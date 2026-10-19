@@ -1,10 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   buildConfirmedGlowSchedule,
+  findMissingSourceRecords,
   FIRST_CONFIRMED_TUESDAY_GLOW,
   HBNF_SCHEDULE_CONFIRMATION_REF,
-  hasGlowActivity,
   isCanceledGlowWeek,
+  shouldEmitConfirmedScheduleRecord,
+  shouldSkipCanceledEvent,
+  shouldUseConfirmedSchedule,
 } from "./confirmed-schedule.mjs";
 
 type Json = Record<string, any>;
@@ -220,7 +223,7 @@ Deno.serve(async (req) => {
 
     for (const [date, week] of Object.entries(glowWeeks)) {
       if (!dateKey(date) || !week || typeof week !== "object") continue;
-      if (confirmedGlowDates.has(date) && !hasGlowActivity(week) && !isCanceledGlowWeek(week)) continue;
+      if (shouldUseConfirmedSchedule(date, week, confirmedGlowDates)) continue;
       const url = eventSourceUrl("glow", date);
       const tuesdayGlow = date >= FIRST_CONFIRMED_TUESDAY_GLOW;
       const status = isCanceledGlowWeek(week)
@@ -255,7 +258,7 @@ Deno.serve(async (req) => {
     let derivedGlowScheduleRecords = 0;
     for (const scheduled of confirmedGlowSchedule) {
       const stateWeek = glowWeeks[scheduled.date];
-      if (isCanceledGlowWeek(stateWeek) || hasGlowActivity(stateWeek)) continue;
+      if (!shouldEmitConfirmedScheduleRecord(stateWeek)) continue;
       const date = scheduled.date;
       const url = eventSourceUrl("glow", date);
       const tuesdayGlow = !scheduled.monthlyFinal;
@@ -292,7 +295,7 @@ Deno.serve(async (req) => {
 
     records.sort((a, b) => a.date.localeCompare(b.date) || a.mode.localeCompare(b.mode));
 
-    const existing = await service.from("lr_event_sources").select("event_id,external_id").eq("source_id", sourceId).not("external_id", "is", null);
+    const existing = await service.from("lr_event_sources").select("event_id,external_id,source_payload").eq("source_id", sourceId).not("external_id", "is", null);
     if (existing.error) throw new Error(existing.error.message);
     const existingEventIds = [...new Set((existing.data ?? []).map((row: any) => row.event_id).filter(Boolean))];
     const existingEvents = existingEventIds.length
@@ -304,9 +307,7 @@ Deno.serve(async (req) => {
       .map((event: any) => event.id));
     const existingByExternalId = new Map((existing.data ?? []).map((row: any) => [row.external_id, row]));
     const seen = new Set(records.map((record) => record.externalId));
-    const missing = stateFetchError
-      ? []
-      : (existing.data ?? []).filter((row: any) => row.external_id && !seen.has(row.external_id));
+    const missing = findMissingSourceRecords(existing.data ?? [], seen, !stateFetchError);
 
     let valid = 0;
     let rejected = 0;
@@ -319,7 +320,8 @@ Deno.serve(async (req) => {
 
     for (const record of records) {
       const existingRow: any = existingByExternalId.get(record.externalId);
-      if (existingRow && canceledEventIds.has(existingRow.event_id) && record.payload.status !== "canceled") {
+      if (existingRow && canceledEventIds.has(existingRow.event_id)
+        && shouldSkipCanceledEvent("canceled", record.payload.status)) {
         continue;
       }
       const candidateInsert = await service.from("lr_source_candidates").insert({

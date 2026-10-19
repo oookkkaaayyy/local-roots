@@ -50,3 +50,37 @@ export function isCanceledGlowWeek(week) {
   const status = String(week?.status ?? "").toLowerCase();
   return week?.canceled === true || week?.cancelled === true || status === "canceled" || status === "cancelled";
 }
+
+export function shouldUseConfirmedSchedule(date, week, confirmedDates) {
+  return confirmedDates.has(date) && !hasGlowActivity(week) && !isCanceledGlowWeek(week);
+}
+
+export function shouldEmitConfirmedScheduleRecord(week) {
+  return !hasGlowActivity(week) && !isCanceledGlowWeek(week);
+}
+
+export function shouldSkipCanceledEvent(existingStatus, incomingStatus) {
+  return existingStatus === "canceled" && incomingStatus !== "canceled";
+}
+
+function parseSourcePayload(value) {
+  if (typeof value === "string") {
+    try { return JSON.parse(value); } catch { return null; }
+  }
+  return value && typeof value === "object" ? value : null;
+}
+
+export function isConfirmedGlowScheduleProvenance(value) {
+  const payload = parseSourcePayload(value);
+  return payload?.origin === "organizer_confirmed_schedule"
+    && payload?.confirmation_reference === HBNF_SCHEDULE_CONFIRMATION_REF
+    && ["final-monthly-glow-2026-10-24", "weekly-tuesday-glow-after-2026-10-27"].includes(payload?.schedule_rule);
+}
+
+export function findMissingSourceRecords(existingRows, seenExternalIds, sourceStateReadSucceeded) {
+  if (!sourceStateReadSucceeded) return [];
+  const seen = seenExternalIds instanceof Set ? seenExternalIds : new Set(seenExternalIds ?? []);
+  return existingRows.filter((row) => row?.external_id
+    && !seen.has(row.external_id)
+    && !isConfirmedGlowScheduleProvenance(row.source_payload));
+}
