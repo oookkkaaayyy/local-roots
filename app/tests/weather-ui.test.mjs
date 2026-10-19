@@ -95,6 +95,7 @@ test('Weather rolls only fresh defaults forward after 4 PM and preserves explici
   assert.match(page,/forecastWindowHasPassed\(today,8,16,TIME_ZONE\)\?plusDays\(today,1\):today/);
   assert.match(page,/date:isCalendarDate\(saved\.date\)\?saved\.date:initial\.date/);
   assert.match(page,/sharedDate=query\.get\('date'\); if\(isCalendarDate\(sharedDate\)\) initial\.date=sharedDate/);
+  assert.ok(page.includes("!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)"),'valid calendar dates, including shared past selections, must pass validation');
   assert.match(page,/if\(allDayParam==='1'\)initial\.allDay=true;else if\(allDayParam==='0'\)initial\.allDay=false/);
   assert.match(page,/This time window has passed\./);
   assert.match(page,/Tomorrow · 8 AM–4 PM/);
