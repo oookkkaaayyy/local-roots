@@ -118,11 +118,11 @@ test('Weather heading keeps Events typography and rolling detail does not alter 
   assert.ok(weatherRule);
   assert.match(weatherRule,/color:var\(--root\)/);
   assert.match(weatherRule,/font-family:var\(--lr-public-font,Arial,sans-serif\)/);
-  assert.match(weatherRule,/font-size:1\.45rem;font-weight:800;letter-spacing:-\.02em/);
-  assert.match(events,/\.events-page \.list-header h2\{font-family:var\(--events-sans\);font-size:1\.45rem;font-weight:800;letter-spacing:-\.02em/);
-  assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.08rem\}/);
+  assert.match(weatherRule,/font-size:1\.2rem;font-weight:700;letter-spacing:-\.012em/);
+  assert.match(events,/\.events-page \.list-header h2\{font-size:1\.28rem;font-weight:700;letter-spacing:-\.012em\}/);
+  assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.2rem\}/);\n  assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.08rem\}/);
   assert.match(weather,/@media\(max-width:720px\)\{\.weather-heading h1\{font-size:1\.08rem\}\}/);
-  assert.match(weather,/@media\(max-width:700px\)\{\.weather-heading h1\{font-weight:700;letter-spacing:-\.012em\}\}/);
+  assert.doesNotMatch(weather,/@media\(max-width:700px\)\{\.weather-heading h1\{/);
   assert.match(page,/buildRolling24HourRows/);assert.match(page,/No forecast for these hours/);assert.match(page,/Forecast covers \{Math\.round\(hourly\.coverage\*100\)\}% of these hours/);assert.match(page,/formatHourlyTimeLabel/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
   assert.match(page,/view\.error\?\<p className="weather-error">Forecast unavailable\.<\/p>/);assert.match(page,/view\.flags\.length\?<div className="weather-flag-list"/);
 });
