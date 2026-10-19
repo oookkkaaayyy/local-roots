@@ -15,6 +15,7 @@ const publicationMigration = readFileSync(
   "utf8",
 );
 const currentPublicPage = readFileSync(new URL("../app/src/pages/HbnfPage.tsx", import.meta.url), "utf8");
+const loadAdapter = () => adapter;
 
 test("only the exact organizer-confirmed schedule evidence may publish an unobserved schedule record", () => {
   assert.match(publicationMigration, /origin' = 'club_schedule_rule'/);
@@ -24,6 +25,7 @@ test("only the exact organizer-confirmed schedule evidence may publish an unobse
   assert.match(publicationMigration, /final-monthly-glow-2026-10-24/);
   assert.match(publicationMigration, /weekly-tuesday-glow-after-2026-10-27/);
   assert.match(publicationMigration, /new\.published := false/);
+  assert.ok(publicationMigration.includes("and not coalesce("));
   assert.match(adapter, /origin: "organizer_confirmed_schedule"/);
 });
 
@@ -40,6 +42,7 @@ test("confirmed Tuesday Glow is bounded to eight upcoming dates and assumes no t
   assert.equal(dates.length, 8);
   assert.equal(dates[0].date, FIRST_CONFIRMED_TUESDAY_GLOW);
   assert.equal(dates.at(-1).date, "2026-12-22");
+  assert.match(adapter, /const tuesdayGlow = !scheduled\.monthlyFinal/);
   assert.ok(dates.every((entry) => entry.rule === "weekly-tuesday-glow-after-2026-10-27"));
   assert.ok(dates.every((entry) => !("startLocal" in entry)));
   assert.equal(buildConfirmedGlowSchedule("2026-11-04")[0].date, "2026-11-10");
