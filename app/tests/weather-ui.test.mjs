@@ -112,7 +112,7 @@ test('Weather distinguishes a successful retrieval from NWS forecast publication
 
 
 test('Weather heading keeps Events typography and rolling detail does not alter summary requests',async()=>{
-  const page=await read('../src/pages/WeatherPage.tsx');const weather=await read('../src/weather.css');const events=await read('../src/events-enhancements.css');const integration=await read('../src/lr-hbnf-integration.css');
+  const page=await read('../src/pages/WeatherPage.tsx');const weather=await read('../src/weather.css');const events=await read('../src/events-enhancements.css');const integration=await read('../src/lr-hbnf-integration.css');const polish=await read('../src/share-ready-polish.css');
   assert.match(page,/<h1>Forecast<\/h1>/);assert.doesNotMatch(page,/<h1>Disc Golf Weather<\/h1>/);
   const weatherRule=weather.match(/\.weather-heading h1\{([^}]*)\}/)?.[1];
   assert.ok(weatherRule);
@@ -120,7 +120,7 @@ test('Weather heading keeps Events typography and rolling detail does not alter 
   assert.match(weatherRule,/font-family:var\(--lr-public-font,Arial,sans-serif\)/);
   assert.match(weatherRule,/font-size:1\.2rem;font-weight:700;letter-spacing:-\.012em/);
   assert.match(events,/\.events-page \.list-header h2\{font-size:1\.28rem;font-weight:700;letter-spacing:-\.012em\}/);
-  assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.2rem\}/);
+  assert.match(polish,/\.public-brand-shell \.events-page \.list-header h2\{\s*font-size:1\.2rem;\s*\}/);
   assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.08rem\}/);
   assert.match(weather,/@media\(max-width:720px\)\{\.weather-heading h1\{font-size:1\.08rem\}\}/);
   assert.doesNotMatch(weather,/@media\(max-width:700px\)\{\.weather-heading h1\{/);
