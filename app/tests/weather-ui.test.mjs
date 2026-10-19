@@ -112,10 +112,17 @@ test('Weather distinguishes a successful retrieval from NWS forecast publication
 
 
 test('Weather heading keeps Events typography and rolling detail does not alter summary requests',async()=>{
-  const page=await read('../src/pages/WeatherPage.tsx');const weather=await read('../src/weather.css');const styles=await read('../src/styles.css');
+  const page=await read('../src/pages/WeatherPage.tsx');const weather=await read('../src/weather.css');const events=await read('../src/events-enhancements.css');const integration=await read('../src/lr-hbnf-integration.css');
   assert.match(page,/<h1>Forecast<\/h1>/);assert.doesNotMatch(page,/<h1>Disc Golf Weather<\/h1>/);
-  const weatherRule=weather.match(/\.weather-heading h1\{([^}]*)\}/)?.[1];const eventsRule=styles.match(/\.list-header h2\{([^}]*)\}/)?.[1];
-  assert.ok(weatherRule);assert.ok(eventsRule);assert.match(weatherRule,/font:1\.7rem Georgia,serif/);assert.match(weatherRule,/color:var\(--root\)/);assert.match(eventsRule,/font:1\.7rem Georgia,serif/);assert.match(eventsRule,/color:var\(--root\)/);assert.doesNotMatch(weather,/\.weather-heading h1\{font-size:/);
+  const weatherRule=weather.match(/\.weather-heading h1\{([^}]*)\}/)?.[1];
+  assert.ok(weatherRule);
+  assert.match(weatherRule,/color:var\(--root\)/);
+  assert.match(weatherRule,/font-family:var\(--lr-public-font,Arial,sans-serif\)/);
+  assert.match(weatherRule,/font-size:1\.45rem;font-weight:800;letter-spacing:-\.02em/);
+  assert.match(events,/\.events-page \.list-header h2\{font-family:var\(--events-sans\);font-size:1\.45rem;font-weight:800;letter-spacing:-\.02em/);
+  assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.08rem\}/);
+  assert.match(weather,/@media\(max-width:720px\)\{\.weather-heading h1\{font-size:1\.08rem\}\}/);
+  assert.match(weather,/@media\(max-width:700px\)\{\.weather-heading h1\{font-weight:700;letter-spacing:-\.012em\}\}/);
   assert.match(page,/buildRolling24HourRows/);assert.match(page,/No forecast for these hours/);assert.match(page,/Forecast covers \{Math\.round\(hourly\.coverage\*100\)\}% of these hours/);assert.match(page,/formatHourlyTimeLabel/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
   assert.match(page,/view\.error\?\<p className="weather-error">Forecast unavailable\.<\/p>/);assert.match(page,/view\.flags\.length\?<div className="weather-flag-list"/);
 });
