@@ -117,3 +117,100 @@
 }
 
 @media(max-width:400px){.public-brand-shell .site-header{gap:8px}}
+
+/*
+ * Shared Local Roots public visual pass — draft review only.
+ * Presentation tokens and existing component surfaces; no routes, scoring, filters or data changes.
+ * Keep HBNF's club panel and D&U's artwork distinct.
+ */
+.public-brand-shell{
+  --lr-design-ink:#292119;
+  --lr-design-bone:#f4e9d6;
+  --lr-design-phosphor:#b4c58f;
+  --lr-design-sage:#8c956a;
+  background:radial-gradient(ellipse at 85% 0%,rgba(255,251,240,.88) 0%,rgba(255,251,240,0) 46%),#f4e9d6;
+  color:var(--lr-design-ink);
+}
+.public-brand-shell .site-header{
+  background:rgba(244,233,214,.97);
+  border-bottom-color:rgba(41,33,25,.21);
+  box-shadow:0 2px 14px rgba(41,33,25,.045);
+}
+.public-brand-shell .site-header .brand strong{
+  color:var(--lr-design-ink);
+  font-weight:700;
+  letter-spacing:-.025em;
+}
+.public-brand-shell .site-header nav a{
+  color:var(--lr-design-ink);
+  font-weight:700;
+}
+@media(min-width:841px){
+  .public-brand-shell .site-header nav.primary-nav{gap:3px}
+  .public-brand-shell .site-header nav.primary-nav a{
+    padding:7px 10px;
+    border:1px solid transparent;
+    border-radius:7px;
+    transition:background-color .16s ease,border-color .16s ease;
+  }
+  .public-brand-shell .site-header nav.primary-nav a:hover{
+    background:rgba(140,149,106,.11);
+  }
+  .public-brand-shell .site-header nav.primary-nav a[aria-current=page]{
+    background:rgba(140,149,106,.17);
+    border-color:rgba(140,149,106,.25);
+    box-shadow:none;
+    text-decoration:none;
+  }
+}
+.public-brand-shell .site-footer{
+  background:rgba(244,233,214,.62);
+  border-top-color:rgba(41,33,25,.20);
+}
+.public-brand-shell .events-page .list-header,
+.public-brand-shell .weather-results-heading{
+  padding-bottom:9px;
+  border-bottom:1px solid rgba(41,33,25,.22);
+}
+.public-brand-shell .events-page .event-card{
+  border-color:rgba(41,33,25,.18);
+  border-radius:12px;
+  background:rgba(255,250,241,.93);
+  box-shadow:0 4px 16px rgba(41,33,25,.045);
+}
+.public-brand-shell .events-page .event-card:hover{
+  transform:none;
+  border-color:rgba(140,149,106,.60);
+  box-shadow:0 6px 18px rgba(41,33,25,.08);
+}
+.public-brand-shell .weather-filter-toggle,
+.public-brand-shell .weather-controls{
+  border-color:rgba(41,33,25,.18);
+  background-color:rgba(255,250,241,.93);
+}
+/* Compact Weather rows are already an accepted mobile design. */
+@media(min-width:621px){
+  .public-brand-shell .weather-course{
+    border-color:rgba(41,33,25,.18);
+    background-color:rgba(255,250,241,.93);
+  }
+}
+.public-brand-shell .du-gallery-frame{
+  border-color:rgba(41,33,25,.20);
+  border-radius:16px;
+  box-shadow:0 6px 20px rgba(41,33,25,.07);
+}
+.public-brand-shell .du-request .section-intro h2{
+  color:var(--lr-design-ink);
+  font-family:var(--lr-public-font);
+  font-size:1.2rem;
+}
+@media(max-width:620px){
+  .public-brand-shell .site-header{box-shadow:none}
+  .public-brand-shell .events-page .list-header,
+  .public-brand-shell .weather-results-heading{padding-bottom:7px}
+  .public-brand-shell .du-gallery-frame{border-radius:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .public-brand-shell .site-header nav.primary-nav a{transition:none}
+}
