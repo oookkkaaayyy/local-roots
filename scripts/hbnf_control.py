@@ -276,7 +276,7 @@ BACKEND_OPAL_FUNCTION_FILES=(
 # LIVE_APPROVED and never changes the global firmware mutation bit.
 OWNER_PWA_TRANSACTION_SCHEMA="hbnf-owner-pwa-install-admission-v1"
 OWNER_PWA_STEP="install_owner_pwa"
-OWNER_PWA_DRIVE_ID="1PLxm2UbVQU7YSZWOLp0GkHJPUtRkZ3Vp"
+OWNER_PWA_DRIVE_ID="19XJLoOI8r6asH377QPlnW20NvzfYXK0n"
 OWNER_PWA_TARGETS=(
     "owner-pwa/hbnf-cart.html", "owner-pwa/hbnf-cart.js",
     "owner-pwa/hbnf-cart-local.js", "owner-pwa/hbnf-cart-features.js",
@@ -288,48 +288,47 @@ OWNER_PWA_TARGETS=(
     "mission-control-local/local-transport.js",
 )
 OWNER_PWA_ARTIFACTS={
-    "release_zip":"17127ae9a6a1cebd34c2467e5662aa23bb5fddb59811122c1114ebb76a686d73",
-    "candidate_zip":"681d02edf22ec6a45df9ac42c2210c3910c590111ec420da5e0f34458ea64b8e",
-    "candidate_manifest":"d05a0521c9a3e67bc42bc5db9afe81ca9678567ead84110a44b7721d868ff787",
-    "served_baseline_zip":"4dcb151465266fe1e80a1b0080d2ed7ec82ef0a20fd5f08830f403383ea6e018",
-    "v105_rollback_zip":"e2e7c7d97ce9756a9f8291e97d3e7e65917234dd6756be25c777e9bcdbd64b24",
-    "served_manifest":"3697dea5b6dd37e7a70fefdd9adf59ea027eb63df281ef1e25c5a2ea3c20d0ad",
-    "installer":"39d80154c62fb2c91bfb3c55c75652aa29969f63238b0b9d3ffc970f8b5a7f17",
-    "rollback_script":"fd3c6c5c746a9948b30eb13392af089b3be15344f4526ebc4a911fe5b6c1741a",
+    "release_zip": "2b43c112287cfea8e88f2f421bd81658ef38fb901cb16e693d4ce7677327f1b2",
+    "candidate_zip": "2b43c112287cfea8e88f2f421bd81658ef38fb901cb16e693d4ce7677327f1b2",
+    "candidate_manifest": "914bc769e343ee908b4387c4c74b07f179c6543785f360a025615c0eb06855e9",
+    "source_bundle": "d4c34090c19a88de960cbf3ae68bbacb51187a6247a8b4018dfc591144d66f69",
+    "served_baseline_zip": "3ea322d36bbdcebf6f76495c3e20d516e7cb746fd917b0643d6495d00c477be7",
+    "installer": "39d80154c62fb2c91bfb3c55c75652aa29969f63238b0b9d3ffc970f8b5a7f17",
+    "rollback_script": "fd3c6c5c746a9948b30eb13392af089b3be15344f4526ebc4a911fe5b6c1741a"
 }
 OWNER_PWA_BASELINE_HASHES={
-    "owner-pwa/hbnf-cart-features.js":"969e8eb38640783fd970d81e4544eefaa0063bfdb8a8a0a7eabdd4fa89de7502",
-    "owner-pwa/hbnf-cart-icon-180.png":"2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
-    "owner-pwa/hbnf-cart-icon-192.png":"1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
-    "owner-pwa/hbnf-cart-icon-512.png":"6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
-    "owner-pwa/hbnf-cart-local.js":"1480ee79cd056f697b65a9d2c4b3693ff612ad000eed37a981812e0a0752c8c9",
-    "owner-pwa/hbnf-cart-manifest.webmanifest":"da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
-    "owner-pwa/hbnf-cart-net.js":"0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
-    "owner-pwa/hbnf-cart-semantic.js":"af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
-    "owner-pwa/hbnf-cart-skins-score.js":"642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
-    "owner-pwa/hbnf-cart-ui-v6.css":"3d4199fd56e19e4d1e66bde443531d2e94155c41dbbc53ba6a6e7da4811ce4cd",
-    "owner-pwa/hbnf-cart-ui-v6.js":"c0347fdbafcda703578b18db37f03ef7010fb69d14c07e1f4eb64d8c0620268f",
-    "owner-pwa/hbnf-cart.html":"efa9759de89a900d7fec7e63114144e730a630eda970ef2f0441e8056a006c61",
-    "owner-pwa/hbnf-cart.js":"a6c55caeb9cc9b09b8fb846b8776c085d3be97f349be3dd46d596cd526361761",
-    "owner-pwa/hbnf-guest-qr.png":"f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
-    "mission-control-local/local-transport.js":"51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+    "mission-control-local/local-transport.js": "2d6e064bb54839d9562c3ff180681d7b918bb92f2fdb43f00c2821053e145e37",
+    "owner-pwa/hbnf-cart-features.js": "6b0034727f1ca7026fd99e95a090500a0e7acc90b70891591bcd18c364b0727a",
+    "owner-pwa/hbnf-cart-icon-180.png": "2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
+    "owner-pwa/hbnf-cart-icon-192.png": "1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
+    "owner-pwa/hbnf-cart-icon-512.png": "6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
+    "owner-pwa/hbnf-cart-local.js": "61731961371e0c839aebc6d60476abf2fb1f7a222ebc8f10873fb6764fe3eea4",
+    "owner-pwa/hbnf-cart-manifest.webmanifest": "da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
+    "owner-pwa/hbnf-cart-net.js": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-semantic.js": "d151cf1dfadc99e1d4376272359c27eec6f2ca93d9bad011cc48960f586f06d0",
+    "owner-pwa/hbnf-cart-skins-score.js": "1e98002593ea55ec97b10435dedc469a26e9abbef0da09e351a123dee4dd8c4d",
+    "owner-pwa/hbnf-cart-ui-v6.css": "3cce153991070ff12ad56a57a96a16de873751fa1e9036b5f7005b1cfbe67312",
+    "owner-pwa/hbnf-cart-ui-v6.js": "4f663dae22e9bb74724c5a7edbd76223353069358e2ef4face2d71b690547dec",
+    "owner-pwa/hbnf-cart.html": "62c8422b11d050bbb27b296a3ba2d84ed1e861be6e0f44bf617d8356a45ba6a1",
+    "owner-pwa/hbnf-cart.js": "b156456f251086aecc70c0aa74ba81a74a3566ae02dde2f3cc457f94ba2f37fc",
+    "owner-pwa/hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
 }
 OWNER_PWA_CANDIDATE_HASHES={
-    "mission-control-local/local-transport.js":"2d6e064bb54839d9562c3ff180681d7b918bb92f2fdb43f00c2821053e145e37",
-    "owner-pwa/hbnf-cart-features.js":"cb347e0a6d41572c547fd68e395f095e2a0e5fbd7e59516a38c836b628b5d27e",
-    "owner-pwa/hbnf-cart-icon-180.png":"2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
-    "owner-pwa/hbnf-cart-icon-192.png":"1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
-    "owner-pwa/hbnf-cart-icon-512.png":"6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
-    "owner-pwa/hbnf-cart-local.js":"20fa2fe5a96342df175a14a68d5dfe68568d1b835793eae23227647d60dbbfaf",
-    "owner-pwa/hbnf-cart-manifest.webmanifest":"da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
-    "owner-pwa/hbnf-cart-net.js":"0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
-    "owner-pwa/hbnf-cart-semantic.js":"af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
-    "owner-pwa/hbnf-cart-skins-score.js":"642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
-    "owner-pwa/hbnf-cart-ui-v6.css":"c878e5fc3d99b967fd7543ec0f03c620083cfb1b05f443f0d820b243b41b94ea",
-    "owner-pwa/hbnf-cart-ui-v6.js":"c0347fdbafcda703578b18db37f03ef7010fb69d14c07e1f4eb64d8c0620268f",
-    "owner-pwa/hbnf-cart.html":"03ad82714487712a1d28e128d0dcc4c300662ef61445c56143b8e50245b4b0b1",
-    "owner-pwa/hbnf-cart.js":"6662cc95b6d76fa02ea3300d635e585b391e44d195aab2da3272e83f283138bd",
-    "owner-pwa/hbnf-guest-qr.png":"f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
+    "mission-control-local/local-transport.js": "2d6e064bb54839d9562c3ff180681d7b918bb92f2fdb43f00c2821053e145e37",
+    "owner-pwa/hbnf-cart-features.js": "3420518dd706f6110717b30e92ba295202b53e140db78454b56d815b1193440d",
+    "owner-pwa/hbnf-cart-icon-180.png": "2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
+    "owner-pwa/hbnf-cart-icon-192.png": "1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
+    "owner-pwa/hbnf-cart-icon-512.png": "6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
+    "owner-pwa/hbnf-cart-local.js": "61731961371e0c839aebc6d60476abf2fb1f7a222ebc8f10873fb6764fe3eea4",
+    "owner-pwa/hbnf-cart-manifest.webmanifest": "da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
+    "owner-pwa/hbnf-cart-net.js": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-semantic.js": "21980b3873e0da3249833751c491e76b544701a6ca8fc89a98b3ae16ba84a330",
+    "owner-pwa/hbnf-cart-skins-score.js": "1e98002593ea55ec97b10435dedc469a26e9abbef0da09e351a123dee4dd8c4d",
+    "owner-pwa/hbnf-cart-ui-v6.css": "3cce153991070ff12ad56a57a96a16de873751fa1e9036b5f7005b1cfbe67312",
+    "owner-pwa/hbnf-cart-ui-v6.js": "4f663dae22e9bb74724c5a7edbd76223353069358e2ef4face2d71b690547dec",
+    "owner-pwa/hbnf-cart.html": "41c00b1a80f11d1cd6310be2c93eb71fb1018902ced8e93a01a7bdcf5fa34067",
+    "owner-pwa/hbnf-cart.js": "b156456f251086aecc70c0aa74ba81a74a3566ae02dde2f3cc457f94ba2f37fc",
+    "owner-pwa/hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
 }
 
 def _owner_pwa_authorization_receipt_errors(manifest,owner):
@@ -348,14 +347,122 @@ def _owner_pwa_authorization_receipt_errors(manifest,owner):
     except (OSError,ValueError,TypeError,AttributeError): errors.append("Owner PWA authorization receipt is missing or unsafe")
     return errors
 
+def _owner_pwa_verified_terminal_transaction(tx):
+    """Verify a prior terminal Owner-PWA receipt before preserving it in history."""
+    errors=[]
+    if not isinstance(tx,dict) or tx.get("schema")!="hbnf-owner-pwa-transaction-state-v1":
+        return ["prior Owner PWA transaction is malformed"]
+    if tx.get("status") not in ("COMPLETE","ROLLED_BACK") or tx.get("active_step") is not None:
+        return ["prior Owner PWA transaction is active, unresolved, or nonterminal"]
+    if tx.get("attempts_used")!=1 or tx.get("completed_steps")!=[OWNER_PWA_STEP]:
+        return ["prior Owner PWA transaction is not a single completed install"]
+    owner=tx.get("owner_authorization",{})
+    artifacts=owner.get("artifact_sha256_bindings",{}) if isinstance(owner,dict) else {}
+    if not isinstance(artifacts,dict) or not re.fullmatch(r"[a-f0-9]{64}",str(artifacts.get("served_baseline_zip",""))):
+        return ["prior Owner PWA transaction has no exact rollback binding"]
+    root=DEFAULT_STATE.parent.parent.resolve()
+    def evidence(path_key,sha_key,label):
+        rel=tx.get(path_key); sha=tx.get(sha_key)
+        if not isinstance(rel,str) or not rel or pathlib.Path(rel).is_absolute() or ".." in pathlib.Path(rel).parts:
+            errors.append("prior "+label+" path is unsafe"); return None
+        p=(root/rel).resolve()
+        try: p.relative_to(root/"evidence")
+        except ValueError: errors.append("prior "+label+" is outside evidence"); return None
+        try:
+            if not p.is_file() or not isinstance(sha,str) or not re.fullmatch(r"[a-f0-9]{64}",sha) or sha256_file(p)!=sha:
+                errors.append("prior "+label+" hash is missing or changed"); return None
+            value=load(p)
+        except (OSError,ValueError,TypeError):
+            errors.append("prior "+label+" is unavailable or malformed"); return None
+        if not isinstance(value,dict): errors.append("prior "+label+" is not an object"); return None
+        return value
+    auth_ref=tx.get("owner_authorization_receipt")
+    if auth_ref is not None:
+        auth_errors=_owner_pwa_authorization_receipt_errors({"owner_authorization_receipt":auth_ref},owner)
+        if auth_errors: errors.extend(["prior "+message for message in auth_errors])
+    if tx.get("status")=="COMPLETE":
+        if tx.get("rollback_attempts_used")!=0:
+            errors.append("completed prior install has unexpected rollback activity")
+        receipt=evidence("install_receipt_path","install_receipt_sha256","install receipt")
+        if receipt is not None:
+            if (receipt!=tx.get("install_receipt")
+                or receipt.get("schema")!="hbnf-owner-pwa-install-result-v1"
+                or receipt.get("transaction_id")!=tx.get("transaction_id")
+                or receipt.get("step")!=OWNER_PWA_STEP
+                or receipt.get("status")!="PASS"
+                or receipt.get("rollback_sha256")!=artifacts.get("served_baseline_zip")
+                or receipt.get("rollback_retained") is not True):
+                errors.append("prior install receipt does not verify its recorded transaction and rollback")
+            installed=receipt.get("installed_sha256_by_path")
+            served=receipt.get("served_sha256_by_path")
+            if not isinstance(installed,dict) or set(installed)!=set(OWNER_PWA_TARGETS) or served!=installed:
+                errors.append("prior install receipt does not bind all exact served Owner files")
+            elif any(not re.fullmatch(r"[a-f0-9]{64}",str(value)) for value in installed.values()):
+                errors.append("prior install receipt contains an invalid file hash")
+            if receipt.get("health_checks")!={"http_200_all_15":True,"content_hash_all_15":True,"owner_route_content":True,"guest_unchanged":True,"skins_unchanged":True,"firmware_unchanged":True,"aux_unchanged":True}:
+                errors.append("prior install receipt does not show all required health checks")
+    else:
+        if tx.get("rollback_attempts_used")!=1:
+            errors.append("rolled-back prior install lacks its single rollback receipt")
+        failure=evidence("failure_receipt_path","failure_receipt_sha256","failure receipt")
+        if failure is not None and (failure.get("schema")!="hbnf-owner-pwa-install-result-v1"
+            or failure.get("transaction_id")!=tx.get("transaction_id")
+            or failure.get("step")!=OWNER_PWA_STEP or failure.get("status")!="FAIL"):
+            errors.append("prior failure receipt is not transaction-bound")
+        rollback=evidence("rollback_receipt_path","rollback_receipt_sha256","rollback receipt")
+        if rollback is not None:
+            hashes=rollback.get("served_sha256_by_path")
+            if (rollback.get("schema")!="hbnf-owner-pwa-install-result-v1"
+                or rollback.get("transaction_id")!=tx.get("transaction_id")
+                or rollback.get("step")!="rollback_if_required" or rollback.get("status")!="PASS"
+                or rollback.get("rollback_sha256")!=artifacts.get("served_baseline_zip")
+                or not isinstance(hashes,dict) or set(hashes)!=set(OWNER_PWA_TARGETS)
+                or any(not re.fullmatch(r"[a-f0-9]{64}",str(value)) for value in hashes.values())):
+                errors.append("prior rollback receipt does not prove its exact baseline restoration")
+    return list(dict.fromkeys(errors))
+
+
+def _owner_pwa_prior_ids(cursor):
+    history=cursor.get("owner_pwa_transaction_history",[])
+    if not isinstance(history,list):
+        raise ValueError("Owner PWA history is malformed")
+    transactions=[]
+    for item in history:
+        if not isinstance(item,dict) or not isinstance(item.get("prior_transaction"),dict):
+            raise ValueError("Owner PWA history contains an unverified transaction")
+        transactions.append(item["prior_transaction"])
+    return transactions
+
 def issue_owner_pwa_admission(state,manifest,owner_authorization,now=None):
     current=time.time() if now is None else now
     cursor=state.get("execution_cursor",{})
     if not isinstance(cursor,dict): raise ValueError("Owner PWA issue rejected: execution cursor missing")
     if not isinstance(manifest,dict) or not isinstance(owner_authorization,dict): raise ValueError("Owner PWA issue rejected: manifest and owner authorization must be objects")
-    if cursor.get("owner_pwa_transaction") or cursor.get("owner_pwa_transaction_history"):
-        raise ValueError("Owner PWA issue rejected: a prior or unresolved Owner PWA authorization exists")
+    archived=_owner_pwa_prior_ids(cursor)
+    prior=cursor.get("owner_pwa_transaction")
+    prior_chain=archived+([prior] if prior is not None else [])
+    history=cursor.get("owner_pwa_transaction_history",[])
+    for index,item in enumerate(history):
+        next_tx=prior_chain[index+1] if index+1<len(prior_chain) else None
+        if next_tx is None or item.get("superseded_by")!=next_tx.get("transaction_id"):
+            raise ValueError("Owner PWA issue rejected: archived transaction chain is incomplete or out of order")
+    seen_transactions=set(); seen_authorizations=set(); seen_nonces=set()
+    for previous in prior_chain:
+        prior_errors=_owner_pwa_verified_terminal_transaction(previous)
+        if prior_errors: raise ValueError("Owner PWA issue rejected: "+"; ".join(prior_errors))
+        previous_owner=previous.get("owner_authorization",{})
+        for value,seen,label in ((previous.get("transaction_id"),seen_transactions,"transaction"),
+                                 (previous_owner.get("authorization_id"),seen_authorizations,"authorization"),
+                                 (previous_owner.get("nonce"),seen_nonces,"nonce")):
+            if not isinstance(value,str) or not value or value in seen:
+                raise ValueError("Owner PWA issue rejected: prior "+label+" identity is missing or repeated")
+            seen.add(value)
     manifest=copy.deepcopy(manifest); owner=copy.deepcopy(owner_authorization)
+    for value,seen,label in ((owner.get("transaction_id"),seen_transactions,"transaction"),
+                             (owner.get("authorization_id"),seen_authorizations,"authorization"),
+                             (owner.get("nonce"),seen_nonces,"nonce")):
+        if isinstance(value,str) and value in seen:
+            raise ValueError("Owner PWA issue rejected: fresh "+label+" identity was already used")
     manifest["schema"]=OWNER_PWA_TRANSACTION_SCHEMA
     manifest["stage"]="OWNER_PWA_LIVE_APPROVED"; manifest["outcome"]="PASS"
     manifest["owner_authorization"]=owner
@@ -379,12 +486,19 @@ def issue_owner_pwa_admission(state,manifest,owner_authorization,now=None):
     tx={"schema":"hbnf-owner-pwa-transaction-state-v1","transaction_id":owner["transaction_id"],
         "admission_sha256":manifest["admission_sha256"],"owner_authorization":copy.deepcopy(owner),
         "status":"AUTHORIZED","attempts_used":0,"active_step":None,"completed_steps":[],
-        "rollback_attempts_used":0,"issued_unix":current}
+        "rollback_attempts_used":0,"issued_unix":current,
+        "owner_authorization_receipt":copy.deepcopy(manifest.get("owner_authorization_receipt"))}
+    prior_saved=copy.deepcopy(prior) if prior is not None else None
     cursor["owner_pwa_transaction"]=tx
     errors=owner_pwa_admission_errors(state,manifest,current,True)
     if errors:
-        cursor.pop("owner_pwa_transaction",None)
+        if prior_saved is None: cursor.pop("owner_pwa_transaction",None)
+        else: cursor["owner_pwa_transaction"]=prior_saved
         raise ValueError("Owner PWA issue rejected: "+"; ".join(errors))
+    if prior_saved is not None:
+        history=copy.deepcopy(cursor.get("owner_pwa_transaction_history",[]))
+        history.append({"prior_transaction":prior_saved,"superseded_by":tx["transaction_id"],"superseded_unix":current})
+        cursor["owner_pwa_transaction_history"]=history
     return manifest
 
 def owner_pwa_admission_digest(manifest):
@@ -402,6 +516,18 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
     cursor=state.get("execution_cursor",{}); tx=cursor.get("owner_pwa_transaction",{}) if isinstance(cursor,dict) else {}
     owner=manifest.get("owner_authorization",{})
     if not isinstance(owner,dict): owner={}; errors.append("Owner PWA owner authorization is malformed")
+    history=cursor.get("owner_pwa_transaction_history",[]) if isinstance(cursor,dict) else []
+    if not isinstance(history,list): errors.append("Owner PWA transaction history is malformed")
+    else:
+        used_ids=[]
+        for item in history:
+            prior=item.get("prior_transaction") if isinstance(item,dict) else None
+            prior_owner=prior.get("owner_authorization",{}) if isinstance(prior,dict) else {}
+            if not isinstance(prior,dict) or not isinstance(prior_owner,dict):
+                errors.append("Owner PWA history contains an invalid transaction record"); continue
+            used_ids.extend((prior.get("transaction_id"),prior_owner.get("authorization_id"),prior_owner.get("nonce")))
+        if any(value and value in used_ids for value in (manifest.get("transaction_id"),owner.get("authorization_id"),owner.get("nonce"))):
+            errors.append("Owner PWA transaction or authorization identity was previously used")
     if not isinstance(tx,dict) or tx.get("schema")!="hbnf-owner-pwa-transaction-state-v1": errors.append("primary control state has no scoped Owner PWA transaction")
     else:
         if tx.get("transaction_id")!=manifest.get("transaction_id"): errors.append("Owner PWA transaction identity mismatch")

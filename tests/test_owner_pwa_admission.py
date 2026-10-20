@@ -6,9 +6,11 @@ spec=importlib.util.spec_from_file_location('control',ROOT/'scripts/hbnf_control
 control=importlib.util.module_from_spec(spec); spec.loader.exec_module(control)
 NOW=int(time.time())
 AUTH_TEST_FILE=control.DEFAULT_STATE.parent.parent/'evidence'/'owner-pwa-test-authorization.json'
+NEXT_AUTH_TEST_FILE=control.DEFAULT_STATE.parent.parent/'evidence'/'owner-pwa-test-authorization-successor.json'
 
 def tearDownModule():
     AUTH_TEST_FILE.unlink(missing_ok=True)
+    NEXT_AUTH_TEST_FILE.unlink(missing_ok=True)
 
 def fixture():
     state=json.loads((ROOT/'config/HBNF_CONTROL_STATE.json').read_text())
@@ -86,6 +88,108 @@ class OwnerPwaAdmission(unittest.TestCase):
         self.assertTrue(control.owner_pwa_admission_errors(state,m,NOW))
         state,m=fixture(); m['transaction_id']='OTHER'; m['admission_sha256']=control.owner_pwa_admission_digest(m)
         self.assertTrue(control.owner_pwa_admission_errors(state,m,NOW))
+    def _completed_transaction(self):
+        state,previous_manifest=fixture()
+        receipt={'schema':'hbnf-owner-pwa-install-result-v1','transaction_id':previous_manifest['transaction_id'],
+            'step':control.OWNER_PWA_STEP,'status':'PASS',
+            'installed_sha256_by_path':copy.deepcopy(control.OWNER_PWA_CANDIDATE_HASHES),
+            'served_sha256_by_path':copy.deepcopy(control.OWNER_PWA_CANDIDATE_HASHES),
+            'rollback_sha256':control.OWNER_PWA_ARTIFACTS['served_baseline_zip'],'rollback_retained':True,
+            'health_checks':{'http_200_all_15':True,'content_hash_all_15':True,'owner_route_content':True,
+                'guest_unchanged':True,'skins_unchanged':True,'firmware_unchanged':True,'aux_unchanged':True}}
+        path=control.DEFAULT_STATE.parent.parent/'evidence'/'owner-pwa-prior-test-install.json'
+        path.parent.mkdir(exist_ok=True); path.write_text(json.dumps(receipt,sort_keys=True))
+        tx=state['execution_cursor']['owner_pwa_transaction']
+        tx.update({'status':'COMPLETE','attempts_used':1,'active_step':None,
+            'completed_steps':[control.OWNER_PWA_STEP],'rollback_attempts_used':0,
+            'install_receipt':copy.deepcopy(receipt),
+            'install_receipt_path':path.relative_to(control.DEFAULT_STATE.parent.parent).as_posix(),
+            'install_receipt_sha256':control.sha256_file(path)})
+        return state,previous_manifest,tx,path
+
+    def _fresh_owner_and_manifest(self,previous_manifest,transaction_id='OWNER-PWA-20261019-TEST-NEXT',
+                                  authorization_id='OWNER-20261019-PWA-NEXT',nonce='c'*64):
+        owner={'schema':'hbnf-owner-pwa-install-authorization-v1','transaction_id':transaction_id,
+            'authorization_id':authorization_id,'source_message_ref':'current explicit owner authorization',
+            'scope':[control.OWNER_PWA_STEP,'rollback_if_required'],'nonce':nonce,
+            'issued_unix':NOW,'expires_unix':NOW+600,
+            'artifact_sha256_bindings':copy.deepcopy(control.OWNER_PWA_ARTIFACTS)}
+        NEXT_AUTH_TEST_FILE.write_text(json.dumps({'schema':'hbnf-owner-pwa-explicit-authorization-receipt-v1',
+            'owner_authorization':owner},sort_keys=True))
+        manifest=copy.deepcopy(previous_manifest)
+        manifest['owner_authorization_receipt']={
+            'path':NEXT_AUTH_TEST_FILE.relative_to(control.DEFAULT_STATE.parent.parent).as_posix(),
+            'sha256':control.sha256_file(NEXT_AUTH_TEST_FILE)}
+        return owner,manifest
+
+    def test_reissue_accepts_the_verified_recorded_completion_without_rewriting_it(self):
+        state=json.loads(control.DEFAULT_STATE.read_text())
+        prior=copy.deepcopy(state['execution_cursor']['owner_pwa_transaction'])
+        self.assertEqual('COMPLETE',prior['status'])
+        self.assertEqual([],control._owner_pwa_verified_terminal_transaction(prior))
+        _template_state,template=fixture()
+        owner,manifest=self._fresh_owner_and_manifest(template,
+            transaction_id='OWNER-PWA-20261019-TEST-AFTER-RECORDED',
+            authorization_id='OWNER-20261019-PWA-AFTER-RECORDED',nonce='8'*64)
+        admitted=control.issue_owner_pwa_admission(state,manifest,owner,NOW)
+        archived=state['execution_cursor']['owner_pwa_transaction_history'][0]
+        self.assertEqual(prior,archived['prior_transaction'])
+        self.assertEqual(admitted['transaction_id'],archived['superseded_by'])
+        self.assertEqual([],control.owner_pwa_admission_errors(state,admitted,NOW))
+        self.assertFalse(state['live_mutation_authorized'])
+
+    def test_new_install_archives_only_a_receipted_terminal_transaction(self):
+        state,old_manifest,prior,path=self._completed_transaction()
+        before=copy.deepcopy(prior)
+        owner,manifest=self._fresh_owner_and_manifest(old_manifest)
+        admitted=control.issue_owner_pwa_admission(state,manifest,owner,NOW)
+        cursor=state['execution_cursor']
+        history=cursor['owner_pwa_transaction_history']
+        self.assertEqual(1,len(history))
+        self.assertEqual(before,history[0]['prior_transaction'])
+        self.assertEqual(admitted['transaction_id'],history[0]['superseded_by'])
+        self.assertEqual(before,prior)
+        self.assertEqual([],control.owner_pwa_admission_errors(state,admitted,NOW))
+        self.assertFalse(state['live_mutation_authorized'])
+        control.reserve_owner_pwa_install(state,admitted,NOW)
+        reject(lambda:control.reserve_owner_pwa_install(state,admitted,NOW))
+        path.unlink(missing_ok=True)
+
+    def test_new_install_rejects_unresolved_or_corrupt_prior_transactions(self):
+        for status,active in (('IN_PROGRESS',control.OWNER_PWA_STEP),('ROLLBACK_REQUIRED',None)):
+            state,old_manifest,_prior,path=self._completed_transaction()
+            tx=state['execution_cursor']['owner_pwa_transaction']
+            tx['status']=status; tx['active_step']=active
+            owner,manifest=self._fresh_owner_and_manifest(old_manifest,
+                transaction_id='OWNER-PWA-20261019-TEST-'+status,
+                authorization_id='OWNER-20261019-PWA-'+status,nonce=('d' if status=='IN_PROGRESS' else 'e')*64)
+            with self.assertRaises(ValueError):
+                control.issue_owner_pwa_admission(state,manifest,owner,NOW)
+            path.unlink(missing_ok=True)
+
+        state,old_manifest,_prior,path=self._completed_transaction()
+        tx=state['execution_cursor']['owner_pwa_transaction']
+        tx['install_receipt']['status']='FAIL'
+        owner,manifest=self._fresh_owner_and_manifest(old_manifest,
+            transaction_id='OWNER-PWA-20261019-TEST-CORRUPT',
+            authorization_id='OWNER-20261019-PWA-CORRUPT',nonce='f'*64)
+        with self.assertRaises(ValueError):
+            control.issue_owner_pwa_admission(state,manifest,owner,NOW)
+        path.unlink(missing_ok=True)
+
+    def test_new_install_rejects_reused_transaction_authorization_or_nonce(self):
+        for field,value in (('transaction_id','OWNER-PWA-20261018-TEST-01'),
+                            ('authorization_id','OWNER-20261018-PWA-ONE-INSTALL'),
+                            ('nonce','a'*64)):
+            state,old_manifest,_prior,path=self._completed_transaction()
+            kwargs={'transaction_id':'OWNER-PWA-20261019-TEST-REPLAY',
+                    'authorization_id':'OWNER-20261019-PWA-REPLAY','nonce':'9'*64}
+            kwargs[field]=value
+            owner,manifest=self._fresh_owner_and_manifest(old_manifest,**kwargs)
+            with self.assertRaises(ValueError):
+                control.issue_owner_pwa_admission(state,manifest,owner,NOW)
+            path.unlink(missing_ok=True)
+
     def test_install_receipt_requires_exact_candidate_served_assets_and_rollback(self):
         state,m=fixture(); control.reserve_owner_pwa_install(state,m,NOW)
         evidence={'schema':'hbnf-owner-pwa-install-result-v1','transaction_id':m['transaction_id'],'step':control.OWNER_PWA_STEP,'status':'PASS',
