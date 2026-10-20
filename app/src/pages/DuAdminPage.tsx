@@ -46,30 +46,6 @@ function urlBase64ToUint8Array(value:string){
   const raw=window.atob(base64);
   return Uint8Array.from(raw,character=>character.charCodeAt(0));
 }
-function ensureDuPwaMetadata(){
-  const created:HTMLElement[]=[];
-  if(!document.querySelector('link[data-du-manifest]')){
-    const manifest=document.createElement('link');manifest.rel='manifest';manifest.href='/du-manifest.webmanifest';manifest.dataset.duManifest='true';document.head.appendChild(manifest);created.push(manifest);
-  }
-  if(!document.querySelector('link[data-du-touch-icon]')){
-    const touch=document.createElement('link');touch.rel='apple-touch-icon';touch.href='/brand/dyed-and-unattached-tombstone.png?v=20261020';touch.dataset.duTouchIcon='true';document.head.appendChild(touch);created.push(touch);
-  }
-  const metas:[string,string][]=[['apple-mobile-web-app-capable','yes'],['apple-mobile-web-app-title','D&U'],['apple-mobile-web-app-status-bar-style','default'],['mobile-web-app-capable','yes']];
-  const previousMeta:{element:HTMLMetaElement;content:string|null;created:boolean}[]=[];
-  for(const [name,content] of metas){
-    let meta=document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
-    const wasCreated=!meta;
-    if(!meta){meta=document.createElement('meta');meta.name=name;document.head.appendChild(meta);}
-    previousMeta.push({element:meta,content:wasCreated?null:meta.content,created:wasCreated});
-    meta.content=content;meta.dataset.duPwa='true';
-    if(wasCreated)created.push(meta);
-  }
-  return()=>{
-    created.forEach(element=>element.remove());
-    previousMeta.filter(item=>!item.created).forEach(item=>{if(item.content!==null)item.element.content=item.content;delete item.element.dataset.duPwa;});
-  };
-}
-
 function Login({targetJob,onPaired}:{targetJob:string|null;onPaired:(token:string)=>void}){
   const [email,setEmail]=useState(''),[pairCode,setPairCode]=useState(''),[message,setMessage]=useState(''),[sending,setSending]=useState(false),[pairing,setPairing]=useState(false);
   async function submit(event:FormEvent){
@@ -389,7 +365,6 @@ export function DuAdminPage(){
     }finally{setLoading(false);}
   },[]);
 
-  useEffect(()=>ensureDuPwaMetadata(),[]);
   useEffect(()=>{
     const badgeNavigator=navigator as BadgeNavigator;
     badgeNavigator.clearAppBadge?.().catch(()=>undefined);
