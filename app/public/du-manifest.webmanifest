@@ -3,17 +3,17 @@
   "short_name": "D&U",
   "id": "/admin/dyed-and-unattached",
   "start_url": "/admin/dyed-and-unattached",
-  "scope": "/",
+  "scope": "/admin/",
   "display": "standalone",
   "background_color": "#f4efe7",
   "theme_color": "#3A2618",
   "description": "Dyed & Unattached stencil production queue",
   "icons": [
     {
-      "src": "/brand/local-roots-lr.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/brand/dyed-and-unattached-tombstone.png?v=20261020",
+      "sizes": "1999x1545",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
