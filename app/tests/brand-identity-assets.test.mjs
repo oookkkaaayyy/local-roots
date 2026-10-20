@@ -65,6 +65,14 @@ test('Local Roots Weather PWA and iPhone metadata use the LR mark without changi
   assert.deepEqual(pngSize(file('public/brand/dyed-unattached-icon-192.png')), [192, 192]);
   assert.deepEqual(pngSize(file('public/brand/dyed-unattached-icon-512.png')), [512, 512]);
 
+  const duPublicManifest = JSON.parse(text('public/dyed-and-unattached/manifest.webmanifest'));
+  assert.equal(duPublicManifest.start_url, '/dyed-and-unattached/');
+  assert.equal(duPublicManifest.scope, '/dyed-and-unattached/');
+  assert.deepEqual(duPublicManifest.icons.map(({ src, sizes, type, purpose }) => [src.split('?')[0], sizes, type, purpose]), [
+    ['/brand/dyed-unattached-icon-192.png', '192x192', 'image/png', 'any'],
+    ['/brand/dyed-unattached-icon-512.png', '512x512', 'image/png', 'any'],
+  ]);
+
   const studioManifest = JSON.parse(text('public/dyed-and-unattached/dye-studio/manifest.webmanifest'));
   assert.equal(studioManifest.start_url, '/dyed-and-unattached/dye-studio/');
   assert.equal(studioManifest.scope, '/dyed-and-unattached/dye-studio/');
@@ -74,8 +82,9 @@ test('Local Roots Weather PWA and iPhone metadata use the LR mark without changi
   const index = text('index.html');
   assert.equal((index.match(/rel="manifest"/g) ?? []).length, 1);
   assert.equal((index.match(/rel="apple-touch-icon"/g) ?? []).length, 1);
-  assert.match(app, /isDuAdmin\?DU_MANIFEST:isWeather\?WEATHER_MANIFEST:ROOT_MANIFEST/);
-  assert.match(app, /isDuAdmin\|\|isDyeStudio\?DU_TOUCH_ICON:LR_TOUCH_ICON/);
+  assert.match(app, /isDuAdmin\?DU_MANIFEST:isDuPublic\?DU_PUBLIC_MANIFEST:isWeather\?WEATHER_MANIFEST:ROOT_MANIFEST/);
+  assert.match(app, /isDuAdmin\|\|isDyeStudio\|\|isDuPublic\?DU_TOUCH_ICON:LR_TOUCH_ICON/);
+  assert.match(app, /isDuAdmin\|\|isDuPublic\?'D&U'/);
   assert.match(app, /isWeather\?'LR Weather':'Local Roots'/);
   assert.match(text('public/dyed-and-unattached/dye-studio/index.html'), /sizes="180x180" href="\/brand\/dyed-unattached-icon-180\.png/);
 });
