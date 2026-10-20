@@ -24,7 +24,7 @@ test('Weather keeps its Safari and installable scope with the approved Local Roo
   assert.equal(manifest.scope, '/weather/');
   assert.ok(manifest.icons.some((icon) => icon.src === '/brand/local-roots-icon-192.png' && icon.sizes === '192x192'));
   assert.ok(manifest.icons.some((icon) => icon.src === '/brand/local-roots-icon-512.png' && icon.sizes === '512x512'));
-  assert.match(app, /if\(touchIcon\)touchIcon\.href=isDuAdmin\|\|isDyeStudio\?DU_TOUCH_ICON:LR_TOUCH_ICON/);
+  assert.match(app, /if\(touchIcon\)touchIcon\.href=isDuAdmin\|\|isDyeStudio\|\|isDuPublic\?DU_TOUCH_ICON:LR_TOUCH_ICON/);
 });
 
 test('Weather mobile course rows stay compact and hourly details remain scrollable', async () => {
