@@ -24,5 +24,17 @@
 /du-manifest.webmanifest
   Cache-Control: no-cache
 
+/brand/dyed-unattached-icon-*.png
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
+/manifest.webmanifest
+  Cache-Control: no-cache
+
+/weather/manifest.webmanifest
+  Cache-Control: no-cache
+
+/dyed-and-unattached/dye-studio/manifest.webmanifest
+  Cache-Control: no-cache
+
 https://local-roots.pages.dev/*
   X-Robots-Tag: noindex, nofollow, noarchive

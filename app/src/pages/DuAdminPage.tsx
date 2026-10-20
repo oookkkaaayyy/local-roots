@@ -46,19 +46,6 @@ function urlBase64ToUint8Array(value:string){
   const raw=window.atob(base64);
   return Uint8Array.from(raw,character=>character.charCodeAt(0));
 }
-function ensureDuPwaMetadata(){
-  const created:HTMLElement[]=[];
-  if(!document.querySelector('link[data-du-manifest]')){
-    const manifest=document.createElement('link');manifest.rel='manifest';manifest.href='/du-manifest.webmanifest';manifest.dataset.duManifest='true';document.head.appendChild(manifest);created.push(manifest);
-  }
-  const metas:[string,string][]=[['apple-mobile-web-app-capable','yes'],['apple-mobile-web-app-title','D&U'],['apple-mobile-web-app-status-bar-style','default'],['mobile-web-app-capable','yes']];
-  for(const [name,content] of metas){
-    if(document.querySelector(`meta[name="${name}"]`))continue;
-    const meta=document.createElement('meta');meta.name=name;meta.content=content;meta.dataset.duPwa='true';document.head.appendChild(meta);created.push(meta);
-  }
-  return()=>created.forEach(element=>element.remove());
-}
-
 function Login({targetJob,onPaired}:{targetJob:string|null;onPaired:(token:string)=>void}){
   const [email,setEmail]=useState(''),[pairCode,setPairCode]=useState(''),[message,setMessage]=useState(''),[sending,setSending]=useState(false),[pairing,setPairing]=useState(false);
   async function submit(event:FormEvent){
@@ -378,7 +365,6 @@ export function DuAdminPage(){
     }finally{setLoading(false);}
   },[]);
 
-  useEffect(()=>ensureDuPwaMetadata(),[]);
   useEffect(()=>{
     const badgeNavigator=navigator as BadgeNavigator;
     badgeNavigator.clearAppBadge?.().catch(()=>undefined);

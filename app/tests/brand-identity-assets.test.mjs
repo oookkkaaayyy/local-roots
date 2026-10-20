@@ -7,6 +7,7 @@ import test from 'node:test';
 const file = (path) => readFileSync(resolve(import.meta.dirname, '..', path));
 const text = (path) => file(path).toString('utf8');
 const lrMarkHash = '736e7c6250fbb619957b68156c8606d6fd50d9d2252bfe2dcd12033abd8fdad3';
+const duTombstoneHash = '89ce5f6db5fa730182610575a2bc53aa07ac8a1bd3cf7c33b26af75d23ade879';
 
 function pngSize(bytes) {
   assert.equal(bytes.toString('ascii', 1, 4), 'PNG');
@@ -41,10 +42,40 @@ test('Local Roots Weather PWA and iPhone metadata use the LR mark without changi
   assert.ok(weatherManifest.icons.every(({ purpose }) => purpose === 'any'));
 
   const app = text('src/App.tsx');
-  assert.match(app, /touchIcon\.href='\/apple-touch-icon\.png\?v=af4a80127dd7f9cf'/);
-  assert.match(app, /manifest\.href='\/weather\/manifest\.webmanifest'/);
-  assert.match(app, /if\(normalized==='\/weather'\)/);
+  assert.match(app, /const WEATHER_MANIFEST = '\/weather\/manifest\.webmanifest'/);
+  assert.match(app, /isWeather\?WEATHER_MANIFEST/);
+  assert.match(app, /isWeather\?'LR Weather'/);
 
+  const rootManifest = JSON.parse(text('public/manifest.webmanifest'));
+  assert.equal(rootManifest.start_url, '/');
+  assert.equal(rootManifest.scope, '/');
+  assert.ok(rootManifest.icons.some(({ src, sizes, type }) => src.startsWith('/brand/local-roots-icon-192.png') && sizes === '192x192' && type === 'image/png'));
+  assert.ok(rootManifest.icons.some(({ src, sizes, type }) => src.startsWith('/brand/local-roots-icon-512.png') && sizes === '512x512' && type === 'image/png'));
+
+  const duSource = file('public/brand/dyed-unattached-tombstone.png');
+  assert.equal(createHash('sha256').update(duSource).digest('hex'), duTombstoneHash);
   const duManifest = JSON.parse(text('public/du-manifest.webmanifest'));
-  assert.ok(duManifest.icons.every(({ src }) => src === '/brand/local-roots-lr.svg'));
+  assert.equal(duManifest.start_url, '/admin/dyed-and-unattached');
+  assert.equal(duManifest.scope, '/admin/');
+  assert.deepEqual(duManifest.icons.map(({ src, sizes, type, purpose }) => [src.split('?')[0], sizes, type, purpose]), [
+    ['/brand/dyed-unattached-icon-192.png', '192x192', 'image/png', 'any'],
+    ['/brand/dyed-unattached-icon-512.png', '512x512', 'image/png', 'any'],
+  ]);
+  assert.deepEqual(pngSize(file('public/brand/dyed-unattached-icon-180.png')), [180, 180]);
+  assert.deepEqual(pngSize(file('public/brand/dyed-unattached-icon-192.png')), [192, 192]);
+  assert.deepEqual(pngSize(file('public/brand/dyed-unattached-icon-512.png')), [512, 512]);
+
+  const studioManifest = JSON.parse(text('public/dyed-and-unattached/dye-studio/manifest.webmanifest'));
+  assert.equal(studioManifest.start_url, '/dyed-and-unattached/dye-studio/');
+  assert.equal(studioManifest.scope, '/dyed-and-unattached/dye-studio/');
+  assert.ok(studioManifest.icons.some(({ src, sizes }) => src.startsWith('/brand/dyed-unattached-icon-192.png') && sizes === '192x192'));
+  assert.ok(studioManifest.icons.some(({ src, sizes }) => src.startsWith('/brand/dyed-unattached-icon-512.png') && sizes === '512x512'));
+
+  const index = text('index.html');
+  assert.equal((index.match(/rel="manifest"/g) ?? []).length, 1);
+  assert.equal((index.match(/rel="apple-touch-icon"/g) ?? []).length, 1);
+  assert.match(app, /isDuAdmin\?DU_MANIFEST:isWeather\?WEATHER_MANIFEST:ROOT_MANIFEST/);
+  assert.match(app, /isDuAdmin\|\|isDyeStudio\?DU_TOUCH_ICON:LR_TOUCH_ICON/);
+  assert.match(app, /isWeather\?'LR Weather':'Local Roots'/);
+  assert.match(text('public/dyed-and-unattached/dye-studio/index.html'), /sizes="180x180" href="\/brand\/dyed-unattached-icon-180\.png/);
 });
