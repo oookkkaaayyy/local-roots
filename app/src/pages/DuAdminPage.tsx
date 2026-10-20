@@ -55,11 +55,19 @@ function ensureDuPwaMetadata(){
     const touch=document.createElement('link');touch.rel='apple-touch-icon';touch.href='/brand/dyed-and-unattached-tombstone.png?v=20261020';touch.dataset.duTouchIcon='true';document.head.appendChild(touch);created.push(touch);
   }
   const metas:[string,string][]=[['apple-mobile-web-app-capable','yes'],['apple-mobile-web-app-title','D&U'],['apple-mobile-web-app-status-bar-style','default'],['mobile-web-app-capable','yes']];
+  const previousMeta:{element:HTMLMetaElement;content:string|null;created:boolean}[]=[];
   for(const [name,content] of metas){
-    if(document.querySelector(`meta[name="${name}"]`))continue;
-    const meta=document.createElement('meta');meta.name=name;meta.content=content;meta.dataset.duPwa='true';document.head.appendChild(meta);created.push(meta);
+    let meta=document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
+    const wasCreated=!meta;
+    if(!meta){meta=document.createElement('meta');meta.name=name;document.head.appendChild(meta);}
+    previousMeta.push({element:meta,content:wasCreated?null:meta.content,created:wasCreated});
+    meta.content=content;meta.dataset.duPwa='true';
+    if(wasCreated)created.push(meta);
   }
-  return()=>created.forEach(element=>element.remove());
+  return()=>{
+    created.forEach(element=>element.remove());
+    previousMeta.filter(item=>!item.created).forEach(item=>{if(item.content!==null)item.element.content=item.content;delete item.element.dataset.duPwa;});
+  };
 }
 
 function Login({targetJob,onPaired}:{targetJob:string|null;onPaired:(token:string)=>void}){
