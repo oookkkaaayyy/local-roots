@@ -51,7 +51,7 @@ function ensureDuPwaMetadata(){
   if(!document.querySelector('link[data-du-manifest]')){
     const manifest=document.createElement('link');manifest.rel='manifest';manifest.href='/du-manifest.webmanifest';manifest.dataset.duManifest='true';document.head.appendChild(manifest);created.push(manifest);
   }
-  const metas:[string,string][]=[['apple-mobile-web-app-capable','yes'],['apple-mobile-web-app-title','D&U'],['apple-mobile-web-app-status-bar-style','default'],['mobile-web-app-capable','yes']];
+  if(!document.querySelector('link[data-du-touch-icon]')){\n    const touch=document.createElement('link');touch.rel='apple-touch-icon';touch.href='/brand/dyed-and-unattached-tombstone.png?v=20261020';touch.dataset.duTouchIcon='true';document.head.appendChild(touch);created.push(touch);\n  }\n  const metas:[string,string][]=[['apple-mobile-web-app-capable','yes'],['apple-mobile-web-app-title','D&U'],['apple-mobile-web-app-status-bar-style','default'],['mobile-web-app-capable','yes']];
   for(const [name,content] of metas){
     if(document.querySelector(`meta[name="${name}"]`))continue;
     const meta=document.createElement('meta');meta.name=name;meta.content=content;meta.dataset.duPwa='true';document.head.appendChild(meta);created.push(meta);
