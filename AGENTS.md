@@ -1,5 +1,19 @@
 # HBNF / Cart Upgrades — Repository Agent Instructions
 
+## CURRENT FIELD-RELIABILITY PROGRAM (OWNER DIRECTIVE — 2026-10-20)
+
+This is a **project priority and source routing note**, not a change to the operational lifecycle model. Continue to enforce the actual `config/HBNF_CONTROL_MODEL.json`, `config/HBNF_CONTROL_STATE.json`, and `scripts/platform.py` commands below. Do not rebuild or replace these files.
+
+- **Active P0, existing HBNF scoring worker:** https://github.com/oookkkaaayyy/local-roots/issues/115 — recover real October 20 Skins scorecard and prevent silent unsaved results. The genuine Oct20 tag finalization already survives independently; never erase or redo it. Preserve owner's original iPhone browser/PWA storage.
+- **Active P1, existing Cart coordinator/worker:** https://github.com/oookkkaaayyy/local-roots/issues/116 — in parallel, fix deterministic Cart power/startup, Opal WAN reconnect, headless score-to-Matrix path, iPad Mini controls/text/palettes and AUX synchronization. Diagnostics and independently safe offline changes proceed during scoring P0.
+- New UV integration, games, visual upgrades and side features are on hold until **both** tracks pass real-world acceptance. Avoid building an alternate scoreboard service when the existing headless relay can be qualified.
+- **Expert-led behavior:** Questions, observations and proposed ideas from the owner are inputs to challenger analysis, **not automatic instructions** to interrupt existing work. Test against current evidence, production identity, risks and simpler alternatives; state adopt/defer/reject. Change agreed direction only on an explicit owner decision or a verified urgent incident.
+- Do not confuse GitHub source availability with installed-device source/version parity. This branch contains genuine Cart control files, but on-course installed Opal and firmware must still be matched to exact verified releases. The separate Local Roots main-branch source-routing candidate is https://github.com/oookkkaaayyy/local-roots/pull/117 (DRAFT and **not accepted production authority**).
+- Keep the owner informed only of substantive results, not prompt chains. At every handoff state P0 status, P1 status, exact next acceptance evidence and any genuine manual gate. No live scoring/Cart mutation merely from this note.
+
+Controlling evidence/priority: https://docs.google.com/document/d/1mydpAPHSuHu7Z75MedZ683s2FoFJVgSi2jLPVGKaYpQ/edit
+Missing-round evidence: https://docs.google.com/document/d/1a0K5wvfnHT-hn9TPxd-ze2vpqM3sPIQcpD5zPSxVt8s/edit
+
 
 ## Mandatory platform front door
 
