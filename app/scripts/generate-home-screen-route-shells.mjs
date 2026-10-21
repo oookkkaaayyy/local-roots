@@ -59,6 +59,33 @@ export async function generateHomeScreenRouteShells(distDir = resolve(projectRoo
     await mkdir(dirname(output), { recursive: true });
     await writeFile(output, makeRouteShell(rootHtml, route));
   }
+
+  // Isolated iOS 27 icon experiment: the only icon source on this page is the
+  // approved Local Roots 180px Apple touch PNG embedded in the initial HTML.
+  // Keep this route preview-only until an owner tests Safari's install preview.
+  const icon = await readFile(resolve(projectRoot, 'public/apple-touch-icon.png'));
+  const iconDataUrl = `data:image/png;base64,${icon.toString('base64')}`;
+  const previewDir = resolve(distDir, 'ios-icon-data-preview');
+  await mkdir(previewDir, { recursive: true });
+  await writeFile(resolve(previewDir, 'index.html'), `<!doctype html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="LR Icon Test">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/ios-icon-data-preview/manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="${iconDataUrl}">
+  <title>Local Roots Icon Test</title>
+</head><body><main><h1>Local Roots icon test</h1><p>This temporary page isolates the embedded Apple touch icon for a Safari Home Screen preview.</p></main></body></html>\n`);
+  await writeFile(resolve(previewDir, 'manifest.webmanifest'), `${JSON.stringify({
+    id: '/ios-icon-data-preview/',
+    name: 'Local Roots Icon Test',
+    short_name: 'LR Icon Test',
+    start_url: '/ios-icon-data-preview/',
+    scope: '/ios-icon-data-preview/',
+    display: 'standalone',
+  }, null, 2)}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
