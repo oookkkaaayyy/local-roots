@@ -2,7 +2,7 @@
   "name": "HBNF Cart Control",
   "short_name": "HBNF Cart",
   "id": "/hbnf-cart.html",
-  "start_url": "/hbnf-cart.html?app=20261021-truthful-readiness-v1",
+  "start_url": "/hbnf-cart.html?app=20261021-fail-closed-readiness-v2",
   "scope": "/hbnf-cart.html",
   "display": "standalone",
   "background_color": "#071018",

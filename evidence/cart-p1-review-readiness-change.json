@@ -1,0 +1,21 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-p1-review-readiness-20261021",
+  "summary": "Carry the Cart display/readiness fixes onto the latest specialist source and fail closed unless current Matrix/AUX status is explicitly confirmed; keep OTA installability separate from operational readiness.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "affected_subsystem": "Cart Owner PWA local preflight and the two already validated ace-display fixes, integrated on specialist source 8eaa9255a92f88b2a8ec6f443a38e1acb67df9f6.",
+      "observed_source_defect": "The readiness helper returned READY for an empty array, and its caller inferred device state from visible labels rather than a bounded, current, confirmed status snapshot. The preflight also counted signed OTA installability as runtime readiness. The review candidate now requires named checks, revision-matched confirmed Matrix and AUX reports observed within 90 seconds, and reports score freshness as degraded when the source exposes no timestamp. OTA admission remains in its existing dedicated workflow.",
+      "rollback_reference": "Revert candidate commits 1902d23 and 21b3c49 or return to specialist source commit 8eaa9255a92f88b2a8ec6f443a38e1acb67df9f6; no deployed runtime was changed.",
+      "tests": ["node tests/hbnf_cart_readiness.test.mjs", "node tests/hbnf_cart_live_display.test.mjs", "node tests/hbnf_owner_local_control.mjs", "node tests/hbnf_owner_pwa_opal_direct.mjs", "node tests/hbnf_matrix_skins_autopoll_contract.mjs"]
+    }
+  }
+}

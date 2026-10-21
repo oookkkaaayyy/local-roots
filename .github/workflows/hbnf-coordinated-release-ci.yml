@@ -127,7 +127,7 @@ jobs:
           for id in featureLook featureColor featurePalette featureLookName featureSavedLooks featureApplyLook featureSaveLook featureApplySaved featureDeleteSaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall featureOtaResult featurePreflight featurePreflightResult; do
             grep -q "id=\"$id\"" hbnf-final-controller/hbnf-cart.html
           done
-          grep -q 'src="./hbnf-cart-features.mjs?v=20261021-truthful-readiness-v1"' hbnf-final-controller/hbnf-cart.html
+          grep -q 'src="./hbnf-cart-features.mjs?v=20261021-fail-closed-readiness-v2"' hbnf-final-controller/hbnf-cart.html
           grep -q 'window.HBNFCanonical' hbnf-final-controller/hbnf-cart.js
           grep -q 'async function command(type, payload = {})' hbnf-final-controller/hbnf-cart.js
           grep -q 'bridge.command("SCENE"' hbnf-final-controller/hbnf-cart-features.mjs

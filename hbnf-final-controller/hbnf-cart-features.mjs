@@ -1,7 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
 import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
-import { readinessStatus, scoreFeedStatus, truthConnectedText } from "./hbnf-cart-readiness.mjs";
+import { deviceReadinessChecks, readinessStatus, scoreFeedStatus } from "./hbnf-cart-readiness.mjs";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
@@ -464,11 +464,6 @@ async function refreshOtaResult() {
   return job;
 }
 
-function truthConnected(id) {
-  const node=$(id);
-  return !!(node && truthConnectedText(node.textContent));
-}
-
 async function runPreflight() {
   const out=$("featurePreflightResult");
   if (!out) return;
@@ -486,16 +481,12 @@ async function runPreflight() {
     else checks.push("Matrix API PASS"+(info && info.ver ? " · WLED "+info.ver : ""));
   } catch (e) { checks.push("Matrix API FAIL"); }
 
-  checks.push("Matrix truth "+(truthConnected("matrixTruth") ? "PASS" : "CHECK"));
-  checks.push("AUX truth "+(truthConnected("auxTruth") ? "PASS" : "CHECK"));
-
   try {
-    const ota=await getOtaStatus();
-    const macOk=normalizedMac(ota.matrix_mac)===EXPECTED_MATRIX_MAC;
-    const sigOk=ota.ok===true && ota.artifact_verified===true;
-    const baseOk=ota.installable!==true || String(ota.based_on_firmware_sha256 || "").toLowerCase()===ACCEPTED_BASE_SHA256;
-    checks.push("Signed OTA "+(sigOk && macOk && baseOk ? "PASS" : "FAIL"));
-  } catch (e) { checks.push("Signed OTA FAIL"); }
+    const snapshot=await canonicalRead("status",{});
+    checks.push(...deviceReadinessChecks(snapshot));
+  } catch (e) {
+    checks.push("Matrix device UNCONFIRMED · status unavailable","AUX device UNCONFIRMED · status unavailable");
+  }
 
   try {
     const liveResponse=await canonicalRead("live_status",{});

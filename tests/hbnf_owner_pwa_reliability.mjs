@@ -12,7 +12,7 @@ const sw = fs.readFileSync(path.join(controller, "hbnf-cart-sw.js"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
 const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui_v6.py"), "utf8");
 const VERSION = "20261016-course-ready-ux-v1";
-const SERVICE_WORKER_VERSION = "20261021-truthful-readiness-v1";
+const SERVICE_WORKER_VERSION = "20261021-fail-closed-readiness-v2";
 const TOKEN = "a".repeat(64);
 
 assert.equal(parsePairFragment(`#pair=${TOKEN}`), TOKEN);
@@ -52,7 +52,7 @@ assert.equal(manifest.start_url, `/hbnf-cart.html?app=${SERVICE_WORKER_VERSION}`
 assert.match(html, /navigator\.serviceWorker\.register/);
 assert.match(html, new RegExp(`hbnf-cart-sw\\.js\\?v=${SERVICE_WORKER_VERSION}`));
 assert.match(html, /scope:"\/hbnf-cart\.html"/);
-assert.match(sw, /hbnf-owner-pwa-v15-truthful-readiness-20261021/);
+assert.match(sw, /hbnf-owner-pwa-v16-fail-closed-readiness-20261021/);
 assert.match(sw, /self\.skipWaiting\(\)/);
 assert.match(sw, /self\.clients\.claim\(\)/);
 assert.match(sw, /url\.origin !== self\.location\.origin/);
@@ -188,5 +188,5 @@ assert.match(js, /x\.reported && x\.reported\.confirmed === true/);
 assert.match(js, /invalid_or_mismatched_foundation_ack.*Matrix command not confirmed/);
 assert.match(css, /min-height:50px/);
 assert.match(css, /@media\(max-width:340px\)/);
-assert.match(sw, /hbnf-owner-pwa-v15-truthful-readiness-20261021/);
+assert.match(sw, /hbnf-owner-pwa-v16-fail-closed-readiness-20261021/);
 console.log("PASS: owner control hierarchy, Animation Mix labels, device-ack truth, responsive layout, and PWA versioning");

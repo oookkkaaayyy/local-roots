@@ -6,9 +6,34 @@ export function truthConnectedText(value) {
 
 export function readinessStatus(checks) {
   const values = Array.isArray(checks) ? checks.map(String) : [];
+  if (!values.length) return "NOT READY";
   if (values.some(value => /\b(?:FAIL|BLOCKED)\b/i.test(value))) return "NOT READY";
-  if (values.some(value => /\b(?:CHECK|UNAVAILABLE|DEGRADED|OFFLINE|UNKNOWN|NOT\s+EXPOSED|NO\s+ACTIVE|NO\s+SCORE)\b/i.test(value))) return "DEGRADED";
+  const required = ["Matrix API", "Matrix device", "AUX device", "Score feed"];
+  if (required.some(name => !values.some(value => value.startsWith(name + " ")))) return "NOT READY";
+  if (values.some(value => /\b(?:CHECK|UNAVAILABLE|DEGRADED|OFFLINE|UNKNOWN|NOT\s+EXPOSED|NO\s+ACTIVE|NO\s+SCORE|STALE|UNCONFIRMED)\b/i.test(value))) return "DEGRADED";
+  if (required.some(name => !values.some(value => value.startsWith(name + " PASS") || (name === "Score feed" && value.startsWith("Score feed ACTIVE"))))) return "DEGRADED";
   return "READY";
+}
+
+export function deviceReadinessChecks(snapshot, nowMs = Date.now(), maxAgeMs = 90000) {
+  const desiredRevision = Number(snapshot?.desired?.revision);
+  const observed = Array.isArray(snapshot?.observed) ? snapshot.observed : [];
+  const devices = snapshot?.devices || {};
+  return ["matrix", "aux"].map(id => {
+    const label = id === "matrix" ? "Matrix" : "AUX";
+    const device = devices[id];
+    const report = observed.find(item => item?.device_id === id);
+    if (!Number.isSafeInteger(desiredRevision) || !device || !report) return `${label} device UNCONFIRMED · status missing`;
+    if (device.confirmed !== true || Number(device.confirmedRevision) !== desiredRevision ||
+        Number(report.desired_revision) !== desiredRevision || report.reported?.confirmed !== true ||
+        !["online", "off"].includes(String(report.status))) {
+      return `${label} device UNCONFIRMED · readback not confirmed for current revision`;
+    }
+    const observedAt = Date.parse(report.observed_at || "");
+    const age = nowMs - observedAt;
+    if (!Number.isFinite(observedAt) || age < 0 || age > maxAgeMs) return `${label} device STALE · readback is not current`;
+    return `${label} device PASS · readback confirmed`;
+  });
 }
 
 export function scoreFeedStatus(response) {
