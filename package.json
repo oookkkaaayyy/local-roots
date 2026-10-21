@@ -5,7 +5,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test:m2": "rm -rf dist && tsc && mkdir -p dist/tests/fixtures && cp tests/fixtures/events.json dist/tests/fixtures/events.json && node --test dist/tests/*.test.js",
-    "test": "npm run typecheck && npm run test:m2"
+    "test": "npm run typecheck && npm run test:m2 && npm run check:hbnf-sources",
+    "check:hbnf-sources": "node scripts/check-hbnf-source-index.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
