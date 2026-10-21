@@ -55,7 +55,7 @@ for (const id of ['hbnf_scoring_worker', 'hbnf_opal_cart_runtime', 'hbnf_supabas
   assert.ok(deployments.has(id), 'missing critical source target: ' + id);
 }
 const allText = JSON.stringify(index);
-assert.doesNotMatch(allText, /gh[pousr]_[A-Za-z0-9]{20,}|Bearer\\s+[A-Za-z0-9_-]{20,}|-----BEGIN (?:RSA )?PRIVATE KEY-----/);
+assert.doesNotMatch(allText, /gh[pousr]_[A-Za-z0-9]{20,}|Bearer\s+[A-Za-z0-9_-]{20,}|-----BEGIN (?:RSA )?PRIVATE KEY-----/);
 const required = process.argv.find(arg => arg.startsWith('--require-production-ready='));
 if (required) {
   const id = required.split('=')[1];
