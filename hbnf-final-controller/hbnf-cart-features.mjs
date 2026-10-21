@@ -1,6 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
 import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
+import { readinessStatus, scoreFeedStatus, truthConnectedText } from "./hbnf-cart-readiness.mjs";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
@@ -465,7 +466,7 @@ async function refreshOtaResult() {
 
 function truthConnected(id) {
   const node=$(id);
-  return !!(node && /CONNECTED|READY/i.test(String(node.textContent || "")));
+  return !!(node && truthConnectedText(node.textContent));
 }
 
 async function runPreflight() {
@@ -497,14 +498,13 @@ async function runPreflight() {
   } catch (e) { checks.push("Signed OTA FAIL"); }
 
   try {
-    await canonicalRead("live_status",{});
-    checks.push("Live-data path PASS");
+    const liveResponse=await canonicalRead("live_status",{});
+    checks.push(scoreFeedStatus(liveResponse));
   } catch (e) {
     checks.push("Live-data path WAN/CHECK");
   }
 
-  const hardFail=checks.some(x=>/API FAIL|identity FAIL|OTA FAIL/.test(x));
-  out.textContent=(hardFail ? "NOT READY · " : "READY/CHECK · ")+checks.join(" · ");
+  out.textContent=readinessStatus(checks)+" · "+checks.join(" · ");
 }
 
 function syncOverlayAvailability() {

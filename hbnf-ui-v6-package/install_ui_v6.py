@@ -14,6 +14,8 @@ FILES=[
     "hbnf-cart-net.mjs",
     "hbnf-cart-sw.js",
     "hbnf-cart-semantic.mjs",
+    "hbnf-cart-live-display.mjs",
+    "hbnf-cart-readiness.mjs",
     "hbnf-cart-manifest.webmanifest",
     "hbnf-cart-ui-v6.css",
     "hbnf-cart-ui-v6.mjs",

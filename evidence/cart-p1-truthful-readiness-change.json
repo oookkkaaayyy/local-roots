@@ -1,0 +1,21 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-p1-truthful-readiness-20261021",
+  "summary": "Prevent false connected readings from DISCONNECTED text, report uncertain checks as DEGRADED, and expose live score-feed state while marking unreported freshness explicitly.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "affected_subsystem": "HBNF Cart Owner PWA readiness preflight, live-feed state, and offline/package delivery of imported pure readiness and live-display helpers.",
+      "observed_source_defect": "The previous /CONNECTED|READY/i/ expression matched the CONNECTED substring in DISCONNECTED. The preflight header treated only FAIL as a hard failure and printed READY/CHECK when WAN or device truth was uncertain. The live_status response does not expose a source update timestamp, so freshness is now disclosed as unavailable and cannot silently appear fully READY.",
+      "rollback_reference": "Revert this isolated source commit; no runtime or production mutation is part of this change.",
+      "tests": ["node tests/hbnf_cart_readiness.test.mjs", "node tests/hbnf_owner_pwa_reliability.mjs", "node tests/hbnf_owner_pwa_package.mjs"]
+    }
+  }
+}

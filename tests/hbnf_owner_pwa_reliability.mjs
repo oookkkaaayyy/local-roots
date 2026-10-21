@@ -11,7 +11,8 @@ const js = fs.readFileSync(path.join(controller, "hbnf-cart.js"), "utf8");
 const sw = fs.readFileSync(path.join(controller, "hbnf-cart-sw.js"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
 const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui_v6.py"), "utf8");
-const VERSION = "20261016-guest-qr-v1";
+const VERSION = "20261016-course-ready-ux-v1";
+const SERVICE_WORKER_VERSION = "20261021-truthful-readiness-v1";
 const TOKEN = "a".repeat(64);
 
 assert.equal(parsePairFragment(`#pair=${TOKEN}`), TOKEN);
@@ -40,17 +41,18 @@ await assert.rejects(
 assert.equal(aborted, true);
 assert.match(js, /fetchWithDeadline\(fetch, endpoint/);
 assert.match(js, /fetchWithDeadline\(fetch, visualStatusEndpoint/);
-assert.match(js, /OPAL_LOCAL_PWA \? "LOCAL DEVICES UNAVAILABLE" : "Cart service unavailable"/);
+assert.match(js, /Cart controls are unavailable\. Check the connection and try again\./);
+assert.match(js, /The Cart could not connect\. No change was sent\./);
 assert.match(js, /matrixHealth\.textContent = "Not confirmed"/);
 assert.match(js, /auxHealth\.textContent = "Not confirmed"/);
 assert.match(js, /window\.addEventListener\("online"/);
 assert.match(js, /window\.addEventListener\("offline"/);
 
-assert.equal(manifest.start_url, `/hbnf-cart.html?app=${VERSION}`);
+assert.equal(manifest.start_url, `/hbnf-cart.html?app=${SERVICE_WORKER_VERSION}`);
 assert.match(html, /navigator\.serviceWorker\.register/);
-assert.match(html, new RegExp(`hbnf-cart-sw\\.js\\?v=${VERSION}`));
+assert.match(html, new RegExp(`hbnf-cart-sw\\.js\\?v=${SERVICE_WORKER_VERSION}`));
 assert.match(html, /scope:"\/hbnf-cart\.html"/);
-assert.match(sw, /hbnf-owner-pwa-v13-guest-qr-20261016/);
+assert.match(sw, /hbnf-owner-pwa-v15-truthful-readiness-20261021/);
 assert.match(sw, /self\.skipWaiting\(\)/);
 assert.match(sw, /self\.clients\.claim\(\)/);
 assert.match(sw, /url\.origin !== self\.location\.origin/);
@@ -132,6 +134,10 @@ for (const asset of [
   "hbnf-cart-ui-v6.css",
   "hbnf-cart-ui-v6.mjs",
   "hbnf-cart-features.mjs",
+  "hbnf-cart-live-display.mjs",
+  "hbnf-cart-readiness.mjs",
+  "hbnf-cart-live-display.mjs",
+  "hbnf-cart-readiness.mjs",
   "hbnf-cart-skins-score.mjs",
   "hbnf-cart-manifest.webmanifest",
   "hbnf-cart-icon-180.png",
@@ -182,5 +188,5 @@ assert.match(js, /x\.reported && x\.reported\.confirmed === true/);
 assert.match(js, /invalid_or_mismatched_foundation_ack.*Matrix command not confirmed/);
 assert.match(css, /min-height:50px/);
 assert.match(css, /@media\(max-width:340px\)/);
-assert.match(sw, /hbnf-owner-pwa-v13-guest-qr-20261016/);
+assert.match(sw, /hbnf-owner-pwa-v15-truthful-readiness-20261021/);
 console.log("PASS: owner control hierarchy, Animation Mix labels, device-ack truth, responsive layout, and PWA versioning");
