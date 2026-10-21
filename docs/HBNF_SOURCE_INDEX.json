@@ -38,7 +38,7 @@
         "scripts/hbnf_control.py"
       ],
       "observed_github_blob_sha": {
-        "AGENTS.md": "6148edf81f7c8b9a18634bda2ae987bb3137fef6",
+        "AGENTS.md": "89a7f636993293bb34cffd5baeaad50108c10c66",
         "config/HBNF_CONTROL_MODEL.json": "66d8626198c25c9942afd3c36a994485fa5308a8",
         "config/HBNF_CONTROL_STATE.json": "d319fdd4f3486d2824a6236ce5191600a71ae0a1",
         "scripts/platform.py": "6fed41587d44561ea9dd4a7854cac00731603ba7",
@@ -46,7 +46,7 @@
       },
       "repository_content_verified": true,
       "production_parity": "not_checked",
-      "note": "Found in branch, NOT on main. GitHub file verification does not establish installed Opal release parity. Reuse existing lifecycle/control tools, not a new controller."
+      "note": "Found in specialist Cart branch, NOT on main. AGENTS.md SHA updated after safe merge of routing PR #118; this is source-location evidence, NOT installed Opal version parity."
     }
   ],
   "deployments": [
