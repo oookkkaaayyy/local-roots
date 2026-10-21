@@ -16,6 +16,8 @@ ASSETS = (
     "hbnf-cart-local.mjs",
     "hbnf-cart-net.mjs",
     "hbnf-cart-semantic.mjs",
+    "hbnf-cart-live-display.mjs",
+    "hbnf-cart-readiness.mjs",
     "hbnf-cart-ui-v6.css",
     "hbnf-cart-ui-v6.mjs",
     "hbnf-cart-features.mjs",
