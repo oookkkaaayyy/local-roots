@@ -1,0 +1,99 @@
+{
+  "schema": "hbnf-source-index-v1",
+  "purpose": "Code-source routing and release evidence. This is NOT authority to deploy or change DB data.",
+  "program": {
+    "track_a_issue": "https://github.com/oookkkaaayyy/local-roots/issues/115",
+    "track_b_issue": "https://github.com/oookkkaaayyy/local-roots/issues/116",
+    "contract": "https://docs.google.com/document/d/1mydpAPHSuHu7Z75MedZ683s2FoFJVgSi2jLPVGKaYpQ/edit",
+    "incident_evidence": "https://docs.google.com/document/d/1a0K5wvfnHT-hn9TPxd-ze2vpqM3sPIQcpD5zPSxVt8s/edit",
+    "feature_expansion": "frozen_pending_field_acceptance",
+    "owner_questions_change_scope": false
+  },
+  "sources": [
+    {
+      "id": "local_roots_app",
+      "repository": "oookkkaaayyy/local-roots",
+      "ref": "main",
+      "paths": [
+        "app/package.json",
+        "app/scripts/check-hbnf-integration.mjs"
+      ],
+      "observed_github_blob_sha": {
+        "app/package.json": "23462c22edb452428d60942e208276c21bcc68d6",
+        "app/scripts/check-hbnf-integration.mjs": "67f62574faf98c7f115e295029e4dc3f78018773"
+      },
+      "repository_content_verified": true,
+      "production_parity": "not_checked",
+      "note": "LR website buildable source and tests; no inference about currently deployed commit."
+    },
+    {
+      "id": "cart_controller_source",
+      "repository": "oookkkaaayyy/local-roots",
+      "ref": "codex/glow-matrix-relay-integration-20261014",
+      "paths": [
+        "AGENTS.md",
+        "config/HBNF_CONTROL_MODEL.json",
+        "config/HBNF_CONTROL_STATE.json",
+        "scripts/platform.py",
+        "scripts/hbnf_control.py"
+      ],
+      "observed_github_blob_sha": {
+        "AGENTS.md": "6148edf81f7c8b9a18634bda2ae987bb3137fef6",
+        "config/HBNF_CONTROL_MODEL.json": "66d8626198c25c9942afd3c36a994485fa5308a8",
+        "config/HBNF_CONTROL_STATE.json": "d319fdd4f3486d2824a6236ce5191600a71ae0a1",
+        "scripts/platform.py": "6fed41587d44561ea9dd4a7854cac00731603ba7",
+        "scripts/hbnf_control.py": "864efd3a5a0a83e3965871786d69f481d62fe533"
+      },
+      "repository_content_verified": true,
+      "production_parity": "not_checked",
+      "note": "Found in branch, NOT on main. GitHub file verification does not establish installed Opal release parity. Reuse existing lifecycle/control tools, not a new controller."
+    }
+  ],
+  "deployments": [
+    {
+      "id": "hbnf_scoring_worker",
+      "provider": "Cloudflare Workers",
+      "reported_active_version": "457a9cd6-662b-4a4b-9d52-f21cd0a65e50",
+      "reported_rollback_version": "f53745ba-bc66-4091-a046-3ac9cced6e64",
+      "editable_repo_ref": null,
+      "artifact_sha256": null,
+      "production_parity": "unverified",
+      "recovery_case": "Oct 20 actual scoring lost; preserve phone PWA; no current production score mutations.",
+      "ready_for_git_auto_deploy": false
+    },
+    {
+      "id": "hbnf_opal_cart_runtime",
+      "provider": "GL.iNet Opal",
+      "reported_active_version": null,
+      "editable_repo_ref": "codex/glow-matrix-relay-integration-20261014",
+      "artifact_sha256": null,
+      "production_parity": "unverified",
+      "ready_for_git_auto_deploy": false
+    },
+    {
+      "id": "local_roots_pages",
+      "provider": "Cloudflare Pages",
+      "reported_active_version": "PR113 merge 3e6f8cfe2bc0dc6e78a44f1aea004500adb743b3 on Oct20 (not reverified now)",
+      "editable_repo_ref": "main",
+      "artifact_sha256": null,
+      "production_parity": "unverified",
+      "ready_for_git_auto_deploy": false
+    },
+    {
+      "id": "hbnf_supabase_schema",
+      "provider": "Supabase",
+      "reported_active_version": null,
+      "editable_repo_ref": null,
+      "artifact_sha256": null,
+      "production_parity": "unverified",
+      "ready_for_git_auto_deploy": false
+    }
+  ],
+  "instructions": [
+    "No source-parity inference from AGENTS, AKS, a file name, a test, or a GitHub branch alone.",
+    "Exact production source, buildable archive/commit, provider deployment, rollback, and data-preservation status must be verified before enabling auto-deploy.",
+    "The current work stays in issues #115 and #116. A user question/hypothesis alone does not change the plan.",
+    "No secrets, tokens, or private credentials in this index.",
+    "GitHub is code authority when source identity is proven; Drive is evidence and decisions; live Cloudflare/Supabase is deployment/data authority."
+  ]
+}
