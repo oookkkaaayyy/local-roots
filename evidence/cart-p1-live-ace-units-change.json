@@ -1,0 +1,21 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-p1-live-ace-units-20261020",
+  "summary": "Render Skins ace-pot values as participant entries and Glow ace-pot values as dollars in Cart live status and the ace overlay; fail closed for invalid values.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "affected_subsystem": "HBNF Cart Owner PWA live status and ace-pot overlay formatting only.",
+      "source_contract": "staging/coordinated-backend/hbnf-cart-control/live.ts chooseLive emits event=skins with skinsAcePot participant-entry counts and event=glow with glowAcePot monetary amounts.",
+      "rollback_reference": "Revert this isolated source commit; no runtime or production mutation is part of this change.",
+      "tests": ["node tests/hbnf_cart_live_display.test.mjs"]
+    }
+  }
+}

@@ -1,5 +1,6 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
+import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
@@ -311,7 +312,7 @@ function renderLive(live, cached=false, cachedAt="") {
   const entries = Array.isArray(live.entries) ? live.entries.slice(0,8).join(" · ") : "";
   node.textContent = (cached ? "Using saved results · " : "")+
     String(live.event || "").toUpperCase()+" · "+String(live.label || "")+
-    " · ACE POT $"+Number(live.acePot||0).toFixed(0)+(entries ? " · "+entries : "")+
+    " · "+formatAcePotDisplay(live)+(entries ? " · "+entries : "")+
     (cachedAt ? " · "+cachedAt : "");
 }
 
@@ -392,10 +393,10 @@ async function showAcePot() {
   const out=await canonicalRead("live_status",{});
   const live=out && out.live;
   if (!live || live.active !== true) throw new Error("No active live round is available; no ace-pot overlay was sent.");
-  if (live.acePot === undefined || live.acePot === null || !Number.isFinite(Number(live.acePot))) throw new Error("The live scoring response did not supply an ace-pot amount; no value was inferred.");
-  const amount=Number(live.acePot);
+  const label=formatAcePotDisplay(live);
+  if (label.endsWith("UNAVAILABLE")) throw new Error("The live scoring response did not supply a valid ace value; no value was inferred.");
   const bridge=canonicalOverlayBridge();
-  await bridge.overlay("text",{text:"ACE POT $"+amount.toFixed(0),color:"#FFFFFF"},7000);
+  await bridge.overlay("text",{text:label,color:"#FFFFFF"},7000);
   setFeatureStatus("Ace pot sent to the Cart.");
 }
 
