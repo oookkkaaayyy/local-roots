@@ -2,7 +2,7 @@
 import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
-import { deviceEvidenceLabel, deviceReadinessChecks, localLinkStatusText } from "./hbnf-cart-readiness.mjs";
+import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v110-course-status";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -12,6 +12,7 @@ const OPAL_LOCAL_PWA = location.hostname === "192.168.77.1" && location.pathname
 const DEVICE_STORAGE_KEY = "hbnf_cart_device_v1";
 const DEVICE_EXPIRY_KEY = "hbnf_cart_device_expiry_v1";
 const DEVICE_EXPIRY_TOKEN_KEY = "hbnf_cart_device_expiry_token_v1";
+const GUEST_DEFAULT_MIGRATION_KEY = "hbnf_guest_default_enabled_v110";
 const DEVICE_COOKIE = "hbnf_cart_device";
 const DEVICE_COOKIE_MAX_AGE = 180 * 24 * 60 * 60;
 const OPAL_LOCAL_COMMANDS = new Set(["OFF", "ON", "SCENE", "VIBE", "VIBE_AUTO", "PALETTE", "OVERLAY_START", "OVERLAY_CLEAR"]);
@@ -32,6 +33,7 @@ let localControlActive = false;
 let localPathStatus = OPAL_LOCAL_PWA ? "checking" : "not_checked";
 let lastLocalEnrollAt = 0;
 let lastCloudPairValidationAt = 0;
+let guestDefaultMigrationInFlight = false;
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
@@ -410,6 +412,7 @@ function setRange(id, outputId, value, formatter = v => String(v)) {
 function hydrateControls(state) {
   hydrating = true;
   try {
+    renderGuestMode(state);
     if (state.sceneId) $("#scene").value = state.sceneId;
 
     const tuning = valueOr(state.tuning, {});
@@ -430,6 +433,63 @@ function hydrateControls(state) {
     $("#audioStyle").value = valueOr(tuning.audioStyle, "scene");
   } finally {
     hydrating = false;
+  }
+}
+
+function guestMigrationApplied() {
+  try { return localStorage.getItem(GUEST_DEFAULT_MIGRATION_KEY) === "done"; }
+  catch (_) { return false; }
+}
+
+function guestMigrationMark(value) {
+  try {
+    if (value) localStorage.setItem(GUEST_DEFAULT_MIGRATION_KEY, value);
+    else localStorage.removeItem(GUEST_DEFAULT_MIGRATION_KEY);
+  } catch (_) {}
+}
+
+function renderGuestMode(state) {
+  const enabled = !!(state && state.guestMode === true);
+  const status = $("guestModeStatus");
+  const open = $("guestModeOpen");
+  const close = $("guestModeClose");
+  if (status) status.textContent = enabled
+    ? "Guest controls are open. The guest page is ready to share."
+    : "Guest controls are opening by default when this iPad is paired.";
+  if (open) { open.hidden = enabled; open.disabled = !validDeviceToken(deviceToken()); }
+  if (close) { close.hidden = !enabled; close.disabled = !validDeviceToken(deviceToken()); }
+  if (!enabled && guestDefaultEnableNeeded(state, guestMigrationApplied()) && validDeviceToken(deviceToken()) && !guestDefaultMigrationInFlight) {
+    guestDefaultMigrationInFlight = true;
+    guestMigrationMark("pending");
+    if (status) status.textContent = "Opening guest controls…";
+    setTimeout(function() {
+      command("GUEST_MODE", { enabled: true }).then(function() {
+        guestMigrationMark("done");
+      }).catch(function() {
+        guestMigrationMark("");
+        if (status) status.textContent = "Guest controls could not open. Tap Open guest controls to retry.";
+        if (open) open.hidden = false;
+      }).finally(function() { guestDefaultMigrationInFlight = false; });
+    }, 0);
+  } else if (!enabled && guestMigrationApplied() && status) {
+    status.textContent = "Guest controls are closed. Open them when you want to share the guest page.";
+  } else if (!enabled && !validDeviceToken(deviceToken()) && status) {
+    status.textContent = "Pair this iPad to open guest controls. The guest page link is always available.";
+  }
+}
+
+async function setGuestMode(enabled) {
+  guestDefaultMigrationInFlight = true;
+  guestMigrationMark("done");
+  const status = $("guestModeStatus");
+  if (status) status.textContent = enabled ? "Opening guest controls…" : "Closing guest controls…";
+  try {
+    await command("GUEST_MODE", { enabled: enabled });
+    guestMigrationMark("done");
+  } catch (_) {
+    if (status) status.textContent = "Guest access change was not confirmed. Check Cart status and try again.";
+  } finally {
+    guestDefaultMigrationInFlight = false;
   }
 }
 
@@ -731,6 +791,9 @@ copyPair.addEventListener("click", async () => {
 document.querySelectorAll("[data-command]").forEach(button => {
   button.addEventListener("click", () => command(button.dataset.command).catch(showError));
 });
+
+if ($("guestModeOpen")) $("guestModeOpen").addEventListener("click", () => setGuestMode(true));
+if ($("guestModeClose")) $("guestModeClose").addEventListener("click", () => setGuestMode(false));
 
 document.querySelectorAll(".vibe-option").forEach(button => {
   button.addEventListener("click", () => {

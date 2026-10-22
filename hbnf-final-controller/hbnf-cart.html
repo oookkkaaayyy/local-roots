@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="HBNF Cart">
   <meta name="hbnf-access" content="guest-zero-pair">
-  <meta name="hbnf-build" content="hbnf-cart2-owner-ux-review-v1-20261022">
-  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261022-owner-pwa-ux-v1">
-  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261022-owner-pwa-ux-v1">
-  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261016-course-ready-ux-v1">
+  <meta name="hbnf-build" content="hbnf-cart2-owner-ux-v110-course-status-20261022">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261022-v110-course-status">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261022-v110-course-status">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261022-v110-course-status">
   <title>HBNF Cart Control</title>
   <style>
     :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;padding:12px;max-width:740px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:12px}.panel{border:1px solid #24414c;border-radius:14px;padding:14px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select,input,textarea{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:1.5em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.pair-link{width:100%;min-height:78px;word-break:break-all}.good{color:#8ce3ad}.warn{color:#f2ca75}
@@ -59,6 +59,16 @@
     <button id="featureRefreshLive" type="button">Refresh scores</button>
     <button id="featureScoreboard" type="button">Show scores</button>
   </nav>
+  <section class="panel course-status-panel" aria-label="At the course">
+    <h2>At the course</h2>
+    <div class="course-status-grid" aria-live="polite">
+      <div class="course-status-cell"><span>Cart</span><strong id="cartLanTruth">Not checked</strong></div>
+      <div class="course-status-cell"><span>Internet / cloud</span><strong id="internetTruth">Not checked</strong></div>
+      <div class="course-status-cell"><span>Scores</span><strong id="courseScoresTruth">Not checked</strong></div>
+      <div class="course-status-cell"><span>Matrix</span><strong id="matrixOutputTruth">Unconfirmed</strong></div>
+    </div>
+    <p class="connection-note">A device reply confirms a command was received, not what is physically lit or shown.</p>
+  </section>
   <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
 
 
@@ -66,8 +76,6 @@
     <summary>Connection details</summary>
     <div class="truth-grid" aria-live="polite">
       <div class="truth-cell"><span id="controlPathLabel">Cart controls</span><strong id="backendTruth" aria-live="polite">Checking…</strong></div>
-      <div class="truth-cell"><span>Cart connection</span><strong id="cartLanTruth" aria-live="polite">Checking…</strong></div>
-      <div class="truth-cell"><span>Internet access</span><strong id="internetTruth" aria-live="polite">Not checked</strong></div>
       <div class="truth-cell"><span>Live scores</span><strong id="scoreCloudTruth" aria-live="polite">Not checked</strong></div>
       <div class="truth-cell"><span>Score update time</span><strong id="scoreFreshnessTruth" aria-live="polite">Not confirmed</strong></div>
       <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth" aria-live="polite">—</strong></div>
@@ -195,10 +203,14 @@
 
   <section class="panel" aria-label="Guest access">
     <h2>Guest controls</h2>
-    <p class="apply-note" role="status">Guest QR controls are available to anyone with the link. Owner controls remain available.</p>
+    <p id="guestModeStatus" class="apply-note" role="status" aria-live="polite">Checking guest access…</p>
+    <div class="row guest-mode-actions">
+      <button id="guestModeOpen" type="button" hidden>Open guest controls</button>
+      <button id="guestModeClose" type="button" hidden>Close guest controls</button>
+    </div>
     <div class="guest-invite" aria-label="Guest access QR">
       <img src="./hbnf-guest-qr.png?v=20261016-course-ready-ux-v1" width="192" height="192" alt="Guest controls QR code">
-      <div><strong>Share with guests</strong><p class="muted">Guests can choose a Vibe or move to the next look.</p><a href="https://hbnightflyers.com/guest/hbnf-cart/">Open guest controls</a></div>
+      <div><strong>Share with guests</strong><p class="muted">When guest access is open, guests can choose a Vibe or move to the next look.</p><a href="https://hbnightflyers.com/guest/hbnf-cart/">Open guest page</a></div>
     </div>
   </section>
 
@@ -320,4 +332,4 @@
     </div>
   </details>
 
-</main><script type="module" src="./hbnf-cart.js?v=20261022-owner-ux-review-v1"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261021-fail-closed-readiness-v2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261016-course-ready-ux-v1"></script></body></html>
+</main><script type="module" src="./hbnf-cart.js?v=20261022-v110-course-status"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261022-v110-course-status"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261016-course-ready-ux-v1"></script></body></html>

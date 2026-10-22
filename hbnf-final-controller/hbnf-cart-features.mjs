@@ -1,7 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
 import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
-import { deviceReadinessChecks, hbnfEndpointReachabilityText, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs";
+import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v110-course-status";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
@@ -27,6 +27,8 @@ let liveRefreshPending = false;
 let liveRefreshPendingSilent = true;
 let hbnfEndpointProbeInFlight = false;
 let hbnfEndpointProbeLastStartedAt = 0;
+let courseInternetState = "not_checked";
+let courseCloudState = "not_checked";
 let paletteOptionsReady = false;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -415,17 +417,26 @@ function compareLiveSourceRevision(sourceRevision, appliedRevision) {
 }
 
 async function matrixLiveSourceRevisionStatus(sourceRevision) {
-  if (!matrixLocal()) return "Matrix source-revision readback unavailable outside the Cart LAN; physical display is unverified.";
+  const status=$("matrixOutputTruth");
+  if (!matrixLocal()) {
+    if (status) status.textContent=matrixRelayLabel("unknown",false);
+    return "Matrix source-revision readback unavailable outside the Cart LAN; physical display is unverified.";
+  }
   try {
     const readback=await fetchJson(matrixApiUrl("/json/si"),{method:"GET",cache:"no-store"},"Matrix live status",0,2500);
     const h=readback&&readback.state&&readback.state.HBNF;
-    if (!h || h.liveActive !== true) return "Matrix live snapshot inactive or stale; its 120-second lease is not current. Physical display is unverified.";
+    if (!h || h.liveActive !== true) {
+      if (status) status.textContent=matrixRelayLabel("unknown",false);
+      return "Matrix live snapshot inactive or stale; its 120-second lease is not current. Physical display is unverified.";
+    }
     const applied=h&&h.liveSourceRevision;
     const state=compareLiveSourceRevision(sourceRevision,applied);
+    if (status) status.textContent=matrixRelayLabel(state,true);
     if (state==="aligned") return "Matrix locally accepted the same source row revision. Physical display is unverified.";
     if (state==="stale") return "Matrix locally reports an older source row revision. Physical display is unverified.";
     return "Matrix source-revision readback is unknown. Physical display is unverified.";
   } catch (_) {
+    if (status) status.textContent=matrixRelayLabel("unknown",false);
     return "Matrix source-revision readback is unavailable. Physical display is unverified.";
   }
 }
@@ -449,10 +460,19 @@ function renderScorePathStatus(message) {
   if (node) node.textContent=message;
 }
 
-function updateScoreNetworkTruth(response, requestFailed=false) {
+function updateScoreNetworkTruth(response, requestFailed=false, cacheAgeMs=null) {
   const cloud=$("scoreCloudTruth"), freshness=$("scoreFreshnessTruth");
+  const course=$("courseScoresTruth");
   if (cloud) cloud.textContent=scoringCloudStatusText(response,requestFailed);
   if (freshness) freshness.textContent=scoreFreshnessLabel();
+  if (course) course.textContent=courseScoreLabel(response,requestFailed,cacheAgeMs);
+  courseCloudState=requestFailed ? "unavailable" : (response && response.live && typeof response.live==="object" ? "reachable" : "not_checked");
+  renderCourseInternetCloud();
+}
+
+function renderCourseInternetCloud() {
+  const node=$("internetTruth");
+  if (node) node.textContent=courseInternetCloudLabel(courseInternetState,courseCloudState);
 }
 
 function probeHbnfEndpoint() {
@@ -462,7 +482,9 @@ function probeHbnfEndpoint() {
   if (now-hbnfEndpointProbeLastStartedAt<HBNF_ENDPOINT_PROBE_INTERVAL_MS) return;
   hbnfEndpointProbeLastStartedAt=now;
   hbnfEndpointProbeInFlight=true;
-  node.textContent=hbnfEndpointReachabilityText("checking");
+  courseInternetState="checking";
+  node.textContent=hbnfEndpointReachabilityText(courseInternetState);
+  renderCourseInternetCloud();
   let image;
   let timer=null;
   let settled=false;
@@ -472,7 +494,9 @@ function probeHbnfEndpoint() {
     if (timer!==null) clearTimeout(timer);
     if (image) { image.onload=null; image.onerror=null; }
     hbnfEndpointProbeInFlight=false;
-    node.textContent=hbnfEndpointReachabilityText(reachable ? "reachable" : "unverified");
+    courseInternetState=reachable ? "reachable" : "unverified";
+    node.textContent=hbnfEndpointReachabilityText(courseInternetState);
+    renderCourseInternetCloud();
   };
   try {
     image=new Image();
@@ -548,9 +572,9 @@ async function refreshLive(silent) {
       renderScoreActionStatus("Live score response received. "+revisionText+" Physical display is not confirmed.");
     }
   } catch (error) {
-    updateScoreNetworkTruth(null,true);
     const cached=readLiveCache();
     if (cached && cached.live) {
+      updateScoreNetworkTruth(null,true,Date.now()-Date.parse(cached.savedAt || ""));
       const revisionText=liveSourceRevisionText(cached.updated_at);
       renderLive(cached.live,true,cached.updated_at);
       renderScorePathStatus("This iPad → cloud: unavailable. Showing locally cached scores. "+revisionText+" Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
@@ -560,6 +584,7 @@ async function refreshLive(silent) {
       }
       return;
     }
+    updateScoreNetworkTruth(null,true);
     renderScorePathStatus("This iPad → cloud: unavailable; live score read not confirmed. Source freshness is not exposed, so freshness is unverified. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
     if (!silent) {
       setFeatureStatus("Couldn’t refresh live scores.",true);

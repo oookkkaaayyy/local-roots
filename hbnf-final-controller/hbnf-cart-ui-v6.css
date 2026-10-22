@@ -20,6 +20,13 @@ body>main{max-width:760px!important;gap:14px!important}
 .truth-cell{border:1px solid #1c382e;border-radius:11px;padding:9px;background:rgba(1,8,5,.38);min-width:0}
 .truth-cell span{display:block;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--hbnf-muted);font-weight:800}
 .truth-cell strong{display:block;margin-top:3px;font-size:.86rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.course-status-panel{padding:12px 15px!important}
+.course-status-panel h2{font-size:1rem;margin:0 0 8px}
+.course-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.course-status-cell{border:1px solid #1c382e;border-radius:9px;padding:7px;background:rgba(1,8,5,.38);min-width:0}
+.course-status-cell span{display:block;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--hbnf-muted);font-weight:800}
+.course-status-cell strong{display:block;margin-top:2px;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guest-mode-actions{margin:.35rem 0 .65rem}
 .live-audio{padding:13px!important}
 .live-audio-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
 .live-audio-head strong{font-size:.75rem;letter-spacing:.09em}.live-audio-head span{font-size:.72rem;color:var(--hbnf-muted)}
@@ -51,7 +58,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:2px solid #dff
 .score-grid label{display:grid;gap:5px;align-items:stretch}
 .score-entry button{min-height:44px}
 @media(max-width:560px){
-  .truth-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.audio-bars{grid-template-columns:1fr 1fr}
+  .truth-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.course-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.audio-bars{grid-template-columns:1fr 1fr}
   .score-grid{grid-template-columns:1fr}
   .hero-v6{align-items:flex-start}.truth-badge{margin-top:4px}
 }

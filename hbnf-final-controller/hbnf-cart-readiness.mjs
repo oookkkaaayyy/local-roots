@@ -47,10 +47,41 @@ export function scoreFeedStatus(response) {
 }
 
 export function localLinkStatusText(snapshot, attemptStatus) {
-  if (snapshot && snapshot.local === true) return "Reachable · local Cart status returned";
-  if (attemptStatus === "unavailable") return "Not confirmed · local check failed";
-  if (attemptStatus === "checking") return "Checking local Cart path…";
-  return "Not tested from this iPad";
+  if (snapshot && snapshot.local === true) return "Reachable";
+  if (attemptStatus === "unavailable") return "Not reachable";
+  if (attemptStatus === "checking") return "Checking…";
+  return "Not checked";
+}
+
+export function courseScoreLabel(response, requestFailed = false, cacheAgeMs = null, nowMs = Date.now()) {
+  if (requestFailed || !response || typeof response !== "object" || !response.live || typeof response.live !== "object") {
+    if (!Number.isFinite(cacheAgeMs)) return "Unavailable";
+    return cacheAgeMs > 10 * 60 * 1000 ? "Saved copy · old" : "Saved copy · recent";
+  }
+  if (response.live.active !== true) return "No active round";
+  const sourceTime = Date.parse(response.updated_at || response.live.updated_at || "");
+  if (!Number.isFinite(sourceTime)) return "Loaded · age unverified";
+  const age = nowMs - sourceTime;
+  if (age < 0) return "Loaded · age unverified";
+  return age <= 10 * 60 * 1000 ? "Current" : "Old · refresh needed";
+}
+
+export function courseInternetCloudLabel(internetState, cloudState) {
+  if (internetState === "reachable" && cloudState === "reachable") return "Internet and cloud available";
+  if (cloudState === "reachable") return "Cloud available · internet check not confirmed";
+  if (internetState === "reachable" && cloudState === "unavailable") return "Internet available · cloud unavailable";
+  if (internetState === "checking" || cloudState === "checking") return "Checking…";
+  if (internetState === "reachable") return "Internet available · cloud not checked";
+  return "Not confirmed";
+}
+
+export function matrixRelayLabel(revisionState, reachable = true) {
+  if (!reachable || !["aligned", "stale"].includes(revisionState)) return "Unconfirmed";
+  return revisionState === "aligned" ? "Confirmed · display not visually checked" : "Older · display not visually checked";
+}
+
+export function guestDefaultEnableNeeded(state, migrationApplied) {
+  return !migrationApplied && !!state && state.guestMode !== true;
 }
 
 export function scoringCloudStatusText(response, requestFailed = false) {
@@ -61,14 +92,14 @@ export function scoringCloudStatusText(response, requestFailed = false) {
 }
 
 export function hbnfEndpointReachabilityText(state) {
-  if (state === "unverified") return "Unverified · HBNF endpoint check failed or timed out";
-  if (state === "checking") return "Checking HBNF endpoint…";
-  if (state === "reachable") return "HBNF endpoint reachable from this iPad";
-  return "Unverified · no recent HBNF endpoint check";
+  if (state === "unverified") return "Unconfirmed";
+  if (state === "checking") return "Checking…";
+  if (state === "reachable") return "Available";
+  return "Not checked";
 }
 
 export function scoreFreshnessLabel() {
-  return "Unverified · scoring response has no source timestamp";
+  return "Update age not available";
 }
 
 export function deviceEvidenceLabel(snapshot, id, nowMs = Date.now(), maxAgeMs = 90000) {
