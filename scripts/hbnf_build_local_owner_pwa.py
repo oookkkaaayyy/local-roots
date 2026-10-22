@@ -111,6 +111,7 @@ def main() -> None:
     parser.add_argument("--rollback-baseline-source-commit")
     parser.add_argument("--rollback-baseline-owner-source-archive", type=Path)
     parser.add_argument("--rollback-baseline-readback-receipt", type=Path)
+    parser.add_argument("--rollback-baseline-owner-pwa-version", default="1.0.8")
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.package_version):
         raise SystemExit("--package-version must be a semantic x.y.z version")
@@ -268,7 +269,7 @@ def main() -> None:
         if not receipt_path.is_file():
             raise SystemExit("Owner PWA installed-baseline readback receipt is missing")
         receipt = json.loads(receipt_path.read_text())
-        if (receipt.get("status") != "PASS" or receipt.get("runtime_version") != "1.0.8" or
+        if (receipt.get("status") != "PASS" or receipt.get("runtime_version") != args.rollback_baseline_owner_pwa_version or
                 receipt.get("installed_file_count") != 20 or receipt.get("rollback_retained") is not True or
                 receipt.get("health_checks", {}).get("content_hash_all_17") is not True):
             raise SystemExit("Installed-baseline readback does not verify the exact v1.0.8 Owner PWA tree")
@@ -290,7 +291,7 @@ def main() -> None:
         baseline_readback = {
             "path": receipt_path.relative_to(root).as_posix(),
             "sha256": digest(receipt_path.read_bytes()),
-            "runtimeVersion": "1.0.8",
+            "runtimeVersion": args.rollback_baseline_owner_pwa_version,
             "installedRegularFiles": 20,
             "servedPayloadHashesVerified": 16,
             "remainingFourMarkerHashes": "Bound by exact baseline manifest and freshly verified by installer before any swap",
