@@ -1,0 +1,39 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_IPAD_HOME_20261022",
+  "summary": "Reorganize the existing Owner PWA for iPad Mini use: truthful Cart/Internet/Matrix status, four quick controls, guest access and QR spacing, collapsed troubleshooting, and explicit unavailable guest status, while preserving current score, command, and default guest semantics.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing static Owner PWA, course-status implementation, command handlers, guest-default migration, and release control model; no runtime or architecture replacement.",
+      "affected_subsystem": "Owner PWA first-screen layout, status wording, diagnostics disclosure, and guest QR layout. Score fetching, command paths, guest default-on policy, cloud writes, and release controls remain on existing code paths.",
+      "rollback_reference": "Revert the source changes in hbnf-final-controller/hbnf-cart.html, hbnf-final-controller/hbnf-cart-ui-v6.css, hbnf-final-controller/hbnf-cart.js, and the focused test/change record. Preserve the original v1.0.10 package and do not install this source before refreshed release gates.",
+      "evidence_sources": [
+        "Owner-provided Cart iPad screenshots IMG_3460.JPG and IMG_3461.JPG, 2026-10-22: technical diagnostics dominate the current page; QR lacks comfortable spacing; status overstates device confirmation.",
+        "Apple Human Interface Guidelines, Layout: https://developer.apple.com/design/human-interface-guidelines/layout",
+        "Apple Human Interface Guidelines, Accessibility (44 x 44 pt targets and spacing): https://developer.apple.com/design/human-interface-guidelines/accessibility",
+        "Apple Support, Control accessories with Home on iPad (quick accessory action plus detail controls): https://support.apple.com/en-nz/guide/ipad/ipad82770048/ipados",
+        "W3C, WCAG 2.2 Target Size (Minimum): https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum"
+      ],
+      "tests": [
+        "Focused iPad owner-home structural and touch-target regression test.",
+        "Existing Cart/WAN, score freshness, Matrix revision acknowledgment, and guest default/toggle/reload/link tests.",
+        "Existing Text and Show Scores acknowledgment/rejection/draft-preservation behavior tests.",
+        "Browser preview at 744 x 1133 CSS pixels with horizontal overflow, quick-action layout, QR padding, and connection-failure status inspected."
+      ]
+    },
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "selected_option": "Use the existing HBNF green/night design system and an accessory-control home pattern: verified status and a small quick-control row first; guest state and share QR next; detailed controls below; transport/device diagnostics behind collapsed Troubleshooting. Preserve status uncertainty and all existing behavior.",
+      "approval_reference": "Owner's direct instruction to fully redesign the iPad Cart UI, with additional concrete hierarchy and truth requirements in the coordinator's current instruction.",
+      "approved_by_owner": true
+    }
+  }
+}

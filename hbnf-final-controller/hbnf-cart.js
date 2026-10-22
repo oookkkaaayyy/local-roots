@@ -2,7 +2,7 @@
 import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
-import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v110-course-status";
+import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v111-ipad-home";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -352,7 +352,7 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   const badge = $("#truthBadge");
   renderLocalLinkStatus(canonicalSnapshot);
   if (!snapshot) {
-    if (badge) { badge.textContent = "Cart unavailable"; badge.className = "truth-badge warn"; }
+    if (badge) { badge.textContent = "Controls unavailable"; badge.className = "truth-badge warn"; }
     return;
   }
   const matrix = snapshot.devices ? snapshot.devices.matrix : null;
@@ -376,7 +376,7 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   }
   if (badge) {
     if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
-    if (matrixOk && auxOk) { badge.textContent = snapshot.local === true ? "Cart + devices confirmed" : "Device status confirmed"; badge.className = "truth-badge good"; }
+    if (matrixOk && auxOk) { badge.textContent = snapshot.local === true ? "Cart + device replies current" : "Device replies current"; badge.className = "truth-badge good"; }
     else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
     else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Device status stale"; badge.className = "truth-badge warn"; }
     else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Device status unknown"; badge.className = "truth-badge warn"; }
@@ -502,9 +502,11 @@ async function refresh({ hydrate = true } = {}) {
     renderLocalLinkStatus(null);
     if (matrixHealth) matrixHealth.textContent = "Not confirmed";
     if (auxHealth) auxHealth.textContent = "Not confirmed";
+    const guestStatus = $("guestModeStatus");
+    if (guestStatus) guestStatus.textContent = "Guest access status is unavailable. Reconnect to the Cart to check it.";
     const badge = $("#truthBadge");
     if (badge) {
-      badge.textContent = "Cart unavailable";
+      badge.textContent = "Controls unavailable";
       badge.className = "truth-badge warn";
     }
     throw error;
@@ -545,12 +547,12 @@ async function refresh({ hydrate = true } = {}) {
     statusNode.textContent = fullyApplied
       ? "Settings acknowledged by Matrix and underglow device reports. Physical output is unverified."
       : failed
-        ? "The Cart could not apply that change. Check connection details."
+        ? "The Cart could not apply that change. Open Troubleshooting for details."
         : submitted
           ? "Change sent. Waiting for the Cart…"
         : pendingRevision === revision
           ? "Change sent. Waiting for the Cart…"
-        : "The Cart hasn’t updated yet. Check connection details.";
+        : "The Cart hasn’t updated yet. Open Troubleshooting for details.";
   } else {
     statusNode.textContent = "The Cart is not ready. No change was sent.";
   }
