@@ -8,19 +8,17 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="HBNF Cart">
   <meta name="hbnf-access" content="guest-zero-pair">
-  <meta name="hbnf-build" content="hbnf-cart2-owner-control-guest-qr-v1-20261016">
-  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261016-course-ready-ux-v1">
-  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261016-course-ready-ux-v1">
+  <meta name="hbnf-build" content="hbnf-cart2-owner-ux-review-v1-20261022">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261022-owner-pwa-ux-v1">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261022-owner-pwa-ux-v1">
   <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261016-course-ready-ux-v1">
   <title>HBNF Cart Control</title>
   <style>
-    :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;padding:20px;max-width:680px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:18px}.panel{border:1px solid #24414c;border-radius:14px;padding:16px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select,input,textarea{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:3em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.pair-link{width:100%;min-height:78px;word-break:break-all}.good{color:#8ce3ad}.warn{color:#f2ca75}
+    :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;padding:12px;max-width:740px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:12px}.panel{border:1px solid #24414c;border-radius:14px;padding:14px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select,input,textarea{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:1.5em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.pair-link{width:100%;min-height:78px;word-break:break-all}.good{color:#8ce3ad}.warn{color:#f2ca75}
     .control-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
     .control-grid label,.tune-grid label{display:grid;gap:6px;align-items:stretch}
     .tune-grid{display:grid;gap:14px}
     .range-head{display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:700}
-    .toggle-line{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important}
-    .toggle-line input{width:20px;height:20px;padding:0}
     .apply-note{margin:.6rem 0 0;font-size:.88rem;color:#a4bec6}
     .fine-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .fine-grid .wide{grid-column:1/-1}
@@ -37,77 +35,94 @@
     .guest-invite img{width:192px;max-width:38vw;min-width:132px;height:auto;image-rendering:pixelated;background:#fff;border-radius:8px}
     .guest-invite p{margin:.45rem 0}.guest-invite a{color:#8ce3ad;font-weight:700}
     @media(max-width:440px){.guest-invite{align-items:flex-start;gap:10px;padding:8px}.guest-invite img{width:132px}}
+    .primary-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:2px}
+    .primary-actions a,.primary-actions button{display:flex;min-height:48px;align-items:center;justify-content:center;text-align:center;text-decoration:none;font-weight:800;border-radius:12px;background:#16424d;color:#eaf4f7;border:1px solid #3c7480;padding:8px 6px}
+    .primary-actions a:focus,.primary-actions button:focus{outline:3px solid #57e0c0;outline-offset:2px}
+    .lights-panel{display:grid;gap:14px}
+    .lights-panel h2{margin:0 0 8px}
+    .light-group{border-top:1px solid #24414c;padding-top:12px}
+    .light-group:first-of-type{border-top:0;padding-top:0}
+    .scores-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+    .scores-actions button{min-height:46px}
+    .guest-invite{align-items:center}
+    .connection-note{margin:.6rem 0 0;color:#a4bec6;font-size:.88rem}
   </style>
 </head>
 <body><main>
   <header class="hero-v6">
-    <div><p class="eyebrow">HBNF CART</p><h1>Mission Control</h1></div>
-    <div id="truthBadge" class="truth-badge warn">Checking Cart</div>
+    <div><p class="eyebrow">HBNF CART</p><h1>Cart Controls</h1></div>
+    <div id="truthBadge" class="truth-badge warn">Checking…</div>
   </header>
 
-  <nav class="quick-links local-control-entry" aria-label="Cart controls">
-    <a class="local-control-link" href="http://192.168.77.1/mission-control-local/index.html">Open Cart controls</a>
+  <nav class="primary-actions" aria-label="Quick actions">
+    <a href="#featureText">Text</a>
+    <button id="featureRefreshLive" type="button">Refresh scores</button>
+    <button id="featureScoreboard" type="button">Show scores</button>
   </nav>
+  <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
+
+
   <details class="panel truth-panel" aria-label="Connection details">
     <summary>Connection details</summary>
     <div class="truth-grid" aria-live="polite">
-      <div class="truth-cell"><span id="controlPathLabel">Control path</span><strong id="backendTruth" aria-live="polite">Checking…</strong></div>
-      <div class="truth-cell"><span>Cart/LAN</span><strong id="cartLanTruth" aria-live="polite">Checking…</strong></div>
-      <div class="truth-cell"><span>HBNF public endpoint</span><strong id="internetTruth" aria-live="polite">Unverified · no recent HBNF endpoint check</strong></div>
-      <div class="truth-cell"><span>Scoring cloud</span><strong id="scoreCloudTruth" aria-live="polite">Not checked</strong></div>
-      <div class="truth-cell"><span>Score freshness</span><strong id="scoreFreshnessTruth" aria-live="polite">Unverified · scoring response has no source timestamp</strong></div>
+      <div class="truth-cell"><span id="controlPathLabel">Cart controls</span><strong id="backendTruth" aria-live="polite">Checking…</strong></div>
+      <div class="truth-cell"><span>Cart connection</span><strong id="cartLanTruth" aria-live="polite">Checking…</strong></div>
+      <div class="truth-cell"><span>Internet access</span><strong id="internetTruth" aria-live="polite">Not checked</strong></div>
+      <div class="truth-cell"><span>Live scores</span><strong id="scoreCloudTruth" aria-live="polite">Not checked</strong></div>
+      <div class="truth-cell"><span>Score update time</span><strong id="scoreFreshnessTruth" aria-live="polite">Not confirmed</strong></div>
       <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth" aria-live="polite">—</strong></div>
       <div class="truth-cell"><span>Underglow</span><strong id="auxTruth" aria-live="polite">—</strong></div>
     </div>
-    <p class="hardware-note">Cart/LAN, the HBNF public endpoint, and scoring cloud are separate. Endpoint success proves only that this iPad reached that HBNF asset; failure or timeout remains unverified and does not prove Internet/WAN loss. A scoring-cloud response proves only that this iPad reached that endpoint. Score freshness remains unverified without a source timestamp. Device reports and command acknowledgments do not confirm physical light or display output, or Cart headless relay delivery.</p>
+    <p class="connection-note">These checks show what the iPad can reach. A device reply does not confirm what is physically showing.</p>
+    <button id="refresh" type="button">Check Cart status</button>
   </details>
 
-  <section class="panel quick-vibe" aria-label="Vibe">
-    <div class="section-heading"><div><p class="eyebrow">SET THE FEEL</p><h2>Vibe</h2></div></div>
-    <div id="vibeOptions" class="vibe-options" role="group" aria-label="Choose a Vibe">
-      <button type="button" class="vibe-option" data-vibe="chill" aria-pressed="false" disabled><strong>CHILL</strong></button>
-      <button type="button" class="vibe-option" data-vibe="groove" aria-pressed="false" disabled><strong>GROOVE</strong></button>
-      <button type="button" class="vibe-option" data-vibe="heavy" aria-pressed="false" disabled><strong>HEAVY</strong></button>
-      <button type="button" class="vibe-option" data-vibe="psychedelic" aria-pressed="false" disabled><strong>PSYCHEDELIC</strong></button>
-      <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>COSMIC</strong></button>
-      <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled hidden>AUTO VIBE</button>
+  <section class="panel lights-panel" aria-label="Lights and Vibe">
+    <h2>Lights</h2>
+    <div class="light-group quick-vibe" aria-label="Vibe">
+      <h2>Vibe</h2>
+      <div id="vibeOptions" class="vibe-options" role="group" aria-label="Choose a Vibe">
+        <button type="button" class="vibe-option" data-vibe="chill" aria-pressed="false" disabled><strong>CHILL</strong></button>
+        <button type="button" class="vibe-option" data-vibe="groove" aria-pressed="false" disabled><strong>GROOVE</strong></button>
+        <button type="button" class="vibe-option" data-vibe="heavy" aria-pressed="false" disabled><strong>HEAVY</strong></button>
+        <button type="button" class="vibe-option" data-vibe="psychedelic" aria-pressed="false" disabled><strong>PSYCHEDELIC</strong></button>
+        <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>COSMIC</strong></button>
+        <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled hidden>AUTO VIBE</button>
+      </div>
+      <p id="vibeAvailability" class="apply-note" role="status" hidden>Vibes aren’t available right now.</p>
     </div>
-    <p id="vibeAvailability" class="apply-note" role="status" hidden>Vibes aren’t available right now.</p>
+    <div class="light-group quick-brightness" aria-label="Brightness">
+      <h2>Brightness</h2>
+      <div class="quick-brightness-grid">
+        <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
+        <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
+      </div>
+    </div>
+    <div id="palettePanel" class="light-group palette-controls" aria-label="Cart color palette">
+      <h2>Color palette</h2>
+      <div class="row">
+        <label class="wide">Palette
+          <select id="featurePalette" aria-describedby="paletteActionStatus"><option value="">Keep current</option></select>
+        </label>
+        <label>Solid / text color
+          <input id="featureColor" type="color" value="#ffffff" aria-label="Solid palette and text color">
+        </label>
+        <button id="featureApplyPalette" type="button" disabled>Apply</button>
+      </div>
+      <p id="paletteActionStatus" class="apply-note" role="status" aria-live="polite">Loading color choices…</p>
+    </div>
   </section>
 
-  <section id="palettePanel" class="panel palette-controls" aria-label="Cart color palette">
-    <h2>Color palette</h2>
-    <p class="muted">Choose a palette, then apply it. The Cart reports the selected palette; physical output is not verified.</p>
+  <details class="panel cart-commands" aria-label="Power and show sequence">
+    <summary>Power and sequence</summary>
     <div class="row">
-      <label class="wide">Palette
-        <select id="featurePalette" aria-describedby="paletteActionStatus"><option value="">Keep current</option></select>
-      </label>
-      <label>Solid / text color
-        <input id="featureColor" type="color" value="#ffffff" aria-label="Solid palette and text color">
-      </label>
-      <button id="featureApplyPalette" type="button" disabled>Apply palette</button>
+      <button class="danger" data-command="OFF">Turn off</button>
+      <button data-command="ON">Turn on</button>
+      <button data-command="NEXT">Next look</button>
+      <button data-command="AUTO">Auto</button>
     </div>
-    <p id="paletteActionStatus" class="apply-note" role="status" aria-live="polite">Palette choices load from the Cart.</p>
-  </section>
-
-  <section class="panel quick-brightness" aria-label="Brightness">
-    <h2>Brightness</h2>
-    <div class="quick-brightness-grid">
-      <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
-      <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
-    </div>
-  </section>
-
-  <section class="panel cart-commands" aria-label="Power and show sequence">
-    <h2>Power &amp; sequence</h2>
-    <div class="row">
-      <button class="danger" data-command="OFF">OFF</button>
-      <button data-command="ON">ON</button>
-      <button data-command="NEXT">NEXT</button>
-      <button data-command="AUTO">SHOW AUTO</button>
-    </div>
-    <details class="sub-controls"><summary>Animation Mix</summary>
-    <button data-command="LOCK">LOCK</button>
+    <details class="sub-controls"><summary>Animation mix</summary>
+    <button data-command="LOCK">Pause animation</button>
     <div class="control-grid">
       <div id="sceneButtons" class="scene-buttons" aria-label="Scene"></div>
       <label class="scene-native-wrap">Scene
@@ -119,14 +134,14 @@
         </select>
       </label>
     </div>
-    <p class="apply-note">Next moves to the next look. Show Auto picks a look for you.</p>
+    <p class="apply-note">Next changes the look. Auto chooses a look for you.</p>
     </details>
-  </section>
+  </details>
 
   <section id="textPanel" class="panel" aria-label="Matrix message">
     <h2>Text</h2>
     <div class="row">
-      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
+      <input id="featureText" type="text" maxlength="63" placeholder="Type a message" style="flex:1;min-width:180px">
       <label for="featureFontIndex" hidden>Text style</label>
       <select id="featureFontIndex" aria-label="Text style" disabled hidden>
         <option value="4" selected>Standard</option>
@@ -134,7 +149,7 @@
         <option value="2">Console</option>
         <option value="3">Classic</option>
       </select>
-      <button id="featureSendText" type="button">Send</button>
+      <button id="featureSendText" type="button">Send to display</button>
     </div>
     <p id="textActionStatus" class="apply-note" role="status" aria-live="polite"></p>
   </section>
@@ -179,15 +194,11 @@
 
 
   <section class="panel" aria-label="Guest access">
-    <h2>Guest Mode</h2>
-    <label class="toggle-line">
-      <input id="guestMode" type="checkbox" disabled>
-      <span>Allow trusted guests to choose a Vibe or advance the Cart look</span>
-    </label>
-    <p id="guestModeStatus" class="apply-note" role="status" aria-live="polite">Guests can use the QR link while Guest Mode is on. You can turn it off anytime.</p>
+    <h2>Guest controls</h2>
+    <p class="apply-note" role="status">Guest QR controls are available to anyone with the link. Owner controls remain available.</p>
     <div class="guest-invite" aria-label="Guest access QR">
       <img src="./hbnf-guest-qr.png?v=20261016-course-ready-ux-v1" width="192" height="192" alt="Guest controls QR code">
-      <div><strong>Invite a guest</strong><p class="muted">Scan with a phone on cellular. Guest Mode must be on and the Cart online.</p><a href="https://hbnightflyers.com/guest/hbnf-cart/">Open Guest Controls</a><p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a></p></div>
+      <div><strong>Share with guests</strong><p class="muted">Guests can choose a Vibe or move to the next look.</p><a href="https://hbnightflyers.com/guest/hbnf-cart/">Open guest controls</a></div>
     </div>
   </section>
 
@@ -228,14 +239,12 @@
   </details>
 
   <section id="scoresPanel" class="panel" aria-label="Skins and Glow live data">
-    <h2>Skins + Glow</h2>
-    <p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a> · Live scores need internet.</p>
+    <h2>Live scores</h2>
+    <p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins</a> · <a href="https://hbnightflyers.com/glow.html">Glow</a></p>
     <div id="featureLive" class="status">Live scores haven’t loaded yet.</div>
-    <p id="scorePathStatus" class="apply-note">This iPad’s cloud score read is not checked yet. Cart relay and Matrix delivery status are not reported here.</p>
+    <p id="scorePathStatus" class="apply-note">Score updates have not been checked yet.</p>
     <p id="scoreActionStatus" class="apply-note" role="status" aria-live="polite"></p>
     <div class="row">
-      <button id="featureRefreshLive" type="button">Refresh live</button>
-      <button id="featureScoreboard" type="button">Show live standings</button>
       <button id="featureAcePot" type="button">Show ace pot</button>
     </div>
     <details id="manualOfflineScorePanel" class="score-entry" hidden aria-label="Manual offline scoreboard">
@@ -249,7 +258,7 @@
       <div id="manualScoreboardStatus" class="status" role="status" aria-live="polite">No scores have been entered.</div>
     </details>
     <details class="score-entry">
-      <summary>Record Skins scoring</summary>
+      <summary>Record Skins score</summary>
       <p class="muted">Scores save to the current Skins card. A tied hole carries the skin. Tiebreakers and ace results follow the scorecard.</p>
       <div class="score-grid">
         <label>Section<select id="skinsSection"><option value="front">Front 9 · Singles</option><option value="back">Back 9 · Doubles</option></select></label>
@@ -310,9 +319,4 @@
     </div>
   </details>
 
-  <section class="panel">
-    <h2>Cart status</h2>
-    <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
-    <button id="refresh">Refresh</button>
-  </section>
-</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261021-fail-closed-readiness-v2",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261021-fail-closed-readiness-v2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261016-course-ready-ux-v1"></script></body></html>
+</main><script type="module" src="./hbnf-cart.js?v=20261022-owner-ux-review-v1"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261021-fail-closed-readiness-v2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261016-course-ready-ux-v1"></script></body></html>

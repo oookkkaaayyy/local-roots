@@ -110,6 +110,7 @@ def main() -> None:
     parser.add_argument("--rollback-baseline-receipt", type=Path)
     parser.add_argument("--rollback-baseline-source-commit")
     parser.add_argument("--rollback-baseline-owner-source-archive", type=Path)
+    parser.add_argument("--rollback-baseline-readback-receipt", type=Path)
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.package_version):
         raise SystemExit("--package-version must be a semantic x.y.z version")
@@ -122,6 +123,10 @@ def main() -> None:
         args.source_commit = verify_clean_source(root, args.source_commit)
         source_paths = [root / "scripts/hbnf_build_local_owner_pwa.py"] + [root / "hbnf-final-controller" / name for name in ASSETS]
         source_paths.append(root / "hbnf-final-controller/hbnf-cart-manifest.webmanifest")
+        source_paths.append(root / "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h")
+        source_paths.append(args.source_locator.resolve())
+        if args.rollback_baseline_readback_receipt:
+            source_paths.append((root / args.rollback_baseline_readback_receipt).resolve())
         verify_source_inputs(root, args.source_commit, source_paths)
         try:
             args.output_dir.resolve().relative_to(root)
@@ -146,11 +151,11 @@ def main() -> None:
     html = (source / "hbnf-cart.html").read_text()
     service_worker = re.compile(r'<script>if\("serviceWorker"[\s\S]*?</script>')
     html, removed = service_worker.subn("", html)
-    if removed != 1:
-        raise SystemExit("Expected exactly one HTTPS-only service-worker registration block")
+    if removed > 1 or 'navigator.serviceWorker.register' in html:
+        raise SystemExit("Owner PWA contains duplicate or malformed service-worker registration blocks")
     html, removed = re.subn(r'<nav class="quick-links local-control-entry"[\s\S]*?</nav>', "", html)
-    if removed != 1:
-        raise SystemExit("Expected exactly one old local-controller shortcut in the Owner PWA")
+    if removed > 1 or 'class="quick-links local-control-entry"' in html:
+        raise SystemExit("Owner PWA contains duplicate or malformed old local-controller shortcuts")
     html = html.replace('href="/guest/hbnf-cart/"', 'href="https://hbnightflyers.com/guest/hbnf-cart/"')
     # OpenWrt's existing uHTTPd map is verified for .js; earlier Opal UI
     # modules failed when served as .mjs. Keep module content, use known-good
@@ -188,6 +193,10 @@ def main() -> None:
     source_inputs.append(source / "hbnf-cart-manifest.webmanifest")
     if args.strict_source_binding:
         source_inputs.append(Path(__file__).resolve())
+        source_inputs.append(root / "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h")
+        source_inputs.append(args.source_locator.resolve())
+        if args.rollback_baseline_readback_receipt:
+            source_inputs.append((root / args.rollback_baseline_readback_receipt).resolve())
     deploy_dir = root / f"staging/coordinated-backend/opal/owner-pwa-local-v{version}"
     baseline = deploy_dir / "BASELINE.SHA256SUMS"
     baseline_provenance_args = (
@@ -253,6 +262,39 @@ def main() -> None:
                 "path": owner_source_archive.relative_to(root).as_posix(),
                 "sha256": digest(owner_source_archive.read_bytes()),
             }
+    baseline_readback = None
+    if args.rollback_baseline_readback_receipt:
+        receipt_path = (root / args.rollback_baseline_readback_receipt).resolve()
+        if not receipt_path.is_file():
+            raise SystemExit("Owner PWA installed-baseline readback receipt is missing")
+        receipt = json.loads(receipt_path.read_text())
+        if (receipt.get("status") != "PASS" or receipt.get("runtime_version") != "1.0.8" or
+                receipt.get("installed_file_count") != 20 or receipt.get("rollback_retained") is not True or
+                receipt.get("health_checks", {}).get("content_hash_all_17") is not True):
+            raise SystemExit("Installed-baseline readback does not verify the exact v1.0.8 Owner PWA tree")
+        installed = receipt.get("installed_sha256_by_path", {})
+        manifest_by_name = {}
+        for line in baseline.read_text().splitlines():
+            match = re.fullmatch(r"([0-9a-f]{64})  (.+)", line)
+            if match:
+                manifest_by_name[match.group(2)] = match.group(1)
+        payload_pairs = 0
+        for name, expected in manifest_by_name.items():
+            if name in {".hbnf-package-marker", ".hbnf-package-version", ".hbnf-payload.sha256", ".hbnf-rollback.sh"}:
+                continue
+            if installed.get("owner-pwa/" + name) != expected:
+                raise SystemExit(f"Installed readback payload hash does not match the v1.0.8 baseline: {name}")
+            payload_pairs += 1
+        if payload_pairs != 16 or len(manifest_by_name) != 20:
+            raise SystemExit("Installed readback must match all 16 payload files in the exact 20-file baseline")
+        baseline_readback = {
+            "path": receipt_path.relative_to(root).as_posix(),
+            "sha256": digest(receipt_path.read_bytes()),
+            "runtimeVersion": "1.0.8",
+            "installedRegularFiles": 20,
+            "servedPayloadHashesVerified": 16,
+            "remainingFourMarkerHashes": "Bound by exact baseline manifest and freshly verified by installer before any swap",
+        }
     if args.transaction_id:
         if not re.fullmatch(r"[A-Z0-9][A-Z0-9-]{7,100}", args.transaction_id):
             raise SystemExit("--transaction-id must be a bounded uppercase transaction identifier")
@@ -302,6 +344,7 @@ def main() -> None:
             "sha256": digest(baseline.read_bytes()) if baseline.is_file() else None,
             "entries": len(baseline.read_text().splitlines()) if baseline.is_file() else None,
             "source": baseline_provenance,
+            "installedReadback": baseline_readback,
         },
         "destination": "/www/mission-control-local/owner-pwa",
         "mode": "additive-static-subtree",

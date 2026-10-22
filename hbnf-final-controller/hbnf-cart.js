@@ -49,8 +49,6 @@ const backendHealth = $("#backendTruth");
 const cartLanHealth = $("#cartLanTruth");
 const controlPathLabel = $("#controlPathLabel");
 if (controlPathLabel) controlPathLabel.textContent = OPAL_LOCAL_PWA ? "iPad → Cart controls" : "Cloud control API";
-const guestModeToggle = $("#guestMode");
-const guestModeStatus = $("#guestModeStatus");
 let pendingRevision = null;
 const syncHealth = null;
 const rendererHealth = null;
@@ -176,7 +174,6 @@ function setAuthorizedUi() {
   if (authPanel) authPanel.hidden = true;
   if (managePairPanel) managePairPanel.hidden = !validDeviceToken(deviceToken());
   if (pairAcceptPanel && !pendingPairToken) pairAcceptPanel.hidden = true;
-  if (guestModeToggle) guestModeToggle.disabled = !validDeviceToken(deviceToken()) || localControlActive;
 }
 
 async function authHeaders() {
@@ -414,10 +411,6 @@ function hydrateControls(state) {
   hydrating = true;
   try {
     if (state.sceneId) $("#scene").value = state.sceneId;
-    if (guestModeToggle) guestModeToggle.checked = state.guestMode === true;
-    if (guestModeStatus) guestModeStatus.textContent = state.guestMode === true
-      ? "Guest Mode is on. Your controls still take priority."
-      : "Guest Mode is off. Turn it on when you’re ready to invite guests.";
 
     const tuning = valueOr(state.tuning, {});
     updateVibeSelection(state);
@@ -738,23 +731,6 @@ copyPair.addEventListener("click", async () => {
 document.querySelectorAll("[data-command]").forEach(button => {
   button.addEventListener("click", () => command(button.dataset.command).catch(showError));
 });
-
-if (guestModeToggle) {
-  guestModeToggle.addEventListener("change", async () => {
-    const enabled = guestModeToggle.checked;
-    guestModeToggle.disabled = true;
-    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Turning Guest Mode on…" : "Turning Guest Mode off…";
-    try {
-      await command("GUEST_MODE", { enabled });
-    } catch (error) {
-      guestModeToggle.checked = !enabled;
-      if (guestModeStatus) guestModeStatus.textContent = "Couldn’t change Guest Mode. Try again.";
-      showError(error);
-    } finally {
-      guestModeToggle.disabled = !validDeviceToken(deviceToken());
-    }
-  });
-}
 
 document.querySelectorAll(".vibe-option").forEach(button => {
   button.addEventListener("click", () => {

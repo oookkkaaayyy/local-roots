@@ -1,0 +1,157 @@
+{
+  "health_checks": {
+    "aux_unchanged": true,
+    "content_hash_all_17": true,
+    "firmware_unchanged": true,
+    "guest_unchanged": true,
+    "http_200_all_17": true,
+    "owner_route_content": true,
+    "skins_unchanged": true
+  },
+  "installed_file_count": 20,
+  "installed_sha256_by_path": {
+    "mission-control-local/local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+    "owner-pwa/hbnf-cart-features.js": "496a4059cd8e4a17f91ca0bf56ea0651a3f5a28cb61d68982410fbb0626d551e",
+    "owner-pwa/hbnf-cart-icon-180.png": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+    "owner-pwa/hbnf-cart-icon-192.png": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+    "owner-pwa/hbnf-cart-icon-512.png": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+    "owner-pwa/hbnf-cart-live-display.js": "54021b2f28492096931294419f1a7776cf54e1ff1b6e67642e1c8af6661437e4",
+    "owner-pwa/hbnf-cart-local.js": "ca81f93e7f76399f3181cbfb18db74effa6e6e6467fe181a562fd7036cc228ba",
+    "owner-pwa/hbnf-cart-manifest.webmanifest": "b4c094d757693982bf15bfe62b1a598f961f3fec48de46c9a07f830ea32956c5",
+    "owner-pwa/hbnf-cart-net.js": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-readiness.js": "9b131932768c8b7b4116c0c894be294aa5bd63c2030c2902a8178698021cb25d",
+    "owner-pwa/hbnf-cart-semantic.js": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "owner-pwa/hbnf-cart-skins-score.js": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+    "owner-pwa/hbnf-cart-ui-v6.css": "a4846b4662a6bd2ffdb0f48c738d0ff55bfeac6d091b6e5fba591758dfb3154f",
+    "owner-pwa/hbnf-cart-ui-v6.js": "cb0cd6f24fe0abe84ab192daf197c1d94e5b9493eb0c887bf9dc60091f653f08",
+    "owner-pwa/hbnf-cart.html": "d233a2f59c8d89efcf4a7b7673e769fbfb746671a054da15161b2b917ef0b4f2",
+    "owner-pwa/hbnf-cart.js": "cf0fb019cd9a997813584080ba466d7084647a4864d2de94c8f82a13685c6c9b",
+    "owner-pwa/hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
+  },
+  "rollback": {
+    "actual_backup_path": "/root/hbnf-owner-pwa-local.rollback-OWNER-PWA-LOCAL-V108-C07D-20261022-01",
+    "actual_manifest_path": "/root/hbnf-owner-pwa-OWNER-PWA-LOCAL-V108-C07D-20261022-01.BASELINE.SHA256SUMS",
+    "association_note": "The approved -02 installer preserved its exact pre-install v1.0.5 baseline in the -01-named recovery path embedded in the unchanged authorized package. The prior -01 transaction stopped before tree mutation and created no backup; this exact backup was read back and verified after -02 installation. No path was renamed or overwritten.",
+    "manifest_sha256": "971b22121876ddf87eff50adedfd54b985216fccbd847074fd67d6ec49bf044d",
+    "verified_regular_file_count": 18
+  },
+  "rollback_retained": true,
+  "rollback_sha256": "c2086e25dbc98cc5ee1b234ac884b686ac4989ca901acd7d3d4f29f70ff9ce91",
+  "runtime_version": "1.0.8",
+  "schema": "hbnf-owner-pwa-install-result-v1",
+  "served_sha256_by_path": {
+    "mission-control-local/local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+    "owner-pwa/hbnf-cart-features.js": "496a4059cd8e4a17f91ca0bf56ea0651a3f5a28cb61d68982410fbb0626d551e",
+    "owner-pwa/hbnf-cart-icon-180.png": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+    "owner-pwa/hbnf-cart-icon-192.png": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+    "owner-pwa/hbnf-cart-icon-512.png": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+    "owner-pwa/hbnf-cart-live-display.js": "54021b2f28492096931294419f1a7776cf54e1ff1b6e67642e1c8af6661437e4",
+    "owner-pwa/hbnf-cart-local.js": "ca81f93e7f76399f3181cbfb18db74effa6e6e6467fe181a562fd7036cc228ba",
+    "owner-pwa/hbnf-cart-manifest.webmanifest": "b4c094d757693982bf15bfe62b1a598f961f3fec48de46c9a07f830ea32956c5",
+    "owner-pwa/hbnf-cart-net.js": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-readiness.js": "9b131932768c8b7b4116c0c894be294aa5bd63c2030c2902a8178698021cb25d",
+    "owner-pwa/hbnf-cart-semantic.js": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "owner-pwa/hbnf-cart-skins-score.js": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+    "owner-pwa/hbnf-cart-ui-v6.css": "a4846b4662a6bd2ffdb0f48c738d0ff55bfeac6d091b6e5fba591758dfb3154f",
+    "owner-pwa/hbnf-cart-ui-v6.js": "cb0cd6f24fe0abe84ab192daf197c1d94e5b9493eb0c887bf9dc60091f653f08",
+    "owner-pwa/hbnf-cart.html": "d233a2f59c8d89efcf4a7b7673e769fbfb746671a054da15161b2b917ef0b4f2",
+    "owner-pwa/hbnf-cart.js": "cf0fb019cd9a997813584080ba466d7084647a4864d2de94c8f82a13685c6c9b",
+    "owner-pwa/hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
+  },
+  "status": "PASS",
+  "step": "install_owner_pwa",
+  "transaction_id": "OWNER-PWA-LOCAL-V108-C07D-20261022-02",
+  "verification": {
+    "direct_device_readback": "Coordinator strict SSH readback: version 1.0.8; 20 regular Owner PWA files; all 16 Owner PWA payload hashes matched; exact 18-file v1.0.5 backup manifest passed.",
+    "firmware_identity": "GL-SFT1200, OpenWrt 18.06 / LEDE, kernel 4.14.90; unchanged by Owner PWA-only installer.",
+    "release_limit": "This verifies deployment and served content, not manual iPad interaction or full Cart P1 field acceptance.",
+    "route_results": {
+      "mission-control-local/local-transport.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/local-transport.js"
+      },
+      "owner-pwa/hbnf-cart-features.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-features.js"
+      },
+      "owner-pwa/hbnf-cart-icon-180.png": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-icon-180.png"
+      },
+      "owner-pwa/hbnf-cart-icon-192.png": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-icon-192.png"
+      },
+      "owner-pwa/hbnf-cart-icon-512.png": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-icon-512.png"
+      },
+      "owner-pwa/hbnf-cart-live-display.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-live-display.js"
+      },
+      "owner-pwa/hbnf-cart-local.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-local.js"
+      },
+      "owner-pwa/hbnf-cart-manifest.webmanifest": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-manifest.webmanifest"
+      },
+      "owner-pwa/hbnf-cart-net.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-net.js"
+      },
+      "owner-pwa/hbnf-cart-readiness.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-readiness.js"
+      },
+      "owner-pwa/hbnf-cart-semantic.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-semantic.js"
+      },
+      "owner-pwa/hbnf-cart-skins-score.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-skins-score.js"
+      },
+      "owner-pwa/hbnf-cart-ui-v6.css": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-ui-v6.css"
+      },
+      "owner-pwa/hbnf-cart-ui-v6.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-ui-v6.js"
+      },
+      "owner-pwa/hbnf-cart.html": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart.html"
+      },
+      "owner-pwa/hbnf-cart.js": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart.js"
+      },
+      "owner-pwa/hbnf-guest-qr.png": {
+        "http_status": 200,
+        "sha256_matches": true,
+        "url": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-guest-qr.png"
+      }
+    },
+    "scoring_data": "No scoring database writes or scoring events were performed. The candidate removes the PWA-side preview observer from post-save refresh; live scoring data was not modified."
+  }
+}

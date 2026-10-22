@@ -1,0 +1,37 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "owner-pwa-ux-v109-20261022",
+  "summary": "Simplify the existing Owner PWA controls, remove the unsupported guest-mode toggle, and use the already approved Cart icon from the accepted firmware source without changing runtime or release architecture.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Owner instruction 2026-10-22: simplify the current Owner PWA only, preserve existing behavior, and wire the approved Cart icon; no deployment or live Opal changes.",
+      "affected_subsystem": "Existing static Owner PWA user interface and icon metadata; existing Opal installation scripts and rollback paths remain unchanged in function.",
+      "rollback_reference": "Revert this source commit. Any later install requires a separate source-bound admission and preserves the exact installed v1.0.8 20-file tree under transaction-bound rollback.",
+      "evidence_sources": [
+        "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h (SHA-256 e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6)",
+        "evidence/owner-pwa-c07d-successor-20261022/INSTALL-RESULT.json (v1.0.8 direct readback; 20 installed files and 16 served payload hashes verified)",
+        "Owner instruction in current conversation: Cart Home Screen icon is approved firmware mark, not generic HBNF letters."
+      ],
+      "tests": [
+        "node --test tests/hbnf_owner_pwa_ux_review.test.mjs",
+        "node --test tests/hbnf-ios12-compat-audit.mjs",
+        "node --test tests/hbnf_owner_pwa_opal_direct.mjs",
+        "sh -n staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/install.sh staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/rollback.sh"
+      ]
+    },
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "selected_option": "Use the existing approved green HBNF Cart mark embedded in the accepted firmware source; keep its 180x180 bytes exact for Apple touch icon and resize the same image to the manifest's truthful 192x192 and 512x512 sizes. Use the current compact controls candidate and state the deployed public guest-link policy truthfully.",
+      "approval_reference": "Owner direction in current conversation on 2026-10-22.",
+      "approved_by_owner": true
+    }
+  }
+}
