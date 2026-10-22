@@ -75,6 +75,21 @@
     <p id="vibeAvailability" class="apply-note" role="status" hidden>Vibes aren’t available right now.</p>
   </section>
 
+  <section id="palettePanel" class="panel palette-controls" aria-label="Cart color palette">
+    <h2>Color palette</h2>
+    <p class="muted">Choose a palette, then apply it. The Cart reports the selected palette; physical output is not verified.</p>
+    <div class="row">
+      <label class="wide">Palette
+        <select id="featurePalette" aria-describedby="paletteActionStatus"><option value="">Keep current</option></select>
+      </label>
+      <label>Solid / text color
+        <input id="featureColor" type="color" value="#ffffff" aria-label="Solid palette and text color">
+      </label>
+      <button id="featureApplyPalette" type="button" disabled>Apply palette</button>
+    </div>
+    <p id="paletteActionStatus" class="apply-note" role="status" aria-live="polite">Palette choices load from the Cart.</p>
+  </section>
+
   <section class="panel quick-brightness" aria-label="Brightness">
     <h2>Brightness</h2>
     <div class="quick-brightness-grid">
@@ -195,12 +210,6 @@
     <div class="fine-grid">
       <label class="wide">Show
         <select id="featureLook"></select>
-      </label>
-      <label>Color
-        <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
-      </label>
-      <label>Palette · optional
-        <select id="featurePalette"><option value="">Current palette</option></select>
       </label>
       <label>Name saved look
         <input id="featureLookName" type="text" maxlength="24" placeholder="e.g. Green course">

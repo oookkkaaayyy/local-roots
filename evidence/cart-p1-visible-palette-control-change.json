@@ -1,0 +1,25 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-p1-visible-palette-control-20261021",
+  "summary": "Expose the existing Cart palette selector and color input, and apply palette-only changes through the current canonical bridge with readback and restoration checks.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "affected_subsystem": "Cart Owner PWA palette and color controls (Feature Tree B1.03).",
+      "observed_source_defect": "The existing dynamic Matrix palette selector and color input were only inside the collapsed Saved looks and advanced color section, matching the documented owner-visible report that alternate palettes were missing from the iPad surface.",
+      "implementation": "Move the existing palette selector and shared solid/text color input into a visible accessible panel. Add a separate palette-only action using the existing canonical PALETTE command, capability gate, current-state preflight, readback verification, and previous-palette restoration attempt on an unconfirmed result. No new protocol, service, dependency, or scoring behavior.",
+      "rollback_reference": "Revert this isolated source/test commit; no device, cloud, firmware, router, release, or score mutation is included.",
+      "tests": [
+        "node tests/hbnf_owner_palette_controls.test.mjs",
+        "node tests/hbnf-coordinated-controller-contract.mjs"
+      ]
+    }
+  }
+}
