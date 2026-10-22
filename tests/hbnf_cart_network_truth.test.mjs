@@ -63,6 +63,8 @@ const features = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-fea
 const backend = fs.readFileSync(new URL("../staging/coordinated-backend/hbnf-cart-control/index.ts", import.meta.url), "utf8");
 assert.match(html, /id="cartLanTruth"/);
 assert.match(html, /id="internetTruth"/);
+assert.match(html, /<span>HBNF public endpoint<\/span><strong id="internetTruth"/);
+assert.doesNotMatch(html, /<span>Internet\/WAN path<\/span>/);
 assert.match(html, /id="scoreCloudTruth"/);
 assert.match(html, /id="scoreFreshnessTruth"/);
 const truthStart = features.indexOf("function updateScoreNetworkTruth(");
