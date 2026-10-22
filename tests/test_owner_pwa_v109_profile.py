@@ -86,17 +86,13 @@ class OwnerPwaV109ProfileTests(unittest.TestCase):
         finally:
             receipt.unlink(missing_ok=True)
 
-    def test_issuing_v109_archives_the_completed_prior_transaction_unchanged(self):
+    def test_issuing_v109_cannot_reuse_its_completed_prior_transaction(self):
         state,manifest,owner,_profile,receipt=candidate_fixture(preserve_existing=True)
         prior=copy.deepcopy(state["execution_cursor"]["owner_pwa_transaction"])
         try:
-            admitted=control.issue_owner_pwa_admission(state,manifest,owner)
-            history=state["execution_cursor"]["owner_pwa_transaction_history"]
-            self.assertEqual(prior,history[-1]["prior_transaction"])
-            self.assertEqual(control.OWNER_PWA_V109_TRANSACTION_ID,history[-1]["superseded_by"])
-            self.assertEqual(control.OWNER_PWA_V109_TRANSACTION_ID,
-                state["execution_cursor"]["owner_pwa_transaction"]["transaction_id"])
-            self.assertEqual([],control.owner_pwa_admission_errors(state,admitted))
+            with self.assertRaisesRegex(ValueError,"fresh transaction identity was already used"):
+                control.issue_owner_pwa_admission(state,manifest,owner)
+            self.assertEqual(prior,state["execution_cursor"]["owner_pwa_transaction"])
             self.assertFalse(state["live_mutation_authorized"])
         finally:
             receipt.unlink(missing_ok=True)
