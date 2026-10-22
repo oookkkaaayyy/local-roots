@@ -76,7 +76,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf-owner-pwa-v109-rehearsal-") as raw
 
     run(["sh", str(target / ".hbnf-rollback.sh")], env=env)
     assert (target / ".hbnf-package-version").read_text().strip() == "1.0.8"
-    subprocess.run(["sha256sum", "-c", str(backup / "hbnf-owner-pwa-OWNER-PWA-LOCAL-V109-UX-20261022-01.BASELINE.SHA256SUMS")], cwd=target, check=True, capture_output=True)
+    subprocess.run(["sha256sum", "-c", str(backup / "hbnf-owner-pwa-OWNER-PWA-LOCAL-V109-UX-20261022-02.BASELINE.SHA256SUMS")], cwd=target, check=True, capture_output=True)
     restored = mission_files()
     assert restored == original_mission, "Mission Control must remain unchanged through install and rollback"
     assert len(list(target.iterdir())) == 20

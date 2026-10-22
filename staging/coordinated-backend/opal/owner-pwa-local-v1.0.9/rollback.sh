@@ -3,7 +3,7 @@ set -eu
 TARGET=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 BASE=$(dirname "$TARGET")
 BACKUP_ROOT=${HBNF_BACKUP_ROOT:-/root}
-TX="OWNER-PWA-LOCAL-V109-UX-20261022-01"
+TX="OWNER-PWA-LOCAL-V109-UX-20261022-02"
 BACKUP="$BACKUP_ROOT/hbnf-owner-pwa-local.rollback-$TX"
 MANIFEST="$BACKUP_ROOT/hbnf-owner-pwa-$TX.BASELINE.SHA256SUMS"
 FAILED="$BASE/.owner-pwa.failed-$TX"
