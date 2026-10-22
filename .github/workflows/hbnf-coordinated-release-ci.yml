@@ -12,6 +12,25 @@ on:
       - 'config/HBNF_COORDINATED_*.json'
       - 'tests/hbnf-*.mjs'
       - 'tests/hbnf-*.py'
+      - 'tests/hbnf_foundation_artifact_scope.py'
+      - 'tests/hbnf_foundation_seq41_offline.py'
+      - 'tests/hbnf_foundation_seq43_offline.py'
+      - 'tests/opal-skins-relay-contract.mjs'
+      - 'scripts/hbnf_foundation_artifact_scope.py'
+      - 'scripts/hbnf_foundation_seq41_transaction.py'
+      - 'scripts/hbnf_foundation_seq43_transaction.py'
+      - 'scripts/hbnf_foundation_seq39_failure_policy.py'
+      - 'scripts/hbnf_foundation_threshold_freeze.py'
+      - 'scripts/hbnf_foundation_live_adapter.py'
+      - 'scripts/hbnf_foundation_continuous_soak.py'
+      - 'scripts/hbnf_foundation_soak_audit.py'
+      - 'scripts/hbnf_live_kernel_sweep.py'
+      - 'config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json'
+      - 'config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json'
+      - 'config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_SEQ39_20261006.json'
+      - 'evidence/hbnf-foundation-qualification-20261005/seq39/**'
+      - 'evidence/hbnf-foundation-qualification-20261005/seq41/**'
+      - 'firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp'
       - 'scripts/hbnf_build_local_owner_pwa.py'
       - 'tests/test_hbnf_owner_pwa_builder_validation.py'
       - 'hbnf-ui-v6-package/**'
@@ -52,6 +71,25 @@ on:
       - 'config/HBNF_COORDINATED_*.json'
       - 'tests/hbnf-*.mjs'
       - 'tests/hbnf-*.py'
+      - 'tests/hbnf_foundation_artifact_scope.py'
+      - 'tests/hbnf_foundation_seq41_offline.py'
+      - 'tests/hbnf_foundation_seq43_offline.py'
+      - 'tests/opal-skins-relay-contract.mjs'
+      - 'scripts/hbnf_foundation_artifact_scope.py'
+      - 'scripts/hbnf_foundation_seq41_transaction.py'
+      - 'scripts/hbnf_foundation_seq43_transaction.py'
+      - 'scripts/hbnf_foundation_seq39_failure_policy.py'
+      - 'scripts/hbnf_foundation_threshold_freeze.py'
+      - 'scripts/hbnf_foundation_live_adapter.py'
+      - 'scripts/hbnf_foundation_continuous_soak.py'
+      - 'scripts/hbnf_foundation_soak_audit.py'
+      - 'scripts/hbnf_live_kernel_sweep.py'
+      - 'config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json'
+      - 'config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json'
+      - 'config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_SEQ39_20261006.json'
+      - 'evidence/hbnf-foundation-qualification-20261005/seq39/**'
+      - 'evidence/hbnf-foundation-qualification-20261005/seq41/**'
+      - 'firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp'
       - 'scripts/hbnf_build_local_owner_pwa.py'
       - 'tests/test_hbnf_owner_pwa_builder_validation.py'
       - 'hbnf-ui-v6-package/**'
@@ -89,24 +127,68 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select artifact-bound Foundation tests
+        id: foundation_scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            pull_request)
+              git diff --name-only "$PR_BASE_SHA...$PR_HEAD_SHA" \
+                | python3 -B scripts/hbnf_foundation_artifact_scope.py --github-output "$GITHUB_OUTPUT"
+              ;;
+            push)
+              if [[ "$PUSH_BEFORE" =~ ^0+$ ]]; then
+                echo 'run_foundation_artifact_tests=true' >> "$GITHUB_OUTPUT"
+                echo 'Initial push has no prior commit; keeping Foundation artifact checks enabled.'
+              else
+                git diff --name-only "$PUSH_BEFORE" "$PUSH_SHA" \
+                  | python3 -B scripts/hbnf_foundation_artifact_scope.py --github-output "$GITHUB_OUTPUT"
+              fi
+              ;;
+            *)
+              echo 'run_foundation_artifact_tests=true' >> "$GITHUB_OUTPUT"
+              echo 'Manual run: keeping all Foundation closure checks enabled.'
+              ;;
+          esac
+
+      - name: Foundation artifact-scope contract
+        run: python3 -B tests/hbnf_foundation_artifact_scope.py
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Opal Skins relay recovery contract
+        run: node --test tests/opal-skins-relay-contract.mjs
 
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
       - name: HBNF architecture fitness
+        env:
+          RUN_FOUNDATION_ARTIFACT_TESTS: ${{ steps.foundation_scope.outputs.run_foundation_artifact_tests }}
         run: |
           set -euo pipefail
           python3 tests/hbnf_control.py
           python3 tests/hbnf_guarded_run.py
           python3 tests/hbnf_foundation_seq39_failure_policy.py
-          python3 tests/hbnf_foundation_seq41_offline.py
           python3 tests/hbnf_foundation_continuous_soak.py
-          python3 tests/hbnf_foundation_seq43_offline.py
+          if [[ "$RUN_FOUNDATION_ARTIFACT_TESTS" == "true" ]]; then
+            python3 tests/hbnf_foundation_seq41_offline.py
+            python3 tests/hbnf_foundation_seq43_offline.py
+          else
+            echo "Seq41/43 exact-firmware closure unchanged; artifact-dependent checks not applicable to this diff."
+          fi
           python3 scripts/hbnf_architecture_fitness.py
           python3 tests/hbnf_runtime_qualify_static.py
           python3 tests/hbnf_kernel_sweep_report.py
