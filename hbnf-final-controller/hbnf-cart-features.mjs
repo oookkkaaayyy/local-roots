@@ -321,6 +321,31 @@ function liveSourceRevisionText(updatedAt) {
   return "Source row updated_at "+revision+" (whole league_state row).";
 }
 
+function compareLiveSourceRevision(sourceRevision, appliedRevision) {
+  const sourceTime=typeof sourceRevision==="string" ? Date.parse(sourceRevision) : NaN;
+  const appliedTime=typeof appliedRevision==="string" ? Date.parse(appliedRevision) : NaN;
+  if (!Number.isFinite(sourceTime) || !Number.isFinite(appliedTime)) return "unknown";
+  // Preserve sub-millisecond timestamp precision: Date.parse truncates the
+  // microseconds commonly present in Postgres updated_at values.
+  if (sourceRevision===appliedRevision) return "aligned";
+  return appliedTime<sourceTime ? "stale" : "unknown";
+}
+
+async function matrixLiveSourceRevisionStatus(sourceRevision) {
+  if (!matrixLocal()) return "Matrix source-revision readback unavailable outside the Cart LAN; physical display is unverified.";
+  try {
+    const readback=await fetchJson(matrixApiUrl("/json/si"),{method:"GET",cache:"no-store"},"Matrix live status",0,2500);
+    const h=readback&&readback.state&&readback.state.HBNF;
+    const applied=h&&h.liveSourceRevision;
+    const state=compareLiveSourceRevision(sourceRevision,applied);
+    if (state==="aligned") return "Matrix locally accepted the same source row revision. Physical display is unverified.";
+    if (state==="stale") return "Matrix locally reports an older source row revision. Physical display is unverified.";
+    return "Matrix source-revision readback is unknown. Physical display is unverified.";
+  } catch (_) {
+    return "Matrix source-revision readback is unavailable. Physical display is unverified.";
+  }
+}
+
 function renderLive(live, cached=false, updatedAt=null) {
   const node=$("featureLive");
   if (!node) return;
@@ -401,7 +426,8 @@ async function refreshLive(silent) {
     const out = await canonicalRead("live_status",{});
     updateScoreNetworkTruth(out);
     const revisionText=updateDisplayedLiveSnapshot(out);
-    renderScorePathStatus("This iPad → cloud: live response received. "+revisionText+" Matrix display is not confirmed by this source revision. Cart → cloud relay and Matrix receipt: not reported.");
+    const matrixRevisionStatus=await matrixLiveSourceRevisionStatus(out&&out.updated_at);
+    renderScorePathStatus("This iPad → cloud: live response received. "+revisionText+" "+matrixRevisionStatus+" Cart → cloud relay status: not reported.");
     if (!silent) {
       setFeatureStatus("Live round refreshed.");
       renderScoreActionStatus("Live score response received. "+revisionText+" Physical display is not confirmed.");
@@ -448,7 +474,8 @@ async function showScoreboard() {
     const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
     commandStarted=true;
     await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-    renderScorePathStatus("This iPad → cloud: active standings received. "+sourceRevision+" Matrix command: acknowledged; physical display is not verified. Cart headless relay status: not reported.");
+    const matrixRevisionStatus=await matrixLiveSourceRevisionStatus(out&&out.updated_at);
+    renderScorePathStatus("This iPad → cloud: active standings received. "+sourceRevision+" "+matrixRevisionStatus+" Cart headless relay status: not reported.");
     setFeatureStatus("Standings command acknowledged. Physical display is not verified.");
     renderScoreActionStatus("Matrix standings command acknowledged. "+sourceRevision+" Physical display is not verified.");
   } catch (error) {
@@ -511,12 +538,13 @@ async function showAcePot() {
   const displayedLabel=usedCachedSnapshot ? "CACHED "+label : label;
   await bridge.overlay("text",{text:displayedLabel,color:"#FFFFFF"},7000);
   const revisionText=liveSourceRevisionText(out && out.updated_at);
+  const matrixRevisionStatus=await matrixLiveSourceRevisionStatus(out && out.updated_at);
   if (usedCachedSnapshot) {
-    renderScorePathStatus("This iPad → cloud: unavailable; using locally cached scores. "+revisionText+" Cached ace-pot text command acknowledged; value may be out of date and physical display is not verified.");
+    renderScorePathStatus("This iPad → cloud: unavailable; using locally cached scores. "+revisionText+" "+matrixRevisionStatus+" Cached ace-pot text command acknowledged; value may be out of date.");
     renderScoreActionStatus("Cached ace-pot command acknowledged. "+revisionText+" The value may be out of date; physical display is not verified.");
     setFeatureStatus("Cached ace pot sent to the Cart. The value may be out of date.");
   } else {
-    renderScorePathStatus("This iPad → cloud: ace-pot source response received. "+revisionText+" Matrix text command acknowledged; physical display is not verified.");
+    renderScorePathStatus("This iPad → cloud: ace-pot source response received. "+revisionText+" "+matrixRevisionStatus+" Matrix text command acknowledged.");
     renderScoreActionStatus("Ace-pot command acknowledged. "+revisionText+" Physical display is not verified.");
     setFeatureStatus("Ace pot sent to the Cart.");
   }

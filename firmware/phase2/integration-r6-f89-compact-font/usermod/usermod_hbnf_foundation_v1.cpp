@@ -122,6 +122,7 @@ struct HbnfLiveSnapshot {
   uint8_t count=0;
   uint16_t acePot=0;
   char label[5]{};
+  char sourceRevision[40]{};
   char entries[20][64]{};
   uint16_t pageDwellMs[12]{};
   uint8_t pageCount=0;
@@ -132,6 +133,29 @@ struct HbnfLiveSnapshot {
 };
 static HbnfLiveSnapshot hbnfLive{};
 static portMUX_TYPE hbnfLiveMux=portMUX_INITIALIZER_UNLOCKED;
+
+static bool hbnfValidLiveRevision(const char* value) {
+  if(!value)return false;
+  const size_t n=strlen(value);
+  if(n<20||n>=40)return false;
+  for(size_t i=0;i<19;i++) {
+    const bool digit=value[i]>='0'&&value[i]<='9';
+    const bool separator=(i==4||i==7)?value[i]=='-':i==10?value[i]=='T':(i==13||i==16)?value[i]==':':false;
+    if(!digit&&!separator)return false;
+  }
+  if(value[19]=='Z')return n==20;
+  size_t i=19;
+  if(value[i]=='.') {
+    i++;
+    const size_t fractionStart=i;
+    while(i<n&&value[i]>='0'&&value[i]<='9')i++;
+    if(i==fractionStart)return false;
+    if(i<n&&value[i]=='Z')return i+1==n;
+  }
+  if(i+6!=n||(value[i]!='+'&&value[i]!='-')||value[i+3]!=':')return false;
+  return value[i+1]>='0'&&value[i+1]<='9'&&value[i+2]>='0'&&value[i+2]<='9'&&
+    value[i+4]>='0'&&value[i+4]<='9'&&value[i+5]>='0'&&value[i+5]<='9';
+}
 
 static uint16_t hbnfLivePageDwellMs(const char* first,const char* second=nullptr) {
   const int firstOverflow=first?((int)strlen(first)*4-1-32):0;
@@ -373,6 +397,7 @@ static void hbnfRenderLiveOverlay(uint8_t matrixBrightness) {
 static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
   const char* schema=root["schema"]|"";
   if(strcmp(schema,"hbnf-live-v1")!=0)return false;
+  const char* sourceRevision=root["revision"]|"";
   const bool active=root["active"]|false;
   const char* label=root["label"]|"";
   const uint32_t acePotValue=root["acePot"]|0;
@@ -381,6 +406,7 @@ static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
   JsonArrayConst input=root["entries"].as<JsonArrayConst>();
   HbnfLiveSnapshot next{};
   next.active=active;next.acePot=acePot;
+  if(hbnfValidLiveRevision(sourceRevision))strlcpy(next.sourceRevision,sourceRevision,sizeof(next.sourceRevision));
   if(active) {
     if(strcmp(label,"F9")!=0&&strcmp(label,"B9")!=0&&strcmp(label,"GLOW")!=0)return false;
     if(input.isNull()||input.size()==0||input.size()>20)return false;
@@ -1595,12 +1621,13 @@ class HbnfFoundationV1Usermod : public Usermod {
       foundationTelemetry["frameTailOverflow"]=tailOverflow;
     }else{foundationTelemetry["frameMsAvg"]=nullptr;foundationTelemetry["frameMsP50"]=nullptr;foundationTelemetry["frameMsP95"]=nullptr;foundationTelemetry["frameMsP99"]=nullptr;foundationTelemetry["frameMsMax"]=nullptr;}
 #endif
-    bool liveActive;uint32_t liveSeen;uint16_t liveAcePot;uint8_t liveCount;char liveLabel[5]{};
-    portENTER_CRITICAL(&hbnfLiveMux);liveActive=hbnfLive.active;liveSeen=hbnfLive.lastSeenMs;liveAcePot=hbnfLive.acePot;liveCount=hbnfLive.count;strlcpy(liveLabel,hbnfLive.label,sizeof(liveLabel));portEXIT_CRITICAL(&hbnfLiveMux);
+    bool liveActive;uint32_t liveSeen;uint16_t liveAcePot;uint8_t liveCount;char liveLabel[5]{},liveSourceRevision[40]{};
+    portENTER_CRITICAL(&hbnfLiveMux);liveActive=hbnfLive.active;liveSeen=hbnfLive.lastSeenMs;liveAcePot=hbnfLive.acePot;liveCount=hbnfLive.count;strlcpy(liveLabel,hbnfLive.label,sizeof(liveLabel));strlcpy(liveSourceRevision,hbnfLive.sourceRevision,sizeof(liveSourceRevision));portEXIT_CRITICAL(&hbnfLiveMux);
     h["liveActive"]=liveActive&&(uint32_t)(millis()-liveSeen)<120000u;
     h["liveLabel"]=liveLabel;
     h["liveAcePot"]=liveAcePot;
     h["liveEntryCount"]=liveCount;
+    h["liveSourceRevision"]=liveSourceRevision[0]?liveSourceRevision:nullptr;
     JsonObject audio=h["audio"];
     if(audio.isNull()) audio=h.createNestedObject("audio");
     audio["bass"]=a.bass;

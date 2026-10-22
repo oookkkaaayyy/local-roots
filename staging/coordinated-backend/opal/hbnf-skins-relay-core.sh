@@ -5,6 +5,20 @@ skins_jf() {
 	jsonfilter -q -i "$1" -e "$2" 2>/dev/null | head -n 1
 }
 
+# Add a source-row revision without letting a malformed upstream value break
+# score delivery. Unknown revisions stay explicit and never become freshness claims.
+skins_attach_revision() {
+	local snapshot="$1" revision="$2"
+	if printf '%s\n' "$revision" | awk '
+		/^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]([.][0-9]+)?(Z|[+-][0-9][0-9]:[0-9][0-9])$/ { ok=1 }
+		END { exit (ok ? 0 : 1) }
+	'; then
+		printf '%s' "$snapshot" | sed "s/}/,\"revision\":\"$revision\"}/"
+	else
+		printf '%s' "$snapshot" | sed 's/}/,"revision":null}/'
+	fi
+}
+
 skins_target_matches() {
 	[ "$1" = '704bca5b345c' ] || return 1
 	case "$2" in

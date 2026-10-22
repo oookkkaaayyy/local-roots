@@ -37,6 +37,10 @@ try {
   const base = { selectorVersion: "skins-front-lock-v1", live: { active: true, event: "skins", label: "F9", acePot: 79, entries: ["Ava Thompson 1", "Bo Smith 0"] } };
   const f9 = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, base));
   assert.deepEqual(f9, { schema: "hbnf-live-v1", active: true, label: "F9", acePot: 79, entries: ["AVA 1", "BO 0"] });
+  const withRevision = JSON.parse(shell(`skins_attach_revision '{"schema":"hbnf-live-v1","active":true,"label":"F9","acePot":79,"entries":["AVA 1"]}' '2026-10-21T18:30:00.000Z'`, base));
+  assert.equal(withRevision.revision, "2026-10-21T18:30:00.000Z", "active snapshots preserve the source row updated_at value");
+  const withoutRevision = JSON.parse(shell(`skins_attach_revision '{"schema":"hbnf-live-v1","active":true,"label":"F9","acePot":79,"entries":["AVA 1"]}' 'not-a-timestamp'`, base));
+  assert.equal(withoutRevision.revision, null, "malformed timestamps remain unknown while scores can still be relayed");
   assert.ok(f9.entries.every((entry) => entry.length <= 8), "every F9 label fits the installed renderer without scrolling");
   const same = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, structuredClone(base)));
   assert.deepEqual(same, f9, "unchanged source scores produce an identical snapshot");
@@ -133,6 +137,7 @@ try {
   assert.doesNotMatch(serviceText, /MATRIX_LIVE_ACTIVE/, "the Matrix liveActive field is a 120-second freshness lease and must not reset the 240-second redisplay clock");
   assert.match(serviceText, /if \[ "\$last_uptime" -gt 0 \] && \[ "\$MATRIX_UPTIME" -lt "\$last_uptime" \]; then last_display=0; fi/, "Matrix reboot still resets the redisplay clock");
   assert.match(serviceText, /if ! fetch_scores; then/);
+  assert.match(serviceText, /skins_attach_revision .*revision/, "relay sends the source row revision alongside the existing score payload");
   assert.match(serviceText, /if ! fetch_scores; then\s+skins_note_feed_failure/);
   assert.match(serviceText, /fi\s+skins_note_feed_success\s+last_success=/, "successful WAN/feed recovery resets the redisplay clock before processing fresh scores");
   assert.match(serviceText, /continue/);
@@ -156,6 +161,8 @@ try {
   const liveRenderer = installedSource.slice(installedSource.indexOf("static void hbnfRenderLiveOverlay"), installedSource.indexOf("static bool hbnfAcceptLiveSnapshot"));
   const liveAcceptor = installedSource.slice(installedSource.indexOf("static bool hbnfAcceptLiveSnapshot"), installedSource.indexOf("// AI: end", installedSource.indexOf("static bool hbnfAcceptLiveSnapshot")));
   assert.match(installedSource, /char entries\[20\]\[64\]/, "Matrix receiver keeps full bounded player text");
+  assert.match(installedSource, /char sourceRevision\[40\]/, "Matrix stores the source revision received with the existing live payload");
+  assert.match(installedSource, /h\["liveSourceRevision"\]/, "Matrix exposes the accepted source revision through existing json/si readback");
   assert.match(installedSource, /char label\[5\]/, "Matrix receiver stores the four-character GLOW label without truncation");
   assert.match(installedSource, /strcmp\(label,"GLOW"\)!=0\)return false/, "Matrix accepts GLOW only as an explicit event label");
   assert.match(installedSource, /ch=='\\+'/ , "Matrix entry validator permits the existing signed Glow score-to-par values");

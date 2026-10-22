@@ -53,12 +53,19 @@ post_matrix() {
 }
 
 fetch_scores() {
+	local revision active
 	curl -fsS --connect-timeout 4 --max-time 8 --max-filesize 32768 \
 		--config "$AUTH" -H 'Accept: application/json' -H 'Cache-Control: no-cache, no-store' \
 		-H 'Content-Type: application/json' --data-binary '{"action":"live_status"}' \
 		"$URL" -o "$TMP/live.json" >/dev/null 2>&1 || return 1
 	skins_build_snapshot "$TMP/live.json" > "$TMP/snapshot.json" || return 1
-	SNAPSHOT="$(cat "$TMP/snapshot.json")"
+	active="$(skins_jf "$TMP/live.json" '@.live.active')"
+	if [ "$active" = 'true' ]; then
+		revision="$(skins_jf "$TMP/live.json" '@.updated_at')"
+		SNAPSHOT="$(skins_attach_revision "$(cat "$TMP/snapshot.json")" "$revision")"
+	else
+		SNAPSHOT="$(cat "$TMP/snapshot.json")"
+	fi
 }
 
 inactive='{"schema":"hbnf-live-v1","active":false,"label":"","acePot":0,"entries":[]}'

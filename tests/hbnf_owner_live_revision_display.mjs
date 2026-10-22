@@ -24,6 +24,9 @@ function createContext(response) {
     LIVE_CACHE_KEY:"hbnf-test-live-cache",
     LIVE_CACHE_MAX_MS:12*60*60*1000,
     formatAcePotDisplay:() => "ACE POT $5",
+    matrixLocal:()=>true,
+    matrixApiUrl:path=>path,
+    fetchJson:async()=>({state:{HBNF:{liveSourceRevision:revision}}}),
     canonicalRead:async()=>response,
     updateScoreNetworkTruth:()=>{},
     setFeatureStatus:value=>statuses.push(value),
@@ -48,7 +51,33 @@ test("Refresh live keeps and reports the source row revision beside the displaye
   assert.match(elements.scorePathStatus.textContent,new RegExp(revision));
   assert.match(elements.scoreActionStatus.textContent,new RegExp(revision));
   assert.equal(JSON.parse(storage["hbnf-test-live-cache"]).updated_at,revision);
-  assert.match(elements.scorePathStatus.textContent,/Matrix display is not confirmed/);
+  assert.match(elements.scorePathStatus.textContent,/physical display is unverified/i);
+});
+
+test("source and locally reported Matrix revisions distinguish aligned, stale, and unknown",()=>{
+  const start=source.indexOf("function compareLiveSourceRevision(");
+  const end=source.indexOf("async function matrixLiveSourceRevisionStatus",start);
+  const context={};
+  vm.runInNewContext(source.slice(start,end),context);
+  assert.equal(context.compareLiveSourceRevision(revision,revision),"aligned");
+  assert.equal(context.compareLiveSourceRevision(revision,"2026-10-21T18:29:59.000Z"),"stale");
+  assert.equal(context.compareLiveSourceRevision(revision,null),"unknown");
+  assert.equal(context.compareLiveSourceRevision(revision,"2026-10-21T18:30:01.000Z"),"unknown");
+  assert.equal(context.compareLiveSourceRevision("2026-10-21T18:30:00.000001Z","2026-10-21T18:30:00.000999Z"),"unknown","sub-millisecond revisions are never falsely reported as aligned");
+});
+
+test("local Matrix readback reports matching, older, and unavailable source revisions truthfully",async()=>{
+  const start=source.indexOf("async function matrixLiveSourceRevisionStatus(");
+  const end=source.indexOf("function renderLive(",start);
+  const context={matrixLocal:()=>true,matrixApiUrl:path=>path,fetchJson:async()=>({state:{HBNF:{liveSourceRevision:revision}}}),compareLiveSourceRevision:(a,b)=>a===b?"aligned":!b?"unknown":Date.parse(b)<Date.parse(a)?"stale":"unknown"};
+  vm.runInNewContext(source.slice(start,end),context);
+  assert.match(await context.matrixLiveSourceRevisionStatus(revision),/same source row revision/);
+  context.fetchJson=async()=>({state:{HBNF:{liveSourceRevision:"2026-10-21T18:29:00.000Z"}}});
+  assert.match(await context.matrixLiveSourceRevisionStatus(revision),/older source row revision/);
+  context.fetchJson=async()=>({state:{HBNF:{}}});
+  assert.match(await context.matrixLiveSourceRevisionStatus(revision),/readback is unknown/);
+  context.fetchJson=async()=>{throw new Error("offline")};
+  assert.match(await context.matrixLiveSourceRevisionStatus(revision),/readback is unavailable/);
 });
 
 test("missing or invalid updated_at remains explicitly unverified in the displayed/cache snapshot",()=>{
