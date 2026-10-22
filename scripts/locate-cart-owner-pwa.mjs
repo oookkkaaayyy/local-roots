@@ -51,6 +51,37 @@ function verifySourceSnapshot(root, source, packageManifest) {
     catch { fail("source.input." + path, "path present at exact Git commit " + source.ref, "unavailable"); }
   });
 }
+export function verifyPackageSourceManifest(rootArg, manifestPath) {
+  const root = resolve(rootArg);
+  const status = execFileSync("git", ["-C", root, "status", "--porcelain", "--untracked-files=all"], { encoding: "utf8" });
+  if (status.trim()) fail("source.checkout", "clean checkout", status.trim());
+  const head = execFileSync("git", ["-C", root, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+  const manifest = readJson(resolve(manifestPath), "package_manifest");
+  equal("package.sourceCommit", head, manifest.sourceCommit);
+  if (!/^[a-f0-9]{40}$/.test(manifest.sourceCommit ?? "")) fail("package.sourceCommit", "full Git commit SHA", manifest.sourceCommit);
+  assertSourceInputs({ entry_path: "scripts/hbnf_build_local_owner_pwa.py" }, manifest.sourceInputs, path => {
+    try { return execFileSync("git", ["-C", root, "show", head + ":" + path], { maxBuffer: 20 * 1024 * 1024 }); }
+    catch { fail("source.input." + path, "tracked path at exact Git HEAD " + head, "unavailable"); }
+  });
+  return { source_manifest_status: "VERIFIED", sourceCommit: head, sourceInputCount: manifest.sourceInputs.length };
+}
+export function verifyReviewArtifact(locator, rootArg, artifactPath, manifestPath) {
+  const review = locator?.review_artifact;
+  if (!review) fail("source_index.owner_pwa_candidate_locator.review_artifact", "present", review);
+  equal("review_artifact.release_disposition", "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED", review.release_disposition);
+  equal("review_artifact.transaction_id", null, review.transaction_id);
+  equal("review_artifact.delivery", "local_only", review.delivery);
+  equal("review_artifact.package_sha256", review.package_sha256, fileSha(resolve(artifactPath), "review_artifact.archive"));
+  equal("review_artifact.manifest_sha256", review.manifest_sha256, fileSha(resolve(manifestPath), "review_artifact.manifest"));
+  const result = verifyPackageSourceManifest(rootArg, manifestPath);
+  const manifest = readJson(resolve(manifestPath), "review_artifact.manifest");
+  equal("review_artifact.package_version", review.version, manifest.package?.replace(/^hbnf-owner-pwa-local-v/, ""));
+  equal("review_artifact.source_commit", review.source_commit, manifest.sourceCommit);
+  equal("review_artifact.package_name", review.archive_name, resolve(artifactPath).split(/[\\/]/).pop());
+  equal("review_artifact.release_disposition/package_manifest", review.release_disposition, manifest.releaseDisposition);
+  equal("review_artifact.transaction_id/package_manifest", null, manifest.transactionId);
+  return { review_artifact_status: "VERIFIED_LOCAL_REVIEW_ONLY", ...result, version: review.version, package_sha256: review.package_sha256 };
+}
 export function resolveLocator(locator, packageRecord, packageManifest, model, state) {
   const e = packageRecord?.evidence;
   if (!e) fail("package_record.evidence", "object", e);
@@ -129,6 +160,32 @@ function run(cartRoot) {
 }
 function main() {
   const args = process.argv.slice(2);
+  const reviewAt = args.indexOf("--verify-review-artifact");
+  if (reviewAt >= 0) {
+    const rootAt = args.indexOf("--cart-root"), artifactAt = args.indexOf("--artifact"), manifestAt = args.indexOf("--manifest");
+    if (rootAt < 0 || !args[rootAt + 1] || artifactAt < 0 || !args[artifactAt + 1] || manifestAt < 0 || !args[manifestAt + 1]) {
+      console.error("Usage: node scripts/locate-cart-owner-pwa.mjs --verify-review-artifact --cart-root <Cart checkout> --artifact <ZIP> --manifest <PACKAGE.json>");
+      process.exitCode = 2;
+      return;
+    }
+    try {
+      const locator = readJson(join(indexRoot, "docs/HBNF_SOURCE_INDEX.json"), "source_index").owner_pwa_candidate_locator;
+      console.log(JSON.stringify(verifyReviewArtifact(locator, args[rootAt + 1], args[artifactAt + 1], args[manifestAt + 1]), null, 2));
+    } catch (error) { console.error(error.message); process.exitCode = 1; }
+    return;
+  }
+  const verifyAt = args.indexOf("--verify-source-manifest");
+  if (verifyAt >= 0) {
+    const rootAt = args.indexOf("--cart-root"), manifestAt = args.indexOf("--manifest");
+    if (rootAt < 0 || !args[rootAt + 1] || manifestAt < 0 || !args[manifestAt + 1]) {
+      console.error("Usage: node scripts/locate-cart-owner-pwa.mjs --verify-source-manifest --cart-root <Cart checkout> --manifest <PACKAGE.json>");
+      process.exitCode = 2;
+      return;
+    }
+    try { console.log(JSON.stringify(verifyPackageSourceManifest(args[rootAt + 1], args[manifestAt + 1]), null, 2)); }
+    catch (error) { console.error(error.message); process.exitCode = 1; }
+    return;
+  }
   const at = args.indexOf("--cart-root");
   if (at < 0 || !args[at + 1]) {
     console.error("Usage: node scripts/locate-cart-owner-pwa.mjs --cart-root <Cart checkout>");
@@ -139,3 +196,4 @@ function main() {
   catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) main();
+
