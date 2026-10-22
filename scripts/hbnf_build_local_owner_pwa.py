@@ -168,7 +168,6 @@ def main() -> None:
 
     if args.strict_source_binding:
         verify_javascript(payload)
-        verify_payload_references(payload)
 
     manifest_source = json.loads((source / "hbnf-cart-manifest.webmanifest").read_text())
     manifest_source["id"] = "./hbnf-cart.html"
@@ -179,6 +178,8 @@ def main() -> None:
         {"src": "./hbnf-cart-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
     ]
     (payload / "hbnf-cart-manifest.webmanifest").write_text(json.dumps(manifest_source, indent=2) + "\n")
+    if args.strict_source_binding:
+        verify_payload_references(payload)
 
     files = sorted(p for p in payload.iterdir() if p.is_file())
     checksums = "".join(f"{digest(path.read_bytes())}  owner-pwa/{path.name}\n" for path in files)
