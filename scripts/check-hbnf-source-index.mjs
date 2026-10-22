@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Low-cost, offline preflight for HBNF source routing. It does NOT verify remote deployment.
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,7 +31,18 @@ for (const source of index.sources) {
     assert.match(path, /^[\w./-]+$/);
     assert.match(source.observed_github_blob_sha[path], sha1);
     if (source.ref === 'main') {
-      assert.ok(existsSync(join(root, path)), 'main-branch indexed source missing: ' + path);
+      const sourcePath = join(root, path);
+      assert.ok(existsSync(sourcePath), 'main-branch indexed source missing: ' + path);
+      const content = readFileSync(sourcePath);
+      const actualBlobSha = createHash('sha1')
+        .update(`blob ${content.length}\0`)
+        .update(content)
+        .digest('hex');
+      assert.equal(
+        actualBlobSha,
+        source.observed_github_blob_sha[path],
+        'main-branch indexed source content mismatch: ' + path,
+      );
     }
   }
 }
