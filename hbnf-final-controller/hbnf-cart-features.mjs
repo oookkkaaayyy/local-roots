@@ -310,12 +310,18 @@ async function sendText() {
     const bridge=canonicalOverlayBridge();
     const data={text:text,color:$("featureColor").value || "#FFFFFF"};
     if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
-    await bridge.overlay("text",data);
+    const result=await bridge.overlay("text",data);
+    if (result && result.accepted===false) throw new Error(result.error || "Cart did not accept the text command.");
+    if (result && result.acknowledged===false) {
+      renderTextActionStatus("Text command accepted; device acknowledgment is still pending. Physical display is not verified.");
+      setFeatureStatus("Text command accepted; device acknowledgment is still pending. Physical display is not verified.");
+      throw new Error("Text command was accepted, but device acknowledgment is still pending.");
+    }
     $("featureText").value="";
-    renderTextActionStatus("Text command acknowledged. Physical display is not verified.");
-    setFeatureStatus("Text command acknowledged. Physical display is not verified.");
+    renderTextActionStatus(result && result.acknowledged===true ? "Text command acknowledged by Cart devices. Physical display is not verified." : "Text command accepted by Cart. Device acknowledgment is not exposed; physical display is not verified.");
+    setFeatureStatus(result && result.acknowledged===true ? "Text command acknowledged by Cart devices. Physical display is not verified." : "Text command accepted by Cart. Device acknowledgment is not exposed; physical display is not verified.");
   } catch (error) {
-    renderTextActionStatus("Text command not confirmed. Physical display is not verified.");
+    if (!/device acknowledgment is still pending/i.test(String(error && error.message))) renderTextActionStatus("Text command not confirmed. Physical display is not verified.");
     throw error;
   }
 }

@@ -611,22 +611,25 @@ async function command(type, payload = {}) {
         payload: payload,
         expectedRevision: revision,
       });
+      if (result && result.accepted === false) throw new Error(result.error || "Cart did not accept the command.");
       revision = result.revision;
       pendingRevision = revision;
       statusNode.textContent = "Change sent. Checking the Cart…";
       const deadline = Date.now() + 6000;
       let latest = null;
+      let acknowledged = false;
       do {
         latest = await refresh({ hydrate: false });
         const observed = Array.isArray(latest.observed) ? latest.observed : [];
         const reports = observed.filter(x => Number(x.desired_revision) === Number(revision));
         const failed = reports.some(x => x.status === "failed" || (x.reported && x.reported.confirmed === false && x.reported.error));
-        const confirmed = reports.length >= 2 && reports.every(x => ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
-        if (failed || confirmed) break;
+        acknowledged = reports.length >= 2 && reports.every(x => ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
+        if (failed) throw new Error("Cart accepted the command, but a device reported failure.");
+        if (acknowledged) break;
         if (Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 750));
       } while (Date.now() < deadline);
       await refresh({ hydrate: false });
-      return;
+      return { accepted: true, acknowledged };
     } catch (error) {
       if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
         await refresh({ hydrate: false });
