@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - hbnf-coordinated-release-20261001
+      - codex/glow-matrix-relay-integration-20261014
     paths:
       - 'hbnf-final-controller/**'
       - 'hbnf-wow-bundle/backend/**'
@@ -11,6 +12,8 @@ on:
       - 'config/HBNF_COORDINATED_*.json'
       - 'tests/hbnf-*.mjs'
       - 'tests/hbnf-*.py'
+      - 'scripts/hbnf_build_local_owner_pwa.py'
+      - 'tests/test_hbnf_owner_pwa_builder_validation.py'
       - 'hbnf-ui-v6-package/**'
       - 'hbnf-cart-core/domain/palette-projection.mjs'
       - 'evidence/live-production-20261001/**'
@@ -41,6 +44,7 @@ on:
   pull_request:
     branches:
       - hbnf-prephase2-final-integration-20260927
+      - codex/glow-matrix-relay-integration-20261014
     paths:
       - 'hbnf-final-controller/**'
       - 'hbnf-wow-bundle/backend/**'
@@ -48,6 +52,8 @@ on:
       - 'config/HBNF_COORDINATED_*.json'
       - 'tests/hbnf-*.mjs'
       - 'tests/hbnf-*.py'
+      - 'scripts/hbnf_build_local_owner_pwa.py'
+      - 'tests/test_hbnf_owner_pwa_builder_validation.py'
       - 'hbnf-ui-v6-package/**'
       - 'staging/coordinated-backend/**'
       - 'evidence/live-production-20261001/**'
@@ -106,6 +112,9 @@ jobs:
           python3 tests/hbnf_kernel_sweep_report.py
           python3 tests/hbnf_live_kernel_sweep.py
           python3 tests/hbnf_source_tree_identity.py
+
+      - name: Owner PWA package builder negative tests
+        run: python3 -B tests/test_hbnf_owner_pwa_builder_validation.py
 
       - name: JavaScript syntax
         run: |
