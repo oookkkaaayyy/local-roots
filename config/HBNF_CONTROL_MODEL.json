@@ -619,6 +619,40 @@
         "anti_complexity": "This is a reporting-format rule inside the existing observability section. It must not create a separate lifecycle, gate, policy file, worker requirement, or execution dependency."
       }
     },
+    "owner_pwa_recovery_lane": {
+      "schema": "hbnf-owner-pwa-recovery-lane-v1",
+      "transaction_field": "execution_cursor.owner_pwa_recovery_transaction",
+      "transaction_id": "OWNER-PWA-RECOVERY-20261021-C5CFAEC3-CF50-4B01-A2B3-109EDF96A9C4",
+      "predecessor_transaction_id": "OWNER-PWA-20261021-71D4F943-01",
+      "predecessor_required_status": "ROLLBACK_REQUIRED",
+      "predecessor_required_active_step": "rollback_if_required",
+      "predecessor_rollback_attempts_used": 1,
+      "predecessor_snapshot_must_remain_unchanged": true,
+      "candidate_sha256": "c2086e25dbc98cc5ee1b234ac884b686ac4989ca901acd7d3d4f29f70ff9ce91",
+      "mission_control_transport_sha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+      "allowed_steps": [
+        "install_owner_pwa_recovery",
+        "restore_empty_runtime_if_required"
+      ],
+      "install_attempt_limit": 1,
+      "restore_attempt_limit": 1,
+      "during_recovery_must_not_archive_or_terminalize_predecessor": true,
+      "post_recovery_successor": {
+        "schema": "hbnf-owner-pwa-recovery-successor-v1",
+        "predecessor_transaction_id": "OWNER-PWA-20261021-71D4F943-01",
+        "predecessor_status_preserved": "ROLLBACK_REQUIRED",
+        "recovery_transaction_id": "OWNER-PWA-RECOVERY-20261021-C5CFAEC3-CF50-4B01-A2B3-109EDF96A9C4",
+        "recovery_receipt_sha256": "7edd8ad72ea2de63234b410743cef648865e1f48c9e2d8f31dd1909860bf2806",
+        "recovery_baseline_manifest_sha256": "971b22121876ddf87eff50adedfd54b985216fccbd847074fd67d6ec49bf044d",
+        "candidate_transaction_id": "OWNER-PWA-LOCAL-V108-RECOVERY-V2-20261021-01",
+        "candidate_zip_sha256": "e9fcebd2a9b9592712c3687667de80882eb9fe8d182574824441edbc2f27cc4f",
+        "preserve_predecessor_snapshot": true,
+        "requires_fresh_candidate_authorization": true
+      },
+      "must_not_change_top_level_lifecycle_or_firmware_authority": true,
+      "requires_fresh_device_identity_empty_runtime_and_same_filesystem_preflight": true,
+      "requires_deployed_and_independently_readback_verified_live_status_post_cors": true
+    },
     "delivery_rail": {
       "schema": "hbnf-cart2-delivery-rail-v1",
       "owner_authorization_binding_schema": "hbnf-exact-live-owner-authorization-v1",
