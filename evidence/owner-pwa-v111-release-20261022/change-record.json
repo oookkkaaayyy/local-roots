@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
-  "change_id": "OWNER_PWA_V111_RELEASE_SCRIPTS_20261022",
-  "summary": "Prepare v1.0.11 Owner PWA installer and rollback companions by reusing the proven v1.0.10 transaction logic and binding the new version and unique transaction ID to the already verified installed v1.0.9 baseline.",
+  "change_id": "OWNER_PWA_V111_RELEASE_CANDIDATE_20261022",
+  "summary": "Pin a v1.0.11 Owner PWA candidate that combines the tested iPad home redesign with the existing course-status and command behavior, using the verified installed v1.0.9 runtime as the rollback baseline. No admission or installation is issued.",
   "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
   "impact": {
     "architecture": false,
@@ -12,16 +12,21 @@
   },
   "evidence": {
     "scoped_evidence": {
-      "approved_architecture_reference": "Owner instruction to preserve the installed v1.0.9 baseline and use the existing candidate-specific installer/rollback controls for a new successor. No new install method or device mutation is introduced.",
-      "affected_subsystem": "New v1.0.11 Owner PWA install.sh and rollback.sh. The existing version 1.0.10 source scripts remain unchanged; new scripts differ only in transaction ID and package version text.",
-      "rollback_reference": "Remove the uninstalled v1.0.11 candidate scripts/package. If a future owner-authorized install is run, use only the transaction-bound rollback companion and verify the original v1.0.9 exact manifest/archive.",
+      "approved_architecture_reference": "Existing static Owner PWA build, owner-PWA exact-hash candidate profile, finite-state admission model, and v1.0.10 guarded install/rollback structure; new profile only pins the successor candidate and exact rollback baseline.",
+      "affected_subsystem": "Owner PWA local package and its existing candidate-specific release profile. Package source is 7b84bd63076d802cc559d7777ef071b7c4ba24d5; candidate ZIP SHA-256 1ee4c25e4c8156f2a8d74a9c07989a4501f90646b6a684759f68672d92c576c5. Exact installed baseline/readback remains v1.0.9, with rollback ZIP SHA-256 a12bcf6b1898669b2d2a8984978216d72a17415cfaaa689841a8a76b772ce1ac and manifest SHA-256 b8802bc9d956ca9e19c127c0bd362f173b103adc4c5e20808eef426cf0c01fb5.",
+      "rollback_reference": "Before installation, discard the uninstalled v1.0.11 candidate and retain the exact v1.0.10 and v1.0.9 packages. After an authorized installation only, use the transaction-bound v1.0.11 rollback script and verify the exact installed v1.0.9 baseline manifest and readback. This change does not authorize an admission or install.",
       "evidence_sources": [
-        "v1.0.10 install.sh and rollback.sh, already validated and rehearsed against the v1.0.9 baseline.",
-        "v1.0.10 BASELINE.SHA256SUMS and INSTALLED-V1.0.9-READBACK.json; exact prior candidate archive unchanged."
+        "staging/coordinated-backend/opal/owner-pwa-local-v1.0.11/PACKAGE.json",
+        "staging/coordinated-backend/opal/owner-pwa-local-v1.0.11/BASELINE.SHA256SUMS",
+        "evidence/owner-pwa-v110-course-status-20261022/INSTALLED-V1.0.9-READBACK.json",
+        "scripts/hbnf_control.py candidate profile ipad-home-v1.0.11"
       ],
       "tests": [
-        "Install and rollback shell syntax checks pass.",
-        "Diff review confirms the only script changes are the new unique transaction ID and v1.0.11 package-version/readback text."
+        "Strict source-bound package build completed from commit 7b84bd63076d802cc559d7777ef071b7c4ba24d5.",
+        "Every one of the 16 candidate payload hashes matched the ZIP; exact v1.0.9 rollback ZIP and all 20 baseline manifest entries matched.",
+        "Offline install and rollback script rehearsal restored all 20 v1.0.9 files byte-for-byte; candidate copy was retained. A temporary id shim satisfied the script's root-only guard in an isolated temporary filesystem; this is not Cart acceptance.",
+        "v1.0.11 profile tests (3/3), v1.0.10 profile tests (3/3), baseline argument tests (2/2), and full control suite (23 tests) passed.",
+        "Focused iPad home, course/guest, Text/Show Scores, iOS 12 compatibility, Opal local route, control, architecture, runtime static, kernel, and Packet20 validations passed."
       ]
     }
   }
