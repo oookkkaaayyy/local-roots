@@ -7,7 +7,9 @@ import hashlib
 import json
 import re
 import shutil
+import subprocess
 import zipfile
+from urllib.parse import urlsplit
 from pathlib import Path
 
 ASSETS = (
@@ -16,6 +18,8 @@ ASSETS = (
     "hbnf-cart-local.mjs",
     "hbnf-cart-net.mjs",
     "hbnf-cart-semantic.mjs",
+    "hbnf-cart-live-display.mjs",
+    "hbnf-cart-readiness.mjs",
     "hbnf-cart-ui-v6.css",
     "hbnf-cart-ui-v6.mjs",
     "hbnf-cart-features.mjs",
@@ -31,16 +35,126 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def verify_clean_source(root: Path, expected_commit) -> str:
+    head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    if expected_commit and expected_commit != head:
+        raise SystemExit(f"--source-commit does not match clean checkout HEAD ({head})")
+    if subprocess.check_output(["git", "-C", str(root), "status", "--porcelain", "--untracked-files=all"], text=True).strip():
+        raise SystemExit("strict source binding requires a clean checkout before packaging")
+    branch = subprocess.check_output(["git", "-C", str(root), "branch", "--show-current"], text=True).strip()
+    if not branch:
+        raise SystemExit("strict source binding requires a named integrated branch")
+    return head
+
+
+def verify_source_inputs(root: Path, commit: str, paths: list[Path]) -> None:
+    for path in paths:
+        relative = path.relative_to(root).as_posix()
+        try:
+            committed = subprocess.check_output(["git", "-C", str(root), "show", f"{commit}:{relative}"])
+        except subprocess.CalledProcessError as exc:
+            raise SystemExit(f"source input is absent from pinned commit: {relative}") from exc
+        if committed != path.read_bytes():
+            raise SystemExit(f"working source input differs from pinned commit: {relative}")
+
+
+def verify_payload_references(payload: Path) -> None:
+    html = (payload / "hbnf-cart.html").read_text()
+    references = re.findall(r"(?:src|href)=['\"]([^'\"]+)['\"]", html, re.I)
+    for reference in references:
+        parsed = urlsplit(reference)
+        if parsed.scheme or parsed.netloc or not parsed.path or parsed.path.startswith("/") or parsed.path.startswith("#"):
+            continue
+        target = (payload / parsed.path).resolve()
+        if payload.resolve() not in target.parents or not target.is_file():
+            raise SystemExit(f"packaged Owner PWA references a missing or unsafe local asset: {reference}")
+    for script in payload.glob("*.js"):
+        source = script.read_text()
+        for reference in re.findall(r"(?:\bfrom\s*|\bimport\s*\()\s*['\"](\.[^'\"]+)['\"]", source):
+            target = (script.parent / urlsplit(reference).path).resolve()
+            if payload.resolve() not in target.parents or not target.is_file():
+                raise SystemExit(f"packaged JavaScript references a missing or unsafe module: {script.name} -> {reference}")
+    for stylesheet in payload.glob("*.css"):
+        source = stylesheet.read_text()
+        for reference in re.findall(r"url\(\s*['\"]?([^)'\"]+)['\"]?\s*\)", source, re.I):
+            parsed = urlsplit(reference)
+            if parsed.scheme or parsed.netloc or reference.startswith("/") or not parsed.path:
+                continue
+            target = (stylesheet.parent / parsed.path).resolve()
+            if payload.resolve() not in target.parents or not target.is_file():
+                raise SystemExit(f"packaged stylesheet references a missing or unsafe asset: {stylesheet.name} -> {reference}")
+
+
+def verify_javascript(payload: Path) -> None:
+    for script in sorted(payload.glob("*.js")):
+        checked = subprocess.run(["node", "--check", str(script)], capture_output=True, text=True)
+        if checked.returncode:
+            detail = (checked.stderr or checked.stdout).strip()
+            raise SystemExit(f"Packaged JavaScript failed syntax validation ({script.name}): {detail[-1200:]}")
+
+
+def verify_package_manifest(root: Path, output: Path, commit: str, payload: Path) -> None:
+    manifest = json.loads((output / "PACKAGE.json").read_text())
+    if manifest.get("sourceCommit") != commit:
+        raise SystemExit("package manifest source commit does not match the clean checkout")
+    expected_assets = {
+        path.name: {"path": path.name, "sha256": digest(path.read_bytes()), "size": path.stat().st_size}
+        for path in payload.iterdir() if path.is_file()
+    }
+    declared_assets = {item.get("path"): item for item in manifest.get("assets", [])}
+    if declared_assets != expected_assets:
+        raise SystemExit("package manifest assets do not exactly match the packaged payload")
+    for item in manifest.get("sourceInputs", []):
+        relative = item.get("path")
+        try:
+            committed = subprocess.check_output(["git", "-C", str(root), "show", f"{commit}:{relative}"])
+        except (subprocess.CalledProcessError, TypeError) as exc:
+            raise SystemExit(f"package source input is absent from pinned commit: {relative}") from exc
+        if digest(committed) != item.get("sha256") or len(committed) != item.get("size"):
+            raise SystemExit(f"package source input differs from pinned commit: {relative}")
+    for item in manifest.get("packageTools", []):
+        path = output / item["path"]
+        if not path.is_file() or digest(path.read_bytes()) != item.get("sha256"):
+            raise SystemExit(f"package tool differs from its manifest: {item.get('path')}")
+    if not manifest.get("sourceInputs") or not manifest.get("assets"):
+        raise SystemExit("package manifest has no pinned source inputs or payload assets")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--package-script-dir", type=Path)
+    parser.add_argument("--source-commit")
+    parser.add_argument("--strict-source-binding", action="store_true")
+    parser.add_argument("--review-only", action="store_true")
     parser.add_argument("--package-version", default="1.0.2")
+    parser.add_argument("--transaction-id")
+    parser.add_argument("--rollback-baseline-transaction-id")
+    parser.add_argument("--rollback-baseline-installed-manifest", type=Path)
+    parser.add_argument("--rollback-baseline-archive", type=Path)
+    parser.add_argument("--rollback-baseline-receipt", type=Path)
+    parser.add_argument("--rollback-baseline-source-commit")
+    parser.add_argument("--rollback-baseline-owner-source-archive", type=Path)
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.package_version):
         raise SystemExit("--package-version must be a semantic x.y.z version")
+    if args.review_only and not args.strict_source_binding:
+        raise SystemExit("--review-only requires --strict-source-binding")
     root = args.source_root.resolve()
+    if args.strict_source_binding:
+        args.source_commit = verify_clean_source(root, args.source_commit)
+        source_paths = [root / "scripts/hbnf_build_local_owner_pwa.py"] + [root / "hbnf-final-controller" / name for name in ASSETS]
+        source_paths.append(root / "hbnf-final-controller/hbnf-cart-manifest.webmanifest")
+        verify_source_inputs(root, args.source_commit, source_paths)
+        try:
+            args.output_dir.resolve().relative_to(root)
+        except ValueError:
+            pass
+        else:
+            raise SystemExit("strict source binding requires --output-dir outside the source checkout")
+    elif not args.source_commit:
+        raise SystemExit("--source-commit is required unless --strict-source-binding derives it from Git")
     source = root / "hbnf-final-controller"
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -76,6 +190,9 @@ def main() -> None:
             data = data.replace(b".mjs", b".js")
         (payload / out_name).write_bytes(data)
 
+    if args.strict_source_binding:
+        verify_javascript(payload)
+
     manifest_source = json.loads((source / "hbnf-cart-manifest.webmanifest").read_text())
     manifest_source["id"] = "./hbnf-cart.html"
     manifest_source["start_url"] = "./hbnf-cart.html?local-owner=" + args.source_commit[:12]
@@ -85,13 +202,131 @@ def main() -> None:
         {"src": "./hbnf-cart-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
     ]
     (payload / "hbnf-cart-manifest.webmanifest").write_text(json.dumps(manifest_source, indent=2) + "\n")
+    if args.strict_source_binding:
+        verify_payload_references(payload)
 
     files = sorted(p for p in payload.iterdir() if p.is_file())
     checksums = "".join(f"{digest(path.read_bytes())}  owner-pwa/{path.name}\n" for path in files)
     (output / "PAYLOAD.SHA256SUMS").write_text(checksums)
+    source_inputs = [source / name for name in ASSETS]
+    source_inputs.append(source / "hbnf-cart-manifest.webmanifest")
+    if args.strict_source_binding:
+        source_inputs.append(Path(__file__).resolve())
+    deploy_dir = root / f"staging/coordinated-backend/opal/owner-pwa-local-v{version}"
+    baseline = deploy_dir / "BASELINE.SHA256SUMS"
+    baseline_provenance_args = (
+        args.rollback_baseline_transaction_id,
+        args.rollback_baseline_installed_manifest,
+        args.rollback_baseline_archive,
+        args.rollback_baseline_receipt,
+        args.rollback_baseline_source_commit,
+    )
+    if any(baseline_provenance_args) and not all(baseline_provenance_args):
+        raise SystemExit("Recovery transaction, installed manifest, archive, and receipt are required together")
+    if args.rollback_baseline_owner_source_archive and not all(baseline_provenance_args):
+        raise SystemExit("Historical Owner PWA archive requires complete recovery-v2 baseline provenance")
+    baseline_provenance = None
+    if args.rollback_baseline_installed_manifest and args.rollback_baseline_archive and args.rollback_baseline_receipt:
+        manifest_source = (root / args.rollback_baseline_installed_manifest).resolve()
+        archive_source = (root / args.rollback_baseline_archive).resolve()
+        receipt_source = (root / args.rollback_baseline_receipt).resolve()
+        owner_source_archive = (root / args.rollback_baseline_owner_source_archive).resolve() if args.rollback_baseline_owner_source_archive else None
+        if not manifest_source.is_file() or not archive_source.is_file() or not receipt_source.is_file():
+            raise SystemExit("Rollback baseline provenance input is missing")
+        payload_prefix = "payload/mission-control-local/owner-pwa/"
+        subtree_lines = []
+        for line in manifest_source.read_text().splitlines():
+            match = re.fullmatch(r"([0-9a-f]{64})  (.+)", line)
+            if match and match.group(2).startswith(payload_prefix):
+                subtree_lines.append(f"{match.group(1)}  {match.group(2)[len(payload_prefix):]}\n")
+        subtree_manifest = "".join(subtree_lines).encode()
+        if len(subtree_lines) != 18 or not baseline.is_file() or subtree_manifest != baseline.read_bytes():
+            raise SystemExit("Packaged rollback manifest is not the exact Owner PWA subtree from the recovery-v2 installed payload")
+        receipt = json.loads(receipt_source.read_text())
+        if (receipt.get("status") != "PASS" or receipt.get("transaction_id") != args.rollback_baseline_transaction_id or
+                receipt.get("owner_pwa_version") != "1.0.5" or receipt.get("installed_manifest_pass") is not True or
+                receipt.get("installed_manifest_entries") != 24 or receipt.get("served_hashes_verified") is not True or
+                receipt.get("runtime_version") != "1.0.2" or receipt.get("source_commit") != args.rollback_baseline_source_commit or
+                receipt.get("rollback_available") is not True):
+            raise SystemExit("Recovery-v2 readback receipt does not verify the selected Owner PWA baseline provenance")
+        if owner_source_archive and not owner_source_archive.is_file():
+            raise SystemExit("Historical Owner PWA source archive is missing")
+        baseline_provenance = {
+            "transactionId": args.rollback_baseline_transaction_id,
+            "sourceCommit": args.rollback_baseline_source_commit,
+            "ownerPwaVersion": "1.0.5",
+            "installedPayloadManifest": {
+                "path": manifest_source.relative_to(root).as_posix(),
+                "sha256": digest(manifest_source.read_bytes()),
+                "ownerPwaSubtreePrefix": payload_prefix,
+                "ownerPwaSubtreeEntries": len(subtree_lines),
+                "ownerPwaSubtreeSha256": digest(subtree_manifest),
+            },
+            "archive": {
+                "path": archive_source.relative_to(root).as_posix(),
+                "sha256": digest(archive_source.read_bytes()),
+            },
+            "readbackReceipt": {
+                "path": receipt_source.relative_to(root).as_posix(),
+                "sha256": digest(receipt_source.read_bytes()),
+                "installedManifestEntries": receipt["installed_manifest_entries"],
+            },
+        }
+        if owner_source_archive:
+            baseline_provenance["historicalOwnerPwaArchive"] = {
+                "path": owner_source_archive.relative_to(root).as_posix(),
+                "sha256": digest(owner_source_archive.read_bytes()),
+            }
+    if args.transaction_id:
+        if not re.fullmatch(r"[A-Z0-9][A-Z0-9-]{7,100}", args.transaction_id):
+            raise SystemExit("--transaction-id must be a bounded uppercase transaction identifier")
+
+    package_tools = []
+    if args.review_only:
+        if args.transaction_id:
+            raise SystemExit("review-only packages cannot carry a transaction ID")
+        package_scripts = []
+        for name, content in (
+            ("install.sh", "#!/bin/sh\necho 'REVIEW ONLY: installation is disabled' >&2\nexit 64\n"),
+            ("rollback.sh", "#!/bin/sh\necho 'REVIEW ONLY: rollback is disabled' >&2\nexit 64\n"),
+        ):
+            script = output / name
+            script.write_text(content)
+            script.chmod(0o644)
+            package_tools.append({"path": name, "sha256": digest(content.encode()), "mode": "disabled-review-stub"})
+        (output / "REVIEW_ONLY.txt").write_text("Review artifact only. No installation or rollback is enabled.\n")
+        package_tools.append({"path": "REVIEW_ONLY.txt", "sha256": digest((output / "REVIEW_ONLY.txt").read_bytes())})
+    else:
+        package_script_dir = (root / args.package_script_dir).resolve() if args.package_script_dir else deploy_dir
+        for name in ("install.sh", "rollback.sh"):
+            if not (package_script_dir / name).is_file():
+                raise SystemExit(f"Required package script is missing: {package_script_dir / name}")
+        package_scripts = [package_script_dir / "install.sh", package_script_dir / "rollback.sh"]
+        source_inputs.extend(package_scripts)
     metadata = {
         "package": f"hbnf-owner-pwa-local-v{version}",
         "sourceCommit": args.source_commit,
+        "transactionId": args.transaction_id,
+        "releaseDisposition": "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED" if args.review_only else "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
+        "packageTools": package_tools,
+        "sourceInputs": [
+            {
+                "path": path.relative_to(root).as_posix(),
+                "sha256": digest(path.read_bytes()),
+                "size": path.stat().st_size,
+            }
+            for path in sorted(source_inputs)
+        ],
+        "builder": {
+            "path": "scripts/hbnf_build_local_owner_pwa.py",
+            "sha256": digest(Path(__file__).resolve().read_bytes()),
+        },
+        "rollbackBaseline": {
+            "path": baseline.name,
+            "sha256": digest(baseline.read_bytes()) if baseline.is_file() else None,
+            "entries": len(baseline.read_text().splitlines()) if baseline.is_file() else None,
+            "source": baseline_provenance,
+        },
         "destination": "/www/mission-control-local/owner-pwa",
         "mode": "additive-static-subtree",
         "assets": [{"path": p.name, "sha256": digest(p.read_bytes()), "size": p.stat().st_size} for p in files],
@@ -99,12 +334,14 @@ def main() -> None:
     }
     (output / "PACKAGE.json").write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
 
-    deploy_dir = root / f"staging/coordinated-backend/opal/owner-pwa-local-v{version}"
-    for name in ("install.sh", "rollback.sh"):
-        shutil.copy2(deploy_dir / name, output / name)
-    baseline = deploy_dir / "BASELINE.SHA256SUMS"
+    if not args.review_only:
+        for name in ("install.sh", "rollback.sh"):
+            shutil.copy2(package_script_dir / name, output / name)
     if baseline.exists():
         shutil.copy2(baseline, output / baseline.name)
+
+    if args.strict_source_binding:
+        verify_package_manifest(root, output, args.source_commit, payload)
 
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for path in sorted(p for p in output.rglob("*") if p.is_file() and p != archive):
