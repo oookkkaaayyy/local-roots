@@ -110,6 +110,13 @@ def main() -> None:
             data = data.replace(b".mjs", b".js")
         (payload / out_name).write_bytes(data)
 
+    if args.strict_source_binding:
+        for script in sorted(payload.glob("*.js")):
+            checked = subprocess.run(["node", "--check", str(script)], capture_output=True, text=True)
+            if checked.returncode:
+                detail = (checked.stderr or checked.stdout).strip()
+                raise SystemExit(f"Packaged JavaScript failed syntax validation ({script.name}): {detail[-1200:]}")
+
     manifest_source = json.loads((source / "hbnf-cart-manifest.webmanifest").read_text())
     manifest_source["id"] = "./hbnf-cart.html"
     manifest_source["start_url"] = "./hbnf-cart.html?local-owner=" + args.source_commit[:12]
