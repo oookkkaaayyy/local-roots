@@ -7,6 +7,7 @@ import hashlib
 import json
 import re
 import shutil
+import subprocess
 import zipfile
 from pathlib import Path
 
@@ -38,7 +39,10 @@ def main() -> None:
     parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--package-script-dir", type=Path)
-    parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--source-commit")
+    parser.add_argument("--strict-source-binding", action="store_true")
+    parser.add_argument("--source-locator", type=Path)
+    parser.add_argument("--review-only", action="store_true")
     parser.add_argument("--package-version", default="1.0.2")
     parser.add_argument("--transaction-id")
     parser.add_argument("--rollback-baseline-transaction-id")
@@ -50,7 +54,27 @@ def main() -> None:
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.package_version):
         raise SystemExit("--package-version must be a semantic x.y.z version")
+    if args.review_only and not args.strict_source_binding:
+        raise SystemExit("--review-only requires --strict-source-binding")
     root = args.source_root.resolve()
+    if args.strict_source_binding:
+        if not args.source_locator:
+            raise SystemExit("--strict-source-binding requires the existing --source-locator checker")
+        head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+        if args.source_commit and args.source_commit != head:
+            raise SystemExit(f"--source-commit does not match clean checkout HEAD ({head})")
+        args.source_commit = head
+        status = subprocess.check_output(["git", "-C", str(root), "status", "--porcelain", "--untracked-files=all"], text=True)
+        if status.strip():
+            raise SystemExit("strict source binding requires a clean checkout before packaging")
+        try:
+            args.output_dir.resolve().relative_to(root)
+        except ValueError:
+            pass
+        else:
+            raise SystemExit("strict source binding requires --output-dir outside the source checkout")
+    elif not args.source_commit:
+        raise SystemExit("--source-commit is required unless --strict-source-binding derives it from Git")
     source = root / "hbnf-final-controller"
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -101,6 +125,8 @@ def main() -> None:
     (output / "PAYLOAD.SHA256SUMS").write_text(checksums)
     source_inputs = [source / name for name in ASSETS]
     source_inputs.append(source / "hbnf-cart-manifest.webmanifest")
+    if args.strict_source_binding:
+        source_inputs.append(Path(__file__).resolve())
     deploy_dir = root / f"staging/coordinated-backend/opal/owner-pwa-local-v{version}"
     baseline = deploy_dir / "BASELINE.SHA256SUMS"
     baseline_provenance_args = (
@@ -170,16 +196,34 @@ def main() -> None:
         if not re.fullmatch(r"[A-Z0-9][A-Z0-9-]{7,100}", args.transaction_id):
             raise SystemExit("--transaction-id must be a bounded uppercase transaction identifier")
 
-    package_script_dir = (root / args.package_script_dir).resolve() if args.package_script_dir else deploy_dir
-    for name in ("install.sh", "rollback.sh"):
-        if not (package_script_dir / name).is_file():
-            raise SystemExit(f"Required package script is missing: {package_script_dir / name}")
-    package_scripts = [package_script_dir / "install.sh", package_script_dir / "rollback.sh"]
-    source_inputs.extend(package_scripts)
+    package_tools = []
+    if args.review_only:
+        if args.transaction_id:
+            raise SystemExit("review-only packages cannot carry a transaction ID")
+        package_scripts = []
+        for name, content in (
+            ("install.sh", "#!/bin/sh\necho 'REVIEW ONLY: installation is disabled' >&2\nexit 64\n"),
+            ("rollback.sh", "#!/bin/sh\necho 'REVIEW ONLY: rollback is disabled' >&2\nexit 64\n"),
+        ):
+            script = output / name
+            script.write_text(content)
+            script.chmod(0o644)
+            package_tools.append({"path": name, "sha256": digest(content.encode()), "mode": "disabled-review-stub"})
+        (output / "REVIEW_ONLY.txt").write_text("Review artifact only. No installation or rollback is enabled.\n")
+        package_tools.append({"path": "REVIEW_ONLY.txt", "sha256": digest((output / "REVIEW_ONLY.txt").read_bytes())})
+    else:
+        package_script_dir = (root / args.package_script_dir).resolve() if args.package_script_dir else deploy_dir
+        for name in ("install.sh", "rollback.sh"):
+            if not (package_script_dir / name).is_file():
+                raise SystemExit(f"Required package script is missing: {package_script_dir / name}")
+        package_scripts = [package_script_dir / "install.sh", package_script_dir / "rollback.sh"]
+        source_inputs.extend(package_scripts)
     metadata = {
         "package": f"hbnf-owner-pwa-local-v{version}",
         "sourceCommit": args.source_commit,
         "transactionId": args.transaction_id,
+        "releaseDisposition": "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED" if args.review_only else "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
+        "packageTools": package_tools,
         "sourceInputs": [
             {
                 "path": path.relative_to(root).as_posix(),
@@ -205,10 +249,17 @@ def main() -> None:
     }
     (output / "PACKAGE.json").write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
 
-    for name in ("install.sh", "rollback.sh"):
-        shutil.copy2(package_script_dir / name, output / name)
+    if not args.review_only:
+        for name in ("install.sh", "rollback.sh"):
+            shutil.copy2(package_script_dir / name, output / name)
     if baseline.exists():
         shutil.copy2(baseline, output / baseline.name)
+
+    if args.strict_source_binding:
+        subprocess.run(
+            ["node", str(args.source_locator.resolve()), "--verify-source-manifest", "--cart-root", str(root), "--manifest", str(output / "PACKAGE.json")],
+            check=True,
+        )
 
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for path in sorted(p for p in output.rglob("*") if p.is_file() and p != archive):
