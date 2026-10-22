@@ -753,6 +753,17 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
         permissions=pre.get("permissions",{})
         if permissions!={"owner_files_regular_no_symlinks":True,"transport_regular_no_symlink":True,"root_install_available":True,"recovery_paths_clear":True}:
             errors.append("live Owner PWA permissions or recovery-path preflight failed")
+        if manifest.get("candidate_profile")==OWNER_PWA_V108_PROFILE:
+            expected_identity={"model":"GL-SFT1200","board":"glinet,gl-sft1200",
+                "br_lan_mac":OWNER_PWA_RECOVERY_HISTORICAL_MAC,"kernel":"4.14.90",
+                "firmware":"OpenWrt 18.06","firmware_release_id":"OpenWrt",
+                "firmware_release":"LEDE","firmware_target":"siflower/sf19a28-fullmask"}
+            if pre.get("device_identity")!=expected_identity:
+                errors.append("fresh Owner PWA preflight device model, board, MAC, kernel, or firmware identity mismatch")
+            expected_rollback={"baseline_zip_sha256":profile["artifacts"]["served_baseline_zip"],
+                "exact_backup_path_clear":True,"same_filesystem":True,"sha256sum_available":True}
+            if pre.get("rollback")!=expected_rollback:
+                errors.append("fresh Owner PWA preflight did not verify the exact rollback artifact and restore prerequisites")
     if manifest.get("authorized_steps")!=[OWNER_PWA_STEP]: errors.append("Owner PWA admission contains a missing or unrelated command")
     if manifest.get("admission_sha256")!=owner_pwa_admission_digest(manifest): errors.append("Owner PWA admission digest is invalid")
     return list(dict.fromkeys(errors))

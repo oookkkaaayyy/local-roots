@@ -74,6 +74,12 @@ class OwnerPwaAdmission(unittest.TestCase):
                 'target_ip':'192.168.77.1','served_sha256_by_path':baseline,'filesystem_sha256_by_path':baseline,
                 'baseline_http_status_by_path':{path:200 for path in baseline},
                 'new_path_preflight_by_path':{path:{'filesystem_absent':True,'http_status':404} for path in control.OWNER_PWA_NEW_PATHS},
+                'device_identity':{'model':'GL-SFT1200','board':'glinet,gl-sft1200',
+                    'br_lan_mac':control.OWNER_PWA_RECOVERY_HISTORICAL_MAC,'kernel':'4.14.90',
+                    'firmware':'OpenWrt 18.06','firmware_release_id':'OpenWrt',
+                    'firmware_release':'LEDE','firmware_target':'siflower/sf19a28-fullmask'},
+                'rollback':{'baseline_zip_sha256':control.OWNER_PWA_V108_ARTIFACTS['served_baseline_zip'],
+                    'exact_backup_path_clear':True,'same_filesystem':True,'sha256sum_available':True},
                 'permissions':{'owner_files_regular_no_symlinks':True,'transport_regular_no_symlink':True,
                     'root_install_available':True,'recovery_paths_clear':True}}}
         return state,owner,manifest
@@ -116,6 +122,22 @@ class OwnerPwaAdmission(unittest.TestCase):
             'owner_authorization':owner},sort_keys=True))
         manifest['owner_authorization_receipt']['sha256']=control.sha256_file(NEXT_AUTH_TEST_FILE)
         with self.assertRaises(ValueError): control.issue_owner_pwa_admission(state,manifest,owner,NOW)
+
+    def test_v108_reservation_rejects_unverified_current_device_or_rollback(self):
+        for field,mutate,expected_error in (
+            ('device_identity',lambda pre:pre['device_identity'].__setitem__('firmware','unknown'),'device model, board, MAC, kernel, or firmware identity mismatch'),
+            ('rollback',lambda pre:pre['rollback'].__setitem__('baseline_zip_sha256','0'*64),'exact rollback artifact and restore prerequisites'),
+        ):
+            with self.subTest(field=field):
+                state,owner,manifest=self._v108_recovery_successor_fixture()
+                manifest=control.issue_owner_pwa_admission(state,manifest,owner,NOW)
+                mutate(manifest['live_preflight'])
+                manifest['admission_sha256']=control.owner_pwa_admission_digest(manifest)
+                state['execution_cursor']['owner_pwa_transaction']['admission_sha256']=manifest['admission_sha256']
+                before=copy.deepcopy(state)
+                with self.assertRaisesRegex(ValueError,expected_error):
+                    control.reserve_owner_pwa_install(state,manifest,NOW)
+                self.assertEqual(before,state,"failed identity/rollback admission must not consume or mutate the transaction")
 
     def test_issue_accepts_only_short_cli_clock_skew(self):
         state=json.loads((ROOT/'config/HBNF_CONTROL_STATE.json').read_text())
