@@ -54,7 +54,7 @@ assert.match(features, /Cart → cloud relay: not reported/);
 assert.match(features, /Matrix live-standings receipt: not reported/);
 assert.match(features, /Cart → cloud relay NOT EXPOSED · no runtime status signal/);
 assert.match(features, /Matrix live standings NOT EXPOSED · relay delivery receipt unavailable/);
-assert.match(features, /Matrix command: acknowledged; physical display is not verified/);
-assert.match(features, /Matrix standings command acknowledged\. Physical display is not verified\./);
+assert.match(features, /commandResult && commandResult\.acknowledged===false/, "Show Scores must not claim device acknowledgment while reports are pending");
+assert.match(features, /Matrix standings command acknowledged by Cart devices\. Physical display is not verified\./);
 
 console.log("PASS: Cart readiness fails closed on missing, unknown, stale, or unconfirmed device evidence");

@@ -104,3 +104,48 @@ test("canonical command rejects when a device reports a failed command", async (
   const context = controllerCommandFixture(snapshot);
   await assert.rejects(context.command("OVERLAY_START", {}), /device reported failure/);
 });
+
+function scoreboardFixture(overlay) {
+  const start = source.indexOf("async function showScoreboard()");
+  const end = source.indexOf("async function showManualScoreboard()", start);
+  assert.ok(start >= 0 && end > start, "Show Scores command should be available for focused verification");
+  const statuses = [];
+  const paths = [];
+  const context = {
+    setFeatureStatus: value => statuses.push(value),
+    renderScoreActionStatus: value => statuses.push(value),
+    renderScorePathStatus: value => paths.push(value),
+    canonicalRead: async () => ({ live: { active: true, label: "Skins", entries: ["Ava 1"] }, updated_at: "2026-10-21T17:42:00Z" }),
+    updateScoreNetworkTruth: () => {},
+    updateDisplayedLiveSnapshot: () => "Source row updated_at 2026-10-21T17:42:00Z.",
+    canonicalOverlayBridge: () => ({ overlay }),
+    matrixLiveSourceRevisionStatus: async () => "Matrix source revision unverified.",
+    Math,
+    String,
+    Error,
+  };
+  vm.runInNewContext(source.slice(start, end), context);
+  return { context, statuses, paths };
+}
+
+test("Show Scores reports accepted-but-unacknowledged delivery without claiming success", async () => {
+  const f = scoreboardFixture(async () => ({ accepted: true, acknowledged: false }));
+  await f.context.showScoreboard();
+  assert.ok(f.statuses.some(value => /accepted; device acknowledgment is still pending/.test(value)));
+  assert.ok(f.paths.some(value => /Matrix live-standings receipt: not reported/.test(value)));
+  assert.ok(!f.statuses.some(value => /acknowledged by Cart devices/.test(value)));
+});
+
+test("Show Scores reports device acknowledgment only after current device readback", async () => {
+  const f = scoreboardFixture(async () => ({ accepted: true, acknowledged: true }));
+  await f.context.showScoreboard();
+  assert.ok(f.statuses.some(value => /acknowledged by Cart devices/.test(value)));
+  assert.ok(f.statuses.some(value => /Physical display is not verified/.test(value)));
+});
+
+test("Show Scores reports a rejected command as unconfirmed", async () => {
+  const f = scoreboardFixture(async () => ({ accepted: false, error: "revision conflict" }));
+  await assert.rejects(f.context.showScoreboard(), /revision conflict/);
+  assert.ok(f.statuses.some(value => /Standings command was not confirmed/.test(value)));
+  assert.ok(!f.statuses.some(value => /acknowledged by Cart devices/.test(value)));
+});

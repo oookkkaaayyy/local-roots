@@ -516,11 +516,21 @@ async function showScoreboard() {
     const bridge=canonicalOverlayBridge();
     const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
     commandStarted=true;
-    await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
+    const commandResult=await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
+    if (commandResult && commandResult.accepted===false) throw new Error(commandResult.error || "Cart did not accept the standings command.");
     const matrixRevisionStatus=await matrixLiveSourceRevisionStatus(out&&out.updated_at);
     renderScorePathStatus("This iPad → cloud: active standings received. "+sourceRevision+" "+matrixRevisionStatus+" Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
-    setFeatureStatus("Matrix command: acknowledged; physical display is not verified.");
-    renderScoreActionStatus("Matrix standings command acknowledged. Physical display is not verified. "+sourceRevision);
+    if (commandResult && commandResult.acknowledged===false) {
+      const pendingMessage="Standings command accepted; device acknowledgment is still pending. Physical display is not verified.";
+      setFeatureStatus(pendingMessage,true);
+      renderScoreActionStatus(pendingMessage+" "+sourceRevision);
+      return;
+    }
+    const commandMessage=commandResult && commandResult.acknowledged===true
+      ? "Matrix standings command acknowledged by Cart devices. Physical display is not verified."
+      : "Matrix standings command accepted; device acknowledgment is not exposed. Physical display is not verified.";
+    setFeatureStatus(commandMessage);
+    renderScoreActionStatus(commandMessage+" "+sourceRevision);
   } catch (error) {
     if (!readSucceeded) updateScoreNetworkTruth(null,true);
     renderScorePathStatus(readSucceeded
