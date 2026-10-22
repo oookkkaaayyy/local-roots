@@ -67,6 +67,7 @@ last_display=0
 last_success=0
 last_uptime=0
 MATRIX_UPTIME=0
+score_feed_unavailable=false
 
 while :; do
 	now="$(date +%s)"
@@ -74,13 +75,15 @@ while :; do
 	if [ "$last_uptime" -gt 0 ] && [ "$MATRIX_UPTIME" -lt "$last_uptime" ]; then last_display=0; fi
 	last_uptime=$MATRIX_UPTIME
 	if ! fetch_scores; then
+		skins_note_feed_failure
 		log_once 'Supabase read failed or live-score payload was invalid; no score was posted'
 		sleep "$POLL_SECONDS"; continue
 	fi
+	skins_note_feed_success
 	last_success=$now
 	LAST_LOG=''
 	if [ "$SNAPSHOT" = "$inactive" ]; then
-		if [ -n "$last_snapshot" ] && post_matrix "$inactive"; then last_snapshot=''; last_display=0; fi
+		if skins_clear_inactive_due "$SNAPSHOT" "$inactive" "$last_snapshot" && post_matrix "$inactive"; then last_snapshot=$inactive; last_display=0; fi
 		sleep "$POLL_SECONDS"; continue
 	fi
 	if [ "$SNAPSHOT" != "$last_snapshot" ]; then

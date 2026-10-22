@@ -84,6 +84,9 @@ try {
   assert.equal(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, inactive)).active, false);
   assert.equal(shell(`skins_snapshot_changed one two; echo $?`, base), "0", "changed snapshots trigger a post");
   assert.equal(shell(`skins_snapshot_changed one one; echo $?`, base), "1", "identical snapshots do not trigger a changed-score post");
+  assert.equal(shell(`skins_clear_inactive_due inactive inactive ''; echo $?`, base), "0", "fresh inactive feed clears a stale Matrix overlay after relay restart");
+  assert.equal(shell(`skins_clear_inactive_due inactive inactive inactive; echo $?`, base), "1", "already-cleared inactive state does not post repeatedly");
+  assert.equal(shell(`skins_clear_inactive_due active inactive ''; echo $?`, base), "1", "active feed is not cleared");
 
   const v23 = structuredClone(base); delete v23.selectorVersion;
   shell(`skins_build_snapshot "$RELAY_FIXTURE"`, v23, false);
@@ -113,6 +116,8 @@ try {
   assert.equal(shell(`skins_redisplay_due 100 339 338 false 240 45; echo $?`, base), "1", "redisplay is not early");
   assert.equal(shell(`skins_redisplay_due 100 340 290 false 240 45; echo $?`, base), "1", "stale data does not redisplay");
   assert.equal(shell(`skins_redisplay_due 100 340 339 true 240 45; echo $?`, base), "1", "manual overlays/games suppress periodic redisplay");
+  assert.equal(shell(`score_feed_unavailable=false; last_display=100; skins_note_feed_failure; skins_note_feed_success; printf '%s:%s' "$last_display" "$score_feed_unavailable"`, base), "0:false", "WAN/feed recovery immediately re-arms redisplay for the next fresh snapshot");
+  assert.equal(shell(`score_feed_unavailable=false; last_display=100; skins_note_feed_success; printf '%s:%s' "$last_display" "$score_feed_unavailable"`, base), "100:false", "ordinary healthy polling preserves the four-minute redisplay schedule");
 
   const serviceText = readFileSync(service, "utf8");
   assert.match(serviceText, /--max-time 8 --max-filesize 32768/);
@@ -122,11 +127,14 @@ try {
   assert.match(serviceText, /Cache-Control: no-cache, no-store/);
   assert.match(serviceText, /POLL_SECONDS=15/);
   assert.match(serviceText, /skins_redisplay_due/);
+  assert.match(serviceText, /if skins_clear_inactive_due "\$SNAPSHOT" "\$inactive" "\$last_snapshot" && post_matrix "\$inactive"; then last_snapshot=\$inactive; last_display=0; fi/, "a successful inactive read clears Matrix state even when the relay restarted with no remembered snapshot");
   assert.match(serviceText, /if \[ -z "\$last_snapshot" \] && \[ "\$SNAPSHOT" != "\$inactive" \]; then[\s\S]*?post_matrix "\$inactive" && post_matrix "\$SNAPSHOT"/, "relay startup toggles an active snapshot so an identical Matrix-held snapshot is rendered");
   assert.match(serviceText, /Keep the Matrix's 120-second live-snapshot lease fresh[\s\S]*?if ! post_matrix "\$SNAPSHOT"; then/, "fresh unchanged snapshots renew the renderer lease without triggering a changed-score display");
   assert.doesNotMatch(serviceText, /MATRIX_LIVE_ACTIVE/, "the Matrix liveActive field is a 120-second freshness lease and must not reset the 240-second redisplay clock");
   assert.match(serviceText, /if \[ "\$last_uptime" -gt 0 \] && \[ "\$MATRIX_UPTIME" -lt "\$last_uptime" \]; then last_display=0; fi/, "Matrix reboot still resets the redisplay clock");
   assert.match(serviceText, /if ! fetch_scores; then/);
+  assert.match(serviceText, /if ! fetch_scores; then\s+skins_note_feed_failure/);
+  assert.match(serviceText, /fi\s+skins_note_feed_success\s+last_success=/, "successful WAN/feed recovery resets the redisplay clock before processing fresh scores");
   assert.match(serviceText, /continue/);
   assert.doesNotMatch(serviceText, /curl[^\n]*-[kK](?:\s|$)/, "TLS verification must remain enabled");
 

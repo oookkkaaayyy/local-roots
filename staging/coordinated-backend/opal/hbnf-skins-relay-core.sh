@@ -230,11 +230,24 @@ EOF
 
 skins_snapshot_changed() { [ "$1" != "$2" ]; }
 
+# Clear a stale Matrix overlay after relay restart when the current live feed
+# is inactive, even though this process has no remembered active snapshot.
+skins_clear_inactive_due() { [ "$1" = "$2" ] && [ "$1" != "$3" ]; }
+
 skins_redisplay_due() {
 	local last_display="$1" now="$2" last_success="$3" blocked="$4" interval="$5" freshness="$6"
 	[ "$blocked" != 'true' ] || return 1
 	[ $((now - last_success)) -le "$freshness" ] || return 1
 	[ "$last_display" -eq 0 ] || [ $((now - last_display)) -ge "$interval" ]
+}
+
+# A WAN/feed outage can outlast the Matrix's shorter live-snapshot lease.
+# On recovery, make an unchanged but fresh snapshot eligible for immediate
+# redisplay instead of waiting for the normal four-minute interval.
+skins_note_feed_failure() { score_feed_unavailable=true; }
+skins_note_feed_success() {
+	if [ "${score_feed_unavailable:-false}" = 'true' ]; then last_display=0; fi
+	score_feed_unavailable=false
 }
 
 skins_overlay_blocked() {
