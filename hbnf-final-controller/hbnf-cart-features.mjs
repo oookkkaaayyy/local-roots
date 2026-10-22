@@ -486,22 +486,40 @@ async function showManualScoreboard() {
 async function showAcePot() {
   setFeatureStatus("Preparing ace pot…");
   let out;
+  let usedCachedSnapshot=false;
   try {
     out=await canonicalRead("live_status",{});
     updateScoreNetworkTruth(out);
     updateDisplayedLiveSnapshot(out);
   } catch (error) {
     updateScoreNetworkTruth(null,true);
-    throw error;
+    const cached=readLiveCache();
+    if (!cached || !cached.live) {
+      renderScorePathStatus("This iPad → cloud: unavailable; no cached live score snapshot is available. No ace-pot command was sent.");
+      renderScoreActionStatus("Live score request failed and no cached scores are available. No ace-pot command was sent.");
+      throw error;
+    }
+    out={live:cached.live,updated_at:cached.updated_at};
+    usedCachedSnapshot=true;
+    renderLive(cached.live,true,cached.updated_at);
   }
   const live=out && out.live;
   if (!live || live.active !== true) throw new Error("No active live round is available; no ace-pot overlay was sent.");
   const label=formatAcePotDisplay(live);
   if (label.endsWith("UNAVAILABLE")) throw new Error("The live scoring response did not supply a valid ace value; no value was inferred.");
   const bridge=canonicalOverlayBridge();
-  await bridge.overlay("text",{text:label,color:"#FFFFFF"},7000);
-  renderScorePathStatus("This iPad → cloud: ace-pot source response received. "+liveSourceRevisionText(out && out.updated_at)+" Matrix text command acknowledged; physical display is not verified.");
-  setFeatureStatus("Ace pot sent to the Cart.");
+  const displayedLabel=usedCachedSnapshot ? "CACHED "+label : label;
+  await bridge.overlay("text",{text:displayedLabel,color:"#FFFFFF"},7000);
+  const revisionText=liveSourceRevisionText(out && out.updated_at);
+  if (usedCachedSnapshot) {
+    renderScorePathStatus("This iPad → cloud: unavailable; using locally cached scores. "+revisionText+" Cached ace-pot text command acknowledged; value may be out of date and physical display is not verified.");
+    renderScoreActionStatus("Cached ace-pot command acknowledged. "+revisionText+" The value may be out of date; physical display is not verified.");
+    setFeatureStatus("Cached ace pot sent to the Cart. The value may be out of date.");
+  } else {
+    renderScorePathStatus("This iPad → cloud: ace-pot source response received. "+revisionText+" Matrix text command acknowledged; physical display is not verified.");
+    renderScoreActionStatus("Ace-pot command acknowledged. "+revisionText+" Physical display is not verified.");
+    setFeatureStatus("Ace pot sent to the Cart.");
+  }
 }
 
 function renderOta(j) {
