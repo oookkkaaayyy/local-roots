@@ -315,17 +315,24 @@ async function sendText() {
   }
 }
 
-function renderLive(live, cached=false) {
+function liveSourceRevisionText(updatedAt) {
+  const revision=typeof updatedAt==="string" ? updatedAt.trim() : "";
+  if (!revision || !Number.isFinite(Date.parse(revision))) return "Source row revision unverified.";
+  return "Source row updated_at "+revision+" (whole league_state row).";
+}
+
+function renderLive(live, cached=false, updatedAt=null) {
   const node=$("featureLive");
   if (!node) return;
+  const revisionText=liveSourceRevisionText(updatedAt);
   if (!live || !live.active) {
-    node.textContent = (cached ? "Cached · " : "")+"No active Skins or Glow round.";
+    node.textContent = (cached ? "Cached · " : "")+"No active Skins or Glow round · "+revisionText;
     return;
   }
   const entries = Array.isArray(live.entries) ? live.entries.slice(0,8).join(" · ") : "";
   node.textContent = (cached ? "Using saved results · " : "")+
     String(live.event || "").toUpperCase()+" · "+String(live.label || "")+
-    " · "+formatAcePotDisplay(live)+(entries ? " · "+entries : "");
+    " · "+formatAcePotDisplay(live)+(entries ? " · "+entries : "")+" · "+revisionText;
 }
 
 function renderScorePathStatus(message) {
@@ -349,9 +356,10 @@ function renderTextActionStatus(message) {
   if (node) node.textContent=message;
 }
 
-function saveLiveCache(live) {
+function saveLiveCache(live, updatedAt) {
   try {
-    localStorage.setItem(LIVE_CACHE_KEY,JSON.stringify({savedAt:new Date().toISOString(),live:live}));
+    const revision=typeof updatedAt==="string" ? updatedAt.trim() : "";
+    localStorage.setItem(LIVE_CACHE_KEY,JSON.stringify({savedAt:new Date().toISOString(),updated_at:revision || null,live:live}));
   } catch (_) {}
 }
 
@@ -364,6 +372,14 @@ function readLiveCache() {
     if (!saved || Date.now()-saved>LIVE_CACHE_MAX_MS) return null;
     return value;
   } catch (_) { return null; }
+}
+
+function updateDisplayedLiveSnapshot(response) {
+  const live=response && response.live;
+  const updatedAt=response && response.updated_at;
+  renderLive(live,false,updatedAt);
+  saveLiveCache(live,updatedAt);
+  return liveSourceRevisionText(updatedAt);
 }
 
 async function refreshLive(silent) {
@@ -384,19 +400,19 @@ async function refreshLive(silent) {
   try {
     const out = await canonicalRead("live_status",{});
     updateScoreNetworkTruth(out);
-    renderLive(out.live,false);
-    renderScorePathStatus("This iPad → cloud: response received; source freshness is not exposed, so score freshness is unverified. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
-    saveLiveCache(out.live);
+    const revisionText=updateDisplayedLiveSnapshot(out);
+    renderScorePathStatus("This iPad → cloud: live response received. "+revisionText+" Matrix display is not confirmed by this source revision. Cart → cloud relay and Matrix receipt: not reported.");
     if (!silent) {
       setFeatureStatus("Live round refreshed.");
-      renderScoreActionStatus("Live score response received. Score freshness is unverified because the source timestamp is not exposed.");
+      renderScoreActionStatus("Live score response received. "+revisionText+" Physical display is not confirmed.");
     }
   } catch (error) {
     updateScoreNetworkTruth(null,true);
     const cached=readLiveCache();
     if (cached && cached.live) {
-      renderLive(cached.live,true);
-      renderScorePathStatus("This iPad → cloud: unavailable. Showing locally cached scores; source freshness is not exposed, so freshness is unverified. Cart relay and Matrix delivery status are not reported.");
+      const revisionText=liveSourceRevisionText(cached.updated_at);
+      renderLive(cached.live,true,cached.updated_at);
+      renderScorePathStatus("This iPad → cloud: unavailable. Showing locally cached scores. "+revisionText+" Cart relay and Matrix delivery status are not reported.");
       if (!silent) {
         setFeatureStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
         renderScoreActionStatus("Live score request failed. Cached scores are shown and labeled.");
@@ -420,26 +436,28 @@ async function showScoreboard() {
   renderScoreActionStatus("Requesting current standings…");
   let readSucceeded=false;
   let commandStarted=false;
+  let sourceRevision="Source row revision unverified.";
   try {
     const out=await canonicalRead("live_status",{});
     updateScoreNetworkTruth(out);
     readSucceeded=true;
+    sourceRevision=updateDisplayedLiveSnapshot(out);
     const live=out && out.live;
     if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
     const bridge=canonicalOverlayBridge();
     const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
     commandStarted=true;
     await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-    renderScorePathStatus("This iPad → cloud: active standings received; source freshness is not exposed, so score freshness is unverified. Matrix command: acknowledged; physical display is not verified. Cart headless relay status: not reported.");
+    renderScorePathStatus("This iPad → cloud: active standings received. "+sourceRevision+" Matrix command: acknowledged; physical display is not verified. Cart headless relay status: not reported.");
     setFeatureStatus("Standings command acknowledged. Physical display is not verified.");
-    renderScoreActionStatus("Matrix standings command acknowledged. Physical display is not verified.");
+    renderScoreActionStatus("Matrix standings command acknowledged. "+sourceRevision+" Physical display is not verified.");
   } catch (error) {
     if (!readSucceeded) updateScoreNetworkTruth(null,true);
     renderScorePathStatus(readSucceeded
       ? (commandStarted
-        ? "This iPad → cloud: active standings read succeeded; score freshness is unverified. Matrix command: not confirmed; physical display is not verified. Cart headless relay status: not reported."
-        : "This iPad → cloud: response received, but no active standings or available Matrix command was confirmed. No display is claimed. Cart headless relay status: not reported.")
-      : "This iPad → cloud: score read unavailable; score freshness is unverified. Matrix command was not sent. Cart headless relay status: not reported.");
+        ? "This iPad → cloud: active standings read succeeded. "+sourceRevision+" Matrix command: not confirmed; physical display is not verified. Cart headless relay status: not reported."
+        : "This iPad → cloud: response received. "+sourceRevision+" No active standings or available Matrix command was confirmed; no display is claimed. Cart headless relay status: not reported.")
+      : "This iPad → cloud: score read unavailable. "+sourceRevision+" Matrix command was not sent. Cart headless relay status: not reported.");
     renderScoreActionStatus(commandStarted ? "Standings command was not confirmed." : (readSucceeded ? "No standings command was sent." : "Live score read failed; no standings command was sent."));
     throw error;
   }
@@ -471,6 +489,7 @@ async function showAcePot() {
   try {
     out=await canonicalRead("live_status",{});
     updateScoreNetworkTruth(out);
+    updateDisplayedLiveSnapshot(out);
   } catch (error) {
     updateScoreNetworkTruth(null,true);
     throw error;
@@ -481,6 +500,7 @@ async function showAcePot() {
   if (label.endsWith("UNAVAILABLE")) throw new Error("The live scoring response did not supply a valid ace value; no value was inferred.");
   const bridge=canonicalOverlayBridge();
   await bridge.overlay("text",{text:label,color:"#FFFFFF"},7000);
+  renderScorePathStatus("This iPad → cloud: ace-pot source response received. "+liveSourceRevisionText(out && out.updated_at)+" Matrix text command acknowledged; physical display is not verified.");
   setFeatureStatus("Ace pot sent to the Cart.");
 }
 
