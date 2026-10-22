@@ -1,0 +1,26 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-p1-endpoint-status-20261022",
+  "summary": "Separate local Cart, HBNF endpoint, scoring-cloud, source freshness, Matrix live-snapshot, and command acknowledgement evidence in the Owner PWA.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "affected_subsystem": "Existing Cart Owner PWA network/readiness and Matrix live-standings feedback.",
+      "observed_source_defect": "A score-cloud response does not establish access from this iPad to the HBNF public endpoint. The UI lacked an independent endpoint check and could not distinguish an unattempted check from a failed or timed-out check. Matrix source revision could also appear aligned after its 120-second live lease had expired.",
+      "implementation": "Load the already-declared small HBNF cart icon with a cache-busting URL, a four-second timeout and a one-minute throttle. Only successful image load reports endpoint reachability from this iPad; errors and timeouts remain unverified. Keep scoring-cloud status independent and require the Matrix live lease before describing revision alignment.",
+      "rollback_reference": "Revert the isolated source change; no device, cloud, router, firmware, release or scoring mutation is included.",
+      "tests": [
+        "node tests/hbnf_cart_network_truth.test.mjs",
+        "node tests/hbnf_cart_readiness.test.mjs",
+        "node tests/hbnf_owner_live_revision_display.mjs"
+      ]
+    }
+  }
+}

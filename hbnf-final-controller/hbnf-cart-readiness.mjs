@@ -54,10 +54,17 @@ export function localLinkStatusText(snapshot, attemptStatus) {
 }
 
 export function scoringCloudStatusText(response, requestFailed = false) {
-  if (requestFailed) return "Unavailable · score request failed";
+  if (requestFailed) return "Not confirmed · this iPad’s score-cloud request failed";
   if (!response || typeof response !== "object") return "Not checked";
   if (!response.live || typeof response.live !== "object") return "Response received · score data missing";
-  return "Response received · scoring cloud reachable";
+  return "Reachable from this iPad · score endpoint responded";
+}
+
+export function hbnfEndpointReachabilityText(state) {
+  if (state === "unverified") return "Unverified · HBNF endpoint check failed or timed out";
+  if (state === "checking") return "Checking HBNF endpoint…";
+  if (state === "reachable") return "HBNF endpoint reachable from this iPad";
+  return "Unverified · no recent HBNF endpoint check";
 }
 
 export function scoreFreshnessLabel() {

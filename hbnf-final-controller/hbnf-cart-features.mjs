@@ -1,7 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
 import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
-import { deviceReadinessChecks, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs";
+import { deviceReadinessChecks, hbnfEndpointReachabilityText, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
@@ -18,10 +18,15 @@ const SAVED_LOOKS_KEY = "hbnf_cart_saved_looks_v1";
 const LEGACY_SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
 const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
 const LIVE_CACHE_MAX_MS = 12 * 60 * 60 * 1000;
+const HBNF_ENDPOINT_IMAGE_URL = "https://hbnightflyers.com/hbnf-cart-icon-180.png";
+const HBNF_ENDPOINT_PROBE_INTERVAL_MS = 60000;
+const HBNF_ENDPOINT_PROBE_TIMEOUT_MS = 4000;
 const MAX_SAVED_LOOKS = 12;
 let liveRefreshInFlight = false;
 let liveRefreshPending = false;
 let liveRefreshPendingSilent = true;
+let hbnfEndpointProbeInFlight = false;
+let hbnfEndpointProbeLastStartedAt = 0;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -336,6 +341,7 @@ async function matrixLiveSourceRevisionStatus(sourceRevision) {
   try {
     const readback=await fetchJson(matrixApiUrl("/json/si"),{method:"GET",cache:"no-store"},"Matrix live status",0,2500);
     const h=readback&&readback.state&&readback.state.HBNF;
+    if (!h || h.liveActive !== true) return "Matrix live snapshot inactive or stale; its 120-second lease is not current. Physical display is unverified.";
     const applied=h&&h.liveSourceRevision;
     const state=compareLiveSourceRevision(sourceRevision,applied);
     if (state==="aligned") return "Matrix locally accepted the same source row revision. Physical display is unverified.";
@@ -369,6 +375,36 @@ function updateScoreNetworkTruth(response, requestFailed=false) {
   const cloud=$("scoreCloudTruth"), freshness=$("scoreFreshnessTruth");
   if (cloud) cloud.textContent=scoringCloudStatusText(response,requestFailed);
   if (freshness) freshness.textContent=scoreFreshnessLabel();
+}
+
+function probeHbnfEndpoint() {
+  const node=$("internetTruth");
+  if (!node || hbnfEndpointProbeInFlight) return;
+  const now=Date.now();
+  if (now-hbnfEndpointProbeLastStartedAt<HBNF_ENDPOINT_PROBE_INTERVAL_MS) return;
+  hbnfEndpointProbeLastStartedAt=now;
+  hbnfEndpointProbeInFlight=true;
+  node.textContent=hbnfEndpointReachabilityText("checking");
+  let image;
+  let timer=null;
+  let settled=false;
+  const finish=function(reachable) {
+    if (settled) return;
+    settled=true;
+    if (timer!==null) clearTimeout(timer);
+    if (image) { image.onload=null; image.onerror=null; }
+    hbnfEndpointProbeInFlight=false;
+    node.textContent=hbnfEndpointReachabilityText(reachable ? "reachable" : "unverified");
+  };
+  try {
+    image=new Image();
+    image.onload=function(){ finish(image.naturalWidth>0 && image.naturalHeight>0); };
+    image.onerror=function(){ finish(false); };
+    timer=setTimeout(function(){ finish(false); },HBNF_ENDPOINT_PROBE_TIMEOUT_MS);
+    image.src=HBNF_ENDPOINT_IMAGE_URL+"?probe="+String(now);
+  } catch (_) {
+    finish(false);
+  }
 }
 
 function renderScoreActionStatus(message) {
@@ -408,6 +444,7 @@ function updateDisplayedLiveSnapshot(response) {
 }
 
 async function refreshLive(silent) {
+  probeHbnfEndpoint();
   if (liveRefreshInFlight) {
     liveRefreshPending=true;
     if (!silent) {
@@ -427,7 +464,7 @@ async function refreshLive(silent) {
     updateScoreNetworkTruth(out);
     const revisionText=updateDisplayedLiveSnapshot(out);
     const matrixRevisionStatus=await matrixLiveSourceRevisionStatus(out&&out.updated_at);
-    renderScorePathStatus("This iPad → cloud: live response received. "+revisionText+" "+matrixRevisionStatus+" Cart → cloud relay status: not reported.");
+    renderScorePathStatus("This iPad → cloud: live response received. "+revisionText+" "+matrixRevisionStatus+" Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
     if (!silent) {
       setFeatureStatus("Live round refreshed.");
       renderScoreActionStatus("Live score response received. "+revisionText+" Physical display is not confirmed.");
@@ -438,14 +475,14 @@ async function refreshLive(silent) {
     if (cached && cached.live) {
       const revisionText=liveSourceRevisionText(cached.updated_at);
       renderLive(cached.live,true,cached.updated_at);
-      renderScorePathStatus("This iPad → cloud: unavailable. Showing locally cached scores. "+revisionText+" Cart relay and Matrix delivery status are not reported.");
+      renderScorePathStatus("This iPad → cloud: unavailable. Showing locally cached scores. "+revisionText+" Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
       if (!silent) {
         setFeatureStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
         renderScoreActionStatus("Live score request failed. Cached scores are shown and labeled.");
       }
       return;
     }
-    renderScorePathStatus("This iPad → cloud: unavailable; live score read not confirmed. Source freshness is not exposed, so freshness is unverified. Cart relay and Matrix delivery status are not reported.");
+    renderScorePathStatus("This iPad → cloud: unavailable; live score read not confirmed. Source freshness is not exposed, so freshness is unverified. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
     if (!silent) {
       setFeatureStatus("Couldn’t refresh live scores.",true);
       renderScoreActionStatus("Live score request failed; current scores are not confirmed.");
@@ -475,16 +512,16 @@ async function showScoreboard() {
     commandStarted=true;
     await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
     const matrixRevisionStatus=await matrixLiveSourceRevisionStatus(out&&out.updated_at);
-    renderScorePathStatus("This iPad → cloud: active standings received. "+sourceRevision+" "+matrixRevisionStatus+" Cart headless relay status: not reported.");
-    setFeatureStatus("Standings command acknowledged. Physical display is not verified.");
-    renderScoreActionStatus("Matrix standings command acknowledged. "+sourceRevision+" Physical display is not verified.");
+    renderScorePathStatus("This iPad → cloud: active standings received. "+sourceRevision+" "+matrixRevisionStatus+" Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
+    setFeatureStatus("Matrix command: acknowledged; physical display is not verified.");
+    renderScoreActionStatus("Matrix standings command acknowledged. Physical display is not verified. "+sourceRevision);
   } catch (error) {
     if (!readSucceeded) updateScoreNetworkTruth(null,true);
     renderScorePathStatus(readSucceeded
       ? (commandStarted
-        ? "This iPad → cloud: active standings read succeeded. "+sourceRevision+" Matrix command: not confirmed; physical display is not verified. Cart headless relay status: not reported."
-        : "This iPad → cloud: response received. "+sourceRevision+" No active standings or available Matrix command was confirmed; no display is claimed. Cart headless relay status: not reported.")
-      : "This iPad → cloud: score read unavailable. "+sourceRevision+" Matrix command was not sent. Cart headless relay status: not reported.");
+        ? "This iPad → cloud: active standings read succeeded. "+sourceRevision+" Matrix command: not confirmed; physical display is not verified. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported."
+        : "This iPad → cloud: response received. "+sourceRevision+" No active standings or available Matrix command was confirmed; no display is claimed. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.")
+      : "This iPad → cloud: score read unavailable. "+sourceRevision+" Matrix command was not sent. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
     renderScoreActionStatus(commandStarted ? "Standings command was not confirmed." : (readSucceeded ? "No standings command was sent." : "Live score read failed; no standings command was sent."));
     throw error;
   }

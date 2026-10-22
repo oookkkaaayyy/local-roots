@@ -53,12 +53,13 @@
     <div class="truth-grid" aria-live="polite">
       <div class="truth-cell"><span id="controlPathLabel">Control path</span><strong id="backendTruth" aria-live="polite">Checking…</strong></div>
       <div class="truth-cell"><span>Cart/LAN</span><strong id="cartLanTruth" aria-live="polite">Checking…</strong></div>
+      <div class="truth-cell"><span>Internet/WAN path</span><strong id="internetTruth" aria-live="polite">Unverified · no recent HBNF endpoint check</strong></div>
       <div class="truth-cell"><span>Scoring cloud</span><strong id="scoreCloudTruth" aria-live="polite">Not checked</strong></div>
       <div class="truth-cell"><span>Score freshness</span><strong id="scoreFreshnessTruth" aria-live="polite">Unverified · scoring response has no source timestamp</strong></div>
       <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth" aria-live="polite">—</strong></div>
       <div class="truth-cell"><span>Underglow</span><strong id="auxTruth" aria-live="polite">—</strong></div>
     </div>
-    <p class="hardware-note">Cart/LAN and scoring cloud are checked separately. Device reports and command acknowledgments do not confirm physical light or display output, and this screen cannot confirm Cart headless relay delivery.</p>
+    <p class="hardware-note">Cart/LAN, the HBNF public endpoint, and scoring cloud are separate. Endpoint success proves only that this iPad reached that HBNF asset; failure or timeout remains unverified and does not prove Internet/WAN loss. A scoring-cloud response proves only that this iPad reached that endpoint. Score freshness remains unverified without a source timestamp. Device reports and command acknowledgments do not confirm physical light or display output, or Cart headless relay delivery.</p>
   </details>
 
   <section class="panel quick-vibe" aria-label="Vibe">

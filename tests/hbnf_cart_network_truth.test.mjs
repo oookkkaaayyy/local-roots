@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 import {
   deviceEvidenceLabel,
+  hbnfEndpointReachabilityText,
   localLinkStatusText,
   readinessStatus,
   scoreFeedStatus,
@@ -27,9 +29,12 @@ const currentSnapshot = {
 assert.equal(localLinkStatusText(currentSnapshot, "unavailable"), "Reachable · local Cart status returned");
 assert.equal(localLinkStatusText({ local: false }, "unavailable"), "Not confirmed · local check failed");
 assert.equal(localLinkStatusText({ local: false }, "not_checked"), "Not tested from this iPad");
-assert.equal(scoringCloudStatusText({ live: { active: false, entries: [] } }), "Response received · scoring cloud reachable");
-assert.equal(scoringCloudStatusText(null, true), "Unavailable · score request failed");
+assert.equal(scoringCloudStatusText({ live: { active: false, entries: [] } }), "Reachable from this iPad · score endpoint responded");
+assert.equal(scoringCloudStatusText(null, true), "Not confirmed · this iPad’s score-cloud request failed");
 assert.equal(scoringCloudStatusText({ live: null }), "Response received · score data missing");
+assert.equal(hbnfEndpointReachabilityText("reachable"), "HBNF endpoint reachable from this iPad");
+assert.equal(hbnfEndpointReachabilityText("unverified"), "Unverified · HBNF endpoint check failed or timed out");
+assert.equal(hbnfEndpointReachabilityText("not_checked"), "Unverified · no recent HBNF endpoint check");
 assert.equal(scoreFreshnessLabel(), "Unverified · scoring response has no source timestamp");
 assert.match(scoreFeedStatus({ live: { active: true, label: "F9", entries: ["Ava"] } }), /source freshness not exposed/);
 assert.equal(readinessStatus([
@@ -57,12 +62,59 @@ const html = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html", 
 const features = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
 const backend = fs.readFileSync(new URL("../staging/coordinated-backend/hbnf-cart-control/index.ts", import.meta.url), "utf8");
 assert.match(html, /id="cartLanTruth"/);
+assert.match(html, /id="internetTruth"/);
 assert.match(html, /id="scoreCloudTruth"/);
 assert.match(html, /id="scoreFreshnessTruth"/);
+const truthStart = features.indexOf("function updateScoreNetworkTruth(");
+const truthEnd = features.indexOf("function renderScoreActionStatus(", truthStart);
+const truthElements = { internetTruth: { textContent: "HBNF endpoint reachable from this iPad" }, scoreCloudTruth: { textContent: "" }, scoreFreshnessTruth: { textContent: "" } };
+const truthContext = {
+  $: id => truthElements[id],
+  hbnfEndpointReachabilityText,
+  scoringCloudStatusText,
+  scoreFreshnessLabel,
+};
+vm.runInNewContext(features.slice(truthStart, truthEnd), truthContext);
+truthContext.updateScoreNetworkTruth({ live: { active: true, entries: ["Ava"] } });
+assert.equal(truthElements.internetTruth.textContent, "HBNF endpoint reachable from this iPad", "score-cloud success must not be reused as endpoint reachability evidence");
+assert.equal(truthElements.scoreCloudTruth.textContent, "Reachable from this iPad · score endpoint responded");
+assert.match(truthElements.scoreFreshnessTruth.textContent, /Unverified/);
+const probeEnd = features.indexOf("function renderScoreActionStatus(", features.indexOf("function probeHbnfEndpoint("));
+const probeElements = { internetTruth: { textContent: "" } };
+const probeImages = [];
+const timers = [];
+let currentTime = now;
+const probeContext = {
+  document: { getElementById: id => probeElements[id] },
+  Date: { now: () => currentTime },
+  Image: class {
+    constructor() { probeImages.push(this); this.naturalWidth=180; this.naturalHeight=180; }
+    set src(value) { this.url=value; }
+  },
+  clearTimeout: id => { timers[id].cleared=true; },
+  hbnfEndpointReachabilityText,
+  setTimeout: (fn,ms) => { const id=timers.push({fn,ms,cleared:false})-1; return id; },
+};
+vm.runInNewContext(features.slice(features.indexOf("const HBNF_ENDPOINT_IMAGE_URL ="), probeEnd), probeContext);
+probeContext.probeHbnfEndpoint();
+assert.match(probeImages[0].url, /^https:\/\/hbnightflyers\.com\/hbnf-cart-icon-180\.png\?probe=/);
+assert.equal(timers[0].ms, 4000);
+probeImages[0].onload();
+assert.equal(probeElements.internetTruth.textContent, "HBNF endpoint reachable from this iPad");
+probeContext.probeHbnfEndpoint();
+assert.equal(probeImages.length, 1, "probe throttle prevents repeated endpoint requests inside the interval");
+currentTime += 60000;
+probeContext.probeHbnfEndpoint();
+probeImages[1].onerror();
+assert.match(probeElements.internetTruth.textContent, /^Unverified/);
+currentTime += 60000;
+probeContext.probeHbnfEndpoint();
+timers[timers.length-1].fn();
+assert.match(probeElements.internetTruth.textContent, /^Unverified/);
 assert.match(html, /physical light or display output/);
 assert.match(html, /https:\/\/hbnightflyers\.com\/skins\.html/);
 assert.match(html, /https:\/\/hbnightflyers\.com\/glow\.html/);
-assert.match(features, /renderLive\(out\.live,false\)/, "client receipt time must not be rendered as score freshness");
+assert.match(features, /function updateDisplayedLiveSnapshot\(response\) \{[\s\S]*?renderLive\(live,false,updatedAt\)/, "score freshness may use only the source timestamp returned with the live response");
 assert.doesNotMatch(features, /renderLive\(out\.live,false,now\.toLocaleTimeString\(\)\)/);
 
 const liveStatusStart = backend.indexOf('if (action === "live_status")');

@@ -69,12 +69,14 @@ test("source and locally reported Matrix revisions distinguish aligned, stale, a
 test("local Matrix readback reports matching, older, and unavailable source revisions truthfully",async()=>{
   const start=source.indexOf("async function matrixLiveSourceRevisionStatus(");
   const end=source.indexOf("function renderLive(",start);
-  const context={matrixLocal:()=>true,matrixApiUrl:path=>path,fetchJson:async()=>({state:{HBNF:{liveSourceRevision:revision}}}),compareLiveSourceRevision:(a,b)=>a===b?"aligned":!b?"unknown":Date.parse(b)<Date.parse(a)?"stale":"unknown"};
+  const context={matrixLocal:()=>true,matrixApiUrl:path=>path,fetchJson:async()=>({state:{HBNF:{liveActive:true,liveSourceRevision:revision}}}),compareLiveSourceRevision:(a,b)=>a===b?"aligned":!b?"unknown":Date.parse(b)<Date.parse(a)?"stale":"unknown"};
   vm.runInNewContext(source.slice(start,end),context);
   assert.match(await context.matrixLiveSourceRevisionStatus(revision),/same source row revision/);
-  context.fetchJson=async()=>({state:{HBNF:{liveSourceRevision:"2026-10-21T18:29:00.000Z"}}});
+  context.fetchJson=async()=>({state:{HBNF:{liveActive:true,liveSourceRevision:"2026-10-21T18:29:00.000Z"}}});
   assert.match(await context.matrixLiveSourceRevisionStatus(revision),/older source row revision/);
-  context.fetchJson=async()=>({state:{HBNF:{}}});
+  context.fetchJson=async()=>({state:{HBNF:{liveActive:false,liveSourceRevision:revision}}});
+  assert.match(await context.matrixLiveSourceRevisionStatus(revision),/inactive or stale.*120-second lease is not current/i,"a matching historical revision cannot imply an active Matrix snapshot after its lease expires");
+  context.fetchJson=async()=>({state:{HBNF:{liveActive:true}}});
   assert.match(await context.matrixLiveSourceRevisionStatus(revision),/readback is unknown/);
   context.fetchJson=async()=>{throw new Error("offline")};
   assert.match(await context.matrixLiveSourceRevisionStatus(revision),/readback is unavailable/);
