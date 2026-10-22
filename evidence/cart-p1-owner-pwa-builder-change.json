@@ -1,0 +1,23 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-p1-owner-pwa-truthful-commands-and-source-bound-build-20261022",
+  "summary": "Make the existing Owner PWA package builder reject dirty or mixed source, invalid packaged JavaScript, and missing local assets before ZIP emission. Preserve the existing admission/control-state checks and do not install or alter release state.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "affected_subsystem": "Existing Cart Owner PWA package builder only; no firmware, router, relay backend, scoring database, or production device changes.",
+    "source_base": "codex/glow-matrix-relay-integration-20261014 at 8eaa9255a92f88b2a8ec6f443a38e1acb67df9f6",
+    "rollback_reference": "Revert this source-only commit set; no live release/control state was mutated.",
+    "tests": [
+      "python3 -B tests/test_hbnf_owner_pwa_builder_validation.py (5/5)",
+      "git diff --check -- scripts/hbnf_build_local_owner_pwa.py (pass)"
+    ],
+    "live_execution": "Not performed. Candidate-specific admission, current device preflight, exact current rollback verification, and owner field acceptance remain required before production installation."
+  }
+}
