@@ -2,7 +2,7 @@
 import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
-import { deviceReadinessChecks } from "./hbnf-cart-readiness.mjs";
+import { deviceEvidenceLabel, deviceReadinessChecks, localLinkStatusText } from "./hbnf-cart-readiness.mjs";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -29,6 +29,7 @@ let hydrating = false;
 let canonicalCapabilities = {};
 const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
 let localControlActive = false;
+let localPathStatus = OPAL_LOCAL_PWA ? "checking" : "not_checked";
 let lastLocalEnrollAt = 0;
 let lastCloudPairValidationAt = 0;
 
@@ -45,6 +46,7 @@ const copyPair = $("#copyPair");
 const matrixHealth = $("#matrixTruth");
 const auxHealth = $("#auxTruth");
 const backendHealth = $("#backendTruth");
+const cartLanHealth = $("#cartLanTruth");
 const controlPathLabel = $("#controlPathLabel");
 if (controlPathLabel) controlPathLabel.textContent = OPAL_LOCAL_PWA ? "iPad → Cart controls" : "Cloud control API";
 const guestModeToggle = $("#guestMode");
@@ -52,6 +54,14 @@ const guestModeStatus = $("#guestModeStatus");
 let pendingRevision = null;
 const syncHealth = null;
 const rendererHealth = null;
+
+function renderLocalLinkStatus(snapshot) {
+  if (!cartLanHealth) return;
+  cartLanHealth.textContent = localLinkStatusText(snapshot, localPathStatus);
+  cartLanHealth.className = (snapshot && snapshot.local === true) || localPathStatus === "reachable"
+    ? "ok"
+    : "degraded";
+}
 
 function valueOr(value, fallback) {
   return (value === undefined || value === null) ? fallback : value;
@@ -228,13 +238,16 @@ function hydrateLocalControls(state) {
 
 async function call(body) {
   if (OPAL_LOCAL_PWA && body.action === "status") {
+    localPathStatus = "checking";
     try {
       const local = await localOwnerControl.connect("", 0);
       localControlActive = true;
+      localPathStatus = local && local.local === true ? "reachable" : "not_checked";
       if (backendHealth) backendHealth.textContent = "Connected";
       return local;
     } catch (error) {
       localControlActive = false;
+      localPathStatus = "unavailable";
       if (backendHealth) backendHealth.textContent = "Unavailable";
       throw error;
     }
@@ -253,16 +266,19 @@ async function call(body) {
   delete cloudBody.changedFields;
   const token = deviceToken();
   if (validDeviceToken(token) && (body.action === "status" || body.action === "command")) {
+    if (body.action === "status") localPathStatus = "checking";
     try {
       if (body.action === "status") {
         const local = await localOwnerControl.connect(token, devicePairExpiryEpoch(token));
         localControlActive = true;
+        localPathStatus = local && local.local === true ? "reachable" : "not_checked";
         return local;
       }
       if (localControlActive && localOwnerControl.supports(body.type, body.payload)) {
         return localOwnerControl.command(token, body.type, body.payload);
       }
     } catch (localError) {
+      if (body.action === "status") localPathStatus = "unavailable";
       if (body.action === "command" && localControlActive && localOwnerControl.supports(body.type, body.payload)) {
         throw localError;
       }
@@ -335,6 +351,7 @@ function observedAgeLabel(value) {
 
 function renderVisualHealth(snapshot, canonicalSnapshot) {
   const badge = $("#truthBadge");
+  renderLocalLinkStatus(canonicalSnapshot);
   if (!snapshot) {
     if (badge) { badge.textContent = "Cart unavailable"; badge.className = "truth-badge warn"; }
     return;
@@ -350,34 +367,17 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   const auxCheck = readiness.find(value => value.indexOf("AUX device ") === 0) || "AUX device UNCONFIRMED";
   const matrixOk = !!(matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision && matrixCheck.indexOf("PASS") >= 0);
   const auxOk = !!(aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision && auxCheck.indexOf("PASS") >= 0);
-  const labelFor = (report, isConfirmed, check) => {
-    if (report && report.online === false) return "Offline";
-    if (report && report.status === "off" && isConfirmed) return "Off · acknowledged";
-    if (report && report.status === "off") return "Off · not confirmed";
-    if (check.indexOf("STALE") >= 0) return "Stale acknowledgment";
-    if (check.indexOf("DDP receiver") >= 0) return "Matrix sync not confirmed";
-    if (check.indexOf("UNCONFIRMED") >= 0) return "Not confirmed";
-    if (isConfirmed) return "Responding";
-    const failure = shortDeviceFailure(report);
-    if (failure) return "Needs attention";
-    const reportedRevision = report && report.reported ? report.reported.cartRevision : null;
-    const seen = Number(reportedRevision !== null && reportedRevision !== undefined
-      ? reportedRevision
-      : (report ? report.desired_revision : undefined));
-    if (Number.isFinite(desiredRevision) && Number.isFinite(seen)) return "Waiting for update";
-    return "No recent update";
-  };
   if (matrixHealth) {
-    matrixHealth.textContent = labelFor(matrixReport, matrixOk, matrixCheck);
+    matrixHealth.textContent = deviceEvidenceLabel(canonicalSnapshot, "matrix");
     matrixHealth.className = matrixOk ? "ok" : (shortDeviceFailure(matrixReport) ? "bad" : "degraded");
   }
   if (auxHealth) {
-    auxHealth.textContent = labelFor(auxReport, auxOk, auxCheck);
+    auxHealth.textContent = deviceEvidenceLabel(canonicalSnapshot, "aux");
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
     if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
-    if (matrixOk && auxOk) { badge.textContent = "Cart connected"; badge.className = "truth-badge good"; }
+    if (matrixOk && auxOk) { badge.textContent = snapshot.local === true ? "Cart + devices confirmed" : "Device status confirmed"; badge.className = "truth-badge good"; }
     else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
     else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Device status stale"; badge.className = "truth-badge warn"; }
     else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Device status unknown"; badge.className = "truth-badge warn"; }
@@ -446,6 +446,7 @@ async function refresh({ hydrate = true } = {}) {
     out = await call({ action: "status" });
   } catch (error) {
     if (backendHealth) backendHealth.textContent = "Unavailable";
+    renderLocalLinkStatus(null);
     if (matrixHealth) matrixHealth.textContent = "Not confirmed";
     if (auxHealth) auxHealth.textContent = "Not confirmed";
     const badge = $("#truthBadge");
@@ -466,9 +467,10 @@ async function refresh({ hydrate = true } = {}) {
     }
     setAuthorizedUi();
     renderVisualHealth(out, out);
-    statusNode.textContent = out.devices && out.devices.aux && out.devices.aux.ddp === true
-      ? "Cart is connected. Matrix and underglow are responding."
-      : "Cart is connected. Check underglow status.";
+    const localChecks = deviceReadinessChecks(out);
+    statusNode.textContent = localChecks.every(value => value.indexOf("PASS") >= 0)
+      ? "Cart local path is reachable. Matrix/AUX readbacks are current and acknowledged; physical output is unverified."
+      : "Cart local path is reachable. Matrix/AUX readback or DDP synchronization needs attention.";
     return out;
   }
 
@@ -488,7 +490,7 @@ async function refresh({ hydrate = true } = {}) {
     const submitted = observed.some(x => Number(x.desired_revision) === Number(revision) && x.status === "submitted");
     if (fullyApplied || failed) pendingRevision = null;
     statusNode.textContent = fullyApplied
-      ? "Settings updated. Matrix and underglow are responding."
+      ? "Settings acknowledged by Matrix and underglow device reports. Physical output is unverified."
       : failed
         ? "The Cart could not apply that change. Check connection details."
         : submitted
