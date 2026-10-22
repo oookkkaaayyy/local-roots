@@ -1,0 +1,17 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER-PWA-V109-EXACT-ADMISSION-PROFILE-20261022",
+  "summary": "Register the exact v1.0.9 Owner PWA package and v1.0.8 installed baseline in the existing one-use admission controller, retaining all device identity, freshness, hash, rollback, and scoped authorization checks.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "reason": "The exact v1.0.9 package was rejected because the existing controller had no v1.0.9 candidate profile. The new profile pins source commit d879a7ced4770136ef10f98bcee9d060013976f6, ZIP SHA-256 2dca2431fc06603c9a09118e227b24ca212e488af7c69e51f64d32a72a451415, all package and script hashes, and the exact v1.0.8 baseline receipt and filesystem manifest. It does not alter the lifecycle model or open firmware mutation authority.",
+    "rollback": "Revert the v1.0.9 profile, its focused tests, and this evidence record. No device files or controller transaction state are changed by the profile registration itself; any later admission is a separate exact one-use record and must remain preserved as evidence."
+  }
+}

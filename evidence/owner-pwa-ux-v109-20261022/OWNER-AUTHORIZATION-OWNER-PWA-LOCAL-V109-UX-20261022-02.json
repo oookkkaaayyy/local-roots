@@ -1,0 +1,26 @@
+{
+  "owner_authorization": {
+    "artifact_sha256_bindings": {
+      "baseline_manifest": "69375cc9a658474df00b15b896ce6dddbd827d6da913edb09a1a3914bd2a5c7c",
+      "baseline_readback": "4bffb9dfb51d4716efd779472b0a8ff8e57f26e0d5b51b8690a4cd8f27200872",
+      "candidate_manifest": "1b9c724f36e22153bdca9fb8d048f94acb7b52c9bd985a1a4e8f739dcb2d25e9",
+      "candidate_zip": "2dca2431fc06603c9a09118e227b24ca212e488af7c69e51f64d32a72a451415",
+      "installer": "4cddf36a79d33856d300f3bd5a9ee5c93844a0dad4a108fa12c59e9ce0a39c31",
+      "payload_manifest": "aa7431a97baaae20d0c21a4c478472429c7383f078aaaa2f887246f61437ca84",
+      "rollback_script": "cfd6f0cb2a08f0d274c8c0a5af3cc1fde59fcaf840a1d1bb71935bee3f3c259c",
+      "served_baseline_zip": "491620fe6dcc08c60d29df0ec76657dfc47cf6f87db74a95323ead1fbaf64c58"
+    },
+    "authorization_id": "OWNER-AUTH-V109-UX-20261022-01",
+    "expires_unix": 1792702443.700001,
+    "issued_unix": 1792701843.700001,
+    "nonce": "2aee75b384bbca647d320a4f5642581a1f85e5ad1d5bbce87da142a2b9441f6b",
+    "schema": "hbnf-owner-pwa-install-authorization-v1",
+    "scope": [
+      "install_owner_pwa",
+      "rollback_if_required"
+    ],
+    "source_message_ref": "Owner instruction relayed in current task from source thread 01a15da3-9fa5-7952-be4b-e8c70d0ef011: complete the work and installation; prior direct approval for the guarded v1.0.9 install stands.",
+    "transaction_id": "OWNER-PWA-LOCAL-V109-UX-20261022-02"
+  },
+  "schema": "hbnf-owner-pwa-explicit-authorization-receipt-v1"
+}

@@ -375,6 +375,121 @@ OWNER_PWA_V108_SOURCE_COMMIT=OWNER_PWA_RECOVERY_SOURCE_COMMIT
 OWNER_PWA_V108_TARGETS=tuple(OWNER_PWA_TARGETS)
 OWNER_PWA_V108_CANDIDATE_HASHES=None
 
+# The UX-only v1.0.9 candidate is a new exact package profile. Its preinstall
+# baseline is the independently read-back v1.0.8 runtime; this profile does not
+# inherit or reopen the already completed v1.0.6 transaction.
+OWNER_PWA_V109_PROFILE="ux-v1.0.9"
+OWNER_PWA_V109_TRANSACTION_ID="OWNER-PWA-LOCAL-V109-UX-20261022-02"
+OWNER_PWA_V109_SOURCE_COMMIT="d879a7ced4770136ef10f98bcee9d060013976f6"
+OWNER_PWA_V109_PACKAGE_SHA256="2dca2431fc06603c9a09118e227b24ca212e488af7c69e51f64d32a72a451415"
+OWNER_PWA_V109_PACKAGE_MANIFEST_SHA256="1b9c724f36e22153bdca9fb8d048f94acb7b52c9bd985a1a4e8f739dcb2d25e9"
+OWNER_PWA_V109_PAYLOAD_MANIFEST_SHA256="aa7431a97baaae20d0c21a4c478472429c7383f078aaaa2f887246f61437ca84"
+OWNER_PWA_V109_BASELINE_MANIFEST_SHA256="69375cc9a658474df00b15b896ce6dddbd827d6da913edb09a1a3914bd2a5c7c"
+OWNER_PWA_V109_BASELINE_READBACK_SHA256="4bffb9dfb51d4716efd779472b0a8ff8e57f26e0d5b51b8690a4cd8f27200872"
+OWNER_PWA_V109_BASELINE_PACKAGE_SHA256="491620fe6dcc08c60d29df0ec76657dfc47cf6f87db74a95323ead1fbaf64c58"
+OWNER_PWA_V109_INSTALLER_SHA256="4cddf36a79d33856d300f3bd5a9ee5c93844a0dad4a108fa12c59e9ce0a39c31"
+OWNER_PWA_V109_ROLLBACK_SHA256="cfd6f0cb2a08f0d274c8c0a5af3cc1fde59fcaf840a1d1bb71935bee3f3c259c"
+OWNER_PWA_V109_PACKAGE_DIR=ROOT/"staging/coordinated-backend/opal/owner-pwa-local-v1.0.9"
+OWNER_PWA_V109_BASELINE_READBACK=ROOT/"evidence/owner-pwa-ux-v109-20261022/INSTALLED-V1.0.8-READBACK.json"
+OWNER_PWA_V109_TARGETS=tuple(OWNER_PWA_TARGETS)
+OWNER_PWA_V109_PROFILE_CACHE=None
+OWNER_PWA_V109_ARTIFACTS={
+    "candidate_zip":OWNER_PWA_V109_PACKAGE_SHA256,
+    "candidate_manifest":OWNER_PWA_V109_PACKAGE_MANIFEST_SHA256,
+    "payload_manifest":OWNER_PWA_V109_PAYLOAD_MANIFEST_SHA256,
+    "baseline_manifest":OWNER_PWA_V109_BASELINE_MANIFEST_SHA256,
+    "baseline_readback":OWNER_PWA_V109_BASELINE_READBACK_SHA256,
+    "served_baseline_zip":OWNER_PWA_V109_BASELINE_PACKAGE_SHA256,
+    "installer":OWNER_PWA_V109_INSTALLER_SHA256,
+    "rollback_script":OWNER_PWA_V109_ROLLBACK_SHA256,
+}
+
+def _owner_pwa_v109_profile():
+    """Validate the exact v1.0.9 package and the recorded v1.0.8 baseline."""
+    global OWNER_PWA_V109_PROFILE_CACHE
+    if OWNER_PWA_V109_PROFILE_CACHE is not None:
+        return OWNER_PWA_V109_PROFILE_CACHE
+    package_dir=OWNER_PWA_V109_PACKAGE_DIR
+    paths={
+        "candidate_zip":package_dir/"hbnf-owner-pwa-local-v1.0.9.zip",
+        "package_manifest":package_dir/"PACKAGE.json",
+        "payload_manifest":package_dir/"PAYLOAD.SHA256SUMS",
+        "baseline_manifest":package_dir/"BASELINE.SHA256SUMS",
+        "baseline_package":package_dir/"hbnf-owner-pwa-local-v1.0.8-baseline.zip",
+        "installer":package_dir/"install.sh",
+        "rollback_script":package_dir/"rollback.sh",
+    }
+    expected={
+        "candidate_zip":OWNER_PWA_V109_PACKAGE_SHA256,
+        "package_manifest":OWNER_PWA_V109_PACKAGE_MANIFEST_SHA256,
+        "payload_manifest":OWNER_PWA_V109_PAYLOAD_MANIFEST_SHA256,
+        "baseline_manifest":OWNER_PWA_V109_BASELINE_MANIFEST_SHA256,
+        "baseline_package":OWNER_PWA_V109_BASELINE_PACKAGE_SHA256,
+        "installer":OWNER_PWA_V109_INSTALLER_SHA256,
+        "rollback_script":OWNER_PWA_V109_ROLLBACK_SHA256,
+    }
+    if any(not path.is_file() or sha256_file(path)!=expected[key] for key,path in paths.items()):
+        raise ValueError("v1.0.9 exact candidate or v1.0.8 baseline package artifact is missing or changed")
+    readback=OWNER_PWA_V109_BASELINE_READBACK
+    if not readback.is_file() or sha256_file(readback)!=OWNER_PWA_V109_BASELINE_READBACK_SHA256:
+        raise ValueError("v1.0.8 installed readback receipt is missing or changed")
+    package=load(paths["package_manifest"])
+    if (package.get("package")!="hbnf-owner-pwa-local-v1.0.9"
+        or package.get("sourceCommit")!=OWNER_PWA_V109_SOURCE_COMMIT
+        or package.get("transactionId")!=OWNER_PWA_V109_TRANSACTION_ID
+        or package.get("rollbackBaseline",{}).get("sha256")!=OWNER_PWA_V109_BASELINE_MANIFEST_SHA256
+        or package.get("rollbackBaseline",{}).get("installedReadback",{}).get("sha256")!=OWNER_PWA_V109_BASELINE_READBACK_SHA256):
+        raise ValueError("v1.0.9 package manifest does not bind its exact source, transaction, and v1.0.8 baseline")
+    assets=package.get("assets")
+    if not isinstance(assets,list) or len(assets)!=16:
+        raise ValueError("v1.0.9 package has an unexpected Owner PWA asset set")
+    candidate={}
+    for item in assets:
+        if (not isinstance(item,dict) or not isinstance(item.get("path"),str)
+            or not re.fullmatch(r"[a-f0-9]{64}",str(item.get("sha256","")))):
+            raise ValueError("v1.0.9 package manifest contains a malformed asset")
+        candidate["owner-pwa/"+item["path"]]=item["sha256"]
+    readback_data=load(readback)
+    if (readback_data.get("status")!="PASS" or readback_data.get("runtime_version")!="1.0.8"
+        or readback_data.get("installed_file_count")!=20
+        or readback_data.get("installed_sha256_by_path")!=readback_data.get("served_sha256_by_path")):
+        raise ValueError("v1.0.8 baseline receipt does not verify the exact served runtime")
+    baseline_served=readback_data["served_sha256_by_path"]
+    transport="mission-control-local/local-transport.js"
+    if set(baseline_served)!=(set(candidate)|{transport}):
+        raise ValueError("v1.0.8 served baseline does not match the 16 exact candidate asset paths and transport")
+    candidate[transport]=baseline_served[transport]
+    baseline_files={}
+    for line in paths["baseline_manifest"].read_text().splitlines():
+        try: digest,filename=line.split(None,1)
+        except ValueError: raise ValueError("v1.0.8 rollback baseline manifest is malformed")
+        filename=filename.strip()
+        if not re.fullmatch(r"[a-f0-9]{64}",digest) or "/" in filename or filename in (".",".."):
+            raise ValueError("v1.0.8 rollback baseline manifest contains an unsafe path")
+        baseline_files["owner-pwa/"+filename]=digest
+    if len(baseline_files)!=20 or len(baseline_files)!=len(paths["baseline_manifest"].read_text().splitlines()):
+        raise ValueError("v1.0.8 rollback baseline manifest does not contain exactly 20 unique files")
+    for path,digest in baseline_served.items():
+        if path==transport: continue
+        if baseline_files.get(path)!=digest:
+            raise ValueError("v1.0.8 baseline file hashes disagree with the exact served payload")
+    baseline_files[transport]=baseline_served[transport]
+    artifacts=OWNER_PWA_V109_ARTIFACTS
+    mission_control_hashes={
+        "mission-control-local/.hbnf-package-marker":"fbeeb20927e58ff3bea0d0a66d5e996dbaefcbb72259a80a45ff206585137835",
+        "mission-control-local/.hbnf-package-version":"9fd28642d3aca191e5c7fc2383cfd6fabb2aac8743f029dabb8989ac584e31bc",
+        "mission-control-local/index.html":"0424ab290ab1d80dbbd1bff31e068009e3000cae22ec2792b92e4eef7bdcbcaf",
+        "mission-control-local/styles.css":"e2aceeabac8fa7e85fca1e638f50da6182d4e5b79fd5004a7a3c071915cc3522",
+        "mission-control-local/app.js":"d44691025b16d95fb1a210a56d901c3ee6cdd74bf932a59f7ffe08679184df2b",
+        "mission-control-local/local-transport.js":baseline_served[transport],
+    }
+    OWNER_PWA_V109_PROFILE_CACHE={"artifacts":artifacts,"targets":OWNER_PWA_V109_TARGETS,
+        "candidate_hashes":candidate,"candidate_commit":OWNER_PWA_V109_SOURCE_COMMIT,
+        "transaction_id":OWNER_PWA_V109_TRANSACTION_ID,"candidate_sha256":OWNER_PWA_V109_PACKAGE_SHA256,
+        "baseline_served_hashes":baseline_served,"baseline_filesystem_hashes":baseline_files,
+        "mission_control_hashes":mission_control_hashes}
+    return OWNER_PWA_V109_PROFILE_CACHE
+
 def _owner_pwa_v108_candidate_hashes():
     """Read per-file pins only from the immutable-hash-pinned v1.0.8 manifest."""
     global OWNER_PWA_V108_CANDIDATE_HASHES
@@ -419,8 +534,10 @@ def _owner_pwa_v108_candidate_hashes():
 
 def _owner_pwa_profile(manifest):
     selected=manifest.get("candidate_profile") if isinstance(manifest,dict) else None
-    if selected not in (None,OWNER_PWA_V108_PROFILE):
+    if selected not in (None,OWNER_PWA_V108_PROFILE,OWNER_PWA_V109_PROFILE):
         raise ValueError("unknown Owner PWA candidate profile")
+    if selected==OWNER_PWA_V109_PROFILE:
+        return _owner_pwa_v109_profile()
     if selected==OWNER_PWA_V108_PROFILE:
         return {"artifacts":OWNER_PWA_V108_ARTIFACTS,"targets":OWNER_PWA_V108_TARGETS,
             "candidate_hashes":_owner_pwa_v108_candidate_hashes(),"candidate_commit":OWNER_PWA_V108_SOURCE_COMMIT,
@@ -546,6 +663,12 @@ def _owner_pwa_verified_terminal_transaction(tx):
                 errors.append("prior install receipt does not bind all exact served Owner files")
             elif any(not re.fullmatch(r"[a-f0-9]{64}",str(value)) for value in installed.values()):
                 errors.append("prior install receipt contains an invalid file hash")
+            if artifacts==OWNER_PWA_V109_ARTIFACTS:
+                try: expected_v109=_owner_pwa_v109_profile()
+                except (OSError,ValueError,TypeError) as exc:
+                    expected_v109=None; errors.append("prior v1.0.9 profile artifacts are unavailable: "+str(exc))
+                if expected_v109 is not None and (installed!=expected_v109["candidate_hashes"] or served!=expected_v109["candidate_hashes"]):
+                    errors.append("prior v1.0.9 install receipt does not match its exact admitted candidate hashes")
             health_names=("http_200_all_17","content_hash_all_17") if isinstance(installed,dict) and set(installed)==set(OWNER_PWA_TARGETS) else ("http_200_all_15","content_hash_all_15")
             if receipt.get("health_checks")!={health_names[0]:True,health_names[1]:True,"owner_route_content":True,"guest_unchanged":True,"skins_unchanged":True,"firmware_unchanged":True,"aux_unchanged":True}:
                 errors.append("prior install receipt does not show all required health checks")
@@ -560,13 +683,23 @@ def _owner_pwa_verified_terminal_transaction(tx):
         rollback=evidence("rollback_receipt_path","rollback_receipt_sha256","rollback receipt")
         if rollback is not None:
             hashes=rollback.get("served_sha256_by_path")
+            valid_rollback_sets=(set(OWNER_PWA_BASELINE_HASHES),set(OWNER_PWA_LEGACY_TARGETS))
+            if artifacts==OWNER_PWA_V109_ARTIFACTS:
+                try: valid_rollback_sets=valid_rollback_sets+(set(_owner_pwa_v109_profile()["baseline_served_hashes"]),)
+                except (OSError,ValueError,TypeError) as exc: errors.append("prior v1.0.9 rollback profile artifacts are unavailable: "+str(exc))
             if (rollback.get("schema")!="hbnf-owner-pwa-install-result-v1"
                 or rollback.get("transaction_id")!=tx.get("transaction_id")
                 or rollback.get("step")!="rollback_if_required" or rollback.get("status")!="PASS"
                 or rollback.get("rollback_sha256")!=artifacts.get("served_baseline_zip")
-                or not isinstance(hashes,dict) or set(hashes) not in (set(OWNER_PWA_BASELINE_HASHES),set(OWNER_PWA_LEGACY_TARGETS))
+                or not isinstance(hashes,dict) or set(hashes) not in valid_rollback_sets
                 or any(not re.fullmatch(r"[a-f0-9]{64}",str(value)) for value in hashes.values())):
                 errors.append("prior rollback receipt does not prove its exact baseline restoration")
+            if artifacts==OWNER_PWA_V109_ARTIFACTS:
+                try: expected_v109=_owner_pwa_v109_profile()
+                except (OSError,ValueError,TypeError) as exc:
+                    expected_v109=None; errors.append("prior v1.0.9 rollback profile artifacts are unavailable: "+str(exc))
+                if expected_v109 is not None and hashes!=expected_v109["baseline_served_hashes"]:
+                    errors.append("prior v1.0.9 rollback receipt does not match its exact v1.0.8 served baseline")
     return list(dict.fromkeys(errors))
 
 
@@ -590,7 +723,11 @@ def issue_owner_pwa_admission(state,manifest,owner_authorization,now=None):
     except (OSError,ValueError,TypeError) as exc: raise ValueError("Owner PWA issue rejected: "+str(exc))
     if any(isinstance(item,dict) and item.get("recovery_supersession") is not None
         for item in cursor.get("owner_pwa_transaction_history",[])) and manifest.get("candidate_profile")!=OWNER_PWA_V108_PROFILE:
-        raise ValueError("Owner PWA issue rejected: this recovery supersession authorizes only the exact v1.0.8 successor")
+        completed_successor=(isinstance(cursor.get("owner_pwa_transaction"),dict)
+            and cursor["owner_pwa_transaction"].get("transaction_id")==OWNER_PWA_V108_TRANSACTION_ID
+            and cursor["owner_pwa_transaction"].get("status") in ("COMPLETE","ROLLED_BACK"))
+        if not completed_successor:
+            raise ValueError("Owner PWA issue rejected: recovery supersession requires the exact v1.0.8 successor to complete before a later candidate")
     archived=_owner_pwa_prior_ids(cursor)
     prior=cursor.get("owner_pwa_transaction")
     prior_chain=archived+([prior] if prior is not None else [])
@@ -642,7 +779,7 @@ def issue_owner_pwa_admission(state,manifest,owner_authorization,now=None):
     if not all(isinstance(owner.get(k),str) and owner[k] for k in ("transaction_id","authorization_id","source_message_ref","nonce")):
         raise ValueError("Owner PWA issue rejected: owner authorization identity is incomplete")
     if profile["transaction_id"] is not None and owner.get("transaction_id")!=profile["transaction_id"]:
-        raise ValueError("Owner PWA issue rejected: recovery successor transaction identity is not the exact approved v1.0.8 package ID")
+        raise ValueError("Owner PWA issue rejected: transaction identity is not the exact approved candidate package ID")
     manifest["transaction_id"]=owner["transaction_id"]
     manifest["admission_sha256"]=owner_pwa_admission_digest(manifest)
     tx={"schema":"hbnf-owner-pwa-transaction-state-v1","transaction_id":owner["transaction_id"],
@@ -730,7 +867,12 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
         errors.append("Owner PWA package, candidate, installer, or rollback hash binding mismatch")
     if manifest.get("target")!={"model":"GL-SFT1200","ip":"192.168.77.1","base":"/www/mission-control-local","owner_dir":"/www/mission-control-local/owner-pwa"}:
         errors.append("Owner PWA target differs from the exact Opal allowlist")
-    if manifest.get("candidate_profile")==OWNER_PWA_V108_PROFILE:
+    if manifest.get("candidate_profile")==OWNER_PWA_V109_PROFILE:
+        if manifest.get("transaction_id")!=OWNER_PWA_V109_TRANSACTION_ID: errors.append("v1.0.9 transaction identity differs from the exact candidate package")
+        if manifest.get("candidate_package_sha256")!=OWNER_PWA_V109_PACKAGE_SHA256: errors.append("v1.0.9 candidate package hash differs from the exact reviewed package")
+        if manifest.get("package_path")!="staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/hbnf-owner-pwa-local-v1.0.9.zip": errors.append("v1.0.9 candidate path differs from the exact reviewed local package")
+        if manifest.get("drive_file_id") is not None: errors.append("v1.0.9 local package admission may not substitute an unrelated Drive artifact")
+    elif manifest.get("candidate_profile")==OWNER_PWA_V108_PROFILE:
         if manifest.get("transaction_id")!=OWNER_PWA_V108_TRANSACTION_ID: errors.append("v1.0.8 successor transaction identity differs from the approved package")
         if manifest.get("candidate_package_sha256")!=OWNER_PWA_V108_PACKAGE_SHA256: errors.append("v1.0.8 candidate package hash differs from the exact approved package")
         if manifest.get("package_path")!="staging/coordinated-backend/opal/owner-pwa-local-v1.0.8-package/hbnf-owner-pwa-local-v1.0.8.zip": errors.append("v1.0.8 candidate path differs from the exact reviewed local package")
@@ -746,13 +888,31 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
     else:
         captured=pre.get("captured_unix")
         if validate_freshness and (not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5): errors.append("Owner PWA live preflight is stale")
-        if pre.get("target_ip")!="192.168.77.1" or pre.get("served_sha256_by_path")!=OWNER_PWA_BASELINE_HASHES: errors.append("live Owner PWA served baseline differs from the exact rollback manifest")
-        if pre.get("filesystem_sha256_by_path")!=OWNER_PWA_BASELINE_HASHES: errors.append("live Owner PWA filesystem baseline differs from the exact rollback manifest")
-        if pre.get("baseline_http_status_by_path")!={path:200 for path in OWNER_PWA_BASELINE_HASHES}: errors.append("live Owner PWA preflight did not verify every existing URL returned HTTP 200")
-        if pre.get("new_path_preflight_by_path")!={path:{"filesystem_absent":True,"http_status":404} for path in OWNER_PWA_NEW_PATHS}: errors.append("candidate-only Owner PWA paths were not verified absent before installation")
+        baseline_served=profile.get("baseline_served_hashes",OWNER_PWA_BASELINE_HASHES)
+        baseline_filesystem=profile.get("baseline_filesystem_hashes",OWNER_PWA_BASELINE_HASHES)
+        if pre.get("target_ip")!="192.168.77.1" or pre.get("served_sha256_by_path")!=baseline_served: errors.append("live Owner PWA served baseline differs from the exact rollback manifest")
+        if pre.get("filesystem_sha256_by_path")!=baseline_filesystem: errors.append("live Owner PWA filesystem baseline differs from the exact rollback manifest")
+        if pre.get("baseline_http_status_by_path")!={path:200 for path in baseline_served}: errors.append("live Owner PWA preflight did not verify every existing URL returned HTTP 200")
+        expected_new_paths={} if manifest.get("candidate_profile")==OWNER_PWA_V109_PROFILE else {path:{"filesystem_absent":True,"http_status":404} for path in OWNER_PWA_NEW_PATHS}
+        if pre.get("new_path_preflight_by_path")!=expected_new_paths: errors.append("candidate-only Owner PWA paths were not verified in the expected baseline state")
         permissions=pre.get("permissions",{})
         if permissions!={"owner_files_regular_no_symlinks":True,"transport_regular_no_symlink":True,"root_install_available":True,"recovery_paths_clear":True}:
             errors.append("live Owner PWA permissions or recovery-path preflight failed")
+        if manifest.get("candidate_profile")==OWNER_PWA_V109_PROFILE:
+            expected_identity={"model":"GL-SFT1200","board":"glinet,gl-sft1200",
+                "br_lan_mac":OWNER_PWA_RECOVERY_HISTORICAL_MAC,"kernel":"4.14.90",
+                "firmware":"OpenWrt 18.06","firmware_release_id":"OpenWrt",
+                "firmware_release":"LEDE","firmware_target":"siflower/sf19a28-fullmask"}
+            if pre.get("device_identity")!=expected_identity:
+                errors.append("fresh v1.0.9 preflight device model, board, MAC, kernel, or firmware identity mismatch")
+            if pre.get("mission_control_sha256_by_path")!=profile["mission_control_hashes"]:
+                errors.append("fresh v1.0.9 preflight Mission Control or local transport differs from the installer's read-only preservation checks")
+            expected_rollback={"baseline_zip_sha256":profile["artifacts"]["served_baseline_zip"],
+                "baseline_manifest_sha256":OWNER_PWA_V109_BASELINE_MANIFEST_SHA256,
+                "baseline_readback_sha256":OWNER_PWA_V109_BASELINE_READBACK_SHA256,
+                "exact_backup_path_clear":True,"same_filesystem":True,"sha256sum_available":True}
+            if pre.get("rollback")!=expected_rollback:
+                errors.append("fresh v1.0.9 preflight did not verify the exact v1.0.8 baseline and rollback prerequisites")
         if manifest.get("candidate_profile")==OWNER_PWA_V108_PROFILE:
             expected_identity={"model":"GL-SFT1200","board":"glinet,gl-sft1200",
                 "br_lan_mac":OWNER_PWA_RECOVERY_HISTORICAL_MAC,"kernel":"4.14.90",
@@ -844,7 +1004,9 @@ def complete_owner_pwa_rollback(state,manifest,evidence,now=None):
     try: evidence=load(p) if p else {}
     except (OSError,ValueError,TypeError): evidence={}; errors.append("rollback evidence is missing or malformed")
     rollback_hash=(profile["artifacts"].get("rollback_baseline_zip") or profile["artifacts"].get("served_baseline_zip"))
-    if not isinstance(evidence,dict) or evidence.get("schema")!="hbnf-owner-pwa-install-result-v1" or evidence.get("transaction_id")!=manifest.get("transaction_id") or evidence.get("step")!="rollback_if_required" or evidence.get("status")!="PASS" or evidence.get("served_sha256_by_path")!=OWNER_PWA_BASELINE_HASHES or evidence.get("absent_path_status_by_path")!={path:404 for path in OWNER_PWA_NEW_PATHS} or evidence.get("rollback_sha256")!=rollback_hash:
+    baseline_served=profile.get("baseline_served_hashes",OWNER_PWA_BASELINE_HASHES)
+    expected_absent={} if manifest.get("candidate_profile")==OWNER_PWA_V109_PROFILE else {path:404 for path in OWNER_PWA_NEW_PATHS}
+    if not isinstance(evidence,dict) or evidence.get("schema")!="hbnf-owner-pwa-install-result-v1" or evidence.get("transaction_id")!=manifest.get("transaction_id") or evidence.get("step")!="rollback_if_required" or evidence.get("status")!="PASS" or evidence.get("served_sha256_by_path")!=baseline_served or evidence.get("absent_path_status_by_path")!=expected_absent or evidence.get("rollback_sha256")!=rollback_hash:
         errors.append("rollback evidence does not verify the exact previous served baseline")
     if errors: raise ValueError("Owner PWA rollback completion rejected: "+"; ".join(dict.fromkeys(errors)))
     tx.update({"status":"ROLLED_BACK","active_step":None,"rollback_receipt_path":str(p.relative_to(root)),"rollback_receipt_sha256":sha256_file(p),"completed_steps":[OWNER_PWA_STEP]})

@@ -1,0 +1,222 @@
+{
+  "assets": [
+    {
+      "path": "hbnf-cart-features.js",
+      "sha256": "496a4059cd8e4a17f91ca0bf56ea0651a3f5a28cb61d68982410fbb0626d551e",
+      "size": 39422
+    },
+    {
+      "path": "hbnf-cart-icon-180.png",
+      "sha256": "2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e",
+      "size": 50069
+    },
+    {
+      "path": "hbnf-cart-icon-192.png",
+      "sha256": "f45ae7df9d4f00ebfbb1a28ba0cfb405dff06e1a5f6ebcf7cf213f517ba226f1",
+      "size": 65962
+    },
+    {
+      "path": "hbnf-cart-icon-512.png",
+      "sha256": "3088b88b82ac601cf32b3902e70de7bdc0ffb7236a7533d7a71775fcc3fb6d27",
+      "size": 299892
+    },
+    {
+      "path": "hbnf-cart-live-display.js",
+      "sha256": "54021b2f28492096931294419f1a7776cf54e1ff1b6e67642e1c8af6661437e4",
+      "size": 451
+    },
+    {
+      "path": "hbnf-cart-local.js",
+      "sha256": "ca81f93e7f76399f3181cbfb18db74effa6e6e6467fe181a562fd7036cc228ba",
+      "size": 27145
+    },
+    {
+      "path": "hbnf-cart-manifest.webmanifest",
+      "sha256": "94247eb6cb9c300656c46d45a99c711b92a43b0876c8105ca5795394f4068041",
+      "size": 533
+    },
+    {
+      "path": "hbnf-cart-net.js",
+      "sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+      "size": 1511
+    },
+    {
+      "path": "hbnf-cart-readiness.js",
+      "sha256": "9b131932768c8b7b4116c0c894be294aa5bd63c2030c2902a8178698021cb25d",
+      "size": 6184
+    },
+    {
+      "path": "hbnf-cart-semantic.js",
+      "sha256": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+      "size": 3411
+    },
+    {
+      "path": "hbnf-cart-skins-score.js",
+      "sha256": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+      "size": 7067
+    },
+    {
+      "path": "hbnf-cart-ui-v6.css",
+      "sha256": "a4846b4662a6bd2ffdb0f48c738d0ff55bfeac6d091b6e5fba591758dfb3154f",
+      "size": 11070
+    },
+    {
+      "path": "hbnf-cart-ui-v6.js",
+      "sha256": "cb0cd6f24fe0abe84ab192daf197c1d94e5b9493eb0c887bf9dc60091f653f08",
+      "size": 1517
+    },
+    {
+      "path": "hbnf-cart.html",
+      "sha256": "878c704d6b29153a9d546942b61055243264a125dff047944da0df97e5968266",
+      "size": 20053
+    },
+    {
+      "path": "hbnf-cart.js",
+      "sha256": "a941bb582a25ce49bbe69cf6fdaa55f068f8cd84f01e687389e5777426f90499",
+      "size": 33088
+    },
+    {
+      "path": "hbnf-guest-qr.png",
+      "sha256": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
+      "size": 3769
+    }
+  ],
+  "builder": {
+    "path": "scripts/hbnf_build_local_owner_pwa.py",
+    "sha256": "02e8ea6acb5a550af8ce8acb96e594daa851ae9fcfdc6b12facfffa23c15b0f9"
+  },
+  "cloudScoring": "remote-only; live results are fetched on demand and cached entries are labeled CACHED",
+  "destination": "/www/mission-control-local/owner-pwa",
+  "mode": "additive-static-subtree",
+  "package": "hbnf-owner-pwa-local-v1.0.9",
+  "packageTools": [],
+  "releaseDisposition": "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
+  "rollbackBaseline": {
+    "entries": 20,
+    "installedReadback": {
+      "installedRegularFiles": 20,
+      "path": "evidence/owner-pwa-ux-v109-20261022/INSTALLED-V1.0.8-READBACK.json",
+      "remainingFourMarkerHashes": "Bound by exact baseline manifest and freshly verified by installer before any swap",
+      "runtimeVersion": "1.0.8",
+      "servedPayloadHashesVerified": 16,
+      "sha256": "4bffb9dfb51d4716efd779472b0a8ff8e57f26e0d5b51b8690a4cd8f27200872"
+    },
+    "path": "BASELINE.SHA256SUMS",
+    "sha256": "69375cc9a658474df00b15b896ce6dddbd827d6da913edb09a1a3914bd2a5c7c",
+    "source": null
+  },
+  "sourceCommit": "d879a7ced4770136ef10f98bcee9d060013976f6",
+  "sourceInputs": [
+    {
+      "path": "evidence/owner-pwa-ux-v109-20261022/INSTALLED-V1.0.8-READBACK.json",
+      "sha256": "4bffb9dfb51d4716efd779472b0a8ff8e57f26e0d5b51b8690a4cd8f27200872",
+      "size": 9115
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h",
+      "sha256": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+      "size": 350552
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-features.mjs",
+      "sha256": "987db942f13f920081a720f476157bcb7083d4e04abdbae1de25068131004788",
+      "size": 39425
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-icon-180.png",
+      "sha256": "2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e",
+      "size": 50069
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-icon-192.png",
+      "sha256": "f45ae7df9d4f00ebfbb1a28ba0cfb405dff06e1a5f6ebcf7cf213f517ba226f1",
+      "size": 65962
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-icon-512.png",
+      "sha256": "3088b88b82ac601cf32b3902e70de7bdc0ffb7236a7533d7a71775fcc3fb6d27",
+      "size": 299892
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-live-display.mjs",
+      "sha256": "54021b2f28492096931294419f1a7776cf54e1ff1b6e67642e1c8af6661437e4",
+      "size": 451
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-local.mjs",
+      "sha256": "945bd2049d90c6e4ebb8cb6ac79c06d7bd46564b73ce20a600881447ae72aea1",
+      "size": 27146
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-manifest.webmanifest",
+      "sha256": "fe64eafccd2746f43e409b988914042f61a39155710252e1bb09bd42a3eacd45",
+      "size": 495
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-net.mjs",
+      "sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+      "size": 1511
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-readiness.mjs",
+      "sha256": "9b131932768c8b7b4116c0c894be294aa5bd63c2030c2902a8178698021cb25d",
+      "size": 6184
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-semantic.mjs",
+      "sha256": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+      "size": 3411
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-skins-score.mjs",
+      "sha256": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+      "size": 7067
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-ui-v6.css",
+      "sha256": "a4846b4662a6bd2ffdb0f48c738d0ff55bfeac6d091b6e5fba591758dfb3154f",
+      "size": 11070
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart-ui-v6.mjs",
+      "sha256": "cb0cd6f24fe0abe84ab192daf197c1d94e5b9493eb0c887bf9dc60091f653f08",
+      "size": 1517
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart.html",
+      "sha256": "895bd9f46432a4f33246c7cf0f84a1cf60853bb346256f0184ebea5b5737ffbe",
+      "size": 20056
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-cart.js",
+      "sha256": "62e0f56ca652b9c49ab913242232627fe0451a5a499193b35af5a60ffcc2e1f6",
+      "size": 33092
+    },
+    {
+      "path": "hbnf-final-controller/hbnf-guest-qr.png",
+      "sha256": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
+      "size": 3769
+    },
+    {
+      "path": "scripts/hbnf_build_local_owner_pwa.py",
+      "sha256": "02e8ea6acb5a550af8ce8acb96e594daa851ae9fcfdc6b12facfffa23c15b0f9",
+      "size": 21032
+    },
+    {
+      "path": "scripts/hbnf_verify_owner_pwa_source_manifest.mjs",
+      "sha256": "ffb928d104288b7a2ef10488af6b2dfe5cfc84aa1386c9cfc3cd49fa033b47b8",
+      "size": 2005
+    },
+    {
+      "path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/install.sh",
+      "sha256": "4cddf36a79d33856d300f3bd5a9ee5c93844a0dad4a108fa12c59e9ce0a39c31",
+      "size": 6402
+    },
+    {
+      "path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/rollback.sh",
+      "sha256": "cfd6f0cb2a08f0d274c8c0a5af3cc1fde59fcaf840a1d1bb71935bee3f3c259c",
+      "size": 1955
+    }
+  ],
+  "transactionId": "OWNER-PWA-LOCAL-V109-UX-20261022-02"
+}
