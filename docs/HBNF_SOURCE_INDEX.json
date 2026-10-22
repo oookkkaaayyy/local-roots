@@ -95,5 +95,71 @@
     "The current work stays in issues #115 and #116. A user question/hypothesis alone does not change the plan.",
     "No secrets, tokens, or private credentials in this index.",
     "GitHub is code authority when source identity is proven; Drive is evidence and decisions; live Cloudflare/Supabase is deployment/data authority."
-  ]
+  ],
+  "owner_pwa_candidate_locator": {
+    "schema": "hbnf-owner-pwa-candidate-locator-v1",
+    "purpose": "Resolve the exact locally built Owner PWA candidate, installed baseline, and current transaction bindings. This is an identity/read-only locator, not release admission.",
+    "repository": "oookkkaaayyy/local-roots",
+    "source": {
+      "ref": "71d4f9437d5ab842a5efdacb42b4bf4822d77d8b",
+      "ref_type": "git_commit",
+      "path": "hbnf-final-controller",
+      "entry_path": "hbnf-final-controller/hbnf-cart.html",
+      "github_commit_url": "https://github.com/oookkkaaayyy/local-roots/commit/71d4f9437d5ab842a5efdacb42b4bf4822d77d8b"
+    },
+    "candidate": {
+      "version": "1.0.8",
+      "package_path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.8-package/hbnf-owner-pwa-local-v1.0.8.zip",
+      "package_sha256": "e9fcebd2a9b9592712c3687667de80882eb9fe8d182574824441edbc2f27cc4f",
+      "package_manifest_path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.8-package/PACKAGE.json",
+      "package_checksum_path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.8-package/PACKAGE.SHA256",
+      "package_record_path": "evidence/engineering-governance/20261021-owner-pwa-local-candidate-packaging-1.0.8.json",
+      "package_record_sha256": "c62cfe9e8bc79e87f0d3930dabf96416c37b8142c3040964f9177f5180b4d737",
+      "transaction_id": "OWNER-PWA-LOCAL-V108-RECOVERY-V2-20261021-01",
+      "observed_status": "HOST_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED"
+    },
+    "installed_baseline": {
+      "version": "1.0.5",
+      "manifest_path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.8-package/BASELINE.SHA256SUMS",
+      "manifest_sha256": "971b22121876ddf87eff50adedfd54b985216fccbd847074fd67d6ec49bf044d",
+      "entries": 18,
+      "recovery_transaction_id": "OWNER-PWA-RECOVERY-20261021-C5CFAEC3-CF50-4B01-A2B3-109EDF96A9C4",
+      "recovery_transaction_status": "COMPLETE",
+      "recovery_receipt_path": "evidence/owner-pwa-recovery-install-result-20261021-C5CFAEC3.json",
+      "recovery_receipt_sha256": "7edd8ad72ea2de63234b410743cef648865e1f48c9e2d8f31dd1909860bf2806"
+    },
+    "transactions": {
+      "predecessor": {
+        "transaction_id": "OWNER-PWA-20261021-71D4F943-01",
+        "status": "ROLLBACK_REQUIRED"
+      },
+      "recovery": {
+        "transaction_id": "OWNER-PWA-RECOVERY-20261021-C5CFAEC3-CF50-4B01-A2B3-109EDF96A9C4",
+        "status": "COMPLETE"
+      },
+      "successor": {
+        "transaction_id": "OWNER-PWA-LOCAL-V108-RECOVERY-V2-20261021-01",
+        "status": "NOT_RESERVED"
+      },
+      "control_model_path": "config/HBNF_CONTROL_MODEL.json",
+      "control_state_path": "config/HBNF_CONTROL_STATE.json"
+    },
+    "rollback": {
+      "exact_installed_baseline_archive_path": "staging/coordinated-backend/opal/owner-pwa-empty-runtime-recovery-v2/source-inputs/served-baseline-v1.0.5.zip",
+      "exact_installed_baseline_archive_sha256": "35e0c596a4571bc3288179cf8a304d9c7420a615479f876b06623e58018740d3",
+      "recovery_bundle_path": "staging/coordinated-backend/opal/owner-pwa-empty-runtime-recovery-v2.zip",
+      "recovery_bundle_sha256": "c2086e25dbc98cc5ee1b234ac884b686ac4989ca901acd7d3d4f29f70ff9ce91",
+      "candidate_has_executable_rollback": "verified_in_local_packaging_record"
+    },
+    "evidence_scope": {
+      "source_identity": "GitHub commit 71d4f9437d5ab842a5efdacb42b4bf4822d77d8b",
+      "current_runtime_and_transaction_status": "local control state plus owner-provided Opal transcript and readback receipt",
+      "candidate_artifacts": "local package files; not uploaded or installed",
+      "unknowns": [
+        "fresh candidate-specific authorization",
+        "fresh current-device preflight",
+        "field acceptance"
+      ]
+    }
+  }
 }
