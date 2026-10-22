@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_V111_RELEASE_SCRIPTS_20261022",
+  "summary": "Prepare v1.0.11 Owner PWA installer and rollback companions by reusing the proven v1.0.10 transaction logic and binding the new version and unique transaction ID to the already verified installed v1.0.9 baseline.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Owner instruction to preserve the installed v1.0.9 baseline and use the existing candidate-specific installer/rollback controls for a new successor. No new install method or device mutation is introduced.",
+      "affected_subsystem": "New v1.0.11 Owner PWA install.sh and rollback.sh. The existing version 1.0.10 source scripts remain unchanged; new scripts differ only in transaction ID and package version text.",
+      "rollback_reference": "Remove the uninstalled v1.0.11 candidate scripts/package. If a future owner-authorized install is run, use only the transaction-bound rollback companion and verify the original v1.0.9 exact manifest/archive.",
+      "evidence_sources": [
+        "v1.0.10 install.sh and rollback.sh, already validated and rehearsed against the v1.0.9 baseline.",
+        "v1.0.10 BASELINE.SHA256SUMS and INSTALLED-V1.0.9-READBACK.json; exact prior candidate archive unchanged."
+      ],
+      "tests": [
+        "Install and rollback shell syntax checks pass.",
+        "Diff review confirms the only script changes are the new unique transaction ID and v1.0.11 package-version/readback text."
+      ]
+    }
+  }
+}
