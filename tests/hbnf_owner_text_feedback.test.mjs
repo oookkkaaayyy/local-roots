@@ -48,6 +48,7 @@ test("failed Text command keeps the draft and reports that acknowledgment is mis
   await assert.rejects(f.context.sendText(), /Cart offline/);
   assert.equal(f.elements.featureText.value, "HELLO", "failed command preserves the user's text");
   assert.ok(f.feedback.some(([where, text]) => where === "text" && /not confirmed/.test(text)));
+  assert.ok(f.feedback.some(([where, text]) => where === "global" && /not confirmed/.test(text)), "global status must not remain stuck at Sending text");
 });
 
 test("Text command preserves the draft when Cart accepts it but device acknowledgment is pending", async () => {
@@ -110,9 +111,10 @@ function scoreboardFixture(overlay) {
   const end = source.indexOf("async function showManualScoreboard()", start);
   assert.ok(start >= 0 && end > start, "Show Scores command should be available for focused verification");
   const statuses = [];
+  const globalStatuses = [];
   const paths = [];
   const context = {
-    setFeatureStatus: value => statuses.push(value),
+    setFeatureStatus: value => globalStatuses.push(value),
     renderScoreActionStatus: value => statuses.push(value),
     renderScorePathStatus: value => paths.push(value),
     canonicalRead: async () => ({ live: { active: true, label: "Skins", entries: ["Ava 1"] }, updated_at: "2026-10-21T17:42:00Z" }),
@@ -125,7 +127,7 @@ function scoreboardFixture(overlay) {
     Error,
   };
   vm.runInNewContext(source.slice(start, end), context);
-  return { context, statuses, paths };
+  return { context, statuses, globalStatuses, paths };
 }
 
 test("Show Scores reports accepted-but-unacknowledged delivery without claiming success", async () => {
@@ -147,5 +149,6 @@ test("Show Scores reports a rejected command as unconfirmed", async () => {
   const f = scoreboardFixture(async () => ({ accepted: false, error: "revision conflict" }));
   await assert.rejects(f.context.showScoreboard(), /revision conflict/);
   assert.ok(f.statuses.some(value => /Standings command was not confirmed/.test(value)));
+  assert.ok(f.globalStatuses.some(value => /Standings command was not confirmed/.test(value)), "global feedback should resolve the loading state");
   assert.ok(!f.statuses.some(value => /acknowledged by Cart devices/.test(value)));
 });

@@ -321,7 +321,10 @@ async function sendText() {
     renderTextActionStatus(result && result.acknowledged===true ? "Text command acknowledged by Cart devices. Physical display is not verified." : "Text command accepted by Cart. Device acknowledgment is not exposed; physical display is not verified.");
     setFeatureStatus(result && result.acknowledged===true ? "Text command acknowledged by Cart devices. Physical display is not verified." : "Text command accepted by Cart. Device acknowledgment is not exposed; physical display is not verified.");
   } catch (error) {
-    if (!/device acknowledgment is still pending/i.test(String(error && error.message))) renderTextActionStatus("Text command not confirmed. Physical display is not verified.");
+    if (!/device acknowledgment is still pending/i.test(String(error && error.message))) {
+      renderTextActionStatus("Text command not confirmed. Physical display is not verified.");
+      setFeatureStatus("Text command not confirmed. Physical display is not verified.",true);
+    }
     throw error;
   }
 }
@@ -522,7 +525,7 @@ async function showScoreboard() {
     renderScorePathStatus("This iPad → cloud: active standings received. "+sourceRevision+" "+matrixRevisionStatus+" Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
     if (commandResult && commandResult.acknowledged===false) {
       const pendingMessage="Standings command accepted; device acknowledgment is still pending. Physical display is not verified.";
-      setFeatureStatus(pendingMessage,true);
+      setFeatureStatus(pendingMessage);
       renderScoreActionStatus(pendingMessage+" "+sourceRevision);
       return;
     }
@@ -538,7 +541,9 @@ async function showScoreboard() {
         ? "This iPad → cloud: active standings read succeeded. "+sourceRevision+" Matrix command: not confirmed; physical display is not verified. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported."
         : "This iPad → cloud: response received. "+sourceRevision+" No active standings or available Matrix command was confirmed; no display is claimed. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.")
       : "This iPad → cloud: score read unavailable. "+sourceRevision+" Matrix command was not sent. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.");
-    renderScoreActionStatus(commandStarted ? "Standings command was not confirmed." : (readSucceeded ? "No standings command was sent." : "Live score read failed; no standings command was sent."));
+    const actionMessage=commandStarted ? "Standings command was not confirmed." : (readSucceeded ? "No standings command was sent." : "Live score read failed; no standings command was sent.");
+    setFeatureStatus(actionMessage,true);
+    renderScoreActionStatus(actionMessage);
     throw error;
   }
 }
