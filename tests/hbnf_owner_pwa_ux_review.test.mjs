@@ -19,7 +19,7 @@ assert.match(html, /apple-touch-icon" sizes="180x180" href="\.\/hbnf-cart-icon-1
 const manifest = JSON.parse(fs.readFileSync("hbnf-final-controller/hbnf-cart-manifest.webmanifest", "utf8"));
 assert.deepEqual(manifest.icons, [
   { src: "/hbnf-cart-icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-  { src: "/hbnf-cart-icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+  { src: "/hbnf-cart-icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
 ]);
 
 const header = fs.readFileSync("firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h", "utf8");

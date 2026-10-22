@@ -70,7 +70,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf-owner-pwa-v109-rehearsal-") as raw
     manifest = json.loads((target / "hbnf-cart-manifest.webmanifest").read_text())
     assert manifest["icons"] == [
         {"src": "./hbnf-cart-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-        {"src": "./hbnf-cart-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+        {"src": "./hbnf-cart-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
     ]
     assert (target / "hbnf-cart-icon-180.png").read_bytes() != (temp / "baseline/owner-pwa/hbnf-cart-icon-180.png").read_bytes()
 
