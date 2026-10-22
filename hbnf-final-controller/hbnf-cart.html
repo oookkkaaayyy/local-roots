@@ -50,7 +50,7 @@
   <details class="panel truth-panel" aria-label="Connection details">
     <summary>Connection details</summary>
     <div class="truth-grid">
-      <div class="truth-cell"><span>Controls</span><strong id="backendTruth">Checking…</strong></div>
+      <div class="truth-cell"><span id="controlPathLabel">Control path</span><strong id="backendTruth">Checking…</strong></div>
       <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth">—</strong></div>
       <div class="truth-cell"><span>Underglow</span><strong id="auxTruth">—</strong></div>
     </div>
@@ -116,6 +116,7 @@
       </select>
       <button id="featureSendText" type="button">Send</button>
     </div>
+    <p id="textActionStatus" class="apply-note" role="status" aria-live="polite"></p>
   </section>
 
   <section class="panel quick-tuning" aria-label="Motion and audio response">
@@ -216,6 +217,8 @@
     <h2>Skins + Glow</h2>
     <p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a> · Live scores need internet.</p>
     <div id="featureLive" class="status">Live scores haven’t loaded yet.</div>
+    <p id="scorePathStatus" class="apply-note">This iPad’s cloud score read is not checked yet. Cart relay and Matrix delivery status are not reported here.</p>
+    <p id="scoreActionStatus" class="apply-note" role="status" aria-live="polite"></p>
     <div class="row">
       <button id="featureRefreshLive" type="button">Refresh live</button>
       <button id="featureScoreboard" type="button">Show live standings</button>

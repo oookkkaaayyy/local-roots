@@ -20,6 +20,8 @@ const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
 const LIVE_CACHE_MAX_MS = 12 * 60 * 60 * 1000;
 const MAX_SAVED_LOOKS = 12;
 let liveRefreshInFlight = false;
+let liveRefreshPending = false;
+let liveRefreshPendingSilent = true;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -293,14 +295,24 @@ async function deleteSavedLook() {
 
 async function sendText() {
   const text = String($("featureText").value || "").trim();
-  if (!text) throw new Error("Type a message first.");
+  if (!text) {
+    renderTextActionStatus("Enter a message before sending.");
+    throw new Error("Type a message first.");
+  }
+  renderTextActionStatus("Sending text command…");
   setFeatureStatus("Sending text…");
-  const bridge=canonicalOverlayBridge();
-  const data={text:text,color:$("featureColor").value || "#FFFFFF"};
-  if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
-  await bridge.overlay("text",data);
-  $("featureText").value="";
-  setFeatureStatus("Text sent to the Cart.");
+  try {
+    const bridge=canonicalOverlayBridge();
+    const data={text:text,color:$("featureColor").value || "#FFFFFF"};
+    if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
+    await bridge.overlay("text",data);
+    $("featureText").value="";
+    renderTextActionStatus("Text command acknowledged. Physical display is not verified.");
+    setFeatureStatus("Text command acknowledged. Physical display is not verified.");
+  } catch (error) {
+    renderTextActionStatus("Text command not confirmed. Physical display is not verified.");
+    throw error;
+  }
 }
 
 function renderLive(live, cached=false, cachedAt="") {
@@ -315,6 +327,21 @@ function renderLive(live, cached=false, cachedAt="") {
     String(live.event || "").toUpperCase()+" · "+String(live.label || "")+
     " · "+formatAcePotDisplay(live)+(entries ? " · "+entries : "")+
     (cachedAt ? " · "+cachedAt : "");
+}
+
+function renderScorePathStatus(message) {
+  const node=$("scorePathStatus");
+  if (node) node.textContent=message;
+}
+
+function renderScoreActionStatus(message) {
+  const node=$("scoreActionStatus");
+  if (node) node.textContent=message;
+}
+
+function renderTextActionStatus(message) {
+  const node=$("textActionStatus");
+  if (node) node.textContent=message;
 }
 
 function saveLiveCache(live) {
@@ -335,38 +362,80 @@ function readLiveCache() {
 }
 
 async function refreshLive(silent) {
-  if (liveRefreshInFlight) return;
+  if (liveRefreshInFlight) {
+    liveRefreshPending=true;
+    if (!silent) {
+      liveRefreshPendingSilent=false;
+      setFeatureStatus("Refresh queued…");
+      renderScoreActionStatus("A score refresh is already running. One more refresh is queued.");
+    }
+    return;
+  }
   liveRefreshInFlight=true;
-  if (!silent) setFeatureStatus("Refreshing live round…");
+  if (!silent) {
+    setFeatureStatus("Refreshing live round…");
+    renderScoreActionStatus("Refreshing live scores from this iPad’s connection…");
+  }
   try {
     const out = await canonicalRead("live_status",{});
     const now=new Date();
     renderLive(out.live,false,now.toLocaleTimeString());
+    renderScorePathStatus(`This iPad → cloud: response received ${now.toLocaleTimeString()}; score source timestamp is not exposed. Cart → cloud relay: not reported. Matrix live-standings receipt: not reported.`);
     saveLiveCache(out.live);
-    if (!silent) setFeatureStatus("Live round refreshed.");
+    if (!silent) {
+      setFeatureStatus("Live round refreshed.");
+      renderScoreActionStatus("Live score request received by this iPad. Source freshness is not exposed.");
+    }
   } catch (error) {
     const cached=readLiveCache();
     if (cached && cached.live) {
       const when=cached.savedAt ? new Date(cached.savedAt).toLocaleString() : "";
       renderLive(cached.live,true,when);
-      if (!silent) setFeatureStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
+      renderScorePathStatus(`This iPad → cloud: unavailable. Showing cached iPad data${when ? ` from ${when}` : ""}; score source timestamp is not exposed. Cart → cloud relay and Matrix live-standings receipt: not reported.`);
+      if (!silent) {
+        setFeatureStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
+        renderScoreActionStatus("Live score request failed. Cached scores are shown and labeled.");
+      }
       return;
+    }
+    renderScorePathStatus("This iPad → cloud: unavailable; live score read not confirmed. Cart → cloud relay and Matrix live-standings receipt: not reported.");
+    if (!silent) {
+      setFeatureStatus("Couldn’t refresh live scores.",true);
+      renderScoreActionStatus("Live score request failed; current scores are not confirmed.");
     }
     throw error;
   } finally {
     liveRefreshInFlight=false;
+    flushPendingLiveRefresh();
   }
 }
 
 async function showScoreboard() {
   setFeatureStatus("Loading live standings…");
-  const out=await canonicalRead("live_status",{});
-  const live=out && out.live;
-  if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
-  const bridge=canonicalOverlayBridge();
-  const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
-  await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-  setFeatureStatus("Standings sent to the Cart.");
+  renderScoreActionStatus("Requesting current standings…");
+  let readSucceeded=false;
+  let commandStarted=false;
+  try {
+    const out=await canonicalRead("live_status",{});
+    readSucceeded=true;
+    const live=out && out.live;
+    if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
+    const bridge=canonicalOverlayBridge();
+    const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
+    commandStarted=true;
+    await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
+    renderScorePathStatus("This iPad → cloud: active standings received; source timestamp is not exposed. Matrix command: acknowledged; physical display is not verified. Cart headless relay status: not reported.");
+    setFeatureStatus("Standings command acknowledged. Physical display is not verified.");
+    renderScoreActionStatus("Matrix standings command acknowledged. Physical display is not verified.");
+  } catch (error) {
+    renderScorePathStatus(readSucceeded
+      ? (commandStarted
+        ? "This iPad → cloud: active standings read succeeded. Matrix command: not confirmed; physical display is not verified. Cart headless relay status: not reported."
+        : "This iPad → cloud: response received, but no active standings or available Matrix command was confirmed. No display is claimed. Cart headless relay status: not reported.")
+      : "This iPad → cloud: score read unavailable. Matrix command was not sent. Cart headless relay status: not reported.");
+    renderScoreActionStatus(commandStarted ? "Standings command was not confirmed." : (readSucceeded ? "No standings command was sent." : "Live score read failed; no standings command was sent."));
+    throw error;
+  }
 }
 
 async function showManualScoreboard() {
@@ -483,8 +552,10 @@ async function runPreflight() {
 
   try {
     const snapshot=await canonicalRead("status",{});
+    checks.push(snapshot && snapshot.local === true ? "iPad → Cart controls PASS · local device status returned" : "iPad → Cart controls UNKNOWN · local status not confirmed");
     checks.push(...deviceReadinessChecks(snapshot));
   } catch (e) {
+    checks.push("iPad → Cart controls UNKNOWN · local status unavailable");
     checks.push("Matrix device UNCONFIRMED · status unavailable","AUX device UNCONFIRMED · status unavailable");
   }
 
@@ -492,8 +563,11 @@ async function runPreflight() {
     const liveResponse=await canonicalRead("live_status",{});
     checks.push(scoreFeedStatus(liveResponse));
   } catch (e) {
-    checks.push("Live-data path WAN/CHECK");
+    checks.push("Score feed (this iPad → cloud) CHECK · request failed");
   }
+
+  checks.push("Cart → cloud relay NOT EXPOSED · no runtime status signal");
+  checks.push("Matrix live standings NOT EXPOSED · relay delivery receipt unavailable");
 
   out.textContent=readinessStatus(checks)+" · "+checks.join(" · ");
 }
@@ -554,11 +628,34 @@ bind("featurePreflight",runPreflight);
 if ($("featureText")) $("featureText").addEventListener("keydown",e=>{ if(e.key==="Enter") $("featureSendText").click(); });
 if (!matrixLocal()) setFeatureStatus("Some advanced controls are available only on the Cart.");
 
+function resumeLiveRefresh() {
+  if (document.hidden) return;
+  if (liveRefreshInFlight) {
+    liveRefreshPending=true;
+    return;
+  }
+  liveRefreshPending=false;
+  liveRefreshPendingSilent=true;
+  refreshLive(true).catch(function(){});
+}
+
+function flushPendingLiveRefresh() {
+  if (!liveRefreshPending || document.hidden || liveRefreshInFlight) return;
+  const silent=liveRefreshPendingSilent;
+  liveRefreshPending=false;
+  liveRefreshPendingSilent=true;
+  refreshLive(silent).catch(function(){});
+}
+
+window.addEventListener("online",resumeLiveRefresh);
 window.addEventListener("pageshow",function(){
   if (matrixLocal()) refreshOtaResult().catch(function(){});
+  resumeLiveRefresh();
 });
 document.addEventListener("visibilitychange",function(){
-  if (!document.hidden && matrixLocal()) refreshOtaResult().catch(function(){});
+  if (document.hidden) return;
+  if (matrixLocal()) refreshOtaResult().catch(function(){});
+  resumeLiveRefresh();
 });
 
 setTimeout(function(){ refreshLive(true).catch(function(){}); },1200);

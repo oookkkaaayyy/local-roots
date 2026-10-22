@@ -2,6 +2,7 @@
 import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
+import { deviceReadinessChecks } from "./hbnf-cart-readiness.mjs";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -44,6 +45,8 @@ const copyPair = $("#copyPair");
 const matrixHealth = $("#matrixTruth");
 const auxHealth = $("#auxTruth");
 const backendHealth = $("#backendTruth");
+const controlPathLabel = $("#controlPathLabel");
+if (controlPathLabel) controlPathLabel.textContent = OPAL_LOCAL_PWA ? "iPad → Cart controls" : "Cloud control API";
 const guestModeToggle = $("#guestMode");
 const guestModeStatus = $("#guestModeStatus");
 let pendingRevision = null;
@@ -342,9 +345,18 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   const desiredRevision = Number(canonicalSnapshot && canonicalSnapshot.desired && canonicalSnapshot.desired.revision);
   const reportFor = id => observed.find(x => x.device_id === id) || {};
   const matrixReport = reportFor("matrix"), auxReport = reportFor("aux");
-  const matrixOk = !!(matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision);
-  const auxOk = !!(aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision);
-  const labelFor = (report, isConfirmed) => {
+  const readiness = deviceReadinessChecks(canonicalSnapshot);
+  const matrixCheck = readiness.find(value => value.indexOf("Matrix device ") === 0) || "Matrix device UNCONFIRMED";
+  const auxCheck = readiness.find(value => value.indexOf("AUX device ") === 0) || "AUX device UNCONFIRMED";
+  const matrixOk = !!(matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision && matrixCheck.indexOf("PASS") >= 0);
+  const auxOk = !!(aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision && auxCheck.indexOf("PASS") >= 0);
+  const labelFor = (report, isConfirmed, check) => {
+    if (report && report.online === false) return "Offline";
+    if (report && report.status === "off" && isConfirmed) return "Off · acknowledged";
+    if (report && report.status === "off") return "Off · not confirmed";
+    if (check.indexOf("STALE") >= 0) return "Stale acknowledgment";
+    if (check.indexOf("DDP receiver") >= 0) return "Matrix sync not confirmed";
+    if (check.indexOf("UNCONFIRMED") >= 0) return "Not confirmed";
     if (isConfirmed) return "Responding";
     const failure = shortDeviceFailure(report);
     if (failure) return "Needs attention";
@@ -352,22 +364,23 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
     const seen = Number(reportedRevision !== null && reportedRevision !== undefined
       ? reportedRevision
       : (report ? report.desired_revision : undefined));
-    if ((report && report.status === "off") || (report && report.online === false)) return "Offline";
     if (Number.isFinite(desiredRevision) && Number.isFinite(seen)) return "Waiting for update";
     return "No recent update";
   };
   if (matrixHealth) {
-    matrixHealth.textContent = labelFor(matrixReport, matrixOk);
+    matrixHealth.textContent = labelFor(matrixReport, matrixOk, matrixCheck);
     matrixHealth.className = matrixOk ? "ok" : (shortDeviceFailure(matrixReport) ? "bad" : "degraded");
   }
   if (auxHealth) {
-    auxHealth.textContent = labelFor(auxReport, auxOk);
+    auxHealth.textContent = labelFor(auxReport, auxOk, auxCheck);
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
     if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
     if (matrixOk && auxOk) { badge.textContent = "Cart connected"; badge.className = "truth-badge good"; }
     else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
+    else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Device status stale"; badge.className = "truth-badge warn"; }
+    else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Device status unknown"; badge.className = "truth-badge warn"; }
     else { badge.textContent = "Checking devices"; badge.className = "truth-badge warn"; }
   }
 }
@@ -709,8 +722,12 @@ sharePair.addEventListener("click", async () => {
 
 copyPair.addEventListener("click", async () => {
   if (!currentPairLink) return;
-  await copyTextLegacy(currentPairLink);
-  pairCreateStatus.textContent = "Pairing link copied.";
+  try {
+    await copyTextLegacy(currentPairLink);
+    pairCreateStatus.textContent = "Pairing link copied.";
+  } catch (_) {
+    pairCreateStatus.textContent = "Couldn’t copy the link. Select it and copy it manually.";
+  }
 });
 
 document.querySelectorAll("[data-command]").forEach(button => {

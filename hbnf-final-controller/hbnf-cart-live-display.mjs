@@ -1,11 +1,11 @@
 export function formatAcePotDisplay(live) {
-  const value = Number(live?.acePot);
-  if (live?.event === "skins") {
+  const value = Number(live && live.acePot);
+  if (live && live.event === "skins") {
     return Number.isSafeInteger(value) && value >= 0
       ? `ACE POOL ${value} ENTRIES`
       : "ACE POOL UNAVAILABLE";
   }
-  if (live?.event === "glow") {
+  if (live && live.event === "glow") {
     return Number.isFinite(value) && value >= 0
       ? `ACE POT $${value.toFixed(0)}`
       : "ACE POT UNAVAILABLE";

@@ -39,6 +39,13 @@ export class LocalOwnerControl {
     this.localRevalidateMs = Number.isSafeInteger(options.localRevalidateMs) ? Math.max(1, options.localRevalidateMs) : 60000;
     this.localRevalidationTimer = null;
     this.commandsPending = 0;
+    this.lastConfirmedBrightness = null;
+    this.localSyncIntervalMs = Number.isSafeInteger(options.localSyncIntervalMs) ? Math.max(25, options.localSyncIntervalMs) : 5000;
+    this.localSyncTimer = null;
+    this.localSyncQueued = false;
+    this.localSyncRunning = false;
+    this.localSyncAttempts = 0;
+    this.localSyncStatus = "not-tracked";
   }
 
   async request(token, path, method = "GET", body = null) {
@@ -128,12 +135,91 @@ export class LocalOwnerControl {
   disconnectTransport() {
     if (this.localRevalidationTimer) clearTimeout(this.localRevalidationTimer);
     this.localRevalidationTimer = null;
+    if (this.localSyncTimer) clearTimeout(this.localSyncTimer);
+    this.localSyncTimer = null;
+    this.lastConfirmedBrightness = null;
+    this.localSyncAttempts = 0;
+    this.localSyncStatus = "not-tracked";
+    this.localSyncQueued = false;
     if (this.transport) this.transport.disconnect();
     this.transport = null;
     this.token = "";
     this.matrixInfo = null;
     this.auxInfo = null;
     this.auxState = null;
+  }
+
+  scheduleLocalReconciliation(token) {
+    if (this.opalDirect || !this.lastConfirmedBrightness || token !== this.token || this.localSyncTimer || this.localSyncQueued || this.localSyncRunning) return;
+    this.localSyncTimer = setTimeout(() => {
+      this.localSyncTimer = null;
+      const run = async () => {
+        this.localSyncQueued = false;
+        if (token !== this.token || !this.transport || !this.lastConfirmedBrightness) return;
+        if (this.commandsPending > 0) {
+          this.scheduleLocalReconciliation(token);
+          return;
+        }
+        this.localSyncRunning = true;
+        this.commandsPending += 1;
+        try {
+          await this.reconcileLastConfirmedBrightness(token);
+        } catch (_) {
+          this.localSyncStatus = "failed";
+        } finally {
+          this.commandsPending -= 1;
+          this.localSyncRunning = false;
+          if (token === this.token && this.lastConfirmedBrightness) this.scheduleLocalReconciliation(token);
+        }
+      };
+      this.localSyncQueued = true;
+      const result = this.commandQueue.then(run, run);
+      this.commandQueue = result.catch(() => {});
+    }, this.localSyncIntervalMs);
+    if (this.localSyncTimer && typeof this.localSyncTimer.unref === "function") this.localSyncTimer.unref();
+  }
+
+  async reconcileLastConfirmedBrightness(token) {
+    if (this.localSyncAttempts >= 3) return;
+    const target = this.lastConfirmedBrightness;
+    const info = await this.request(token, "/api/matrix/json/info");
+    if (String(info.mac || "").toLowerCase() !== LOCAL_MATRIX_MAC) {
+      this.transport.clearIdentity();
+      throw new Error("Unexpected Matrix identity during local recovery.");
+    }
+    if (!this.transport.verifyIdentity(info)) throw new Error("Matrix identity could not be reconfirmed.");
+    const state = await this.transport.refresh();
+    if (!this.transport.controlReady()) throw new Error("Fresh Matrix state is unavailable for local recovery.");
+    const h = state && state.HBNF;
+    if (!h) throw new Error("Matrix HBNF state is missing during local recovery.");
+    const aux = await this.readAux(token);
+    const matrixPatch = {};
+    if (Number(h.matrixBrightness) !== target.matrixBrightness) matrixPatch.matrixBrightness = target.matrixBrightness;
+    if (Number(h.auxBrightness) !== target.matrixAuxBrightness) matrixPatch.auxBrightness = target.matrixAuxBrightness;
+    const auxMismatch = Number(aux.state.bri) !== target.auxBrightness;
+    if (!Object.keys(matrixPatch).length && !auxMismatch) {
+      this.localSyncAttempts = 0;
+      this.localSyncStatus = "readback-confirmed";
+      return;
+    }
+    if (this.localSyncAttempts >= 3) return;
+    this.localSyncAttempts += 1;
+    this.localSyncStatus = "reconciling";
+    if (Object.keys(matrixPatch).length) await this.transport.command("TUNE", matrixPatch);
+    if (auxMismatch) {
+      await this.request(token, "/api/aux/control", "POST", { bri: target.auxBrightness });
+      const verifiedAux = await this.readAux(token);
+      if (Number(verifiedAux.state.bri) !== target.auxBrightness) throw new Error("AUX brightness readback did not match the last confirmed value.");
+    }
+    const verifiedState = this.transport.snapshot && this.transport.snapshot.HBNF;
+    const verifiedAuxState = this.auxState;
+    if (!verifiedState || Number(verifiedState.matrixBrightness) !== target.matrixBrightness ||
+        Number(verifiedState.auxBrightness) !== target.matrixAuxBrightness || !verifiedAuxState ||
+        Number(verifiedAuxState.bri) !== target.auxBrightness) {
+      throw new Error("Matrix/AUX brightness reconciliation readback did not match.");
+    }
+    this.localSyncAttempts = 0;
+    this.localSyncStatus = "readback-confirmed";
   }
 
   scheduleLocalRevalidation(token) {
@@ -173,6 +259,8 @@ export class LocalOwnerControl {
         this.transport = new module.LocalMatrixTransport({
           readState: () => this.request(token, "/api/matrix/json/state"),
           sendCommand: patch => this.request(token, "/api/matrix/control", "POST", { HBNF: patch }),
+          onState: () => this.scheduleLocalReconciliation(token),
+          onConnection: connected => { if (connected) this.scheduleLocalReconciliation(token); },
           pollMs: 1500,
         });
         this.token = token;
@@ -228,8 +316,9 @@ export class LocalOwnerControl {
     const scene = Number.isInteger(Number(h.scene)) ? (sceneNames[Number(h.scene)] || String(h.scene)) : String(h.scene || "");
     const matrixBrightness = Number(h.matrixBrightness);
     const auxBrightness = Number(h.auxBrightness);
+    const auxDdpConfirmed = this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === LOCAL_MATRIX_IP;
     const matrixObserved = { device_id: "matrix", desired_revision: revision, status: "online", observed_at: new Date().toISOString(), reported: { confirmed: true, brightness: matrixBrightness, appliedProjection: { brightness: matrixBrightness } } };
-    const auxObserved = { device_id: "aux", desired_revision: revision, status: this.auxState.on ? "online" : "off", observed_at: new Date().toISOString(), reported: { confirmed: true, brightness: Number(this.auxState.bri), matrixTargetBrightness: auxBrightness, appliedProjection: { brightness: auxBrightness }, ddp: this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === "192.168.77.10", physical: "unverified" } };
+    const auxObserved = { device_id: "aux", desired_revision: revision, status: this.auxState.on ? "online" : "off", observed_at: new Date().toISOString(), reported: { confirmed: true, brightness: Number(this.auxState.bri), matrixTargetBrightness: auxBrightness, appliedProjection: { brightness: auxBrightness }, ddp: auxDdpConfirmed, physical: "unverified" } };
     return {
       local: true,
       desired: { revision, state: {
@@ -248,7 +337,12 @@ export class LocalOwnerControl {
       observed: [matrixObserved, auxObserved],
       devices: {
         matrix: { confirmed: true, confirmedRevision: revision, mac: LOCAL_MATRIX_MAC, firmware: h.candidate },
-        aux: { confirmed: true, confirmedRevision: revision, mac: LOCAL_AUX_MAC, ddp: this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === "192.168.77.10", physical: "unverified" },
+        aux: { confirmed: true, confirmedRevision: revision, mac: LOCAL_AUX_MAC, ddp: auxDdpConfirmed, physical: "unverified" },
+      },
+      localSynchronization: {
+        status: this.localSyncStatus,
+        attempts: this.localSyncAttempts,
+        physical: "unverified",
       },
       capabilities: Object.assign({ phase2VibeRuntimeV1: true, localOwnerControlV1: true }, this.opalDirect ? {
         canonicalPaletteIntentV1: true,
@@ -334,6 +428,18 @@ export class LocalOwnerControl {
     } else {
       await this.readAux(token);
     }
+    if (state && state.HBNF && Number.isInteger(Number(state.HBNF.matrixBrightness)) &&
+        Number.isInteger(Number(state.HBNF.auxBrightness)) && this.auxState &&
+        Number.isInteger(Number(this.auxState.bri))) {
+      this.lastConfirmedBrightness = {
+        matrixBrightness: Number(state.HBNF.matrixBrightness),
+        matrixAuxBrightness: Number(state.HBNF.auxBrightness),
+        auxBrightness: Number(this.auxState.bri),
+      };
+      this.localSyncAttempts = 0;
+      this.localSyncStatus = "readback-confirmed";
+      this.scheduleLocalReconciliation(token);
+    }
     return {
       accepted: true,
       local: true,
@@ -386,7 +492,7 @@ export class LocalOwnerControl {
       acknowledgments: {
         matrix: { confirmed: true, mac: LOCAL_MATRIX_MAC, release: LOCAL_MATRIX_RELEASE, stateVersion: this.transport.snapshotVersion },
         aux: {
-          confirmed: !!(this.auxState && this.auxInfo),
+          confirmed: !!(this.auxState && this.auxInfo && this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === LOCAL_MATRIX_IP),
           mac: LOCAL_AUX_MAC,
           reachable: !!(this.auxState && this.auxInfo),
           brightness: this.auxState ? Number(this.auxState.bri) : null,
