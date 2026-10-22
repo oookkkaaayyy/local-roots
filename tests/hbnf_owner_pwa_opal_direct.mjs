@@ -100,6 +100,6 @@ test("local route preserves cloud routes and labels score reads as internet-depe
   const html = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html", import.meta.url), "utf8");
   assert.match(js, /const result = await callCloud\(cloudBody\)/);
   assert.match(js, /const SUPABASE_URL = "https:\/\/phcpbvuqibyarpfrftgx\.supabase\.co"/);
-  assert.match(html, /live standings, score entry, pairing, and cloud updates need internet/i);
-  assert.match(js, /OFFLINE · no change sent\. Current cart show continues locally; reconnect to the internet to use remote controls or score\./);
+  assert.match(html, /live scores need internet/i);
+  assert.match(js, /You are offline\. No change was sent\./);
 });
