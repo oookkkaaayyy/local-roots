@@ -9,6 +9,7 @@ import re
 import shutil
 import subprocess
 import zipfile
+from urllib.parse import urlsplit
 from pathlib import Path
 
 ASSETS = (
@@ -32,6 +33,64 @@ ASSETS = (
 
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def verify_clean_source(root: Path, expected_commit) -> str:
+    head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    if expected_commit and expected_commit != head:
+        raise SystemExit(f"--source-commit does not match clean checkout HEAD ({head})")
+    if subprocess.check_output(["git", "-C", str(root), "status", "--porcelain", "--untracked-files=all"], text=True).strip():
+        raise SystemExit("strict source binding requires a clean checkout before packaging")
+    branch = subprocess.check_output(["git", "-C", str(root), "branch", "--show-current"], text=True).strip()
+    if not branch:
+        raise SystemExit("strict source binding requires a named integrated branch")
+    return head
+
+
+def verify_source_inputs(root: Path, commit: str, paths: list[Path]) -> None:
+    for path in paths:
+        relative = path.relative_to(root).as_posix()
+        try:
+            committed = subprocess.check_output(["git", "-C", str(root), "show", f"{commit}:{relative}"])
+        except subprocess.CalledProcessError as exc:
+            raise SystemExit(f"source input is absent from pinned commit: {relative}") from exc
+        if committed != path.read_bytes():
+            raise SystemExit(f"working source input differs from pinned commit: {relative}")
+
+
+def verify_payload_references(payload: Path) -> None:
+    html = (payload / "hbnf-cart.html").read_text()
+    references = re.findall(r"(?:src|href)=['\"]([^'\"]+)['\"]", html, re.I)
+    for reference in references:
+        parsed = urlsplit(reference)
+        if parsed.scheme or parsed.netloc or not parsed.path or parsed.path.startswith("/") or parsed.path.startswith("#"):
+            continue
+        target = (payload / parsed.path).resolve()
+        if payload.resolve() not in target.parents or not target.is_file():
+            raise SystemExit(f"packaged Owner PWA references a missing or unsafe local asset: {reference}")
+    for script in payload.glob("*.js"):
+        source = script.read_text()
+        for reference in re.findall(r"(?:\bfrom\s*|\bimport\s*\()\s*['\"](\.[^'\"]+)['\"]", source):
+            target = (script.parent / urlsplit(reference).path).resolve()
+            if payload.resolve() not in target.parents or not target.is_file():
+                raise SystemExit(f"packaged JavaScript references a missing or unsafe module: {script.name} -> {reference}")
+    for stylesheet in payload.glob("*.css"):
+        source = stylesheet.read_text()
+        for reference in re.findall(r"url\(\s*['\"]?([^)'\"]+)['\"]?\s*\)", source, re.I):
+            parsed = urlsplit(reference)
+            if parsed.scheme or parsed.netloc or reference.startswith("/") or not parsed.path:
+                continue
+            target = (stylesheet.parent / parsed.path).resolve()
+            if payload.resolve() not in target.parents or not target.is_file():
+                raise SystemExit(f"packaged stylesheet references a missing or unsafe asset: {stylesheet.name} -> {reference}")
+
+
+def verify_javascript(payload: Path) -> None:
+    for script in sorted(payload.glob("*.js")):
+        checked = subprocess.run(["node", "--check", str(script)], capture_output=True, text=True)
+        if checked.returncode:
+            detail = (checked.stderr or checked.stdout).strip()
+            raise SystemExit(f"Packaged JavaScript failed syntax validation ({script.name}): {detail[-1200:]}")
 
 
 def main() -> None:
@@ -60,13 +119,10 @@ def main() -> None:
     if args.strict_source_binding:
         if not args.source_locator:
             raise SystemExit("--strict-source-binding requires the existing --source-locator checker")
-        head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
-        if args.source_commit and args.source_commit != head:
-            raise SystemExit(f"--source-commit does not match clean checkout HEAD ({head})")
-        args.source_commit = head
-        status = subprocess.check_output(["git", "-C", str(root), "status", "--porcelain", "--untracked-files=all"], text=True)
-        if status.strip():
-            raise SystemExit("strict source binding requires a clean checkout before packaging")
+        args.source_commit = verify_clean_source(root, args.source_commit)
+        source_paths = [root / "scripts/hbnf_build_local_owner_pwa.py"] + [root / "hbnf-final-controller" / name for name in ASSETS]
+        source_paths.append(root / "hbnf-final-controller/hbnf-cart-manifest.webmanifest")
+        verify_source_inputs(root, args.source_commit, source_paths)
         try:
             args.output_dir.resolve().relative_to(root)
         except ValueError:
@@ -111,11 +167,8 @@ def main() -> None:
         (payload / out_name).write_bytes(data)
 
     if args.strict_source_binding:
-        for script in sorted(payload.glob("*.js")):
-            checked = subprocess.run(["node", "--check", str(script)], capture_output=True, text=True)
-            if checked.returncode:
-                detail = (checked.stderr or checked.stdout).strip()
-                raise SystemExit(f"Packaged JavaScript failed syntax validation ({script.name}): {detail[-1200:]}")
+        verify_javascript(payload)
+        verify_payload_references(payload)
 
     manifest_source = json.loads((source / "hbnf-cart-manifest.webmanifest").read_text())
     manifest_source["id"] = "./hbnf-cart.html"
