@@ -24,7 +24,8 @@
         "node --test tests/hbnf_owner_pwa_ux_review.test.mjs",
         "node --test tests/hbnf-ios12-compat-audit.mjs",
         "node --test tests/hbnf_owner_pwa_opal_direct.mjs",
-        "sh -n staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/install.sh staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/rollback.sh"
+        "sh -n staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/install.sh staging/coordinated-backend/opal/owner-pwa-local-v1.0.9/rollback.sh",
+        "HBNF_V109_CANDIDATE_ZIP=<candidate> HBNF_V108_BASELINE_ZIP=<verified-v1.0.8-archive> python3 tests/hbnf_owner_pwa_v109_rehearsal.py"
       ]
     },
     "owner_design_gate": {
