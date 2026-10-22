@@ -85,3 +85,20 @@ test('isolated iOS icon experiment embeds the exact approved 180px PNG in initia
   assert.equal(manifest.display, 'standalone');
   assert.equal(manifest.icons, undefined, 'manifest must not mask whether Safari accepts the embedded Apple icon');
 });
+
+test('isolated manifest candidate uses approved PNG-only icons with no Apple touch declaration', async () => {
+  const html = await shell('ios-icon-manifest-preview/index.html');
+  assert.match(html, /<title>Local Roots Manifest Icon Test<\/title>/);
+  assert.match(html, /apple-mobile-web-app-title" content="LR Manifest Test"/);
+  assert.doesNotMatch(html, /apple-touch-icon/i, 'the manifest is the only Home Screen icon source');
+  assert.doesNotMatch(html, /<script\b/i);
+
+  const manifest = JSON.parse(await readFile(resolve(dist, 'ios-icon-manifest-preview/manifest.webmanifest'), 'utf8'));
+  assert.equal(manifest.start_url, '/ios-icon-manifest-preview/');
+  assert.equal(manifest.scope, '/ios-icon-manifest-preview/');
+  assert.equal(manifest.display, 'standalone');
+  assert.deepEqual(manifest.icons, [
+    { src: '/brand/local-roots-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: '/brand/local-roots-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+  ]);
+});

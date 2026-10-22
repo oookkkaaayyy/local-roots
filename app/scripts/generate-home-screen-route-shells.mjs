@@ -110,6 +110,36 @@ export async function generateHomeScreenRouteShells(distDir = resolve(projectRoo
     scope: '/ios-icon-data-preview/',
     display: 'standalone',
   }, null, 2)}\n`);
+
+  // Second isolated candidate: exercise Safari's documented manifest-icon
+  // path with no apple-touch-icon declaration and PNG-only manifest entries.
+  // The production Local Roots manifest also lists SVG, which has triggered
+  // WebKit's monogram fallback in a reported configuration even when PNGs are
+  // present. This route changes no production manifest or app route.
+  const manifestPreviewDir = resolve(distDir, 'ios-icon-manifest-preview');
+  await mkdir(manifestPreviewDir, { recursive: true });
+  await writeFile(resolve(manifestPreviewDir, 'index.html'), `<!doctype html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="LR Manifest Test">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/ios-icon-manifest-preview/manifest.webmanifest">
+  <title>Local Roots Manifest Icon Test</title>
+</head><body><main><h1>Local Roots manifest icon test</h1><p>This temporary page uses only the approved PNG artwork in its manifest, with no Apple touch icon or SVG entry.</p></main></body></html>\n`);
+  await writeFile(resolve(manifestPreviewDir, 'manifest.webmanifest'), `${JSON.stringify({
+    id: '/ios-icon-manifest-preview/',
+    name: 'Local Roots Manifest Icon Test',
+    short_name: 'LR Manifest Test',
+    start_url: '/ios-icon-manifest-preview/',
+    scope: '/ios-icon-manifest-preview/',
+    display: 'standalone',
+    icons: [
+      { src: '/brand/local-roots-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/brand/local-roots-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    ],
+  }, null, 2)}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
