@@ -1,0 +1,43 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_OPAL_PREFLIGHT_AND_RECOVERY_EVIDENCE_20261021",
+  "summary": "Make the read-only Opal preflight accept the observed GL-SFT1200 firmware tuple and prevent a pre-recovery path report from being treated as current after the exact recovery receipt passed.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "failure": "Owner-provided ubus output serializes the target slash as an escaped slash and the description contains a non-breaking space; exact comparison against those presentation fields rejected the observed GL-SFT1200 OpenWrt/LEDE tuple. A pre-recovery report that expected Owner PWA and rollback paths to be absent was later repeated as if current even though the recovery-v2 install receipt subsequently passed. The prior preflight also stopped after its first remote failure and ran the installed baseline manifest from the wrong working directory.",
+    "implementation": [
+      "scripts/hbnf_owner_pwa_live_preflight_v108.py",
+      "tests/test_owner_pwa_live_preflight_v108.py"
+    ],
+    "prior_path_observation": {
+      "classification": "STALE_PRE_RECOVERY",
+      "asserts_current_device_state": false,
+      "superseded_by": {
+        "path": "evidence/owner-pwa-recovery-install-result-20261021-C5CFAEC3.json",
+        "sha256": "7edd8ad72ea2de63234b410743cef648865e1f48c9e2d8f31dd1909860bf2806",
+        "status": "PASS",
+        "owner_pwa_version": "1.0.5",
+        "installed_manifest_entries": 24,
+        "served_hashes_verified": true,
+        "rollback_available": true
+      }
+    },
+    "fresh_live_preflight": "NOT_RUN",
+    "validation": [
+      "python3 -B tests/test_owner_pwa_live_preflight_v108.py: 5/5 pass, covering the escaped-slash/NBSP system-board tuple, stable firmware identity fields, aggregate failures, no false pass receipt, shell syntax, source pin checks, and stale path-evidence classification.",
+      "python3 -B scripts/hbnf_owner_pwa_live_preflight_v108.py --help: pass.",
+      "Read-only Opal shell body: sh -n pass.",
+      "Recovery receipt hash and required fields verified: v1.0.5, 24 manifest entries, served hashes verified, rollback available; receipt SHA-256 7edd8ad72ea2de63234b410743cef648865e1f48c9e2d8f31dd1909860bf2806.",
+      "Fresh live-device/HTTP preflight was not run; no current device state is inferred from the historical path-absence report or recovery receipt.",
+      "The approved transaction 01 package remains unchanged. The separate source-bound transaction 02 artifact remains unadmitted and is not substituted for it."
+    ],
+    "rollback": "Revert the scoped commit containing the preflight helper, regression test, and this evidence record. No device, network, cloud, score, admission, package pin, or control-state mutation is made by these changes. The v1.0.6 ROLLBACK_REQUIRED state and unrelated dirty files remain preserved."
+  }
+}
