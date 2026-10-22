@@ -35,6 +35,14 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def resolve_baseline_manifest(root: Path, package_version: str, explicit_path: Path | None) -> Path:
+    """Use a specified prior baseline, or preserve the legacy version-local default."""
+    if explicit_path is None:
+        return root / f"staging/coordinated-backend/opal/owner-pwa-local-v{package_version}/BASELINE.SHA256SUMS"
+    candidate = explicit_path if explicit_path.is_absolute() else root / explicit_path
+    return candidate.resolve()
+
+
 def verify_clean_source(root: Path, expected_commit) -> str:
     head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
     if expected_commit and expected_commit != head:
@@ -112,12 +120,17 @@ def main() -> None:
     parser.add_argument("--rollback-baseline-owner-source-archive", type=Path)
     parser.add_argument("--rollback-baseline-readback-receipt", type=Path)
     parser.add_argument("--rollback-baseline-owner-pwa-version", default="1.0.8")
+    parser.add_argument("--rollback-baseline-manifest", type=Path,
+        help="explicit existing installed-tree manifest; defaults to the version-local manifest")
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.package_version):
         raise SystemExit("--package-version must be a semantic x.y.z version")
     if args.review_only and not args.strict_source_binding:
         raise SystemExit("--review-only requires --strict-source-binding")
     root = args.source_root.resolve()
+    baseline_manifest = resolve_baseline_manifest(root, args.package_version, args.rollback_baseline_manifest)
+    if args.rollback_baseline_manifest and not baseline_manifest.is_file():
+        raise SystemExit("explicit rollback baseline manifest is missing")
     if args.strict_source_binding:
         if not args.source_locator:
             raise SystemExit("--strict-source-binding requires the existing --source-locator checker")
@@ -126,6 +139,12 @@ def main() -> None:
         source_paths.append(root / "hbnf-final-controller/hbnf-cart-manifest.webmanifest")
         source_paths.append(root / "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h")
         source_paths.append(args.source_locator.resolve())
+        if args.rollback_baseline_manifest:
+            try:
+                baseline_manifest.relative_to(root)
+            except ValueError as exc:
+                raise SystemExit("strict source binding requires the explicit rollback manifest inside the checkout") from exc
+            source_paths.append(baseline_manifest)
         if args.rollback_baseline_readback_receipt:
             source_paths.append((root / args.rollback_baseline_readback_receipt).resolve())
         verify_source_inputs(root, args.source_commit, source_paths)
@@ -192,6 +211,8 @@ def main() -> None:
     (output / "PAYLOAD.SHA256SUMS").write_text(checksums)
     source_inputs = [source / name for name in ASSETS]
     source_inputs.append(source / "hbnf-cart-manifest.webmanifest")
+    if args.rollback_baseline_manifest:
+        source_inputs.append(baseline_manifest)
     if args.strict_source_binding:
         source_inputs.append(Path(__file__).resolve())
         source_inputs.append(root / "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h")
@@ -199,7 +220,7 @@ def main() -> None:
         if args.rollback_baseline_readback_receipt:
             source_inputs.append((root / args.rollback_baseline_readback_receipt).resolve())
     deploy_dir = root / f"staging/coordinated-backend/opal/owner-pwa-local-v{version}"
-    baseline = deploy_dir / "BASELINE.SHA256SUMS"
+    baseline = baseline_manifest
     baseline_provenance_args = (
         args.rollback_baseline_transaction_id,
         args.rollback_baseline_installed_manifest,

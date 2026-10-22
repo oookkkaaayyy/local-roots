@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_V111_BASELINE_BUILDER_20261022",
+  "summary": "Allow a strictly source-bound successor Owner PWA package to reuse an explicit, already verified installed-tree baseline manifest while preserving the existing version-local default behavior.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Owner PWA package builder and its strict clean-source, input-hash, baseline-readback, and payload validation gates; owner directed reuse of the verified v1.0.9 installed baseline for the redesigned successor.",
+      "affected_subsystem": "scripts/hbnf_build_local_owner_pwa.py baseline manifest selection only. Omitted option preserves the prior version-local lookup. Explicit paths under the clean checkout are bound into strict source verification and the package source-input manifest.",
+      "rollback_reference": "Revert the explicit baseline-manifest option and its focused test. Existing builds without the option keep the same version-local baseline resolution.",
+      "evidence_sources": [
+        "Existing v1.0.10 BASELINE.SHA256SUMS and INSTALLED-V1.0.9-READBACK.json; both remain unchanged.",
+        "Owner instruction 2026-10-22 to use v1.0.9 as the actual installed baseline and preserve the strict source/commit gate."
+      ],
+      "tests": [
+        "Focused builder test proves legacy version-local resolution is unchanged and a successor can explicitly resolve the exact existing v1.0.9 baseline manifest.",
+        "Strict source binding requires the explicit baseline to exist inside the checkout and match the pinned commit before packaging."
+      ]
+    }
+  }
+}
