@@ -98,7 +98,7 @@
   ],
   "owner_pwa_candidate_locator": {
     "schema": "hbnf-owner-pwa-candidate-locator-v1",
-    "purpose": "Resolve the exact locally built Owner PWA candidate, installed baseline, and current transaction bindings. This is an identity/read-only locator, not release admission.",
+    "purpose": "Resolve the historical v1.0.8 lifecycle candidate and installed-baseline evidence, plus the current local review-only Owner PWA artifact. Identity/read-only locator only; not release admission.",
     "repository": "oookkkaaayyy/local-roots",
     "source": {
       "ref": "71d4f9437d5ab842a5efdacb42b4bf4822d77d8b",
@@ -160,6 +160,33 @@
         "fresh current-device preflight",
         "field acceptance"
       ]
+    },
+    "review_artifact": {
+      "version": "1.0.12",
+      "archive_name": "hbnf-owner-pwa-local-v1.0.12.zip",
+      "package_sha256": "32a13f5bf42ae0c231b6a09007fe026e7e923c5452b835d6613550666d5a6854",
+      "manifest_sha256": "878baf0b9bfc5741220259ee3765dfe929a34f95db5b32210ae68ea717b825b9",
+      "source_commit": "1e7d027387dce21fed9817257b51f1df788bc06f",
+      "source_branch": "codex/cart-p1-source-bound-review-20261022",
+      "source_input_count": 17,
+      "release_disposition": "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED",
+      "transaction_id": null,
+      "delivery": "local_only",
+      "predecessor_evidence": {
+        "owner_pwa_version": "1.0.5",
+        "latest_owner_readback": "2026-10-21 17:42 owner-provided SSH transcript reports runtime present and 14/14 payload hashes pass",
+        "historical_baseline_manifest_sha256": "971b22121876ddf87eff50adedfd54b985216fccbd847074fd67d6ec49bf044d",
+        "exact_rollback_archive_sha256": "35e0c596a4571bc3288179cf8a304d9c7420a615479f876b06623e58018740d3",
+        "fresh_current_device_readback": false,
+        "rollback_tree_current_hashes_verified": false
+      },
+      "rejected_prior_review_artifact": {
+        "version": "1.0.11",
+        "source_commit": "181d274bd3dea512c915905b9871429fb523febc",
+        "package_sha256": "36fcdd7ebca1a42bea4a97c4fcfd0f5eff730544ab6f82978c31d3bb5d8555dc",
+        "status": "REJECTED_INVALID_PACKAGED_JAVASCRIPT",
+        "evidence": "node --check rejected owner-pwa/hbnf-cart-features.js; preserved locally and not installed"
+      }
     }
   }
 }
