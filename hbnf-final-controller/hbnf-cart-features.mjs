@@ -247,11 +247,12 @@ async function applyPalette() {
     throw error;
   }
   const prior=desiredState(before);
-  if (!prior || typeof prior.paletteId!=="string" || !prior.paletteId) {
-    renderPaletteStatus("Current palette is unknown. No change was sent.");
-    throw new Error("Current palette could not be confirmed; no palette change was sent.");
+  if (!prior) {
+    renderPaletteStatus("Cart settings aren’t available. No change was sent.");
+    throw new Error("Cart settings could not be read; no palette change was sent.");
   }
-  if (String(prior.paletteId)===paletteId) {
+  const priorPaletteId=typeof prior.paletteId==="string" ? prior.paletteId : "";
+  if (priorPaletteId && priorPaletteId===paletteId) {
     renderPaletteStatus("Cart settings already match. The lights weren’t checked.");
     setFeatureStatus("Cart settings already match. The lights weren’t checked.");
     return;
@@ -267,13 +268,19 @@ async function applyPalette() {
     setFeatureStatus("Cart settings now match. The lights weren’t checked.");
   } catch (error) {
     let restored=false;
-    try {
-      await bridge.command("PALETTE",{paletteId:paletteCommandId(prior.paletteId)});
-      const restoredSnapshot=await bridge.refresh({hydrate:false});
-      const restoredState=desiredState(restoredSnapshot);
-      restored=!!restoredState && String(restoredState.paletteId)===String(prior.paletteId);
-    } catch (_) {}
-    const restoreStatus=restored ? "Previous palette is back in Cart settings." : "Couldn’t confirm the previous palette was restored.";
+    if (priorPaletteId) {
+      try {
+        await bridge.command("PALETTE",{paletteId:paletteCommandId(priorPaletteId)});
+        const restoredSnapshot=await bridge.refresh({hydrate:false});
+        const restoredState=desiredState(restoredSnapshot);
+        restored=!!restoredState && String(restoredState.paletteId)===priorPaletteId;
+      } catch (_) {}
+    }
+    const restoreStatus=restored
+      ? "Previous palette is back in Cart settings."
+      : priorPaletteId
+        ? "Couldn’t confirm the previous palette was restored."
+        : "The selected palette couldn’t be confirmed. The previous palette was unknown, so it wasn’t restored automatically.";
     renderPaletteStatus("Palette wasn’t confirmed. "+restoreStatus);
     setFeatureStatus("Palette wasn’t confirmed. "+restoreStatus,true);
     throw new Error("Palette was not confirmed. "+restoreStatus+" "+(error.message || String(error)));
