@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261023-cart-ux-v4";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261023-cart-ux-v4";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
@@ -26,6 +26,8 @@ let tuneInFlight = false;
 let tuneTimer = null;
 let hydrating = false;
 let canonicalCapabilities = {};
+let cartStatusChecked = false;
+let cartConnectionUnavailable = false;
 const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
 let localControlActive = false;
 let lastLocalEnrollAt = 0;
@@ -191,6 +193,10 @@ async function callCloud(body) {
     }, HBNF_API_TIMEOUT_MS, "Cart control");
     if (backendHealth) backendHealth.textContent = "Reachable";
   } catch (error) {
+    canonicalCapabilities = {};
+    cartStatusChecked = true;
+    cartConnectionUnavailable = true;
+    updateVibeSelection({});
     if (backendHealth) backendHealth.textContent = "Unavailable";
     throw error;
   }
@@ -372,13 +378,32 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   }
 }
 
+function setVibePending(pending) {
+  const ready = canonicalCapabilities.phase2VibeRuntimeV1 === true || canonicalCapabilities.opalDirectOwnerPwaV1 === true;
+  const autoReady = ready && canonicalCapabilities.autoVibeControlV1 === true;
+  const group = $("vibeOptions");
+  if (group) group.setAttribute("aria-busy", pending ? "true" : "false");
+  document.querySelectorAll(".vibe-option").forEach(button => { button.disabled = pending || !ready; });
+  const autoButton = $("#vibeAuto");
+  if (autoButton) autoButton.disabled = pending || !autoReady;
+}
+
 function updateVibeSelection(_state) {
   const vibe = String(_state && _state.selectedVibe || "");
   const ready = canonicalCapabilities.phase2VibeRuntimeV1 === true || canonicalCapabilities.opalDirectOwnerPwaV1 === true;
   const autoReady = ready && canonicalCapabilities.autoVibeControlV1 === true;
   const options = $("#vibeOptions"), availability = $("#vibeAvailability");
   if (options) options.hidden = !ready;
-  if (availability) availability.hidden = ready;
+  if (availability) {
+    availability.hidden = ready;
+    if (!ready) {
+      availability.textContent = !cartStatusChecked
+        ? "Checking lighting controls…"
+        : cartConnectionUnavailable
+          ? "Can’t reach the Cart. Check the connection details and try again."
+          : "Lighting-style controls aren’t available on this Cart.";
+    }
+  }
   document.querySelectorAll(".vibe-option").forEach(button => {
     button.disabled = !ready;
     button.setAttribute("aria-pressed", button.dataset.vibe === vibe ? "true" : "false");
@@ -403,8 +428,8 @@ function hydrateControls(state) {
     if (state.sceneId) $("#scene").value = state.sceneId;
     if (guestModeToggle) guestModeToggle.checked = state.guestMode === true;
     if (guestModeStatus) guestModeStatus.textContent = state.guestMode === true
-      ? "Guest Mode is on. Your controls still take priority."
-      : "Guest Mode is off. Turn it on when you’re ready to invite guests.";
+      ? "Guest access is on. Your controls still take priority."
+      : "Guest access is off. Turn it on when you’re ready to invite guests.";
 
     const tuning = valueOr(state.tuning, {});
     updateVibeSelection(state);
@@ -432,6 +457,9 @@ async function refresh({ hydrate = true } = {}) {
   try {
     out = await call({ action: "status" });
   } catch (error) {
+    cartStatusChecked = true;
+    cartConnectionUnavailable = true;
+    updateVibeSelection({});
     if (backendHealth) backendHealth.textContent = "Unavailable";
     if (matrixHealth) matrixHealth.textContent = "Not confirmed";
     if (auxHealth) auxHealth.textContent = "Not confirmed";
@@ -442,7 +470,10 @@ async function refresh({ hydrate = true } = {}) {
     }
     throw error;
   }
+  cartStatusChecked = true;
+  cartConnectionUnavailable = false;
   canonicalCapabilities = out && out.capabilities ? out.capabilities : {};
+  updateVibeSelection(out && out.desired && out.desired.state ? out.desired.state : {});
   try { window.dispatchEvent(new CustomEvent("hbnf-canonical-capabilities",{detail:canonicalCapabilities})); } catch (_) {}
 
   if (out && out.local === true) {
@@ -586,6 +617,7 @@ async function flushTune() {
 
 async function command(type, payload = {}) {
   await flushTune();
+  let deviceOutcome = "pending";
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -607,11 +639,12 @@ async function command(type, payload = {}) {
         const reports = observed.filter(x => Number(x.desired_revision) === Number(revision));
         const failed = reports.some(x => x.status === "failed" || (x.reported && x.reported.confirmed === false && x.reported.error));
         const confirmed = reports.length >= 2 && reports.every(x => ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
-        if (failed || confirmed) break;
+        if (failed) { deviceOutcome = "failed"; break; }
+        if (confirmed) { deviceOutcome = "confirmed"; break; }
         if (Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 750));
       } while (Date.now() < deadline);
       await refresh({ hydrate: false });
-      return;
+      return { status: deviceOutcome };
     } catch (error) {
       if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
         await refresh({ hydrate: false });
@@ -714,19 +747,40 @@ copyPair.addEventListener("click", async () => {
 });
 
 document.querySelectorAll("[data-command]").forEach(button => {
-  button.addEventListener("click", () => command(button.dataset.command).catch(showError));
+  button.addEventListener("click", async () => {
+    if (button.disabled) return;
+    const actionStatus = $("commandActionStatus");
+    if (actionStatus) {
+      actionStatus.hidden = false;
+      actionStatus.className = "apply-note";
+      actionStatus.textContent = "Sending request to the Cart…";
+    }
+    try {
+      await command(button.dataset.command);
+      if (actionStatus) {
+        actionStatus.textContent = statusNode.textContent || "Request sent to the Cart.";
+        actionStatus.className = /could not|hasn’t|not ready|unavailable/i.test(actionStatus.textContent) ? "apply-note bad" : "apply-note";
+      }
+    } catch (error) {
+      if (actionStatus) {
+        actionStatus.textContent = "The Cart could not confirm this request. Check the connection and try again.";
+        actionStatus.className = "apply-note bad";
+      }
+      showError(error);
+    }
+  });
 });
 
 if (guestModeToggle) {
   guestModeToggle.addEventListener("change", async () => {
     const enabled = guestModeToggle.checked;
     guestModeToggle.disabled = true;
-    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Turning Guest Mode on…" : "Turning Guest Mode off…";
+    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Turning guest access on…" : "Turning guest access off…";
     try {
       await command("GUEST_MODE", { enabled });
     } catch (error) {
       guestModeToggle.checked = !enabled;
-      if (guestModeStatus) guestModeStatus.textContent = "Couldn’t change Guest Mode. Try again.";
+      if (guestModeStatus) guestModeStatus.textContent = "Couldn’t update guest access. Try again.";
       showError(error);
     } finally {
       guestModeToggle.disabled = !validDeviceToken(deviceToken());
@@ -737,11 +791,72 @@ if (guestModeToggle) {
 document.querySelectorAll(".vibe-option").forEach(button => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
-    command("VIBE", { vibe: button.dataset.vibe }).catch(showError);
+    const previouslySelected = Array.from(document.querySelectorAll(".vibe-option")).find(option => option.getAttribute("aria-pressed") === "true");
+    const autoButton = $("#vibeAuto");
+    const autoWasSelected = autoButton && autoButton.getAttribute("aria-pressed") === "true";
+    document.querySelectorAll(".vibe-option").forEach(option => {
+      option.setAttribute("aria-pressed", option === button ? "true" : "false");
+    });
+    if (autoButton) autoButton.setAttribute("aria-pressed", "false");
+    setVibePending(true);
+    const actionStatus = $("vibeActionStatus");
+    if (actionStatus) { actionStatus.hidden = false; actionStatus.className = "apply-note"; actionStatus.textContent = "Updating lighting style…"; }
+    statusNode.textContent = "Updating lighting style…";
+    command("VIBE", { vibe: button.dataset.vibe })
+      .then(outcome => refresh({ hydrate: true }).then(() => {
+        if (!actionStatus) return;
+        actionStatus.textContent = outcome.status === "confirmed"
+          ? "Cart devices confirmed the lighting setting."
+          : outcome.status === "failed"
+            ? "The Cart couldn’t apply that lighting change. Check the connection details."
+            : "Request sent; Cart devices haven’t confirmed the lighting change yet.";
+        actionStatus.className = outcome.status === "failed" ? "apply-note bad" : outcome.status === "pending" ? "apply-note warn" : "apply-note";
+      }))
+      .catch(async error => {
+        await refresh({ hydrate: true }).catch(() => {
+          document.querySelectorAll(".vibe-option").forEach(option => {
+            option.setAttribute("aria-pressed", option === previouslySelected ? "true" : "false");
+          });
+          if (autoButton) autoButton.setAttribute("aria-pressed", autoWasSelected ? "true" : "false");
+        });
+        if (actionStatus) { actionStatus.textContent = "Couldn’t confirm that lighting change. Check the connection and try again."; actionStatus.className = "apply-note bad"; }
+        showError(error);
+      })
+      .finally(() => setVibePending(false));
   });
 });
 $("#vibeAuto").addEventListener("click", () => {
-  if (!$("#vibeAuto").disabled) command("VIBE_AUTO").catch(showError);
+  const button = $("#vibeAuto");
+  if (button.disabled) return;
+  const previouslySelected = Array.from(document.querySelectorAll(".vibe-option")).find(option => option.getAttribute("aria-pressed") === "true");
+  const autoWasSelected = button.getAttribute("aria-pressed") === "true";
+  document.querySelectorAll(".vibe-option").forEach(option => option.setAttribute("aria-pressed", "false"));
+  button.setAttribute("aria-pressed", "true");
+  setVibePending(true);
+  const actionStatus = $("vibeActionStatus");
+  if (actionStatus) { actionStatus.hidden = false; actionStatus.className = "apply-note"; actionStatus.textContent = "Updating lighting style…"; }
+  statusNode.textContent = "Updating lighting style…";
+  command("VIBE_AUTO")
+    .then(outcome => refresh({ hydrate: true }).then(() => {
+      if (!actionStatus) return;
+      actionStatus.textContent = outcome.status === "confirmed"
+        ? "Cart devices confirmed the lighting setting."
+        : outcome.status === "failed"
+          ? "The Cart couldn’t apply that lighting change. Check the connection details."
+          : "Request sent; Cart devices haven’t confirmed the lighting change yet.";
+      actionStatus.className = outcome.status === "failed" ? "apply-note bad" : outcome.status === "pending" ? "apply-note warn" : "apply-note";
+    }))
+    .catch(async error => {
+      await refresh({ hydrate: true }).catch(() => {
+        document.querySelectorAll(".vibe-option").forEach(option => {
+          option.setAttribute("aria-pressed", option === previouslySelected ? "true" : "false");
+        });
+        button.setAttribute("aria-pressed", autoWasSelected ? "true" : "false");
+      });
+      if (actionStatus) { actionStatus.textContent = "Couldn’t confirm that lighting change. Check the connection and try again."; actionStatus.className = "apply-note bad"; }
+      showError(error);
+    })
+    .finally(() => setVibePending(false));
 });
 
 for (const id of ["scene", "audioProfile", "audioStyle"]) {

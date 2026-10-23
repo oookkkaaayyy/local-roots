@@ -76,7 +76,7 @@
       controls(enabled);
       if(pendingRevision!==null){
         if(revision>pendingRevision){pendingRevision=null;announce("The Cart changed before your choice was applied.","Check the current status and try again if Guest Mode is still on.");}
-        else if(revision===pendingRevision&&devicesConfirmed){pendingRevision=null;announce("Change applied.","Matrix and underglow have responded.");}
+        else if(revision===pendingRevision&&devicesConfirmed){pendingRevision=null;announce("Change applied.","Matrix and underglow confirmed the setting. Check the lights to confirm the visible result.");}
         else announce("Choice sent. Waiting for the Cart.","Status will update shortly.");
       }else if(enabled)announce("Guest Mode is on.","Choose a Vibe, or tap Next look or Cart Auto.");
       else announce("Guest Mode is off.","Ask the owner to turn it on before trying again.");

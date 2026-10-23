@@ -1,7 +1,7 @@
 /* HBNF owner PWA app-shell reliability cache. Never caches control/API traffic. */
 const CACHE_PREFIX = "hbnf-owner-pwa-";
-const CACHE_NAME = "hbnf-owner-pwa-v14-course-ready-ux-20261016";
-const VERSION = "20261016-course-ready-ux-v1";
+const CACHE_NAME = "hbnf-owner-pwa-v16-cart-ux-20261023";
+const VERSION = "20261023-cart-ux-v4";
 const APP_FALLBACK = `/hbnf-cart.html?app=${VERSION}`;
 const CORE = [
   APP_FALLBACK,

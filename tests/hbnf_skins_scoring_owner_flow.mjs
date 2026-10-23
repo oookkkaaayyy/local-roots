@@ -80,9 +80,9 @@ const html=readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html",import
 const controller=readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js",import.meta.url),"utf8");
 const ui=readFileSync(new URL("../hbnf-final-controller/hbnf-cart-skins-score.mjs",import.meta.url),"utf8");
 const api=readFileSync(new URL("../staging/coordinated-backend/hbnf-cart-control/index.ts",import.meta.url),"utf8");
-assert.match(html,/Record Skins scoring/);assert.match(html,/skinsAceWinner/);assert.match(html,/skinsAceSummary/);assert.match(html,/hbnf-cart-skins-score\.mjs/);
+assert.match(html,/<summary>Enter Skins scores<\/summary>/);assert.match(html,/skinsAceWinner/);assert.match(html,/skinsAceSummary/);assert.match(html,/hbnf-cart-skins-score\.mjs/);
 assert.match(ui,/skins_score_state/);assert.match(ui,/skins_score_set/);assert.match(ui,/skins_tiebreaker_set/);assert.match(ui,/skins_ace_set/);
-assert.match(ui,/Save status is uncertain/);assert.match(ui,/authoritative readback unavailable/);assert.match(ui,/expected_winner_id/);assert.match(ui,/expected_winner_name/);
+assert.match(ui,/Save status is unclear/);assert.match(ui,/save confirmed\. Refresh before the next edit/);assert.match(ui,/expected_winner_id/);assert.match(ui,/expected_winner_name/);
 assert.doesNotMatch(ui,/winnerNode\.addEventListener\("change"/);assert.doesNotMatch(ui,/aceWinnerNode\.addEventListener\("change"/);
 assert.match(controller,/headers\["x-hbnf-device"\]=token/);
 assert.match(controller,/observed\.every/);assert.match(controller,/fullyApplied/);

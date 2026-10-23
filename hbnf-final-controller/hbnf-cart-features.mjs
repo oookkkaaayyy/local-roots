@@ -18,12 +18,26 @@ const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
 const LIVE_CACHE_MAX_MS = 12 * 60 * 60 * 1000;
 const MAX_SAVED_LOOKS = 12;
 let liveRefreshInFlight = false;
+let liveRefreshManualRequested = false;
+let paletteOptionsReady = false;
+let paletteLoadInFlight = false;
+let paletteRetryTimer = null;
+let paletteRetryAttempt = 0;
+const PALETTE_RETRY_DELAYS_MS = [1000, 3000, 8000];
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function setFeatureStatus(message, bad=false) {
   const node = $("featureStatus");
   if (!node) return;
+  node.textContent = message;
+  node.className = bad ? "status bad" : "status";
+}
+
+function setLiveRefreshStatus(message, bad=false) {
+  const node = $("liveRefreshStatus");
+  if (!node) return;
+  node.hidden = !message;
   node.textContent = message;
   node.className = bad ? "status bad" : "status";
 }
@@ -112,22 +126,39 @@ function populateLooks() {
 
 async function loadPalettes() {
   const select = $("featurePalette");
-  if (!select || !matrixLocal()) return;
-  const names = await fetchJson(matrixApiUrl("/json/pal"),{method:"GET",cache:"no-store"},"Palette list",1,3500);
-  if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
-  while (select.options.length) select.remove(0);
-  const current=document.createElement("option");
-  current.value=""; current.textContent="Keep current";
-  select.appendChild(current);
-  const solid=document.createElement("option");
-  solid.value="solid"; solid.textContent="Solid color";
-  select.appendChild(solid);
-  names.forEach((name,index)=>{
-    if (!name || name === "RSVD" || name === "-") return;
-    const o=document.createElement("option");
-    o.value="wled-"+String(index); o.textContent=String(name);
-    select.appendChild(o);
-  });
+  if (!select || paletteLoadInFlight || paletteOptionsReady) return;
+  if (!matrixLocal()) {
+    renderPaletteStatus("Connect to the Cart network to load color choices.");
+    return;
+  }
+  paletteLoadInFlight = true;
+  try {
+    const names = await fetchJson(matrixApiUrl("/json/pal"),{method:"GET",cache:"no-store"},"Palette list",1,3500);
+    if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
+    while (select.options.length) select.remove(0);
+    const current=document.createElement("option");
+    current.value=""; current.textContent="Keep current";
+    select.appendChild(current);
+    const solid=document.createElement("option");
+    solid.value="solid"; solid.textContent="Solid color";
+    select.appendChild(solid);
+    names.forEach((name,index)=>{
+      if (!name || name === "RSVD" || name === "-") return;
+      const o=document.createElement("option");
+      o.value="wled-"+String(index); o.textContent=String(name);
+      select.appendChild(o);
+    });
+    paletteOptionsReady=true;
+    paletteRetryAttempt=0;
+    if (paletteRetryTimer!==null) {
+      clearTimeout(paletteRetryTimer);
+      paletteRetryTimer=null;
+    }
+    renderPaletteStatus("Color choices loaded from the Cart.");
+    syncOverlayAvailability();
+  } finally {
+    paletteLoadInFlight = false;
+  }
 }
 
 function desiredState(snapshot) {
@@ -152,12 +183,22 @@ function paletteControlFromId(paletteId) {
   return "";
 }
 
+function paletteCommandId(paletteId) {
+  const id=String(paletteId || "");
+  return id==="legacy" ? "hbnf-balanced" : id;
+}
+
+function renderPaletteStatus(message) {
+  const node=$("paletteActionStatus");
+  if (node) node.textContent=message;
+}
+
 async function rollbackCanonicalLook(bridge, before) {
   const state=desiredState(before);
   if (!state) return;
   try {
     if (state.sceneId) await bridge.command("SCENE",{sceneId:String(state.sceneId)});
-    if (state.paletteId) await bridge.command("PALETTE",{paletteId:String(state.paletteId)});
+    if (state.paletteId) await bridge.command("PALETTE",{paletteId:paletteCommandId(state.paletteId)});
   } catch (_) {}
 }
 
@@ -183,6 +224,59 @@ async function applyLook() {
   } catch (error) {
     await rollbackCanonicalLook(bridge,before);
     throw new Error("Look was not fully verified; canonical prior state was restored where possible. "+(error.message || String(error)));
+  }
+}
+
+async function applyPalette() {
+  const bridge=canonicalBridge();
+  if (canonicalCapabilities().canonicalPaletteIntentV1!==true) {
+    renderPaletteStatus("Palette controls aren’t ready. No change was sent.");
+    throw new Error("Palette controls aren’t ready. No change was sent.");
+  }
+  const paletteId=paletteIdFromControls();
+  if (!paletteId) {
+    renderPaletteStatus("Choose a palette first.");
+    throw new Error("Choose a palette before applying.");
+  }
+  let before;
+  try {
+    before=await bridge.refresh({hydrate:false});
+  } catch (error) {
+    renderPaletteStatus("Couldn’t read the current palette. No change was sent.");
+    setFeatureStatus("Couldn’t read the current palette. No change was sent.",true);
+    throw error;
+  }
+  const prior=desiredState(before);
+  if (!prior || typeof prior.paletteId!=="string" || !prior.paletteId) {
+    renderPaletteStatus("Current palette is unknown. No change was sent.");
+    throw new Error("Current palette could not be confirmed; no palette change was sent.");
+  }
+  if (String(prior.paletteId)===paletteId) {
+    renderPaletteStatus("Cart settings already match. The lights weren’t checked.");
+    setFeatureStatus("Cart settings already match. The lights weren’t checked.");
+    return;
+  }
+  renderPaletteStatus("Applying palette…");
+  setFeatureStatus("Applying palette…");
+  try {
+    await bridge.command("PALETTE",{paletteId});
+    const after=await bridge.refresh({hydrate:false});
+    const current=desiredState(after);
+    if (!current || String(current.paletteId)!==paletteId) throw new Error("Cart settings did not confirm the selected palette.");
+    renderPaletteStatus("Cart settings now match. The lights weren’t checked.");
+    setFeatureStatus("Cart settings now match. The lights weren’t checked.");
+  } catch (error) {
+    let restored=false;
+    try {
+      await bridge.command("PALETTE",{paletteId:paletteCommandId(prior.paletteId)});
+      const restoredSnapshot=await bridge.refresh({hydrate:false});
+      const restoredState=desiredState(restoredSnapshot);
+      restored=!!restoredState && String(restoredState.paletteId)===String(prior.paletteId);
+    } catch (_) {}
+    const restoreStatus=restored ? "Previous palette is back in Cart settings." : "Couldn’t confirm the previous palette was restored.";
+    renderPaletteStatus("Palette wasn’t confirmed. "+restoreStatus);
+    setFeatureStatus("Palette wasn’t confirmed. "+restoreStatus,true);
+    throw new Error("Palette was not confirmed. "+restoreStatus+" "+(error.message || String(error)));
   }
 }
 
@@ -292,20 +386,28 @@ async function deleteSavedLook() {
 async function sendText() {
   const text = String($("featureText").value || "").trim();
   if (!text) throw new Error("Type a message first.");
+  const actionStatus=$("textActionStatus");
+  if (actionStatus) { actionStatus.hidden=false; actionStatus.className="apply-note"; actionStatus.textContent="Sending message to the Cart…"; }
   setFeatureStatus("Sending text…");
-  const bridge=canonicalOverlayBridge();
-  const data={text:text,color:$("featureColor").value || "#FFFFFF"};
-  if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
-  await bridge.overlay("text",data);
-  $("featureText").value="";
-  setFeatureStatus("Text sent to the Cart.");
+  try {
+    const bridge=canonicalOverlayBridge();
+    const data={text:text,color:$("featureColor").value || "#FFFFFF"};
+    if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
+    await bridge.overlay("text",data);
+    $("featureText").value="";
+    if (actionStatus) actionStatus.textContent="Message request sent to the Cart.";
+    setFeatureStatus("Text sent to the Cart.");
+  } catch (error) {
+    if (actionStatus) { actionStatus.textContent="Couldn’t send the message. Check the connection and try again."; actionStatus.className="apply-note bad"; }
+    throw error;
+  }
 }
 
 function renderLive(live, cached=false, cachedAt="") {
   const node=$("featureLive");
   if (!node) return;
   if (!live || !live.active) {
-    node.textContent = (cached ? "Cached: " : "")+"No active Skins or Glow round."+(cachedAt ? " · "+cachedAt : "");
+    node.textContent = (cached ? "Saved results: " : "")+"No live round is active."+(cachedAt ? " · "+cachedAt : "");
     return;
   }
   const entries = Array.isArray(live.entries) ? live.entries.slice(0,8).join(" · ") : "";
@@ -333,38 +435,70 @@ function readLiveCache() {
 }
 
 async function refreshLive(silent) {
-  if (liveRefreshInFlight) return;
+  if (liveRefreshInFlight) {
+    if (!silent) {
+      liveRefreshManualRequested=true;
+      setLiveRefreshStatus("Refreshing scores…");
+    }
+    return;
+  }
   liveRefreshInFlight=true;
-  if (!silent) setFeatureStatus("Refreshing live round…");
+  if (!silent) setLiveRefreshStatus("Refreshing scores…");
   try {
     const out = await canonicalRead("live_status",{});
     const now=new Date();
     renderLive(out.live,false,now.toLocaleTimeString());
     saveLiveCache(out.live);
-    if (!silent) setFeatureStatus("Live round refreshed.");
+    if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Scores refreshed.");
   } catch (error) {
     const cached=readLiveCache();
     if (cached && cached.live) {
       const when=cached.savedAt ? new Date(cached.savedAt).toLocaleString() : "";
       renderLive(cached.live,true,when);
-      if (!silent) setFeatureStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
+      if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
       return;
     }
+    if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Couldn’t refresh scores. Check the connection and try again.",true);
     throw error;
   } finally {
     liveRefreshInFlight=false;
+    liveRefreshManualRequested=false;
   }
 }
 
 async function showScoreboard() {
-  setFeatureStatus("Loading live standings…");
-  const out=await canonicalRead("live_status",{});
+  const status=$("scoreActionStatus");
+  const report=(message,bad=false)=>{
+    if (!status) return;
+    status.hidden=false;
+    status.textContent=message;
+    status.className=bad ? "status bad" : "status";
+  };
+  report("Checking for a live round…");
+  let out;
+  try { out=await canonicalRead("live_status",{}); }
+  catch (error) {
+    report("Couldn’t check for a live round. Check the internet connection and try again; no scores were sent.",true);
+    throw error;
+  }
   const live=out && out.live;
-  if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
-  const bridge=canonicalOverlayBridge();
+  if (!live || !live.active) {
+    report("No live round is active. Start a Skins or Glow round, then show scores.",true);
+    return;
+  }
+  if (!Array.isArray(live.entries) || !live.entries.length) {
+    report("A round is active, but no scores are available yet. Enter scores, then show them.",true);
+    return;
+  }
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
-  await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-  setFeatureStatus("Standings sent to the Cart.");
+  try {
+    const bridge=canonicalOverlayBridge();
+    await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
+    report("Score display request sent. Check the Matrix to confirm it appeared.");
+  } catch (error) {
+    report("Couldn’t send the scores to the Cart. Check the connection and try again.",true);
+    throw error;
+  }
 }
 
 async function showManualScoreboard() {
@@ -528,10 +662,12 @@ function syncOverlayAvailability() {
   });
   const apply=$("featureApplyLook");
   if (apply) apply.disabled=!paletteReady;
+  const applyPaletteButton=$("featureApplyPalette");
+  if (applyPaletteButton) applyPaletteButton.disabled=!paletteReady || !paletteOptionsReady;
   if (!overlayReady) {
     const live=$("featureLive");
     if (live && live.textContent==="Live scores haven’t loaded yet.") {
-      live.textContent="Live scores are available. Cart display isn’t available yet.";
+      live.textContent="Score display isn’t available on this Cart yet.";
     }
   }
   return overlayReady && paletteReady;
@@ -545,8 +681,34 @@ function bind(id,fn) {
 populateLooks();
 renderSavedLooks("");
 syncOverlayAvailability();
-loadPalettes().catch(()=>setFeatureStatus("Couldn’t load colors. Check the connection and try again.",true));
+loadPalettes().catch(()=>{
+  paletteOptionsReady=false;
+  renderPaletteStatus("Couldn’t load color choices. Check the Cart connection and try again.");
+  syncOverlayAvailability();
+  setFeatureStatus("Couldn’t load colors. Check the Cart connection and try again.",true);
+  schedulePaletteRetry();
+});
+function schedulePaletteRetry() {
+  if (paletteOptionsReady || paletteRetryTimer!==null || !matrixLocal() || document.hidden || paletteRetryAttempt>=PALETTE_RETRY_DELAYS_MS.length) return;
+  const delay=PALETTE_RETRY_DELAYS_MS[paletteRetryAttempt++];
+  paletteRetryTimer=setTimeout(function(){
+    paletteRetryTimer=null;
+    if (!document.hidden) retryPaletteLoad();
+  },delay);
+}
+function retryPaletteLoad() {
+  if (!paletteOptionsReady && matrixLocal()) loadPalettes().catch(()=>{
+    paletteOptionsReady=false;
+    renderPaletteStatus("Couldn’t load color choices. Check the Cart connection and try again.");
+    syncOverlayAvailability();
+    schedulePaletteRetry();
+  });
+}
+window.addEventListener("online",retryPaletteLoad);
+window.addEventListener("pageshow",retryPaletteLoad);
+document.addEventListener("visibilitychange",function(){ if (!document.hidden) retryPaletteLoad(); });
 bind("featureApplyLook",applyLook);
+bind("featureApplyPalette",applyPalette);
 bind("featureSaveLook",saveLook);
 bind("featureApplySaved",applySavedLook);
 bind("featureDeleteSaved",deleteSavedLook);

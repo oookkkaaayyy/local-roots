@@ -4,13 +4,13 @@ import fs from "node:fs";
 import { LocalOwnerControl, LOCAL_MATRIX_IP, LOCAL_AUX_IP, LOCAL_MATRIX_MAC, LOCAL_AUX_MAC, LOCAL_MATRIX_RELEASE } from "../hbnf-final-controller/hbnf-cart-local.mjs";
 import { buildPatch } from "../staging/coordinated-backend/opal/mission-control-local/local-transport.js";
 
-function directFixture({ auxReachable = true } = {}) {
+function directFixture({ auxReachable = true, palette = { mode: "legacy", id: "hbnf-balanced" } } = {}) {
   const calls = [];
   const matrix = {
     HBNF: {
       candidate: LOCAL_MATRIX_RELEASE, matrixBrightness: 69, auxBrightness: 255,
       vibe: 1, motion: 50, audioResponse: 50, scene: "course-flow",
-      palette: { mode: "legacy", id: "hbnf-balanced" },
+      palette,
     },
     seg: [],
   };
@@ -60,8 +60,21 @@ test("Opal-hosted Owner PWA uses fresh local Matrix and AUX identity/readback wi
   assert.equal(status.devices.aux.mac, LOCAL_AUX_MAC);
   assert.equal(status.devices.aux.ddp, true);
   assert.equal(status.devices.aux.physical, "unverified");
+  assert.equal(status.desired.state.paletteId, "legacy", "known legacy palette must be readable so Apply can preserve the prior state");
   assert.ok(f.calls.includes(`http://${LOCAL_MATRIX_IP}/json/info`));
   assert.ok(f.calls.includes(`http://${LOCAL_AUX_IP}/json/state`));
+});
+
+test("id-less legacy palette readback stays generic and unknown legacy IDs stay unconfirmed", async t => {
+  const generic = directFixture({ palette: { mode: "legacy" } });
+  const genericOwner = new LocalOwnerControl({ opalDirect: true, directTransportLoader: async () => generic.module, storage: null });
+  t.after(() => genericOwner.disconnectTransport());
+  assert.equal((await genericOwner.connect("", 0)).desired.state.paletteId, "legacy");
+
+  const unknown = directFixture({ palette: { mode: "legacy", id: "future-unknown" } });
+  const unknownOwner = new LocalOwnerControl({ opalDirect: true, directTransportLoader: async () => unknown.module, storage: null });
+  t.after(() => unknownOwner.disconnectTransport());
+  assert.equal((await unknownOwner.connect("", 0)).desired.state.paletteId, "");
 });
 
 test("local Owner PWA brightness, motion/audio, Vibes, scenes, palettes, text and scoreboard route through existing Matrix transport", async t => {
@@ -100,6 +113,6 @@ test("local route preserves cloud routes and labels score reads as internet-depe
   const html = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html", import.meta.url), "utf8");
   assert.match(js, /const result = await callCloud\(cloudBody\)/);
   assert.match(js, /const SUPABASE_URL = "https:\/\/phcpbvuqibyarpfrftgx\.supabase\.co"/);
-  assert.match(html, /live standings, score entry, pairing, and cloud updates need internet/i);
-  assert.match(js, /OFFLINE · no change sent\. Current cart show continues locally; reconnect to the internet to use remote controls or score\./);
+  assert.match(html, /live score updates require an internet connection/i);
+  assert.match(js, /You’re offline\. Controls on the Cart are still available\./);
 });

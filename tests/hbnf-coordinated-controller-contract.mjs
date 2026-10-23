@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
+import vm from "node:vm";
 
 const html=fs.readFileSync("hbnf-final-controller/hbnf-cart.html","utf8");
 const controller=fs.readFileSync("hbnf-final-controller/hbnf-cart.js","utf8");
@@ -13,6 +14,10 @@ for (const id of [
 ]) assert.ok(html.includes('id="'+id+'"'), "missing UI id "+id);
 
 assert.ok(html.includes("hbnf-cart-features.mjs"),"feature module not loaded");
+assert.match(html, /<section id="scoresPanel"[\s\S]*?id="liveRefreshStatus"[^>]*role="status"[^>]*aria-live="polite"/, "manual score refresh feedback must be visible in the Scores section");
+assert.ok(features.includes('setLiveRefreshStatus("Refreshing scores…")'),"manual refresh does not announce its pending state in Scores");
+assert.ok(features.includes('setLiveRefreshStatus("Scores refreshed.")'),"manual refresh does not announce success in Scores");
+assert.ok(features.includes('setLiveRefreshStatus("Couldn’t refresh scores. Check the connection and try again.",true)'),"manual refresh does not announce failure in Scores");
 assert.ok(controller.includes("window.HBNFCanonical"),"canonical browser bridge missing");
 assert.ok(controller.includes("async function command(type, payload = {})"),"canonical command payload bridge missing");
 assert.ok(controller.includes("read: function(action, payload)"),"canonical read bridge missing");
@@ -30,7 +35,7 @@ assert.ok(features.includes('canonicalRead("live_status"'),"live data is not rou
 assert.ok(stagedControl.includes('action === "live_status"'),"canonical backend live_status missing");
 assert.ok(stagedControl.includes("chooseLive"),"canonical live_status does not reuse current selector");
 
-assert.ok(features.includes('fetchJson("/json/pal"'),"dynamic WLED palette list missing");
+assert.ok(features.includes('fetchJson(matrixApiUrl("/json/pal")'),"dynamic WLED palette list missing");
 assert.ok(features.includes("rollbackCanonicalLook"),"canonical look rollback path missing");
 assert.ok(features.includes("Canonical scene readback did not match"),"canonical scene readback verification missing");
 assert.ok(features.includes("Canonical palette readback did not match"),"canonical palette readback verification missing");
@@ -52,5 +57,27 @@ assert.ok(features.includes("refreshOtaResult"),"OTA result refresh logic missin
 assert.ok(features.includes("OPAL_INSTALLER"),"trusted installer handoff missing");
 assert.ok(features.includes('location.hostname === "192.168.77.10"'),"local Matrix gate missing");
 assert.ok(!features.includes("?."),"optional chaining is not allowed in iOS-12-targeted feature module");
+
+{
+  const start=features.indexOf("async function refreshLive(silent) {");
+  const end=features.indexOf("\nasync function showScoreboard()",start);
+  assert.ok(start>=0&&end>start,"live refresh function boundaries must be present");
+  let resolveRead;
+  const status=[];
+  const context={
+    setLiveRefreshStatus:(message,bad)=>status.push([message,!!bad]),
+    canonicalRead:()=>new Promise(resolve=>{resolveRead=resolve;}),
+    renderLive:()=>{},saveLiveCache:()=>{},readLiveCache:()=>null,
+    Date,liveRefreshInFlight:false,liveRefreshManualRequested:false,
+  };
+  vm.runInNewContext("let liveRefreshInFlight=false; let liveRefreshManualRequested=false;\n"+features.slice(start,end),context);
+  const automatic=context.refreshLive(true);
+  await Promise.resolve();
+  await context.refreshLive(false);
+  assert.deepEqual(status,[["Refreshing scores…",false]],"manual tap during automatic refresh must show pending feedback immediately");
+  resolveRead({live:{active:true,entries:["A 3"]}});
+  await automatic;
+  assert.deepEqual(status,[["Refreshing scores…",false],["Scores refreshed.",false]],"the shared refresh must resolve the manual feedback");
+}
 
 console.log("HBNF coordinated controller contract: PASS");

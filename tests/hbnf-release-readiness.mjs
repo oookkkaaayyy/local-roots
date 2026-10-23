@@ -23,7 +23,7 @@ assert.ok(html.includes('id="audioResponse"'),"accepted Audio Response control m
 for (const id of ["featureLook","featureColor","featurePalette","featureText","featureLive","featureOtaCheck","featurePreflight"]) {
   assert.ok(html.includes('id="'+id+'"'),"required visible control missing: "+id);
 }
-assert.ok(features.includes('fetchJson("/json/pal"'),"dynamic palette API missing");
+assert.ok(features.includes('fetchJson(matrixApiUrl("/json/pal")'),"dynamic palette API missing");
 assert.ok(features.includes("rollbackCanonicalLook"),"canonical look rollback missing");
 assert.ok(features.includes("LIVE_CACHE_KEY"),"live cache missing");
 assert.ok(features.includes("runPreflight"),"preflight missing");

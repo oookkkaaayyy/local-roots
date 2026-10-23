@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 import { createManualScoreboardPayload, parseManualScoreRows } from "../hbnf-final-controller/hbnf-cart-semantic.mjs";
 
 test("manual rows normalize line endings and ignore blank lines", () => {
@@ -38,7 +39,117 @@ test("manual display uses only the local overlay path; live data remains a separ
   const liveOnly = source.slice(liveStart, liveEnd);
   assert.match(liveOnly, /canonicalRead\("live_status"/);
   assert.doesNotMatch(liveOnly, /readLiveCache|renderLive\(cached/);
-  assert.match(html, /Manual Show Scores[^<]*works offline/);
-  assert.match(html, /not live standings/i);
-  assert.match(html, /Show live standings · internet/);
+  assert.match(html, /Show scores entered here[^<]*works offline/);
+  assert.match(html, /Live score updates require an internet connection/);
+  assert.match(html, /Show scores on Cart/);
+  assert.match(html, /id="scoreActionStatus" class="status" role="status" aria-live="polite"/);
+  assert.match(html, /id="scoreActionStatus"[^>]*hidden/);
+  assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/owner-pwa\/hbnf-cart\.html"/);
+  assert.match(html, /Open local controls · Cart Wi-Fi/);
+  assert.doesNotMatch(html, /mission-control-local\/index\.html/);
+});
+
+test("Show scores explains when no live round exists and sends no overlay", async () => {
+  const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
+  const start = source.indexOf("async function showScoreboard()");
+  const end = source.indexOf("async function showManualScoreboard()", start);
+  assert.ok(start >= 0 && end > start);
+  const overlays = [], statusNode={textContent:"",className:"status"};
+  const context = {
+    $: id => id === "scoreActionStatus" ? statusNode : null,
+    canonicalRead: async action => { assert.equal(action, "live_status"); return { live: { active: false, entries: [] } }; },
+    canonicalOverlayBridge: () => ({ overlay: async (...args) => overlays.push(args) }),
+  };
+  vm.runInNewContext(source.slice(start, end), context);
+  await context.showScoreboard();
+  assert.equal(statusNode.textContent,"No live round is active. Start a Skins or Glow round, then show scores.");
+  assert.equal(statusNode.className,"status bad");
+  assert.equal(statusNode.hidden,false,"the result must become visible when the user requests scores");
+  assert.equal(overlays.length, 0, "no active round must not send a Matrix overlay");
+});
+
+test("Show scores distinguishes an active round that has no score entries", async () => {
+  const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
+  const start = source.indexOf("async function showScoreboard()");
+  const end = source.indexOf("async function showManualScoreboard()", start);
+  const statusNode={textContent:"",className:"status"}, overlays=[];
+  const context = {
+    $: id => id === "scoreActionStatus" ? statusNode : null,
+    canonicalRead: async () => ({ live: { active: true, label:"F9", entries: [] } }),
+    canonicalOverlayBridge: () => ({ overlay: async (...args) => overlays.push(args) }),
+  };
+  vm.runInNewContext(source.slice(start, end), context);
+  await context.showScoreboard();
+  assert.equal(statusNode.textContent,"A round is active, but no scores are available yet. Enter scores, then show them.");
+  assert.equal(statusNode.className,"status bad");
+  assert.equal(overlays.length,0,"an empty active round must not send a Matrix overlay");
+});
+
+test("Show scores sends the active round after its data is confirmed", async () => {
+  const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
+  const start = source.indexOf("async function showScoreboard()");
+  const end = source.indexOf("async function showManualScoreboard()", start);
+  const overlays = [], statusNode={textContent:"",className:"status"};
+  const context = {
+    $: id => id === "scoreActionStatus" ? statusNode : null,
+    canonicalRead: async () => ({ live: { active: true, label: "F9", entries: ["A 3", "B 2"] } }),
+    canonicalOverlayBridge: () => ({ overlay: async (...args) => overlays.push(args) }),
+  };
+  vm.runInNewContext(source.slice(start, end), context);
+  await context.showScoreboard();
+  assert.equal(overlays.length, 1);
+  assert.equal(overlays[0][0], "scoreboard");
+  assert.deepEqual(JSON.parse(JSON.stringify(overlays[0][1])), { label: "F9", entries: ["A 3", "B 2"] });
+  assert.equal(statusNode.textContent, "Score display request sent. Check the Matrix to confirm it appeared.");
+});
+
+test("Show scores reports live-read failures beside the score controls and sends no overlay", async () => {
+  const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
+  const start = source.indexOf("async function showScoreboard()");
+  const end = source.indexOf("async function showManualScoreboard()", start);
+  const statusNode={textContent:"",className:"status",hidden:true}, overlays=[];
+  const context = {
+    $: id => id === "scoreActionStatus" ? statusNode : null,
+    canonicalRead: async () => { throw new Error("offline"); },
+    canonicalOverlayBridge: () => ({ overlay: async (...args) => overlays.push(args) }),
+  };
+  vm.runInNewContext(source.slice(start, end), context);
+  await assert.rejects(context.showScoreboard(), /offline/);
+  assert.equal(statusNode.hidden,false);
+  assert.match(statusNode.textContent,/Couldn’t check for a live round/);
+  assert.match(statusNode.textContent,/no scores were sent/);
+  assert.equal(overlays.length,0);
+});
+
+test("Show scores reports overlay failures without claiming the Matrix changed", async () => {
+  const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
+  const start = source.indexOf("async function showScoreboard()");
+  const end = source.indexOf("async function showManualScoreboard()", start);
+  const statusNode={textContent:"",className:"status",hidden:true};
+  const context = {
+    $: id => id === "scoreActionStatus" ? statusNode : null,
+    canonicalRead: async () => ({ live: { active:true, label:"F9", entries:["A 3"] } }),
+    canonicalOverlayBridge: () => ({ overlay: async () => { throw new Error("bridge offline"); } }),
+  };
+  vm.runInNewContext(source.slice(start, end), context);
+  await assert.rejects(context.showScoreboard(), /bridge offline/);
+  assert.equal(statusNode.hidden,false);
+  assert.match(statusNode.textContent,/Couldn’t send the scores/);
+  assert.doesNotMatch(statusNode.textContent,/showing on the Cart/);
+});
+
+test("Show scores reports when the overlay bridge is unavailable", async () => {
+  const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
+  const start = source.indexOf("async function showScoreboard()");
+  const end = source.indexOf("async function showManualScoreboard()", start);
+  const statusNode={textContent:"",className:"status",hidden:true};
+  const context = {
+    $: id => id === "scoreActionStatus" ? statusNode : null,
+    canonicalRead: async () => ({ live: { active:true, label:"F9", entries:["A 3"] } }),
+    canonicalOverlayBridge: () => { throw new Error("bridge unavailable"); },
+  };
+  vm.runInNewContext(source.slice(start, end), context);
+  await assert.rejects(context.showScoreboard(), /bridge unavailable/);
+  assert.equal(statusNode.hidden,false);
+  assert.match(statusNode.textContent,/Couldn’t send the scores/);
 });

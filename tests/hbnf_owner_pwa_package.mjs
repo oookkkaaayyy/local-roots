@@ -19,11 +19,11 @@ const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_packa
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
 assert.match(html, /hbnf-cart2-owner-control-guest-qr-v1-20261016/);
-assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html"/);
-assert.match(html, /Open local controls · works on Cart Wi-Fi without internet/);
+assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/owner-pwa\/hbnf-cart\.html"/);
+assert.match(html, /Open local controls · Cart Wi-Fi/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261016-guest-qr-v1");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261023-cart-ux-v4");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
@@ -59,7 +59,7 @@ for (const name of [
 
 assert.match(html, /navigator\.serviceWorker\.register/);
 assert.match(html, /local-control-entry/);
-assert.match(html, /id="featureFontIndex"[\s\S]*value="4" selected[\s\S]*Slot 0 · Tom Thumb 6px[\s\S]*Slot 2 · Console 6×8[\s\S]*Slot 3 · C64-esque 9px/);
+assert.match(html, /id="featureFontIndex"[\s\S]*value="4" selected[\s\S]*>Compact<\/option>[\s\S]*>Console<\/option>[\s\S]*>Classic<\/option>/);
 assert.doesNotMatch(html, /TinyUnicode/i, "unsupported UTF-8 font slot is not offered by the ASCII overlay adapter");
 const featureModule = fs.readFileSync(path.join(controller, "hbnf-cart-features.mjs"), "utf8");
 assert.match(featureModule, /nativeTextFontIndexV1===true/);
@@ -128,19 +128,22 @@ try {
 
 const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
 const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");
-assert.match(guestHtml, /Use cellular or another network with internet; HBNF-Cart Wi-Fi is not required/);
+assert.match(guestHtml, /Use these controls over cellular while Guest Mode is on/);
 assert.match(guestHtml, /Skins scoring/);
 assert.match(guestHtml, /Glow scoring/);
-assert.match(guestHtml, /Matrix\/AUX command acknowledgements not confirmed/);
-assert.match(guestJs, /AUX illumination is not verified by this acknowledgement/);
-assert.match(guestJs, /GUEST SERVICE OFFLINE/);
+assert.match(guestHtml, /id="deviceStatus"/);
+assert.match(guestJs, /Number\(report\.desired_revision\)===wantedRevision[\s\S]*?report\.reported\.confirmed===true/, "device acknowledgement must match the requested revision");
+assert.match(guestJs, /Check the lights to confirm the visible result/, "device acknowledgement must not claim physical illumination");
+assert.match(guestJs, /Matrix: "\+matrix\+" · Underglow: "\+aux/);
+assert.match(guestJs, /textContent="CART OFFLINE"/);
+assert.match(guestJs, /Status unavailable/);
 for (const vibe of ["chill", "groove", "heavy", "psychedelic", "cosmic"]) {
   assert.match(guestHtml, new RegExp(`data-value="${vibe}"`), `Guest page exposes approved ${vibe} name`);
 }
 assert.match(guestHtml, /data-guest-action="vibe_auto" data-vibe-control disabled/);
-assert.match(guestHtml, /Guest Vibes stay disabled until the Cart’s matching Vibe runtime is qualified/);
+assert.match(guestJs, /phase2VibeRuntimeV1===true/);
+assert.match(guestJs, /control\.hasAttribute\("data-vibe-control"\)/);
+assert.match(guestHtml, /Vibes aren’t available right now/);
 assert.doesNotMatch(guestHtml, /data-value="(?:mellow|moderate|energetic|peak)"/);
-assert.match(guestJs, /control\.hasAttribute\("data-vibe-control"\)/, "Guest status refresh must never enable an unqualified Vibe action");
-assert.match(guestJs, /Vibe selection is unavailable until the matching Cart runtime is qualified/);
 
 console.log("HBNF owner PWA package closure: PASS");
