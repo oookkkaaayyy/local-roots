@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const watch = readFileSync(new URL("../supabase/functions/lr-integrity-watch/index.ts", import.meta.url), "utf8");
+const projectRoot = new URL(import.meta.url.includes("/dist/tests/") ? "../../" : "../", import.meta.url);
+const watch = readFileSync(new URL("supabase/functions/lr-integrity-watch/index.ts", projectRoot), "utf8");
 
 test("integrity watch follows the upgraded event discovery and results contract", () => {
   assert.equal(watch.includes('"Show past events"'), false);
