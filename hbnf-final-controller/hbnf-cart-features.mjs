@@ -152,12 +152,22 @@ function paletteControlFromId(paletteId) {
   return "";
 }
 
+function paletteCommandId(paletteId) {
+  const id=String(paletteId || "");
+  return id==="legacy" ? "hbnf-balanced" : id;
+}
+
+function renderPaletteStatus(message) {
+  const node=$("paletteActionStatus");
+  if (node) node.textContent=message;
+}
+
 async function rollbackCanonicalLook(bridge, before) {
   const state=desiredState(before);
   if (!state) return;
   try {
     if (state.sceneId) await bridge.command("SCENE",{sceneId:String(state.sceneId)});
-    if (state.paletteId) await bridge.command("PALETTE",{paletteId:String(state.paletteId)});
+    if (state.paletteId) await bridge.command("PALETTE",{paletteId:paletteCommandId(state.paletteId)});
   } catch (_) {}
 }
 
@@ -183,6 +193,59 @@ async function applyLook() {
   } catch (error) {
     await rollbackCanonicalLook(bridge,before);
     throw new Error("Look was not fully verified; canonical prior state was restored where possible. "+(error.message || String(error)));
+  }
+}
+
+async function applyPalette() {
+  const bridge=canonicalBridge();
+  if (canonicalCapabilities().canonicalPaletteIntentV1!==true) {
+    renderPaletteStatus("Palette controls aren’t ready. No change was sent.");
+    throw new Error("Palette controls aren’t ready. No change was sent.");
+  }
+  const paletteId=paletteIdFromControls();
+  if (!paletteId) {
+    renderPaletteStatus("Choose a palette first.");
+    throw new Error("Choose a palette before applying.");
+  }
+  let before;
+  try {
+    before=await bridge.refresh({hydrate:false});
+  } catch (error) {
+    renderPaletteStatus("Couldn’t read the current palette. No change was sent.");
+    setFeatureStatus("Couldn’t read the current palette. No change was sent.",true);
+    throw error;
+  }
+  const prior=desiredState(before);
+  if (!prior || typeof prior.paletteId!=="string" || !prior.paletteId) {
+    renderPaletteStatus("Current palette is unknown. No change was sent.");
+    throw new Error("Current palette could not be confirmed; no palette change was sent.");
+  }
+  if (String(prior.paletteId)===paletteId) {
+    renderPaletteStatus("Cart settings already match. The lights weren’t checked.");
+    setFeatureStatus("Cart settings already match. The lights weren’t checked.");
+    return;
+  }
+  renderPaletteStatus("Applying palette…");
+  setFeatureStatus("Applying palette…");
+  try {
+    await bridge.command("PALETTE",{paletteId});
+    const after=await bridge.refresh({hydrate:false});
+    const current=desiredState(after);
+    if (!current || String(current.paletteId)!==paletteId) throw new Error("Cart settings did not confirm the selected palette.");
+    renderPaletteStatus("Cart settings now match. The lights weren’t checked.");
+    setFeatureStatus("Cart settings now match. The lights weren’t checked.");
+  } catch (error) {
+    let restored=false;
+    try {
+      await bridge.command("PALETTE",{paletteId:paletteCommandId(prior.paletteId)});
+      const restoredSnapshot=await bridge.refresh({hydrate:false});
+      const restoredState=desiredState(restoredSnapshot);
+      restored=!!restoredState && String(restoredState.paletteId)===String(prior.paletteId);
+    } catch (_) {}
+    const restoreStatus=restored ? "Previous palette is back in Cart settings." : "Couldn’t confirm the previous palette was restored.";
+    renderPaletteStatus("Palette wasn’t confirmed. "+restoreStatus);
+    setFeatureStatus("Palette wasn’t confirmed. "+restoreStatus,true);
+    throw new Error("Palette was not confirmed. "+restoreStatus+" "+(error.message || String(error)));
   }
 }
 
@@ -528,6 +591,8 @@ function syncOverlayAvailability() {
   });
   const apply=$("featureApplyLook");
   if (apply) apply.disabled=!paletteReady;
+  const applyPaletteButton=$("featureApplyPalette");
+  if (applyPaletteButton) applyPaletteButton.disabled=!paletteReady || !paletteOptionsReady;
   if (!overlayReady) {
     const live=$("featureLive");
     if (live && live.textContent==="Live scores haven’t loaded yet.") {
@@ -547,6 +612,7 @@ renderSavedLooks("");
 syncOverlayAvailability();
 loadPalettes().catch(()=>setFeatureStatus("Couldn’t load colors. Check the connection and try again.",true));
 bind("featureApplyLook",applyLook);
+bind("featureApplyPalette",applyPalette);
 bind("featureSaveLook",saveLook);
 bind("featureApplySaved",applySavedLook);
 bind("featureDeleteSaved",deleteSavedLook);

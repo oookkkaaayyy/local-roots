@@ -235,7 +235,8 @@ export class LocalOwnerControl {
       desired: { revision, state: {
         sceneId: scene,
         paletteId: h.palette && h.palette.mode === "wled" ? "wled-" + String(h.palette.index) :
-          (h.palette && h.palette.mode === "solid" && Array.isArray(h.palette.rgb) ? "solid-" + h.palette.rgb.map(v => Number(v).toString(16).padStart(2, "0")).join("") : ""),
+          (h.palette && h.palette.mode === "legacy" ? (h.palette.id == null ? "legacy" : (["hbnf-balanced", "copper", "ocean"].includes(String(h.palette.id)) ? "legacy" : "")) :
+          (h.palette && h.palette.mode === "solid" && Array.isArray(h.palette.rgb) ? "solid-" + h.palette.rgb.map(v => Number(v).toString(16).padStart(2, "0")).join("") : "")),
         selectedVibe: vibeNames[Number(h.vibe)] || "",
         vibeMode: Number(h.vibe) === 5 ? "music" : "manual",
         guestMode: null,

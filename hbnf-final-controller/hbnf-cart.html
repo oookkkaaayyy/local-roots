@@ -78,6 +78,20 @@
     </div>
   </section>
 
+  <section id="palettePanel" class="panel palette-controls" aria-label="Cart color palette">
+    <h2>Color palette</h2>
+    <div class="row">
+      <label class="wide">Palette
+        <select id="featurePalette" aria-describedby="paletteActionStatus"><option value="">Keep current</option></select>
+      </label>
+      <label>Solid / text color
+        <input id="featureColor" type="color" value="#ffffff" aria-label="Solid palette and text color">
+      </label>
+      <button id="featureApplyPalette" type="button" disabled>Apply</button>
+    </div>
+    <p id="paletteActionStatus" class="apply-note" role="status" aria-live="polite">Loading color choices…</p>
+  </section>
+
   <section class="panel cart-commands" aria-label="Power and show sequence">
     <h2>Power &amp; sequence</h2>
     <div class="row">
@@ -190,12 +204,6 @@
       <label class="wide">Show
         <select id="featureLook"></select>
       </label>
-      <label>Color
-        <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
-      </label>
-      <label>Palette · optional
-        <select id="featurePalette"><option value="">Current palette</option></select>
-      </label>
       <label>Name saved look
         <input id="featureLookName" type="text" maxlength="24" placeholder="e.g. Green course">
       </label>
@@ -214,7 +222,7 @@
 
   <section id="scoresPanel" class="panel" aria-label="Skins and Glow live data">
     <h2>Skins + Glow</h2>
-    <p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a> · Live scores need internet.</p>
+    <p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a> · Live score updates require an internet connection.</p>
     <div id="featureLive" class="status">Live scores haven’t loaded yet.</div>
     <div class="row">
       <button id="featureRefreshLive" type="button">Refresh live</button>
