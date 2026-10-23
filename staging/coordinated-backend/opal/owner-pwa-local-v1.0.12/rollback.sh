@@ -15,7 +15,7 @@ MANIFEST_SHA256=7ca405175fa7032d018d3d5f6f6adffc8a5c268d421a661b5be02f425931e348
 [ -f "$MANIFEST" ] && [ "$(sha256sum "$MANIFEST" | awk '{print $1}')" = "$MANIFEST_SHA256" ] || { echo "Candidate-bound exact baseline manifest identity failed." >&2; exit 80; }
 [ "$(find "$BACKUP" -maxdepth 1 -type f | wc -l | tr -d ' ')" = 20 ] || { echo "Exact pre-install Owner PWA file set is incomplete." >&2; exit 81; }
 (cd "$BACKUP" && sha256sum -c "$MANIFEST" >/dev/null) || { echo "Exact pre-install Owner PWA recovery copy failed verification." >&2; exit 82; }
-(cd "$TARGET" && sha256sum -c .hbnf-payload.sha256 >/dev/null) || { echo "Current v1.0.11 payload changed; preserve it and inspect before rollback." >&2; exit 83; }
+(cd "$TARGET" && sha256sum -c .hbnf-payload.sha256 >/dev/null) || { echo "Current v1.0.12 payload changed; preserve it and inspect before rollback." >&2; exit 83; }
 [ ! -e "$FAILED" ] || { echo "Failed-candidate preservation path already exists." >&2; exit 84; }
 
 mv "$TARGET" "$FAILED"

@@ -54,7 +54,7 @@ cp -pR "$PKG_DIR/owner-pwa/." "$STAGE/"
 sed 's#owner-pwa/##' "$PKG_DIR/PAYLOAD.SHA256SUMS" > "$STAGE/.hbnf-payload.sha256"
 cp -p "$PKG_DIR/rollback.sh" "$STAGE/.hbnf-rollback.sh"
 printf '%s\n' 'hbnf-owner-pwa-local-v1' > "$STAGE/.hbnf-package-marker"
-printf '%s\n' '1.0.11' > "$STAGE/.hbnf-package-version"
+printf '%s\n' '1.0.12' > "$STAGE/.hbnf-package-version"
 chmod 0644 "$STAGE"/* "$STAGE"/.[!.]*
 chmod 0755 "$STAGE/.hbnf-rollback.sh"
 (cd "$STAGE" && sha256sum -c .hbnf-payload.sha256 >/dev/null) || { echo "Staged candidate payload verification failed." >&2; exit 93; }
