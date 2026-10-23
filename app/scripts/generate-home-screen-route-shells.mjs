@@ -140,6 +140,37 @@ export async function generateHomeScreenRouteShells(distDir = resolve(projectRoo
       { src: '/brand/local-roots-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
     ],
   }, null, 2)}\n`);
+
+  // HBNF comparison candidate, sourced from the active source-matched release
+  // capsule. It uses the HBNF production manifest's PNG-only selection path,
+  // but has a unique test identity and no apple-touch-icon link.
+  const hbnfManifestPreviewDir = resolve(distDir, 'ios-icon-hbnf-manifest-preview');
+  await mkdir(hbnfManifestPreviewDir, { recursive: true });
+  await writeFile(resolve(hbnfManifestPreviewDir, 'index.html'), `<!doctype html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="HBNF Manifest Test">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/ios-icon-hbnf-manifest-preview/manifest.webmanifest">
+  <title>HBNF Manifest Icon Test</title>
+</head><body><main><h1>HBNF manifest icon test</h1><p>This temporary page uses the approved HBNF icon PNGs from the source-matched production release manifest, with no Apple touch icon or SVG entry.</p></main></body></html>\n`);
+  await writeFile(resolve(hbnfManifestPreviewDir, 'manifest.webmanifest'), `${JSON.stringify({
+    id: '/ios-icon-hbnf-manifest-preview/',
+    name: 'HBNF Manifest Icon Test',
+    short_name: 'HBNF Test',
+    start_url: '/ios-icon-hbnf-manifest-preview/',
+    scope: '/ios-icon-hbnf-manifest-preview/',
+    display: 'standalone',
+    background_color: '#292119',
+    theme_color: '#292119',
+    icons: [
+      { src: '/brand/icon-test/hbnf-main-icon-180.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
+      { src: '/brand/icon-test/hbnf-main-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/brand/icon-test/hbnf-main-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    ],
+  }, null, 2)}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

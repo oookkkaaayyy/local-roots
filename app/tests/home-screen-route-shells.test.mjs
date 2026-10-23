@@ -102,3 +102,34 @@ test('isolated manifest candidate uses approved PNG-only icons with no Apple tou
     { src: '/brand/local-roots-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
   ]);
 });
+
+test('isolated HBNF manifest candidate uses production-matched approved PNG artwork', async () => {
+  const html = await shell('ios-icon-hbnf-manifest-preview/index.html');
+  assert.match(html, /<title>HBNF Manifest Icon Test<\/title>/);
+  assert.match(html, /apple-mobile-web-app-title" content="HBNF Manifest Test"/);
+  assert.doesNotMatch(html, /apple-touch-icon/i, 'the manifest is the only Home Screen icon source');
+  assert.doesNotMatch(html, /<script\b/i);
+
+  const manifest = JSON.parse(await readFile(resolve(dist, 'ios-icon-hbnf-manifest-preview/manifest.webmanifest'), 'utf8'));
+  assert.equal(manifest.id, '/ios-icon-hbnf-manifest-preview/');
+  assert.equal(manifest.start_url, '/ios-icon-hbnf-manifest-preview/');
+  assert.equal(manifest.scope, '/ios-icon-hbnf-manifest-preview/');
+  assert.equal(manifest.display, 'standalone');
+  assert.deepEqual(manifest.icons, [
+    { src: '/brand/icon-test/hbnf-main-icon-180.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
+    { src: '/brand/icon-test/hbnf-main-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: '/brand/icon-test/hbnf-main-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+  ]);
+
+  const expected = [
+    ['hbnf-main-icon-180.png', 'ca9b69edd803628c8eff75c763b221807f41c8ca513ccd4dab2f871e78533742', 180],
+    ['hbnf-main-icon-192.png', '60dc017dd806adc9b19585da3665febbb28eb06df5abff24978ad9c4e98090c8', 192],
+    ['hbnf-main-icon-512.png', '67671c59633eb5acb64aa14fc7b8dd8549878a7a0f8232fb79945d5fc8390df3', 512],
+  ];
+  for (const [name, hash, size] of expected) {
+    const bytes = await readFile(resolve(import.meta.dirname, '..', 'public/brand/icon-test', name));
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), hash, `${name} must match the verified HBNF release capsule`);
+    assert.equal(bytes.toString('ascii', 1, 4), 'PNG');
+    assert.deepEqual([bytes.readUInt32BE(16), bytes.readUInt32BE(20)], [size, size]);
+  }
+});
