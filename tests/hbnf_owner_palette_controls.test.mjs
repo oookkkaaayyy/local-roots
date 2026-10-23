@@ -116,10 +116,15 @@ const controllerSource = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-
 const vibeHandlerStart = controllerSource.indexOf('document.querySelectorAll(".vibe-option").forEach(button => {', controllerSource.indexOf("window.HBNFCanonical ="));
 const vibeHandlerEnd = controllerSource.indexOf('for (const id of ["scene"', vibeHandlerStart);
 const vibeHandler = controllerSource.slice(vibeHandlerStart, vibeHandlerEnd);
+const vibePendingStart = controllerSource.indexOf("function setVibePending(pending)");
+const vibePendingEnd = controllerSource.indexOf("function updateVibeSelection", vibePendingStart);
+const vibePendingSource = controllerSource.slice(vibePendingStart, vibePendingEnd);
 assert.ok(vibeHandlerStart >= 0 && vibeHandlerEnd > vibeHandlerStart, "Vibe controls must have a single focused click handler");
+assert.ok(vibePendingStart >= 0 && vibePendingEnd > vibePendingStart, "Vibe pending state must have a focused implementation");
 assert.match(vibeHandler, /option\.setAttribute\("aria-pressed", option === button \? "true" : "false"\)/, "selected Vibe must respond immediately to the tap");
 assert.match(vibeHandler, /refresh\(\{ hydrate: true \}\)/, "confirmed server state must replace optimistic Vibe selection");
-assert.match(vibeHandler, /aria-busy/, "Vibe updates must expose pending state to assistive technology");
+assert.match(vibePendingSource, /aria-busy/, "Vibe updates must expose pending state to assistive technology");
+assert.match(vibePendingSource, /button\.disabled = pending \|\| !ready/, "pending Vibe commands must block duplicate taps");
 
 test("Vibe tap updates immediately, then reconciles or rolls back on failure", async () => {
   const buttons = ["chill", "groove"].map(vibe => ({
@@ -134,25 +139,30 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
     setAttribute(name, value) { this.attrs[name] = value; }, getAttribute(name) { return this.attrs[name]; },
   };
   const statusNode = { textContent: "" };
-  let resolveCommand, rejectRefresh, hydrated = false;
+  let resolveCommand, rejectRefresh, hydrated = false, confirmedVibe = "groove";
   const context = {
     Array, document: { querySelectorAll: () => buttons },
     $: id => id === "vibeOptions" ? group : auto,
+    canonicalCapabilities: { phase2VibeRuntimeV1: true, autoVibeControlV1: true },
     statusNode,
     command: () => new Promise(resolve => { resolveCommand = resolve; }),
     refresh: async options => {
       hydrated = options.hydrate === true;
       if (rejectRefresh) throw new Error("offline");
-      buttons.forEach(button => button.setAttribute("aria-pressed", button.dataset.vibe === "groove" ? "true" : "false"));
+      buttons.forEach(button => button.setAttribute("aria-pressed", button.dataset.vibe === confirmedVibe ? "true" : "false"));
+      auto.setAttribute("aria-pressed", confirmedVibe === "auto" ? "true" : "false");
     },
     showError() {},
   };
-  vm.runInNewContext(vibeHandler, context);
+  vm.runInNewContext(vibePendingSource + vibeHandler, context);
   buttons[1].listeners.click();
   assert.equal(buttons[0].attrs["aria-pressed"], "false");
   assert.equal(buttons[1].attrs["aria-pressed"], "true");
+  assert.equal(buttons[1].disabled, true, "pending Vibe must prevent duplicate taps");
   assert.equal(group.attrs["aria-busy"], "true");
   assert.equal(statusNode.textContent, "Updating Vibe…");
+  buttons[0].listeners.click();
+  assert.equal(buttons[1].attrs["aria-pressed"], "true", "a second tap during a pending command must be ignored");
   resolveCommand();
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(hydrated, true);
@@ -174,4 +184,62 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(auto.attrs["aria-pressed"], "false", "unconfirmed Auto Vibe must roll back");
   assert.equal(buttons[1].attrs["aria-pressed"], "true");
+
+  rejectRefresh = false;
+  confirmedVibe = "auto";
+  context.command = () => new Promise(resolve => { resolveCommand = resolve; });
+  auto.listeners.click();
+  assert.equal(auto.attrs["aria-pressed"], "true");
+  resolveCommand();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(auto.attrs["aria-pressed"], "true", "confirmed Auto Vibe must reconcile successfully");
+  assert.equal(group.attrs["aria-busy"], "false");
+
+  rejectRefresh = true;
+  context.command = async () => { throw new Error("command failed"); };
+  buttons[0].listeners.click();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(buttons[0].attrs["aria-pressed"], "false");
+  assert.equal(auto.attrs["aria-pressed"], "true", "failed manual Vibe must restore previously selected Auto Vibe");
+});
+
+test("palette choices reload after Cart reconnect and overlapping lifecycle events share one request", async () => {
+  const select = { options: [], appendChild(option) { this.options.push(option); }, remove(index) { this.options.splice(index, 1); } };
+  const windowHandlers = {}, documentHandlers = {};
+  const statuses = [];
+  let local = false, fetchCount = 0, finishFetch;
+  const loadSourceStart = featureSource.indexOf("async function loadPalettes()");
+  const loadSourceEnd = featureSource.indexOf("function desiredState", loadSourceStart);
+  const retrySourceStart = featureSource.indexOf("function retryPaletteLoad()");
+  const retrySourceEnd = featureSource.indexOf('bind("featureApplyLook"', retrySourceStart);
+  const source = "let paletteOptionsReady=false; let paletteLoadInFlight=false;\n" +
+    featureSource.slice(loadSourceStart, loadSourceEnd) +
+    featureSource.slice(retrySourceStart, retrySourceEnd) +
+    "window.paletteIsReady=()=>paletteOptionsReady;";
+  const context = {
+    window: { addEventListener: (name, fn) => { windowHandlers[name] = fn; } },
+    document: { hidden: false, addEventListener: (name, fn) => { documentHandlers[name] = fn; }, createElement: () => ({}) },
+    matrixLocal: () => local, matrixApiUrl: path => path,
+    fetchJson: async () => { fetchCount++; return new Promise(resolve => { finishFetch = resolve; }); },
+    renderPaletteStatus: value => statuses.push(value), syncOverlayAvailability() {},
+    $: id => id === "featurePalette" ? select : null,
+  };
+  vm.runInNewContext(source, context);
+  await context.loadPalettes();
+  assert.match(statuses.at(-1), /Connect to the Cart network/);
+  assert.equal(fetchCount, 0);
+
+  local = true;
+  windowHandlers.online();
+  assert.equal(fetchCount, 1, "reconnect must start palette loading");
+  windowHandlers.pageshow();
+  documentHandlers.visibilitychange();
+  assert.equal(fetchCount, 1, "overlapping return events must not duplicate the palette request");
+  finishFetch(["Rainbow", "RSVD", "Ocean"]);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(context.window.paletteIsReady(), true, "successful retry must enable palette options");
+  assert.deepEqual(select.options.map(option => [option.value, option.textContent]), [
+    ["", "Keep current"], ["solid", "Solid color"], ["wled-0", "Rainbow"], ["wled-2", "Ocean"],
+  ]);
+  assert.match(statuses.at(-1), /Color choices loaded/);
 });

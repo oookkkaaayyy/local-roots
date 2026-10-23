@@ -372,6 +372,16 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   }
 }
 
+function setVibePending(pending) {
+  const ready = canonicalCapabilities.phase2VibeRuntimeV1 === true || canonicalCapabilities.opalDirectOwnerPwaV1 === true;
+  const autoReady = ready && canonicalCapabilities.autoVibeControlV1 === true;
+  const group = $("vibeOptions");
+  if (group) group.setAttribute("aria-busy", pending ? "true" : "false");
+  document.querySelectorAll(".vibe-option").forEach(button => { button.disabled = pending || !ready; });
+  const autoButton = $("#vibeAuto");
+  if (autoButton) autoButton.disabled = pending || !autoReady;
+}
+
 function updateVibeSelection(_state) {
   const vibe = String(_state && _state.selectedVibe || "");
   const ready = canonicalCapabilities.phase2VibeRuntimeV1 === true || canonicalCapabilities.opalDirectOwnerPwaV1 === true;
@@ -737,12 +747,14 @@ if (guestModeToggle) {
 document.querySelectorAll(".vibe-option").forEach(button => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
-    const group = $("vibeOptions");
     const previouslySelected = Array.from(document.querySelectorAll(".vibe-option")).find(option => option.getAttribute("aria-pressed") === "true");
+    const autoButton = $("#vibeAuto");
+    const autoWasSelected = autoButton && autoButton.getAttribute("aria-pressed") === "true";
     document.querySelectorAll(".vibe-option").forEach(option => {
       option.setAttribute("aria-pressed", option === button ? "true" : "false");
     });
-    if (group) group.setAttribute("aria-busy", "true");
+    if (autoButton) autoButton.setAttribute("aria-pressed", "false");
+    setVibePending(true);
     statusNode.textContent = "Updating Vibe…";
     command("VIBE", { vibe: button.dataset.vibe })
       .then(() => refresh({ hydrate: true }))
@@ -751,21 +763,21 @@ document.querySelectorAll(".vibe-option").forEach(button => {
           document.querySelectorAll(".vibe-option").forEach(option => {
             option.setAttribute("aria-pressed", option === previouslySelected ? "true" : "false");
           });
+          if (autoButton) autoButton.setAttribute("aria-pressed", autoWasSelected ? "true" : "false");
         });
         showError(error);
       })
-      .finally(() => { if (group) group.setAttribute("aria-busy", "false"); });
+      .finally(() => setVibePending(false));
   });
 });
 $("#vibeAuto").addEventListener("click", () => {
   const button = $("#vibeAuto");
   if (button.disabled) return;
-  const group = $("vibeOptions");
   const previouslySelected = Array.from(document.querySelectorAll(".vibe-option")).find(option => option.getAttribute("aria-pressed") === "true");
   const autoWasSelected = button.getAttribute("aria-pressed") === "true";
   document.querySelectorAll(".vibe-option").forEach(option => option.setAttribute("aria-pressed", "false"));
   button.setAttribute("aria-pressed", "true");
-  if (group) group.setAttribute("aria-busy", "true");
+  setVibePending(true);
   statusNode.textContent = "Updating Vibe…";
   command("VIBE_AUTO")
     .then(() => refresh({ hydrate: true }))
@@ -778,7 +790,7 @@ $("#vibeAuto").addEventListener("click", () => {
       });
       showError(error);
     })
-    .finally(() => { if (group) group.setAttribute("aria-busy", "false"); });
+    .finally(() => setVibePending(false));
 });
 
 for (const id of ["scene", "audioProfile", "audioStyle"]) {
