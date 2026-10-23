@@ -119,6 +119,8 @@ def main() -> None:
     parser.add_argument("--rollback-baseline-source-commit")
     parser.add_argument("--rollback-baseline-owner-source-archive", type=Path)
     parser.add_argument("--rollback-baseline-readback-receipt", type=Path)
+    parser.add_argument("--rollback-baseline-package-dir", type=Path,
+        help="prior exact package whose successful install result supplies the installed Owner PWA payload hashes")
     parser.add_argument("--rollback-baseline-owner-pwa-version", default="1.0.8")
     parser.add_argument("--rollback-baseline-manifest", type=Path,
         help="explicit existing installed-tree manifest; defaults to the version-local manifest")
@@ -147,6 +149,9 @@ def main() -> None:
             source_paths.append(baseline_manifest)
         if args.rollback_baseline_readback_receipt:
             source_paths.append((root / args.rollback_baseline_readback_receipt).resolve())
+        if args.rollback_baseline_package_dir:
+            prior_dir = (root / args.rollback_baseline_package_dir).resolve()
+            source_paths.extend(prior_dir / name for name in ("PACKAGE.json", "PACKAGE.SHA256", "PAYLOAD.SHA256SUMS", "rollback.sh", "hbnf-owner-pwa-local-v1.0.11.zip"))
         verify_source_inputs(root, args.source_commit, source_paths)
         try:
             args.output_dir.resolve().relative_to(root)
@@ -290,11 +295,66 @@ def main() -> None:
         if not receipt_path.is_file():
             raise SystemExit("Owner PWA installed-baseline readback receipt is missing")
         receipt = json.loads(receipt_path.read_text())
-        if (receipt.get("status") != "PASS" or receipt.get("runtime_version") != args.rollback_baseline_owner_pwa_version or
-                receipt.get("installed_file_count") != 20 or receipt.get("rollback_retained") is not True or
-                receipt.get("health_checks", {}).get("content_hash_all_17") is not True):
-            raise SystemExit("Installed-baseline readback does not verify the exact v1.0.8 Owner PWA tree")
-        installed = receipt.get("installed_sha256_by_path", {})
+        if receipt.get("schema") == "hbnf-owner-pwa-install-result-v1":
+            if (not args.rollback_baseline_package_dir or receipt.get("status") != "PASS" or
+                    receipt.get("step") != "install_owner_pwa" or receipt.get("install_exit") != 0 or
+                    receipt.get("runtime_version") != args.rollback_baseline_owner_pwa_version or
+                    receipt.get("rollback_retained") is not True or
+                    receipt.get("health_checks", {}).get("content_hash_all_17") is not True):
+                raise SystemExit("Successful install result or exact prior package is missing for the selected Owner PWA baseline")
+            prior_dir = (root / args.rollback_baseline_package_dir).resolve()
+            prior_package = json.loads((prior_dir / "PACKAGE.json").read_text())
+            prior_zip = prior_dir / ("hbnf-owner-pwa-local-v" + args.rollback_baseline_owner_pwa_version + ".zip")
+            if not prior_zip.is_file():
+                prior_zip = next(prior_dir.glob("hbnf-owner-pwa-local-v*.zip"), None)
+            prior_sha = (prior_dir / "PACKAGE.SHA256").read_text().split()[0]
+            if (not prior_zip or not prior_zip.is_file() or digest(prior_zip.read_bytes()) != prior_sha or
+                    prior_package.get("sourceCommit") != receipt.get("source_commit") or
+                    prior_package.get("transactionId") != receipt.get("transaction_id")):
+                raise SystemExit("Prior package identity or ZIP hash does not match the successful installed-version receipt")
+            prior_payload = (prior_dir / "PAYLOAD.SHA256SUMS").read_bytes()
+            installed_payload_manifest = prior_payload.replace(b"owner-pwa/", b"")
+            baseline_by_name = {}
+            for line in baseline.read_text().splitlines():
+                match = re.fullmatch(r"([0-9a-f]{64})  (.+)", line)
+                if not match or match.group(2) in baseline_by_name:
+                    raise SystemExit("Installed Owner PWA baseline manifest is malformed or contains duplicate paths")
+                baseline_by_name[match.group(2)] = match.group(1)
+            installed = receipt.get("installed_sha256_by_path", {})
+            prior_assets = {item.get("path"): item.get("sha256") for item in prior_package.get("assets", [])}
+            payload_assets = {}
+            for line in prior_payload.decode().splitlines():
+                match = re.fullmatch(r"([0-9a-f]{64})  owner-pwa/(.+)", line)
+                if not match:
+                    raise SystemExit("Prior package payload manifest is malformed")
+                payload_assets[match.group(2)] = match.group(1)
+            if len(payload_assets) != 16 or prior_assets != payload_assets:
+                raise SystemExit("Prior package manifest and 16-file payload set do not agree")
+            for name, expected in payload_assets.items():
+                if installed.get("owner-pwa/" + name) != expected or baseline_by_name.get(name) != expected:
+                    raise SystemExit("Installed Owner PWA payload hashes do not match the exact successful install result: " + name)
+            marker_hashes = {
+                ".hbnf-package-marker": digest(b"hbnf-owner-pwa-local-v1\n"),
+                ".hbnf-package-version": digest((args.rollback_baseline_owner_pwa_version + "\n").encode()),
+                ".hbnf-payload.sha256": digest(installed_payload_manifest),
+                ".hbnf-rollback.sh": digest((prior_dir / "rollback.sh").read_bytes()),
+            }
+            if any(baseline_by_name.get(name) != expected for name, expected in marker_hashes.items()) or len(baseline_by_name) != 20:
+                raise SystemExit("Four installed package markers do not match the prior package's exact installer/rollback bytes")
+            baseline_readback = {
+                "path": receipt_path.relative_to(root).as_posix(),
+                "sha256": digest(receipt_path.read_bytes()),
+                "runtimeVersion": args.rollback_baseline_owner_pwa_version,
+                "installedRegularFiles": 20,
+                "servedPayloadHashesVerified": 16,
+                "remainingFourMarkerHashes": "Derived from the exact prior install script, payload manifest, version marker, and rollback script; fresh live preflight must recheck every file",
+            }
+        else:
+            if (receipt.get("status") != "PASS" or receipt.get("runtime_version") != args.rollback_baseline_owner_pwa_version or
+                    receipt.get("installed_file_count") != 20 or receipt.get("rollback_retained") is not True or
+                    receipt.get("health_checks", {}).get("content_hash_all_17") is not True):
+                raise SystemExit("Installed-baseline readback does not verify the exact 20-file Owner PWA tree")
+            installed = receipt.get("installed_sha256_by_path", {})
         manifest_by_name = {}
         for line in baseline.read_text().splitlines():
             match = re.fullmatch(r"([0-9a-f]{64})  (.+)", line)
@@ -309,14 +369,15 @@ def main() -> None:
             payload_pairs += 1
         if payload_pairs != 16 or len(manifest_by_name) != 20:
             raise SystemExit("Installed readback must match all 16 payload files in the exact 20-file baseline")
-        baseline_readback = {
-            "path": receipt_path.relative_to(root).as_posix(),
-            "sha256": digest(receipt_path.read_bytes()),
-            "runtimeVersion": args.rollback_baseline_owner_pwa_version,
-            "installedRegularFiles": 20,
-            "servedPayloadHashesVerified": 16,
-            "remainingFourMarkerHashes": "Bound by exact baseline manifest and freshly verified by installer before any swap",
-        }
+        if baseline_readback is None:
+            baseline_readback = {
+                "path": receipt_path.relative_to(root).as_posix(),
+                "sha256": digest(receipt_path.read_bytes()),
+                "runtimeVersion": args.rollback_baseline_owner_pwa_version,
+                "installedRegularFiles": 20,
+                "servedPayloadHashesVerified": 16,
+                "remainingFourMarkerHashes": "Bound by exact baseline manifest and freshly verified by installer before any swap",
+            }
     if args.transaction_id:
         if not re.fullmatch(r"[A-Z0-9][A-Z0-9-]{7,100}", args.transaction_id):
             raise SystemExit("--transaction-id must be a bounded uppercase transaction identifier")
