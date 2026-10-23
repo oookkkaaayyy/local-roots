@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 package = Path(sys.argv[1]).resolve()
@@ -29,12 +30,15 @@ with tempfile.TemporaryDirectory(prefix="hbnf-v112-rehearsal-") as temp:
     target = base / "owner-pwa"
     target.mkdir(parents=True)
     root.mkdir()
-    shutil.copytree(prior / "owner-pwa", target, dirs_exist_ok=True)
+    prior_unpack = temp / "prior-v1.0.11"
+    with zipfile.ZipFile(prior / "hbnf-owner-pwa-local-v1.0.11.zip") as archive:
+        archive.extractall(prior_unpack)
+    shutil.copytree(prior_unpack / "owner-pwa", target, dirs_exist_ok=True)
     (target / ".hbnf-package-marker").write_text("hbnf-owner-pwa-local-v1\n")
     (target / ".hbnf-package-version").write_text("1.0.11\n")
-    prior_payload = (prior / "PAYLOAD.SHA256SUMS").read_text().replace("owner-pwa/", "")
+    prior_payload = (prior_unpack / "PAYLOAD.SHA256SUMS").read_text().replace("owner-pwa/", "")
     (target / ".hbnf-payload.sha256").write_text(prior_payload)
-    shutil.copy2(prior / "rollback.sh", target / ".hbnf-rollback.sh")
+    shutil.copy2(prior_unpack / "rollback.sh", target / ".hbnf-rollback.sh")
     (target / ".hbnf-rollback.sh").chmod(0o755)
 
     for name in (".hbnf-package-marker", ".hbnf-package-version", "index.html", "styles.css", "app.js", "local-transport.js"):
@@ -46,7 +50,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf-v112-rehearsal-") as temp:
 
     manifest = package / "BASELINE.SHA256SUMS"
     check = subprocess.run(["sha256sum", "-c", str(manifest)], cwd=target, capture_output=True, text=True)
-    if check.returncode: raise AssertionError("Reconstructed installed v1.0.11 baseline failed: " + check.stderr)
+    if check.returncode: raise AssertionError("Reconstructed installed v1.0.11 baseline failed: " + check.stdout + check.stderr)
 
     bin_dir = temp / "bin"
     bin_dir.mkdir()

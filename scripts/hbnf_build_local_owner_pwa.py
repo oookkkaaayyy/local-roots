@@ -312,7 +312,21 @@ def main() -> None:
                     prior_package.get("sourceCommit") != receipt.get("source_commit") or
                     prior_package.get("transactionId") != receipt.get("transaction_id")):
                 raise SystemExit("Prior package identity or ZIP hash does not match the successful installed-version receipt")
-            prior_payload = (prior_dir / "PAYLOAD.SHA256SUMS").read_bytes()
+            with zipfile.ZipFile(prior_zip) as prior_archive:
+                if json.loads(prior_archive.read("PACKAGE.json")) != prior_package:
+                    raise SystemExit("Prior package ZIP manifest differs from its reviewed local manifest")
+                prior_payload = prior_archive.read("PAYLOAD.SHA256SUMS")
+                if prior_payload != (prior_dir / "PAYLOAD.SHA256SUMS").read_bytes():
+                    raise SystemExit("Prior package ZIP payload manifest differs from its local copy")
+                prior_rollback = prior_archive.read("rollback.sh")
+                if prior_rollback != (prior_dir / "rollback.sh").read_bytes():
+                    raise SystemExit("Prior package ZIP rollback differs from its local copy")
+                prior_zip_assets = {}
+                for prior_asset in prior_package.get("assets", []):
+                    name = prior_asset.get("path")
+                    if not isinstance(name, str):
+                        raise SystemExit("Prior package asset path is malformed")
+                    prior_zip_assets[name] = digest(prior_archive.read("owner-pwa/" + name))
             installed_payload_manifest = prior_payload.replace(b"owner-pwa/", b"")
             baseline_by_name = {}
             for line in baseline.read_text().splitlines():
@@ -331,13 +345,15 @@ def main() -> None:
             if len(payload_assets) != 16 or prior_assets != payload_assets:
                 raise SystemExit("Prior package manifest and 16-file payload set do not agree")
             for name, expected in payload_assets.items():
+                if prior_zip_assets.get(name) != expected:
+                    raise SystemExit("Prior package ZIP payload does not match its manifest: " + name)
                 if installed.get("owner-pwa/" + name) != expected or baseline_by_name.get(name) != expected:
                     raise SystemExit("Installed Owner PWA payload hashes do not match the exact successful install result: " + name)
             marker_hashes = {
                 ".hbnf-package-marker": digest(b"hbnf-owner-pwa-local-v1\n"),
                 ".hbnf-package-version": digest((args.rollback_baseline_owner_pwa_version + "\n").encode()),
                 ".hbnf-payload.sha256": digest(installed_payload_manifest),
-                ".hbnf-rollback.sh": digest((prior_dir / "rollback.sh").read_bytes()),
+                ".hbnf-rollback.sh": digest(prior_rollback),
             }
             if any(baseline_by_name.get(name) != expected for name, expected in marker_hashes.items()) or len(baseline_by_name) != 20:
                 raise SystemExit("Four installed package markers do not match the prior package's exact installer/rollback bytes")
