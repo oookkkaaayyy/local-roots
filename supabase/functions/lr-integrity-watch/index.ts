@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { readFrontendGraph } from "./frontend-assets.mjs";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -68,6 +69,7 @@ Deno.serve(async (req) => {
   let stagingHsts: string | null = null;
   let frontendBundleOk = false;
   let frontendBundleUrl: string | null = null;
+  let frontendAssetUrls: string[] = [];
   let missingFrontendMarkers = [...REQUIRED_FRONTEND_MARKERS];
   let cssBundleOk = false;
   let cssBundleUrl: string | null = null;
@@ -96,14 +98,16 @@ Deno.serve(async (req) => {
     const scriptMatch = body.match(/<script[^>]+src=["']([^"']+\.js)["']/i);
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
-      const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
-        redirect: "follow",
-      });
-      if (bundleResponse.ok) {
-        const bundle = await bundleResponse.text();
-        missingFrontendMarkers = REQUIRED_FRONTEND_MARKERS.filter((marker) => !bundle.includes(marker));
+      try {
+        const graph = await readFrontendGraph(frontendBundleUrl, (url, init) => fetch(url, {
+          ...init,
+          headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+        }));
+        frontendAssetUrls = graph.urls;
+        missingFrontendMarkers = REQUIRED_FRONTEND_MARKERS.filter((marker) => !graph.bundle.includes(marker));
         frontendBundleOk = missingFrontendMarkers.length === 0;
+      } catch (error) {
+        console.error("lr-integrity-watch frontend assets", error instanceof Error ? error.message : String(error));
       }
     }
 
@@ -149,6 +153,7 @@ Deno.serve(async (req) => {
     staging_hsts: stagingHsts,
     frontend_bundle_ok: frontendBundleOk,
     frontend_bundle_url: frontendBundleUrl,
+    frontend_asset_urls: frontendAssetUrls,
     missing_frontend_markers: missingFrontendMarkers,
     css_bundle_ok: cssBundleOk,
     css_bundle_url: cssBundleUrl,
