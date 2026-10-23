@@ -9,10 +9,11 @@ test("integrity watch follows the upgraded event discovery and results contract"
   assert.equal(watch.includes('"Show past events"'), false);
   assert.equal(watch.includes('"Results available"'), false);
   assert.equal(watch.includes('"View official results"'), false);
+  assert.equal(watch.includes('"PDGA Results ↗"'), false);
   for (const marker of [
     '"Past events & results"',
     '"Add to Calendar"',
-    '"PDGA Results ↗"',
+    '"PDGA Results"',
     '"On Local Roots"',
     '"Official link"',
     '"Full Results"',
