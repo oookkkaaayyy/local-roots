@@ -68,36 +68,32 @@ test('Local Roots root and Dye Studio link their own approved artwork before scr
   assert.ok(studio.indexOf('rel="apple-touch-icon"') < studio.indexOf('<script'), 'the initial icon must precede app scripts');
 });
 
-test('isolated iOS candidate uses same-origin approved PNG URL in initial HTML and manifest', async () => {
+test('isolated iOS candidate exposes only the approved same-origin Apple touch PNG', async () => {
   const html = await shell('ios-icon-external-png-preview/index.html');
   const links = html.match(/<link rel="apple-touch-icon"[^>]*>/g) ?? [];
   assert.equal(links.length, 1);
   assert.match(html, /<title>Local Roots PNG Icon Test<\/title>/);
   assert.match(html, /apple-mobile-web-app-title" content="LR PNG Test"/);
+  assert.match(html, /Isolated icon-path test: the only Home Screen artwork source is the approved 180×180 Local Roots PNG/);
   assert.match(html, /rel="manifest" href="\/ios-icon-external-png-preview\/manifest\.webmanifest"/);
   await assertExternalIcon(html, 'apple-touch-icon.png', 'af4a80127dd7f9cf208a101dc342743b7d5c50e599b39ea0e7e3d98dd2a667d9', '/apple-touch-icon.png?v=af4a80127dd7f9cf');
   assert.doesNotMatch(html, /<script\b/i, 'the test icon must not depend on a delayed script');
+  assert.doesNotMatch(html, /data:image\/png;base64,/);
   const headers = await readFile(resolve(import.meta.dirname, '..', 'public/_headers'), 'utf8');
   assert.match(headers, /img-src[^\n]*'self'/, 'the deployed CSP must permit the same-origin icon request');
   assert.match(headers, /\/apple-touch-icon\.png\n  Cache-Control: no-cache/);
   assert.match(headers, /\/manifest\.webmanifest\n  Cache-Control: no-cache/);
   const manifest = JSON.parse(await readFile(resolve(dist, 'ios-icon-external-png-preview/manifest.webmanifest'), 'utf8'));
+  assert.equal(manifest.name, 'Local Roots PNG Icon Test');
+  assert.equal(manifest.short_name, 'LR PNG Test');
   assert.equal(manifest.id, '/ios-icon-external-png-preview/');
   assert.equal(manifest.start_url, '/ios-icon-external-png-preview/');
   assert.equal(manifest.scope, '/ios-icon-external-png-preview/');
   assert.equal(manifest.display, 'standalone');
+  assert.equal(manifest.icons, undefined, 'no manifest icon may mask the apple-touch-icon path');
 
-  const expectedIcons = [
-    ['/apple-touch-icon.png?v=af4a80127dd7f9cf', 'apple-touch-icon.png', 'af4a80127dd7f9cf208a101dc342743b7d5c50e599b39ea0e7e3d98dd2a667d9', 180],
-    ['/brand/local-roots-icon-192.png?v=dc2fc313167b4efd', 'brand/local-roots-icon-192.png', 'dc2fc313167b4efd9016813b634d67ec819c60546b73d7050b2302f4d2161795', 192],
-    ['/brand/local-roots-icon-512.png?v=b5107277c59c1238', 'brand/local-roots-icon-512.png', 'b5107277c59c123881459e843f4b7a7ca0c4448f5e8291f981f241e4c1f900fe', 512],
-  ];
-  assert.deepEqual(manifest.icons, expectedIcons.map(([src, , , size]) => ({ src, sizes: `${size}x${size}`, type: 'image/png', purpose: 'any' })));
-  for (const [src, asset, hash, size] of expectedIcons) {
-    assert.ok(src.startsWith('/'));
-    const bytes = await readFile(resolve(import.meta.dirname, '..', 'public', asset));
-    assert.equal(createHash('sha256').update(bytes).digest('hex'), hash);
-    assert.equal(bytes.toString('ascii', 1, 4), 'PNG');
-    assert.deepEqual([bytes.readUInt32BE(16), bytes.readUInt32BE(20)], [size, size]);
-  }
+  const approved = await readFile(resolve(import.meta.dirname, '..', 'public/apple-touch-icon.png'));
+  assert.equal(createHash('sha256').update(approved).digest('hex'), 'af4a80127dd7f9cf208a101dc342743b7d5c50e599b39ea0e7e3d98dd2a667d9');
+  assert.equal(approved.toString('ascii', 1, 4), 'PNG');
+  assert.deepEqual([approved.readUInt32BE(16), approved.readUInt32BE(20)], [180, 180]);
 });

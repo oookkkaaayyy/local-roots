@@ -60,8 +60,9 @@ export async function generateHomeScreenRouteShells(distDir = resolve(projectRoo
     await writeFile(output, makeRouteShell(rootHtml, route));
   }
 
-  // Isolated external-PNG candidate. Its Apple touch link and manifest all
-  // point to same-origin, approved, hash-versioned PNG files.
+  // Isolated external-PNG candidate. The initial HTML has exactly one icon
+  // source: the same-origin approved Apple touch PNG. The manifest has no
+  // icons so it cannot mask that path.
   const iconHref = '/apple-touch-icon.png?v=af4a80127dd7f9cf';
   const previewDir = resolve(distDir, 'ios-icon-external-png-preview');
   await mkdir(previewDir, { recursive: true });
@@ -75,7 +76,7 @@ export async function generateHomeScreenRouteShells(distDir = resolve(projectRoo
   <link rel="manifest" href="/ios-icon-external-png-preview/manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" type="image/png" href="${iconHref}">
   <title>Local Roots PNG Icon Test</title>
-</head><body><main><h1>Local Roots PNG icon test</h1><p>This isolated route uses the approved 180×180 Local Roots PNG at a same-origin URL in the initial Apple touch declaration and manifest.</p></main></body></html>\n`);
+  </head><body><main><h1>Local Roots PNG icon test</h1><p>Isolated icon-path test: the only Home Screen artwork source is the approved 180×180 Local Roots PNG linked from the initial HTML.</p></main></body></html>\n`);
   await writeFile(resolve(previewDir, 'manifest.webmanifest'), `${JSON.stringify({
     id: '/ios-icon-external-png-preview/',
     name: 'Local Roots PNG Icon Test',
@@ -83,11 +84,6 @@ export async function generateHomeScreenRouteShells(distDir = resolve(projectRoo
     start_url: '/ios-icon-external-png-preview/',
     scope: '/ios-icon-external-png-preview/',
     display: 'standalone',
-    icons: [
-      { src: iconHref, sizes: '180x180', type: 'image/png', purpose: 'any' },
-      { src: '/brand/local-roots-icon-192.png?v=dc2fc313167b4efd', sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: '/brand/local-roots-icon-512.png?v=b5107277c59c1238', sizes: '512x512', type: 'image/png', purpose: 'any' },
-    ],
   }, null, 2)}\n`);
 }
 
