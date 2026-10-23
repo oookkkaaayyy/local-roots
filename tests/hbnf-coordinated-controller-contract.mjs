@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
+import vm from "node:vm";
 
 const html=fs.readFileSync("hbnf-final-controller/hbnf-cart.html","utf8");
 const controller=fs.readFileSync("hbnf-final-controller/hbnf-cart.js","utf8");
@@ -56,5 +57,27 @@ assert.ok(features.includes("refreshOtaResult"),"OTA result refresh logic missin
 assert.ok(features.includes("OPAL_INSTALLER"),"trusted installer handoff missing");
 assert.ok(features.includes('location.hostname === "192.168.77.10"'),"local Matrix gate missing");
 assert.ok(!features.includes("?."),"optional chaining is not allowed in iOS-12-targeted feature module");
+
+{
+  const start=features.indexOf("async function refreshLive(silent) {");
+  const end=features.indexOf("\nasync function showScoreboard()",start);
+  assert.ok(start>=0&&end>start,"live refresh function boundaries must be present");
+  let resolveRead;
+  const status=[];
+  const context={
+    setLiveRefreshStatus:(message,bad)=>status.push([message,!!bad]),
+    canonicalRead:()=>new Promise(resolve=>{resolveRead=resolve;}),
+    renderLive:()=>{},saveLiveCache:()=>{},readLiveCache:()=>null,
+    Date,liveRefreshInFlight:false,liveRefreshManualRequested:false,
+  };
+  vm.runInNewContext("let liveRefreshInFlight=false; let liveRefreshManualRequested=false;\n"+features.slice(start,end),context);
+  const automatic=context.refreshLive(true);
+  await Promise.resolve();
+  await context.refreshLive(false);
+  assert.deepEqual(status,[["Refreshing scores…",false]],"manual tap during automatic refresh must show pending feedback immediately");
+  resolveRead({live:{active:true,entries:["A 3"]}});
+  await automatic;
+  assert.deepEqual(status,[["Refreshing scores…",false],["Scores refreshed.",false]],"the shared refresh must resolve the manual feedback");
+}
 
 console.log("HBNF coordinated controller contract: PASS");

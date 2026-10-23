@@ -132,7 +132,8 @@ assert.match(guestHtml, /Use these controls over cellular while Guest Mode is on
 assert.match(guestHtml, /Skins scoring/);
 assert.match(guestHtml, /Glow scoring/);
 assert.match(guestHtml, /id="deviceStatus"/);
-assert.match(guestJs, /report\.reported\.confirmed===true/);
+assert.match(guestJs, /Number\(report\.desired_revision\)===wantedRevision[\s\S]*?report\.reported\.confirmed===true/, "device acknowledgement must match the requested revision");
+assert.match(guestJs, /Check the lights to confirm the visible result/, "device acknowledgement must not claim physical illumination");
 assert.match(guestJs, /Matrix: "\+matrix\+" · Underglow: "\+aux/);
 assert.match(guestJs, /textContent="CART OFFLINE"/);
 assert.match(guestJs, /Status unavailable/);
