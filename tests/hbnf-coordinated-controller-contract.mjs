@@ -80,4 +80,45 @@ assert.ok(!features.includes("?."),"optional chaining is not allowed in iOS-12-t
   assert.deepEqual(status,[["Refreshing scores…",false],["Scores refreshed.",false]],"the shared refresh must resolve the manual feedback");
 }
 
+
+{
+  const start=features.indexOf("async function showScoreboard() {");
+  const end=features.indexOf("\nasync function showManualScoreboard()",start);
+  assert.ok(start>=0&&end>start,"Show Scores action boundaries must be present");
+  assert.match(html,/id="scoreActionStatus"[^>]*role="status"[^>]*aria-live="polite"/,"Show Scores feedback must be announced accessibly");
+  const body=features.slice(start,end);
+  const makeContext=(read,overlay)=>{
+    const status=[];
+    const context={
+      canonicalRead:read,canonicalOverlayBridge:()=>({overlay}),
+    };
+    const element={hidden:true,className:""};
+    let currentMessage="";
+    Object.defineProperty(element,"textContent",{get:()=>currentMessage,set:value=>{currentMessage=value;status.push([value,element.className==="status bad"]);}});
+    context.$=id=>id==="scoreActionStatus"?element:null;
+    vm.runInNewContext(body,context);
+    return {context,status,element};
+  };
+  for(const [live,expected] of [[null,"There’s no active round to show yet."],[{active:false},"There’s no active round to show yet."],[{active:true,entries:[]},"This round doesn’t have any scores yet."]]){
+    let overlays=0;
+    const {context,status}=makeContext(async()=>({live}),async()=>{overlays++;});
+    await context.showScoreboard();
+    assert.equal(status.length,2,"Show Scores must announce checking and the resolved state");
+    assert.match(status[1][0],new RegExp(expected.replace(/[.*+?^${}()|\\[\\]\\\\]/g,"\\$&")));
+    assert.equal(overlays,0,"Show Scores must not send without a real scored round");
+  }
+  let rejectOverlay;
+  let resolveOverlay;
+  const pending=makeContext(async()=>({live:{active:true,label:"Round",entries:["A 3"]}}),()=>new Promise((resolve,reject)=>{resolveOverlay=resolve;rejectOverlay=reject;}));
+  const sending=pending.context.showScoreboard();
+  for(let i=0;i<6;i++) await Promise.resolve();
+  assert.deepEqual(pending.status.map(row=>row[0]),["Checking for an active round…","Sending scores to the Cart display…"],"pending Score send must be shown immediately");
+  resolveOverlay();
+  await sending;
+  assert.match(pending.status[2][0],/^Scores sent\./,"successful send must tell the user to verify the display");
+  const failed=makeContext(async()=>({live:{active:true,entries:["A 3"]}}),async()=>{throw new Error("offline");});
+  await assert.rejects(failed.context.showScoreboard(),/offline/);
+  assert.match(failed.status[2][0],/^Couldn’t send the scores to the Cart display\./,"send failure must explain the next recovery step");
+}
+
 console.log("HBNF coordinated controller contract: PASS");

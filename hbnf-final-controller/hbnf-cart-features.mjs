@@ -481,29 +481,30 @@ async function showScoreboard() {
     status.textContent=message;
     status.className=bad ? "status bad" : "status";
   };
-  report("Checking for a live round…");
+  report("Checking for an active round…");
   let out;
   try { out=await canonicalRead("live_status",{}); }
   catch (error) {
-    report("Couldn’t check for a live round. Check the internet connection and try again; no scores were sent.",true);
+    report("Couldn’t check for an active round. Check your internet connection and try again; no scores were sent.",true);
     throw error;
   }
   const live=out && out.live;
   if (!live || !live.active) {
-    report("No live round is active. Start a Skins or Glow round, then show scores.",true);
+    report("There’s no active round to show yet. Start a Skins or Glow round, then try again.",true);
     return;
   }
   if (!Array.isArray(live.entries) || !live.entries.length) {
-    report("A round is active, but no scores are available yet. Enter scores, then show them.",true);
+    report("This round doesn’t have any scores yet. Enter scores, then try again.",true);
     return;
   }
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
   try {
     const bridge=canonicalOverlayBridge();
+    report("Sending scores to the Cart display…");
     await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-    report("Score display request sent. Check the Matrix to confirm it appeared.");
+    report("Scores sent. Check the Cart display to make sure they appeared.");
   } catch (error) {
-    report("Couldn’t send the scores to the Cart. Check the connection and try again.",true);
+    report("Couldn’t send the scores to the Cart display. Check that the Cart is online and try again.",true);
     throw error;
   }
 }
