@@ -47,7 +47,7 @@ def fixture():
             "exact_backup_path_clear":True,"same_filesystem":True,"sha256sum_available":True}}
     manifest={"candidate_profile":control.OWNER_PWA_V111_PROFILE,
         "candidate_package_sha256":control.OWNER_PWA_V111_PACKAGE_SHA256,
-        "package_path":"staging/coordinated-backend/opal/owner-pwa-local-v1.0.11/hbnf-owner-pwa-local-v1.0.11.zip",
+        "package_path":"staging/coordinated-backend/opal/owner-pwa-local-v1.0.11-retry-02/hbnf-owner-pwa-local-v1.0.11.zip",
         "drive_file_id":None,"candidate_commit":control.OWNER_PWA_V111_SOURCE_COMMIT,
         "target":{"model":"GL-SFT1200","ip":"192.168.77.1","base":"/www/mission-control-local",
             "owner_dir":"/www/mission-control-local/owner-pwa"},
@@ -57,11 +57,43 @@ def fixture():
     return state,manifest,owner,profile,receipt
 
 class OwnerPwaV111ProfileTests(unittest.TestCase):
+    def test_prior_v111_rollback_is_checked_against_its_exact_installed_v109_baseline(self):
+        profile=control._owner_pwa_v111_profile()
+        transaction="OWNER-PWA-LOCAL-V111-PRIOR-ROLLBACK-TEST"
+        failure={"schema":"hbnf-owner-pwa-install-result-v1","transaction_id":transaction,
+            "step":control.OWNER_PWA_STEP,"status":"FAIL"}
+        rollback={"schema":"hbnf-owner-pwa-install-result-v1","transaction_id":transaction,
+            "step":"rollback_if_required","status":"PASS",
+            "rollback_sha256":profile["artifacts"]["served_baseline_zip"],
+            "served_sha256_by_path":copy.deepcopy(profile["baseline_served_hashes"])}
+        root=control.DEFAULT_STATE.parent.parent/"evidence"
+        failure_path=root/".v111-prior-rollback-failure-test.json"
+        rollback_path=root/".v111-prior-rollback-result-test.json"
+        failure_path.write_text(json.dumps(failure,sort_keys=True))
+        rollback_path.write_text(json.dumps(rollback,sort_keys=True))
+        tx={"schema":"hbnf-owner-pwa-transaction-state-v1","transaction_id":transaction,
+            "status":"ROLLED_BACK","active_step":None,"attempts_used":1,
+            "completed_steps":[control.OWNER_PWA_STEP],"rollback_attempts_used":1,
+            "owner_authorization":{"artifact_sha256_bindings":copy.deepcopy(profile["artifacts"])},
+            "failure_receipt_path":failure_path.relative_to(root.parent).as_posix(),
+            "failure_receipt_sha256":control.sha256_file(failure_path),
+            "rollback_receipt_path":rollback_path.relative_to(root.parent).as_posix(),
+            "rollback_receipt_sha256":control.sha256_file(rollback_path)}
+        try:
+            self.assertEqual([],control._owner_pwa_verified_terminal_transaction(tx))
+            rollback["served_sha256_by_path"]["owner-pwa/hbnf-cart.js"]="0"*64
+            rollback_path.write_text(json.dumps(rollback,sort_keys=True))
+            tx["rollback_receipt_sha256"]=control.sha256_file(rollback_path)
+            self.assertTrue(control._owner_pwa_verified_terminal_transaction(tx))
+        finally:
+            failure_path.unlink(missing_ok=True); rollback_path.unlink(missing_ok=True)
+
     def test_exact_candidate_and_v109_baseline_are_pinned(self):
         p=control._owner_pwa_v111_profile()
         self.assertEqual(control.OWNER_PWA_V111_TRANSACTION_ID,p["transaction_id"])
         self.assertEqual(control.OWNER_PWA_V111_SOURCE_COMMIT,p["candidate_commit"])
         self.assertEqual(control.OWNER_PWA_V111_PACKAGE_SHA256,p["candidate_sha256"])
+        self.assertNotEqual("OWNER-PWA-LOCAL-V111-IPAD-HOME-20261022-01",p["transaction_id"])
         self.assertEqual(17,len(p["candidate_hashes"]))
         self.assertEqual(17,len(p["baseline_served_hashes"]))
         self.assertEqual(21,len(p["baseline_filesystem_hashes"]))
