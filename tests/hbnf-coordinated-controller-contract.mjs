@@ -13,6 +13,10 @@ for (const id of [
 ]) assert.ok(html.includes('id="'+id+'"'), "missing UI id "+id);
 
 assert.ok(html.includes("hbnf-cart-features.mjs"),"feature module not loaded");
+assert.match(html, /<section id="scoresPanel"[\s\S]*?id="liveRefreshStatus"[^>]*role="status"[^>]*aria-live="polite"/, "manual score refresh feedback must be visible in the Scores section");
+assert.ok(features.includes('setLiveRefreshStatus("Refreshing scores…")'),"manual refresh does not announce its pending state in Scores");
+assert.ok(features.includes('setLiveRefreshStatus("Scores refreshed.")'),"manual refresh does not announce success in Scores");
+assert.ok(features.includes('setLiveRefreshStatus("Couldn’t refresh scores. Check the connection and try again.",true)'),"manual refresh does not announce failure in Scores");
 assert.ok(controller.includes("window.HBNFCanonical"),"canonical browser bridge missing");
 assert.ok(controller.includes("async function command(type, payload = {})"),"canonical command payload bridge missing");
 assert.ok(controller.includes("read: function(action, payload)"),"canonical read bridge missing");

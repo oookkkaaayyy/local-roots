@@ -33,6 +33,14 @@ function setFeatureStatus(message, bad=false) {
   node.className = bad ? "status bad" : "status";
 }
 
+function setLiveRefreshStatus(message, bad=false) {
+  const node = $("liveRefreshStatus");
+  if (!node) return;
+  node.hidden = !message;
+  node.textContent = message;
+  node.className = bad ? "status bad" : "status";
+}
+
 function matrixLocal() {
   return location.hostname === "192.168.77.10" ||
     (location.hostname === "192.168.77.1" && location.pathname.indexOf("/mission-control-local/owner-pwa/") === 0);
@@ -428,21 +436,22 @@ function readLiveCache() {
 async function refreshLive(silent) {
   if (liveRefreshInFlight) return;
   liveRefreshInFlight=true;
-  if (!silent) setFeatureStatus("Refreshing live round…");
+  if (!silent) setLiveRefreshStatus("Refreshing scores…");
   try {
     const out = await canonicalRead("live_status",{});
     const now=new Date();
     renderLive(out.live,false,now.toLocaleTimeString());
     saveLiveCache(out.live);
-    if (!silent) setFeatureStatus("Live round refreshed.");
+    if (!silent) setLiveRefreshStatus("Scores refreshed.");
   } catch (error) {
     const cached=readLiveCache();
     if (cached && cached.live) {
       const when=cached.savedAt ? new Date(cached.savedAt).toLocaleString() : "";
       renderLive(cached.live,true,when);
-      if (!silent) setFeatureStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
+      if (!silent) setLiveRefreshStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
       return;
     }
+    if (!silent) setLiveRefreshStatus("Couldn’t refresh scores. Check the connection and try again.",true);
     throw error;
   } finally {
     liveRefreshInFlight=false;

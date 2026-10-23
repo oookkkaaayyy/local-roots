@@ -1,15 +1,37 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
-import datetime as dt
-import hashlib
-import json
-import pathlib
-import subprocess
+import os
 import sys
-import uuid
-from typing import Any
+
+# This CLI's filename shadows Python's standard-library ``platform`` module
+# when invoked directly from the scripts/ directory. Remove that directory
+# from import lookup before importing modules such as uuid that need stdlib
+# platform.system().
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_SCRIPT_DIR_ENTRIES = [
+    (index, entry)
+    for index, entry in enumerate(sys.path)
+    if os.path.abspath(entry or os.getcwd()) == _SCRIPT_DIR
+]
+for _index, _entry in reversed(_SCRIPT_DIR_ENTRIES):
+    sys.path.pop(_index)
+
+try:
+    # Cache stdlib platform while the scripts directory cannot shadow it.
+    import platform as _stdlib_platform
+
+    import argparse
+    import datetime as dt
+    import hashlib
+    import json
+    import pathlib
+    import subprocess
+    import uuid
+    from typing import Any
+finally:
+    for _index, _entry in _SCRIPT_DIR_ENTRIES:
+        sys.path.insert(_index, _entry)
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLATFORM = ROOT / "platform"
