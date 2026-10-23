@@ -442,17 +442,27 @@ async function refreshLive(silent) {
 }
 
 async function showScoreboard() {
-  setFeatureStatus("Checking for a live round…");
+  const status=$("scoreActionStatus");
+  const report=(message,bad=false)=>{
+    if (!status) return;
+    status.textContent=message;
+    status.className=bad ? "status bad" : "status";
+  };
+  report("Checking for a live round…");
   const out=await canonicalRead("live_status",{});
   const live=out && out.live;
-  if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) {
-    setFeatureStatus("No live round is active. Start a Skins or Glow round, then show scores.",true);
+  if (!live || !live.active) {
+    report("No live round is active. Start a Skins or Glow round, then show scores.",true);
+    return;
+  }
+  if (!Array.isArray(live.entries) || !live.entries.length) {
+    report("A round is active, but no scores are available yet. Enter scores, then show them.",true);
     return;
   }
   const bridge=canonicalOverlayBridge();
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
   await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-  setFeatureStatus("Scores are showing on the Cart.");
+  report("Scores are showing on the Cart.");
 }
 
 async function showManualScoreboard() {
