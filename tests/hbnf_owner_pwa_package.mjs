@@ -19,11 +19,11 @@ const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_packa
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
 assert.match(html, /hbnf-cart2-owner-control-guest-qr-v1-20261016/);
-assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html"/);
+assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/owner-pwa\/hbnf-cart\.html"/);
 assert.match(html, /Open local controls · works on Cart Wi-Fi without internet/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261016-guest-qr-v1");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261023-cart-ux-v3");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 

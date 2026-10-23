@@ -5,6 +5,16 @@ import vm from "node:vm";
 
 const html = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html", import.meta.url), "utf8");
 const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
+const controllerSource = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
+const serviceWorker = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-sw.js", import.meta.url), "utf8");
+const manifest = JSON.parse(fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-manifest.webmanifest", import.meta.url), "utf8"));
+const appVersion = "20261023-cart-ux-v3";
+assert.match(html, new RegExp(`\\?v=${appVersion}`), "HTML assets must use the current shell version");
+assert.doesNotMatch(html, /20261016-course-ready-ux-v1/, "stale asset URLs must not be reused by browser caches");
+assert.match(controllerSource, new RegExp(`hbnf-cart-(?:net|semantic)\\.mjs\\?v=${appVersion}`));
+assert.match(serviceWorker, new RegExp(`const VERSION = "${appVersion}"`));
+assert.match(serviceWorker, /hbnf-owner-pwa-v15-cart-ux-20261023/);
+assert.equal(manifest.start_url, `/hbnf-cart.html?app=${appVersion}`);
 const panelStart = html.indexOf('<section id="palettePanel"');
 const panelEnd = html.indexOf("</section>", panelStart);
 assert.ok(panelStart >= 0 && panelEnd > panelStart, "Palette controls should have a dedicated panel");
@@ -17,8 +27,8 @@ assert.match(palettePanel, /id="featurePalette"[^>]*aria-describedby="paletteAct
 assert.match(palettePanel, /id="featureColor"/);
 assert.match(palettePanel, /id="featureApplyPalette"/);
 assert.match(palettePanel, /id="paletteActionStatus"[^>]*role="status"[^>]*aria-live="polite"/);
-assert.match(html, /id="vibeAvailability"[^>]*role="status">Lighting styles aren’t available right now\. Check the Cart connection or use local controls\./,
-  "Vibe controls must give a safe recovery option without claiming reconnecting will enable unsupported capabilities");
+assert.match(html, /id="vibeAvailability"[^>]*role="status">Checking lighting controls…/,
+  "Vibe readiness should be reported only after the Cart capability check");
 assert.match(html, /id="vibeActionStatus"[^>]*aria-live="polite" hidden/,
   "Vibe update feedback must be available beside the selected control");
 assert.match(html, /id="commandActionStatus"[^>]*aria-live="polite" hidden/,
@@ -123,7 +133,6 @@ const featureSource = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-car
 assert.match(featureSource, /window\.addEventListener\("online",retryPaletteLoad\)/, "palette loading must retry after the browser reconnects");
 assert.match(featureSource, /window\.addEventListener\("pageshow",retryPaletteLoad\)/, "palette loading must retry when the page returns");
 assert.match(featureSource, /document\.addEventListener\("visibilitychange",function\(\)\{ if \(!document\.hidden\) retryPaletteLoad\(\); \}\)/, "palette loading must retry when the page becomes visible");
-const controllerSource = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
 const vibeHandlerStart = controllerSource.indexOf('document.querySelectorAll(".vibe-option").forEach(button => {', controllerSource.indexOf("window.HBNFCanonical ="));
 const vibeHandlerEnd = controllerSource.indexOf('for (const id of ["scene"', vibeHandlerStart);
 const vibeHandler = controllerSource.slice(vibeHandlerStart, vibeHandlerEnd);
@@ -261,6 +270,45 @@ test("Cart command distinguishes confirmed, failed, and pending device outcomes"
   assert.equal((await run(confirmed)).status,"confirmed");
   assert.equal((await run(failed)).status,"failed");
   assert.equal((await run(submitted,true)).status,"pending");
+});
+
+test("Vibe availability distinguishes a disconnected Cart from unsupported controls", () => {
+  const start = controllerSource.indexOf("function updateVibeSelection(_state)");
+  const end = controllerSource.indexOf("function setRange(", start);
+  assert.ok(start >= 0 && end > start);
+  const updateSource = controllerSource.slice(start, end);
+  const buttons = ["chill","groove"].map(vibe => ({
+    dataset:{vibe}, disabled:true, attrs:{"aria-pressed":"false"},
+    setAttribute(name,value){this.attrs[name]=value;},
+  }));
+  const options={hidden:false};
+  const availability={hidden:false,textContent:"Checking lighting controls…"};
+  const auto={hidden:true,disabled:true,attrs:{"aria-pressed":"false"},setAttribute(name,value){this.attrs[name]=value;}};
+  const context={
+    canonicalCapabilities:{},
+    cartStatusChecked:false,
+    cartConnectionUnavailable:false,
+    document:{querySelectorAll:()=>buttons},
+    $:id=>({vibeOptions:options,vibeAvailability:availability,vibeAuto:auto})[String(id).replace(/^#/,"")],
+  };
+  vm.runInNewContext(updateSource,context);
+  context.updateVibeSelection({});
+  assert.equal(availability.hidden,false);
+  assert.equal(availability.textContent,"Checking lighting controls…");
+  context.cartStatusChecked=true;
+  context.cartConnectionUnavailable=true;
+  context.updateVibeSelection({});
+  assert.equal(availability.textContent,"Can’t reach the Cart. Check the connection details and try again.");
+  context.cartConnectionUnavailable=false;
+  context.updateVibeSelection({});
+  assert.equal(availability.textContent,"Lighting-style controls aren’t available on this Cart.");
+  assert.equal(buttons[0].disabled,true);
+  context.canonicalCapabilities.phase2VibeRuntimeV1=true;
+  context.updateVibeSelection({selectedVibe:"chill"});
+  assert.equal(availability.hidden,true);
+  assert.equal(buttons[0].disabled,false);
+  assert.equal(buttons[0].attrs["aria-pressed"],"true");
+  assert.match(updateSource,/cartConnectionUnavailable[\s\S]*Can’t reach the Cart\. Check the connection details and try again\./);
 });
 
 test("palette choices reload after Cart reconnect and overlapping lifecycle events share one request", async () => {

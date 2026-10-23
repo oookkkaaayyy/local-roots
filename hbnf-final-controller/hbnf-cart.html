@@ -9,9 +9,9 @@
   <meta name="apple-mobile-web-app-title" content="HBNF Cart">
   <meta name="hbnf-access" content="guest-zero-pair">
   <meta name="hbnf-build" content="hbnf-cart2-owner-control-guest-qr-v1-20261016">
-  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261016-course-ready-ux-v1">
-  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261016-course-ready-ux-v1">
-  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261016-course-ready-ux-v1">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261023-cart-ux-v3">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261023-cart-ux-v3">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261023-cart-ux-v3">
   <title>HBNF Cart Control</title>
   <style>
     :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;padding:20px;max-width:680px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:18px}.panel{border:1px solid #24414c;border-radius:14px;padding:16px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select,input,textarea{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:3em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.pair-link{width:100%;min-height:78px;word-break:break-all}.good{color:#8ce3ad}.warn{color:#f2ca75}
@@ -70,7 +70,7 @@
       <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>Cosmic</strong></button>
       <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled hidden>Automatic</button>
     </div>
-    <p id="vibeAvailability" class="apply-note" role="status">Lighting styles aren’t available right now. Check the Cart connection or use local controls.</p>
+    <p id="vibeAvailability" class="apply-note" role="status">Checking lighting controls…</p>
     <p id="vibeActionStatus" class="apply-note" role="status" aria-live="polite" hidden></p>
   </section>
 
@@ -181,7 +181,7 @@
     </label>
     <p id="guestModeStatus" class="apply-note" role="status" aria-live="polite">Guests can use the QR link while guest access is on. You can turn it off anytime.</p>
     <div class="guest-invite" aria-label="Guest access QR">
-      <img src="./hbnf-guest-qr.png?v=20261016-course-ready-ux-v1" width="192" height="192" alt="Guest controls QR code">
+      <img src="./hbnf-guest-qr.png?v=20261023-cart-ux-v3" width="192" height="192" alt="Guest controls QR code">
       <div><strong>Invite a guest</strong><p class="muted">Scan with a phone on cellular. Guest access must be on and the Cart online.</p><a href="https://hbnightflyers.com/guest/hbnf-cart/">Open guest controls</a><p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a></p></div>
     </div>
   </section>
@@ -309,4 +309,4 @@
     <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
     <button id="refresh">Refresh</button>
   </section>
-</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261016-course-ready-ux-v1",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261016-course-ready-ux-v1"></script></body></html>
+</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261023-cart-ux-v3",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261023-cart-ux-v3"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261023-cart-ux-v3"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261023-cart-ux-v3"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261023-cart-ux-v3"></script></body></html>

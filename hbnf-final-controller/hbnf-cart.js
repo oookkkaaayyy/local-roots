@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261023-cart-ux-v3";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261023-cart-ux-v3";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
@@ -26,6 +26,8 @@ let tuneInFlight = false;
 let tuneTimer = null;
 let hydrating = false;
 let canonicalCapabilities = {};
+let cartStatusChecked = false;
+let cartConnectionUnavailable = false;
 const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
 let localControlActive = false;
 let lastLocalEnrollAt = 0;
@@ -191,6 +193,8 @@ async function callCloud(body) {
     }, HBNF_API_TIMEOUT_MS, "Cart control");
     if (backendHealth) backendHealth.textContent = "Reachable";
   } catch (error) {
+    canonicalCapabilities = {};
+    updateVibeSelection({});
     if (backendHealth) backendHealth.textContent = "Unavailable";
     throw error;
   }
@@ -388,7 +392,16 @@ function updateVibeSelection(_state) {
   const autoReady = ready && canonicalCapabilities.autoVibeControlV1 === true;
   const options = $("#vibeOptions"), availability = $("#vibeAvailability");
   if (options) options.hidden = !ready;
-  if (availability) availability.hidden = ready;
+  if (availability) {
+    availability.hidden = ready;
+    if (!ready) {
+      availability.textContent = !cartStatusChecked
+        ? "Checking lighting controls…"
+        : cartConnectionUnavailable
+          ? "Can’t reach the Cart. Check the connection details and try again."
+          : "Lighting-style controls aren’t available on this Cart.";
+    }
+  }
   document.querySelectorAll(".vibe-option").forEach(button => {
     button.disabled = !ready;
     button.setAttribute("aria-pressed", button.dataset.vibe === vibe ? "true" : "false");
@@ -442,6 +455,9 @@ async function refresh({ hydrate = true } = {}) {
   try {
     out = await call({ action: "status" });
   } catch (error) {
+    cartStatusChecked = true;
+    cartConnectionUnavailable = true;
+    updateVibeSelection({});
     if (backendHealth) backendHealth.textContent = "Unavailable";
     if (matrixHealth) matrixHealth.textContent = "Not confirmed";
     if (auxHealth) auxHealth.textContent = "Not confirmed";
@@ -452,7 +468,10 @@ async function refresh({ hydrate = true } = {}) {
     }
     throw error;
   }
+  cartStatusChecked = true;
+  cartConnectionUnavailable = false;
   canonicalCapabilities = out && out.capabilities ? out.capabilities : {};
+  updateVibeSelection(out && out.desired && out.desired.state ? out.desired.state : {});
   try { window.dispatchEvent(new CustomEvent("hbnf-canonical-capabilities",{detail:canonicalCapabilities})); } catch (_) {}
 
   if (out && out.local === true) {

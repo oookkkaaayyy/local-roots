@@ -13,11 +13,11 @@ const localBuilder = readFileSync("scripts/hbnf_build_local_owner_pwa.py", "utf8
 const cloudBuilder = readFileSync("scripts/hbnf_build_owner_guest_package.py", "utf8");
 
 const guestUrl = "https://hbnightflyers.com/guest/hbnf-cart/";
-assert.match(owner, /src="\.\/hbnf-guest-qr\.png\?v=20261016-course-ready-ux-v1"/);
+assert.match(owner, /src="\.\/hbnf-guest-qr\.png\?v=20261023-cart-ux-v3"/);
 assert.match(owner, new RegExp(guestUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 assert.match(owner, /width="192" height="192" alt="Guest controls QR code"/);
-assert.match(owner, /Guests can use the QR link while Guest Mode is on/);
-assert.match(owner, /Scan with a phone on cellular\. Guest Mode must be on and the Cart online\./);
+assert.match(owner, /Guests can use the QR link while guest access is on/);
+assert.match(owner, /Scan with a phone on cellular\. Guest access must be on and the Cart online\./);
 assert.match(owner, /https:\/\/hbnightflyers\.com\/skins\.html/);
 assert.match(owner, /https:\/\/hbnightflyers\.com\/glow\.html/);
 assert.match(guest, /Use these controls over cellular while Guest Mode is on\./);
@@ -27,7 +27,7 @@ assert.match(worker, /\/hbnf-guest-qr\.png\?v=\$\{VERSION\}/);
 assert.match(localBuilder, /"hbnf-guest-qr\.png"/);
 assert.match(cloudBuilder, /"hbnf-guest-qr\.png"/);
 assert.match(owner, /id="vibeOptions"/);
-assert.match(owner, /id="vibeAvailability"[^>]+hidden/);
+assert.match(owner, /id="vibeAvailability"[^>]+role="status"/);
 assert.match(ownerJs, /const autoReady = ready && canonicalCapabilities\.autoVibeControlV1 === true/);
 assert.match(owner, /\[hidden\]\{display:none!important\}/);
 assert.match(guest, /id="vibeOptions"/);
