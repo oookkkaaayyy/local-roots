@@ -8,12 +8,12 @@ const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-featu
 const controllerSource = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
 const serviceWorker = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-sw.js", import.meta.url), "utf8");
 const manifest = JSON.parse(fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-manifest.webmanifest", import.meta.url), "utf8"));
-const appVersion = "20261023-cart-ux-v3";
+const appVersion = "20261023-cart-ux-v4";
 assert.match(html, new RegExp(`\\?v=${appVersion}`), "HTML assets must use the current shell version");
 assert.doesNotMatch(html, /20261016-course-ready-ux-v1/, "stale asset URLs must not be reused by browser caches");
 assert.match(controllerSource, new RegExp(`hbnf-cart-(?:net|semantic)\\.mjs\\?v=${appVersion}`));
 assert.match(serviceWorker, new RegExp(`const VERSION = "${appVersion}"`));
-assert.match(serviceWorker, /hbnf-owner-pwa-v15-cart-ux-20261023/);
+assert.match(serviceWorker, /hbnf-owner-pwa-v16-cart-ux-20261023/);
 assert.equal(manifest.start_url, `/hbnf-cart.html?app=${appVersion}`);
 const panelStart = html.indexOf('<section id="palettePanel"');
 const panelEnd = html.indexOf("</section>", panelStart);
@@ -309,6 +309,36 @@ test("Vibe availability distinguishes a disconnected Cart from unsupported contr
   assert.equal(buttons[0].disabled,false);
   assert.equal(buttons[0].attrs["aria-pressed"],"true");
   assert.match(updateSource,/cartConnectionUnavailable[\s\S]*Can’t reach the Cart\. Check the connection details and try again\./);
+});
+
+test("failed Cart request marks the connection unavailable before reconciling Vibe controls", async () => {
+  const updateStart=controllerSource.indexOf("function updateVibeSelection(_state)");
+  const updateEnd=controllerSource.indexOf("function setRange(",updateStart);
+  const cloudStart=controllerSource.indexOf("async function callCloud(body)");
+  const cloudEnd=controllerSource.indexOf("\nfunction hydrateLocalControls",cloudStart);
+  assert.ok(updateStart>=0 && updateEnd>updateStart && cloudStart>=0 && cloudEnd>cloudStart);
+  const buttons=[{dataset:{vibe:"chill"},disabled:false,attrs:{},setAttribute(name,value){this.attrs[name]=value;}}];
+  const availability={hidden:true,textContent:""};
+  const options={hidden:false};
+  const auto={hidden:false,disabled:false,setAttribute(){}};
+  const context={
+    canonicalCapabilities:{phase2VibeRuntimeV1:true},
+    cartStatusChecked:true,
+    cartConnectionUnavailable:false,
+    authHeaders:async()=>({headers:{},mode:"guest"}),
+    fetchWithDeadline:async()=>{throw new Error("network timeout");},
+    fetch:async()=>{}, endpoint:"https://cart.test/control", HBNF_API_TIMEOUT_MS:10,
+    backendHealth:{textContent:"Reachable"},
+    document:{querySelectorAll:()=>buttons},
+    $:id=>({vibeOptions:options,vibeAvailability:availability,vibeAuto:auto})[String(id).replace(/^#/,"")],
+  };
+  vm.runInNewContext(controllerSource.slice(updateStart,updateEnd)+"\n"+controllerSource.slice(cloudStart,cloudEnd),context);
+  await assert.rejects(context.callCloud({action:"command"}),/network timeout/);
+  assert.equal(context.canonicalCapabilities.phase2VibeRuntimeV1,undefined);
+  assert.equal(context.cartStatusChecked,true);
+  assert.equal(context.cartConnectionUnavailable,true);
+  assert.equal(availability.textContent,"Can’t reach the Cart. Check the connection details and try again.");
+  assert.equal(buttons[0].disabled,true);
 });
 
 test("palette choices reload after Cart reconnect and overlapping lifecycle events share one request", async () => {

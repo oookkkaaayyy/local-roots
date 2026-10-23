@@ -13,7 +13,7 @@ const localBuilder = readFileSync("scripts/hbnf_build_local_owner_pwa.py", "utf8
 const cloudBuilder = readFileSync("scripts/hbnf_build_owner_guest_package.py", "utf8");
 
 const guestUrl = "https://hbnightflyers.com/guest/hbnf-cart/";
-assert.match(owner, /src="\.\/hbnf-guest-qr\.png\?v=20261023-cart-ux-v3"/);
+assert.match(owner, /src="\.\/hbnf-guest-qr\.png\?v=20261023-cart-ux-v4"/);
 assert.match(owner, new RegExp(guestUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 assert.match(owner, /width="192" height="192" alt="Guest controls QR code"/);
 assert.match(owner, /Guests can use the QR link while guest access is on/);
