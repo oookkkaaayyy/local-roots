@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
         const graph = await readFrontendGraph(frontendBundleUrl, (url, init) => fetch(url, {
           ...init,
           headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
-        }));
+        }), new URL(STAGING_URL).origin);
         frontendAssetUrls = graph.urls;
         missingFrontendMarkers = REQUIRED_FRONTEND_MARKERS.filter((marker) => !graph.bundle.includes(marker));
         frontendBundleOk = missingFrontendMarkers.length === 0;
