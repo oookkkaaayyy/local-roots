@@ -1,163 +1,52 @@
-# HBNF / Cart Upgrades — Repository Agent Instructions
 
-## CURRENT FIELD-RELIABILITY PROGRAM (OWNER DIRECTIVE — 2026-10-20)
+Apply the global Codex `AGENTS.md` for task budgeting, source identity, independent recovery checkpoints, and general execution. This file adds only HBNF/Cart-specific requirements. Treat these instructions as behavioral guidance: rely on a mechanical gate only after verifying that it is active on the current surface, covers the specific action, and blocks safely when dependencies fail.
 
-This is a **project priority and source routing note**, not a change to the operational lifecycle model. Continue to enforce the actual `config/HBNF_CONTROL_MODEL.json`, `config/HBNF_CONTROL_STATE.json`, and `scripts/platform.py` commands below. Do not rebuild or replace these files.
+## Current work and authority
 
-- **Active P0, existing HBNF scoring worker:** https://github.com/oookkkaaayyy/local-roots/issues/115 — recover real October 20 Skins scorecard and prevent silent unsaved results. The genuine Oct20 tag finalization already survives independently; never erase or redo it. Preserve owner's original iPhone browser/PWA storage.
-- **Active P1, existing Cart coordinator/worker:** https://github.com/oookkkaaayyy/local-roots/issues/116 — in parallel, fix deterministic Cart power/startup, Opal WAN reconnect, headless score-to-Matrix path, iPad Mini controls/text/palettes and AUX synchronization. Diagnostics and independently safe offline changes proceed during scoring P0.
-- New UV integration, games, visual upgrades and side features are on hold until **both** tracks pass real-world acceptance. Avoid building an alternate scoreboard service when the existing headless relay can be qualified.
-- **Expert-led behavior:** Questions, observations and proposed ideas from the owner are inputs to challenger analysis, **not automatic instructions** to interrupt existing work. Test against current evidence, production identity, risks and simpler alternatives; state adopt/defer/reject. Change agreed direction only on an explicit owner decision or a verified urgent incident.
-- Do not confuse GitHub source availability with installed-device source/version parity. This branch contains genuine Cart control files, but on-course installed Opal and firmware must still be matched to exact verified releases. The separate Local Roots main-branch source-routing candidate is https://github.com/oookkkaaayyy/local-roots/pull/117 (DRAFT and **not accepted production authority**).
-- Keep the owner informed only of substantive results, not prompt chains. At every handoff state P0 status, P1 status, exact next acceptance evidence and any genuine manual gate. No live scoring/Cart mutation merely from this note.
+This repository supports HBNF scoring and Cart 2.0. Current outcomes and acceptance criteria are tracked in [scoring issue #115](https://github.com/oookkkaaayyy/local-roots/issues/115) and [Cart issue #116](https://github.com/oookkkaaayyy/local-roots/issues/116); check their current state instead of treating this file as a live status report. For history-dependent work, follow the AKS Master Router and current HBNF/Cart file authority. Use the existing issue as the single task contract.
 
-Controlling evidence/priority: https://docs.google.com/document/d/1mydpAPHSuHu7Z75MedZ683s2FoFJVgSi2jLPVGKaYpQ/edit
-Missing-round evidence: https://docs.google.com/document/d/1a0K5wvfnHT-hn9TPxd-ze2vpqM3sPIQcpD5zPSxVt8s/edit
+For HBNF lifecycle state, the operational authority is `config/HBNF_CONTROL_MODEL.json`, `config/HBNF_CONTROL_STATE.json`, and `scripts/hbnf_control.py`. Do not infer lifecycle state from prose, successful tests, builds, installs, postmortems, or older records. Change the lifecycle model only when the task explicitly concerns it; obey its complexity limits, applicability classes, and required evidence. T4 work also requires the manifest path in that model.
 
+Preserve the original Oct. 20 scoring evidence and tag finalization. Never recreate scores, re-finalize tags, or alter production scoring data without explicit owner approval. Do not add UV, games, or unrelated features before the reliability outcomes in #115 and #116 are accepted. Do not confuse repository source with the currently installed device version.
 
-## Mandatory platform front door
+## One compact task contract
 
-For substantial HBNF implementation, build, deployment, diagnostic, recovery, or acceptance work:
+Before implementation, confirm in the existing issue or work record: user-visible outcome; exact source/ref and installed identity for device work; observable acceptance evidence and how to obtain it; recovery path; scope/non-goals. Confirm that the recovery destination is available and that authorization covers the complete checkpoint payload—including the source tree, any existing dirty changes, and the files planned for editing—before the first edit. Reuse this same contract for workers and review. If a required source, access path, verification path, or checkpoint authorization is missing, do read-only work that closes a named prerequisite, then stop at the specific blocker. Do not create extra prompts, plans, trackers, capsules, or handoffs unless required below.
 
-1. Run `python3 scripts/platform.py doctor`.
-2. Select the appropriate golden path from `platform/workflows/`.
-3. Create a self-validating execution capsule with `python3 scripts/platform.py capsule ...`.
-4. Validate it with `python3 scripts/platform.py check-capsule ...`.
-5. For worker execution, compile the directive with `python3 scripts/platform.py directive ...`.
-6. Do not perform a paid or mutating step unless the capsule validates and every mandatory prelive stage is closed.
+## Match process to operation risk
 
-The platform layer does not replace the HBNF lifecycle control model. It enforces the engineering path used to reach the next lifecycle receipt.
+For read-only investigation and source-only changes, inspect only relevant files, make one bounded change, and run focused checks tied to acceptance. UI changes must be rendered at the target viewport; local rendering proves layout only.
 
-For any task touching HBNF release engineering, firmware promotion, Cart 2.0 integration, deployment, or acceptance:
+For substantial HBNF release engineering, firmware promotion, Cart integration, deployment, diagnostics, or acceptance, use the established `platform/workflows/` path. Run `python3 scripts/platform.py doctor` once; it also reports control status, so do not repeat that check without a state change. For worker/live/mutating steps, create one capsule with `python3 scripts/platform.py capsule ...`, validate it with `python3 scripts/platform.py check-capsule ...`, and compile a worker directive with `python3 scripts/platform.py directive ...` when a worker is used. Bind it to exact source, inputs, hashes, checks, expected outputs, recovery, and stop conditions. Do not repeat completed preflight or rediscover unchanged dependencies without new evidence.
 
-1. `python3 scripts/platform.py doctor` already runs `python3 scripts/hbnf_control.py status`. Review that emitted status as the required control-state check; do not invoke the same status check a second time unless investigating a new state change.
+Before any live mutation, prove the exact consumer path, current deployed/device identity, preview or rehearsal, user-visible verification, and rollback to the exact prior state. No live or production mutation unless the control model permits it and the owner explicitly authorizes that operation. Owner approval is also required for architecture, security, infrastructure, or purchasing decisions. Paid builds and GitHub Actions require explicit approval for each bounded run; do not use them for diagnosis, and do not retry without new evidence. A diagnostic install is prohibited unless the exact updater/publication path and tested rollback are proven.
 
-2. Treat only these files as operational lifecycle authority:
-   - `config/HBNF_CONTROL_MODEL.json`
-   - `config/HBNF_CONTROL_STATE.json`
-   - `scripts/hbnf_control.py`
+For PlatformIO builds, use the last successful pinned release capsule and record command, environment, dependency closure, source identity, and cache state. Set a measurable stop point; after 30 minutes without progress evidence, stop and diagnose before changing build mechanisms.
 
-3. Do not infer lifecycle state from prose, recency, successful compilation, successful installation, postmortems, READ FIRST docs, AKS, or legacy gate JSON.
+After two consecutive host/process/tooling blockers without new product evidence, stop and simplify the lane before trying another mechanism. Never retry the same failing mechanism without evidence that changes why it should succeed. Do not use paid/quota-limited runs for diagnosis or give unsupported ETAs.
 
-4. Do not add free-floating governance rules. New information must be classified as:
-   - implementation detail;
-   - direct evidence for the current stage receipt; or
-   - a deliberate lifecycle-model revision.
+## Control-change verification
 
-5. Preserve the V2 complexity budget:
-   - 6 states maximum;
-   - 5 forward transitions maximum;
-   - exactly one outgoing transition per nonterminal state;
-   - one self-contained receipt per transition;
-   - no branching, cycles, nested receipts, or receipt-to-receipt references.
+When changing HBNF control or release logic, create the required applicability record and validate it with `python3 scripts/hbnf_control.py check-change --change <record-or-manifest.json>`. Run the established focused control suite:
 
-6. Before finalizing any repository change that touches HBNF control/release logic, run:
-   - `python3 tests/hbnf_control.py`
-   - `python3 tests/hbnf_guarded_run.py`
-   - `python3 scripts/hbnf_architecture_fitness.py`
-   - `python3 tests/hbnf_runtime_qualify_static.py`
-   - `python3 tests/hbnf_kernel_sweep_report.py`
-   - `python3 tests/hbnf_source_tree_identity.py`
-   - `python3 tests/hbnf_live_kernel_sweep.py`
-   - `python3 tests/hbnf_packet20_http_adapter.py`
-   - `python3 tests/hbnf_packet20_build_validate.py`
+```text
+python3 tests/hbnf_control.py
+python3 tests/hbnf_guarded_run.py
+python3 scripts/hbnf_architecture_fitness.py
+python3 tests/hbnf_runtime_qualify_static.py
+python3 tests/hbnf_kernel_sweep_report.py
+python3 tests/hbnf_source_tree_identity.py
+python3 tests/hbnf_live_kernel_sweep.py
+python3 tests/hbnf_packet20_http_adapter.py
+python3 tests/hbnf_packet20_build_validate.py
+```
 
-7. Do not perform live mutation unless the control plane and the task's explicit user authorization both permit it.
+`tests/hbnf_live_kernel_sweep.py` exercises mocked/dry-run adapters; it is not authorization to run the live `scripts/hbnf_live_kernel_sweep.py` runner, which requires the live-task capsule and explicit owner authorization. Preserve the lifecycle model's applicability classes and complexity limits; T4 progression also requires its validated governance manifest.
 
-## Artifact continuity and storage
+## Acceptance, coordination, and continuity
 
-8. Local Codex/worktree paths are temporary workspace, never durable handoff authority.
+Track each requested outcome separately as PASS, FAIL, NOT CHECKED, or BLOCKED. Tests, local renders, hashes, and device acknowledgements prove only their specific claims. Cart release requires every B0–B5 and UI criterion in #116, including physical iPad Safari, integration, field checks, and owner acceptance. Never call a candidate installed or accepted without direct evidence.
 
-9. Before any later phase depends on a newly validated HBNF artifact, perform this sequence:
-   **validate -> SHA-256 -> register -> promote -> read-back verify -> continue**.
+Keep one accountable coordinator. Use an existing worker only for a bounded independent task; do not fan out or make the owner a courier. Request owner action only at a real access, physical-validation, or authorization boundary, with one consolidated request, exact expected evidence, and a stop condition. Communicate at meaningful milestones or changed blockers; do not send routine heartbeat updates or poll unchanged state.
 
-10. Promotion destinations:
-   - buildable/deployable source, workflows, manifests, and release metadata -> GitHub;
-   - durable binaries, exact recovery companions, decisive diagnostics, and compact evidence -> Google Drive;
-   - current routing/state and artifact identities -> AKS.
-
-11. First-stop Drive authority for Cart 2.0:
-   - `AKS — HBNF CART 2.0 — CURRENT FILE AUTHORITY`
-   - Drive ID `1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc`
-   - Canonical project folder `HBNF CART 2.0 — ACTIVE`, Drive ID `1E5u4gEUVi0cwTEZP8j0vqUF78tWrU-Pc`
-   - Global artifact registry: `AKS — ARTIFACT & SOURCE REGISTRY — CURRENT`, Drive ID `18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k`
-
-12. Do not broadly search Drive or local worktrees for an artifact until the current file authority and artifact registry have been consulted.
-
-13. Retention discipline:
-   - keep the current diagnostic/candidate, exact recovery companion, and last accepted field baseline;
-   - keep extra milestone binaries only when they have unique rollback/provenance value;
-   - do not retain build caches, dependency trees, repository clones, `node_modules`, or PlatformIO caches in Drive;
-   - routine raw logs/captures are temporary; retain compact decisive evidence instead;
-   - superseded reproducible intermediates are deletion-eligible after GitHub/registry provenance is verified.
-
-14. When an artifact is superseded, mark/route it as superseded immediately. Never allow an obsolete file whose title says CURRENT to remain in the active path.
-
-15. Before ending a task that created or materially changed a meaningful artifact, update the artifact authority/registry so the next task never has to rediscover it.
-
-
-16. GitHub Actions is an explicitly authorized execution/cost boundary. Repository Actions was intentionally shut down on 2026-09-29 when included usage was near its limit. Never enable, trigger, dispatch, or rerun GitHub Actions without explicit current user authorization for that exact bounded run. One approved run never implies approval for a retry or unrelated workflow.
-
-
-## HBNF anti-spin execution rules
-
-17. During an active Packet/live-execution lane, completed prerequisites are immutable unless a specific state-changing event invalidates them. Do not repeat release-state reads, updater preflights, artifact verification, signatures, build provenance, or control status for reassurance.
-
-18. A failed live or host step creates exactly one current blocker: the smallest evidence-backed cause of that failed step. Correct that blocker and resume from the failed step. Do not fan out into adjacent archaeology.
-
-19. No paid/limited remote build or GitHub Actions run may be used diagnostically. Before any authorized build, source/dependency/vendor/generated-input closure must be reconciled offline/read-only. One authorized run never implies a retry.
-
-20. After two consecutive host/process/tooling blockers with no new Matrix diagnostic evidence, stop execution and simplify the lane before attempting a third mechanism.
-
-21. During Packet20/21/22 execution, do not create new governance layers, handoffs, or policy artifacts unless needed to preserve a decisive result or prevent loss. Existing control-state + one durable delta are sufficient.
-
-22. Use the canonical repository checkout for live runners. Temporary runner/adapter copies are forbidden unless every dependent input path is explicit and verified. Never rely on implicit relative paths from /tmp or another disposable workspace.
-
-23. User involvement is a last resort. Never use the user as a Terminal relay. When a user-only action is unavoidable, request exactly one action with one expected result and one stop condition.
-
-24. Coordinator success metric is forward evidence: installed candidate, completed sweep, exact restore, qualified candidate, or accepted feature. Preparatory checks do not count as progress unless they close a previously unproven prerequisite.
-
-25. Same-mechanism retry rule: no retry after a failure unless new evidence materially changes why that retry should succeed.
-
-26. For every engineering change, create a record using the applicability classes in `config/HBNF_CONTROL_MODEL.json` and validate it with `python3 scripts/hbnf_control.py check-change --change <record-or-manifest.json>`. Store decision records as evidence, not as policy. Unknown impact fails closed; architecture, new dependencies, subjective design, and bespoke replacement require the evidence defined by the control model. T4 progression requires the validated `evidence/engineering-governance/T4_ENGINEERING_GOVERNANCE_MANIFEST.json` artifact.
-
-27. Before each PlatformIO build, reuse the last successful pinned release capsule and record the exact command, environment, dependency closure, source identity, and cache state. Set a diagnostic budget and measurable phase outputs before starting. Judge progress from stage/log changes, object counts and timestamps, process CPU/RSS, memory pressure, and disk—not elapsed time alone. After 30 minutes without measurable progress, preserve the log and build tree, classify the failure/stall, then make at most one evidence-supported mechanism change. Do not repeat dependency archaeology unless new evidence invalidates the recorded closure; do not change LDF, packages, or compiler flags without proof.
-
-28. Use the existing 15-minute Live Status heartbeat during active work. Before a long operation record its start and expected checkpoint; update after it completes or its state materially changes. Include current task, last accomplishment, next checkpoint, actual blocker, source branch/head, timestamp, and live-mutation state. Never let heartbeat work interrupt a critical build, and never leave a stopped worker marked ACTIVE.
-
-These instructions exist to prevent governance drift, artifact loss, repeated rediscovery, storage bloat, and execution wheel-spinning across Codex tasks and chats.
-
-## Single-capsule execution model
-
-For any live, deployment, diagnostic, or high-cost task:
-
-- The coordinator must prepare exactly one execution capsule before the worker acts. The capsule consists of the exact repository ref/commit, exact scripts/configs, exact durable artifacts, required hashes, expected terminal outputs, and stop conditions.
-- Use indexed authority first, not archaeology first. Resolve needed material from the current file authority, artifact/source registry, AKS pointers, canonical GitHub paths, and indexed Drive records before searching older local workspaces or historical sources.
-- Do not forbid genuine rediscovery. If indexed authority does not contain what is genuinely needed, broaden the search deliberately to prior Drive items, GitHub history, archived evidence, prior handoffs/chats, or local workspaces as appropriate. The problem is repeated unindexed archaeology, not evidence retrieval itself.
-- Anything plausibly reusable later must be preserved before the task ends and made easy to retrieve: exact source/config/helper identity, decisive evidence, accepted/rejected artifacts when uniquely informative, recovery companions, hashes, provenance, and the pointer needed to find them.
-- Preservation destinations remain role-based: GitHub for canonical/buildable source and scripts; Drive for durable binaries/evidence/recovery artifacts; AKS/registries for searchable routing, metadata, identities, and pointers. Local Codex paths are workspace only unless no durable copy exists yet.
-- All runtime paths must be explicit. Do not rely on cwd-sensitive defaults or temporary /tmp-relative paths.
-- A capsule must be self-validating before mutation: required files exist, expected hashes/identities match, and all non-network/pure tests required for that lane pass.
-- Live evidence must be promoted to durable authority immediately after the run. No decisive result may remain local-only after the task returns.
-- One run -> one result -> one durable delta. Do not create extra handoffs, summaries, or authority copies unless context loss makes one necessary.
-- If the capsule is incomplete, stop before mutation and repair the capsule offline using indexed retrieval first, then broader evidence recovery if genuinely required.
-- Once a capsule has passed validation and begun execution, the worker may not silently substitute another adapter, helper, config, checkout, or artifact.
-
-## Mandatory standard-engineering execution contract
-
-This section governs every future implementation, build, deployment, release, diagnostic, recovery, and hardware-validation prompt/process in this project.
-
-- Do not treat the project as exploratory unless the unknown is genuinely irreducible runtime/physical behavior. Source identity, dependencies, generated inputs, credentials, API/consumer contracts, mutable-pointer semantics, publication behavior, timeout budgets, rollback paths, and cloud deployment mechanics are deterministic prerequisites and must be closed before live/paid mutation.
-- Before any risky mutation, prove the **entire transaction** end to end in preview/staging/simulation or deterministic fixtures: prepare -> publish/deploy -> actual consumer reads the exact path/role/identity -> execute -> verify -> rollback/recovery -> restore exact prior cloud/device state.
-- Recovery is a prerequisite, not an incident task. The exact last-known-good artifact/version, exact consumer path, exact rollback command/path, and acceptance checks must be proven before the first risky mutation.
-- Mutable aliases such as `latest`, `stable`, or role pointers are discovery conveniences only. Once a target is selected, execution must be bound to exact signed/versioned identity and hash. If a consumer is pinned to a mutable alias, the alias transition itself must be rehearsed and reversible before mutation.
-- Capture exact current production/device/deployment identity before changing it. Where the provider supports immutable versions/previews, create and verify a new version first, deploy that exact verified version, and roll back by exact prior version identity rather than reconstructing production state.
-- Paid/quota-limited builds are never source archaeology. Complete source/dependency/vendor/generated-input closure first. A failed paid run does not authorize another.
-- A worker directive must come from a validated execution capsule or equivalent complete preflight package. Once mutation begins, do not improvise new helpers, configs, artifacts, URLs, credentials, publication routes, or recovery mechanisms.
-- Any deterministic prerequisite discovered during live execution is a **process defect**. Stop the lane, fix the offline contract, add a regression test that would have caught it, and do not resume until the full transaction rehearsal passes.
-- Progress means a terminal product outcome or closed acceptance criterion. Documentation, rediscovery, prompt iteration, or preparation alone do not count.
-- Do not provide unsupported ETAs. Estimates require a validated path plus measured stage durations; explicitly separate irreducible runtime uncertainty.
-- User interaction is last resort. Every copy/paste action must be supplied as one single fenced block. Every site/file/folder/artifact the user is told to open or use must include a direct link or exact path. Use regular macOS Terminal, not iTerm.
-- Never use the user as a relay between tools/workers when the backend can perform or preserve the step directly.
-
-For HBNF/Cart 2.0 specifically, a diagnostic install is forbidden unless the exact recovery artifact **and the actual updater/publication/manifest path required to consume it** have already been proven end-to-end and the exact prior cloud deployment can be restored without reconstruction.
+For a durable decision, result, or material failure, append one nonduplicate PENDING Delta Inbox row and follow AKS reconciliation; do not rewrite canonical AKS sources during ordinary work. Store canonical source in GitHub, durable binaries/recovery evidence in Drive, and current pointers/metadata in AKS. Before a later phase depends on a new artifact: validate it, hash it, register and promote it, then verify readback. Update the artifact registry when a durable artifact becomes current or is superseded, not for transient outputs. Keep the current candidate, exact recovery companion, and last accepted baseline; do not leave decisive evidence local-only. Protect credentials and private user data.
