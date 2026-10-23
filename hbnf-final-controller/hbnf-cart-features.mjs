@@ -18,6 +18,7 @@ const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
 const LIVE_CACHE_MAX_MS = 12 * 60 * 60 * 1000;
 const MAX_SAVED_LOOKS = 12;
 let liveRefreshInFlight = false;
+let paletteOptionsReady = false;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -112,7 +113,11 @@ function populateLooks() {
 
 async function loadPalettes() {
   const select = $("featurePalette");
-  if (!select || !matrixLocal()) return;
+  if (!select) return;
+  if (!matrixLocal()) {
+    renderPaletteStatus("Connect to the Cart network to load color choices.");
+    return;
+  }
   const names = await fetchJson(matrixApiUrl("/json/pal"),{method:"GET",cache:"no-store"},"Palette list",1,3500);
   if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
   while (select.options.length) select.remove(0);
@@ -128,6 +133,9 @@ async function loadPalettes() {
     o.value="wled-"+String(index); o.textContent=String(name);
     select.appendChild(o);
   });
+  paletteOptionsReady=true;
+  renderPaletteStatus("Color choices loaded from the Cart.");
+  syncOverlayAvailability();
 }
 
 function desiredState(snapshot) {
@@ -610,7 +618,12 @@ function bind(id,fn) {
 populateLooks();
 renderSavedLooks("");
 syncOverlayAvailability();
-loadPalettes().catch(()=>setFeatureStatus("Couldn’t load colors. Check the connection and try again.",true));
+loadPalettes().catch(()=>{
+  paletteOptionsReady=false;
+  renderPaletteStatus("Couldn’t load color choices. Check the Cart connection and try again.");
+  syncOverlayAvailability();
+  setFeatureStatus("Couldn’t load colors. Check the Cart connection and try again.",true);
+});
 bind("featureApplyLook",applyLook);
 bind("featureApplyPalette",applyPalette);
 bind("featureSaveLook",saveLook);
