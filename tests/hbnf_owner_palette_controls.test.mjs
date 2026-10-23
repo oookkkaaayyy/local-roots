@@ -17,8 +17,8 @@ assert.match(palettePanel, /id="featurePalette"[^>]*aria-describedby="paletteAct
 assert.match(palettePanel, /id="featureColor"/);
 assert.match(palettePanel, /id="featureApplyPalette"/);
 assert.match(palettePanel, /id="paletteActionStatus"[^>]*role="status"[^>]*aria-live="polite"/);
-assert.match(html, /id="vibeAvailability"[^>]*role="status">Lighting styles are available when the Cart connection is ready/,
-  "Vibe controls must explain why they are unavailable before the first successful Cart connection");
+assert.match(html, /id="vibeAvailability"[^>]*role="status">Lighting styles aren’t available right now\. Check the Cart connection or use local controls\./,
+  "Vibe controls must give a safe recovery option without claiming reconnecting will enable unsupported capabilities");
 assert.match(html, /id="vibeActionStatus"[^>]*aria-live="polite" hidden/,
   "Vibe update feedback must be available beside the selected control");
 assert.match(html, /id="commandActionStatus"[^>]*aria-live="polite" hidden/,
@@ -177,11 +177,11 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   assert.equal(vibeActionStatus.textContent,"Updating lighting style…");
   buttons[0].listeners.click();
   assert.equal(buttons[1].attrs["aria-pressed"], "true", "a second tap during a pending command must be ignored");
-  resolveCommand();
+  resolveCommand({ status: "confirmed" });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(hydrated, true);
   assert.equal(group.attrs["aria-busy"], "false");
-  assert.equal(vibeActionStatus.textContent,"Lighting style updated in Cart settings.");
+  assert.equal(vibeActionStatus.textContent,"Cart devices confirmed the lighting setting.");
 
   hydrated = false;
   rejectRefresh = true;
@@ -193,20 +193,36 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   assert.equal(group.attrs["aria-busy"], "false");
   assert.match(vibeActionStatus.textContent,/Couldn’t confirm/);
 
+  rejectRefresh = false;
+  confirmedVibe = "chill";
+  context.command = async () => ({ status: "failed" });
+  buttons[0].listeners.click();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(vibeActionStatus.textContent,"The Cart couldn’t apply that lighting change. Check the connection details.");
+  assert.equal(vibeActionStatus.className,"apply-note bad");
+
+  context.command = async () => ({ status: "pending" });
+  buttons[1].listeners.click();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(vibeActionStatus.textContent,"Request sent; Cart devices haven’t confirmed the lighting change yet.");
+  assert.equal(vibeActionStatus.className,"apply-note warn");
+
+  rejectRefresh = true;
+  context.command = async () => { throw new Error("command failed"); };
   auto.disabled = false;
   auto.listeners.click();
   assert.equal(auto.attrs["aria-pressed"], "true", "Auto Vibe must respond immediately too");
   assert.equal(buttons[1].attrs["aria-pressed"], "false");
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(auto.attrs["aria-pressed"], "false", "unconfirmed Auto Vibe must roll back");
-  assert.equal(buttons[1].attrs["aria-pressed"], "true");
+  assert.equal(buttons[0].attrs["aria-pressed"], "true");
 
   rejectRefresh = false;
   confirmedVibe = "auto";
   context.command = () => new Promise(resolve => { resolveCommand = resolve; });
   auto.listeners.click();
   assert.equal(auto.attrs["aria-pressed"], "true");
-  resolveCommand();
+  resolveCommand({ status: "confirmed" });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(auto.attrs["aria-pressed"], "true", "confirmed Auto Vibe must reconcile successfully");
   assert.equal(group.attrs["aria-busy"], "false");
@@ -217,6 +233,34 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(buttons[0].attrs["aria-pressed"], "false");
   assert.equal(auto.attrs["aria-pressed"], "true", "failed manual Vibe must restore previously selected Auto Vibe");
+});
+
+test("Cart command distinguishes confirmed, failed, and pending device outcomes", async () => {
+  const start = controllerSource.indexOf("async function command(type, payload = {})");
+  const end = controllerSource.indexOf("window.HBNFCanonical =", start);
+  assert.ok(start >= 0 && end > start, "command must have a focused, reviewable implementation");
+  const commandSource = controllerSource.slice(start, end);
+  async function run(observed, pending = false) {
+    let nowCalls = 0;
+    const context = {
+      flushTune: async () => {},
+      call: async () => ({ revision: 7 }),
+      refresh: async () => ({ observed }),
+      newCommandId: () => "test-command",
+      statusNode: { textContent: "" },
+      revision: 0,
+      pendingRevision: null,
+      Date: pending ? { now: () => nowCalls++ === 0 ? 1000 : 8000 } : Date,
+    };
+    vm.runInNewContext(commandSource, context);
+    return context.command("VIBE", { vibe: "chill" });
+  }
+  const confirmed = [1,2].map(() => ({ desired_revision:7,status:"online",reported:{confirmed:true} }));
+  const failed = [{ desired_revision:7,status:"failed",reported:{confirmed:false,error:"offline"} }];
+  const submitted = [1,2].map(() => ({ desired_revision:7,status:"submitted",reported:{confirmed:false} }));
+  assert.equal((await run(confirmed)).status,"confirmed");
+  assert.equal((await run(failed)).status,"failed");
+  assert.equal((await run(submitted,true)).status,"pending");
 });
 
 test("palette choices reload after Cart reconnect and overlapping lifecycle events share one request", async () => {

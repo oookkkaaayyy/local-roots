@@ -596,6 +596,7 @@ async function flushTune() {
 
 async function command(type, payload = {}) {
   await flushTune();
+  let deviceOutcome = "pending";
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -617,11 +618,12 @@ async function command(type, payload = {}) {
         const reports = observed.filter(x => Number(x.desired_revision) === Number(revision));
         const failed = reports.some(x => x.status === "failed" || (x.reported && x.reported.confirmed === false && x.reported.error));
         const confirmed = reports.length >= 2 && reports.every(x => ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
-        if (failed || confirmed) break;
+        if (failed) { deviceOutcome = "failed"; break; }
+        if (confirmed) { deviceOutcome = "confirmed"; break; }
         if (Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 750));
       } while (Date.now() < deadline);
       await refresh({ hydrate: false });
-      return;
+      return { status: deviceOutcome };
     } catch (error) {
       if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
         await refresh({ hydrate: false });
@@ -780,8 +782,14 @@ document.querySelectorAll(".vibe-option").forEach(button => {
     if (actionStatus) { actionStatus.hidden = false; actionStatus.className = "apply-note"; actionStatus.textContent = "Updating lighting style…"; }
     statusNode.textContent = "Updating lighting style…";
     command("VIBE", { vibe: button.dataset.vibe })
-      .then(() => refresh({ hydrate: true }).then(() => {
-        if (actionStatus) actionStatus.textContent = "Lighting style updated in Cart settings.";
+      .then(outcome => refresh({ hydrate: true }).then(() => {
+        if (!actionStatus) return;
+        actionStatus.textContent = outcome.status === "confirmed"
+          ? "Cart devices confirmed the lighting setting."
+          : outcome.status === "failed"
+            ? "The Cart couldn’t apply that lighting change. Check the connection details."
+            : "Request sent; Cart devices haven’t confirmed the lighting change yet.";
+        actionStatus.className = outcome.status === "failed" ? "apply-note bad" : outcome.status === "pending" ? "apply-note warn" : "apply-note";
       }))
       .catch(async error => {
         await refresh({ hydrate: true }).catch(() => {
@@ -808,8 +816,14 @@ $("#vibeAuto").addEventListener("click", () => {
   if (actionStatus) { actionStatus.hidden = false; actionStatus.className = "apply-note"; actionStatus.textContent = "Updating lighting style…"; }
   statusNode.textContent = "Updating lighting style…";
   command("VIBE_AUTO")
-    .then(() => refresh({ hydrate: true }).then(() => {
-      if (actionStatus) actionStatus.textContent = "Automatic lighting style updated in Cart settings.";
+    .then(outcome => refresh({ hydrate: true }).then(() => {
+      if (!actionStatus) return;
+      actionStatus.textContent = outcome.status === "confirmed"
+        ? "Cart devices confirmed the lighting setting."
+        : outcome.status === "failed"
+          ? "The Cart couldn’t apply that lighting change. Check the connection details."
+          : "Request sent; Cart devices haven’t confirmed the lighting change yet.";
+      actionStatus.className = outcome.status === "failed" ? "apply-note bad" : outcome.status === "pending" ? "apply-note warn" : "apply-note";
     }))
     .catch(async error => {
       await refresh({ hydrate: true }).catch(() => {
