@@ -202,7 +202,7 @@ class ExecutionSystemTests(unittest.TestCase):
             receipt["checks"]["engineering_governance_complete"]=False
             self.assertTrue(any("governance" in e for e in MOD.validate_receipt(self.model,state,receipt,evidence_root=directory)))
 
-    def test_project_doctor_uses_current_control_authority(self):
+    def test_project_doctor_uses_current_control_authority_without_stdlib_shadowing(self):
         result=subprocess.run([sys.executable,str(ROOT/"scripts/platform.py"),"doctor"],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=60)
         self.assertEqual(result.returncode,0,result.stdout)
         self.assertTrue(json.loads(result.stdout)["ok"])

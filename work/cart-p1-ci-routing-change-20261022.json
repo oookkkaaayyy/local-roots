@@ -1,0 +1,18 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-p1-ci-artifact-scope-20261022",
+  "summary": "Keep control and relay contract validation active while routing the Seq41/Seq43 firmware closure checks only when their pinned code, firmware or evidence inputs change.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scope": "CI test selection and regression coverage only; no lifecycle model, release admission, firmware, device, scoring data, or production behavior changes.",
+    "source": "GitHub PR #121 exact head 8b417305cb77edb5042de55671cadc9f4c0f5eb0; .github/workflows/hbnf-coordinated-release-ci.yml; tests/hbnf_foundation_seq41_offline.py; tests/hbnf_foundation_seq43_offline.py.",
+    "verified_dependency": "Both offline transaction tests pin the same owner-only Drive Seq39 firmware/recovery binaries and evidence, while the Cart relay/control change does not touch those inputs."
+  }
+}

@@ -1,13 +1,23 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
+import sys
+
+# Executing this file directly places its directory first on sys.path. Because
+# this script is named platform.py, that directory shadows Python's standard
+# library `platform` module (imported by uuid and other stdlib modules).
+if __name__ == "__main__" and sys.path:
+    _script_dir = os.path.realpath(os.path.dirname(__file__))
+    if os.path.realpath(sys.path[0] or os.curdir) == _script_dir:
+        sys.path.pop(0)
+
 import argparse
 import datetime as dt
 import hashlib
 import json
 import pathlib
 import subprocess
-import sys
 import uuid
 from typing import Any
 
