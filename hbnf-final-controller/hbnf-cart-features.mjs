@@ -390,7 +390,7 @@ function renderLive(live, cached=false, cachedAt="") {
   const node=$("featureLive");
   if (!node) return;
   if (!live || !live.active) {
-    node.textContent = (cached ? "Cached: " : "")+"No active Skins or Glow round."+(cachedAt ? " · "+cachedAt : "");
+    node.textContent = (cached ? "Saved results: " : "")+"No live round is active."+(cachedAt ? " · "+cachedAt : "");
     return;
   }
   const entries = Array.isArray(live.entries) ? live.entries.slice(0,8).join(" · ") : "";
@@ -442,14 +442,17 @@ async function refreshLive(silent) {
 }
 
 async function showScoreboard() {
-  setFeatureStatus("Loading live standings…");
+  setFeatureStatus("Checking for a live round…");
   const out=await canonicalRead("live_status",{});
   const live=out && out.live;
-  if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
+  if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) {
+    setFeatureStatus("No live round is active. Start a Skins or Glow round, then show scores.",true);
+    return;
+  }
   const bridge=canonicalOverlayBridge();
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
   await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-  setFeatureStatus("Standings sent to the Cart.");
+  setFeatureStatus("Scores are showing on the Cart.");
 }
 
 async function showManualScoreboard() {
@@ -618,7 +621,7 @@ function syncOverlayAvailability() {
   if (!overlayReady) {
     const live=$("featureLive");
     if (live && live.textContent==="Live scores haven’t loaded yet.") {
-      live.textContent="Live scores are available. Cart display isn’t available yet.";
+      live.textContent="Score display isn’t available on this Cart yet.";
     }
   }
   return overlayReady && paletteReady;

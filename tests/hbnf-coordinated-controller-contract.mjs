@@ -30,7 +30,7 @@ assert.ok(features.includes('canonicalRead("live_status"'),"live data is not rou
 assert.ok(stagedControl.includes('action === "live_status"'),"canonical backend live_status missing");
 assert.ok(stagedControl.includes("chooseLive"),"canonical live_status does not reuse current selector");
 
-assert.ok(features.includes('fetchJson("/json/pal"'),"dynamic WLED palette list missing");
+assert.ok(features.includes('fetchJson(matrixApiUrl("/json/pal")'),"dynamic WLED palette list missing");
 assert.ok(features.includes("rollbackCanonicalLook"),"canonical look rollback path missing");
 assert.ok(features.includes("Canonical scene readback did not match"),"canonical scene readback verification missing");
 assert.ok(features.includes("Canonical palette readback did not match"),"canonical palette readback verification missing");

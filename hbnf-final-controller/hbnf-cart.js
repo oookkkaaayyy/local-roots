@@ -413,8 +413,8 @@ function hydrateControls(state) {
     if (state.sceneId) $("#scene").value = state.sceneId;
     if (guestModeToggle) guestModeToggle.checked = state.guestMode === true;
     if (guestModeStatus) guestModeStatus.textContent = state.guestMode === true
-      ? "Guest Mode is on. Your controls still take priority."
-      : "Guest Mode is off. Turn it on when you’re ready to invite guests.";
+      ? "Guest access is on. Your controls still take priority."
+      : "Guest access is off. Turn it on when you’re ready to invite guests.";
 
     const tuning = valueOr(state.tuning, {});
     updateVibeSelection(state);
@@ -731,12 +731,12 @@ if (guestModeToggle) {
   guestModeToggle.addEventListener("change", async () => {
     const enabled = guestModeToggle.checked;
     guestModeToggle.disabled = true;
-    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Turning Guest Mode on…" : "Turning Guest Mode off…";
+    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Turning guest access on…" : "Turning guest access off…";
     try {
       await command("GUEST_MODE", { enabled });
     } catch (error) {
       guestModeToggle.checked = !enabled;
-      if (guestModeStatus) guestModeStatus.textContent = "Couldn’t change Guest Mode. Try again.";
+      if (guestModeStatus) guestModeStatus.textContent = "Couldn’t update guest access. Try again.";
       showError(error);
     } finally {
       guestModeToggle.disabled = !validDeviceToken(deviceToken());
@@ -755,7 +755,7 @@ document.querySelectorAll(".vibe-option").forEach(button => {
     });
     if (autoButton) autoButton.setAttribute("aria-pressed", "false");
     setVibePending(true);
-    statusNode.textContent = "Updating Vibe…";
+    statusNode.textContent = "Updating lighting style…";
     command("VIBE", { vibe: button.dataset.vibe })
       .then(() => refresh({ hydrate: true }))
       .catch(async error => {
@@ -778,7 +778,7 @@ $("#vibeAuto").addEventListener("click", () => {
   document.querySelectorAll(".vibe-option").forEach(option => option.setAttribute("aria-pressed", "false"));
   button.setAttribute("aria-pressed", "true");
   setVibePending(true);
-  statusNode.textContent = "Updating Vibe…";
+  statusNode.textContent = "Updating lighting style…";
   command("VIBE_AUTO")
     .then(() => refresh({ hydrate: true }))
     .catch(async error => {

@@ -12,7 +12,7 @@ const palettePanel = html.slice(panelStart, panelEnd);
 const markupBeforePanel = html.slice(0, panelStart);
 assert.equal((markupBeforePanel.match(/<details\b/g) || []).length, (markupBeforePanel.match(/<\/details>/g) || []).length,
   "Palette controls must not be inside a collapsed details section");
-assert.match(palettePanel, /aria-label="Cart color palette"/);
+assert.match(palettePanel, /aria-label="Colors"/);
 assert.match(palettePanel, /id="featurePalette"[^>]*aria-describedby="paletteActionStatus"/);
 assert.match(palettePanel, /id="featureColor"/);
 assert.match(palettePanel, /id="featureApplyPalette"/);
@@ -160,7 +160,7 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   assert.equal(buttons[1].attrs["aria-pressed"], "true");
   assert.equal(buttons[1].disabled, true, "pending Vibe must prevent duplicate taps");
   assert.equal(group.attrs["aria-busy"], "true");
-  assert.equal(statusNode.textContent, "Updating Vibe…");
+  assert.equal(statusNode.textContent, "Updating lighting style…");
   buttons[0].listeners.click();
   assert.equal(buttons[1].attrs["aria-pressed"], "true", "a second tap during a pending command must be ignored");
   resolveCommand();

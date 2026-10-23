@@ -7,10 +7,10 @@ function sceneButtons(){
   if(!select||!host||host.dataset.ready==="1")return;
   host.dataset.ready="1";
   const labels=[
-    ["course-flow","Balanced (Course Flow)","45–90 seconds between variants; broad speed range."],
-    ["field-mix","Upbeat (Field Mix)","Faster speed range; 40–80 second holds."],
-    ["hbnf-signature","Signature (HBNF Signature)","Mid-to-fast speed range; 50–100 second holds."],
-    ["quiet-cosmos","Ambient (Quiet Cosmos)","Slower speed range; 60–120 second holds."]
+    ["course-flow","Steady","A consistent pace; looks change every 45–90 seconds."],
+    ["field-mix","Upbeat","Faster changes; each look lasts 40–80 seconds."],
+    ["hbnf-signature","HBNF signature","Signature looks; each lasts 50–100 seconds."],
+    ["quiet-cosmos","Calm","Slower changes; each look lasts 60–120 seconds."]
   ];
   for(const [value,label,description] of labels){
     const b=document.createElement("button");
