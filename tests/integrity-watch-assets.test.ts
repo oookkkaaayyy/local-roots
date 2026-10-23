@@ -1,7 +1,8 @@
 // @ts-nocheck
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { findJsAssetImports, readFrontendGraph } from '../supabase/functions/lr-integrity-watch/frontend-assets.mjs';
+const projectRoot = new URL(import.meta.url.includes("/dist/tests/") ? "../../" : "../", import.meta.url);
+const { findJsAssetImports, readFrontendGraph } = await import(new URL("supabase/functions/lr-integrity-watch/frontend-assets.mjs", projectRoot).href);
 
 const origin = 'https://local-roots.pages.dev';
 function fetcher(assets) {
