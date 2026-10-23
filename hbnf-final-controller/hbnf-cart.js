@@ -737,11 +737,48 @@ if (guestModeToggle) {
 document.querySelectorAll(".vibe-option").forEach(button => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
-    command("VIBE", { vibe: button.dataset.vibe }).catch(showError);
+    const group = $("vibeOptions");
+    const previouslySelected = Array.from(document.querySelectorAll(".vibe-option")).find(option => option.getAttribute("aria-pressed") === "true");
+    document.querySelectorAll(".vibe-option").forEach(option => {
+      option.setAttribute("aria-pressed", option === button ? "true" : "false");
+    });
+    if (group) group.setAttribute("aria-busy", "true");
+    statusNode.textContent = "Updating Vibe…";
+    command("VIBE", { vibe: button.dataset.vibe })
+      .then(() => refresh({ hydrate: true }))
+      .catch(async error => {
+        await refresh({ hydrate: true }).catch(() => {
+          document.querySelectorAll(".vibe-option").forEach(option => {
+            option.setAttribute("aria-pressed", option === previouslySelected ? "true" : "false");
+          });
+        });
+        showError(error);
+      })
+      .finally(() => { if (group) group.setAttribute("aria-busy", "false"); });
   });
 });
 $("#vibeAuto").addEventListener("click", () => {
-  if (!$("#vibeAuto").disabled) command("VIBE_AUTO").catch(showError);
+  const button = $("#vibeAuto");
+  if (button.disabled) return;
+  const group = $("vibeOptions");
+  const previouslySelected = Array.from(document.querySelectorAll(".vibe-option")).find(option => option.getAttribute("aria-pressed") === "true");
+  const autoWasSelected = button.getAttribute("aria-pressed") === "true";
+  document.querySelectorAll(".vibe-option").forEach(option => option.setAttribute("aria-pressed", "false"));
+  button.setAttribute("aria-pressed", "true");
+  if (group) group.setAttribute("aria-busy", "true");
+  statusNode.textContent = "Updating Vibe…";
+  command("VIBE_AUTO")
+    .then(() => refresh({ hydrate: true }))
+    .catch(async error => {
+      await refresh({ hydrate: true }).catch(() => {
+        document.querySelectorAll(".vibe-option").forEach(option => {
+          option.setAttribute("aria-pressed", option === previouslySelected ? "true" : "false");
+        });
+        button.setAttribute("aria-pressed", autoWasSelected ? "true" : "false");
+      });
+      showError(error);
+    })
+    .finally(() => { if (group) group.setAttribute("aria-busy", "false"); });
 });
 
 for (const id of ["scene", "audioProfile", "audioStyle"]) {

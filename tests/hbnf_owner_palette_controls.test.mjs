@@ -107,3 +107,71 @@ test("Keep current is not sent as a palette command", async () => {
   await assert.rejects(f.apply(), /Choose a palette before applying/);
   assert.equal(f.commands.length, 0);
 });
+
+const featureSource = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8");
+assert.match(featureSource, /window\.addEventListener\("online",retryPaletteLoad\)/, "palette loading must retry after the browser reconnects");
+assert.match(featureSource, /window\.addEventListener\("pageshow",retryPaletteLoad\)/, "palette loading must retry when the page returns");
+assert.match(featureSource, /document\.addEventListener\("visibilitychange",function\(\)\{ if \(!document\.hidden\) retryPaletteLoad\(\); \}\)/, "palette loading must retry when the page becomes visible");
+const controllerSource = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
+const vibeHandlerStart = controllerSource.indexOf('document.querySelectorAll(".vibe-option").forEach(button => {', controllerSource.indexOf("window.HBNFCanonical ="));
+const vibeHandlerEnd = controllerSource.indexOf('for (const id of ["scene"', vibeHandlerStart);
+const vibeHandler = controllerSource.slice(vibeHandlerStart, vibeHandlerEnd);
+assert.ok(vibeHandlerStart >= 0 && vibeHandlerEnd > vibeHandlerStart, "Vibe controls must have a single focused click handler");
+assert.match(vibeHandler, /option\.setAttribute\("aria-pressed", option === button \? "true" : "false"\)/, "selected Vibe must respond immediately to the tap");
+assert.match(vibeHandler, /refresh\(\{ hydrate: true \}\)/, "confirmed server state must replace optimistic Vibe selection");
+assert.match(vibeHandler, /aria-busy/, "Vibe updates must expose pending state to assistive technology");
+
+test("Vibe tap updates immediately, then reconciles or rolls back on failure", async () => {
+  const buttons = ["chill", "groove"].map(vibe => ({
+    dataset: { vibe }, disabled: false, attrs: { "aria-pressed": vibe === "chill" ? "true" : "false" },
+    listeners: {}, addEventListener(name, fn) { this.listeners[name] = fn; },
+    setAttribute(name, value) { this.attrs[name] = value; }, getAttribute(name) { return this.attrs[name]; },
+  }));
+  const group = { attrs: {}, setAttribute(name, value) { this.attrs[name] = value; } };
+  const auto = {
+    disabled: true, attrs: { "aria-pressed": "false" }, listeners: {},
+    addEventListener(name, fn) { this.listeners[name] = fn; },
+    setAttribute(name, value) { this.attrs[name] = value; }, getAttribute(name) { return this.attrs[name]; },
+  };
+  const statusNode = { textContent: "" };
+  let resolveCommand, rejectRefresh, hydrated = false;
+  const context = {
+    Array, document: { querySelectorAll: () => buttons },
+    $: id => id === "vibeOptions" ? group : auto,
+    statusNode,
+    command: () => new Promise(resolve => { resolveCommand = resolve; }),
+    refresh: async options => {
+      hydrated = options.hydrate === true;
+      if (rejectRefresh) throw new Error("offline");
+      buttons.forEach(button => button.setAttribute("aria-pressed", button.dataset.vibe === "groove" ? "true" : "false"));
+    },
+    showError() {},
+  };
+  vm.runInNewContext(vibeHandler, context);
+  buttons[1].listeners.click();
+  assert.equal(buttons[0].attrs["aria-pressed"], "false");
+  assert.equal(buttons[1].attrs["aria-pressed"], "true");
+  assert.equal(group.attrs["aria-busy"], "true");
+  assert.equal(statusNode.textContent, "Updating Vibe…");
+  resolveCommand();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(hydrated, true);
+  assert.equal(group.attrs["aria-busy"], "false");
+
+  hydrated = false;
+  rejectRefresh = true;
+  context.command = async () => { throw new Error("command failed"); };
+  buttons[0].listeners.click();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(buttons[0].attrs["aria-pressed"], "false", "failed, unconfirmed selection must roll back");
+  assert.equal(buttons[1].attrs["aria-pressed"], "true");
+  assert.equal(group.attrs["aria-busy"], "false");
+
+  auto.disabled = false;
+  auto.listeners.click();
+  assert.equal(auto.attrs["aria-pressed"], "true", "Auto Vibe must respond immediately too");
+  assert.equal(buttons[1].attrs["aria-pressed"], "false");
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(auto.attrs["aria-pressed"], "false", "unconfirmed Auto Vibe must roll back");
+  assert.equal(buttons[1].attrs["aria-pressed"], "true");
+});

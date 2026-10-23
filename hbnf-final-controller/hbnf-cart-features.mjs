@@ -19,6 +19,7 @@ const LIVE_CACHE_MAX_MS = 12 * 60 * 60 * 1000;
 const MAX_SAVED_LOOKS = 12;
 let liveRefreshInFlight = false;
 let paletteOptionsReady = false;
+let paletteLoadInFlight = false;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -113,29 +114,34 @@ function populateLooks() {
 
 async function loadPalettes() {
   const select = $("featurePalette");
-  if (!select) return;
+  if (!select || paletteLoadInFlight || paletteOptionsReady) return;
   if (!matrixLocal()) {
     renderPaletteStatus("Connect to the Cart network to load color choices.");
     return;
   }
-  const names = await fetchJson(matrixApiUrl("/json/pal"),{method:"GET",cache:"no-store"},"Palette list",1,3500);
-  if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
-  while (select.options.length) select.remove(0);
-  const current=document.createElement("option");
-  current.value=""; current.textContent="Keep current";
-  select.appendChild(current);
-  const solid=document.createElement("option");
-  solid.value="solid"; solid.textContent="Solid color";
-  select.appendChild(solid);
-  names.forEach((name,index)=>{
-    if (!name || name === "RSVD" || name === "-") return;
-    const o=document.createElement("option");
-    o.value="wled-"+String(index); o.textContent=String(name);
-    select.appendChild(o);
-  });
-  paletteOptionsReady=true;
-  renderPaletteStatus("Color choices loaded from the Cart.");
-  syncOverlayAvailability();
+  paletteLoadInFlight = true;
+  try {
+    const names = await fetchJson(matrixApiUrl("/json/pal"),{method:"GET",cache:"no-store"},"Palette list",1,3500);
+    if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
+    while (select.options.length) select.remove(0);
+    const current=document.createElement("option");
+    current.value=""; current.textContent="Keep current";
+    select.appendChild(current);
+    const solid=document.createElement("option");
+    solid.value="solid"; solid.textContent="Solid color";
+    select.appendChild(solid);
+    names.forEach((name,index)=>{
+      if (!name || name === "RSVD" || name === "-") return;
+      const o=document.createElement("option");
+      o.value="wled-"+String(index); o.textContent=String(name);
+      select.appendChild(o);
+    });
+    paletteOptionsReady=true;
+    renderPaletteStatus("Color choices loaded from the Cart.");
+    syncOverlayAvailability();
+  } finally {
+    paletteLoadInFlight = false;
+  }
 }
 
 function desiredState(snapshot) {
@@ -624,6 +630,16 @@ loadPalettes().catch(()=>{
   syncOverlayAvailability();
   setFeatureStatus("Couldn’t load colors. Check the Cart connection and try again.",true);
 });
+function retryPaletteLoad() {
+  if (!paletteOptionsReady && matrixLocal()) loadPalettes().catch(()=>{
+    paletteOptionsReady=false;
+    renderPaletteStatus("Couldn’t load color choices. Check the Cart connection and try again.");
+    syncOverlayAvailability();
+  });
+}
+window.addEventListener("online",retryPaletteLoad);
+window.addEventListener("pageshow",retryPaletteLoad);
+document.addEventListener("visibilitychange",function(){ if (!document.hidden) retryPaletteLoad(); });
 bind("featureApplyLook",applyLook);
 bind("featureApplyPalette",applyPalette);
 bind("featureSaveLook",saveLook);
