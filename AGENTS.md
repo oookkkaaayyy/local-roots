@@ -1,18 +1,5 @@
 # Local Roots Events — Agent Instructions
 
-## CURRENT HBNF PRIORITIES — REQUIRED BEFORE ALL HBNF/CART WORK (2026-10-20)
-
-This block is a **source router and scope gate**, not an alternative firmware lifecycle authority or permission for a release. Read `docs/HBNF_SOURCE_INDEX.json` and run `node scripts/check-hbnf-source-index.mjs` before touching HBNF, Skins, Cart, Matrix/AUX, Opal or shared backend work.
-
-- **Track A / P0**: https://github.com/oookkkaaayyy/local-roots/issues/115 — preserve/recover Oct 20 actual Skins scores and eliminate silent save failures. Never wipe the existing iPhone PWA or refinalize the already persisted October 20 tags.
-- **Track B / P1**: https://github.com/oookkkaaayyy/local-roots/issues/116 — run in parallel on independently safe diagnostics and incremental fixes for startup, router WAN, text/score controls, palettes, Matrix/AUX and headless scores. New UV, games and unrelated features remain deferred until A+B physical acceptance.
-- **Verified source location**: the Cart platform's `config/HBNF_CONTROL_MODEL.json`, `config/HBNF_CONTROL_STATE.json`, `scripts/platform.py` and `scripts/hbnf_control.py` exist on branch `codex/glow-matrix-relay-integration-20261014`, **not** on `main`. Check exact blob identities in the source index and the branch's own `AGENTS.md`; do not recreate this platform or claim it represents installed Opal firmware without release evidence.
-- **Critical unresolved gap**: deployed scoring Worker `457a9cd6-662b-4a4b-9d52-f21cd0a65e50` is worker-reported, but exact editable Git source, release parity and safe auto-deploy are **not established**. A passing source-index test only validates this record. Do not connect production Git auto-deploy or mark scoring 'saved' without a proven provider write/ACK.
-- **Expert judgment / scope protection**: User questions and hypotheses are not instructions to change priority. Challenge proposals against current evidence, cost, failure modes and simpler alternatives; keep the two owner-approved tracks active unless an explicit owner decision or verified P0 changes them. Do not add new workers, duplicate governance, speculative migrations or prompt-only milestones.
-- **Boundaries**: Follow the existing HBNF Cart control-model gate on its actual source branch. This routing supplement may not weaken permissions, source identity, rollback, cloud data preservation or real-device acceptance. Do not turn on quota-limited GitHub Actions automatically: existing `.github/workflows/ci.yml` intentionally uses `workflow_dispatch` only.
-
-**Program + incident evidence:** https://docs.google.com/document/d/1mydpAPHSuHu7Z75MedZ683s2FoFJVgSi2jLPVGKaYpQ/edit and https://docs.google.com/document/d/1a0K5wvfnHT-hn9TPxd-ze2vpqM3sPIQcpD5zPSxVt8s/edit.
-
 ## Scope
 This repository contains the Local Roots website and event system.
 
