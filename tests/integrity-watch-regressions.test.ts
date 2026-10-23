@@ -47,3 +47,8 @@ test("integrity watch version advances with its deployed contract", () => {
   assert.ok(watch.includes('LocalRootsIntegrityWatch/10.0'));
   assert.equal(watch.includes('LocalRootsIntegrityWatch/9.0'), false);
 });
+
+test("integrity watch inspects lazy-loaded frontend chunks, not only the entrypoint", () => {
+  assert.ok(watch.includes("readFrontendGraph(frontendBundleUrl"));
+  assert.equal(watch.includes("const bundleResponse = await fetch(frontendBundleUrl"), false);
+});
