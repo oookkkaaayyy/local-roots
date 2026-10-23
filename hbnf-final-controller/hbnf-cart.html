@@ -70,7 +70,8 @@
       <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>Cosmic</strong></button>
       <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled hidden>Automatic</button>
     </div>
-    <p id="vibeAvailability" class="apply-note" role="status" hidden>Lighting styles aren’t available right now.</p>
+    <p id="vibeAvailability" class="apply-note" role="status">Lighting styles are available when the Cart connection is ready.</p>
+    <p id="vibeActionStatus" class="apply-note" role="status" aria-live="polite" hidden></p>
   </section>
 
   <section class="panel quick-brightness" aria-label="Brightness">
@@ -103,6 +104,7 @@
       <button data-command="NEXT">Next look</button>
       <button data-command="AUTO">Auto show</button>
     </div>
+    <p id="commandActionStatus" class="apply-note" role="status" aria-live="polite" hidden></p>
     <details class="sub-controls"><summary>Choose show style</summary>
     <button data-command="LOCK">Keep this look</button>
     <div class="control-grid">
@@ -133,6 +135,7 @@
       </select>
       <button id="featureSendText" type="button">Show message</button>
     </div>
+    <p id="textActionStatus" class="apply-note" role="status" aria-live="polite" hidden></p>
   </section>
 
   <section class="panel quick-tuning" aria-label="Motion and audio response">
@@ -228,7 +231,7 @@
       <button id="featureScoreboard" type="button">Show scores on Cart</button>
       <button id="featureAcePot" type="button">Show ace pot</button>
     </div>
-    <p id="scoreActionStatus" class="status" role="status" aria-live="polite">Ready to show scores.</p>
+    <p id="scoreActionStatus" class="status" role="status" aria-live="polite" hidden></p>
     <details id="manualOfflineScorePanel" class="score-entry" hidden aria-label="Manual offline scoreboard">
       <summary>Show scores entered here · works offline</summary>
       <p class="muted">Display only. Nothing is saved or submitted. Enter up to 12 lines, 63 characters each.</p>

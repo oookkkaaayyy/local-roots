@@ -377,13 +377,21 @@ async function deleteSavedLook() {
 async function sendText() {
   const text = String($("featureText").value || "").trim();
   if (!text) throw new Error("Type a message first.");
+  const actionStatus=$("textActionStatus");
+  if (actionStatus) { actionStatus.hidden=false; actionStatus.className="apply-note"; actionStatus.textContent="Sending message to the Cart…"; }
   setFeatureStatus("Sending text…");
-  const bridge=canonicalOverlayBridge();
-  const data={text:text,color:$("featureColor").value || "#FFFFFF"};
-  if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
-  await bridge.overlay("text",data);
-  $("featureText").value="";
-  setFeatureStatus("Text sent to the Cart.");
+  try {
+    const bridge=canonicalOverlayBridge();
+    const data={text:text,color:$("featureColor").value || "#FFFFFF"};
+    if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
+    await bridge.overlay("text",data);
+    $("featureText").value="";
+    if (actionStatus) actionStatus.textContent="Message request sent to the Cart.";
+    setFeatureStatus("Text sent to the Cart.");
+  } catch (error) {
+    if (actionStatus) { actionStatus.textContent="Couldn’t send the message. Check the connection and try again."; actionStatus.className="apply-note bad"; }
+    throw error;
+  }
 }
 
 function renderLive(live, cached=false, cachedAt="") {
@@ -445,11 +453,17 @@ async function showScoreboard() {
   const status=$("scoreActionStatus");
   const report=(message,bad=false)=>{
     if (!status) return;
+    status.hidden=false;
     status.textContent=message;
     status.className=bad ? "status bad" : "status";
   };
   report("Checking for a live round…");
-  const out=await canonicalRead("live_status",{});
+  let out;
+  try { out=await canonicalRead("live_status",{}); }
+  catch (error) {
+    report("Couldn’t check for a live round. Check the internet connection and try again; no scores were sent.",true);
+    throw error;
+  }
   const live=out && out.live;
   if (!live || !live.active) {
     report("No live round is active. Start a Skins or Glow round, then show scores.",true);
@@ -459,10 +473,15 @@ async function showScoreboard() {
     report("A round is active, but no scores are available yet. Enter scores, then show them.",true);
     return;
   }
-  const bridge=canonicalOverlayBridge();
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
-  await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-  report("Scores are showing on the Cart.");
+  try {
+    const bridge=canonicalOverlayBridge();
+    await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
+    report("Score display request sent. Check the Matrix to confirm it appeared.");
+  } catch (error) {
+    report("Couldn’t send the scores to the Cart. Check the connection and try again.",true);
+    throw error;
+  }
 }
 
 async function showManualScoreboard() {

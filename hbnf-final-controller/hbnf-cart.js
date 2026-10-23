@@ -724,7 +724,28 @@ copyPair.addEventListener("click", async () => {
 });
 
 document.querySelectorAll("[data-command]").forEach(button => {
-  button.addEventListener("click", () => command(button.dataset.command).catch(showError));
+  button.addEventListener("click", async () => {
+    if (button.disabled) return;
+    const actionStatus = $("commandActionStatus");
+    if (actionStatus) {
+      actionStatus.hidden = false;
+      actionStatus.className = "apply-note";
+      actionStatus.textContent = "Sending request to the Cart…";
+    }
+    try {
+      await command(button.dataset.command);
+      if (actionStatus) {
+        actionStatus.textContent = statusNode.textContent || "Request sent to the Cart.";
+        actionStatus.className = /could not|hasn’t|not ready|unavailable/i.test(actionStatus.textContent) ? "apply-note bad" : "apply-note";
+      }
+    } catch (error) {
+      if (actionStatus) {
+        actionStatus.textContent = "The Cart could not confirm this request. Check the connection and try again.";
+        actionStatus.className = "apply-note bad";
+      }
+      showError(error);
+    }
+  });
 });
 
 if (guestModeToggle) {
@@ -755,9 +776,13 @@ document.querySelectorAll(".vibe-option").forEach(button => {
     });
     if (autoButton) autoButton.setAttribute("aria-pressed", "false");
     setVibePending(true);
+    const actionStatus = $("vibeActionStatus");
+    if (actionStatus) { actionStatus.hidden = false; actionStatus.className = "apply-note"; actionStatus.textContent = "Updating lighting style…"; }
     statusNode.textContent = "Updating lighting style…";
     command("VIBE", { vibe: button.dataset.vibe })
-      .then(() => refresh({ hydrate: true }))
+      .then(() => refresh({ hydrate: true }).then(() => {
+        if (actionStatus) actionStatus.textContent = "Lighting style updated in Cart settings.";
+      }))
       .catch(async error => {
         await refresh({ hydrate: true }).catch(() => {
           document.querySelectorAll(".vibe-option").forEach(option => {
@@ -765,6 +790,7 @@ document.querySelectorAll(".vibe-option").forEach(button => {
           });
           if (autoButton) autoButton.setAttribute("aria-pressed", autoWasSelected ? "true" : "false");
         });
+        if (actionStatus) { actionStatus.textContent = "Couldn’t confirm that lighting change. Check the connection and try again."; actionStatus.className = "apply-note bad"; }
         showError(error);
       })
       .finally(() => setVibePending(false));
@@ -778,9 +804,13 @@ $("#vibeAuto").addEventListener("click", () => {
   document.querySelectorAll(".vibe-option").forEach(option => option.setAttribute("aria-pressed", "false"));
   button.setAttribute("aria-pressed", "true");
   setVibePending(true);
+  const actionStatus = $("vibeActionStatus");
+  if (actionStatus) { actionStatus.hidden = false; actionStatus.className = "apply-note"; actionStatus.textContent = "Updating lighting style…"; }
   statusNode.textContent = "Updating lighting style…";
   command("VIBE_AUTO")
-    .then(() => refresh({ hydrate: true }))
+    .then(() => refresh({ hydrate: true }).then(() => {
+      if (actionStatus) actionStatus.textContent = "Automatic lighting style updated in Cart settings.";
+    }))
     .catch(async error => {
       await refresh({ hydrate: true }).catch(() => {
         document.querySelectorAll(".vibe-option").forEach(option => {
@@ -788,6 +818,7 @@ $("#vibeAuto").addEventListener("click", () => {
         });
         button.setAttribute("aria-pressed", autoWasSelected ? "true" : "false");
       });
+      if (actionStatus) { actionStatus.textContent = "Couldn’t confirm that lighting change. Check the connection and try again."; actionStatus.className = "apply-note bad"; }
       showError(error);
     })
     .finally(() => setVibePending(false));

@@ -17,6 +17,17 @@ assert.match(palettePanel, /id="featurePalette"[^>]*aria-describedby="paletteAct
 assert.match(palettePanel, /id="featureColor"/);
 assert.match(palettePanel, /id="featureApplyPalette"/);
 assert.match(palettePanel, /id="paletteActionStatus"[^>]*role="status"[^>]*aria-live="polite"/);
+assert.match(html, /id="vibeAvailability"[^>]*role="status">Lighting styles are available when the Cart connection is ready/,
+  "Vibe controls must explain why they are unavailable before the first successful Cart connection");
+assert.match(html, /id="vibeActionStatus"[^>]*aria-live="polite" hidden/,
+  "Vibe update feedback must be available beside the selected control");
+assert.match(html, /id="commandActionStatus"[^>]*aria-live="polite" hidden/,
+  "Show-control feedback must be available beside its buttons");
+assert.match(html, /id="textActionStatus"[^>]*aria-live="polite" hidden/,
+  "Message feedback must be available beside its button");
+assert.match(fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-ui-v6.css", import.meta.url), "utf8"),
+  /\.quick-links\[aria-label="Everyday tools"\]\{grid-template-columns:1fr\}/,
+  "the scores shortcut should use the available width in portrait and landscape");
 assert.equal((html.match(/id="featurePalette"/g) || []).length, 1, "Palette selector ID must remain unique");
 assert.equal((html.match(/id="featureColor"/g) || []).length, 1, "Color input ID must remain unique");
 assert.match(source, /bind\("featureApplyPalette",applyPalette\)/, "Visible apply button must use the existing feature binding");
@@ -139,10 +150,11 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
     setAttribute(name, value) { this.attrs[name] = value; }, getAttribute(name) { return this.attrs[name]; },
   };
   const statusNode = { textContent: "" };
+  const vibeActionStatus = { textContent: "", hidden: true, className: "apply-note" };
   let resolveCommand, rejectRefresh, hydrated = false, confirmedVibe = "groove";
   const context = {
     Array, document: { querySelectorAll: () => buttons },
-    $: id => id === "vibeOptions" ? group : auto,
+    $: id => id === "vibeOptions" ? group : id === "vibeActionStatus" ? vibeActionStatus : auto,
     canonicalCapabilities: { phase2VibeRuntimeV1: true, autoVibeControlV1: true },
     statusNode,
     command: () => new Promise(resolve => { resolveCommand = resolve; }),
@@ -161,12 +173,15 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   assert.equal(buttons[1].disabled, true, "pending Vibe must prevent duplicate taps");
   assert.equal(group.attrs["aria-busy"], "true");
   assert.equal(statusNode.textContent, "Updating lighting style…");
+  assert.equal(vibeActionStatus.hidden,false,"the update message must appear beside the selected control");
+  assert.equal(vibeActionStatus.textContent,"Updating lighting style…");
   buttons[0].listeners.click();
   assert.equal(buttons[1].attrs["aria-pressed"], "true", "a second tap during a pending command must be ignored");
   resolveCommand();
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(hydrated, true);
   assert.equal(group.attrs["aria-busy"], "false");
+  assert.equal(vibeActionStatus.textContent,"Lighting style updated in Cart settings.");
 
   hydrated = false;
   rejectRefresh = true;
@@ -176,6 +191,7 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   assert.equal(buttons[0].attrs["aria-pressed"], "false", "failed, unconfirmed selection must roll back");
   assert.equal(buttons[1].attrs["aria-pressed"], "true");
   assert.equal(group.attrs["aria-busy"], "false");
+  assert.match(vibeActionStatus.textContent,/Couldn’t confirm/);
 
   auto.disabled = false;
   auto.listeners.click();
