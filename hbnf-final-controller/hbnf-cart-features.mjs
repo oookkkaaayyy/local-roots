@@ -1,7 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
 import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
-import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v111-ipad-home";
+import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v112-show-scores-system";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
@@ -841,7 +841,18 @@ function syncOverlayAvailability() {
 
 function bind(id,fn) {
   const n=$(id); if (!n) return;
-  n.addEventListener("click",()=>Promise.resolve(fn()).catch(()=>setFeatureStatus("Couldn’t complete that action. Check the connection and try again.",true)));
+  n.addEventListener("click",()=>{
+    if (n.disabled || n.getAttribute("aria-busy")==="true") return;
+    const priorDisabled=n.disabled;
+    n.disabled=true;
+    n.setAttribute("aria-busy","true");
+    const statusNode=$(id==="featureSendText"?"textActionStatus":(id.indexOf("Score")>=0||id.indexOf("Ace")>=0||id.indexOf("Live")>=0?"scoreActionStatus":(id.indexOf("Palette")>=0?"paletteActionStatus":"featureStatus")));
+    if (statusNode) statusNode.textContent="Sending…";
+    Promise.resolve().then(fn).catch(()=>setFeatureStatus("Couldn’t complete that action. Check the connection and try again.",true)).finally(()=>{
+      n.disabled=priorDisabled;
+      n.removeAttribute("aria-busy");
+    });
+  });
 }
 
 populateLooks();

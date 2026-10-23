@@ -64,6 +64,18 @@ test("Opal-hosted Owner PWA uses fresh local Matrix and AUX identity/readback wi
   assert.ok(f.calls.includes(`http://${LOCAL_AUX_IP}/json/state`));
 });
 
+test("fresh verified Opal connection skips repeat identity/AUX preflight before commands", async t => {
+  const f = directFixture();
+  const owner = new LocalOwnerControl({ opalDirect: true, directTransportLoader: async () => f.module, storage: null });
+  t.after(() => owner.disconnectTransport());
+  await owner.connect("", 0);
+  const preflightReads = f.calls.length;
+  const result = await owner.command("", "VIBE", { vibe: "heavy" });
+  assert.equal(f.calls.length, preflightReads + 2, "a command performs its required post-command AUX identity/state readback without re-reading Matrix identity or waiting for another Matrix poll");
+  assert.equal(result.acknowledgments.matrix.confirmed, true, "fresh Matrix state acknowledgment remains required");
+  assert.equal(result.acknowledgments.aux.reachable, true, "AUX reachability readback remains required");
+});
+
 test("local Owner PWA brightness, motion/audio, Vibes, scenes, palettes, text and scoreboard route through existing Matrix transport", async t => {
   const f = directFixture();
   const owner = new LocalOwnerControl({ opalDirect: true, directTransportLoader: async () => f.module, storage: null });

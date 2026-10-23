@@ -2,7 +2,7 @@
 import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
-import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v111-ipad-home";
+import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v112-show-scores-system";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -25,6 +25,7 @@ let currentPairLink = "";
 let tuneDirty = false;
 let tuneDirtyFields = new Set();
 let tuneInFlight = false;
+let tuneDispatchPromise = null;
 let tuneTimer = null;
 let hydrating = false;
 let canonicalCapabilities = {};
@@ -52,6 +53,7 @@ const cartLanHealth = $("#cartLanTruth");
 const controlPathLabel = $("#controlPathLabel");
 if (controlPathLabel) controlPathLabel.textContent = OPAL_LOCAL_PWA ? "iPad → Cart controls" : "Cloud control API";
 let pendingRevision = null;
+const activeCommandKeys = new Set();
 const syncHealth = null;
 const rendererHealth = null;
 
@@ -597,14 +599,17 @@ function queueTune(delay = 0, field = "") {
   }, delay);
 }
 
-async function flushTune() {
+async function flushTune(options = {}) {
   clearTimeout(tuneTimer);
   tuneTimer = null;
-  if (tuneInFlight) return;
+  if (tuneInFlight) {
+    if (tuneDispatchPromise) await tuneDispatchPromise;
+    if (options.waitForApplied === false || tuneInFlight) return;
+  }
   if (!tuneDirty) return;
 
   tuneInFlight = true;
-  try {
+  const dispatch = (async () => {
     while (tuneDirty) {
       tuneDirty = false;
       const payload = readTunePayload();
@@ -635,10 +640,16 @@ async function flushTune() {
         }
       }
     }
+  })();
+  tuneDispatchPromise = dispatch;
+  try {
+    await dispatch;
   } finally {
     tuneInFlight = false;
+    tuneDispatchPromise = null;
   }
 
+  if (options.waitForApplied === false) return;
   for (let i = 0; i < 12; i++) {
     const snap = await refresh({ hydrate: false });
     const observed = Array.isArray(snap.observed) ? snap.observed : [];
@@ -655,22 +666,46 @@ async function flushTune() {
 }
 
 async function command(type, payload = {}) {
-  await flushTune();
+  const startedAt = performance.now();
+  const sourceButton = payload && payload._sourceButton;
+  const safePayload = Object.assign({}, payload);
+  delete safePayload._sourceButton;
+  const originalDisabled = sourceButton ? sourceButton.disabled : false;
+  const duplicatePayload = Object.assign({}, safePayload);
+  if (type === "OVERLAY_START") delete duplicatePayload.overlayId;
+  const commandKey = JSON.stringify([type, duplicatePayload]);
+  if (activeCommandKeys.has(commandKey)) return { accepted: false, duplicate: true };
+  activeCommandKeys.add(commandKey);
+  if (sourceButton) {
+    sourceButton.disabled = true;
+    sourceButton.setAttribute("aria-busy", "true");
+  }
+  statusNode.textContent = "Sending Cart command…";
+  let tuneFlushMs = 0;
+  let submitMs = 0;
+  let deviceAckWaitMs = 0;
+  try {
+  const tuneStartedAt = performance.now();
+  await flushTune({ waitForApplied: false });
+  tuneFlushMs = performance.now() - tuneStartedAt;
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
+      const submitStartedAt = performance.now();
       const result = await call({
         action: "command",
         commandId: newCommandId(),
         type,
-        payload: payload,
+        payload: Object.assign({}, safePayload, payload && payload.overlayId ? { overlayId: payload.overlayId } : {}),
         expectedRevision: revision,
       });
+      submitMs += performance.now() - submitStartedAt;
       if (result && result.accepted === false) throw new Error(result.error || "Cart did not accept the command.");
       revision = result.revision;
       pendingRevision = revision;
       statusNode.textContent = "Change sent. Checking the Cart…";
       const deadline = Date.now() + 6000;
+      const ackStartedAt = performance.now();
       let latest = null;
       let acknowledged = false;
       do {
@@ -683,14 +718,30 @@ async function command(type, payload = {}) {
         if (acknowledged) break;
         if (Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 750));
       } while (Date.now() < deadline);
-      await refresh({ hydrate: false });
-      return { accepted: true, acknowledged };
+      deviceAckWaitMs = performance.now() - ackStartedAt;
+      const outcome = { accepted: true, acknowledged };
+      window.HBNFCanonicalLastCommandTiming = {
+        source: OPAL_LOCAL_PWA ? "opal-local" : (localControlActive ? "paired-local" : "cloud"),
+        tuneFlushMs: tuneFlushMs,
+        submitMs: submitMs,
+        deviceAckWaitMs: deviceAckWaitMs,
+        totalMs: performance.now() - startedAt,
+        acknowledged: acknowledged,
+      };
+      return outcome;
     } catch (error) {
       if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
         await refresh({ hydrate: false });
         continue;
       }
       throw error;
+    }
+  }
+  } finally {
+    activeCommandKeys.delete(commandKey);
+    if (sourceButton) {
+      sourceButton.disabled = originalDisabled;
+      sourceButton.removeAttribute("aria-busy");
     }
   }
 }
@@ -700,6 +751,7 @@ window.HBNFCanonical = {
   refresh: refresh,
   flushTune: flushTune,
   getRevision: function(){ return revision; },
+  getLastCommandTiming: function(){ return window.HBNFCanonicalLastCommandTiming || null; },
   getCapabilities: function(){ return canonicalCapabilities; },
   read: function(action, payload) {
     return call(Object.assign({action:action}, payload || {}));
@@ -791,7 +843,10 @@ copyPair.addEventListener("click", async () => {
 });
 
 document.querySelectorAll("[data-command]").forEach(button => {
-  button.addEventListener("click", () => command(button.dataset.command).catch(showError));
+  button.addEventListener("click", () => {
+    statusNode.textContent = "Sending Cart command…";
+    command(button.dataset.command, { _sourceButton: button }).catch(showError);
+  });
 });
 
 if ($("guestModeOpen")) $("guestModeOpen").addEventListener("click", () => setGuestMode(true));
@@ -800,16 +855,16 @@ if ($("guestModeClose")) $("guestModeClose").addEventListener("click", () => set
 document.querySelectorAll(".vibe-option").forEach(button => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
-    command("VIBE", { vibe: button.dataset.vibe }).catch(showError);
+    command("VIBE", { vibe: button.dataset.vibe, _sourceButton: button }).catch(showError);
   });
 });
 $("#vibeAuto").addEventListener("click", () => {
-  if (!$("#vibeAuto").disabled) command("VIBE_AUTO").catch(showError);
+  if (!$("#vibeAuto").disabled) command("VIBE_AUTO", { _sourceButton: $("vibeAuto") }).catch(showError);
 });
 
 for (const id of ["scene", "audioProfile", "audioStyle"]) {
   $(id).addEventListener("change", () => {
-    if (OPAL_LOCAL_PWA && id === "scene") command("SCENE", { sceneId: $(id).value }).catch(showError);
+    if (OPAL_LOCAL_PWA && id === "scene") command("SCENE", { sceneId: $(id).value, _sourceButton: $(id) }).catch(showError);
     else queueTune(0, id);
   });
 }

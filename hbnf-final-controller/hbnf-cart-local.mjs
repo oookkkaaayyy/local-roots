@@ -35,6 +35,7 @@ export class LocalOwnerControl {
     this.matrixInfo = null;
     this.auxInfo = null;
     this.auxState = null;
+    this.auxStateAt = 0;
     this.commandQueue = Promise.resolve();
     this.localRevalidateMs = Number.isSafeInteger(options.localRevalidateMs) ? Math.max(1, options.localRevalidateMs) : 60000;
     this.localRevalidationTimer = null;
@@ -118,6 +119,7 @@ export class LocalOwnerControl {
       }
       this.auxInfo = result[0];
       this.auxState = result[1];
+      this.auxStateAt = Date.now();
       return { info: result[0], state: result[1] };
     }
     const result = await Promise.all([
@@ -129,6 +131,7 @@ export class LocalOwnerControl {
     }
     this.auxInfo = result[0];
     this.auxState = result[1];
+    this.auxStateAt = Date.now();
     return { info: result[0], state: result[1] };
   }
 
@@ -147,6 +150,7 @@ export class LocalOwnerControl {
     this.matrixInfo = null;
     this.auxInfo = null;
     this.auxState = null;
+    this.auxStateAt = 0;
   }
 
   scheduleLocalReconciliation(token) {
@@ -281,6 +285,13 @@ export class LocalOwnerControl {
   }
 
   async connectOpalDirect() {
+    // Reuse verified identity and readback only while both devices remain
+    // within their existing freshness windows. Commands still receive a new
+    // Matrix acknowledgment and AUX readback after application.
+    if (this.matrixInfo && this.transport && this.transport.controlReady() &&
+        Date.now() - this.transport.snapshotAt <= 15000 &&
+        Date.now() - this.transport.identityVerifiedAt <= 30000 &&
+        this.auxInfo && this.auxState && this.auxStateAt && Date.now() - this.auxStateAt <= 15000) return this.snapshot();
     const module = this.module || await this.directTransportLoader();
     this.module = module;
     const matrixInfo = await module.getJson("http://" + LOCAL_MATRIX_IP + "/json/info");
