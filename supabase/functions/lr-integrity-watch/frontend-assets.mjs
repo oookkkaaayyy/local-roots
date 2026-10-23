@@ -14,8 +14,11 @@ export function findJsAssetImports(source, fromUrl, expectedOrigin) {
   return [...urls];
 }
 
-export async function readFrontendGraph(entryUrl, fetchAsset) {
+export async function readFrontendGraph(entryUrl, fetchAsset, expectedOrigin) {
   const entry = new URL(entryUrl);
+  if (!expectedOrigin || entry.origin !== expectedOrigin) {
+    throw new Error('frontend_entry_origin_mismatch');
+  }
   if (!entry.pathname.startsWith('/assets/') || !entry.pathname.endsWith('.js')) {
     throw new Error('frontend_entry_not_asset');
   }
@@ -29,13 +32,13 @@ export async function readFrontendGraph(entryUrl, fetchAsset) {
     seen.add(url);
     const response = await fetchAsset(url, { redirect: 'error' });
     if (!response.ok) throw new Error(`frontend_asset_http_${response.status}`);
-    if (response.url && new URL(response.url).origin !== entry.origin) throw new Error('frontend_asset_origin_mismatch');
+    if (response.url && new URL(response.url).origin !== expectedOrigin) throw new Error('frontend_asset_origin_mismatch');
     const source = await response.text();
     if (source.length > MAX_ASSET_CHARS || combined.length + source.length > MAX_TOTAL_CHARS) {
       throw new Error('frontend_asset_size_limit');
     }
     combined += `\n${source}`;
-    for (const next of findJsAssetImports(source, url, entry.origin)) {
+    for (const next of findJsAssetImports(source, url, expectedOrigin)) {
       if (!seen.has(next) && !pending.includes(next)) pending.push(next);
     }
   }
