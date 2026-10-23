@@ -20,7 +20,7 @@ test('discovers lazy and static Vite JS chunks and retains route markers', async
     [`${origin}/assets/LegacyRoutes-b.js`]: 'import "./helpers-c.js"; Past events & results; PDGA Results; Add to Calendar;',
     [`${origin}/assets/helpers-c.js`]: 'Full Results; Upcoming events',
   };
-  const result = await readFrontendGraph(`${origin}/assets/index-a.js`, fetcher(assets));
+  const result = await readFrontendGraph(`${origin}/assets/index-a.js`, fetcher(assets), origin);
   assert.equal(result.urls.length, 3);
   for (const marker of ['Past events & results', 'PDGA Results', 'Add to Calendar', 'Full Results', 'Upcoming events']) {
     assert.ok(result.bundle.includes(marker), `missing lazy chunk marker: ${marker}`);
@@ -35,18 +35,43 @@ test('limits discovered imports to same-origin JS under /assets/', () => {
 
 test('fails closed if an imported chunk is unavailable', async () => {
   await assert.rejects(
-    () => readFrontendGraph(`${origin}/assets/index.js`, fetcher({[`${origin}/assets/index.js`]:'import("./missing.js")'})),
+    () => readFrontendGraph(`${origin}/assets/index.js`, fetcher({[`${origin}/assets/index.js`]:'import("./missing.js")'}), origin),
     /frontend_asset_http_404/,
   );
 });
 
 test('fails closed when an asset exceeds the byte budget', async () => {
   await assert.rejects(
-    () => readFrontendGraph(`${origin}/assets/index.js`, fetcher({[`${origin}/assets/index.js`]:'x'.repeat(4_000_001)})),
+    () => readFrontendGraph(`${origin}/assets/index.js`, fetcher({[`${origin}/assets/index.js`]:'x'.repeat(4_000_001)}), origin),
     /frontend_asset_size_limit/,
   );
 });
 
 test('rejects non-asset entrypoints', async () => {
-  await assert.rejects(() => readFrontendGraph(`${origin}/index.js`, fetcher({})), /frontend_entry_not_asset/);
+  await assert.rejects(() => readFrontendGraph(`${origin}/index.js`, fetcher({}), origin), /frontend_entry_not_asset/);
+});
+
+test('rejects external HTML-selected JS entrypoint before any fetch', async () => {
+  let fetched = false;
+  await assert.rejects(
+    () => readFrontendGraph('https://untrusted.example/assets/index-test.js', async () => {
+      fetched = true;
+      return { ok: true, url: 'https://untrusted.example/assets/index-test.js', text: async () => '' };
+    }, origin),
+    /frontend_entry_origin_mismatch/,
+  );
+  assert.equal(fetched, false);
+});
+
+test('rejects absent trusted origin and cross-origin asset response', async () => {
+  await assert.rejects(
+    () => readFrontendGraph(`${origin}/assets/index.js`, fetcher({})),
+    /frontend_entry_origin_mismatch/,
+  );
+  await assert.rejects(
+    () => readFrontendGraph(`${origin}/assets/index.js`, async () => ({
+      ok: true, url: 'https://untrusted.example/assets/index.js', text: async () => '',
+    }), origin),
+    /frontend_asset_origin_mismatch/,
+  );
 });
