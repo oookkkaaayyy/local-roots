@@ -251,7 +251,7 @@ test("Guest UI reports backend reachability separately from Matrix/AUX confirmat
   let fetchCount = 0;
   const context = {
     document: {
-      querySelectorAll() { return [action]; },
+      querySelectorAll(selector) { return selector === '[data-guest-action="vibe"]' ? [] : [action]; },
       getElementById(id) { return nodes.get(id); },
     },
     window: {
@@ -269,16 +269,15 @@ test("Guest UI reports backend reachability separately from Matrix/AUX confirmat
   };
   vm.runInNewContext(script, context);
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(nodes.get("connectionBadge").textContent, "BACKEND ONLINE");
-  assert.match(nodes.get("deviceStatus").textContent, /Matrix command ACKNOWLEDGED · AUX command OFFLINE/);
-  assert.doesNotMatch(nodes.get("deviceStatus").textContent, /AUX CONFIRMED/);
+  assert.equal(nodes.get("connectionBadge").textContent, "CART ONLINE");
+  assert.equal(nodes.get("deviceStatus").textContent, "Matrix: Responding · Underglow: Offline");
 
   action.click();
   await new Promise(resolve => setImmediate(resolve));
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(fetchCount, 3);
-  assert.match(nodes.get("primaryStatus").textContent, /queued; device acknowledgement pending/i);
-  assert.match(nodes.get("secondaryStatus").textContent, /not yet confirmed/i);
+  assert.match(nodes.get("primaryStatus").textContent, /Choice sent\. Waiting for the Cart\./);
+  assert.match(nodes.get("secondaryStatus").textContent, /Status will update shortly\./);
   assert.doesNotMatch(nodes.get("primaryStatus").textContent, /applied/i);
 });
 
@@ -310,7 +309,7 @@ test("Guest text field enables with Guest Mode and submits its value only from t
   const posted = [];
   const context = {
     document: {
-      querySelectorAll(selector) { return selector.indexOf("button") === 0 ? buttons : allControls; },
+      querySelectorAll(selector) { return selector === '[data-guest-action="vibe"]' ? [] : selector.indexOf("button") === 0 ? buttons : allControls; },
       getElementById(id) { return nodes.get(id) || null; },
     },
     window: {

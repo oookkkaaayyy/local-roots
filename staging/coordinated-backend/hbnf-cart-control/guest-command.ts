@@ -105,8 +105,8 @@ export function requiresOwnerAuthorization(action: string, _commandType: unknown
 export async function runGuestCommand(
   request: Record<string, unknown>,
   deps: {
-    readContext: () => Promise<{ data: any; error: any }>;
-    commit: (input: { commandId: string; type: string; expectedRevision: number; nextState: Record<string, unknown> }) => Promise<{ data: any; error: any }>;
+    readContext: () => PromiseLike<{ data: any; error: any }>;
+    commit: (input: { commandId: string; type: string; expectedRevision: number; nextState: Record<string, unknown> }) => PromiseLike<{ data: any; error: any }>;
     reconcile: (input: { revision: number; fence: Record<string, unknown>; type: string }) => Promise<{ ok: boolean; status: number; body: unknown }>;
   },
 ): Promise<{ status: number; body: Record<string, unknown> }> {

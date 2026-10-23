@@ -171,6 +171,7 @@ jobs:
           node tests/hbnf_owner_local_control.mjs
           node tests/hbnf_owner_pwa_reliability.mjs
           node tests/hbnf-coordinated-backend-staging.mjs
+          node --test staging/coordinated-backend/hbnf-cart-control/guest-command.test.mjs
           node tests/hbnf-release-readiness.mjs
           node tests/hbnf-ios12-compat-audit.mjs
           node tests/hbnf-canonical-palette-projection.mjs
@@ -181,10 +182,11 @@ jobs:
           grep -q 'OPAL_INSTALLER' hbnf-final-controller/hbnf-cart-features.mjs
 
       - name: Deno check staged backend
+        working-directory: staging/coordinated-backend
         run: |
           set -euo pipefail
-          deno check staging/coordinated-backend/hbnf-cart-control/index.ts
-          deno check staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts
+          (cd hbnf-cart-control && deno check --node-modules-dir=auto index.ts)
+          (cd hbnf-matrix-adapter-foundation && deno check index.ts)
 
       - name: Safety gates
         run: |
