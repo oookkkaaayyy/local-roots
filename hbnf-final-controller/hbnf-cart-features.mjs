@@ -20,6 +20,9 @@ const MAX_SAVED_LOOKS = 12;
 let liveRefreshInFlight = false;
 let paletteOptionsReady = false;
 let paletteLoadInFlight = false;
+let paletteRetryTimer = null;
+let paletteRetryAttempt = 0;
+const PALETTE_RETRY_DELAYS_MS = [1000, 3000, 8000];
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -137,6 +140,11 @@ async function loadPalettes() {
       select.appendChild(o);
     });
     paletteOptionsReady=true;
+    paletteRetryAttempt=0;
+    if (paletteRetryTimer!==null) {
+      clearTimeout(paletteRetryTimer);
+      paletteRetryTimer=null;
+    }
     renderPaletteStatus("Color choices loaded from the Cart.");
     syncOverlayAvailability();
   } finally {
@@ -629,12 +637,22 @@ loadPalettes().catch(()=>{
   renderPaletteStatus("Couldn’t load color choices. Check the Cart connection and try again.");
   syncOverlayAvailability();
   setFeatureStatus("Couldn’t load colors. Check the Cart connection and try again.",true);
+  schedulePaletteRetry();
 });
+function schedulePaletteRetry() {
+  if (paletteOptionsReady || paletteRetryTimer!==null || !matrixLocal() || document.hidden || paletteRetryAttempt>=PALETTE_RETRY_DELAYS_MS.length) return;
+  const delay=PALETTE_RETRY_DELAYS_MS[paletteRetryAttempt++];
+  paletteRetryTimer=setTimeout(function(){
+    paletteRetryTimer=null;
+    if (!document.hidden) retryPaletteLoad();
+  },delay);
+}
 function retryPaletteLoad() {
   if (!paletteOptionsReady && matrixLocal()) loadPalettes().catch(()=>{
     paletteOptionsReady=false;
     renderPaletteStatus("Couldn’t load color choices. Check the Cart connection and try again.");
     syncOverlayAvailability();
+    schedulePaletteRetry();
   });
 }
 window.addEventListener("online",retryPaletteLoad);

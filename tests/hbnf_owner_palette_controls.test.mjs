@@ -207,12 +207,13 @@ test("palette choices reload after Cart reconnect and overlapping lifecycle even
   const select = { options: [], appendChild(option) { this.options.push(option); }, remove(index) { this.options.splice(index, 1); } };
   const windowHandlers = {}, documentHandlers = {};
   const statuses = [];
-  let local = false, fetchCount = 0, finishFetch;
+  const timers = new Map();
+  let timerId = 0, local = false, fetchCount = 0, finishFetch, failFetch;
   const loadSourceStart = featureSource.indexOf("async function loadPalettes()");
   const loadSourceEnd = featureSource.indexOf("function desiredState", loadSourceStart);
-  const retrySourceStart = featureSource.indexOf("function retryPaletteLoad()");
+  const retrySourceStart = featureSource.indexOf("function schedulePaletteRetry()");
   const retrySourceEnd = featureSource.indexOf('bind("featureApplyLook"', retrySourceStart);
-  const source = "let paletteOptionsReady=false; let paletteLoadInFlight=false;\n" +
+  const source = "let paletteOptionsReady=false; let paletteLoadInFlight=false; let paletteRetryTimer=null; let paletteRetryAttempt=0; const PALETTE_RETRY_DELAYS_MS=[1000,3000,8000];\n" +
     featureSource.slice(loadSourceStart, loadSourceEnd) +
     featureSource.slice(retrySourceStart, retrySourceEnd) +
     "window.paletteIsReady=()=>paletteOptionsReady;";
@@ -220,8 +221,10 @@ test("palette choices reload after Cart reconnect and overlapping lifecycle even
     window: { addEventListener: (name, fn) => { windowHandlers[name] = fn; } },
     document: { hidden: false, addEventListener: (name, fn) => { documentHandlers[name] = fn; }, createElement: () => ({}) },
     matrixLocal: () => local, matrixApiUrl: path => path,
-    fetchJson: async () => { fetchCount++; return new Promise(resolve => { finishFetch = resolve; }); },
+    fetchJson: async () => { fetchCount++; return new Promise((resolve,reject) => { finishFetch = resolve; failFetch = reject; }); },
     renderPaletteStatus: value => statuses.push(value), syncOverlayAvailability() {},
+    setTimeout: (fn, delay) => { const id=++timerId; timers.set(id,{fn,delay}); return id; },
+    clearTimeout: id => timers.delete(id),
     $: id => id === "featurePalette" ? select : null,
   };
   vm.runInNewContext(source, context);
@@ -232,12 +235,21 @@ test("palette choices reload after Cart reconnect and overlapping lifecycle even
   local = true;
   windowHandlers.online();
   assert.equal(fetchCount, 1, "reconnect must start palette loading");
+  failFetch(new Error("temporary Cart API failure"));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(timers.size, 1, "a transient failed retry must schedule a bounded follow-up");
+  assert.equal([...timers.values()][0].delay, 1000, "first follow-up should use the bounded backoff");
+  const [timerKey, timer] = [...timers.entries()][0];
+  timers.delete(timerKey);
+  timer.fn();
+  assert.equal(fetchCount, 2, "scheduled follow-up must make another palette request");
   windowHandlers.pageshow();
   documentHandlers.visibilitychange();
-  assert.equal(fetchCount, 1, "overlapping return events must not duplicate the palette request");
+  assert.equal(fetchCount, 2, "overlapping return events must not duplicate the palette request");
   finishFetch(["Rainbow", "RSVD", "Ocean"]);
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(context.window.paletteIsReady(), true, "successful retry must enable palette options");
+  assert.equal(timers.size, 0, "success must clear any retry timer");
   assert.deepEqual(select.options.map(option => [option.value, option.textContent]), [
     ["", "Keep current"], ["solid", "Solid color"], ["wled-0", "Rainbow"], ["wled-2", "Ocean"],
   ]);
