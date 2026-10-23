@@ -216,7 +216,7 @@ test("palette choices reload after Cart reconnect and overlapping lifecycle even
   const source = "let paletteOptionsReady=false; let paletteLoadInFlight=false; let paletteRetryTimer=null; let paletteRetryAttempt=0; const PALETTE_RETRY_DELAYS_MS=[1000,3000,8000];\n" +
     featureSource.slice(loadSourceStart, loadSourceEnd) +
     featureSource.slice(retrySourceStart, retrySourceEnd) +
-    "window.paletteIsReady=()=>paletteOptionsReady;";
+    "window.paletteIsReady=()=>paletteOptionsReady; window.markPaletteUnavailable=()=>{paletteOptionsReady=false;};";
   const context = {
     window: { addEventListener: (name, fn) => { windowHandlers[name] = fn; } },
     document: { hidden: false, addEventListener: (name, fn) => { documentHandlers[name] = fn; }, createElement: () => ({}) },
@@ -243,15 +243,27 @@ test("palette choices reload after Cart reconnect and overlapping lifecycle even
   timers.delete(timerKey);
   timer.fn();
   assert.equal(fetchCount, 2, "scheduled follow-up must make another palette request");
+  failFetch(new Error("transient retry failure"));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(timers.size, 1);
+  assert.equal([...timers.values()][0].delay, 3000, "subsequent failures should back off");
   windowHandlers.pageshow();
   documentHandlers.visibilitychange();
-  assert.equal(fetchCount, 2, "overlapping return events must not duplicate the palette request");
+  assert.equal(fetchCount, 3, "page return should retry while the backoff timer remains pending");
+  assert.equal(timers.size, 1, "the scheduled backoff must remain pending during an event-triggered load");
   finishFetch(["Rainbow", "RSVD", "Ocean"]);
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(context.window.paletteIsReady(), true, "successful retry must enable palette options");
-  assert.equal(timers.size, 0, "success must clear any retry timer");
+  assert.equal(timers.size, 0, "success must cancel the still-pending retry timer");
+  assert.match(statuses.at(-1), /Color choices loaded/);
+  context.window.markPaletteUnavailable();
+  windowHandlers.online();
+  assert.equal(fetchCount, 4);
+  failFetch(new Error("next transient failure"));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal([...timers.values()][0].delay, 1000, "success must reset the backoff sequence");
+  timers.clear();
   assert.deepEqual(select.options.map(option => [option.value, option.textContent]), [
     ["", "Keep current"], ["solid", "Solid color"], ["wled-0", "Rainbow"], ["wled-2", "Ocean"],
   ]);
-  assert.match(statuses.at(-1), /Color choices loaded/);
 });
