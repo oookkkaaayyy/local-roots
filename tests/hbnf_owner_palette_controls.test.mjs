@@ -53,10 +53,12 @@ function fixture({ selection = "wled-7", initial = "wled-1", capability = true, 
   const actionFeedback = [];
   const globalFeedback = [];
   let sendCount = 0;
+  let refreshCount = 0;
   const bridge = {
     refresh: async () => {
       if (readFails) throw new Error("Cart offline");
-      return { desired: { state: unknownInitial ? null : { paletteId: current } } };
+      const paletteId=unknownInitial && refreshCount++===0 ? "" : current;
+      return { desired: { state: { paletteId } } };
     },
     command: async (name, payload) => {
       commands.push([name, payload]);
@@ -106,14 +108,24 @@ test("generic legacy state is restored with a firmware alias without claiming a 
   assert.match(f.actionFeedback.at(-1), /Previous palette is back in Cart settings/);
 });
 
-test("unavailable palette intent and unknown current state fail before any command", async () => {
+test("unavailable palette intent blocks; unknown prior palette still applies the selected choice", async () => {
   const unavailable = fixture({ capability: false });
   await assert.rejects(unavailable.apply(), /controls aren’t ready/);
   assert.equal(unavailable.commands.length, 0);
 
   const unknown = fixture({ unknownInitial: true });
-  await assert.rejects(unknown.apply(), /no palette change was sent/);
-  assert.equal(unknown.commands.length, 0);
+  await unknown.apply();
+  assert.deepEqual(JSON.parse(JSON.stringify(unknown.commands)), [["PALETTE", { paletteId: "wled-7" }]]);
+  assert.match(unknown.actionFeedback.at(-1), /Cart settings now match/);
+  assert.match(unknown.actionFeedback.at(-1), /lights weren’t checked/i);
+});
+
+test("unknown prior palette is not guessed during recovery after apply cannot be confirmed", async () => {
+  const unknown = fixture({ unknownInitial: true, mismatch: true });
+  await assert.rejects(unknown.apply(), /previous palette was unknown/i);
+  assert.deepEqual(JSON.parse(JSON.stringify(unknown.commands)), [["PALETTE", { paletteId: "wled-7" }]],
+    "the UI must not guess a rollback palette when the previous value was unknown");
+  assert.match(unknown.actionFeedback.at(-1), /previous palette was unknown, so it wasn’t restored automatically/i);
 });
 
 test("unreachable current state reports the failure and sends no palette command", async () => {

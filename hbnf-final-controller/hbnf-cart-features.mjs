@@ -247,11 +247,12 @@ async function applyPalette() {
     throw error;
   }
   const prior=desiredState(before);
-  if (!prior || typeof prior.paletteId!=="string" || !prior.paletteId) {
-    renderPaletteStatus("Current palette is unknown. No change was sent.");
-    throw new Error("Current palette could not be confirmed; no palette change was sent.");
+  if (!prior) {
+    renderPaletteStatus("Cart settings aren’t available. No change was sent.");
+    throw new Error("Cart settings could not be read; no palette change was sent.");
   }
-  if (String(prior.paletteId)===paletteId) {
+  const priorPaletteId=typeof prior.paletteId==="string" ? prior.paletteId : "";
+  if (priorPaletteId && priorPaletteId===paletteId) {
     renderPaletteStatus("Cart settings already match. The lights weren’t checked.");
     setFeatureStatus("Cart settings already match. The lights weren’t checked.");
     return;
@@ -267,13 +268,19 @@ async function applyPalette() {
     setFeatureStatus("Cart settings now match. The lights weren’t checked.");
   } catch (error) {
     let restored=false;
-    try {
-      await bridge.command("PALETTE",{paletteId:paletteCommandId(prior.paletteId)});
-      const restoredSnapshot=await bridge.refresh({hydrate:false});
-      const restoredState=desiredState(restoredSnapshot);
-      restored=!!restoredState && String(restoredState.paletteId)===String(prior.paletteId);
-    } catch (_) {}
-    const restoreStatus=restored ? "Previous palette is back in Cart settings." : "Couldn’t confirm the previous palette was restored.";
+    if (priorPaletteId) {
+      try {
+        await bridge.command("PALETTE",{paletteId:paletteCommandId(priorPaletteId)});
+        const restoredSnapshot=await bridge.refresh({hydrate:false});
+        const restoredState=desiredState(restoredSnapshot);
+        restored=!!restoredState && String(restoredState.paletteId)===priorPaletteId;
+      } catch (_) {}
+    }
+    const restoreStatus=restored
+      ? "Previous palette is back in Cart settings."
+      : priorPaletteId
+        ? "Couldn’t confirm the previous palette was restored."
+        : "The selected palette couldn’t be confirmed. The previous palette was unknown, so it wasn’t restored automatically.";
     renderPaletteStatus("Palette wasn’t confirmed. "+restoreStatus);
     setFeatureStatus("Palette wasn’t confirmed. "+restoreStatus,true);
     throw new Error("Palette was not confirmed. "+restoreStatus+" "+(error.message || String(error)));
@@ -474,29 +481,30 @@ async function showScoreboard() {
     status.textContent=message;
     status.className=bad ? "status bad" : "status";
   };
-  report("Checking for a live round…");
+  report("Checking for an active round…");
   let out;
   try { out=await canonicalRead("live_status",{}); }
   catch (error) {
-    report("Couldn’t check for a live round. Check the internet connection and try again; no scores were sent.",true);
+    report("Couldn’t check for an active round. Check your internet connection and try again; no scores were sent.",true);
     throw error;
   }
   const live=out && out.live;
   if (!live || !live.active) {
-    report("No live round is active. Start a Skins or Glow round, then show scores.",true);
+    report("There’s no active round to show yet. Start a Skins or Glow round, then try again.",true);
     return;
   }
   if (!Array.isArray(live.entries) || !live.entries.length) {
-    report("A round is active, but no scores are available yet. Enter scores, then show them.",true);
+    report("This round doesn’t have any scores yet. Enter scores, then try again.",true);
     return;
   }
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
   try {
     const bridge=canonicalOverlayBridge();
+    report("Sending scores to the Cart display…");
     await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-    report("Score display request sent. Check the Matrix to confirm it appeared.");
+    report("Scores sent. Check the Cart display to make sure they appeared.");
   } catch (error) {
-    report("Couldn’t send the scores to the Cart. Check the connection and try again.",true);
+    report("Couldn’t send the scores to the Cart display. Check that the Cart is online and try again.",true);
     throw error;
   }
 }
