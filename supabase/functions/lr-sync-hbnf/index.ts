@@ -5,6 +5,7 @@ import {
   FIRST_CONFIRMED_TUESDAY_GLOW,
   HBNF_SCHEDULE_CONFIRMATION_REF,
   isCanceledGlowWeek,
+  isSyntheticGlowFixtureWeek,
   shouldEmitConfirmedScheduleRecord,
   shouldSkipCanceledEvent,
   shouldUseConfirmedSchedule,
@@ -179,6 +180,7 @@ Deno.serve(async (req) => {
     const today = localDateISO();
     const skinsWeeks: Json = state?.skins?.weeks && typeof state.skins.weeks === "object" ? state.skins.weeks : {};
     const glowWeeks: Json = state?.glow?.weeks && typeof state.glow.weeks === "object" ? state.glow.weeks : {};
+    const quarantinedFixtureExternalIds = new Set<string>();
     const confirmedGlowSchedule = buildConfirmedGlowSchedule(today);
     const confirmedGlowDates = new Set(confirmedGlowSchedule.map((scheduled) => scheduled.date));
     const records: {
@@ -223,6 +225,10 @@ Deno.serve(async (req) => {
 
     for (const [date, week] of Object.entries(glowWeeks)) {
       if (!dateKey(date) || !week || typeof week !== "object") continue;
+      if (isSyntheticGlowFixtureWeek(week)) {
+        quarantinedFixtureExternalIds.add(`hbnf:glow:${date}`);
+        continue;
+      }
       if (shouldUseConfirmedSchedule(date, week, confirmedGlowDates)) continue;
       const url = eventSourceUrl("glow", date);
       const tuesdayGlow = date >= FIRST_CONFIRMED_TUESDAY_GLOW;
@@ -306,7 +312,17 @@ Deno.serve(async (req) => {
       .filter((event: any) => event.status === "canceled")
       .map((event: any) => event.id));
     const existingByExternalId = new Map((existing.data ?? []).map((row: any) => [row.external_id, row]));
-    const seen = new Set(records.map((record) => record.externalId));
+    // A quarantined synthetic fixture is deliberately omitted, not missing upstream.
+    const seen = new Set([...records.map((record) => record.externalId), ...quarantinedFixtureExternalIds]);
+    for (const externalId of quarantinedFixtureExternalIds) {
+      const existingFixture: any = existingByExternalId.get(externalId);
+      if (!existingFixture?.event_id) continue;
+      const unpublished = await service.from("lr_events")
+        .update({ published: false })
+        .eq("id", existingFixture.event_id)
+        .eq("published", true);
+      if (unpublished.error) throw new Error(`fixture quarantine failed: ${unpublished.error.message}`);
+    }
     const missing = findMissingSourceRecords(existing.data ?? [], seen, !stateFetchError);
 
     let valid = 0;
