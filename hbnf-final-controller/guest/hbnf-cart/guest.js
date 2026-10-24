@@ -56,7 +56,7 @@
       enabled=false;revision=null;controls(false);
       document.getElementById("connectionBadge").textContent="LINK UNAVAILABLE";
       document.getElementById("guestBadge").textContent="CLOSED";
-      announce("This link doesn’t match the Cart.","Scan the QR code shown in the owner controls.");
+      announce("This link isn’t for this Cart.","Scan the QR code in the owner controls.");
       return Promise.resolve();
     }
     busy=true;controls(false);
@@ -68,21 +68,21 @@
       revision=desired&&Number.isSafeInteger(Number(desired.revision))?Number(desired.revision):null;
       enabled=!!(cartState&&cartState.guestMode===true&&revision!==null);
       renderControlState(cartState||{});
-      document.getElementById("connectionBadge").textContent="CART ONLINE";
+      document.getElementById("connectionBadge").textContent="ONLINE";
       document.getElementById("connectionBadge").className="badge ready";
       document.getElementById("guestBadge").textContent=enabled?"OPEN":"CLOSED";
       document.getElementById("guestBadge").className="badge "+(enabled?"ready":"closed");
       var devicesConfirmed=revision!==null&&updateDeviceStatus(snapshot,revision);
       controls(enabled);
       if(pendingRevision!==null){
-        if(revision>pendingRevision){pendingRevision=null;announce("The Cart changed before your choice was applied.","Check the current status and try again if Guest Mode is still on.");}
-        else if(revision===pendingRevision&&devicesConfirmed){pendingRevision=null;announce("Change applied.","Matrix and underglow confirmed the setting. Check the lights to confirm the visible result.");}
-        else announce("Choice sent. Waiting for the Cart.","Status will update shortly.");
-      }else if(enabled)announce("Guest Mode is on.","Choose a Vibe, or tap Next look or Cart Auto.");
-      else announce("Guest Mode is off.","Ask the owner to turn it on before trying again.");
+        if(revision>pendingRevision){pendingRevision=null;announce("Settings changed before your choice was applied.","Check the status and try again if guest access is still on.");}
+        else if(revision===pendingRevision&&devicesConfirmed){pendingRevision=null;announce("Change applied.","Matrix and underglow confirmed the setting. Check that the lights changed.");}
+        else announce("Choice sent. Waiting for confirmation.","Status will update shortly.");
+      }else if(enabled)announce("Guest access is on.","Choose a Vibe, Next look, or Auto show.");
+      else announce("Guest access is off.","Ask the owner to turn it on before trying again.");
     }).catch(function(error){
       enabled=false;revision=null;controls(false);
-      document.getElementById("connectionBadge").textContent="CART OFFLINE";
+      document.getElementById("connectionBadge").textContent="OFFLINE";
       document.getElementById("connectionBadge").className="badge offline";
       deviceStatus.textContent="Status unavailable";
       deviceStatus.className="device-status unconfirmed";
@@ -101,17 +101,17 @@
     lastAction[action]=now;
     busy=true;controls(false);detail.textContent="Sending your choice…";
     post({action:"guest_command",commandId:id(),expectedRevision:revision,guestAction:action,value:value})
-      .then(function(result){pendingRevision=Number.isSafeInteger(Number(result&&result.revision))?Number(result.revision):revision;announce("Choice sent. Waiting for the Cart.","Status will update shortly.");})
+      .then(function(result){pendingRevision=Number.isSafeInteger(Number(result&&result.revision))?Number(result.revision):revision;announce("Choice sent. Waiting for confirmation.","The Cart will update status shortly.");})
       .catch(function(error){
         if(error.status===409&&error.data&&error.data.error==="stale_revision"){
-          announce("The Cart changed before your choice was applied.","Status refreshed. Try again if Guest Mode is still on.");
+          announce("Settings changed before your choice was applied.","Status refreshed. Try again if guest access is still on.");
           return;
         }
         if(error.status===403&&error.data&&error.data.error==="guest_mode_closed"){
-          announce("Guest Mode is off.","Ask the owner to turn it on before trying again.");
+          announce("Guest access is off.","Ask the owner to turn it on before trying again.");
           return;
         }
-        announce("That choice couldn’t be sent.","Check your connection and try again.");
+          announce("Couldn’t send that choice.","Check your connection and try again.");
       }).finally(function(){busy=false;refresh();});
   }
   buttons.forEach(function(button){button.addEventListener("click",function(){act(button);});});
@@ -121,7 +121,7 @@
   }});
   document.getElementById("retry").addEventListener("click",refresh);
   window.addEventListener("online",refresh);
-  window.addEventListener("offline",function(){enabled=false;revision=null;controls(false);document.getElementById("connectionBadge").textContent="CART OFFLINE";document.getElementById("connectionBadge").className="badge offline";deviceStatus.textContent="Status unavailable";deviceStatus.className="device-status unconfirmed";announce("You're offline.","Reconnect to try again.");});
+  window.addEventListener("offline",function(){enabled=false;revision=null;controls(false);document.getElementById("connectionBadge").textContent="OFFLINE";document.getElementById("connectionBadge").className="badge offline";deviceStatus.textContent="Status unavailable";deviceStatus.className="device-status unconfirmed";announce("You’re offline.","Reconnect to try again.");});
   window.setInterval(refresh,10000);
   refresh();
 })();

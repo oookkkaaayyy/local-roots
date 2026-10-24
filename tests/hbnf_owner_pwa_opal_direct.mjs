@@ -15,11 +15,11 @@ function directFixture({ auxReachable = true, palette = { mode: "legacy", id: "h
     seg: [],
   };
   class FakeTransport {
-    constructor({ url }) { this.url = url; this.socket = null; this.snapshot = null; this.snapshotVersion = 0; this.snapshotAt = 0; this.identityVerifiedAt = 0; }
+    constructor({ url, onState }) { this.url = url; this.onState = onState; this.socket = null; this.snapshot = null; this.snapshotVersion = 0; this.snapshotAt = 0; this.identityVerifiedAt = 0; }
     verifyIdentity(info) { this.identityVerifiedAt = info.mac === LOCAL_MATRIX_MAC ? Date.now() : 0; return this.identityVerifiedAt > 0; }
     controlReady() { return !!(this.socket && this.socket.readyState === 1 && this.identityVerifiedAt && this.snapshot && this.snapshot.HBNF.candidate === LOCAL_MATRIX_RELEASE); }
     connect() { this.socket = { readyState: 1 }; this.read(); }
-    read() { this.snapshot = structuredClone(matrix); this.snapshotVersion += 1; this.snapshotAt = Date.now(); }
+    read() { this.snapshot = structuredClone(matrix); this.snapshotVersion += 1; this.snapshotAt = Date.now(); this.onState?.(this.snapshot); }
     requestState() { this.read(); }
     async command(type, payload) {
       const patch = buildPatch(type, payload);
@@ -48,6 +48,19 @@ function directFixture({ auxReachable = true, palette = { mode: "legacy", id: "h
   };
   return { calls, matrix, module };
 }
+
+test("Opal Owner PWA forwards pushed Matrix state to its UI refresh callback", async t => {
+  let received = 0;
+  const f = directFixture();
+  const owner = new LocalOwnerControl({ opalDirect: true, onState: () => { received += 1; }, directTransportLoader: async () => f.module, storage: null });
+  t.after(() => owner.disconnectTransport());
+  await owner.connect("", 0);
+  const afterConnect = received;
+  f.matrix.HBNF.vibe = 2;
+  owner.transport.read();
+  assert.ok(received > afterConnect, "a pushed Matrix snapshot must notify the Owner PWA adapter");
+  assert.equal(owner.transport.snapshot.HBNF.vibe, 2);
+});
 
 test("Opal-hosted Owner PWA uses fresh local Matrix and AUX identity/readback without cloud credentials", async t => {
   const f = directFixture();
@@ -113,6 +126,6 @@ test("local route preserves cloud routes and labels score reads as internet-depe
   const html = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html", import.meta.url), "utf8");
   assert.match(js, /const result = await callCloud\(cloudBody\)/);
   assert.match(js, /const SUPABASE_URL = "https:\/\/phcpbvuqibyarpfrftgx\.supabase\.co"/);
-  assert.match(html, /live score updates require an internet connection/i);
-  assert.match(js, /You’re offline\. Controls on the Cart are still available\./);
+  assert.match(html, /Live scores need an internet connection\./i);
+  assert.match(js, /You’re offline\. Local controls are still available\./);
 });

@@ -23,11 +23,15 @@ export class LocalOwnerControl {
   constructor(options = {}) {
     this.origin = String(options.origin || LOCAL_CONTROL_ORIGIN).replace(/\/$/, "");
     this.opalDirect = options.opalDirect === true;
+    this.onState = typeof options.onState === "function" ? options.onState : null;
     this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js"));
     this.directStorage = options.storage || (typeof localStorage !== "undefined" ? localStorage : null);
     this.directPowerKey = "hbnf.owner-pwa-opal.power-restore.v1";
     this.fetchFn = options.fetchFn || fetch;
     this.transportLoader = options.transportLoader || (() => import(`${this.origin}/mission-control-local/owner-http-transport.js`));
+    this.transportLoadTimeoutMs = Number.isSafeInteger(options.transportLoadTimeoutMs)
+      ? Math.max(1, options.transportLoadTimeoutMs)
+      : HBNF_API_TIMEOUT_MS;
     this.transport = null;
     this.module = null;
     this.token = "";
@@ -59,6 +63,20 @@ export class LocalOwnerControl {
       throw error;
     }
     return data;
+  }
+
+  async loadTransport(loader) {
+    let timeout;
+    try {
+      return await Promise.race([
+        Promise.resolve().then(loader),
+        new Promise((_, reject) => {
+          timeout = setTimeout(() => reject(new Error("Local Cart transport module timed out.")), this.transportLoadTimeoutMs);
+        }),
+      ]);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   async ensureSession(token, expiresAtEpoch) {
@@ -100,7 +118,7 @@ export class LocalOwnerControl {
 
   async readAux(token) {
     if (this.opalDirect) {
-      const module = this.module || await this.directTransportLoader();
+      const module = this.module || await this.loadTransport(this.directTransportLoader);
       this.module = module;
       const result = await Promise.all([
         module.getJson("http://" + LOCAL_AUX_IP + "/json/info"),
@@ -163,7 +181,7 @@ export class LocalOwnerControl {
     if (!validToken(token)) throw new Error("This device is not paired for local control.");
     await this.ensureSession(token, expiresAtEpoch);
     if (Number.isSafeInteger(expiresAtEpoch)) this.expiresAtEpoch = expiresAtEpoch;
-    const module = this.module || await this.transportLoader();
+    const module = this.module || await this.loadTransport(this.transportLoader);
     this.module = module;
     try {
       const matrixInfo = await this.request(token, "/api/matrix/json/info");
@@ -193,12 +211,17 @@ export class LocalOwnerControl {
   }
 
   async connectOpalDirect() {
-    const module = this.module || await this.directTransportLoader();
+    const module = this.module || await this.loadTransport(this.directTransportLoader);
     this.module = module;
     const matrixInfo = await module.getJson("http://" + LOCAL_MATRIX_IP + "/json/info");
     if (String(matrixInfo.mac || "").toLowerCase().replace(/:/g, "") !== LOCAL_MATRIX_MAC) throw new Error("Unexpected Matrix identity.");
     if (!this.transport) {
-      this.transport = new module.LocalMatrixTransport({ url: "ws://" + LOCAL_MATRIX_IP + "/ws" });
+      this.transport = new module.LocalMatrixTransport({
+        url: "ws://" + LOCAL_MATRIX_IP + "/ws",
+        onState: state => {
+          try { if (typeof this.onState === "function") this.onState(state); } catch (_) {}
+        },
+      });
       this.token = "__opal_direct__";
     }
     if (!this.transport.verifyIdentity(matrixInfo)) throw new Error("Matrix identity verification failed.");

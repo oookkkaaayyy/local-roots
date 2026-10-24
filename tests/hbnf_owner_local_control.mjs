@@ -173,6 +173,20 @@ test("unauthorized/revoked session fails before loading command transport", asyn
   assert.equal(f.calls.some(call => call.path === "/api/matrix/control"), false);
 });
 
+test("a stalled local transport import fails within its deadline instead of hanging readiness", async () => {
+  const f = fixture();
+  const client = new LocalOwnerControl({
+    fetchFn: f.fetchFn,
+    transportLoader: () => new Promise(() => {}),
+    transportLoadTimeoutMs: 15,
+  });
+  const started = Date.now();
+  await assert.rejects(client.connect(token, expiry), /transport module timed out/);
+  assert.ok(Date.now() - started < 500, "transport loading must be bounded");
+  assert.equal(client.transport, null);
+  assert.equal(f.calls.some(call => call.path === "/api/matrix/control"), false);
+});
+
 test("invalid token, wrong Matrix identity, stale release, and unsupported commands fail closed", async () => {
   const f = fixture();
   const client = makeClient(f);

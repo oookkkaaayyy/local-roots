@@ -8,12 +8,12 @@ const source = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-featu
 const controllerSource = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
 const serviceWorker = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-sw.js", import.meta.url), "utf8");
 const manifest = JSON.parse(fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-manifest.webmanifest", import.meta.url), "utf8"));
-const appVersion = "20261023-cart-ux-v4";
+const appVersion = "20261023-cart-ux-v5";
 assert.match(html, new RegExp(`\\?v=${appVersion}`), "HTML assets must use the current shell version");
 assert.doesNotMatch(html, /20261016-course-ready-ux-v1/, "stale asset URLs must not be reused by browser caches");
 assert.match(controllerSource, new RegExp(`hbnf-cart-(?:net|semantic)\\.mjs\\?v=${appVersion}`));
 assert.match(serviceWorker, new RegExp(`const VERSION = "${appVersion}"`));
-assert.match(serviceWorker, /hbnf-owner-pwa-v16-cart-ux-20261023/);
+assert.match(serviceWorker, /hbnf-owner-pwa-v17-cart-ux-20261023/);
 assert.equal(manifest.start_url, `/hbnf-cart.html?app=${appVersion}`);
 const panelStart = html.indexOf('<section id="palettePanel"');
 const panelEnd = html.indexOf("</section>", panelStart);
@@ -36,7 +36,7 @@ assert.match(html, /id="commandActionStatus"[^>]*aria-live="polite" hidden/,
 assert.match(html, /id="textActionStatus"[^>]*aria-live="polite" hidden/,
   "Message feedback must be available beside its button");
 assert.match(fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-ui-v6.css", import.meta.url), "utf8"),
-  /\.quick-links\[aria-label="Everyday tools"\]\{grid-template-columns:1fr\}/,
+  /\.quick-links\[aria-label="Quick links"\]\{grid-template-columns:1fr\}/,
   "the scores shortcut should use the available width in portrait and landscape");
 assert.equal((html.match(/id="featurePalette"/g) || []).length, 1, "Palette selector ID must remain unique");
 assert.equal((html.match(/id="featureColor"/g) || []).length, 1, "Color input ID must remain unique");
@@ -83,29 +83,29 @@ test("visible palette action changes only palette and reports readback without c
   const f = fixture();
   await f.apply();
   assert.deepEqual(JSON.parse(JSON.stringify(f.commands)), [["PALETTE", { paletteId: "wled-7" }]]);
-  assert.match(f.actionFeedback.at(-1), /Cart settings now match/);
+  assert.match(f.actionFeedback.at(-1), /Colors updated/);
   assert.match(f.actionFeedback.at(-1), /lights weren’t checked/i);
   assert.doesNotMatch(f.actionFeedback.at(-1), /acknowledg|readback|physical output/i);
 });
 
 test("palette failure attempts and verifies restoration of the prior palette", async () => {
   const f = fixture({ mismatch: true });
-  await assert.rejects(f.apply(), /Palette was not confirmed/);
+  await assert.rejects(f.apply(), /Color change was not confirmed/);
   assert.deepEqual(JSON.parse(JSON.stringify(f.commands)), [
     ["PALETTE", { paletteId: "wled-7" }],
     ["PALETTE", { paletteId: "wled-1" }],
   ]);
-  assert.match(f.actionFeedback.at(-1), /Previous palette is back in Cart settings/);
+  assert.match(f.actionFeedback.at(-1), /Previous colors are restored/);
 });
 
 test("generic legacy state is restored with a firmware alias without claiming a named preset", async () => {
   const f = fixture({ mismatch: true, initial: "legacy" });
-  await assert.rejects(f.apply(), /Palette was not confirmed/);
+  await assert.rejects(f.apply(), /Color change was not confirmed/);
   assert.deepEqual(JSON.parse(JSON.stringify(f.commands)), [
     ["PALETTE", { paletteId: "wled-7" }],
     ["PALETTE", { paletteId: "hbnf-balanced" }],
   ]);
-  assert.match(f.actionFeedback.at(-1), /Previous palette is back in Cart settings/);
+  assert.match(f.actionFeedback.at(-1), /Previous colors are restored/);
 });
 
 test("unavailable palette intent blocks; unknown prior palette still applies the selected choice", async () => {
@@ -116,16 +116,16 @@ test("unavailable palette intent blocks; unknown prior palette still applies the
   const unknown = fixture({ unknownInitial: true });
   await unknown.apply();
   assert.deepEqual(JSON.parse(JSON.stringify(unknown.commands)), [["PALETTE", { paletteId: "wled-7" }]]);
-  assert.match(unknown.actionFeedback.at(-1), /Cart settings now match/);
+  assert.match(unknown.actionFeedback.at(-1), /Colors updated/);
   assert.match(unknown.actionFeedback.at(-1), /lights weren’t checked/i);
 });
 
 test("unknown prior palette is not guessed during recovery after apply cannot be confirmed", async () => {
   const unknown = fixture({ unknownInitial: true, mismatch: true });
-  await assert.rejects(unknown.apply(), /previous palette was unknown/i);
+  await assert.rejects(unknown.apply(), /previous colors were unknown/i);
   assert.deepEqual(JSON.parse(JSON.stringify(unknown.commands)), [["PALETTE", { paletteId: "wled-7" }]],
     "the UI must not guess a rollback palette when the previous value was unknown");
-  assert.match(unknown.actionFeedback.at(-1), /previous palette was unknown, so it wasn’t restored automatically/i);
+  assert.match(unknown.actionFeedback.at(-1), /previous colors were unknown, so they weren’t restored/i);
 });
 
 test("unreachable current state reports the failure and sends no palette command", async () => {
@@ -137,7 +137,7 @@ test("unreachable current state reports the failure and sends no palette command
 
 test("Keep current is not sent as a palette command", async () => {
   const f = fixture({ selection: "" });
-  await assert.rejects(f.apply(), /Choose a palette before applying/);
+  await assert.rejects(f.apply(), /Choose a color style before applying/);
   assert.equal(f.commands.length, 0);
 });
 
@@ -202,7 +202,7 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(hydrated, true);
   assert.equal(group.attrs["aria-busy"], "false");
-  assert.equal(vibeActionStatus.textContent,"Cart devices confirmed the lighting setting.");
+  assert.equal(vibeActionStatus.textContent,"Matrix and underglow confirmed the lighting setting.");
 
   hydrated = false;
   rejectRefresh = true;
@@ -219,13 +219,13 @@ test("Vibe tap updates immediately, then reconciles or rolls back on failure", a
   context.command = async () => ({ status: "failed" });
   buttons[0].listeners.click();
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(vibeActionStatus.textContent,"The Cart couldn’t apply that lighting change. Check the connection details.");
+  assert.equal(vibeActionStatus.textContent,"Couldn’t apply that lighting change. Check connection details.");
   assert.equal(vibeActionStatus.className,"apply-note bad");
 
   context.command = async () => ({ status: "pending" });
   buttons[1].listeners.click();
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(vibeActionStatus.textContent,"Request sent; Cart devices haven’t confirmed the lighting change yet.");
+  assert.equal(vibeActionStatus.textContent,"Request sent; Matrix and underglow haven’t confirmed the change yet.");
   assert.equal(vibeActionStatus.className,"apply-note warn");
 
   rejectRefresh = true;
@@ -310,17 +310,17 @@ test("Vibe availability distinguishes a disconnected Cart from unsupported contr
   context.cartStatusChecked=true;
   context.cartConnectionUnavailable=true;
   context.updateVibeSelection({});
-  assert.equal(availability.textContent,"Can’t reach the Cart. Check the connection details and try again.");
+  assert.equal(availability.textContent,"Can’t connect to the Cart. Check the connection and try again.");
   context.cartConnectionUnavailable=false;
   context.updateVibeSelection({});
-  assert.equal(availability.textContent,"Lighting-style controls aren’t available on this Cart.");
+  assert.equal(availability.textContent,"Lighting styles aren’t available.");
   assert.equal(buttons[0].disabled,true);
   context.canonicalCapabilities.phase2VibeRuntimeV1=true;
   context.updateVibeSelection({selectedVibe:"chill"});
   assert.equal(availability.hidden,true);
   assert.equal(buttons[0].disabled,false);
   assert.equal(buttons[0].attrs["aria-pressed"],"true");
-  assert.match(updateSource,/cartConnectionUnavailable[\s\S]*Can’t reach the Cart\. Check the connection details and try again\./);
+  assert.match(updateSource,/cartConnectionUnavailable[\s\S]*Can’t connect to the Cart\. Check the connection and try again\./);
 });
 
 test("failed Cart request marks the connection unavailable before reconciling Vibe controls", async () => {
@@ -349,7 +349,7 @@ test("failed Cart request marks the connection unavailable before reconciling Vi
   assert.equal(context.canonicalCapabilities.phase2VibeRuntimeV1,undefined);
   assert.equal(context.cartStatusChecked,true);
   assert.equal(context.cartConnectionUnavailable,true);
-  assert.equal(availability.textContent,"Can’t reach the Cart. Check the connection details and try again.");
+  assert.equal(availability.textContent,"Can’t connect to the Cart. Check the connection and try again.");
   assert.equal(buttons[0].disabled,true);
 });
 
@@ -379,7 +379,7 @@ test("palette choices reload after Cart reconnect and overlapping lifecycle even
   };
   vm.runInNewContext(source, context);
   await context.loadPalettes();
-  assert.match(statuses.at(-1), /Connect to the Cart network/);
+  assert.match(statuses.at(-1), /Connect to Cart Wi-Fi/);
   assert.equal(fetchCount, 0);
 
   local = true;
@@ -405,7 +405,7 @@ test("palette choices reload after Cart reconnect and overlapping lifecycle even
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(context.window.paletteIsReady(), true, "successful retry must enable palette options");
   assert.equal(timers.size, 0, "success must cancel the still-pending retry timer");
-  assert.match(statuses.at(-1), /Color choices loaded/);
+  assert.match(statuses.at(-1), /Colors loaded/);
   context.window.markPaletteUnavailable();
   windowHandlers.online();
   assert.equal(fetchCount, 4);
