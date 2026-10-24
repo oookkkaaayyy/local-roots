@@ -20,11 +20,13 @@ test("Cart copy uses concise labels and keeps scoring links understandable", () 
     "Everyday tools", "Fine-tune the show", "Choose a look for the Cart.",
     "Show scores on Cart", "Cart status", "Guest Mode", "Cart Auto",
     "Animation & color", "READY/CHECK", "BLOCKED ·", "Score-update time is unknown",
+    "Saved looks and colors", "Saved looks and advanced color", "Firmware and diagnostics", "Advanced audio",
   ]) assert.ok(!copy.includes(outdated), `outdated or internal copy remains: ${outdated}`);
 
   for (const phrase of [
     "Show scores on Matrix", "Show ace pot on Matrix", "Show entered scores (offline)",
     "Last score update time is unknown", "Connect to Cart Wi-Fi to load colors.",
+    "Saved looks", "Updates and status", "Sound",
     "Matrix and underglow confirmed the lighting setting.", "Choice sent. Waiting for confirmation.",
   ]) assert.ok(copy.includes(phrase), `expected concise copy is missing: ${phrase}`);
 
@@ -49,6 +51,11 @@ test("buttons and message inputs retain accessible names; icons are not ad hoc",
   assert.match(owner, /aria-label="Underglow brightness"/);
   assert.match(guest, /Underglow brightness is independent\./);
   assert.doesNotMatch(markup, /\(AUX\)/, "the technical AUX label is kept out of visible copy");
+  for (const label of ["Saved looks", "Updates and status", "Sound"]) {
+    assert.match(owner, new RegExp(`<summary>${label}</summary>`));
+  }
+  assert.match(owner, /aria-label="Saved looks"[\s\S]*?<summary>Saved looks<\/summary>/);
+  assert.match(owner, /aria-label="Updates and status"[\s\S]*?<summary>Updates and status<\/summary>/);
 
   const svgTags = [...markup.matchAll(/<svg\b([^>]*)>/gi)];
   for (const [, attrs] of svgTags) {
