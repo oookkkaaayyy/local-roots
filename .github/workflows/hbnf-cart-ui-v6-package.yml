@@ -1,4 +1,4 @@
-name: HBNF Cart 2.0 Owner/Guest Vibe R2 Package
+name: HBNF Cart 2.0 Owner/Guest Controller-Only Package
 on:
   push:
     branches:
@@ -13,6 +13,22 @@ on:
       - 'tests/hbnf_matrix_brightness_output.cpp'
       - '.github/workflows/hbnf-cart-ui-v6-package.yml'
   workflow_dispatch:
+    inputs:
+      publish_candidate:
+        description: "Upload the controller-only Owner/Guest package after source gates pass"
+        required: true
+        type: boolean
+        default: false
+      expected_commit_sha:
+        description: "Full 40-character SHA of the reviewed source commit"
+        required: false
+        type: string
+        default: ""
+      artifact_capacity_confirmed:
+        description: "Confirm Actions artifact storage was checked and has capacity"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   package:
@@ -65,14 +81,42 @@ jobs:
           python3 scripts/hbnf_build_owner_guest_package.py \
             --source-root "$GITHUB_WORKSPACE" \
             --output-dir "$RUNNER_TEMP" \
+            --package-name HBNF_CART_OWNER_GUEST_CONTROLLER_ONLY_V1_20261016 \
             --source-commit "$GITHUB_SHA"
 
-      - name: Upload exact package
+      - name: Validate manual candidate publication
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_candidate
+        env:
+          EXPECTED_COMMIT_SHA: ${{ inputs.expected_commit_sha }}
+          ARTIFACT_CAPACITY_CONFIRMED: ${{ inputs.artifact_capacity_confirmed }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$EXPECTED_COMMIT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "A full lowercase 40-character source SHA is required." >&2
+            exit 1
+          fi
+          if [[ "$EXPECTED_COMMIT_SHA" != "$GITHUB_SHA" ]]; then
+            echo "The requested source SHA does not match this workflow run." >&2
+            exit 1
+          fi
+          if [[ "$ARTIFACT_CAPACITY_CONFIRMED" != "true" ]]; then
+            echo "Repository Actions artifact capacity must be confirmed before upload." >&2
+            exit 1
+          fi
+          PACKAGE="$RUNNER_TEMP/HBNF_CART_OWNER_GUEST_CONTROLLER_ONLY_V1_20261016.zip"
+          PACKAGE_BYTES="$(wc -c < "$PACKAGE" | tr -d '[:space:]')"
+          if (( PACKAGE_BYTES > 50000000 )); then
+            echo "Controller-only package exceeds the 50 MB publication ceiling." >&2
+            exit 1
+          fi
+
+      - name: Upload exact controller-only package
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_candidate
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-CART-OWNER-GUEST-CONTROLS-V1-20261016
+          name: HBNF-CART-OWNER-GUEST-CONTROLLER-ONLY-V1-20261016-${{ github.sha }}
           path: |
-            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CONTROLS_V1_20261016.zip
-            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CONTROLS_V1_20261016.zip.sha256
+            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CONTROLLER_ONLY_V1_20261016.zip
+            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CONTROLLER_ONLY_V1_20261016.zip.sha256
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 7

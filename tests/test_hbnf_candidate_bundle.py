@@ -51,6 +51,26 @@ class CandidateBundleTest(unittest.TestCase):
         self.assertIn('if [[ "$ARTIFACT_CAPACITY_CONFIRMED" != "true" ]]', candidate)
         self.assertIn("retention-days: 7", candidate)
 
+    def test_owner_guest_controller_package_builds_without_automatic_publication(self):
+        workflow = (ROOT / ".github/workflows/hbnf-cart-ui-v6-package.yml").read_text()
+        triggers, jobs = workflow.split("jobs:\n", 1)
+        self.assertIn("  push:\n", triggers)
+        self.assertIn("  workflow_dispatch:\n", triggers)
+        self.assertIn("default: false", triggers)
+        self.assertIn("type: boolean", triggers)
+        self.assertIn("name: Build controller-only package", jobs)
+        self.assertIn("--package-name HBNF_CART_OWNER_GUEST_CONTROLLER_ONLY_V1_20261016", jobs)
+        self.assertIn("name: Validate manual candidate publication", jobs)
+        self.assertIn("github.event_name == 'workflow_dispatch' && inputs.publish_candidate", jobs)
+        self.assertIn('[[ "$EXPECTED_COMMIT_SHA" != "$GITHUB_SHA" ]]', jobs)
+        self.assertIn('[[ "$ARTIFACT_CAPACITY_CONFIRMED" != "true" ]]', jobs)
+        self.assertIn("PACKAGE_BYTES > 50000000", jobs)
+        self.assertIn("HBNF_CART_OWNER_GUEST_CONTROLLER_ONLY_V1_20261016.zip", jobs)
+        self.assertIn("HBNF-CART-OWNER-GUEST-CONTROLLER-ONLY-V1-20261016-${{ github.sha }}", jobs)
+        self.assertIn("retention-days: 7", jobs)
+        upload_step = jobs.split("- name: Upload exact controller-only package", 1)[1]
+        self.assertIn("if: github.event_name == 'workflow_dispatch' && inputs.publish_candidate", upload_step)
+
     def test_generated_node_modules_are_excluded_but_source_symlinks_fail(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
