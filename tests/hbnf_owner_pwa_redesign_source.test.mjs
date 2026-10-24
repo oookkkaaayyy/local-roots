@@ -69,6 +69,7 @@ test("layout uses available wide screens and preserves touch-sized primary contr
   assert.match(ui, /append\(heading, commandRow\)/);
   assert.match(ui, /commandPanel\.remove\(\)/);
   assert.match(css, /#ownerViewShow>#showStylePanel\{grid-area:motion\}/);
+  assert.match(css, /\.vibe-options\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(88px,1fr\)\);gap:6px\}/);
   assert.match(css, /\.show-device-actions \.row\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
   assert.match(css, /min-height:48px/);
   assert.match(css, /input\[type=range\].*min-height:44px/s);
@@ -79,7 +80,8 @@ test("layout uses available wide screens and preserves touch-sized primary contr
 
 test("changed Owner PWA assets use a fresh matching cache revision", () => {
   const revision = "20261024-cart-control-home-r4";
-  for (const asset of ["hbnf-cart-ui-v6.css", "hbnf-cart.js", "hbnf-cart-ui-v6.mjs", "hbnf-cart-features.mjs", "hbnf-cart-skins-score.mjs"]) {
+  assert.match(html, /hbnf-cart-ui-v6\.css\?v=20261024-cart-vibe-fit-r5/);
+  for (const asset of ["hbnf-cart.js", "hbnf-cart-ui-v6.mjs", "hbnf-cart-features.mjs", "hbnf-cart-skins-score.mjs"]) {
     assert.match(html, new RegExp(`${asset.replaceAll(".", "\\.")}\\?v=${revision}`));
   }
   assert.match(html, /hbnf-cart2-owner-control-home-r4-20261024/);

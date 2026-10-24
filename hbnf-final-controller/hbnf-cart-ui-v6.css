@@ -66,7 +66,7 @@ h3{margin:0 0 8px;font-size:.95rem;line-height:1.25;font-weight:720}
 #lightsPanel{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .light-group{min-width:0;padding:10px;border:1px solid #c8b69b;border-radius:10px;background:#f2ecdf}
 .light-group h3{margin:0 0 7px}
-.vibe-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.vibe-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:6px}
 .vibe-option,.vibe-auto{display:grid;min-width:0;min-height:48px;place-content:center;padding:7px 5px;border:1px solid var(--cart-forest);border-radius:8px;background:#dee6cf;color:var(--cart-root);text-align:center}
 .vibe-option strong{font-size:.8rem;letter-spacing:0}
 .vibe-option[aria-pressed=true]{border-color:var(--cart-forest);background:var(--cart-forest);color:var(--cart-cream);box-shadow:inset 0 -3px 0 var(--hbnf-accent)}
