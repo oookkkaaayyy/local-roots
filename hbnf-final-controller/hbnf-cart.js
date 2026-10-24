@@ -1,7 +1,7 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261023-cart-ux-v4";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261023-cart-ux-v4";
-import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261023-cart-ux-v5";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261023-cart-ux-v5";
+import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261023-cart-ux-v5";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -32,6 +32,9 @@ const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
 let localControlActive = false;
 let lastLocalEnrollAt = 0;
 let lastCloudPairValidationAt = 0;
+// Match the local Matrix control-ready freshness ceiling. Cloud observations
+// older than this are historical acknowledgments, not proof of current response.
+const DEVICE_OBSERVATION_FRESH_MS = 15000;
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
@@ -328,12 +331,12 @@ function shortDeviceFailure(device) {
 
 function observedAgeLabel(value) {
   const at = Date.parse(value || "");
-  if (!Number.isFinite(at)) return "no prior report";
-  const seconds = Math.max(0, Math.floor((Date.now() - at) / 1000));
-  if (seconds < 90) return `last report ${seconds}s ago`;
+  if (!Number.isFinite(at) || at > Date.now()) return "age unknown";
+  const seconds = Math.floor((Date.now() - at) / 1000);
+  if (seconds < 90) return `${seconds}s ago`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 90) return `last report ${minutes}m ago`;
-  return `last report ${Math.floor(minutes / 60)}h ago`;
+  if (minutes < 90) return `${minutes}m ago`;
+  return `${Math.floor(minutes / 60)}h ago`;
 }
 
 function renderVisualHealth(snapshot, canonicalSnapshot) {
@@ -348,12 +351,24 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   const desiredRevision = Number(canonicalSnapshot && canonicalSnapshot.desired && canonicalSnapshot.desired.revision);
   const reportFor = id => observed.find(x => x.device_id === id) || {};
   const matrixReport = reportFor("matrix"), auxReport = reportFor("aux");
-  const matrixOk = !!(matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision);
-  const auxOk = !!(aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision);
+  const isFresh = report => {
+    const at = Date.parse(report && report.observed_at || "");
+    return Number.isFinite(at) && at <= Date.now() && Date.now() - at <= DEVICE_OBSERVATION_FRESH_MS;
+  };
+  const matrixFresh = snapshot.local === true || isFresh(matrixReport);
+  const auxFresh = snapshot.local === true || isFresh(auxReport);
+  const matrixOk = !!(matrixFresh && matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision);
+  const auxOk = !!(auxFresh && aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision);
   const labelFor = (report, isConfirmed) => {
     if (isConfirmed) return "Responding";
     const failure = shortDeviceFailure(report);
-    if (failure) return "Needs attention";
+    if (failure && isFresh(report)) return "Needs attention";
+    if (!isFresh(report)) {
+      const age = observedAgeLabel(report && report.observed_at);
+      if (failure) return `Last reported issue ${age}`;
+      if ((report && report.status === "off") || (report && report.online === false)) return `Last reported offline ${age}`;
+      return age === "age unknown" ? "Freshness unknown" : `Last confirmed ${age}`;
+    }
     const reportedRevision = report && report.reported ? report.reported.cartRevision : null;
     const seen = Number(reportedRevision !== null && reportedRevision !== undefined
       ? reportedRevision
@@ -364,16 +379,17 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   };
   if (matrixHealth) {
     matrixHealth.textContent = labelFor(matrixReport, matrixOk);
-    matrixHealth.className = matrixOk ? "ok" : (shortDeviceFailure(matrixReport) ? "bad" : "degraded");
+    matrixHealth.className = matrixOk ? "ok" : (isFresh(matrixReport) && shortDeviceFailure(matrixReport) ? "bad" : "degraded");
   }
   if (auxHealth) {
     auxHealth.textContent = labelFor(auxReport, auxOk);
-    auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
+    auxHealth.className = auxOk ? "ok" : (isFresh(auxReport) && shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
     if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
     if (matrixOk && auxOk) { badge.textContent = "Cart connected"; badge.className = "truth-badge good"; }
-    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
+    else if ((isFresh(matrixReport) && shortDeviceFailure(matrixReport)) || (isFresh(auxReport) && shortDeviceFailure(auxReport))) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
+    else if (!matrixFresh || !auxFresh) { badge.textContent = "Device status is stale or unknown"; badge.className = "truth-badge warn"; }
     else { badge.textContent = "Checking devices"; badge.className = "truth-badge warn"; }
   }
 }

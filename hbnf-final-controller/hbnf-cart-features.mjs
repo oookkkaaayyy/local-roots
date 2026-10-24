@@ -456,13 +456,13 @@ async function refreshLive(silent) {
     const now=new Date();
     renderLive(out.live,false,now.toLocaleTimeString());
     saveLiveCache(out.live);
-    if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Scores refreshed.");
+    if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Scores checked just now. Score-update time is unknown.");
   } catch (error) {
     const cached=readLiveCache();
     if (cached && cached.live) {
       const when=cached.savedAt ? new Date(cached.savedAt).toLocaleString() : "";
       renderLive(cached.live,true,when);
-      if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
+      if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Couldn’t refresh scores. Showing saved results; score-update time is unknown.",true);
       return;
     }
     if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Couldn’t refresh scores. Check the connection and try again.",true);
@@ -490,11 +490,11 @@ async function showScoreboard() {
   }
   const live=out && out.live;
   if (!live || !live.active) {
-    report("There’s no active round to show yet. Start a Skins or Glow round, then try again.",true);
+    report("No active round was found in the latest read. Score-update time is unknown; check the scoring page if a round is under way.",true);
     return;
   }
   if (!Array.isArray(live.entries) || !live.entries.length) {
-    report("This round doesn’t have any scores yet. Enter scores, then try again.",true);
+    report("No scores were found in the latest read. Score-update time is unknown; enter scores, then try again.",true);
     return;
   }
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
@@ -502,7 +502,7 @@ async function showScoreboard() {
     const bridge=canonicalOverlayBridge();
     report("Sending scores to the Cart display…");
     await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-    report("Scores sent. Check the Cart display to make sure they appeared.");
+    report("Scores sent from the latest read. Score-update time is unknown; check the Cart display.");
   } catch (error) {
     report("Couldn’t send the scores to the Cart display. Check that the Cart is online and try again.",true);
     throw error;

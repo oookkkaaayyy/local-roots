@@ -23,7 +23,7 @@ assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/owner
 assert.match(html, /Open local controls · Cart Wi-Fi/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261023-cart-ux-v4");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261023-cart-ux-v5");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
