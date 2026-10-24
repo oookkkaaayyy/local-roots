@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { callFunction, supabase } from '../lib/supabase';
-import { downloadEventCalendar, eventDateRange, eventDetailPath, eventTitle, HBNF_EVENT_LINKS, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
+import { downloadEventCalendar, eventDisplayStatus, eventDateRange, eventDetailPath, eventTitle, HBNF_EVENT_LINKS, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
 import { Shell } from '../components/Shell';
 import type { PublicEvent } from '../types';
 
@@ -54,9 +54,9 @@ function currentEventsPath(){
 
 function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
-  const effectiveStatus = ['canceled','completed'].includes(event.status) ? event.status : event.end_date<today ? 'completed' : event.status;
-  const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed'].includes(effectiveStatus));
-  const canAddCalendar = event.end_date>=today && !['canceled','completed'].includes(effectiveStatus);
+  const effectiveStatus = eventDisplayStatus(event,today);
+  const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed','postponed'].includes(effectiveStatus));
+  const canAddCalendar = event.end_date>=today && !['canceled','completed','postponed'].includes(effectiveStatus);
   const tdNames = event.td_names??[];
   const resultLabel = event.results_url ? resultsLinkLabel(event.results_url) : '';
   const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`;

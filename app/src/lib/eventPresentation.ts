@@ -15,6 +15,12 @@ export function isHbnfEvent(event:Pick<PublicEvent,'name'|'club_host'>) {
 }
 
 export const eventTitle = (value: string) => value.replaceAll('_',' ').replace(/\b\w/g,(match)=>match.toUpperCase());
+/** A passed date is not evidence that an event was completed. */
+export function eventDisplayStatus(event: Pick<PublicEvent,'status'|'end_date'>, today: string) {
+  if (['completed','canceled','postponed'].includes(event.status)) return event.status;
+  return event.end_date < today ? 'date_passed' : event.status;
+}
+
 
 export function eventDateRange(start: string, end: string) {
   const a = new Date(`${start}T12:00:00Z`), b = new Date(`${end}T12:00:00Z`);

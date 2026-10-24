@@ -273,3 +273,48 @@ test("compact public navigation keeps Events and Dyed & Unattached visible", () 
   const styles = source("styles.css");
   assert.ok(styles.includes(".site-header .nav-events,.site-header .nav-du{display:block}"));
 });
+
+test("past dates never imply verified completion in public status", () => {
+  const events=source("pages/EventsPage.tsx");
+  const detail=source("pages/EventDetailPage.tsx");
+  const presentation=source("lib/eventPresentation.ts");
+  assert.ok(events.includes("eventDisplayStatus(event,today)"));
+  assert.ok(detail.includes("eventDisplayStatus(event,today)"));
+  assert.ok(detail.includes("const canSubmitResults=event.end_date<today&&!['canceled','postponed'].includes(event.status);"));
+  assert.ok(presentation.includes("['completed','canceled','postponed'].includes(event.status)"));
+  assert.ok(presentation.includes("event.end_date < today ? 'date_passed' : event.status"));
+  assert.equal(events.includes("event.end_date<today ? 'completed'"),false);
+  assert.equal(detail.includes("event.end_date<today?'completed'"),false);
+});
+
+
+test("organizer-owned results submissions remain available for elapsed unverified events only", () => {
+  const detail=source("pages/EventDetailPage.tsx");
+  const expression=detail.match(/const canSubmitResults=([^;]+);/)?.[1];
+  assert.ok(expression, "results eligibility expression must remain present");
+  const eligible=new Function("event","today",`return (${expression});`);
+  const today="2026-10-09";
+  for(const status of ["announced","upcoming","registration_open","full","waitlist","completed"]){
+    assert.equal(eligible({status,end_date:"2026-10-08"},today),true,`elapsed ${status} should allow organizer-owned results`);
+  }
+  for(const status of ["canceled","postponed"]){
+    assert.equal(eligible({status,end_date:"2026-10-08"},today),false,`elapsed ${status} must not accept results`);
+  }
+  assert.equal(eligible({status:"upcoming",end_date:"2026-10-10"},today),false);
+  assert.equal(eligible({status:"completed",end_date:"2026-10-10"},today),false);
+});
+
+
+test("postponed events cannot advertise registration or calendar scheduling", () => {
+  for (const page of ["pages/EventsPage.tsx", "pages/EventDetailPage.tsx"]) {
+    const code=source(page);
+    const guard="!['canceled','completed','postponed'].includes(effectiveStatus)";
+    assert.equal(code.split(guard).length-1,2,`${page} must guard both registration and calendar actions`);
+    for (const status of ["canceled","completed","postponed"]) {
+      assert.equal(!["canceled","completed","postponed"].includes(status),false);
+    }
+    for (const status of ["announced","upcoming","registration_open"]) {
+      assert.equal(!["canceled","completed","postponed"].includes(status),true);
+    }
+  }
+});
