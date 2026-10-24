@@ -16,7 +16,7 @@ function fetcher(assets) {
 
 test('discovers lazy and static Vite JS chunks and retains route markers', async () => {
   const assets = {
-    [`${origin}/assets/index-a.js`]: 'const route=()=>import("./LegacyRoutes-b.js"); import "https://evil.example/assets/bad.js"; import("./LegacyRoutes-b.js")',
+    [`${origin}/assets/index-a.js`]: 'const route=()=>import("./LegacyRoutes-b.js"); import("./LegacyRoutes-b.js")',
     [`${origin}/assets/LegacyRoutes-b.js`]: 'import "./helpers-c.js"; Past events & results; PDGA Results; Add to Calendar;',
     [`${origin}/assets/helpers-c.js`]: 'Full Results; Upcoming events',
   };
@@ -28,9 +28,32 @@ test('discovers lazy and static Vite JS chunks and retains route markers', async
   assert.equal(result.urls.some((url) => url.includes('evil')), false);
 });
 
-test('limits discovered imports to same-origin JS under /assets/', () => {
-  const urls = findJsAssetImports('import("./ok.js");import("https://evil.example/assets/no.js");import("../admin.js");', `${origin}/assets/index.js`, origin);
-  assert.deepEqual(urls, [`${origin}/assets/ok.js`]);
+test('accepts only same-origin JS imports under /assets/', () => {
+  const urls = findJsAssetImports('import("./ok.js");import("./other.js");', `${origin}/assets/index.js`, origin);
+  assert.deepEqual(urls, [`${origin}/assets/ok.js`, `${origin}/assets/other.js`]);
+});
+
+test('rejects off-origin imports before fetching them even when route markers are present', async () => {
+  const entry = `${origin}/assets/index.js`;
+  const fetched = [];
+  await assert.rejects(
+    () => readFrontendGraph(entry, async (url) => {
+      fetched.push(url);
+      return {
+        ok: true, status: 200, url,
+        text: async () => 'Past events & results; PDGA Results; import("https://evil.example/assets/extra.js")',
+      };
+    }, origin),
+    /frontend_import_origin_or_path_mismatch/,
+  );
+  assert.deepEqual(fetched, [entry]);
+});
+
+test('rejects imported JS paths outside the trusted asset directory', () => {
+  assert.throws(
+    () => findJsAssetImports('import("../admin.js")', `${origin}/assets/index.js`, origin),
+    /frontend_import_origin_or_path_mismatch/,
+  );
 });
 
 test('fails closed if an imported chunk is unavailable', async () => {
