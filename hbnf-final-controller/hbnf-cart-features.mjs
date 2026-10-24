@@ -178,12 +178,17 @@ function paletteControlFromId(paletteId) {
   return "";
 }
 
+function paletteCommandId(paletteId) {
+  const id=String(paletteId || "");
+  return id==="legacy" ? "hbnf-balanced" : id;
+}
+
 async function rollbackCanonicalLook(bridge, before) {
   const state=desiredState(before);
   if (!state) return;
   try {
     if (state.sceneId) await bridge.command("SCENE",{sceneId:String(state.sceneId)});
-    if (state.paletteId) await bridge.command("PALETTE",{paletteId:String(state.paletteId)});
+    if (state.paletteId) await bridge.command("PALETTE",{paletteId:paletteCommandId(state.paletteId)});
   } catch (_) {}
 }
 
@@ -254,7 +259,7 @@ async function applyPalette() {
   } catch (error) {
     let restored=false;
     try {
-      await bridge.command("PALETTE",{paletteId:String(prior.paletteId)});
+      await bridge.command("PALETTE",{paletteId:paletteCommandId(prior.paletteId)});
       const restoredSnapshot=await bridge.refresh({hydrate:false});
       const restoredState=desiredState(restoredSnapshot);
       restored=!!restoredState && String(restoredState.paletteId)===String(prior.paletteId);

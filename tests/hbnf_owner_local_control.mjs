@@ -84,6 +84,24 @@ test("paired local status and per-command HTTP writes use only Opal on the WAN-o
   assert.ok(f.calls.every(call => !call.url.includes(token)));
 });
 
+test("id-less and documented legacy palette readbacks get a rollback alias; unknown IDs stay unconfirmed", async (t) => {
+  for (const palette of [{ mode: "legacy" }, { mode: "legacy", id: "hbnf-balanced" }, { mode: "legacy", id: "copper" }, { mode: "legacy", id: "ocean" }]) {
+    const f = fixture();
+    f.owner.current.HBNF.palette = palette;
+    const client = makeClient(f);
+    t.after(() => client.disconnectTransport());
+    const snapshot = await client.connect(token, expiry);
+    assert.equal(snapshot.desired.state.paletteId, "legacy");
+  }
+
+  const f = fixture();
+  f.owner.current.HBNF.palette = { mode: "legacy", id: "unrecognized" };
+  const client = makeClient(f);
+  t.after(() => client.disconnectTransport());
+  const snapshot = await client.connect(token, expiry);
+  assert.equal(snapshot.desired.state.paletteId, "", "unknown explicit palette IDs must not be guessed");
+});
+
 test("new local enrollment sends the pairing hint but server Lua rejects browser expiry as authority", async (t) => {
   const f = fixture({ sessionStatus: 404 });
   const client = makeClient(f);

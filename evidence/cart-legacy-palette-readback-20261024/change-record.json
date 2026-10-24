@@ -1,0 +1,31 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-legacy-palette-readback-20261024",
+  "summary": "Recognize the documented id-less Matrix legacy palette during Owner PWA preflight and use its hbnf-balanced alias only when restoring that known prior state; explicit unknown IDs remain unconfirmed.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Issue #116 Order 2 existing Owner PWA control and palette scope; no architecture or device behavior change.",
+      "affected_subsystem": "hbnf-final-controller Owner PWA Matrix palette readback and rollback mapping.",
+      "rollback_reference": "Revert this source commit to accepted TX02 source fa51d12e1f4dd96b31223e7e5a9f3221eb7a63be; no production device or configuration changed.",
+      "evidence_sources": [
+        "Issue #116 comment 6379669164: installed Owner PWA palette readback lacked the id-less legacy mapping.",
+        "hbnf-final-controller/hbnf-cart-local.mjs at fa51d12e1f4dd96b31223e7e5a9f3221eb7a63be: legacy mode produced an empty palette ID.",
+        "Previously reviewed mapping at a92d49ef367d79855d7c773b652e6ab3d0e55cb1: allow only the id-less sentinel and documented aliases; restore through hbnf-balanced."
+      ],
+      "tests": [
+        "node --test tests/hbnf_owner_local_control.mjs tests/hbnf_owner_legacy_palette_alias.test.mjs",
+        "node --check hbnf-final-controller/hbnf-cart-local.mjs",
+        "node --check hbnf-final-controller/hbnf-cart-features.mjs",
+        "git diff --check"
+      ]
+    }
+  }
+}
