@@ -12,6 +12,8 @@ const displayStart=source.indexOf("function liveSourceRevisionText(updatedAt)");
 const refreshStart=source.indexOf("async function refreshLive(silent)");
 const refreshEnd=source.indexOf("async function showScoreboard()",refreshStart);
 assert.ok(displayStart>=0&&refreshStart>displayStart&&refreshEnd>refreshStart,"live snapshot and refresh functions should be present");
+assert.doesNotMatch(source,/Live scores are available\. Cart display isn’t available yet\./,"overlay capability must not claim scores are available before a score read succeeds");
+assert.match(source,/Cart score display controls aren’t available yet\./,"missing overlay capability is reported without implying score data is available");
 const display=source.slice(displayStart,refreshStart);
 const refresh=source.slice(refreshStart,refreshEnd);
 const revision="2026-10-21T18:30:00.000Z";

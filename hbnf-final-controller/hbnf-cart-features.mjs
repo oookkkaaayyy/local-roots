@@ -838,7 +838,7 @@ function syncOverlayAvailability() {
   if (!overlayReady) {
     const live=$("featureLive");
     if (live && live.textContent==="Live scores haven’t loaded yet.") {
-      live.textContent="Live scores are available. Cart display isn’t available yet.";
+      live.textContent="Cart score display controls aren’t available yet.";
     }
   }
   return overlayReady && paletteReady;
