@@ -44,3 +44,29 @@ export async function readFrontendGraph(entryUrl, fetchAsset, expectedOrigin) {
   }
   return { bundle: combined, urls: [...seen] };
 }
+
+
+export function assertTrustedResponseOrigin(response, expectedOrigin, label = 'staging') {
+  if (!expectedOrigin || !response.url || new URL(response.url).origin !== expectedOrigin) {
+    throw new Error(`${label}_response_origin_mismatch`);
+  }
+}
+
+export function resolveTrustedAssetUrl(href, pageUrl, expectedOrigin, extension) {
+  const url = new URL(href, pageUrl);
+  if (!expectedOrigin || url.origin !== expectedOrigin ||
+      !url.pathname.startsWith('/assets/') || !url.pathname.endsWith(`.${extension}`)) {
+    throw new Error(`${extension}_asset_origin_or_path_mismatch`);
+  }
+  return url.toString();
+}
+
+export async function readCssAsset(href, pageUrl, fetchCss, expectedOrigin) {
+  const url = resolveTrustedAssetUrl(href, pageUrl, expectedOrigin, 'css');
+  const response = await fetchCss(url, { redirect: 'error' });
+  if (!response.ok) throw new Error(`css_asset_http_${response.status}`);
+  assertTrustedResponseOrigin(response, expectedOrigin, 'css');
+  const source = await response.text();
+  if (source.length > MAX_ASSET_CHARS) throw new Error('css_asset_size_limit');
+  return { url, normalizedCss: source.replace(/\s+/g, '') };
+}
