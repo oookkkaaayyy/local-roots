@@ -219,7 +219,7 @@ export class LocalOwnerControl {
       this.transport = new module.LocalMatrixTransport({
         url: "ws://" + LOCAL_MATRIX_IP + "/ws",
         onState: state => {
-          try { this.onState?.(state); } catch (_) {}
+          try { if (typeof this.onState === "function") this.onState(state); } catch (_) {}
         },
       });
       this.token = "__opal_direct__";
