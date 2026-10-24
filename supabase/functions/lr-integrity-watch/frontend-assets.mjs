@@ -8,7 +8,9 @@ export function findJsAssetImports(source, fromUrl, expectedOrigin) {
   for (const match of source.matchAll(JS_IMPORTS)) {
     const specifier = match[1] ?? match[2] ?? match[3];
     const url = new URL(specifier, fromUrl);
-    if (url.origin !== expectedOrigin || !url.pathname.startsWith('/assets/') || !url.pathname.endsWith('.js')) continue;
+    if (!expectedOrigin || url.origin !== expectedOrigin || !url.pathname.startsWith('/assets/') || !url.pathname.endsWith('.js')) {
+      throw new Error('frontend_import_origin_or_path_mismatch');
+    }
     urls.add(url.toString());
   }
   return [...urls];
