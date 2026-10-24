@@ -17,8 +17,34 @@ const manifestPath = path.resolve(arg("--manifest"));
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const head = execFileSync("git", ["-C", root, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 assert.equal(manifest.sourceCommit, head, "Manifest source commit must match checkout HEAD");
-assert.equal(manifest.releaseDisposition, "INSTALLABLE_REQUIRES_EXISTING_ADMISSION");
-assert.ok(manifest.transactionId, "Installable package must be bound to a candidate transaction ID");
+const reviewOnly = manifest.releaseDisposition === "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED";
+assert.ok(
+  reviewOnly || manifest.releaseDisposition === "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
+  "Manifest must declare a supported review-only or installable disposition",
+);
+if (reviewOnly) {
+  assert.equal(manifest.transactionId, null, "Review-only package must not carry an install transaction ID");
+  const packageTools = manifest.packageTools ?? [];
+  const tools = new Map(packageTools.map((tool) => [tool.path, tool]));
+  assert.equal(packageTools.length, tools.size, "Review-only package tool paths must be unique");
+  assert.deepEqual([...tools.keys()].sort(), ["REVIEW_ONLY.txt", "install.sh", "rollback.sh"]);
+  const expectedReviewContent = {
+    "install.sh": "#!/bin/sh\necho 'REVIEW ONLY: installation is disabled' >&2\nexit 64\n",
+    "rollback.sh": "#!/bin/sh\necho 'REVIEW ONLY: rollback is disabled' >&2\nexit 64\n",
+    "REVIEW_ONLY.txt": "Review artifact only. No installation or rollback is enabled.\n",
+  };
+  for (const [name, tool] of tools) {
+    const file = path.resolve(path.dirname(manifestPath), name);
+    assert.ok(file.startsWith(`${path.dirname(manifestPath)}${path.sep}`), `Review tool escapes package: ${name}`);
+    assert.equal(sha256(file), tool.sha256, `Review tool hash mismatch: ${name}`);
+    assert.equal(fs.readFileSync(file, "utf8"), expectedReviewContent[name], `Unexpected review tool content: ${name}`);
+    if (name === "install.sh" || name === "rollback.sh") {
+      assert.equal(tool.mode, "disabled-review-stub", `${name} must remain disabled`);
+    }
+  }
+} else {
+  assert.ok(manifest.transactionId, "Installable package must be bound to a candidate transaction ID");
+}
 
 function sha256(file) {
   return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");

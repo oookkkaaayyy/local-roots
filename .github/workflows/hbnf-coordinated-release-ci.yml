@@ -110,6 +110,7 @@ jobs:
       - name: JavaScript syntax
         run: |
           set -euo pipefail
+          node tests/hbnf_owner_pwa_source_manifest.mjs
           node --check hbnf-final-controller/hbnf-cart.js
           node --check hbnf-final-controller/hbnf-cart-local.mjs
           node --check hbnf-final-controller/hbnf-cart-net.mjs
