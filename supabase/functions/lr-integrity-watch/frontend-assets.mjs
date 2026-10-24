@@ -1,7 +1,7 @@
 const MAX_ASSETS = 24;
 const MAX_ASSET_CHARS = 4_000_000;
 const MAX_TOTAL_CHARS = 12_000_000;
-const JS_IMPORTS = /\bimport\s*\(\s*["']([^"']+\.js)["']\s*\)|\bfrom\s*["']([^"']+\.js)["']|\bimport\s*["']([^"']+\.js)["']/g;
+// Inspect every literal import specifier, not only ones ending exactly in .js.\n// Query/hash suffixes, .mjs, and extensionless URLs must not bypass origin checks.\nconst JS_IMPORTS = /\bimport\s*\(\s*["']([^"']+)["']\s*\)|\bfrom\s*["']([^"']+)["']|\bimport\s*["']([^"']+)["']/g;
 
 export function findJsAssetImports(source, fromUrl, expectedOrigin) {
   const urls = new Set();
