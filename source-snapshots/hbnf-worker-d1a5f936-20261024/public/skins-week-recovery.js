@@ -44,10 +44,10 @@
     for (const table of TABLES) rows[table] = clone(await api.readTagRows(table, date));
     return rows;
   }
-  async function persistStatus(api, id, status, detail) {
+  async function persistStatus(api, id, status, detail, fields) {
     const before = await readRoot(api), envelope = envelopeOf(before.root, id);
     if (!envelope) throw new Error('Recovery envelope is missing from cloud');
-    const updated = Object.assign({}, envelope, { status, updatedAt: api.now() });
+    const updated = Object.assign({}, envelope, fields || {}, { status, updatedAt: api.now() });
     if (detail) updated.detail = String(detail).slice(0, 300);
     return casRoot(api, before, withEnvelope(before.root, updated));
   }
@@ -97,8 +97,15 @@
     if (envelope.status === 'restored') return { id, date: envelope.date, status: 'restored', idempotent: true };
     const branch = weekBranch(before.root), date = envelope.date;
     if ((branch.deletedWeeks && branch.deletedWeeks[date]) !== envelope.deleteMarker) throw new Error('Deletion marker changed; restore refused');
-    if (branch.weeks && branch.weeks[date]) throw new Error('A newer week already exists; restore refused');
-    await persistStatus(api, id, 'restoring');
+    if (branch.weeks && branch.weeks[date]) {
+      const rows = await readTagSnapshot(api, date);
+      if (envelope.restoreMarker && branch.restoredWeeks && branch.restoredWeeks[date] === envelope.restoreMarker && same(branch.weeks[date], envelope.week) && same(rows, envelope.rows)) {
+        await persistStatus(api, id, 'restored');
+        return { id, date, status: 'restored', idempotent: true };
+      }
+      throw new Error('A newer week already exists; restore refused');
+    }
+    await persistStatus(api, id, 'restoring', undefined, { restoreMarker: api.now() });
     try {
       for (const table of TABLES) {
         const currentRows = await api.readTagRows(table, date);
@@ -120,7 +127,7 @@
       const nextBranch = weekBranch(before.root);
       if ((nextBranch.deletedWeeks && nextBranch.deletedWeeks[date]) !== envelope.deleteMarker || nextBranch.weeks[date]) throw new Error('Week changed during restore; scorecard write refused');
       nextBranch.weeks = Object.assign({}, nextBranch.weeks || {}, { [date]: clone(envelope.week) });
-      nextBranch.restoredWeeks = Object.assign({}, nextBranch.restoredWeeks || {}, { [date]: api.now() });
+      nextBranch.restoredWeeks = Object.assign({}, nextBranch.restoredWeeks || {}, { [date]: envelope.restoreMarker });
       before = await casRoot(api, before, setWeekBranch(before.root, nextBranch));
       await persistStatus(api, id, 'restored');
       return { id, date, status: 'restored' };
