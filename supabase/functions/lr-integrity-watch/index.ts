@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { readFrontendGraph } from "./frontend-assets.mjs";
+import { assertTrustedResponseOrigin, readCssAsset, readFrontendGraph } from "./frontend-assets.mjs";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -76,10 +76,12 @@ Deno.serve(async (req) => {
   let missingCssMarkers = [...REQUIRED_CSS_MARKERS];
 
   try {
+    const expectedOrigin = new URL(STAGING_URL).origin;
     const response = await fetch(STAGING_URL, {
       headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
-      redirect: "follow",
+      redirect: "error",
     });
+    assertTrustedResponseOrigin(response, expectedOrigin, "staging_html");
     stagingStatus = response.status;
     stagingRobotsTag = response.headers.get("x-robots-tag");
     stagingFrameOptions = response.headers.get("x-frame-options");
@@ -102,7 +104,7 @@ Deno.serve(async (req) => {
         const graph = await readFrontendGraph(frontendBundleUrl, (url, init) => fetch(url, {
           ...init,
           headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
-        }), new URL(STAGING_URL).origin);
+        }), expectedOrigin);
         frontendAssetUrls = graph.urls;
         missingFrontendMarkers = REQUIRED_FRONTEND_MARKERS.filter((marker) => !graph.bundle.includes(marker));
         frontendBundleOk = missingFrontendMarkers.length === 0;
@@ -113,15 +115,16 @@ Deno.serve(async (req) => {
 
     const cssMatch = body.match(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/i);
     if (shellOk && cssMatch?.[1]) {
-      cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
-      const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
-        redirect: "follow",
-      });
-      if (cssResponse.ok) {
-        const normalizedCss = (await cssResponse.text()).replace(/\s+/g, "");
-        missingCssMarkers = REQUIRED_CSS_MARKERS.filter((marker) => !normalizedCss.includes(marker));
+      try {
+        const css = await readCssAsset(cssMatch[1], STAGING_URL, (url, init) => fetch(url, {
+          ...init,
+          headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+        }), expectedOrigin);
+        cssBundleUrl = css.url;
+        missingCssMarkers = REQUIRED_CSS_MARKERS.filter((marker) => !css.normalizedCss.includes(marker));
         cssBundleOk = missingCssMarkers.length === 0;
+      } catch (error) {
+        console.error("lr-integrity-watch CSS asset", error instanceof Error ? error.message : String(error));
       }
     }
   } catch (error) {
