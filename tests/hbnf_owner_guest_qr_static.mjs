@@ -20,7 +20,7 @@ assert.match(owner, /Guests can use the QR code when access is on\. Turn it off 
 assert.match(owner, /Guests need cellular service\. Turn on guest access and keep the Cart online\./);
 assert.match(owner, /https:\/\/hbnightflyers\.com\/skins\.html/);
 assert.match(owner, /https:\/\/hbnightflyers\.com\/glow\.html/);
-assert.match(guest, /Use these controls over cellular while Guest Mode is on\./);
+assert.match(guest, /Use these controls on cellular when guest access is on\./);
 assert.match(guest, /https:\/\/hbnightflyers\.com\/skins\.html/);
 assert.match(guest, /https:\/\/hbnightflyers\.com\/glow\.html/);
 assert.match(worker, /\/hbnf-guest-qr\.png\?v=\$\{VERSION\}/);
