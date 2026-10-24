@@ -151,3 +151,37 @@ test('CSS source is bounded to the existing asset-size budget', async () => {
     /css_asset_size_limit/,
   );
 });
+
+test('rejects query-string and extensionless external imports without fetching them', async () => {
+  const entry = `${origin}/assets/index.js`;
+  for (const specifier of [
+    'https://untrusted.example/assets/extra.js?rev=1',
+    'https://untrusted.example/assets/extra.js#v2',
+    'https://untrusted.example/assets/extra.mjs',
+    'https://untrusted.example/extensionless',
+  ]) {
+    const fetched = [];
+    await assert.rejects(
+      () => readFrontendGraph(entry, async (url) => {
+        fetched.push(url);
+        return {
+          ok: true, status: 200, url,
+          text: async () => `Past events & results; PDGA Results; import("${specifier}")`,
+        };
+      }, origin),
+      /frontend_import_origin_or_path_mismatch/,
+    );
+    assert.deepEqual(fetched, [entry], `unexpected fetch for ${specifier}`);
+  }
+});
+
+test('traverses valid same-origin JS import with query-string suffix', async () => {
+  const entry = `${origin}/assets/index.js`;
+  const child = `${origin}/assets/chunk.js?rev=1`;
+  const result = await readFrontendGraph(entry, fetcher({
+    [entry]: 'import("./chunk.js?rev=1"); Past events & results',
+    [child]: 'PDGA Results',
+  }), origin);
+  assert.deepEqual(result.urls, [entry, child]);
+  assert.ok(result.bundle.includes('PDGA Results'));
+});
