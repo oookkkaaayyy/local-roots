@@ -71,7 +71,7 @@ jobs:
           grep -q 'matrixTruth' hbnf-final-controller/hbnf-cart.html
           ! grep -q 'LIVE AUDIO RESPONSE' hbnf-final-controller/hbnf-cart.html
           ! grep -q 'syncTruth' hbnf-final-controller/hbnf-cart.html
-          grep -q 'READY' hbnf-final-controller/hbnf-cart.js
+          grep -q 'Controls aren’t ready. No change was sent.' hbnf-final-controller/hbnf-cart.js
           ! grep -q '/functions/v1/hbnf-cart-control' hbnf-final-controller/hbnf-cart-ui-v6.mjs
           ! grep -q 'action:"command"' hbnf-final-controller/hbnf-cart-ui-v6.mjs
 
