@@ -64,7 +64,7 @@ const features = fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-fea
 const backend = fs.readFileSync(new URL("../staging/coordinated-backend/hbnf-cart-control/index.ts", import.meta.url), "utf8");
 assert.match(html, /id="cartLanTruth"/);
 assert.match(html, /id="internetTruth"/);
-assert.match(html, /<span>Internet \/ cloud<\/span><strong id="internetTruth"/);
+assert.match(html, /<span>Internet<\/span><strong id="internetTruth"/);
 assert.doesNotMatch(html, /<span>Internet\/WAN path<\/span>/);
 assert.match(html, /id="scoreCloudTruth"/);
 assert.match(html, /id="scoreFreshnessTruth"/);
@@ -122,7 +122,7 @@ currentTime += 60000;
 probeContext.probeHbnfEndpoint();
 timers[timers.length-1].fn();
 assert.equal(probeElements.internetTruth.textContent, "Not confirmed");
-assert.match(html, /does not confirm what is physically lit or shown|confirms a command was received, not what is physically lit or shown/);
+assert.match(html, /A Cart response confirms the change arrived\. Check the display to confirm what you can see\./);
 assert.match(html, /https:\/\/hbnightflyers\.com\/skins\.html/);
 assert.match(html, /https:\/\/hbnightflyers\.com\/glow\.html/);
 assert.match(features, /function updateDisplayedLiveSnapshot\(response\) \{[\s\S]*?renderLive\(live,false,updatedAt\)/, "score freshness may use only the source timestamp returned with the live response");

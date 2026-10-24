@@ -37,6 +37,7 @@ test("deferred palette and saved look controls stay hidden with their source dat
 test("layout uses available wide screens and preserves touch-sized primary controls", () => {
   assert.match(css, /body\{width:auto;max-width:none!important/);
   assert.match(css, /@media\(min-width:900px\).*orientation:landscape/s);
+  assert.match(css, /#ownerViewShow>#showStylePanel,#ownerViewShow>\.cart-commands\{grid-column:1\/-1;min-width:0\}/);
   assert.match(css, /min-height:52px/);
   assert.match(css, /input\[type=range\].*min-height:48px/s);
   assert.match(ui, /aria-controls="ownerViewShow"/);
@@ -45,11 +46,11 @@ test("layout uses available wide screens and preserves touch-sized primary contr
 });
 
 test("changed Owner PWA assets use a fresh matching cache revision", () => {
-  const revision = "20261024-cart-field-desk-r1";
+  const revision = "20261024-cart-field-desk-r2";
   for (const asset of ["hbnf-cart-ui-v6.css", "hbnf-cart.js", "hbnf-cart-ui-v6.mjs", "hbnf-cart-features.mjs", "hbnf-cart-skins-score.mjs"]) {
     assert.match(html, new RegExp(`${asset.replaceAll(".", "\\.")}\\?v=${revision}`));
   }
-  assert.match(html, /hbnf-cart2-owner-field-desk-r1-20261024/);
+  assert.match(html, /hbnf-cart2-owner-field-desk-r2-20261024/);
   assert.match(readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8"), new RegExp(`hbnf-cart-readiness\\.mjs\\?v=${revision}`));
   assert.match(readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8"), new RegExp(`hbnf-cart-readiness\\.mjs\\?v=${revision}`));
 });

@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
   "change_id": "OWNER_PWA_FIELD_DESK_REDESIGN_20261024",
-  "summary": "Redesign the Owner Cart controls as an HBNF field desk using the HBNF neon badge and Local Roots earth/sage brand tokens, with clearer Show/Score/System grouping and preserved existing behavior.",
+  "summary": "Redesign the Owner Cart as an HBNF field desk led by the verified canonical HBNF night palette, harmonized with documented Local Roots cream, sage, and earth accents; clarify Show, Scores, and System while preserving existing behavior.",
   "change_class": "SUBJECTIVE_DESIGN",
   "impact": {
     "architecture": false,
@@ -25,6 +25,7 @@
         "WCAG 2.2: https://www.w3.org/TR/WCAG22/."
       ],
       "tests": [
+        "node --test tests/hbnf_cart_network_truth.test.mjs",
         "node --test tests/hbnf_owner_pwa_redesign_source.test.mjs tests/hbnf_owner_pwa_ipad_home.test.mjs tests/hbnf_owner_pwa_show_scores_system.test.mjs tests/hbnf_owner_palette_deferral.test.mjs tests/hbnf_owner_guest_qr_static.mjs tests/hbnf_owner_text_feedback.test.mjs",
         "Exact source browser render at iPad Mini 744x1133 portrait and 1133x744 landscape; verify full-width fit/no horizontal overflow, navigation, visible Show style, honest offline state, hidden palette/Saved Looks, and touch-sized controls.",
         "node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs; git diff --check."

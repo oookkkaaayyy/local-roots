@@ -186,7 +186,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:3px solid #dff
   #ownerViewShow>#lightsPanel,#ownerViewShow>#textPanel{grid-column:1/-1}
   #lightsPanel{grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);align-items:start}
   #lightsPanel>.panel-heading{grid-column:1/-1}
-  #ownerViewShow>#showStylePanel,#ownerViewShow>.cart-commands{min-width:0}
+  #ownerViewShow>#showStylePanel,#ownerViewShow>.cart-commands{grid-column:1/-1;min-width:0}
   #ownerViewScores{grid-template-columns:repeat(2,minmax(0,1fr))}
   #ownerViewScores>.owner-score-actions,#ownerViewScores>#scoresPanel{grid-column:1/-1}
 }
