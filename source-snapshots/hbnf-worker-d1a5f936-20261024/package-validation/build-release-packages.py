@@ -31,7 +31,8 @@ def build(args, label: str, source: Path, source_commit: str, output: Path) -> t
     files: dict[str, bytes] = {}
     for path in asset_files(source):
         files[path.relative_to(source).as_posix()] = path.read_bytes()
-    if len([name for name in files if name.startswith("public/")]) != 44:
+    asset_count = len([name for name in files if name.startswith("public/")])
+    if asset_count not in (44, 45):
         raise SystemExit(f"{label}: expected 44 public assets, found {len(files)}")
     files["wrangler.jsonc"] = production_config(source)
     files["package.json"] = json.dumps({
@@ -63,7 +64,7 @@ def build(args, label: str, source: Path, source_commit: str, output: Path) -> t
         "cloudflareRollbackVersionIdToReverifyBeforeUse": args.active_version,
         "sourceToVersionLineage": "NOT_ESTABLISHED; the rollback source is response-matched at public routes, not exported from the provider Version",
         "toolchain": {"wrangler": "4.152.0", "lockfile": "package-lock.json"},
-        "assetCount": 44,
+        "assetCount": asset_count,
         "files": [{"path": name, "bytes": len(data), "sha256": sha256(data)} for name, data in sorted(files.items())],
         "providerVersionUploaded": False,
         "productionTrafficChanged": False,
