@@ -102,7 +102,8 @@ def verify_javascript(payload: Path) -> None:
             raise SystemExit(f"Packaged JavaScript failed syntax validation ({script.name}): {detail[-1200:]}")
 
 
-def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_dir: Path, expected_version: str) -> dict:
+def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_dir: Path, expected_version: str,
+                                 archive_override: Path | None = None) -> dict:
     """Bind a directly served baseline to its exact retained package, without overstating filesystem evidence."""
     try:
         receipt = json.loads(receipt_path.read_text())
@@ -112,7 +113,7 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
         install = (package_dir / "install.sh").read_bytes()
         package_baseline = (package_dir / "BASELINE.SHA256SUMS").read_bytes()
         package_sha_line = (package_dir / "PACKAGE.SHA256").read_text().strip()
-        archive = package_dir / f"hbnf-owner-pwa-local-v{expected_version}.zip"
+        archive = archive_override or package_dir / f"hbnf-owner-pwa-local-v{expected_version}.zip"
         archive_bytes = archive.read_bytes()
     except (OSError, ValueError) as exc:
         raise SystemExit("Live readback, exact baseline package, or required package component is missing") from exc
@@ -216,6 +217,12 @@ def main() -> None:
     parser.add_argument("--rollback-baseline-readback-receipt", type=Path)
     parser.add_argument("--rollback-baseline-package-dir", type=Path,
         help="prior exact package whose successful install result supplies the installed Owner PWA payload hashes")
+    parser.add_argument("--rollback-baseline-package", type=Path,
+        help="exact prior installable ZIP to include as a nested recovery companion")
+    parser.add_argument("--rollback-baseline-package-drive-file-id",
+        help="approved private-vault identity for an exact baseline ZIP stored outside source control")
+    parser.add_argument("--release-slice", choices=("cart-owner-pwa-ui-v1.0.13",),
+        help="label an owner-approved independent UI slice without claiming scoring acceptance")
     parser.add_argument("--rollback-baseline-owner-pwa-version", default="1.0.8")
     parser.add_argument("--rollback-baseline-manifest", type=Path,
         help="explicit existing installed-tree manifest; defaults to the version-local manifest")
@@ -248,8 +255,23 @@ def main() -> None:
             prior_dir = (root / args.rollback_baseline_package_dir).resolve()
             source_paths.extend(prior_dir / name for name in (
                 "PACKAGE.json", "PACKAGE.SHA256", "PAYLOAD.SHA256SUMS", "install.sh", "rollback.sh",
-                "BASELINE.SHA256SUMS", f"hbnf-owner-pwa-local-v{args.rollback_baseline_owner_pwa_version}.zip",
+                "BASELINE.SHA256SUMS",
             ))
+            if not args.rollback_baseline_package_drive_file_id:
+                source_paths.append(prior_dir / f"hbnf-owner-pwa-local-v{args.rollback_baseline_owner_pwa_version}.zip")
+        package_scripts_root = ((root / args.package_script_dir).resolve() if args.package_script_dir
+                                else root / f"staging/coordinated-backend/opal/owner-pwa-local-v{args.package_version}")
+        source_paths.extend(package_scripts_root / name for name in ("install.sh", "rollback.sh"))
+        if args.rollback_baseline_package:
+            prior_zip = args.rollback_baseline_package if args.rollback_baseline_package.is_absolute() else root / args.rollback_baseline_package
+            prior_zip = prior_zip.resolve()
+            try:
+                prior_zip.relative_to(root)
+            except ValueError:
+                if not args.rollback_baseline_package_drive_file_id:
+                    raise SystemExit("strict source binding requires the exact rollback package inside the checkout")
+            else:
+                source_paths.append(prior_zip)
         verify_source_inputs(root, args.source_commit, source_paths)
         try:
             args.output_dir.resolve().relative_to(root)
@@ -336,6 +358,21 @@ def main() -> None:
     if args.rollback_baseline_owner_source_archive and not all(baseline_provenance_args):
         raise SystemExit("Historical Owner PWA archive requires complete recovery-v2 baseline provenance")
     baseline_provenance = None
+    baseline_package_path = None
+    if args.rollback_baseline_package:
+        baseline_package_path = args.rollback_baseline_package if args.rollback_baseline_package.is_absolute() else root / args.rollback_baseline_package
+        baseline_package_path = baseline_package_path.resolve()
+        if not baseline_package_path.is_file():
+            raise SystemExit("Exact rollback companion package is missing")
+        if args.rollback_baseline_package_dir and not args.rollback_baseline_package_drive_file_id:
+            expected_prior = (root / args.rollback_baseline_package_dir).resolve() / f"hbnf-owner-pwa-local-v{args.rollback_baseline_owner_pwa_version}.zip"
+            if baseline_package_path != expected_prior:
+                raise SystemExit("Rollback companion must be the exact ZIP inside the verified prior package directory")
+        elif args.rollback_baseline_package_dir and args.rollback_baseline_package_drive_file_id:
+            if not re.fullmatch(r"[A-Za-z0-9_-]{20,}", args.rollback_baseline_package_drive_file_id):
+                raise SystemExit("Private-vault rollback package identity is malformed")
+        if baseline_package_path.is_relative_to(root) and not args.rollback_baseline_package_drive_file_id:
+            source_inputs.append(baseline_package_path)
     if args.rollback_baseline_installed_manifest and args.rollback_baseline_archive and args.rollback_baseline_receipt:
         manifest_source = (root / args.rollback_baseline_installed_manifest).resolve()
         archive_source = (root / args.rollback_baseline_archive).resolve()
@@ -398,7 +435,8 @@ def main() -> None:
                 raise SystemExit("Direct live readback requires the exact retained baseline package")
             prior_dir = (root / args.rollback_baseline_package_dir).resolve()
             baseline_readback = verify_live_readback_baseline(
-                receipt_path, baseline, prior_dir, args.rollback_baseline_owner_pwa_version
+                receipt_path, baseline, prior_dir, args.rollback_baseline_owner_pwa_version,
+                baseline_package_path if args.rollback_baseline_package_drive_file_id else None
             )
             baseline_readback["path"] = receipt_path.relative_to(root).as_posix()
             installed = receipt.get("installed_sha256_by_path", {})
@@ -504,6 +542,8 @@ def main() -> None:
     if args.transaction_id:
         if not re.fullmatch(r"[A-Z0-9][A-Z0-9-]{7,100}", args.transaction_id):
             raise SystemExit("--transaction-id must be a bounded uppercase transaction identifier")
+    if args.release_slice and (version != "1.0.13" or args.review_only or not args.transaction_id):
+        raise SystemExit("The Cart UI release slice requires an installable v1.0.13 package with a transaction identity")
 
     package_tools = []
     if args.review_only:
@@ -532,6 +572,12 @@ def main() -> None:
         "sourceCommit": args.source_commit,
         "transactionId": args.transaction_id,
         "releaseDisposition": "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED" if args.review_only else "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
+        "releaseSlice": ({
+            "id": args.release_slice,
+            "scope": "Owner PWA interface and existing client-side command feedback only; no scoring logic, backend, score data, Matrix projection, or device settings",
+            "scoringOrder1": "OPEN_NOT_CLAIMED",
+            "T4T5": "UNCHANGED_AND_STILL_REQUIRE_ALL_EXISTING_ACCEPTANCE",
+        } if args.release_slice else None),
         "packageTools": package_tools,
         "sourceInputs": [
             {
@@ -551,6 +597,14 @@ def main() -> None:
             "entries": len(baseline.read_text().splitlines()) if baseline.is_file() else None,
             "source": baseline_provenance,
             "installedReadback": baseline_readback,
+            "packageArchive": ({
+                "path": "ROLLBACK_BASELINE.zip",
+                "sourcePath": ("drive:" + args.rollback_baseline_package_drive_file_id
+                    if args.rollback_baseline_package_drive_file_id else baseline_package_path.relative_to(root).as_posix()),
+                "driveFileId": args.rollback_baseline_package_drive_file_id,
+                "sha256": digest(baseline_package_path.read_bytes()),
+                "size": baseline_package_path.stat().st_size,
+            } if baseline_package_path else None),
         },
         "destination": "/www/mission-control-local/owner-pwa",
         "mode": "additive-static-subtree",
@@ -564,6 +618,11 @@ def main() -> None:
             shutil.copy2(package_script_dir / name, output / name)
     if baseline.exists():
         shutil.copy2(baseline, output / baseline.name)
+    if baseline_package_path:
+        shutil.copy2(baseline_package_path, output / "ROLLBACK_BASELINE.zip")
+        (output / "ROLLBACK_BASELINE.SHA256").write_text(
+            f"{digest(baseline_package_path.read_bytes())}  ROLLBACK_BASELINE.zip\n"
+        )
 
     if args.strict_source_binding:
         subprocess.run(

@@ -129,6 +129,19 @@ class OwnerPwaBuilderValidationTests(unittest.TestCase):
             self.assertEqual(result["deviceSidePriorRollbackCopy"], "NOT_CHECKED")
             self.assertTrue(result["installerMustVerifyExactDirectoryAndCreateFreshRollbackBeforeSwap"])
 
+    def test_direct_live_readback_accepts_vault_copy_only_when_exact_bytes_match(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td)
+            receipt, baseline, package, _ = self.make_live_baseline(root)
+            vault_copy = root / "vault" / "hbnf-owner-pwa-local-v1.0.12.zip"
+            vault_copy.parent.mkdir()
+            vault_copy.write_bytes((package / vault_copy.name).read_bytes())
+            result = BUILDER.verify_live_readback_baseline(receipt, baseline, package, "1.0.12", vault_copy)
+            self.assertEqual(result["observedExpectedHttpPaths"], 20)
+            vault_copy.write_bytes(vault_copy.read_bytes() + b"tampered")
+            with self.assertRaisesRegex(SystemExit, "exact retained Owner PWA package"):
+                BUILDER.verify_live_readback_baseline(receipt, baseline, package, "1.0.12", vault_copy)
+
     def test_direct_live_readback_rejects_hash_or_status_mismatch(self):
         with tempfile.TemporaryDirectory() as td:
             receipt, baseline, package, payload = self.make_live_baseline(pathlib.Path(td))

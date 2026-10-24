@@ -62,4 +62,20 @@ for (const asset of manifest.assets) {
 }
 assert.equal(manifest.rollbackBaseline.entries, 20, "Expected exact 20-file installed Owner PWA baseline");
 assert.match(manifest.rollbackBaseline.sha256, /^[0-9a-f]{64}$/);
+const rollbackArchive = manifest.rollbackBaseline.packageArchive;
+if (manifest.releaseSlice?.id === "cart-owner-pwa-ui-v1.0.13") {
+  assert.ok(rollbackArchive, "UI release slice requires its exact retained baseline package");
+}
+if (rollbackArchive) {
+  assert.equal(rollbackArchive.path, "ROLLBACK_BASELINE.zip");
+  assert.match(rollbackArchive.sha256, /^[0-9a-f]{64}$/);
+  assert.ok(Number.isSafeInteger(rollbackArchive.size) && rollbackArchive.size > 0);
+  if (rollbackArchive.driveFileId) {
+    assert.match(rollbackArchive.driveFileId, /^[A-Za-z0-9_-]{20,}$/);
+    assert.equal(rollbackArchive.sourcePath, `drive:${rollbackArchive.driveFileId}`);
+  }
+  const exactArchive = path.resolve(path.dirname(manifestPath), rollbackArchive.path);
+  assert.equal(fs.statSync(exactArchive).size, rollbackArchive.size, "Nested baseline package size mismatch");
+  assert.equal(sha256(exactArchive), rollbackArchive.sha256, "Nested baseline package hash mismatch");
+}
 console.log(`PASS: source manifest bound to ${head}; ${manifest.sourceInputs.length} exact inputs checked`);
