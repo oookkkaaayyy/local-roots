@@ -105,11 +105,11 @@
       <button data-command="AUTO">Auto show</button>
     </div>
     <p id="commandActionStatus" class="apply-note" role="status" aria-live="polite" hidden></p>
-    <details class="sub-controls"><summary>Choose show style</summary>
+    <details class="sub-controls"><summary>Show style</summary>
     <button data-command="LOCK">Keep this look</button>
     <div class="control-grid">
-      <div id="sceneButtons" class="scene-buttons" aria-label="Scene"></div>
-      <label class="scene-native-wrap">Scene
+      <div id="sceneButtons" class="scene-buttons" aria-label="Show style"></div>
+      <label class="scene-native-wrap">Show style
         <select id="scene">
           <option value="course-flow">Steady pace</option>
           <option value="field-mix">Upbeat</option>
@@ -123,7 +123,7 @@
   </section>
 
   <section id="textPanel" class="panel" aria-label="Display message">
-    <h2>Display a message</h2>
+    <h2>Text message</h2>
     <div class="row">
       <input id="featureText" type="text" maxlength="63" placeholder="Type a short message" aria-label="Message" style="flex:1;min-width:180px">
       <label for="featureFontIndex" hidden>Text style</label>
@@ -139,7 +139,7 @@
   </section>
 
   <section class="panel quick-tuning" aria-label="Motion and audio response">
-    <h2>How the show reacts</h2>
+    <h2>Sound and motion</h2>
     <div class="tune-grid">
       <label>
         <span class="range-head"><span>Sound response</span><output id="audioResponseValue">75</output></span>
@@ -167,7 +167,7 @@
   <section id="managePairPanel" class="panel" hidden aria-label="Pair another device">
     <h2>Pair another device</h2>
     <p class="muted">Create a private link, then AirDrop, text, or copy it to the new device. It works for 180 days.</p>
-    <div class="row"><button id="createPair">Create pairing link</button><button id="sharePair" hidden>Share link</button><button id="copyPair" hidden>Copy link</button></div>
+    <div class="row"><button id="createPair">Create private link</button><button id="sharePair" hidden>Share link</button><button id="copyPair" hidden>Copy link</button></div>
     <textarea id="pairLink" class="pair-link" hidden readonly aria-label="Pairing link"></textarea>
     <div id="pairCreateStatus" class="muted" role="status" aria-live="polite"></div>
   </section>
@@ -263,14 +263,14 @@
 
   <details class="panel sub-controls" aria-label="Updates and status">
     <summary>Updates and status</summary>
-    <div id="featureOtaStatus" class="status">Signed update not checked yet.</div>
+    <div id="featureOtaStatus" class="status">Update not checked yet.</div>
     <div class="row">
-      <button id="featureOtaCheck" type="button">Check signed update</button>
-      <button id="featureOtaInstall" type="button" hidden>Open trusted installer</button>
-      <button id="featureOtaResult" type="button">Refresh install result</button>
-      <button id="featurePreflight" type="button">Run rollout preflight</button>
+      <button id="featureOtaCheck" type="button">Check for update</button>
+      <button id="featureOtaInstall" type="button" hidden>Open installer</button>
+      <button id="featureOtaResult" type="button">Check install status</button>
+      <button id="featurePreflight" type="button">Check device readiness</button>
     </div>
-    <div id="featurePreflightResult" class="status">Preflight not run.</div>
+    <div id="featurePreflightResult" class="status">Device readiness not checked.</div>
   </details>
 
   <details class="panel">
@@ -280,9 +280,9 @@
         <span class="range-head"><span>Mic sensitivity</span><output id="micSensitivityValue">255</output></span>
         <input id="micSensitivity" type="range" min="64" max="255" step="1" value="255">
       </label>
-      <label>Audio emphasis
+      <label>Sound balance
         <select id="audioProfile">
-          <option value="scene">Scene default</option>
+          <option value="scene">Match show style</option>
           <option value="bass">Bass</option>
           <option value="mid">Mid</option>
           <option value="balanced">Balanced</option>
@@ -291,9 +291,9 @@
           <option value="impact">Impact</option>
         </select>
       </label>
-      <label>Reaction style
+      <label>Sound style
         <select id="audioStyle">
-          <option value="scene">Scene default</option>
+          <option value="scene">Match show style</option>
           <option value="clean">Clean</option>
           <option value="punch">Punch</option>
           <option value="ring">Ring</option>

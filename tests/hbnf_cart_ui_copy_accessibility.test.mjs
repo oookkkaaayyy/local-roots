@@ -21,13 +21,22 @@ test("Cart copy uses concise labels and keeps scoring links understandable", () 
     "Show scores on Cart", "Cart status", "Guest Mode", "Cart Auto",
     "Animation & color", "READY/CHECK", "BLOCKED ·", "Score-update time is unknown",
     "Saved looks and colors", "Saved looks and advanced color", "Firmware and diagnostics", "Advanced audio",
+    "Run rollout preflight", "Open trusted installer", "Refresh install result", "Scene default",
+    "Audio emphasis", "Reaction style", "Show text", "Choice sent. Waiting for the Cart.",
+    "Palette controls aren’t ready", "Signed update not checked yet.", "Preflight not run.",
+    "Choose a palette first.", "Applying palette…", "Palette wasn’t confirmed.",
+    "last score update time is unknown", "Score data connection needs internet", "Score data connection not confirmed",
   ]) assert.ok(!copy.includes(outdated), `outdated or internal copy remains: ${outdated}`);
 
   for (const phrase of [
     "Show scores on Matrix", "Show ace pot on Matrix", "Show entered scores (offline)",
-    "Last score update time is unknown", "Connect to Cart Wi-Fi to load colors.",
+    "Scores refreshed. The last update time isn’t available.", "Connect to Cart Wi-Fi to load colors.",
     "Saved looks", "Updates and status", "Sound",
     "Matrix and underglow confirmed the lighting setting.", "Choice sent. Waiting for confirmation.",
+    "Check device readiness", "Color controls aren’t ready. No change was sent.",
+    "Sound and motion", "Text message", "Check for update", "Open installer", "Check install status",
+    "Choose a color style first.", "Couldn’t refresh scores. Showing saved results; the score update time isn’t available.",
+    "Score data not confirmed",
   ]) assert.ok(copy.includes(phrase), `expected concise copy is missing: ${phrase}`);
 
   for (const href of ["skins.html", "glow.html"]) {
@@ -82,4 +91,12 @@ test("updated command feedback keeps failures visually marked", () => {
   assert.match(features, /Message request sent\./);
   assert.match(features, /Couldn’t send the message\. Check the connection and try again\./);
   assert.match(guestRuntime, /Matrix and underglow confirmed the setting\./);
+});
+
+test("plain device readiness messages preserve the existing stop conditions", () => {
+  assert.match(features, /if \(mac!==EXPECTED_MATRIX_MAC\) checks\.push\("Wrong Matrix device"\)/);
+  assert.match(features, /catch \(e\) \{ checks\.push\("Matrix not responding"\); \}/);
+  assert.match(features, /checks\.push\("Update security check "\+\(sigOk && macOk && baseOk \? "passed" : "failed"\)\)/);
+  assert.match(features, /const hardFail=checks\.some\(x=>\/Matrix not responding\|Wrong Matrix device\|Update security check failed\/\.test\(x\)\)/);
+  assert.match(features, /out\.textContent=\(hardFail \? "Not ready · " : "Checks complete · "\)/);
 });

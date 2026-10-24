@@ -148,7 +148,7 @@ assert.ok(html.indexOf('class="panel quick-vibe"') < html.indexOf('class="panel 
 assert.match(html, /data-command="AUTO">Auto show<\/button>/, "Auto show must be distinguishable from Automatic lighting style");
 assert.match(html, /<details class="panel truth-panel" aria-label="Connection details">\s*<summary>Connection details<\/summary>/, "detailed device status is collapsed under Connection details");
 assert.match(html, /Shows the latest device check, not whether the lights are on\./, "device status must distinguish a device check from confirmed physical illumination");
-assert.match(html, /<summary>Choose show style<\/summary>/);
+assert.match(html, /<summary>Show style<\/summary>/);
 for (const [value,label] of [["course-flow","Steady pace"],["field-mix","Upbeat"],["hbnf-signature","HBNF signature"],["quiet-cosmos","Calm"]]) assert.ok(html.includes(`<option value="${value}">${label}</option>`), `show-style choice keeps the current user-facing label ${label}`);
 assert.match(css, /\.scene-description/);
 assert.ok(html.indexOf('id="textPanel"') < html.indexOf('aria-label="Motion and audio response"'), "text stays ahead of secondary response tuning");

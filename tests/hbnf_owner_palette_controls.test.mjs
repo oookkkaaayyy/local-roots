@@ -90,7 +90,7 @@ test("visible palette action changes only palette and reports readback without c
 
 test("palette failure attempts and verifies restoration of the prior palette", async () => {
   const f = fixture({ mismatch: true });
-  await assert.rejects(f.apply(), /Palette was not confirmed/);
+  await assert.rejects(f.apply(), /Color change was not confirmed/);
   assert.deepEqual(JSON.parse(JSON.stringify(f.commands)), [
     ["PALETTE", { paletteId: "wled-7" }],
     ["PALETTE", { paletteId: "wled-1" }],
@@ -100,7 +100,7 @@ test("palette failure attempts and verifies restoration of the prior palette", a
 
 test("generic legacy state is restored with a firmware alias without claiming a named preset", async () => {
   const f = fixture({ mismatch: true, initial: "legacy" });
-  await assert.rejects(f.apply(), /Palette was not confirmed/);
+  await assert.rejects(f.apply(), /Color change was not confirmed/);
   assert.deepEqual(JSON.parse(JSON.stringify(f.commands)), [
     ["PALETTE", { paletteId: "wled-7" }],
     ["PALETTE", { paletteId: "hbnf-balanced" }],
@@ -137,7 +137,7 @@ test("unreachable current state reports the failure and sends no palette command
 
 test("Keep current is not sent as a palette command", async () => {
   const f = fixture({ selection: "" });
-  await assert.rejects(f.apply(), /Choose a palette before applying/);
+  await assert.rejects(f.apply(), /Choose a color style before applying/);
   assert.equal(f.commands.length, 0);
 });
 

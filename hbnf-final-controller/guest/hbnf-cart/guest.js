@@ -101,7 +101,7 @@
     lastAction[action]=now;
     busy=true;controls(false);detail.textContent="Sending your choice…";
     post({action:"guest_command",commandId:id(),expectedRevision:revision,guestAction:action,value:value})
-      .then(function(result){pendingRevision=Number.isSafeInteger(Number(result&&result.revision))?Number(result.revision):revision;announce("Choice sent. Waiting for the Cart.","Status will update shortly.");})
+      .then(function(result){pendingRevision=Number.isSafeInteger(Number(result&&result.revision))?Number(result.revision):revision;announce("Choice sent. Waiting for confirmation.","The Cart will update status shortly.");})
       .catch(function(error){
         if(error.status===409&&error.data&&error.data.error==="stale_revision"){
           announce("Settings changed before your choice was applied.","Status refreshed. Try again if guest access is still on.");
