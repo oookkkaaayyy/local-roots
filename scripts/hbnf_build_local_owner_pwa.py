@@ -119,6 +119,7 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
         raise SystemExit("Live readback, exact baseline package, or required package component is missing") from exc
 
     package_sha = package_sha_line.split()[0] if len(package_sha_line.split()) == 2 else ""
+    expected_archive_name = f"hbnf-owner-pwa-local-v{expected_version}.zip"
     device = receipt.get("device_identity")
 
     if (receipt.get("schema") != "hbnf-owner-pwa-live-readback-v1" or receipt.get("status") != "PASS" or
@@ -126,7 +127,7 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
             receipt.get("baseline_manifest_sha256") != digest(baseline.read_bytes()) or
             receipt.get("baseline_package_sha256") != digest(archive_bytes) or
             package_sha != digest(archive_bytes) or
-            package_sha_line != f"{package_sha}  {archive.name}" or
+            package_sha_line != f"{package_sha}  {expected_archive_name}" or
             receipt.get("source_commit") != package.get("sourceCommit") or
             receipt.get("transaction_id") != package.get("transactionId") or
             package.get("package") != f"hbnf-owner-pwa-local-v{expected_version}" or
