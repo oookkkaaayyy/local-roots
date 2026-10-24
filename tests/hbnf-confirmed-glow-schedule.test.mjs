@@ -185,8 +185,8 @@ test("synthetic HBNF Glow fixture is quarantined without hiding genuine incomple
   assert.equal(isSyntheticGlowFixtureWeek({ ...synthetic, cards: { card1: { finalized: true } } }), false);
   assert.equal(isSyntheticGlowFixtureWeek({ ...synthetic, players: [{ name: "Fixture Andrew" }, { name: "Real Player" }] }), false);
   assert.equal(isSyntheticGlowFixtureWeek({ players: [], cards: {} }), false);
-  assert.match(adapter, /if \\(isSyntheticGlowFixtureWeek\\(week\\)\\)/);
-  assert.match(adapter, /quarantinedFixtureExternalIds\\.add/);
+  assert.match(adapter, /if \(isSyntheticGlowFixtureWeek\(week\)\)/);
+  assert.match(adapter, /quarantinedFixtureExternalIds\.add/);
   assert.match(adapter, /published: false/);
-  assert.match(adapter, /quarantinedFixtureExternalIds\\]\\)/);
+  assert.match(adapter, /quarantinedFixtureExternalIds\]\)/);
 });
