@@ -8,7 +8,7 @@ const os = require('node:os');
 const { execFileSync } = require('node:child_process');
 
 const baseDir = __dirname;
-function loadSync(sourcePath) {
+function loadSync(sourcePath, options = {}) {
   const html = fs.readFileSync(sourcePath, 'utf8');
   const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
   const main = scripts.find(s => s.includes('function makeSyncHelpers(ctx)'));
@@ -16,8 +16,11 @@ function loadSync(sourcePath) {
   const start = main.indexOf('function hbnfSyncClone(obj)');
   const end = main.indexOf('\nconst qs=', start);
   assert.ok(start >= 0 && end > start, 'could not isolate sync helpers');
+  const status = { textContent: '' };
   const sandbox = {
-    document: { querySelector: () => ({ set textContent(_) {} }) },
+    document: { querySelector: () => status },
+    window: options.window || {},
+    getConfiguredSupabase: options.getConfiguredSupabase || (() => null),
     saveLocal: () => true,
     renderAll: () => {},
     console,
@@ -35,7 +38,7 @@ function loadSync(sourcePath) {
   };
   vm.createContext(sandbox);
   vm.runInContext(`${main.slice(start, end)};this.__sync={hbnfSyncHash,makeSyncHelpers};`, sandbox);
-  return sandbox.__sync;
+  return { ...sandbox.__sync, sandbox, status };
 }
 
 async function runPull(sourcePath) {
@@ -98,6 +101,91 @@ async function runPull(sourcePath) {
   return { hbnfSyncHash, ctx, database, storedBaselineIsRaw, rootBaselineIsRaw, remoteBranchStayedRaw, stateWasNormalized };
 }
 
+async function runRealtime(sourcePath) {
+  let realtimeHandler = null;
+  let subscriptionHandler = null;
+  let localSaves = 0;
+  let renders = 0;
+  const initialRoot = { skins: { weeks: {}, activeWeek: null }, bagTags: { keep: 'other-root-data' } };
+  const realtimeClient = {
+    from() {
+      return {
+        select() {
+          return {
+            eq() {
+              return {
+                single: async () => ({ data: { state_json: JSON.parse(JSON.stringify(initialRoot)), updated_at: 'revision-1' }, error: null }),
+              };
+            },
+          };
+        },
+      };
+    },
+    channel() {
+      return {
+        on(event, filter, handler) { assert.equal(event, 'postgres_changes'); assert.equal(filter.table, 'league_state'); realtimeHandler = handler; return this; },
+        subscribe(handler) { subscriptionHandler = handler; handler('SUBSCRIBED'); return this; },
+      };
+    },
+  };
+  const { makeSyncHelpers, sandbox, status } = loadSync(sourcePath, {
+    window: { supabase: { createClient: () => realtimeClient } },
+    getConfiguredSupabase: () => ({ SUPABASE_URL: 'https://mock.invalid', SUPABASE_ANON_KEY: 'mock-key' }),
+  });
+  sandbox.saveLocal = () => { localSaves++; return true; };
+  sandbox.renderAll = () => { renders++; };
+  const ctx = {
+    branch: 'skins',
+    state: { weeks: {}, activeWeek: null },
+    rootState: {},
+    localDirty: false,
+    localEditedBeforeBaseline: false,
+    syncBaselineReady: false,
+    remoteConflictPending: false,
+    normalize(input) {
+      // Mimic the production legacy-shape normalizer: fill defaults by mutating its input.
+      for (const week of Object.values(input.weeks || {})) {
+        week.front ||= { cards: [], aceWinner: '' };
+        week.back ||= { cards: [], aceWinner: '' };
+        week.tagExchangeExceptions ||= {};
+      }
+      input.weeks ||= {};
+      input.weeks['2026-10-27'] ||= { finalized: false, front: { cards: [] }, back: { cards: [] } };
+      input.normalizedMarker = true;
+      return input;
+    },
+  };
+  const sync = makeSyncHelpers(ctx);
+  await sync.initSync();
+  assert.equal(typeof realtimeHandler, 'function', 'initSync must register the Realtime callback');
+  assert.equal(typeof subscriptionHandler, 'function', 'initSync must establish the mocked channel subscription');
+
+  // A valid older row shape that lacks modern defaults exercises the mutating normalizer.
+  const rawIncoming = {
+    skins: { weeks: { '2026-10-20': { finalized: false, front: { cards: [{ winners: { 8: 'mason' } }] } } }, activeWeek: '2026-10-20' },
+    bagTags: { keep: 'other-root-data' },
+  };
+  const rawRootText = JSON.stringify(rawIncoming);
+  const rawBranchText = JSON.stringify(rawIncoming.skins);
+  const payload = { new: { state_json: rawIncoming, updated_at: 'revision-2' } };
+  const savesBeforeRealtime = localSaves;
+  const rendersBeforeRealtime = renders;
+  realtimeHandler(payload);
+
+  return {
+    ctx, status,
+    payloadUnchanged: JSON.stringify(payload.new.state_json) === rawRootText,
+    rootHashIsRaw: ctx.lastRemoteRootHash === rawRootText,
+    branchHashIsRaw: ctx.lastRemoteBranchHash === rawBranchText,
+    rootStateIsDetached: ctx.rootState !== payload.new.state_json && ctx.rootState.skins !== payload.new.state_json.skins,
+    normalizedLocalWeek: !!(ctx.state.weeks['2026-10-20'].back && ctx.state.weeks['2026-10-20'].tagExchangeExceptions),
+    visibleUpdateRendered: renders - rendersBeforeRealtime === 1,
+    localDraftSaved: localSaves - savesBeforeRealtime === 1,
+    localWeekSelected: ctx.state.activeWeek === '2026-10-20',
+    remoteConflictPending: ctx.remoteConflictPending,
+  };
+}
+
 (async () => {
   const snapshotPath = 'source-snapshots/hbnf-worker-d1a5f936-20261024/public/skins.html';
   const production = path.join(os.tmpdir(), `hbnf-skins-baseline-${process.pid}.html`);
@@ -124,6 +212,19 @@ async function runPull(sourcePath) {
   assert.equal(after.stateWasNormalized, true, 'candidate must still normalize the working copy');
   assert.equal(after.database.updates, 1, 'candidate must pass compare-before-save and send exactly one mocked update');
   assert.equal(after.ctx.remoteConflictPending, false, 'candidate must not raise a false conflict');
+
+  const baselineRealtime = await runRealtime(production);
+  assert.equal(baselineRealtime.payloadUnchanged, false, 'baseline Realtime callback should reproduce in-place mutation of the provider payload');
+  const candidateRealtime = await runRealtime(candidate);
+  assert.equal(candidateRealtime.payloadUnchanged, true, 'candidate Realtime callback must not mutate the provider payload');
+  assert.equal(candidateRealtime.rootHashIsRaw, true, 'candidate Realtime callback must retain the raw root hash');
+  assert.equal(candidateRealtime.branchHashIsRaw, true, 'candidate Realtime callback must retain the raw branch hash');
+  assert.equal(candidateRealtime.rootStateIsDetached, true, 'candidate Realtime callback must detach the stored root from the provider payload');
+  assert.equal(candidateRealtime.normalizedLocalWeek, true, 'candidate must normalize a separate local working copy');
+  assert.equal(candidateRealtime.visibleUpdateRendered, true, 'candidate must render one visible update');
+  assert.equal(candidateRealtime.localDraftSaved, true, 'candidate must save the local draft after Realtime update');
+  assert.equal(candidateRealtime.localWeekSelected, true, 'candidate must apply the incoming active week');
+  assert.equal(candidateRealtime.remoteConflictPending, false, 'clean Realtime update must not create a conflict');
   fs.rmSync(production, {force:true});
-  console.log(JSON.stringify({result:'PASS',productionReproduces:{baselineUsesNormalizedBranch:!before.storedBaselineIsRaw,conflictBeforeUpdate:before.ctx.remoteConflictPending},candidate:{rawBranchBaseline:after.storedBaselineIsRaw,rawRootBaseline:after.rootBaselineIsRaw,normalizedWorkingCopy:after.stateWasNormalized,mockedUpdateCount:after.database.updates,noFalseConflict:!after.ctx.remoteConflictPending},network:'none',realDatabase:'not connected or changed'},null,2));
+  console.log(JSON.stringify({result:'PASS',productionReproduces:{baselineUsesNormalizedBranch:!before.storedBaselineIsRaw,conflictBeforeUpdate:before.ctx.remoteConflictPending,realtimeMutatesPayload:!baselineRealtime.payloadUnchanged},candidate:{rawBranchBaseline:after.storedBaselineIsRaw,rawRootBaseline:after.rootBaselineIsRaw,normalizedWorkingCopy:after.stateWasNormalized,mockedUpdateCount:after.database.updates,noFalseConflict:!after.ctx.remoteConflictPending,realtimePayloadUnchanged:candidateRealtime.payloadUnchanged,realtimeRawRootHash:candidateRealtime.rootHashIsRaw,realtimeRawBranchHash:candidateRealtime.branchHashIsRaw,detachedRootState:candidateRealtime.rootStateIsDetached,normalizedLocalWeek:candidateRealtime.normalizedLocalWeek,visibleUpdateRendered:candidateRealtime.visibleUpdateRendered,localDraftSaved:candidateRealtime.localDraftSaved,noRealtimeConflict:!candidateRealtime.remoteConflictPending},network:'none',realDatabase:'not connected or changed'},null,2));
 })().catch(error => { console.error(error); process.exitCode = 1; });
