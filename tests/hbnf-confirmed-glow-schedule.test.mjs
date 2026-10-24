@@ -9,6 +9,7 @@ import {
   hasGlowActivity,
   isCanceledGlowWeek,
   isConfirmedGlowScheduleProvenance,
+  isSyntheticGlowFixtureWeek,
   shouldEmitConfirmedScheduleRecord,
   shouldSkipCanceledEvent,
   shouldUseConfirmedSchedule,
@@ -168,4 +169,24 @@ test("public HBNF events remain upcoming-only, canceled-free, and date ordered",
   const visible = fixture.filter((event) => event.end_date >= today && event.status !== "canceled")
     .sort((a, b) => a.start_date.localeCompare(b.start_date) || a.name.localeCompare(b.name));
   assert.deepEqual(visible.map((event) => event.name), ["Skins", "Glow"]);
+});
+
+
+test("synthetic HBNF Glow fixture is quarantined without hiding genuine incomplete rounds", () => {
+  const synthetic = {
+    players: [
+      { name: "Fixture Andrew", scores: Array(18).fill(3) },
+      { name: "Fixture Jason", scores: Array(18).fill(4) },
+    ],
+    cards: { card1: { finalized: false } },
+  };
+  assert.equal(isSyntheticGlowFixtureWeek(synthetic), true);
+  assert.equal(isSyntheticGlowFixtureWeek({ ...synthetic, finalized: true }), false);
+  assert.equal(isSyntheticGlowFixtureWeek({ ...synthetic, cards: { card1: { finalized: true } } }), false);
+  assert.equal(isSyntheticGlowFixtureWeek({ ...synthetic, players: [{ name: "Fixture Andrew" }, { name: "Real Player" }] }), false);
+  assert.equal(isSyntheticGlowFixtureWeek({ players: [], cards: {} }), false);
+  assert.match(adapter, /if \\(isSyntheticGlowFixtureWeek\\(week\\)\\)/);
+  assert.match(adapter, /quarantinedFixtureExternalIds\\.add/);
+  assert.match(adapter, /published: false/);
+  assert.match(adapter, /quarantinedFixtureExternalIds\\]\\)/);
 });
