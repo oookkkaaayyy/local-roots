@@ -4,6 +4,22 @@ on:
     branches:
       - hbnf-prephase2-final-integration-20260927
       - hbnf-coordinated-release-20261001
+      - 'codex/cart-*'
+      - 'codex/hbnf-cart-*'
+    paths:
+      - 'hbnf-final-controller/**'
+      - 'hbnf-ui-v6-package/**'
+      - 'scripts/hbnf_build_owner_guest_package.py'
+      - 'firmware/phase2/brightness-r1/**'
+      - 'tests/hbnf_matrix_brightness_output.mjs'
+      - 'tests/hbnf_matrix_brightness_output.cpp'
+      - '.github/workflows/hbnf-cart-ui-v6-package.yml'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
     paths:
       - 'hbnf-final-controller/**'
       - 'hbnf-ui-v6-package/**'
