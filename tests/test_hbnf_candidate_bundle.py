@@ -22,6 +22,8 @@ class CandidateBundleTest(unittest.TestCase):
         )[0]
         self.assertNotIn("    branches:", pull_request)
         self.assertIn("    paths:\n", pull_request)
+        for action in ("opened", "synchronize", "reopened", "edited"):
+            self.assertIn(f"      - {action}", pull_request, action)
         for path in (
             ".github/workflows/hbnf-coordinated-release-ci.yml",
             "scripts/hbnf_candidate_bundle.py",
@@ -29,6 +31,14 @@ class CandidateBundleTest(unittest.TestCase):
             "tests/hbnf_owner_pwa_package.mjs",
         ):
             self.assertIn(f"      - '{path}'", pull_request, path)
+
+    def test_pr_base_edits_run_scoped_gates_without_running_for_text_edits(self):
+        workflow = (ROOT / ".github/workflows/hbnf-coordinated-release-ci.yml").read_text()
+        source_gates = workflow.split("  source-gates:\n", 1)[1].split(
+            "  candidate-artifact:\n", 1
+        )[0]
+        self.assertIn("github.event.action != 'edited'", source_gates)
+        self.assertIn("github.event.changes.base != null", source_gates)
 
     def test_pull_request_never_uploads_and_candidate_upload_is_fail_closed(self):
         workflow = (ROOT / ".github/workflows/hbnf-coordinated-release-ci.yml").read_text()

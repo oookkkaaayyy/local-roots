@@ -42,6 +42,11 @@ on:
       - 'tests/hbnf_source_tree_identity.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
     paths:
       - 'hbnf-final-controller/**'
       - 'hbnf-wow-bundle/backend/**'
@@ -101,6 +106,10 @@ on:
 
 jobs:
   source-gates:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.action != 'edited' ||
+      github.event.changes.base != null
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
