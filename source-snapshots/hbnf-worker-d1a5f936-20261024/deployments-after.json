@@ -1,0 +1,176 @@
+[
+  {
+    "id": "988411ed-c02c-4a0f-920c-31652dc0a6dc",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "P0 Front 9 native multiline entry recovery 2026-10-20",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "4db118d3-fc2f-4a8b-aca7-82ba17e5be40",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-20T20:40:41.180786Z"
+  },
+  {
+    "id": "b6bdcb94-a761-4973-b364-315e07226714",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "P0 Back 9 tag-field binding correction 2026-10-20",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "c5416b61-ecc3-42f0-af7b-253e5947ffb2",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-20T21:03:44.033501Z"
+  },
+  {
+    "id": "bc330d63-0995-4885-a0ea-429cd8039b2a",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "HBNF scorecards totals-only payout display 2026-10-20",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "b0299d34-8924-45ab-8826-4c19d04c11d0",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-20T21:33:54.409214Z"
+  },
+  {
+    "id": "da1dc89e-5108-4d04-a75d-650cf37a7898",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "HBNF Skins authoritative-baseline sync repair 2026-10-20",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "f53745ba-bc66-4091-a046-3ac9cced6e64",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-20T22:10:34.014036Z"
+  },
+  {
+    "id": "efd4d646-b418-4fd9-a59b-541d6c71a8dc",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "HBNF Skins continue server save when device draft storage fails",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "457a9cd6-662b-4a4b-9d52-f21cd0a65e50",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-21T00:19:01.074724Z"
+  },
+  {
+    "id": "80608e95-de70-4b8a-a71f-9e1fadcc7765",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "HBNF P0 Skins startup edit preservation after cloud hydration 2026-10-22",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "45e895f4-0e3f-4aa1-bb3b-d6c8ef045f55",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-22T20:56:04.220199Z"
+  },
+  {
+    "id": "64d6d751-0389-4706-81a2-c1353a9083bb",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "HBNF Skins edit hydration race fix 2026-10-22",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "45e895f4-0e3f-4aa1-bb3b-d6c8ef045f55",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-22T20:58:15.399687Z"
+  },
+  {
+    "id": "64168b4e-03a8-4395-b513-0a27a85e3702",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "HBNF iPad fix smoke test; candidate at 0 percent",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "dfde63fe-685c-44f8-a230-9481caa3c3a3",
+        "percentage": 0
+      },
+      {
+        "version_id": "45e895f4-0e3f-4aa1-bb3b-d6c8ef045f55",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-22T21:11:07.412213Z"
+  },
+  {
+    "id": "bae7a8b7-8877-40c9-889a-b365f1577c35",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "HBNF iPad Safari, navigation and header fix 2026-10-22",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "dfde63fe-685c-44f8-a230-9481caa3c3a3",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-22T21:12:09.67706Z"
+  },
+  {
+    "id": "3a3347fb-f067-455d-9eb2-346e09b30529",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "HBNF calculated-Net reporting correction; rollback dfde63fe-685c-44f8-a230-9481caa3c3a3",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "d1a5f936-e2ea-4434-b4ee-b5858b1baa9e",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-22T22:03:31.88706Z"
+  }
+]

@@ -1,0 +1,2252 @@
+{
+  "_meta": {
+    "revision": "hbnf-flow-2026-09-17-v9",
+    "build": "9.17.26_3",
+    "canvas": "32x16",
+    "wled": "16.0.1-hbnf-flow-1.0.1",
+    "saveMode": "selected-visual-segments-only",
+    "overlaySegments": [
+      3
+    ],
+    "notes": "Flow-native library: WLED preset/playlist transitions are zero. HBNFFlow final-frame compositor is the sole normal-operation transition/flash guard. Explicit BLACKOUT/OFF is the only intentional hard-dark exception."
+  },
+  "10": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 68,
+        "fx": 198,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS GEQ 2D",
+        "sx": 170,
+        "ix": 210,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "o3": false,
+        "col": [
+          [
+            180,
+            0,
+            80
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "PULSE GRID",
+    "ql": ""
+  },
+  "11": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 68,
+        "fx": 199,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS GEQ NOVA",
+        "sx": 178,
+        "ix": 215,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "col": [
+          [
+            0,
+            120,
+            200
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "NOVA BEAT",
+    "ql": ""
+  },
+  "12": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 66,
+        "fx": 198,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "GEQ",
+        "sx": 160,
+        "ix": 205,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "col": [
+          [
+            125,
+            205,
+            98
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "LIME PULSE",
+    "ql": ""
+  },
+  "13": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 68,
+        "fx": 199,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "FUNKY PLANK",
+        "sx": 186,
+        "ix": 220,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "col": [
+          [
+            60,
+            80,
+            220
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o1": false,
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "BLUE NOVA",
+    "ql": ""
+  },
+  "14": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 66,
+        "fx": 198,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "AKEMI",
+        "sx": 176,
+        "ix": 210,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "col": [
+          [
+            200,
+            0,
+            140
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o1": false,
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "MAGENTA PULSE",
+    "ql": ""
+  },
+  "20": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 64,
+        "fx": 168,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "HIPHOTIC",
+        "sx": 112,
+        "ix": 165,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "col": [
+          [
+            100,
+            0,
+            200
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o1": false,
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "JULIA DEEP",
+    "ql": ""
+  },
+  "21": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 64,
+        "fx": 174,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "JULIA",
+        "sx": 122,
+        "ix": 170,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "col": [
+          [
+            0,
+            130,
+            170
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o1": false,
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "POLAR FLOW",
+    "ql": ""
+  },
+  "22": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 66,
+        "fx": 180,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "DNA SPIRAL",
+        "sx": 140,
+        "ix": 180,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "col": [
+          [
+            80,
+            0,
+            190
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o1": false,
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 1,
+        "fx": 0,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "SINDOTS",
+        "sx": 82,
+        "ix": 115,
+        "pal": 0,
+        "c1": 155,
+        "c2": 74,
+        "c3": 18,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ],
+    "n": "HIPHOTIC",
+    "ql": ""
+  },
+  "23": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 64,
+        "fx": 183,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS GALAXY",
+        "sx": 120,
+        "ix": 165,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "col": [
+          [
+            170,
+            0,
+            110
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "BLACK HOLE",
+    "ql": ""
+  },
+  "24": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 66,
+        "fx": 217,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "BLACK HOLE",
+        "sx": 118,
+        "ix": 178,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "col": [
+          [
+            40,
+            90,
+            220
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 1,
+        "fx": 0,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "COLORED BURSTS",
+        "sx": 80,
+        "ix": 112,
+        "pal": 0,
+        "c1": 80,
+        "c2": 95,
+        "c3": 15,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ],
+    "n": "GALAXY",
+    "ql": ""
+  },
+  "30": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 50,
+        "fx": 187,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS FIRE",
+        "sx": 150,
+        "ix": 155,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "o3": false,
+        "col": [
+          [
+            220,
+            50,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "VOLCANO",
+    "ql": ""
+  },
+  "31": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 48,
+        "fx": 188,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS FIREWORKS",
+        "sx": 145,
+        "ix": 160,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "o3": false,
+        "col": [
+          [
+            220,
+            30,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "FIRE",
+    "ql": ""
+  },
+  "32": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 52,
+        "fx": 189,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS VOLCANO",
+        "sx": 160,
+        "ix": 170,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "col": [
+          [
+            200,
+            0,
+            50
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "FIREWORKS",
+    "ql": ""
+  },
+  "33": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 52,
+        "fx": 190,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS IMPACT",
+        "sx": 135,
+        "ix": 165,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "o3": false,
+        "col": [
+          [
+            240,
+            80,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "VORTEX",
+    "ql": ""
+  },
+  "34": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 50,
+        "fx": 195,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS VORTEX",
+        "sx": 150,
+        "ix": 165,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "o3": false,
+        "col": [
+          [
+            210,
+            40,
+            20
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 1,
+        "fx": 0,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS FIRE",
+        "sx": 105,
+        "ix": 155,
+        "pal": 0,
+        "c1": 130,
+        "c2": 90,
+        "c3": 17,
+        "o1": true,
+        "o3": true,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ],
+    "n": "IMPACT",
+    "ql": ""
+  },
+  "40": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 66,
+        "fx": 152,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "COLORED BURSTS",
+        "sx": 125,
+        "ix": 165,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "col": [
+          [
+            125,
+            205,
+            98
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 1,
+        "fx": 0,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS GEQ 2D",
+        "sx": 145,
+        "ix": 165,
+        "pal": 0,
+        "c1": 52,
+        "c2": 80,
+        "c3": 10,
+        "o1": true,
+        "o3": true,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ],
+    "n": "HBNF DNA",
+    "ql": "HBNF"
+  },
+  "41": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 64,
+        "fx": 153,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "MATRIX",
+        "sx": 145,
+        "ix": 175,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "col": [
+          [
+            0,
+            130,
+            170
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 1,
+        "fx": 0,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS GALAXY",
+        "sx": 82,
+        "ix": 96,
+        "pal": 0,
+        "c1": 100,
+        "c2": 70,
+        "c3": 9,
+        "o1": true,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ],
+    "n": "HBNF MATRIX",
+    "ql": "HBNF"
+  },
+  "42": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 66,
+        "fx": 154,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS ATTRACTOR",
+        "sx": 120,
+        "ix": 175,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o1": false,
+        "o2": false,
+        "o3": false,
+        "col": [
+          [
+            180,
+            0,
+            80
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 1,
+        "fx": 0,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "GEQ",
+        "sx": 106,
+        "ix": 128,
+        "pal": 0,
+        "c1": 175,
+        "c2": 22,
+        "c3": 13,
+        "o1": true,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ],
+    "n": "HBNF METABALLS",
+    "ql": "HBNF"
+  },
+  "43": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 64,
+        "fx": 167,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS FIREWORKS",
+        "sx": 145,
+        "ix": 178,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "o2": false,
+        "o3": false,
+        "col": [
+          [
+            125,
+            205,
+            98
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o1": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 1,
+        "fx": 0,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS GEQ NOVA",
+        "sx": 115,
+        "ix": 125,
+        "pal": 0,
+        "c1": 86,
+        "c2": 45,
+        "c3": 12,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ],
+    "n": "HBNF BURSTS",
+    "ql": "HBNF"
+  },
+  "44": {
+    "on": true,
+    "transition": 0,
+    "bs": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 66,
+        "fx": 175,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "HIPHOTIC",
+        "sx": 135,
+        "ix": 170,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "col": [
+          [
+            0,
+            110,
+            180
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "o1": false,
+        "o2": false,
+        "o3": false
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 1,
+        "fx": 0,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "PS SPRAY",
+        "sx": 128,
+        "ix": 120,
+        "pal": 0,
+        "c1": 128,
+        "c2": 50,
+        "c3": 15,
+        "o1": true,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ],
+    "n": "HBNF SWIRL",
+    "ql": "HBNF"
+  },
+  "50": {
+    "on": true,
+    "o": true,
+    "n": "FIELD MIX",
+    "ql": "FD",
+    "playlist": {
+      "ps": [
+        40,
+        20,
+        43,
+        24,
+        44,
+        21,
+        42,
+        22,
+        33,
+        30,
+        31,
+        41
+      ],
+      "dur": [
+        105,
+        105,
+        105,
+        105,
+        105,
+        105,
+        105,
+        105,
+        105,
+        105,
+        105,
+        105
+      ],
+      "transition": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "repeat": 0
+    }
+  },
+  "51": {
+    "on": true,
+    "o": true,
+    "n": "SHOWCASE",
+    "ql": "SH",
+    "playlist": {
+      "ps": [
+        40,
+        20,
+        43,
+        24,
+        44,
+        21,
+        42,
+        22,
+        33,
+        30,
+        31,
+        41
+      ],
+      "dur": [
+        95,
+        95,
+        95,
+        95,
+        95,
+        95,
+        95,
+        95,
+        95,
+        95,
+        95,
+        95
+      ],
+      "transition": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "repeat": 0
+    }
+  },
+  "52": {
+    "on": true,
+    "o": true,
+    "n": "AUDIO REACTIVE",
+    "ql": "AU",
+    "playlist": {
+      "ps": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "dur": [
+        85,
+        85,
+        85,
+        85,
+        85
+      ],
+      "transition": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "repeat": 0
+    }
+  },
+  "53": {
+    "on": true,
+    "o": true,
+    "n": "COSMIC",
+    "ql": "CO",
+    "playlist": {
+      "ps": [
+        20,
+        21,
+        22,
+        24
+      ],
+      "dur": [
+        115,
+        115,
+        115,
+        115
+      ],
+      "transition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "repeat": 0
+    }
+  },
+  "54": {
+    "on": true,
+    "o": true,
+    "n": "PYRO",
+    "ql": "PY",
+    "playlist": {
+      "ps": [
+        30,
+        31,
+        33
+      ],
+      "dur": [
+        100,
+        100,
+        100
+      ],
+      "transition": [
+        0,
+        0,
+        0
+      ],
+      "repeat": 0
+    }
+  },
+  "55": {
+    "on": true,
+    "o": true,
+    "n": "HBNF SIGNATURE",
+    "ql": "HB",
+    "playlist": {
+      "ps": [
+        40,
+        41,
+        42,
+        43,
+        44
+      ],
+      "dur": [
+        105,
+        105,
+        105,
+        105,
+        105
+      ],
+      "transition": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "repeat": 0
+    }
+  },
+  "90": {
+    "on": true,
+    "transition": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 60,
+        "fx": 175,
+        "fxdef": false,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "bm": 0,
+        "n": "MAPPING OK",
+        "sx": 128,
+        "ix": 160,
+        "pal": 0,
+        "col": [
+          [
+            125,
+            205,
+            98
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "c2": 128,
+        "c3": 16,
+        "c1": 128
+      },
+      {
+        "id": 1,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "on": true,
+        "bri": 1,
+        "fx": 0,
+        "sel": true,
+        "bm": 0,
+        "n": "LAYER 2",
+        "pal": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "frz": false
+      }
+    ],
+    "n": "NIGHT SAFE",
+    "bs": 0
+  }
+}
