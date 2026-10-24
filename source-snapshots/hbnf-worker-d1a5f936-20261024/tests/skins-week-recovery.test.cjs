@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const { deleteWeek, restoreWeek, TABLES } = require('../public/skins-week-recovery.js');
 
 const date = '2026-10-27';
@@ -24,6 +25,9 @@ function provider(options={}) {
 }
 
 (async()=>{
+  const page=fs.readFileSync(require('node:path').join(__dirname,'../public/skins.html'),'utf8');
+  assert.match(page,/snap\.kind==='hbnf-week-recovery-v1'.*week-specific recovery action/,'generic full-root restore must refuse scoped recovery envelopes');
+  assert.match(page,/hbnfReadHistory\(\)\.filter\(x=>x\.kind!=='hbnf-week-recovery-v1'\)/,'generic undo must ignore scoped recovery envelopes');
   {
     const p=provider();const out=await deleteWeek(p,date);assert.equal(out.status,'deleted');
     const firstDelete=p.events.findIndex(x=>x.startsWith('tag-delete:'));
@@ -47,5 +51,5 @@ function provider(options={}) {
   {
     const p=provider();await deleteWeek(p,date);const id=p.findEnvelope().id;p.state.tags[TABLES[0]].push(tag(TABLES[0],date,'player-a',9));await assert.rejects(()=>restoreWeek(p,id),/conflict/);assert.equal(p.state.tags[TABLES[0]].find(x=>x.round_date===date).revision,9);assert.ok(!p.state.root.skins.weeks[date]);
   }
-  console.log('PASS: ACK/readback-before-delete, root CAS conflict, tag revision conflict, partial delete recovery, partial restore retry/idempotence, unrelated state preservation, restore conflict refusal');
+  console.log('PASS: ACK/readback-before-delete, root CAS conflict, tag revision conflict, partial delete recovery, partial restore retry/idempotence, unrelated state preservation, restore conflict refusal, generic restore isolation');
 })().catch(error=>{console.error(error);process.exitCode=1});
