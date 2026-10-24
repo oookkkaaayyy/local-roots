@@ -15,6 +15,21 @@ spec.loader.exec_module(bundle)
 
 
 class CandidateBundleTest(unittest.TestCase):
+    def test_stacked_cart_source_paths_trigger_release_ci(self):
+        workflow = (ROOT / ".github/workflows/hbnf-coordinated-release-ci.yml").read_text()
+        pull_request = workflow.split("  pull_request:\n", 1)[1].split(
+            "  workflow_dispatch:\n", 1
+        )[0]
+        self.assertNotIn("    branches:", pull_request)
+        self.assertIn("    paths:\n", pull_request)
+        for path in (
+            ".github/workflows/hbnf-coordinated-release-ci.yml",
+            "scripts/hbnf_candidate_bundle.py",
+            "tests/test_hbnf_candidate_bundle.py",
+            "tests/hbnf_owner_pwa_package.mjs",
+        ):
+            self.assertIn(f"      - '{path}'", pull_request, path)
+
     def test_exact_closed_manifest_and_reproducible_archive(self):
         source_commit = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
@@ -64,3 +79,4 @@ class CandidateBundleTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

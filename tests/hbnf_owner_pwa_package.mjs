@@ -17,6 +17,7 @@ const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
 const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_package.py");
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
+const candidateBuilder = fs.readFileSync(path.join(root, "scripts/hbnf_candidate_bundle.py"), "utf8");
 
 assert.match(html, /hbnf-cart2-owner-control-guest-qr-v1-20261016/);
 assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/owner-pwa\/hbnf-cart\.html"/);
@@ -54,8 +55,13 @@ for (const name of [
 ]) {
   assert.ok(installer.includes(`"${name}"`), `installer omits ${name}`);
   assert.ok(packageBuilder.includes(`"${name}"`), `Owner/Guest package builder omits ${name}`);
-  assert.ok(releaseWorkflow.includes(`hbnf-final-controller/${name}`), `release package omits ${name}`);
+  assert.ok(
+    candidateBuilder.includes(`("hbnf-final-controller/${name}", "controller/${name}")`),
+    `candidate release bundle omits ${name}`,
+  );
 }
+assert.match(releaseWorkflow, /scripts\/hbnf_candidate_bundle\.py/,
+  "coordinated release workflow must use the checked candidate bundle builder");
 
 assert.match(html, /navigator\.serviceWorker\.register/);
 assert.match(html, /local-control-entry/);

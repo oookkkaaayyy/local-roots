@@ -42,9 +42,6 @@ on:
       - 'tests/hbnf_source_tree_identity.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   pull_request:
-    branches:
-      - hbnf-prephase2-final-integration-20260927
-      - codex/glow-matrix-relay-integration-20261014
     paths:
       - 'hbnf-final-controller/**'
       - 'hbnf-wow-bundle/backend/**'
@@ -54,6 +51,9 @@ on:
       - 'tests/hbnf-*.py'
       - 'scripts/hbnf_build_local_owner_pwa.py'
       - 'tests/test_hbnf_owner_pwa_builder_validation.py'
+      - 'scripts/hbnf_candidate_bundle.py'
+      - 'tests/test_hbnf_candidate_bundle.py'
+      - 'tests/hbnf_owner_pwa_package.mjs'
       - 'hbnf-ui-v6-package/**'
       - 'staging/coordinated-backend/**'
       - 'evidence/live-production-20261001/**'
@@ -261,3 +261,4 @@ jobs:
             ${{ runner.temp }}/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip.manifest.json
           if-no-files-found: error
           retention-days: 7
+
