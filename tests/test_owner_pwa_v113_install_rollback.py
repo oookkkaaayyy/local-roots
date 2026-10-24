@@ -1,4 +1,5 @@
 import hashlib
+import io
 import os
 from pathlib import Path
 import shutil
@@ -9,7 +10,8 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "staging/coordinated-backend/opal/owner-pwa-local-v1.0.13"
-BASELINE_PACKAGE = ROOT / "staging/coordinated-backend/opal/owner-pwa-local-v1.0.12-tx02-package"
+CANDIDATE_ZIP = PACKAGE / "hbnf-owner-pwa-local-v1.0.13.zip"
+BASELINE_PACKAGE_SHA = "a24f480aa5dd9cdfc8fe5c415b277f4605db1c506054b8c9e5918bd03ccf62b6"
 READBACK = ROOT / "evidence/owner-pwa-v112-tx02-direct-readback-20261024"
 BASELINE_SHA = "054155fdca281f07d377fa1e03b33a127088499c6e97c59082a579587624cf80"
 
@@ -41,17 +43,21 @@ class OwnerPwaV113InstallerTests(unittest.TestCase):
         self.temp.cleanup()
 
     def _materialize_baseline(self):
-        with zipfile.ZipFile(BASELINE_PACKAGE / "hbnf-owner-pwa-local-v1.0.12.zip") as archive:
+        with zipfile.ZipFile(CANDIDATE_ZIP) as candidate:
+            rollback_bytes = candidate.read("ROLLBACK_BASELINE.zip")
+        self.assertEqual(hashlib.sha256(rollback_bytes).hexdigest(), BASELINE_PACKAGE_SHA)
+        with zipfile.ZipFile(io.BytesIO(rollback_bytes)) as archive:
             for name in archive.namelist():
                 if name.startswith("owner-pwa/") and not name.endswith("/"):
                     out = self.target / name.split("/", 1)[1]
                     out.parent.mkdir(parents=True, exist_ok=True)
                     out.write_bytes(archive.read(name))
+            payload_bytes = archive.read("PAYLOAD.SHA256SUMS")
+            rollback_script = archive.read("rollback.sh")
         (self.target / ".hbnf-package-marker").write_text("hbnf-owner-pwa-local-v1\n")
         (self.target / ".hbnf-package-version").write_text("1.0.12\n")
-        payload = (BASELINE_PACKAGE / "PAYLOAD.SHA256SUMS").read_bytes().replace(b"owner-pwa/", b"")
-        (self.target / ".hbnf-payload.sha256").write_bytes(payload)
-        shutil.copyfile(BASELINE_PACKAGE / "rollback.sh", self.target / ".hbnf-rollback.sh")
+        (self.target / ".hbnf-payload.sha256").write_bytes(payload_bytes.replace(b"owner-pwa/", b""))
+        (self.target / ".hbnf-rollback.sh").write_bytes(rollback_script)
         baseline = READBACK / "BASELINE.SHA256SUMS"
         self.assertEqual(sha(baseline), BASELINE_SHA)
         shutil.copyfile(baseline, self.pkg / "BASELINE.SHA256SUMS")
@@ -75,8 +81,10 @@ class OwnerPwaV113InstallerTests(unittest.TestCase):
             (candidate / name).write_bytes(data)
             entries.append(f"{hashlib.sha256(data).hexdigest()}  owner-pwa/{name}\n")
         (self.pkg / "PAYLOAD.SHA256SUMS").write_text("".join(entries))
-        rollback_zip = BASELINE_PACKAGE / "hbnf-owner-pwa-local-v1.0.12.zip"
-        shutil.copyfile(rollback_zip, self.pkg / "ROLLBACK_BASELINE.zip")
+        with zipfile.ZipFile(CANDIDATE_ZIP) as candidate:
+            rollback_bytes = candidate.read("ROLLBACK_BASELINE.zip")
+        rollback_zip = self.pkg / "ROLLBACK_BASELINE.zip"
+        rollback_zip.write_bytes(rollback_bytes)
         (self.pkg / "ROLLBACK_BASELINE.SHA256").write_text(
             f"{sha(rollback_zip)}  ROLLBACK_BASELINE.zip\n"
         )
