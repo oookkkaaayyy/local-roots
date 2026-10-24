@@ -28,8 +28,24 @@ let hydrating = false;
 let canonicalCapabilities = {};
 let cartStatusChecked = false;
 let cartConnectionUnavailable = false;
-const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
 let localControlActive = false;
+let localStateRefreshQueued = false;
+function scheduleLocalStateRefresh() {
+  if (!OPAL_LOCAL_PWA || !localControlActive || document.hidden || tuneInFlight || tuneDirty || localStateRefreshQueued) return;
+  localStateRefreshQueued = true;
+  window.setTimeout(() => {
+    localStateRefreshQueued = false;
+    if (!OPAL_LOCAL_PWA || !localControlActive || document.hidden || tuneInFlight || tuneDirty || localOwnerControl.commandsPending > 0) return;
+    try {
+      const out = localOwnerControl.snapshot();
+      if (!out || out.local !== true || !out.desired) return;
+      revision = out.desired.revision;
+      updateVibeSelection(out.desired.state);
+      hydrateLocalControls(out.desired.state);
+    } catch (_) {}
+  }, 0);
+}
+const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA, onState: scheduleLocalStateRefresh });
 let lastLocalEnrollAt = 0;
 let lastCloudPairValidationAt = 0;
 // Match the local Matrix control-ready freshness ceiling. Cloud observations

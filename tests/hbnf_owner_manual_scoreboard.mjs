@@ -39,13 +39,13 @@ test("manual display uses only the local overlay path; live data remains a separ
   const liveOnly = source.slice(liveStart, liveEnd);
   assert.match(liveOnly, /canonicalRead\("live_status"/);
   assert.doesNotMatch(liveOnly, /readLiveCache|renderLive\(cached/);
-  assert.match(html, /Show scores entered here[^<]*works offline/);
-  assert.match(html, /Live score updates require an internet connection/);
-  assert.match(html, /Show scores on Cart/);
+  assert.match(html, /Show entered scores \(offline\)/);
+  assert.match(html, /Live scores need an internet connection/);
+  assert.match(html, /Show scores on Matrix/);
   assert.match(html, /id="scoreActionStatus" class="status" role="status" aria-live="polite"/);
   assert.match(html, /id="scoreActionStatus"[^>]*hidden/);
   assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/owner-pwa\/hbnf-cart\.html"/);
-  assert.match(html, /Open local controls · Cart Wi-Fi/);
+  assert.match(html, /Local controls · Cart Wi-Fi/);
   assert.doesNotMatch(html, /mission-control-local\/index\.html/);
 });
 
@@ -62,7 +62,7 @@ test("Show scores explains when no live round exists and sends no overlay", asyn
   };
   vm.runInNewContext(source.slice(start, end), context);
   await context.showScoreboard();
-  assert.equal(statusNode.textContent,"No live round is active. Start a Skins or Glow round, then show scores.");
+  assert.equal(statusNode.textContent,"No active round found. Score update time isn’t available; check the scoring page.");
   assert.equal(statusNode.className,"status bad");
   assert.equal(statusNode.hidden,false,"the result must become visible when the user requests scores");
   assert.equal(overlays.length, 0, "no active round must not send a Matrix overlay");
@@ -80,7 +80,7 @@ test("Show scores distinguishes an active round that has no score entries", asyn
   };
   vm.runInNewContext(source.slice(start, end), context);
   await context.showScoreboard();
-  assert.equal(statusNode.textContent,"A round is active, but no scores are available yet. Enter scores, then show them.");
+  assert.equal(statusNode.textContent,"No scores found. Score update time isn’t available; enter scores, then try again.");
   assert.equal(statusNode.className,"status bad");
   assert.equal(overlays.length,0,"an empty active round must not send a Matrix overlay");
 });
@@ -100,7 +100,7 @@ test("Show scores sends the active round after its data is confirmed", async () 
   assert.equal(overlays.length, 1);
   assert.equal(overlays[0][0], "scoreboard");
   assert.deepEqual(JSON.parse(JSON.stringify(overlays[0][1])), { label: "F9", entries: ["A 3", "B 2"] });
-  assert.equal(statusNode.textContent, "Score display request sent. Check the Matrix to confirm it appeared.");
+  assert.equal(statusNode.textContent, "Scores sent from the latest check. The update time isn’t available; check Matrix.");
 });
 
 test("Show scores reports live-read failures beside the score controls and sends no overlay", async () => {
@@ -116,8 +116,8 @@ test("Show scores reports live-read failures beside the score controls and sends
   vm.runInNewContext(source.slice(start, end), context);
   await assert.rejects(context.showScoreboard(), /offline/);
   assert.equal(statusNode.hidden,false);
-  assert.match(statusNode.textContent,/Couldn’t check for a live round/);
-  assert.match(statusNode.textContent,/no scores were sent/);
+  assert.match(statusNode.textContent,/Couldn’t check for an active round/);
+  assert.match(statusNode.textContent,/No scores were sent/);
   assert.equal(overlays.length,0);
 });
 
@@ -134,7 +134,7 @@ test("Show scores reports overlay failures without claiming the Matrix changed",
   vm.runInNewContext(source.slice(start, end), context);
   await assert.rejects(context.showScoreboard(), /bridge offline/);
   assert.equal(statusNode.hidden,false);
-  assert.match(statusNode.textContent,/Couldn’t send the scores/);
+  assert.match(statusNode.textContent,/Couldn’t send scores to Matrix/);
   assert.doesNotMatch(statusNode.textContent,/showing on the Cart/);
 });
 
@@ -151,5 +151,5 @@ test("Show scores reports when the overlay bridge is unavailable", async () => {
   vm.runInNewContext(source.slice(start, end), context);
   await assert.rejects(context.showScoreboard(), /bridge unavailable/);
   assert.equal(statusNode.hidden,false);
-  assert.match(statusNode.textContent,/Couldn’t send the scores/);
+  assert.match(statusNode.textContent,/Couldn’t send scores to Matrix/);
 });

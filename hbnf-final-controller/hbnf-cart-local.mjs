@@ -23,6 +23,7 @@ export class LocalOwnerControl {
   constructor(options = {}) {
     this.origin = String(options.origin || LOCAL_CONTROL_ORIGIN).replace(/\/$/, "");
     this.opalDirect = options.opalDirect === true;
+    this.onState = typeof options.onState === "function" ? options.onState : null;
     this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js"));
     this.directStorage = options.storage || (typeof localStorage !== "undefined" ? localStorage : null);
     this.directPowerKey = "hbnf.owner-pwa-opal.power-restore.v1";
@@ -215,7 +216,12 @@ export class LocalOwnerControl {
     const matrixInfo = await module.getJson("http://" + LOCAL_MATRIX_IP + "/json/info");
     if (String(matrixInfo.mac || "").toLowerCase().replace(/:/g, "") !== LOCAL_MATRIX_MAC) throw new Error("Unexpected Matrix identity.");
     if (!this.transport) {
-      this.transport = new module.LocalMatrixTransport({ url: "ws://" + LOCAL_MATRIX_IP + "/ws" });
+      this.transport = new module.LocalMatrixTransport({
+        url: "ws://" + LOCAL_MATRIX_IP + "/ws",
+        onState: state => {
+          try { this.onState?.(state); } catch (_) {}
+        },
+      });
       this.token = "__opal_direct__";
     }
     if (!this.transport.verifyIdentity(matrixInfo)) throw new Error("Matrix identity verification failed.");

@@ -16,7 +16,7 @@ for (const id of [
 assert.ok(html.includes("hbnf-cart-features.mjs"),"feature module not loaded");
 assert.match(html, /<section id="scoresPanel"[\s\S]*?id="liveRefreshStatus"[^>]*role="status"[^>]*aria-live="polite"/, "manual score refresh feedback must be visible in the Scores section");
 assert.ok(features.includes('setLiveRefreshStatus("Refreshing scores…")'),"manual refresh does not announce its pending state in Scores");
-assert.ok(features.includes('setLiveRefreshStatus("Scores checked just now. Score-update time is unknown.")'),"manual refresh must distinguish a successful read from score-update freshness");
+assert.ok(features.includes('setLiveRefreshStatus("Scores refreshed. The last update time isn’t available.")'),"manual refresh must distinguish a successful read from score-update freshness");
 assert.ok(features.includes('setLiveRefreshStatus("Couldn’t refresh scores. Check the connection and try again.",true)'),"manual refresh does not announce failure in Scores");
 assert.ok(controller.includes("window.HBNFCanonical"),"canonical browser bridge missing");
 assert.ok(controller.includes("async function command(type, payload = {})"),"canonical command payload bridge missing");
@@ -81,7 +81,7 @@ assert.ok(!features.includes("?."),"optional chaining is not allowed in iOS-12-t
   ]});
   assert.equal(matrix.textContent,"Responding");
   assert.equal(aux.textContent,"Responding");
-  assert.equal(badge.textContent,"Cart connected");
+  assert.equal(badge.textContent,"Devices responding");
 }
 
 {
@@ -103,7 +103,7 @@ assert.ok(!features.includes("?."),"optional chaining is not allowed in iOS-12-t
   assert.deepEqual(status,[["Refreshing scores…",false]],"manual tap during automatic refresh must show pending feedback immediately");
   resolveRead({live:{active:true,entries:["A 3"]}});
   await automatic;
-  assert.deepEqual(status,[["Refreshing scores…",false],["Scores checked just now. Score-update time is unknown.",false]],"the shared refresh must resolve with honest score freshness");
+  assert.deepEqual(status,[["Refreshing scores…",false],["Scores refreshed. The last update time isn’t available.",false]],"the shared refresh must resolve with honest score freshness");
 }
 
 
@@ -125,7 +125,7 @@ assert.ok(!features.includes("?."),"optional chaining is not allowed in iOS-12-t
     vm.runInNewContext(body,context);
     return {context,status,element};
   };
-  for(const [live,expected] of [[null,"No active round was found in the latest read."],[{active:false},"No active round was found in the latest read."],[{active:true,entries:[]},"No scores were found in the latest read."]]){
+  for(const [live,expected] of [[null,"No active round found. Score update time isn’t available; check the scoring page."],[{active:false},"No active round found. Score update time isn’t available; check the scoring page."],[{active:true,entries:[]},"No scores found. Score update time isn’t available; enter scores, then try again."]]){
     let overlays=0;
     const {context,status}=makeContext(async()=>({live}),async()=>{overlays++;});
     await context.showScoreboard();
@@ -138,13 +138,13 @@ assert.ok(!features.includes("?."),"optional chaining is not allowed in iOS-12-t
   const pending=makeContext(async()=>({live:{active:true,label:"Round",entries:["A 3"]}}),()=>new Promise((resolve,reject)=>{resolveOverlay=resolve;rejectOverlay=reject;}));
   const sending=pending.context.showScoreboard();
   for(let i=0;i<6;i++) await Promise.resolve();
-  assert.deepEqual(pending.status.map(row=>row[0]),["Checking for an active round…","Sending scores to the Cart display…"],"pending Score send must be shown immediately");
+  assert.deepEqual(pending.status.map(row=>row[0]),["Checking for an active round…","Sending scores to Matrix…"],"pending Score send must be shown immediately");
   resolveOverlay();
   await sending;
-  assert.match(pending.status[2][0],/^Scores sent from the latest read\. Score-update time is unknown;/,"successful send must disclose unknown score freshness and prompt display verification");
+  assert.equal(pending.status[2][0],"Scores sent from the latest check. The update time isn’t available; check Matrix.","successful send must disclose unknown score freshness and prompt display verification");
   const failed=makeContext(async()=>({live:{active:true,entries:["A 3"]}}),async()=>{throw new Error("offline");});
   await assert.rejects(failed.context.showScoreboard(),/offline/);
-  assert.match(failed.status[2][0],/^Couldn’t send the scores to the Cart display\./,"send failure must explain the next recovery step");
+  assert.match(failed.status[2][0],/^Couldn’t send scores to Matrix\./,"send failure must explain the next recovery step");
 }
 
 console.log("HBNF coordinated controller contract: PASS");
