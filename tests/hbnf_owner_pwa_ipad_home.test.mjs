@@ -21,7 +21,7 @@ assert.match(statusSection, /<span>Cart<\/span>/);
 assert.match(statusSection, /<span>Internet<\/span>/);
 assert.match(statusSection, /<span>Matrix<\/span>/);
 assert.doesNotMatch(statusSection, /Supabase|acknowledged|updated_at|IPAD|HTTP/i);
-assert.match(statusSection, /check the display to confirm what you can see/i);
+assert.doesNotMatch(statusSection, /check the display to confirm what you can see/i);
 
 const guestSection = html.match(/<section class="panel guest-quick-panel"[\s\S]*?<\/section>/)?.[0] || "";
 assert.match(guestSection, /id="guestModeStatus"/);
@@ -37,17 +37,17 @@ assert.match(controller, /Controls unavailable/);
 assert.match(controller, /guestDefaultEnableNeeded/);
 assert.match(controller, /Guest access status is unavailable\. Reconnect to the Cart to check it\./);
 
-assert.match(css, /\.primary-actions a,\.primary-actions button\{[^}]*min-height:52px/s);
-assert.match(css, /\.guest-invite\{[^}]*padding:14px/s);
-assert.match(css, /\.guest-invite img\{[^}]*padding:8px/s);
+assert.match(css, /\.primary-actions a,\.primary-actions button\{[^}]*min-height:48px/s);
+assert.match(css, /\.guest-invite\{[^}]*padding:8px/s);
+assert.match(css, /\.guest-invite img\{[^}]*padding:5px/s);
 assert.match(css, /summary::?-webkit-details-marker/);
 assert.match(css, /@media\(max-width:699px\)/);
-assert.match(css, /body\{width:auto;max-width:none!important/);
-assert.match(css, /body>main\{width:min\(100%,1080px\);max-width:1080px/);
+assert.match(css, /body\{margin:0;min-height:100vh/);
+assert.match(css, /body>main\{width:min\(100%,1080px\)/);
 
 const uiModule = fs.readFileSync("hbnf-final-controller/hbnf-cart-ui-v6.mjs", "utf8");
 assert.match(css, /@media\(min-width:900px\) and \(min-height:680px\) and \(orientation:landscape\)/);
-assert.match(css, /#ownerViewShow>#lightsPanel,#ownerViewShow>#textPanel\{grid-column:1\/-1\}/);
+assert.match(css, /grid-template-areas:"lights motion" "text power"/);
 assert.match(uiModule, /aria-controls="ownerViewShow"/);
 
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);

@@ -11,17 +11,16 @@ function sceneButtons(){
   if(!select||!host||host.dataset.ready==="1")return;
   host.dataset.ready="1";
   const labels=[
-    ["course-flow","Balanced (Course Flow)","45–90 seconds between variants; broad speed range."],
-    ["field-mix","Upbeat (Field Mix)","Faster speed range; 40–80 second holds."],
-    ["hbnf-signature","Signature (HBNF Signature)","Mid-to-fast speed range; 50–100 second holds."],
-    ["quiet-cosmos","Ambient (Quiet Cosmos)","Slower speed range; 60–120 second holds."]
+    ["course-flow","Course flow"],
+    ["field-mix","Field mix"],
+    ["hbnf-signature","HBNF signature"],
+    ["quiet-cosmos","Quiet cosmos"]
   ];
-  for(const [value,label,description] of labels){
+  for(const [value,label] of labels){
     const b=document.createElement("button");
     b.type="button";b.className="scene-button";b.dataset.scene=value;b.setAttribute("aria-pressed","false");
     const name=document.createElement("strong");name.className="scene-name";name.textContent=label;
-    const detail=document.createElement("span");detail.className="scene-description";detail.textContent=description;
-    b.append(name,detail);
+    b.append(name);
     b.addEventListener("click",()=>{
       if(select.value!==value){
         select.value=value;
@@ -40,18 +39,6 @@ sceneButtons();
 const main = document.querySelector("body > main");
 const header = main && main.querySelector(".hero-v6");
 if (main && header && !document.getElementById("ownerNavigation")) {
-  const css = document.createElement("style");
-  css.textContent = `
-    /* Layout rules only; visual design lives in hbnf-cart-ui-v6.css. */
-    #ownerNavigation{position:sticky;top:0;z-index:5}
-    .owner-view{display:grid;gap:14px;align-items:start}.owner-view[hidden]{display:none!important}
-    .owner-view-heading{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    #scoresPanel .score-entry{margin-top:12px}
-    .owner-score-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    @media(max-width:699px){.hero-v6>#status{grid-column:1/-1}}
-  `;
-  document.head.appendChild(css);
-
   const nav = document.createElement("nav");
   nav.id = "ownerNavigation";
   nav.setAttribute("aria-label", "Cart controls");
@@ -95,13 +82,8 @@ if (main && header && !document.getElementById("ownerNavigation")) {
   if (oldSceneGrid) oldSceneGrid.remove();
   const oldSubControls = main.querySelector(".cart-commands .sub-controls");
   if (oldSubControls) oldSubControls.remove();
-  const showHelp = document.createElement("p");
-  showHelp.className = "apply-note";
-  showHelp.textContent = "Next changes the look. Auto chooses a look for you.";
-  const sequenceRow = main.querySelector(".cart-commands .row");
-  if (sequenceRow) sequenceRow.after(showHelp);
-  move(".cart-commands", "show");
   move("#textPanel", "show");
+  move(".cart-commands", "show");
   move(".quick-tuning", "system");
   move("#scoresPanel", "scores");
   move(".course-status-panel", "system");

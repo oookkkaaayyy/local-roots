@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
-  "change_id": "OWNER_PWA_FIELD_DESK_REDESIGN_20261024",
-  "summary": "Redesign the Owner Cart as an HBNF field desk led by the verified canonical HBNF night palette, harmonized with documented Local Roots cream, sage, and earth accents; clarify Show, Scores, and System while preserving existing behavior.",
+  "change_id": "OWNER_PWA_FIELD_UTILITY_REVISION_20261024",
+  "summary": "Reorganize the Owner Cart into a compact earth-toned utility using documented Local Roots cream, sage, soil and clay as the dominant surfaces with restrained HBNF green accents; preserve all controls, Show motion and hidden data.",
   "change_class": "SUBJECTIVE_DESIGN",
   "impact": {
     "architecture": false,
@@ -14,29 +14,29 @@
     "scoped_evidence": {
       "approved_architecture_reference": "Existing static Owner PWA, three-view navigation, current command/status handlers and guest route. Presentation/layout only; no new runtime, backend, dependency, release gate, or device behavior.",
       "affected_subsystem": "Owner PWA visual system and placement of brightness, Vibe, Text, independent Show style, Guest and deferred scores/colors controls. Existing IDs, storage, handlers, live score source, relay and permission rules remain.",
-      "rollback_reference": "Revert this commit\u2019s presentation-only edits in hbnf-final-controller/hbnf-cart.html, hbnf-final-controller/hbnf-cart-ui-v6.css, hbnf-final-controller/hbnf-cart-ui-v6.mjs and focused test/evidence files; prior commit 58457871ba78cd472627d2154d2bfa28d9f45a36 remains the source recovery point. No installed package or production state changes.",
+      "rollback_reference": "Revert this source commit to its immediate parent draft PR #130 source 972449e043a04022718e16c525eb905649a3176c. No installed package, production device, or device setting changes.",
       "evidence_sources": [
-        "evidence/cart2-owner-guest-vibe-r1-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R1_20261009/controller/hbnf-cart-ui-v6.css: established HBNF tokens --hbnf-bg #06100d, --hbnf-panel #0a1713, --hbnf-panel2 #0d211a, --hbnf-line #24483a, --hbnf-text #eff8f3, --hbnf-muted #8eaa9d, --hbnf-good #7cf0b0, --hbnf-warn #f0ca73, --hbnf-bad #ff9292, --hbnf-accent #4ce19f.",
-        "hbnf-final-controller/hbnf-cart.html (accepted current owner UI) and hbnf-final-controller/hbnf-cart-ui-v6.css: dark HBNF surfaces, pale text and green/teal control accents.",
-        "app/src/styles.css: Local Roots tokens --cream #fff8ee, --sage-light #dee6cf, --sage #8c956a, --root #3a2618, --clay #a7623a; used selectively as harmonizing support accents/surfaces, not as HBNF replacements.",
-        "hbnf-final-controller/hbnf-cart-icon-180.png: existing HBNF badge icon; icon is not used to infer the HBNF palette.",
-        "Apple HIG Layout: https://developer.apple.com/design/human-interface-guidelines/layout.",
-        "Apple HIG Accessibility: https://developer.apple.com/design/human-interface-guidelines/accessibility.",
-        "WCAG 2.2: https://www.w3.org/TR/WCAG22/."
+        "Accepted HBNF palette values retained from evidence/cart2-owner-guest-vibe-r1-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R1_20261009/controller/hbnf-cart-ui-v6.css; HBNF green is now a restrained accent.",
+        "Local Roots tokens from app/src/styles.css: --cream #fff8ee, --sage-light #dee6cf, --sage #8c956a, --root #3a2618, --clay #a7623a; exact values verified in source and used for dominant surfaces and controls.",
+        "hbnf-final-controller/hbnf-cart-icon-180.png remains unchanged; forest container and screen blend integrate the existing black-backed mark without editing its artwork.",
+        "Apple HIG Layout and UI Design Dos and Don\u2019ts: adapt to screen and orientation, group and align related controls, maintain touch targets and contrast.",
+        "GOV.UK Writing for user interfaces: minimize cognitive load, begin with less, remove explanatory copy where the interface can be self-evident.",
+        "WCAG 2.2: text and non-text contrast, reflow, visible focus, and target size."
       ],
       "tests": [
         "node --test tests/hbnf_cart_network_truth.test.mjs",
         "node --test tests/hbnf_owner_pwa_redesign_source.test.mjs tests/hbnf_owner_pwa_ipad_home.test.mjs tests/hbnf_owner_pwa_show_scores_system.test.mjs tests/hbnf_owner_palette_deferral.test.mjs tests/hbnf_owner_guest_qr_static.mjs tests/hbnf_owner_text_feedback.test.mjs",
-        "Exact source browser render at iPad Mini 744x1133 portrait and 1133x744 landscape; verify full-width fit/no horizontal overflow, navigation, visible Show style, honest offline state, hidden palette/Saved Looks, and touch-sized controls.",
+        "Render exact source at iPad Mini 744x1133 portrait and 1133x744 landscape and iPhone 390x844; verify compact hierarchy, navigation, no horizontal overflow, controls, offline feedback, colors/Saved Looks hidden and independent Show motion. Final render NOT CHECKED under browser policy restriction.",
         "node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs; git diff --check."
       ],
-      "summary": "Redesign Owner Cart as an HBNF field desk using the accepted HBNF night palette as primary, with documented Local Roots cream/sage/earth accents. Expose existing Show style controls without changing their backend, and refresh Owner PWA asset URLs so installed clients request the updated source."
+      "summary": "Reorganize the Owner Cart into a compact earth-toned utility using documented Local Roots cream, sage, soil and clay as the dominant surfaces with restrained HBNF green accents; preserve all controls, Show motion and hidden data."
     },
     "owner_design_gate": {
       "decision_status": "APPROVED",
-      "selected_option": "A distinct HBNF field desk with established HBNF dark ink/forest-green surfaces and pale text as primary identity, harmonized by selective Local Roots cream/sage/earth accents. Existing HBNF badge, editorial serif headings and sans-serif controls; Show view organized around Vibe, brightness, directly visible Show style choices, Text and secondary power; Guest in System, Scores isolated/deferred, diagnostics behind disclosure; preserve all current actions and data paths.",
-      "approval_reference": "Owner clarification relayed by the Cart coordinator on 2026-10-24: complete redesign is required, not incremental tweaks; preserve Brightness, Vibe, Text, Show and Guest; keep Colors/Saved Looks and scoring deferred but preserved; use HIG/WCAG and exact device-size review.",
-      "approved_by_owner": true
+      "selected_option": "Compact field utility led by documented Local Roots cream, stone, soil, clay, sage and forest tones; retain HBNF green only as a restrained accent. Use one system sans family, functional headings and short status copy. Align frequent controls and state first, fit portrait and landscape without dead space, preserve independent Show motion, guest controls, deferred Scores/Colors/Saved Looks and all data paths.",
+      "approval_reference": "Owner's corrective design brief relayed 2026-10-24 after rejecting the prior visual direction. Implement these specific requirements; final design acceptance is pending exact-source visual review.",
+      "approved_by_owner": true,
+      "visual_acceptance_status": "NOT_CHECKED"
     }
   }
 }

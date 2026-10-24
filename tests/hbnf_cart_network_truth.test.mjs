@@ -122,7 +122,7 @@ currentTime += 60000;
 probeContext.probeHbnfEndpoint();
 timers[timers.length-1].fn();
 assert.equal(probeElements.internetTruth.textContent, "Not confirmed");
-assert.match(html, /A Cart response confirms the change arrived\. Check the display to confirm what you can see\./);
+assert.doesNotMatch(html, /A Cart response confirms the change arrived|Check the display to confirm what you can see/);
 assert.match(html, /https:\/\/hbnightflyers\.com\/skins\.html/);
 assert.match(html, /https:\/\/hbnightflyers\.com\/glow\.html/);
 assert.match(features, /function updateDisplayedLiveSnapshot\(response\) \{[\s\S]*?renderLive\(live,false,updatedAt\)/, "score freshness may use only the source timestamp returned with the live response");
