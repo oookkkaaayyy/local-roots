@@ -1280,11 +1280,12 @@ function makeSyncHelpers(ctx){return{
   ctx.syncBaselinePromise=this.pullRoot();
   await ctx.syncBaselinePromise;
   ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live').on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
-   const incoming=(payload.new&&payload.new.state_json)||{};
-   const incomingRootHash=hbnfSyncHash(incoming);
+   const rawIncoming=(payload.new&&payload.new.state_json)||{};
+   const incoming=hbnfSyncClone(rawIncoming);
+   const incomingRootHash=hbnfSyncHash(rawIncoming);
    if(incomingRootHash&&incomingRootHash===ctx.lastRemoteRootHash)return;
-   const incomingBranchHash=hbnfSyncHash(incoming&&incoming[ctx.branch]);
-   const remoteBranch=incoming&&incoming[ctx.branch];
+   const remoteBranch=rawIncoming&&rawIncoming[ctx.branch];
+   const incomingBranchHash=hbnfSyncHash(remoteBranch);
    if(ctx.localDirty){
     if(ctx.syncing&&incomingBranchHash&&incomingBranchHash===ctx.inFlightBranchHash){
      ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;
@@ -1301,7 +1302,7 @@ function makeSyncHelpers(ctx){return{
    ctx.rootState=incoming||{};
    ctx.lastRemoteRootHash=incomingRootHash;
    ctx.lastRemoteBranchHash=incomingBranchHash;
-   const authoritative=ctx.normalize?ctx.normalize(remoteBranch):hbnfSyncClone(remoteBranch);
+   const authoritative=ctx.normalize?ctx.normalize(hbnfSyncClone(remoteBranch)):hbnfSyncClone(remoteBranch);
    const afterBranchHash=hbnfSyncHash(authoritative);
    if(afterBranchHash===beforeBranchHash)return;
    ctx.state=authoritative;
@@ -1326,17 +1327,19 @@ function makeSyncHelpers(ctx){return{
    if(!res.data||!res.data.updated_at)throw new Error('Cloud baseline unavailable; local copy retained.');
    const incoming=(res.data&&res.data.state_json)||{};
    const remoteBranch=incoming&&incoming[ctx.branch];
-   const authoritative=ctx.normalize?ctx.normalize(remoteBranch):hbnfSyncClone(remoteBranch);
+   const incomingRootHash=hbnfSyncHash(incoming);
+   const incomingBranchHash=hbnfSyncHash(remoteBranch);
+   const authoritative=ctx.normalize?ctx.normalize(hbnfSyncClone(remoteBranch)):hbnfSyncClone(remoteBranch);
    const cached=ctx.state?hbnfSyncClone(ctx.state):null;
    const editedWhileBaselinePending=!!ctx.localEditedBeforeBaseline&&!!ctx.localDirty;
    const pendingLocalBranch=editedWhileBaselinePending?cached:null;
    const pendingEditHasAuthoritativeBase=editedWhileBaselinePending&&ctx.startupBranchHash===hbnfSyncHash(authoritative);
    const cachedDiffers=!!cached&&hbnfSyncHash(cached)!==hbnfSyncHash(authoritative);
    if(cachedDiffers&&ctx.preserveLocalDraft)ctx.preserveLocalDraft(cached,res.data.updated_at);
-   ctx.rootState=incoming||{};
+   ctx.rootState=hbnfSyncClone(incoming)||{};
    ctx.syncBaselineReady=true;
-   ctx.lastRemoteRootHash=hbnfSyncHash(incoming);
-   ctx.lastRemoteBranchHash=hbnfSyncHash(remoteBranch);
+   ctx.lastRemoteRootHash=incomingRootHash;
+   ctx.lastRemoteBranchHash=incomingBranchHash;
    ctx.state=editedWhileBaselinePending?pendingLocalBranch:authoritative;
    ctx.localDirty=editedWhileBaselinePending;
    ctx.localSyncNeedsConfirmation=false;
