@@ -1,7 +1,9 @@
-# False-conflict fix candidate
+# HBNF scoring save recovery candidate
 
-This source-only change is based on observed snapshot commit `4289e37e8d0b2864cb17451c5267dfab87a63a1d`. It deep-copies fetched `league_state.state_json`, hashes the raw remote root/branch before normalization, and normalizes only a separate working copy for both initial load and realtime updates. This prevents in-place normalization defaults from changing the stored concurrency baseline and causing a false conflict.
+This candidate starts from the observed 44-asset capsule and includes the raw-state/realtime fix from baseline commit `4289e37e8d0b2864cb17451c5267dfab87a63a1d`. It deep-copies fetched `league_state.state_json`, records the raw revision baseline before normalization, and normalizes a separate working copy. This prevents the demonstrated false conflict caused by in-place normalization.
 
-`tests/verify-conflict-baseline.cjs` loads the immutable baseline page from the snapshot commit and the changed page from the working tree. It deterministically reproduces the baseline false conflict and verifies the candidate reaches exactly one mocked conditional update. It also dispatches a legacy-shaped mocked Postgres Realtime payload: the baseline mutates that provider payload during normalization, while the candidate preserves it, retains raw root/branch hashes, normalizes a detached working copy, saves locally, and renders the incoming update. The test uses no network and no real database.
+The additional reconnect correction retries the existing conditional save when browser `online` fires or Supabase Realtime resubscribes. It uses the existing revision check, stops on a detected conflict, retains local dirty state on failure, and clears it only after the update returns the row. It does not add a new persistence backend or alter scoring rules.
 
-This is a source/test candidate only. It has not been packaged, deployed, provider-write/readback verified, or tested on an iPhone or through Matrix. Full active deployment asset parity remains unproven.
+Focused mocked-provider tests cover row acknowledgment, stale revision conflict, lost acknowledgment/idempotent retry, offline edit recovery after reconnect, and supported week deletion with date/event-scoped Round Tags cleanup. They preserve the other root fields, historical scorecards, tag custody, stats, and backups. No real Supabase provider is contacted by these tests.
+
+This remains a candidate. Read-only route parity is not deployment lineage, mocked provider tests are not server readback, the full source-input archive is not a Cloudflare-uploaded version, and no production deploy or iPhone/Matrix acceptance has occurred.

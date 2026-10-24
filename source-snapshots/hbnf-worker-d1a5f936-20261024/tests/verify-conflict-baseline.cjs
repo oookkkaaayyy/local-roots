@@ -129,7 +129,11 @@ async function runRealtime(sourcePath) {
     },
   };
   const { makeSyncHelpers, sandbox, status } = loadSync(sourcePath, {
-    window: { supabase: { createClient: () => realtimeClient } },
+    window: {
+      supabase: { createClient: () => realtimeClient },
+      addEventListener() {},
+      removeEventListener() {},
+    },
     getConfiguredSupabase: () => ({ SUPABASE_URL: 'https://mock.invalid', SUPABASE_ANON_KEY: 'mock-key' }),
   });
   sandbox.saveLocal = () => { localSaves++; return true; };

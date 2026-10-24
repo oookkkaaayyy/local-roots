@@ -1,16 +1,24 @@
-# Local Worker package validation
+# HBNF Worker package and release gates
 
-This separate validation folder has a locally pinned Wrangler CLI and lockfile so the recovered assets can be dry-run built reproducibly without changing the observed snapshot's Wrangler evidence. Cloudflare documents `wrangler deploy --dry-run --outdir` as a compile without deployment. The validation config is asset-only, intentionally has no Worker script entrypoint, and uses a non-production Worker name.
+This directory pins Wrangler `4.152.0` and its lockfile. `npm ci`, the 44-file asset check, focused save/conflict tests, response normalization tests, and `wrangler deploy --dry-run` validate source/tooling only. Wrangler's dry-run output is a small no-op Worker and is **not** the full static-assets package.
 
-From this directory:
+The exact release input consists of the complete `public/` directory, the production-shaped `wrangler.jsonc`, and the pinned Wrangler toolchain. Cloudflare's supported `wrangler versions upload` command accepts a directory of static assets or the configured project and creates a new remote Worker Version. That is a provider write, even though it does not route production traffic. It must be separately authorized; this task has not uploaded a version or changed traffic.
 
-1. Run `npm ci` to install the locked toolchain.
-2. Run `npm run wrangler:version` to confirm the local CLI version.
-3. Run `npm run build:dry-run` to verify the 44 local asset hashes and compile into `.wrangler-output/` without publishing.
-4. Run `npm run test:route-parity` for the offline response-normalization checks, then `npm run verify:live-routes` to compare the nine known public HTML routes to this exact snapshot. The live check removes only the specifically identified Cloudflare challenge script injected into the HTML response; other differences remain visible and cause a nonzero exit.
+After an authorized upload, capture the returned candidate Version ID and preview it through Cloudflare's version preview route before any traffic change. The current active production Version recorded in the evidence is `d1a5f936-e2ea-4434-b4ee-b5858b1baa9e`; verify the live deployment again immediately before any future rollout. Rollback must use the exact pre-change active Version ID at 100% using `wrangler versions deploy <active-version-id>@100%`. Do not use the older `dfde63fe-685c-44f8-a230-9481caa3c3a3` manifest rollback ID as if it were the immediately prior production version.
 
-`LOCAL_ASSET_SHA256SUMS` records the exact bytes of the local `public/` files. It is deliberately separate from the existing `ASSET_SHA256SUMS` and release manifest: those are preserved source evidence and include a candidate/live `/skins` hash that differs from the raw recovered file. This mismatch remains unresolved and must not be normalized away.
+`LOCAL_ASSET_SHA256SUMS` covers the raw source snapshot; it is separate from historical preserved release evidence. A live route GET plus removal of only the identified appended Cloudflare challenge script is route-level response evidence, not provider asset export, binary equivalence, or source deployment lineage. Candidate/source mismatch on `/skins` is reported and must not be normalized away.
 
-The local hash check does **not** establish that every file matches the active Cloudflare deployment or that this snapshot is the deployed source. Provider parity, deployment lineage, provider save/readback, installable release packaging, rollback, and physical/device acceptance remain separate release gates.
+## Safe local checks
 
-The live-route check is response-level evidence only. A passing result still does not prove which Worker version served the bytes. A differing route is printed with both hashes rather than being normalized, overwritten, or treated as an unexplained hash mismatch.
+Run from this directory:
+
+1. `npm ci`
+2. `npm run wrangler:version` (must report `4.152.0`)
+3. `npm run verify:assets`
+4. `npm run test:sync-baseline`
+5. `npm run test:save-reconnect`
+6. `npm run test:route-parity`
+7. `npm run build:dry-run`
+8. `npm run verify:live-routes` for read-only HTTP observation; known `/skins` source drift is an expected difference until a candidate is deployed and previewed.
+
+No real Supabase row, production score, tag, or Cloudflare traffic is changed by these commands.
