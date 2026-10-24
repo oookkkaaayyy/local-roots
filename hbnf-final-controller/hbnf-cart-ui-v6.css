@@ -65,7 +65,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:2px solid #dff
 
 /* Cart 2.0 owner home: brightness and Vibe first, expert controls in details. */
 body{max-width:none!important;padding:clamp(12px,2.5vw,28px)!important}
-body>main{width:min(100%,920px)!important;margin-inline:auto!important;gap:12px!important}
+body>main{width:min(100%,920px)!important;max-width:920px!important;margin-inline:auto!important;gap:12px!important}
 .hero-v6{align-items:center}
 .hero-v6 h1{font-size:clamp(1.8rem,4vw,2.4rem)}
 .panel{padding:clamp(14px,2vw,22px)!important;border-radius:16px!important}

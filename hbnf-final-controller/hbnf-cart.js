@@ -378,11 +378,11 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   }
   if (badge) {
     if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
-    if (matrixOk && auxOk) { badge.textContent = snapshot.local === true ? "Cart + device replies current" : "Device replies current"; badge.className = "truth-badge good"; }
+    if (matrixOk && auxOk) { badge.textContent = snapshot.local === true ? "Cart, Matrix & underglow responding" : "Matrix & underglow responding"; badge.className = "truth-badge good"; }
     else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
-    else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Device status stale"; badge.className = "truth-badge warn"; }
-    else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Device status unknown"; badge.className = "truth-badge warn"; }
-    else { badge.textContent = "Checking devices"; badge.className = "truth-badge warn"; }
+    else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Matrix/underglow update is old"; badge.className = "truth-badge warn"; }
+    else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Matrix/underglow not confirmed"; badge.className = "truth-badge warn"; }
+    else { badge.textContent = "Checking Matrix & underglow"; badge.className = "truth-badge warn"; }
   }
 }
 
@@ -526,8 +526,8 @@ async function refresh({ hydrate = true } = {}) {
     renderVisualHealth(out, out);
     const localChecks = deviceReadinessChecks(out);
     statusNode.textContent = localChecks.every(value => value.indexOf("PASS") >= 0)
-      ? "Cart local path is reachable. Matrix/AUX readbacks are current and acknowledged; physical output is unverified."
-      : "Cart local path is reachable. Matrix/AUX readback or DDP synchronization needs attention.";
+      ? "Cart is reachable. Matrix and underglow responded; check the display to confirm what’s showing."
+      : "Cart is reachable, but Matrix or underglow has not confirmed its status.";
     return out;
   }
 
@@ -547,14 +547,14 @@ async function refresh({ hydrate = true } = {}) {
     const submitted = observed.some(x => Number(x.desired_revision) === Number(revision) && x.status === "submitted");
     if (fullyApplied || failed) pendingRevision = null;
     statusNode.textContent = fullyApplied
-      ? "Settings acknowledged by Matrix and underglow device reports. Physical output is unverified."
+      ? "Matrix and underglow confirmed the change. Check the display to verify the result."
       : failed
-        ? "The Cart could not apply that change. Open Troubleshooting for details."
+        ? "The Cart could not apply that change. Check Cart status before retrying."
         : submitted
           ? "Change sent. Waiting for the Cart…"
         : pendingRevision === revision
           ? "Change sent. Waiting for the Cart…"
-        : "The Cart hasn’t updated yet. Open Troubleshooting for details.";
+        : "Waiting for the Cart to confirm. Check Cart status if it takes too long.";
   } else {
     statusNode.textContent = "The Cart is not ready. No change was sent.";
   }

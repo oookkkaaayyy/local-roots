@@ -54,6 +54,12 @@ if (main && header && !document.getElementById("ownerNavigation")) {
     .owner-score-actions button{min-height:52px;background:#16434d;border-color:#3a7880}
     .owner-view .course-status-grid{gap:8px}.owner-view .course-status-cell,.owner-view .truth-cell{border-radius:12px}
     .owner-view .danger{background:#472832;border-color:#a5505a}
+    @media(min-width:900px) and (min-height:680px) and (orientation:landscape){
+      #ownerViewShow{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+      #ownerViewShow>#lightsPanel,#ownerViewShow>.cart-commands{min-width:0}
+      #ownerViewShow>#textPanel{grid-column:1/-1}
+    }
+    @media(max-width:800px){.hero-v6{flex-wrap:wrap}.hero-v6>#status{flex-basis:100%}}
     @media(max-width:540px){body{padding-left:12px;padding-right:12px}.owner-view .guest-invite{align-items:flex-start}.owner-score-actions{grid-template-columns:1fr}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
   `;
