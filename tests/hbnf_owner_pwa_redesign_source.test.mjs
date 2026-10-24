@@ -63,8 +63,13 @@ test("deferred palette and saved look controls stay hidden with their source dat
 
 test("layout uses available wide screens and preserves touch-sized primary controls", () => {
   assert.match(css, /@media\(min-width:900px\).*orientation:landscape/s);
-  assert.match(css, /grid-template-areas:"lights motion" "text power"/);
+  assert.match(css, /grid-template-areas:"status status" "actions actions" "lights motion" "text text"/);
+  assert.match(ui, /move\("\.course-status-panel", "show"\)/);
+  assert.match(ui, /className = "panel show-device-actions"/);
+  assert.match(ui, /append\(heading, commandRow\)/);
+  assert.match(ui, /commandPanel\.remove\(\)/);
   assert.match(css, /#ownerViewShow>#showStylePanel\{grid-area:motion\}/);
+  assert.match(css, /\.show-device-actions \.row\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
   assert.match(css, /min-height:48px/);
   assert.match(css, /input\[type=range\].*min-height:44px/s);
   assert.match(ui, /aria-controls="ownerViewShow"/);
@@ -73,11 +78,11 @@ test("layout uses available wide screens and preserves touch-sized primary contr
 });
 
 test("changed Owner PWA assets use a fresh matching cache revision", () => {
-  const revision = "20261024-cart-field-desk-r3";
+  const revision = "20261024-cart-control-home-r4";
   for (const asset of ["hbnf-cart-ui-v6.css", "hbnf-cart.js", "hbnf-cart-ui-v6.mjs", "hbnf-cart-features.mjs", "hbnf-cart-skins-score.mjs"]) {
     assert.match(html, new RegExp(`${asset.replaceAll(".", "\\.")}\\?v=${revision}`));
   }
-  assert.match(html, /hbnf-cart2-owner-field-desk-r3-20261024/);
+  assert.match(html, /hbnf-cart2-owner-control-home-r4-20261024/);
   assert.match(readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8"), new RegExp(`hbnf-cart-readiness\\.mjs\\?v=${revision}`));
   assert.match(readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8"), new RegExp(`hbnf-cart-readiness\\.mjs\\?v=${revision}`));
 });

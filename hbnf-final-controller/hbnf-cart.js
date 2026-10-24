@@ -2,7 +2,7 @@
 import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
-import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261024-cart-field-desk-r3";
+import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261024-cart-control-home-r4";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";

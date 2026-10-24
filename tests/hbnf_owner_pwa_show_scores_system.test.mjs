@@ -11,6 +11,10 @@ test("Owner PWA exposes Show, Scores and System without duplicating controls",()
     if(id==="truthPanel") assert.match(html,/class="panel truth-panel"/); else assert.ok(html.includes('id="'+id+'"'),"missing existing control "+id);
   }
   assert.match(shell,/move\("#lightsPanel", "show"\)/);
+  assert.match(shell,/move\("\.course-status-panel", "show"\)/);
+  assert.match(shell,/className = "panel show-device-actions"/);
+  assert.match(shell,/querySelector\(":scope > \.row"\)/);
+  assert.match(shell,/commandPanel\.remove\(\)/);
   assert.match(shell,/move\("#scoresPanel", "scores"\)/);
   assert.match(shell,/move\("\.truth-panel", "system"\)/);
   assert.match(shell,/\["#featureRefreshLive", "#featureScoreboard"\]/);

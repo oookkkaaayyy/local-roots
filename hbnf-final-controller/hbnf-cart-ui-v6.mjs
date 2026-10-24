@@ -68,6 +68,7 @@ if (main && header && !document.getElementById("ownerNavigation")) {
     if (element) views[view].appendChild(element);
     return element;
   };
+  move(".course-status-panel", "show");
   move("#lightsPanel", "show");
   const showStyle = move("#showStylePanel", "show");
   const sceneButtonsHost = main.querySelector("#sceneButtons");
@@ -83,10 +84,22 @@ if (main && header && !document.getElementById("ownerNavigation")) {
   const oldSubControls = main.querySelector(".cart-commands .sub-controls");
   if (oldSubControls) oldSubControls.remove();
   move("#textPanel", "show");
-  move(".cart-commands", "show");
+  const commandPanel = move(".cart-commands", "show");
+  if (commandPanel) {
+    const commandRow = commandPanel.querySelector(":scope > .row");
+    if (commandRow) {
+      const quickActions = document.createElement("section");
+      quickActions.className = "panel show-device-actions";
+      quickActions.setAttribute("aria-label", "Quick show actions");
+      const heading = document.createElement("h2");
+      heading.textContent = "Show actions";
+      quickActions.append(heading, commandRow);
+      views.show.insertBefore(quickActions, views.show.querySelector("#lightsPanel"));
+    }
+    commandPanel.remove();
+  }
   move(".quick-tuning", "system");
   move("#scoresPanel", "scores");
-  move(".course-status-panel", "system");
   move(".guest-quick-panel", "system");
   move(".truth-panel", "system");
   move("#pairAcceptPanel", "system");

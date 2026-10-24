@@ -1,7 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
 import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
-import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs?v=20261024-cart-field-desk-r3";
+import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs?v=20261024-cart-control-home-r4";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";

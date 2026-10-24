@@ -47,7 +47,9 @@ assert.match(css, /body>main\{width:min\(100%,1080px\)/);
 
 const uiModule = fs.readFileSync("hbnf-final-controller/hbnf-cart-ui-v6.mjs", "utf8");
 assert.match(css, /@media\(min-width:900px\) and \(min-height:680px\) and \(orientation:landscape\)/);
-assert.match(css, /grid-template-areas:"lights motion" "text power"/);
+assert.match(css, /grid-template-areas:"status status" "actions actions" "lights motion" "text text"/);
+assert.match(uiModule, /move\("\.course-status-panel", "show"\)/);
+assert.match(uiModule, /className = "panel show-device-actions"/);
 assert.match(uiModule, /aria-controls="ownerViewShow"/);
 
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);

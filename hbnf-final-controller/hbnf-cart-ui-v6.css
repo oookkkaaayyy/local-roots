@@ -90,14 +90,16 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid var(
 .scene-button:focus-visible{outline:3px solid var(--cart-forest);outline-offset:2px}
 #showStylePause{margin-top:6px}#showStylePause button{width:100%;background:var(--cart-forest);color:var(--cart-cream)}
 .scene-native-wrap{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}
-.cart-commands>summary,.truth-panel>summary,.sub-controls>summary,details.panel>summary{display:flex;min-height:46px;align-items:center;gap:10px;list-style:none;cursor:pointer;color:var(--cart-root);font-weight:720}
-.cart-commands>summary::after,.truth-panel>summary::after,.sub-controls>summary::after,details.panel>summary::after{content:"Open";margin-left:auto;color:var(--cart-soil);font-size:.72rem;font-weight:700;text-transform:uppercase}
-.cart-commands[open]>summary::after,.truth-panel[open]>summary::after,.sub-controls[open]>summary::after,details.panel[open]>summary::after{content:"Close"}
-.cart-commands>summary::-webkit-details-marker,.truth-panel>summary::-webkit-details-marker,.sub-controls>summary::-webkit-details-marker,details.panel>summary::-webkit-details-marker{display:none}
-.cart-commands .row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding-top:8px}
-.cart-commands .row>button{min-width:0;min-height:48px;padding:7px;background:var(--cart-sage-light);color:var(--cart-root)}
-.cart-commands .row>button[data-command=OFF]{background:#eed0c7;color:#712a20;border-color:#a7623a}
-.cart-commands .row>button[data-command=LOCK]{grid-column:1/-1}
+.truth-panel>summary,.sub-controls>summary,details.panel>summary{display:flex;min-height:46px;align-items:center;gap:10px;list-style:none;cursor:pointer;color:var(--cart-root);font-weight:720}
+.truth-panel>summary::after,.sub-controls>summary::after,details.panel>summary::after{content:"Open";margin-left:auto;color:var(--cart-soil);font-size:.72rem;font-weight:700;text-transform:uppercase}
+.truth-panel[open]>summary::after,.sub-controls[open]>summary::after,details.panel[open]>summary::after{content:"Close"}
+.truth-panel>summary::-webkit-details-marker,.sub-controls>summary::-webkit-details-marker,details.panel>summary::-webkit-details-marker{display:none}
+.show-device-actions{background:var(--cart-cream)}
+.show-device-actions h2{margin-bottom:8px}
+.show-device-actions .row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.show-device-actions .row>button{min-width:0;min-height:52px;padding:8px;background:var(--cart-sage-light);color:var(--cart-root)}
+.show-device-actions .row>button[data-command=OFF]{background:#eed0c7;color:#712a20;border-color:#a7623a}
+.show-device-actions .row>button[data-command=ON]{background:var(--cart-forest);color:var(--cart-cream)}
 #textPanel h2{margin-bottom:7px}
 #textPanel .row{display:flex;gap:7px;align-items:stretch}
 #featureText{flex:1 1 220px;min-width:0;min-height:48px;font-size:1rem}
@@ -140,7 +142,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid var(
   .guest-invite img{width:96px;min-width:88px}
   .guest-mode-actions{width:100%}
   .guest-mode-actions button{flex:1 1 100%}
-  .cart-commands .row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .show-device-actions .row{grid-template-columns:repeat(2,minmax(0,1fr))}
   #textPanel .row{flex-direction:column}
   #featureSendText{width:100%}
 }
@@ -161,11 +163,13 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid var(
   .score-grid .wide,.fine-grid .wide{grid-column:auto}
 }
 @media(min-width:900px) and (min-height:680px) and (orientation:landscape){
-  #ownerViewShow{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"lights motion" "text power";align-items:start;gap:9px}
+  #ownerViewShow{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"status status" "actions actions" "lights motion" "text text";align-items:start;gap:9px}
+  #ownerViewShow>.course-status-panel{grid-area:status}
+  #ownerViewShow>.show-device-actions{grid-area:actions}
   #ownerViewShow>#lightsPanel{grid-area:lights;grid-template-columns:minmax(0,1.15fr) minmax(220px,.85fr);align-items:start;gap:8px}
   #ownerViewShow>#showStylePanel{grid-area:motion}
   #ownerViewShow>#textPanel{grid-area:text}
-  #ownerViewShow>.cart-commands{grid-area:power}
+  #ownerViewShow>#textPanel{grid-area:text}
   #ownerViewScores{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
   #ownerViewScores>.owner-score-actions,#ownerViewScores>#scoresPanel{grid-column:1/-1}
   #ownerViewSystem{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
