@@ -78,11 +78,16 @@ function controllerCommandFixture(snapshot) {
   assert.ok(start >= 0 && end > start, "canonical command bridge should be available for focused verification");
   const context = {
     revision: 1,
+    activeCommandKeys: new Set(),
+    OPAL_LOCAL_PWA: false,
+    localControlActive: false,
     flushTune: async () => {},
     newCommandId: () => "test-command",
     call: async () => ({ revision: 2, accepted: true }),
     refresh: async () => snapshot,
     statusNode: { textContent: "" },
+    performance: { now: () => 1 },
+    window: {},
     setTimeout: callback => { callback(); return 0; },
     Date,
     Promise,
