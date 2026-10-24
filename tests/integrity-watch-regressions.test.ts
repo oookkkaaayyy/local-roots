@@ -52,3 +52,10 @@ test("integrity watch inspects lazy-loaded frontend chunks, not only the entrypo
   assert.ok(watch.includes("readFrontendGraph(frontendBundleUrl"));
   assert.equal(watch.includes("const bundleResponse = await fetch(frontendBundleUrl"), false);
 });
+
+test("integrity watch fails closed on staging HTML redirects and validates CSS origin", () => {
+  assert.ok(watch.includes('assertTrustedResponseOrigin(response, expectedOrigin, "staging_html")'));
+  assert.ok(watch.includes("readCssAsset(cssMatch[1], STAGING_URL"));
+  assert.equal(watch.includes('redirect: "follow"'), false);
+  assert.ok(watch.includes('redirect: "error"'));
+});
