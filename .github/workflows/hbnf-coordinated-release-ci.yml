@@ -110,6 +110,7 @@ jobs:
       - name: JavaScript syntax
         run: |
           set -euo pipefail
+          python3 -m unittest tests.test_hbnf_owner_pwa_builder_validation -v
           node tests/hbnf_owner_pwa_source_manifest.mjs
           node --check hbnf-final-controller/hbnf-cart.js
           node --check hbnf-final-controller/hbnf-cart-local.mjs

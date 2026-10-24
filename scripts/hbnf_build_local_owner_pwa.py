@@ -101,6 +101,100 @@ def verify_javascript(payload: Path) -> None:
             raise SystemExit(f"Packaged JavaScript failed syntax validation ({script.name}): {detail[-1200:]}")
 
 
+def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_dir: Path, expected_version: str) -> dict:
+    """Bind a directly served baseline to its exact retained package, without overstating filesystem evidence."""
+    try:
+        receipt = json.loads(receipt_path.read_text())
+        package = json.loads((package_dir / "PACKAGE.json").read_text())
+        payload_manifest = (package_dir / "PAYLOAD.SHA256SUMS").read_bytes()
+        rollback = (package_dir / "rollback.sh").read_bytes()
+        install = (package_dir / "install.sh").read_bytes()
+        package_baseline = (package_dir / "BASELINE.SHA256SUMS").read_bytes()
+        package_sha_line = (package_dir / "PACKAGE.SHA256").read_text().strip()
+        archive = package_dir / f"hbnf-owner-pwa-local-v{expected_version}.zip"
+        archive_bytes = archive.read_bytes()
+    except (OSError, ValueError) as exc:
+        raise SystemExit("Live readback, exact baseline package, or required package component is missing") from exc
+
+    package_sha = package_sha_line.split()[0] if len(package_sha_line.split()) == 2 else ""
+    device = receipt.get("device_identity")
+
+    if (receipt.get("schema") != "hbnf-owner-pwa-live-readback-v1" or receipt.get("status") != "PASS" or
+            receipt.get("runtime_version") != expected_version or
+            receipt.get("baseline_manifest_sha256") != digest(baseline.read_bytes()) or
+            receipt.get("baseline_package_sha256") != digest(archive_bytes) or
+            package_sha != digest(archive_bytes) or
+            package_sha_line != f"{package_sha}  {archive.name}" or
+            receipt.get("source_commit") != package.get("sourceCommit") or
+            receipt.get("transaction_id") != package.get("transactionId") or
+            package.get("package") != f"hbnf-owner-pwa-local-v{expected_version}" or
+            receipt.get("served_payload_hashes_verified") is not True or
+            receipt.get("observed_expected_path_count") != 20 or
+            receipt.get("observed_expected_paths_http_200") is not True or
+            receipt.get("payload_manifest_sha256") != digest(payload_manifest.replace(b"owner-pwa/", b"")) or
+            receipt.get("rollback_artifact_available") is not True or
+            not isinstance(device, dict) or device.get("ip") != "192.168.77.1" or
+            "94:83:c4:98:78:93" not in device.get("arp", "")):
+        raise SystemExit("Live readback does not bind the exact retained Owner PWA package and 20 expected HTTP paths")
+
+    baseline_by_name = {}
+    for line in baseline.read_text().splitlines():
+        match = re.fullmatch(r"([0-9a-f]{64})  ([^/]+)", line)
+        if not match or match.group(2) in baseline_by_name:
+            raise SystemExit("Direct-readback baseline manifest is malformed or contains duplicate/nonlocal paths")
+        baseline_by_name[match.group(2)] = match.group(1)
+    served = receipt.get("installed_sha256_by_path")
+    http_status = receipt.get("http_status_by_path")
+    if not isinstance(served, dict) or not isinstance(http_status, dict) or len(baseline_by_name) != 20:
+        raise SystemExit("Direct-readback receipt must cover exactly 20 manifest entries")
+    if set(http_status) != {"owner-pwa/" + name for name in baseline_by_name} or any(status != 200 for status in http_status.values()):
+        raise SystemExit("Direct-readback HTTP status set differs from its exact 20-file manifest")
+    if any(served.get("owner-pwa/" + name) != sha for name, sha in baseline_by_name.items()):
+        raise SystemExit("Direct-readback content hashes differ from its exact 20-file manifest")
+
+    expected_markers = {
+        ".hbnf-package-marker": digest(b"hbnf-owner-pwa-local-v1\n"),
+        ".hbnf-package-version": digest((expected_version + "\n").encode()),
+        ".hbnf-payload.sha256": digest(payload_manifest.replace(b"owner-pwa/", b"")),
+        ".hbnf-rollback.sh": digest(rollback),
+    }
+    if any(baseline_by_name.get(name) != sha for name, sha in expected_markers.items()):
+        raise SystemExit("Direct-readback package markers do not match exact package and rollback bytes")
+
+    payload_by_name = {}
+    for line in payload_manifest.decode().splitlines():
+        match = re.fullmatch(r"([0-9a-f]{64})  owner-pwa/(.+)", line)
+        if not match or match.group(2) in payload_by_name:
+            raise SystemExit("Retained baseline payload manifest is malformed or duplicated")
+        payload_by_name[match.group(2)] = match.group(1)
+    package_assets = {item.get("path"): item.get("sha256") for item in package.get("assets", [])}
+    with zipfile.ZipFile(archive) as zf:
+        if (zf.read("PACKAGE.json") != (package_dir / "PACKAGE.json").read_bytes() or
+                zf.read("BASELINE.SHA256SUMS") != package_baseline or
+                zf.read("PAYLOAD.SHA256SUMS") != payload_manifest or
+                zf.read("install.sh") != install or
+                zf.read("rollback.sh") != rollback):
+            raise SystemExit("Retained baseline ZIP differs from its package manifest, installer, rollback, or checksum inputs")
+        for name, sha in payload_by_name.items():
+            if digest(zf.read("owner-pwa/" + name)) != sha:
+                raise SystemExit("Retained baseline ZIP payload differs from its manifest: " + name)
+    if len(payload_by_name) != 16 or package_assets != payload_by_name:
+        raise SystemExit("Retained baseline package must bind exactly the 16 verified Owner PWA payload files")
+
+    return {
+        "path": receipt_path.as_posix(),
+        "sha256": digest(receipt_path.read_bytes()),
+        "runtimeVersion": expected_version,
+        "observedExpectedHttpPaths": 20,
+        "servedPayloadHashesVerified": 16,
+        "filesystemEntryCount": receipt.get("filesystem_entry_count", "NOT_CHECKED"),
+        "filesystemCompleteness": receipt.get("filesystem_completeness", "REQUIRES_FRESH_INSTALLER_PREFLIGHT"),
+        "deviceSidePriorRollbackCopy": receipt.get("device_side_prior_rollback_copy", "NOT_CHECKED"),
+        "rollbackArtifactAvailable": True,
+        "installerMustVerifyExactDirectoryAndCreateFreshRollbackBeforeSwap": True,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -151,7 +245,10 @@ def main() -> None:
             source_paths.append((root / args.rollback_baseline_readback_receipt).resolve())
         if args.rollback_baseline_package_dir:
             prior_dir = (root / args.rollback_baseline_package_dir).resolve()
-            source_paths.extend(prior_dir / name for name in ("PACKAGE.json", "PACKAGE.SHA256", "PAYLOAD.SHA256SUMS", "rollback.sh", "hbnf-owner-pwa-local-v1.0.11.zip"))
+            source_paths.extend(prior_dir / name for name in (
+                "PACKAGE.json", "PACKAGE.SHA256", "PAYLOAD.SHA256SUMS", "install.sh", "rollback.sh",
+                "BASELINE.SHA256SUMS", f"hbnf-owner-pwa-local-v{args.rollback_baseline_owner_pwa_version}.zip",
+            ))
         verify_source_inputs(root, args.source_commit, source_paths)
         try:
             args.output_dir.resolve().relative_to(root)
@@ -295,7 +392,16 @@ def main() -> None:
         if not receipt_path.is_file():
             raise SystemExit("Owner PWA installed-baseline readback receipt is missing")
         receipt = json.loads(receipt_path.read_text())
-        if receipt.get("schema") == "hbnf-owner-pwa-install-result-v1":
+        if receipt.get("schema") == "hbnf-owner-pwa-live-readback-v1":
+            if not args.rollback_baseline_package_dir:
+                raise SystemExit("Direct live readback requires the exact retained baseline package")
+            prior_dir = (root / args.rollback_baseline_package_dir).resolve()
+            baseline_readback = verify_live_readback_baseline(
+                receipt_path, baseline, prior_dir, args.rollback_baseline_owner_pwa_version
+            )
+            baseline_readback["path"] = receipt_path.relative_to(root).as_posix()
+            installed = receipt.get("installed_sha256_by_path", {})
+        elif receipt.get("schema") == "hbnf-owner-pwa-install-result-v1":
             if (not args.rollback_baseline_package_dir or receipt.get("status") != "PASS" or
                     receipt.get("step") != "install_owner_pwa" or receipt.get("install_exit") != 0 or
                     receipt.get("runtime_version") != args.rollback_baseline_owner_pwa_version or
