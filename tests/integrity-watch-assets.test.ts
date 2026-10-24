@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 const projectRoot = new URL(import.meta.url.includes("/dist/tests/") ? "../../" : "../", import.meta.url);
-const { findJsAssetImports, readFrontendGraph } = await import(new URL("supabase/functions/lr-integrity-watch/frontend-assets.mjs", projectRoot).href);
+const { assertTrustedResponseOrigin, findJsAssetImports, readCssAsset, readFrontendGraph, resolveTrustedAssetUrl } = await import(new URL("supabase/functions/lr-integrity-watch/frontend-assets.mjs", projectRoot).href);
 
 const origin = 'https://local-roots.pages.dev';
 function fetcher(assets) {
@@ -73,5 +73,58 @@ test('rejects absent trusted origin and cross-origin asset response', async () =
       ok: true, url: 'https://untrusted.example/assets/index.js', text: async () => '',
     }), origin),
     /frontend_asset_origin_mismatch/,
+  );
+});
+
+test('rejects external CSS href before any request', async () => {
+  let requests = 0;
+  await assert.rejects(
+    () => readCssAsset('https://untrusted.example/assets/injected.css', origin, async () => {
+      requests++;
+      throw new Error('must not fetch');
+    }, origin),
+    /css_asset_origin_or_path_mismatch/,
+  );
+  assert.equal(requests, 0);
+  assert.throws(
+    () => resolveTrustedAssetUrl('/other.css', origin, origin, 'css'),
+    /css_asset_origin_or_path_mismatch/,
+  );
+});
+
+test('CSS fetch rejects redirects and effective off-origin responses', async () => {
+  let fetchOptions;
+  const result = await readCssAsset('/assets/site.css', origin, async (url, options) => {
+    fetchOptions = options;
+    return { ok: true, status: 200, url, text: async () => '.a { color: red; }' };
+  }, origin);
+  assert.equal(fetchOptions.redirect, 'error');
+  assert.equal(result.normalizedCss, '.a{color:red;}');
+  await assert.rejects(
+    () => readCssAsset('/assets/site.css', origin, async () => ({
+      ok: true, status: 200, url: 'https://untrusted.example/assets/site.css', text: async () => '',
+    }), origin),
+    /css_response_origin_mismatch/,
+  );
+});
+
+test('HTML staging response origin is required even after a successful HTTP response', () => {
+  assert.doesNotThrow(() => assertTrustedResponseOrigin({ url: origin + '/' }, origin, 'staging_html'));
+  assert.throws(
+    () => assertTrustedResponseOrigin({ url: 'https://untrusted.example/' }, origin, 'staging_html'),
+    /staging_html_response_origin_mismatch/,
+  );
+  assert.throws(
+    () => assertTrustedResponseOrigin({ url: '' }, origin, 'staging_html'),
+    /staging_html_response_origin_mismatch/,
+  );
+});
+
+test('CSS source is bounded to the existing asset-size budget', async () => {
+  await assert.rejects(
+    () => readCssAsset('/assets/site.css', origin, async (url) => ({
+      ok: true, status: 200, url, text: async () => 'x'.repeat(4_000_001),
+    }), origin),
+    /css_asset_size_limit/,
   );
 });
