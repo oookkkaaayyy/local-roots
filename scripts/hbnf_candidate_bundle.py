@@ -81,10 +81,16 @@ def collect_files() -> dict[str, bytes]:
         if not source_root.is_dir() or source_root.is_symlink():
             raise FileNotFoundError(f"required source directory missing: {source_name}")
         for source in sorted(source_root.rglob("*")):
+            relative_path = source.relative_to(source_root)
+            # Deno materializes dependency links under node_modules during the
+            # preceding source gates. They are runner-generated and are not
+            # part of the reviewed source bundle.
+            if "node_modules" in relative_path.parts:
+                continue
             if source.is_symlink():
                 raise ValueError(f"symlinks are not allowed in candidate source: {source.relative_to(ROOT)}")
             if source.is_file():
-                relative = source.relative_to(source_root).as_posix()
+                relative = relative_path.as_posix()
                 archive_name = f"{archive_prefix}/{relative}"
                 if archive_name in collected:
                     raise ValueError(f"duplicate package path: {archive_name}")
@@ -149,3 +155,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
