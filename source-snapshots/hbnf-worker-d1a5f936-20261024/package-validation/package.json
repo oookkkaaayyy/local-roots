@@ -1,0 +1,17 @@
+{
+  "name": "hbnf-worker-observed-snapshot",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Reproducible local validation for the observed HBNF Worker source snapshot; not proof of deployed-source parity.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "wrangler:version": "wrangler --version",
+    "verify:assets": "node ./verify-assets.mjs",
+    "build:dry-run": "npm run verify:assets && wrangler deploy --dry-run --config ./wrangler.jsonc --outdir .wrangler-output"
+  },
+  "devDependencies": {
+    "wrangler": "4.152.0"
+  }
+}
