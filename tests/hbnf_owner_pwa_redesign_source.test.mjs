@@ -5,6 +5,8 @@ import { readFileSync } from "node:fs";
 const html = readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html", import.meta.url), "utf8");
 const css = readFileSync(new URL("../hbnf-final-controller/hbnf-cart-ui-v6.css", import.meta.url), "utf8");
 const ui = readFileSync(new URL("../hbnf-final-controller/hbnf-cart-ui-v6.mjs", import.meta.url), "utf8");
+const js = readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
+const serviceWorker = readFileSync(new URL("../hbnf-final-controller/hbnf-cart-sw.js", import.meta.url), "utf8");
 
 function luminance(hex) {
   const channels = hex.match(/[a-f\d]{2}/gi).map(value => parseInt(value, 16) / 255);
@@ -17,27 +19,32 @@ function contrast(foreground, background) {
   return (lighter + .05) / (darker + .05);
 }
 
-test("Cart uses the documented earth palette with HBNF green as a restrained accent", () => {
-  for (const token of ["--hbnf-bg:#06100d", "--hbnf-panel:#0a1713", "--hbnf-panel2:#0d211a", "--hbnf-text:#eff8f3", "--hbnf-muted:#8eaa9d", "--hbnf-accent:#4ce19f"]) {
+test("Cart uses a restrained dark earth palette and a neutral HBNF wordmark", () => {
+  for (const token of ["color-scheme:dark", "--hbnf-bg:#141916", "--hbnf-panel:#202722", "--hbnf-panel2:#29312b", "--hbnf-text:#f1eadc", "--hbnf-muted:#c9bea9", "--hbnf-accent:#9eae81"]) {
     assert.ok(css.includes(token), `missing established HBNF token ${token}`);
   }
-  for (const token of ["--cart-cream:#fff8ee", "--cart-sage-light:#dee6cf", "--cart-sage:#8c956a", "--cart-forest:#243a2d", "--cart-clay:#a7623a"]) {
+  for (const token of ["--cart-cream:#202722", "--cart-sage-light:#354137", "--cart-sage:#788660", "--cart-forest:#a5b68e", "--cart-clay:#cf8964"]) {
     assert.ok(css.includes(token), `missing documented Local Roots token ${token}`);
   }
   assert.match(css, /body\{[^}]*background:var\(--cart-canvas\);color:var\(--cart-root\);font:16px\/1\.4 -apple-system/s);
-  assert.match(css, /\.cart-mark-wrap\{[^}]*background:var\(--cart-forest\)/);
-  assert.match(css, /\.cart-mark\{[^}]*mix-blend-mode:screen/);
+  assert.match(html, /<span class="cart-wordmark" aria-hidden="true">HBNF<\/span>/);
+  assert.match(css, /\.cart-wordmark\{[^}]*background:#d6c4a4[^}]*color:#3a2618/);
+  assert.doesNotMatch(html, /local-roots-(?:lr|full)\.svg/);
+  assert.doesNotMatch(css, /#4ce19f|#fffdf8|#fff8ee/i, "the retired neon and glaring white surfaces are absent");
   assert.doesNotMatch(css, /Georgia|Times New Roman/);
   assert.doesNotMatch(html, /Set the scene|Choose a Vibe, then set the brightness|Choose how the lights move|YOUR SHOW/);
   assert.doesNotMatch(ui, /Next changes the look|broad speed range|second holds/);
 });
 
 test("visible text and control states keep readable contrast on the earth palette", () => {
-  assert.ok(contrast("#3a2618", "#fff8ee") >= 4.5, "main text on cream");
-  assert.ok(contrast("#5a5147", "#f2ecdf") >= 4.5, "muted text on canvas");
-  assert.ok(contrast("#243a2d", "#dee6cf") >= 4.5, "forest text on sage controls");
-  assert.ok(contrast("#70440b", "#f2e2c4") >= 4.5, "warning text on warning surface");
-  assert.ok(contrast("#712a20", "#eed0c7") >= 4.5, "error text on error surface");
+  assert.ok(contrast("#f1eadc", "#202722") >= 4.5, "main text on dark panel");
+  assert.ok(contrast("#c9bea9", "#202722") >= 4.5, "muted text on dark panel");
+  assert.ok(contrast("#202722", "#a5b68e") >= 4.5, "button text on sage control");
+  assert.ok(contrast("#f1eadc", "#354137") >= 4.5, "text on selected control surface");
+  assert.ok(contrast("#f2cf7a", "#493e2c") >= 4.5, "warning text on warning surface");
+  assert.ok(contrast("#ffdfd3", "#50352e") >= 4.5, "error text on error surface");
+  assert.ok(contrast("#bdb3a2", "#343a36") >= 4.5, "disabled text on disabled surface");
+  assert.ok(contrast("#3a2618", "#d6c4a4") >= 4.5, "HBNF wordmark on sandstone tile");
   assert.match(css, /button,select,input:not\(\[type=range\]\),textarea\{[^}]*border:1px solid var\(--cart-forest\)/);
   assert.match(css, /:focus-visible\{outline:3px solid var\(--cart-forest\)/);
 });
@@ -50,6 +57,7 @@ test("Motion remains visible and uses the independent existing scene selector an
   assert.match(ui, /showStyleOptions\.appendChild\(sceneButtonsHost\)/);
   assert.match(ui, /select\.dispatchEvent\(new Event\("change"/);
   assert.match(ui, /setAttribute\("aria-pressed",String\(selected\)\)/);
+  assert.match(css, /\.scene-button\{[^}]*justify-items:center[^}]*text-align:center/);
 });
 
 test("deferred palette and saved look controls stay hidden with their source data intact", () => {
@@ -63,8 +71,15 @@ test("deferred palette and saved look controls stay hidden with their source dat
 
 test("layout uses available wide screens and preserves touch-sized primary controls", () => {
   assert.match(css, /@media\(min-width:900px\).*orientation:landscape/s);
-  assert.match(css, /grid-template-areas:"status status" "actions actions" "lights motion" "text text"/);
-  assert.match(ui, /move\("\.course-status-panel", "show"\)/);
+  assert.match(css, /grid-template-areas:"actions actions" "lights motion" "text text"/);
+  assert.match(ui, /move\("\.course-status-panel", "system"\)/);
+  assert.match(ui, /statusDetails\.className = "panel status-details-panel"/);
+  assert.match(ui, /statusDetails\.append\(summary, status\)/);
+  assert.doesNotMatch(ui, /header\.appendChild\(status\)/);
+  assert.match(html, /id="truthBadge"[^>]*role="status"[^>]*aria-live="polite"/);
+  assert.match(js, /function updateCompactStatus\(\)/);
+  assert.match(js, /label = "Connection issue"/);
+  assert.match(js, /badge\.textContent = "Connection issue"/);
   assert.match(ui, /className = "panel show-device-actions"/);
   assert.match(ui, /append\(heading, commandRow\)/);
   assert.match(ui, /commandPanel\.remove\(\)/);
@@ -79,12 +94,23 @@ test("layout uses available wide screens and preserves touch-sized primary contr
 });
 
 test("changed Owner PWA assets use a fresh matching cache revision", () => {
-  const revision = "20261024-cart-control-home-r4";
-  assert.match(html, /hbnf-cart-ui-v6\.css\?v=20261024-cart-vibe-fit-r5/);
+  const revision = "20261024-cart-control-home-r5";
+  assert.match(html, /hbnf-cart-ui-v6\.css\?v=20261024-cart-night-earth-r2/);
+  assert.match(html, /hbnf-cart-manifest\.webmanifest\?v=20261024-cart-night-earth-r2/);
   for (const asset of ["hbnf-cart.js", "hbnf-cart-ui-v6.mjs", "hbnf-cart-features.mjs", "hbnf-cart-skins-score.mjs"]) {
     assert.match(html, new RegExp(`${asset.replaceAll(".", "\\.")}\\?v=${revision}`));
   }
-  assert.match(html, /hbnf-cart2-owner-control-home-r4-20261024/);
-  assert.match(readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8"), new RegExp(`hbnf-cart-readiness\\.mjs\\?v=${revision}`));
-  assert.match(readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8"), new RegExp(`hbnf-cart-readiness\\.mjs\\?v=${revision}`));
+  assert.match(html, /hbnf-cart2-owner-control-home-r5-20261024/);
+  for (const source of [js, readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8")]) {
+    assert.match(source, /hbnf-cart-readiness\.mjs\?v=20261024-cart-control-home-r4/);
+  }
+});
+
+test("retained Cart app-icon assets and strict package inputs stay unchanged", () => {
+  const manifest = JSON.parse(readFileSync(new URL("../hbnf-final-controller/hbnf-cart-manifest.webmanifest", import.meta.url), "utf8"));
+  assert.deepEqual(manifest.icons.map(icon => icon.src), ["/hbnf-cart-icon-192.png", "/hbnf-cart-icon-512.png"]);
+  assert.match(html, /apple-touch-icon" sizes="180x180" href="\.\/hbnf-cart-icon-180\.png/);
+  for (const source of [serviceWorker, readFileSync(new URL("../scripts/hbnf_build_local_owner_pwa.py", import.meta.url), "utf8")]) {
+    assert.doesNotMatch(source, /local-roots-lr\.svg/);
+  }
 });

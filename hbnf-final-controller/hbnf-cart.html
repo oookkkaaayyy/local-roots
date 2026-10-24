@@ -3,34 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#fff8ee">
+  <meta name="theme-color" content="#141916">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="HBNF Cart">
   <meta name="hbnf-access" content="guest-zero-pair">
-  <meta name="hbnf-build" content="hbnf-cart2-owner-control-home-r4-20261024">
-  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261024-cart-control-home-r4">
+  <meta name="hbnf-build" content="hbnf-cart2-owner-control-home-r5-20261024">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261024-cart-night-earth-r2">
   <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261024-cart-control-home-r4">
-  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261024-cart-vibe-fit-r5">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261024-cart-night-earth-r2">
   <title>HBNF Cart Control</title>
 </head>
 <body><main>
   <header class="hero-v6">
     <div class="cart-brand">
-      <span class="cart-mark-wrap" aria-hidden="true"><img class="cart-mark" src="./hbnf-cart-icon-180.png" width="56" height="56" alt=""></span>
+      <span class="cart-wordmark" aria-hidden="true">HBNF</span>
       <h1>Cart controls</h1>
     </div>
-    <div id="truthBadge" class="truth-badge warn">Checking…</div>
+    <div id="truthBadge" class="truth-badge warn" role="status" aria-live="polite" aria-atomic="true">Checking…</div>
   </header>
 
-  <section class="panel course-status-panel" aria-label="Cart status">
-    <h2>Connection</h2>
+  <details class="panel course-status-panel" aria-label="Cart status">
+    <summary>Connection details</summary>
     <div class="course-status-grid" aria-live="polite">
       <div class="course-status-cell"><span>Cart</span><strong id="cartLanTruth">Not checked</strong></div>
       <div class="course-status-cell"><span>Internet</span><strong id="internetTruth">Not checked</strong></div>
       <div class="course-status-cell"><span>Matrix</span><strong id="matrixOutputTruth">Unconfirmed</strong></div>
     </div>
-  </section>
+  </details>
   <nav class="primary-actions" aria-label="Quick controls">
     <a href="#lightsPanel">Lights &amp; looks</a>
     <a href="#featureText">Text</a>
@@ -50,7 +50,7 @@
       <div><a href="https://hbnightflyers.com/guest/hbnf-cart/">Guest controls</a></div>
     </div>
   </section>
-  <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
+  <p id="status" class="status" aria-live="off">Connecting…</p>
 
   <details class="panel truth-panel" aria-label="Troubleshooting and device details">
     <summary>Troubleshooting</summary>
@@ -301,4 +301,4 @@
     </div>
   </details>
 
-</main><script type="module" src="./hbnf-cart.js?v=20261024-cart-control-home-r4"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261024-cart-control-home-r4"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261024-cart-control-home-r4"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261024-cart-control-home-r4"></script></body></html>
+</main><script type="module" src="./hbnf-cart.js?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261024-cart-control-home-r5"></script></body></html>

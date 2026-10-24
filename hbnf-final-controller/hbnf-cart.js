@@ -38,6 +38,7 @@ let guestDefaultMigrationInFlight = false;
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
+const truthBadge = $("#truthBadge");
 const authPanel = $("#authPanel");
 const pairAcceptPanel = $("#pairAcceptPanel");
 const managePairPanel = $("#managePairPanel");
@@ -56,6 +57,29 @@ let pendingRevision = null;
 const activeCommandKeys = new Set();
 const syncHealth = null;
 const rendererHealth = null;
+
+function updateCompactStatus() {
+  if (!statusNode || !truthBadge) return;
+  const detail = String(statusNode.textContent || "").trim().toLowerCase();
+  let label = "Status details", tone = "warn";
+  if (/^connecting|^checking/.test(detail)) label = "Checking";
+  else if (/sending cart command|change sent\. checking/.test(detail)) label = "Sending", tone = "warn";
+  else if (/change sent\. waiting|waiting for the cart/.test(detail)) label = "Waiting", tone = "warn";
+  else if (/matrix and underglow confirmed the change/.test(detail)) label = "Update confirmed", tone = "good";
+  else if (/could not connect|you are offline|controls are unavailable|cart is not ready|no change was sent/.test(detail)) label = "Connection issue", tone = "warn";
+  else if (/could not apply|could not complete|not confirmed|has not confirmed/.test(detail)) label = "Needs attention", tone = "warn";
+  else if (/pair this device/.test(detail)) label = "Pair needed", tone = "warn";
+  else if (/cart is reachable, but/.test(detail)) label = "Check devices", tone = "warn";
+  else if (/cart is reachable/.test(detail)) label = "Cart responding", tone = "good";
+  truthBadge.textContent = label;
+  truthBadge.className = "truth-badge " + tone;
+}
+
+if (statusNode && truthBadge && typeof MutationObserver === "function") {
+  const compactStatusObserver = new MutationObserver(updateCompactStatus);
+  compactStatusObserver.observe(statusNode, { childList: true, characterData: true, subtree: true });
+  updateCompactStatus();
+}
 
 function renderLocalLinkStatus(snapshot) {
   if (!cartLanHealth) return;
@@ -354,7 +378,7 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   const badge = $("#truthBadge");
   renderLocalLinkStatus(canonicalSnapshot);
   if (!snapshot) {
-    if (badge) { badge.textContent = "Controls unavailable"; badge.className = "truth-badge warn"; }
+    if (badge) { badge.textContent = "Connection issue"; badge.className = "truth-badge warn"; }
     return;
   }
   const matrix = snapshot.devices ? snapshot.devices.matrix : null;
@@ -377,12 +401,12 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
-    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
-    if (matrixOk && auxOk) { badge.textContent = snapshot.local === true ? "Cart, Matrix & underglow responding" : "Matrix & underglow responding"; badge.className = "truth-badge good"; }
-    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
-    else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Matrix/underglow update is old"; badge.className = "truth-badge warn"; }
-    else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Matrix/underglow not confirmed"; badge.className = "truth-badge warn"; }
-    else { badge.textContent = "Checking Matrix & underglow"; badge.className = "truth-badge warn"; }
+    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check AUX"; badge.className = "truth-badge warn"; return; }
+    if (matrixOk && auxOk) { badge.textContent = "Devices responding"; badge.className = "truth-badge good"; }
+    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Needs attention"; badge.className = "truth-badge bad"; }
+    else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Status is old"; badge.className = "truth-badge warn"; }
+    else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Not confirmed"; badge.className = "truth-badge warn"; }
+    else { badge.textContent = "Checking devices"; badge.className = "truth-badge warn"; }
   }
 }
 
@@ -508,7 +532,7 @@ async function refresh({ hydrate = true } = {}) {
     if (guestStatus) guestStatus.textContent = "Guest access status is unavailable. Reconnect to the Cart to check it.";
     const badge = $("#truthBadge");
     if (badge) {
-      badge.textContent = "Controls unavailable";
+      badge.textContent = "Connection issue";
       badge.className = "truth-badge warn";
     }
     throw error;

@@ -62,13 +62,12 @@ if (main && header && !document.getElementById("ownerNavigation")) {
   views.show.after(views.scores);
   views.scores.after(views.system);
   const status = main.querySelector("#status");
-  if (status) header.appendChild(status);
   const move = (selector, view) => {
     const element = main.querySelector(selector);
     if (element) views[view].appendChild(element);
     return element;
   };
-  move(".course-status-panel", "show");
+  move(".course-status-panel", "system");
   move("#lightsPanel", "show");
   const showStyle = move("#showStylePanel", "show");
   const sceneButtonsHost = main.querySelector("#sceneButtons");
@@ -99,6 +98,14 @@ if (main && header && !document.getElementById("ownerNavigation")) {
     commandPanel.remove();
   }
   move(".quick-tuning", "system");
+  if (status) {
+    const statusDetails = document.createElement("details");
+    statusDetails.className = "panel status-details-panel";
+    const summary = document.createElement("summary");
+    summary.textContent = "Latest status details";
+    statusDetails.append(summary, status);
+    views.system.appendChild(statusDetails);
+  }
   move("#scoresPanel", "scores");
   move(".guest-quick-panel", "system");
   move(".truth-panel", "system");
