@@ -16,7 +16,7 @@ CONTROLLER_FILES = (
     "hbnf-cart-semantic.mjs", "hbnf-cart-live-display.mjs", "hbnf-cart-readiness.mjs",
     "hbnf-cart-manifest.webmanifest", "hbnf-cart-ui-v6.css",
     "hbnf-cart-ui-v6.mjs", "hbnf-cart-features.mjs", "hbnf-cart-skins-score.mjs",
-    "hbnf-cart-icon-180.png", "hbnf-cart-icon-192.png", "hbnf-cart-icon-512.png", "hbnf-guest-qr.png",
+    "hbnf-faded-phosphor.png", "hbnf-cart-icon-180.png", "hbnf-cart-icon-192.png", "hbnf-cart-icon-512.png", "hbnf-guest-qr.png",
     "guest/hbnf-cart/index.html", "guest/hbnf-cart/guest.js", "guest/hbnf-cart/guest.css",
 )
 PACKAGE_FILES = (

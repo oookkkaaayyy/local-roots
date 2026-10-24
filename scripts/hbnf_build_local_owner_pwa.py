@@ -24,6 +24,7 @@ ASSETS = (
     "hbnf-cart-ui-v6.mjs",
     "hbnf-cart-features.mjs",
     "hbnf-cart-skins-score.mjs",
+    "hbnf-faded-phosphor.png",
     "hbnf-cart-icon-180.png",
     "hbnf-cart-icon-192.png",
     "hbnf-cart-icon-512.png",

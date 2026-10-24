@@ -1,4 +1,4 @@
-/* Nighttime forest and earth tones; the established LR mark uses a sandstone tile. */
+/* Nighttime forest and earth tones with the owner-approved transparent HBNF mark. */
 :root{
   color-scheme:dark;
   --hbnf-bg:#141916;
@@ -44,7 +44,7 @@ h2{margin:0 0 8px;font-size:1.05rem;line-height:1.25;font-weight:740}
 h3{margin:0 0 8px;font-size:.95rem;line-height:1.25;font-weight:720}
 .hero-v6{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px 12px;min-height:60px;padding:7px 10px;border:1px solid var(--cart-line);border-radius:11px;background:var(--cart-cream);color:var(--cart-root)}
 .cart-brand{display:flex;align-items:center;gap:10px;min-width:0}
-.cart-wordmark{display:grid;width:48px;height:48px;flex:0 0 48px;place-items:center;overflow:hidden;border:1px solid #d6c4a4;border-radius:11px;background:#d6c4a4;color:#3a2618;font-size:.77rem;font-weight:850;letter-spacing:.035em}
+.cart-mark{display:block;width:48px;height:48px;flex:0 0 48px;object-fit:contain;background:transparent}
 .truth-badge{max-width:180px;padding:6px 10px;border:1px solid #6b604f;border-radius:999px;background:#2d342f;color:var(--cart-root);font-size:.8rem;font-weight:720;line-height:1.25;text-align:center}
 .truth-badge.good{background:#30402f;color:#d8eccd;border-color:#78916a}.truth-badge.warn{background:#493e2c;color:#f2cf7a;border-color:#8a744a}.truth-badge.bad{background:#4a302c;color:#ffc0b0;border-color:#93634f}
 #status{min-height:1.4em;margin:0;padding:7px 10px;border-left:3px solid var(--hbnf-accent);border-radius:0 7px 7px 0;background:#29312b;color:var(--cart-root);font-size:.9rem;font-weight:650;line-height:1.4}

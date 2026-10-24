@@ -1,7 +1,7 @@
 /* HBNF owner PWA app-shell reliability cache. Never caches control/API traffic. */
 const CACHE_PREFIX = "hbnf-owner-pwa-";
-const CACHE_NAME = "hbnf-owner-pwa-v17-night-earth-ui-20261024";
-const VERSION = "20261024-night-earth-ui-r2";
+const CACHE_NAME = "hbnf-owner-pwa-v18-hbnf-mark-20261024";
+const VERSION = "20261024-hbnf-mark-r1";
 const APP_FALLBACK = `/hbnf-cart.html?app=${VERSION}`;
 const CORE = [
   APP_FALLBACK,
@@ -16,6 +16,7 @@ const CORE = [
   `/hbnf-cart-features.mjs?v=${VERSION}`,
   `/hbnf-cart-skins-score.mjs?v=${VERSION}`,
   `/hbnf-cart-manifest.webmanifest?v=${VERSION}`,
+  `/hbnf-faded-phosphor.png?v=20261024-hbnf-faded-phosphor-r1`,
   `/hbnf-cart-icon-180.png?v=${VERSION}`,
   `/hbnf-cart-icon-192.png?v=${VERSION}`,
   `/hbnf-cart-icon-512.png?v=${VERSION}`,
