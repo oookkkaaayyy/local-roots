@@ -20,7 +20,7 @@ const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
 assert.match(html, /hbnf-cart2-owner-control-guest-qr-v1-20261016/);
 assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/owner-pwa\/hbnf-cart\.html"/);
-assert.match(html, /Open local controls · Cart Wi-Fi/);
+assert.match(html, /Local controls · Cart Wi-Fi/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
 assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261023-cart-ux-v5");
@@ -128,14 +128,14 @@ try {
 
 const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
 const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");
-assert.match(guestHtml, /Use these controls over cellular while Guest Mode is on/);
+assert.match(guestHtml, /Use these controls on cellular when guest access is on/);
 assert.match(guestHtml, /Skins scoring/);
 assert.match(guestHtml, /Glow scoring/);
 assert.match(guestHtml, /id="deviceStatus"/);
 assert.match(guestJs, /Number\(report\.desired_revision\)===wantedRevision[\s\S]*?report\.reported\.confirmed===true/, "device acknowledgement must match the requested revision");
-assert.match(guestJs, /Check the lights to confirm the visible result/, "device acknowledgement must not claim physical illumination");
+assert.match(guestJs, /Check that the lights changed/, "device acknowledgement must not claim physical illumination");
 assert.match(guestJs, /Matrix: "\+matrix\+" · Underglow: "\+aux/);
-assert.match(guestJs, /textContent="CART OFFLINE"/);
+assert.match(guestJs, /textContent="OFFLINE"/);
 assert.match(guestJs, /Status unavailable/);
 for (const vibe of ["chill", "groove", "heavy", "psychedelic", "cosmic"]) {
   assert.match(guestHtml, new RegExp(`data-value="${vibe}"`), `Guest page exposes approved ${vibe} name`);

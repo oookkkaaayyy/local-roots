@@ -342,7 +342,7 @@ function observedAgeLabel(value) {
 function renderVisualHealth(snapshot, canonicalSnapshot) {
   const badge = $("#truthBadge");
   if (!snapshot) {
-    if (badge) { badge.textContent = "Cart unavailable"; badge.className = "truth-badge warn"; }
+    if (badge) { badge.textContent = "Connection unavailable"; badge.className = "truth-badge warn"; }
     return;
   }
   const matrix = snapshot.devices ? snapshot.devices.matrix : null;
@@ -387,8 +387,8 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   }
   if (badge) {
     if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
-    if (matrixOk && auxOk) { badge.textContent = "Cart connected"; badge.className = "truth-badge good"; }
-    else if ((isFresh(matrixReport) && shortDeviceFailure(matrixReport)) || (isFresh(auxReport) && shortDeviceFailure(auxReport))) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
+    if (matrixOk && auxOk) { badge.textContent = "Devices responding"; badge.className = "truth-badge good"; }
+    else if ((isFresh(matrixReport) && shortDeviceFailure(matrixReport)) || (isFresh(auxReport) && shortDeviceFailure(auxReport))) { badge.textContent = "Check device status"; badge.className = "truth-badge bad"; }
     else if (!matrixFresh || !auxFresh) { badge.textContent = "Device status is stale or unknown"; badge.className = "truth-badge warn"; }
     else { badge.textContent = "Checking devices"; badge.className = "truth-badge warn"; }
   }
@@ -416,8 +416,8 @@ function updateVibeSelection(_state) {
       availability.textContent = !cartStatusChecked
         ? "Checking lighting controls…"
         : cartConnectionUnavailable
-          ? "Can’t reach the Cart. Check the connection details and try again."
-          : "Lighting-style controls aren’t available on this Cart.";
+          ? "Can’t connect to the Cart. Check the connection and try again."
+          : "Lighting styles aren’t available.";
     }
   }
   document.querySelectorAll(".vibe-option").forEach(button => {
@@ -444,8 +444,8 @@ function hydrateControls(state) {
     if (state.sceneId) $("#scene").value = state.sceneId;
     if (guestModeToggle) guestModeToggle.checked = state.guestMode === true;
     if (guestModeStatus) guestModeStatus.textContent = state.guestMode === true
-      ? "Guest access is on. Your controls still take priority."
-      : "Guest access is off. Turn it on when you’re ready to invite guests.";
+      ? "Guest access is on. Your controls take priority."
+      : "Guest access is off. Turn it on to invite guests.";
 
     const tuning = valueOr(state.tuning, {});
     updateVibeSelection(state);
@@ -481,7 +481,7 @@ async function refresh({ hydrate = true } = {}) {
     if (auxHealth) auxHealth.textContent = "Not confirmed";
     const badge = $("#truthBadge");
     if (badge) {
-      badge.textContent = "Cart unavailable";
+      badge.textContent = "Connection unavailable";
       badge.className = "truth-badge warn";
     }
     throw error;
@@ -501,8 +501,8 @@ async function refresh({ hydrate = true } = {}) {
     setAuthorizedUi();
     renderVisualHealth(out, out);
     statusNode.textContent = out.devices && out.devices.aux && out.devices.aux.ddp === true
-      ? "Cart is connected. Matrix and underglow are responding."
-      : "Cart is connected. Check underglow status.";
+      ? "Matrix and underglow are responding."
+      : "Matrix responded. Check underglow status.";
     return out;
   }
 
@@ -524,14 +524,14 @@ async function refresh({ hydrate = true } = {}) {
     statusNode.textContent = fullyApplied
       ? "Settings updated. Matrix and underglow are responding."
       : failed
-        ? "The Cart could not apply that change. Check connection details."
+        ? "Couldn’t apply that change. Check connection details."
         : submitted
-          ? "Change sent. Waiting for the Cart…"
+          ? "Change sent. Waiting for an update…"
         : pendingRevision === revision
-          ? "Change sent. Waiting for the Cart…"
-        : "The Cart hasn’t updated yet. Check connection details.";
+          ? "Change sent. Waiting for an update…"
+        : "No update yet. Check connection details.";
   } else {
-    statusNode.textContent = "The Cart is not ready. No change was sent.";
+    statusNode.textContent = "Controls aren’t ready. No change was sent.";
   }
 
   visualStatus().then(value => renderVisualHealth(value, out)).catch(() => renderVisualHealth(null, out));
@@ -600,7 +600,7 @@ async function flushTune() {
           });
           revision = result.revision;
           pendingRevision = revision;
-          statusNode.textContent = "Change sent. Waiting for the Cart…";
+          statusNode.textContent = "Change sent. Waiting for an update…";
           break;
         } catch (error) {
           if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
@@ -646,7 +646,7 @@ async function command(type, payload = {}) {
       });
       revision = result.revision;
       pendingRevision = revision;
-      statusNode.textContent = "Change sent. Checking the Cart…";
+      statusNode.textContent = "Change sent. Checking for an update…";
       const deadline = Date.now() + 6000;
       let latest = null;
       do {
@@ -718,7 +718,7 @@ $("#acceptPair").addEventListener("click", async () => {
   pairAcceptStatus.textContent = "";
   try {
     await refresh();
-    statusNode.textContent += "\nThis device is paired for about six months.";
+    statusNode.textContent += "\nThis device is paired for six months.";
   } catch (error) {
     clearDeviceCredential();
     showError(error);
@@ -748,7 +748,7 @@ sharePair.addEventListener("click", async () => {
   try {
     await navigator.share({
       title: "Pair HBNF Cart",
-      text: "Open this private link on the device to pair HBNF Cart.",
+      text: "Open this private link on the device to pair it with the Cart.",
       url: currentPairLink,
     });
   } catch (error) {
@@ -769,17 +769,17 @@ document.querySelectorAll("[data-command]").forEach(button => {
     if (actionStatus) {
       actionStatus.hidden = false;
       actionStatus.className = "apply-note";
-      actionStatus.textContent = "Sending request to the Cart…";
+      actionStatus.textContent = "Sending request…";
     }
     try {
       await command(button.dataset.command);
       if (actionStatus) {
-        actionStatus.textContent = statusNode.textContent || "Request sent to the Cart.";
-        actionStatus.className = /could not|hasn’t|not ready|unavailable/i.test(actionStatus.textContent) ? "apply-note bad" : "apply-note";
+        actionStatus.textContent = statusNode.textContent || "Request sent.";
+        actionStatus.className = /could not|couldn’t|couldn't|hasn’t|hasn't|not ready|aren’t ready|aren't ready|no update yet|unavailable/i.test(actionStatus.textContent) ? "apply-note bad" : "apply-note";
       }
     } catch (error) {
       if (actionStatus) {
-        actionStatus.textContent = "The Cart could not confirm this request. Check the connection and try again.";
+        actionStatus.textContent = "Couldn’t confirm the request. Check the connection and try again.";
         actionStatus.className = "apply-note bad";
       }
       showError(error);
@@ -822,10 +822,10 @@ document.querySelectorAll(".vibe-option").forEach(button => {
       .then(outcome => refresh({ hydrate: true }).then(() => {
         if (!actionStatus) return;
         actionStatus.textContent = outcome.status === "confirmed"
-          ? "Cart devices confirmed the lighting setting."
+          ? "Matrix and underglow confirmed the lighting setting."
           : outcome.status === "failed"
-            ? "The Cart couldn’t apply that lighting change. Check the connection details."
-            : "Request sent; Cart devices haven’t confirmed the lighting change yet.";
+            ? "Couldn’t apply that lighting change. Check connection details."
+            : "Request sent; Matrix and underglow haven’t confirmed the change yet.";
         actionStatus.className = outcome.status === "failed" ? "apply-note bad" : outcome.status === "pending" ? "apply-note warn" : "apply-note";
       }))
       .catch(async error => {
@@ -856,10 +856,10 @@ $("#vibeAuto").addEventListener("click", () => {
     .then(outcome => refresh({ hydrate: true }).then(() => {
       if (!actionStatus) return;
       actionStatus.textContent = outcome.status === "confirmed"
-        ? "Cart devices confirmed the lighting setting."
+        ? "Matrix and underglow confirmed the lighting setting."
         : outcome.status === "failed"
-          ? "The Cart couldn’t apply that lighting change. Check the connection details."
-          : "Request sent; Cart devices haven’t confirmed the lighting change yet.";
+          ? "Couldn’t apply that lighting change. Check connection details."
+          : "Request sent; Matrix and underglow haven’t confirmed the change yet.";
       actionStatus.className = outcome.status === "failed" ? "apply-note bad" : outcome.status === "pending" ? "apply-note warn" : "apply-note";
     }))
     .catch(async error => {
@@ -903,19 +903,19 @@ $("#refresh").addEventListener("click", () => refresh().catch(showRefreshError))
 
 function showRefreshError(error) {
   statusNode.textContent = OPAL_LOCAL_PWA
-    ? "Cart controls are unavailable. Check the connection and try again."
-    : "The Cart could not connect. No change was sent.";
+    ? "Controls are unavailable. Check the connection and try again."
+    : "Couldn’t connect. No change was sent.";
 }
 
 function showError(error) {
   statusNode.textContent = pendingRevision !== null
-    ? "Change sent. Waiting for the Cart to update."
-    : "The Cart could not complete that change. Check the connection and try again.";
+    ? "Change sent. Waiting for an update."
+    : "Couldn’t complete that change. Check the connection and try again.";
 }
 
 detectPairFragment();
 setAuthorizedUi();
-statusNode.textContent = "Connecting…";
+statusNode.textContent = "Checking connection…";
 refresh().catch(showRefreshError);
 
 window.addEventListener("online", () => {
@@ -923,7 +923,7 @@ window.addEventListener("online", () => {
 });
 window.addEventListener("offline", () => {
   statusNode.textContent = OPAL_LOCAL_PWA
-    ? "You’re offline. Controls on the Cart are still available."
+    ? "You’re offline. Local controls are still available."
     : "You are offline. No change was sent.";
 });
 

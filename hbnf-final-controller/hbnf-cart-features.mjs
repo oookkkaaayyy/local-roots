@@ -128,7 +128,7 @@ async function loadPalettes() {
   const select = $("featurePalette");
   if (!select || paletteLoadInFlight || paletteOptionsReady) return;
   if (!matrixLocal()) {
-    renderPaletteStatus("Connect to the Cart network to load color choices.");
+    renderPaletteStatus("Connect to Cart Wi-Fi to load colors.");
     return;
   }
   paletteLoadInFlight = true;
@@ -154,7 +154,7 @@ async function loadPalettes() {
       clearTimeout(paletteRetryTimer);
       paletteRetryTimer=null;
     }
-    renderPaletteStatus("Color choices loaded from the Cart.");
+    renderPaletteStatus("Colors loaded.");
     syncOverlayAvailability();
   } finally {
     paletteLoadInFlight = false;
@@ -248,13 +248,13 @@ async function applyPalette() {
   }
   const prior=desiredState(before);
   if (!prior) {
-    renderPaletteStatus("Cart settings aren’t available. No change was sent.");
+    renderPaletteStatus("Current settings aren’t available. No change was sent.");
     throw new Error("Cart settings could not be read; no palette change was sent.");
   }
   const priorPaletteId=typeof prior.paletteId==="string" ? prior.paletteId : "";
   if (priorPaletteId && priorPaletteId===paletteId) {
-    renderPaletteStatus("Cart settings already match. The lights weren’t checked.");
-    setFeatureStatus("Cart settings already match. The lights weren’t checked.");
+    renderPaletteStatus("Colors already match. The lights weren’t checked.");
+    setFeatureStatus("Colors already match. The lights weren’t checked.");
     return;
   }
   renderPaletteStatus("Applying palette…");
@@ -264,8 +264,8 @@ async function applyPalette() {
     const after=await bridge.refresh({hydrate:false});
     const current=desiredState(after);
     if (!current || String(current.paletteId)!==paletteId) throw new Error("Cart settings did not confirm the selected palette.");
-    renderPaletteStatus("Cart settings now match. The lights weren’t checked.");
-    setFeatureStatus("Cart settings now match. The lights weren’t checked.");
+    renderPaletteStatus("Colors updated. The lights weren’t checked.");
+    setFeatureStatus("Colors updated. The lights weren’t checked.");
   } catch (error) {
     let restored=false;
     if (priorPaletteId) {
@@ -277,10 +277,10 @@ async function applyPalette() {
       } catch (_) {}
     }
     const restoreStatus=restored
-      ? "Previous palette is back in Cart settings."
+      ? "Previous colors are restored."
       : priorPaletteId
         ? "Couldn’t confirm the previous palette was restored."
-        : "The selected palette couldn’t be confirmed. The previous palette was unknown, so it wasn’t restored automatically.";
+        : "Couldn’t confirm the selected palette. Previous colors were unknown, so they weren’t restored.";
     renderPaletteStatus("Palette wasn’t confirmed. "+restoreStatus);
     setFeatureStatus("Palette wasn’t confirmed. "+restoreStatus,true);
     throw new Error("Palette was not confirmed. "+restoreStatus+" "+(error.message || String(error)));
@@ -356,7 +356,7 @@ async function saveLook() {
   writeSavedLooks(list);
   renderSavedLooks(name);
   if (nameInput) nameInput.value=name;
-  setFeatureStatus("Saved look stored on this device.");
+  setFeatureStatus("Saved on this device.");
 }
 
 function selectedSavedLook() {
@@ -394,7 +394,7 @@ async function sendText() {
   const text = String($("featureText").value || "").trim();
   if (!text) throw new Error("Type a message first.");
   const actionStatus=$("textActionStatus");
-  if (actionStatus) { actionStatus.hidden=false; actionStatus.className="apply-note"; actionStatus.textContent="Sending message to the Cart…"; }
+  if (actionStatus) { actionStatus.hidden=false; actionStatus.className="apply-note"; actionStatus.textContent="Sending message…"; }
   setFeatureStatus("Sending text…");
   try {
     const bridge=canonicalOverlayBridge();
@@ -402,8 +402,8 @@ async function sendText() {
     if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
     await bridge.overlay("text",data);
     $("featureText").value="";
-    if (actionStatus) actionStatus.textContent="Message request sent to the Cart.";
-    setFeatureStatus("Text sent to the Cart.");
+    if (actionStatus) actionStatus.textContent="Message request sent.";
+    setFeatureStatus("Message request sent.");
   } catch (error) {
     if (actionStatus) { actionStatus.textContent="Couldn’t send the message. Check the connection and try again."; actionStatus.className="apply-note bad"; }
     throw error;
@@ -456,13 +456,13 @@ async function refreshLive(silent) {
     const now=new Date();
     renderLive(out.live,false,now.toLocaleTimeString());
     saveLiveCache(out.live);
-    if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Scores checked just now. Score-update time is unknown.");
+    if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Scores checked just now. Last score update time is unknown.");
   } catch (error) {
     const cached=readLiveCache();
     if (cached && cached.live) {
       const when=cached.savedAt ? new Date(cached.savedAt).toLocaleString() : "";
       renderLive(cached.live,true,when);
-      if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Couldn’t refresh scores. Showing saved results; score-update time is unknown.",true);
+      if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Couldn’t refresh. Showing saved results; last score update time is unknown.",true);
       return;
     }
     if (!silent || liveRefreshManualRequested) setLiveRefreshStatus("Couldn’t refresh scores. Check the connection and try again.",true);
@@ -485,26 +485,26 @@ async function showScoreboard() {
   let out;
   try { out=await canonicalRead("live_status",{}); }
   catch (error) {
-    report("Couldn’t check for an active round. Check your internet connection and try again; no scores were sent.",true);
+    report("Couldn’t check for an active round. Check your internet connection and try again. No scores were sent.",true);
     throw error;
   }
   const live=out && out.live;
   if (!live || !live.active) {
-    report("No active round was found in the latest read. Score-update time is unknown; check the scoring page if a round is under way.",true);
+    report("No active round was found. Last score update time is unknown; check the scoring page.",true);
     return;
   }
   if (!Array.isArray(live.entries) || !live.entries.length) {
-    report("No scores were found in the latest read. Score-update time is unknown; enter scores, then try again.",true);
+    report("No scores were found. Last score update time is unknown; enter scores, then try again.",true);
     return;
   }
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
   try {
     const bridge=canonicalOverlayBridge();
-    report("Sending scores to the Cart display…");
+    report("Sending scores to Matrix…");
     await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-    report("Scores sent from the latest read. Score-update time is unknown; check the Cart display.");
+    report("Scores sent from the latest check. Last score update time is unknown; check Matrix.");
   } catch (error) {
-    report("Couldn’t send the scores to the Cart display. Check that the Cart is online and try again.",true);
+    report("Couldn’t send scores to Matrix. Check the connection and try again.",true);
     throw error;
   }
 }
@@ -518,11 +518,11 @@ async function showManualScoreboard() {
       $("manualScoreboardLabel") ? $("manualScoreboardLabel").value : "",
       $("manualScoreboardEntries") ? $("manualScoreboardEntries").value : ""
     );
-    if (status) status.textContent="Showing scores on the Cart…";
+    if (status) status.textContent="Showing scores on Matrix…";
     setFeatureStatus("Showing the scores entered here.");
     await bridge.overlay("scoreboard",payload,22000);
-    if (status) status.textContent="Scores shown on the Cart only. Nothing was saved.";
-    setFeatureStatus("Scores shown on the Cart only. Nothing was saved.");
+    if (status) status.textContent="Shown on Matrix only. Nothing was saved.";
+    setFeatureStatus("Shown on Matrix only. Nothing was saved.");
   } catch (error) {
     if (status) status.textContent="Scores could not be shown. Check the connection and try again.";
     throw error;
@@ -538,7 +538,7 @@ async function showAcePot() {
   const amount=Number(live.acePot);
   const bridge=canonicalOverlayBridge();
   await bridge.overlay("text",{text:"ACE POT $"+amount.toFixed(0),color:"#FFFFFF"},7000);
-  setFeatureStatus("Ace pot sent to the Cart.");
+  setFeatureStatus("Ace pot sent to Matrix.");
 }
 
 function renderOta(j) {
@@ -552,20 +552,20 @@ function renderOta(j) {
   const macOk=normalizedMac(j.matrix_mac)===EXPECTED_MATRIX_MAC;
   const artifactOk=j.artifact_verified===true;
   if (!macOk || !artifactOk) {
-    status.textContent="BLOCKED · signed release identity verification failed.";
+    status.textContent="Update blocked: the signed release could not be verified.";
     return;
   }
   if (j.installable === true) {
     if (String(j.based_on_firmware_sha256 || "").toLowerCase()!==ACCEPTED_BASE_SHA256) {
-      status.textContent="BLOCKED · update is not based on the accepted Audio V1.1 firmware.";
+      status.textContent="Update blocked: it doesn’t use the accepted Audio V1.1 base.";
       return;
     }
-    status.textContent = "Update available: "+j.release_id+" · verified base";
+    status.textContent = "Update available: "+j.release_id+" · base verified";
     install.hidden=false;
   } else if (j.already_accepted === true) {
-    status.textContent = "Current signed release accepted: "+j.release_id;
+    status.textContent = "Current signed update accepted: "+j.release_id;
   } else {
-    status.textContent = "Signed release checked: "+(j.release_id || "unknown");
+    status.textContent = "Signed update checked: "+(j.release_id || "unknown");
   }
 }
 
@@ -576,7 +576,7 @@ async function getOtaStatus() {
 
 async function checkOta() {
   const status=$("featureOtaStatus");
-  status.textContent="Checking signed release…";
+  status.textContent="Checking signed update…";
   const j=await getOtaStatus();
   renderOta(j);
 }
@@ -613,9 +613,9 @@ async function runPreflight() {
   const out=$("featurePreflightResult");
   if (!out) return;
   const checks=[];
-  out.textContent="Running local readiness checks…";
+  out.textContent="Checking local readiness…";
   if (!matrixLocal()) {
-    out.textContent="BLOCKED · Open this dashboard from 192.168.77.10/hbnf while connected to HBNF-Cart.";
+    out.textContent="Open this dashboard at 192.168.77.10/hbnf while connected to Cart Wi-Fi.";
     return;
   }
 
@@ -645,7 +645,7 @@ async function runPreflight() {
   }
 
   const hardFail=checks.some(x=>/API FAIL|identity FAIL|OTA FAIL/.test(x));
-  out.textContent=(hardFail ? "NOT READY · " : "READY/CHECK · ")+checks.join(" · ");
+  out.textContent=(hardFail ? "Not ready · " : "Checks complete · ")+checks.join(" · ");
 }
 
 function syncOverlayAvailability() {
@@ -675,7 +675,7 @@ function syncOverlayAvailability() {
   if (!overlayReady) {
     const live=$("featureLive");
     if (live && live.textContent==="Live scores haven’t loaded yet.") {
-      live.textContent="Score display isn’t available on this Cart yet.";
+      live.textContent="Score display isn’t available yet.";
     }
   }
   return overlayReady && paletteReady;
@@ -691,7 +691,7 @@ renderSavedLooks("");
 syncOverlayAvailability();
 loadPalettes().catch(()=>{
   paletteOptionsReady=false;
-  renderPaletteStatus("Couldn’t load color choices. Check the Cart connection and try again.");
+  renderPaletteStatus("Couldn’t load colors. Check the connection and try again.");
   syncOverlayAvailability();
   setFeatureStatus("Couldn’t load colors. Check the Cart connection and try again.",true);
   schedulePaletteRetry();
@@ -707,7 +707,7 @@ function schedulePaletteRetry() {
 function retryPaletteLoad() {
   if (!paletteOptionsReady && matrixLocal()) loadPalettes().catch(()=>{
     paletteOptionsReady=false;
-    renderPaletteStatus("Couldn’t load color choices. Check the Cart connection and try again.");
+    renderPaletteStatus("Couldn’t load colors. Check the connection and try again.");
     syncOverlayAvailability();
     schedulePaletteRetry();
   });
@@ -730,7 +730,7 @@ bind("featureOtaInstall",()=>{ location.href=OPAL_INSTALLER; });
 bind("featureOtaResult",refreshOtaResult);
 bind("featurePreflight",runPreflight);
 if ($("featureText")) $("featureText").addEventListener("keydown",e=>{ if(e.key==="Enter") $("featureSendText").click(); });
-if (!matrixLocal()) setFeatureStatus("Some advanced controls are available only on the Cart.");
+if (!matrixLocal()) setFeatureStatus("Some advanced controls are only available on Cart Wi-Fi.");
 
 window.addEventListener("pageshow",function(){
   if (matrixLocal()) refreshOtaResult().catch(function(){});
