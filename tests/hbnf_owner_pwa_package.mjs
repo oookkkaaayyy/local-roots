@@ -17,6 +17,7 @@ const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
 const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_package.py");
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
+const candidateBuilder = fs.readFileSync(path.join(root, "scripts/hbnf_candidate_bundle.py"), "utf8");
 
 assert.match(html, /hbnf-cart2-owner-control-guest-qr-v1-20261016/);
 assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/owner-pwa\/hbnf-cart\.html"/);
@@ -54,8 +55,13 @@ for (const name of [
 ]) {
   assert.ok(installer.includes(`"${name}"`), `installer omits ${name}`);
   assert.ok(packageBuilder.includes(`"${name}"`), `Owner/Guest package builder omits ${name}`);
-  assert.ok(releaseWorkflow.includes(`hbnf-final-controller/${name}`), `release package omits ${name}`);
+  assert.ok(
+    candidateBuilder.includes(`("hbnf-final-controller/${name}", "controller/${name}")`),
+    `candidate release bundle omits ${name}`,
+  );
 }
+assert.match(releaseWorkflow, /scripts\/hbnf_candidate_bundle\.py/,
+  "coordinated release workflow must use the checked candidate bundle builder");
 
 assert.match(html, /navigator\.serviceWorker\.register/);
 assert.match(html, /local-control-entry/);
@@ -84,7 +90,13 @@ assert.match(css, /::-webkit-slider-thumb[^}]*width:20px;height:20px/);
 assert.match(css, /::-moz-range-thumb[^}]*width:16px;height:16px/);
 assert.match(html, /:focus-visible/, "keyboard focus styling remains visible");
 assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA service worker missing");
-assert.match(uiWorkflow, /HBNF-CART-OWNER-GUEST-CONTROLS-V1-20261016/);
+assert.match(uiWorkflow, /HBNF-CART-OWNER-GUEST-CONTROLLER-ONLY-V1-20261016/);
+assert.match(uiWorkflow, /type: boolean\n        default: false/);
+assert.match(uiWorkflow, /EXPECTED_COMMIT_SHA.*inputs\.expected_commit_sha/);
+assert.match(uiWorkflow, /ARTIFACT_CAPACITY_CONFIRMED.*inputs\.artifact_capacity_confirmed/);
+assert.match(uiWorkflow, /github\.event_name == 'workflow_dispatch' && inputs\.publish_candidate/);
+assert.match(uiWorkflow, /retention-days: 7/);
+assert.doesNotMatch(uiWorkflow, /retention-days: 30/);
 assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-control-guest-qr-v1-20261016"/);
 assert.match(installer, /\?release="\+BUILD_MARKER\+/);
 assert.match(installer, /HBNF_CART2_OWNER_GUEST_INSTALL=PASS/);
