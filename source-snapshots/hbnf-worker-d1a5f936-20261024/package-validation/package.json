@@ -9,6 +9,8 @@
   "scripts": {
     "wrangler:version": "wrangler --version",
     "verify:assets": "node ./verify-assets.mjs",
+    "verify:live-routes": "node ./verify-live-routes.mjs",
+    "test:route-parity": "node --test ./verify-live-routes.test.mjs",
     "build:dry-run": "npm run verify:assets && wrangler deploy --dry-run --config ./wrangler.jsonc --outdir .wrangler-output"
   },
   "devDependencies": {
