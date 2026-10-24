@@ -31,7 +31,11 @@ assert.ok(stagedControl.includes('action === "live_status"'),"canonical backend 
 assert.ok(stagedControl.includes("chooseLive"),"canonical live_status does not reuse current selector");
 
 assert.ok(features.includes('fetchJson(matrixApiUrl("/json/pal")'),"dynamic WLED palette list missing");
-assert.ok(html.includes('<section id="palettePanel"'),"palette controls are not exposed in a visible panel");
+assert.match(html, /<div id="palettePanel"[^>]*\bhidden\b/,"palette controls are retained but withheld from the Owner UI");
+assert.match(html, /<details class="panel sub-controls" aria-label="Saved looks and advanced color"[^>]*\bhidden\b/,"Saved Looks controls are retained but withheld from the Owner UI");
+assert.match(html, /<select id="scene">/,"independent Show style selector remains available");
+assert.match(html, /id="featureRefreshLive"[\s\S]*?id="featureScoreboard"/,"core score refresh and Show Scores controls remain exposed");
+assert.match(html, /id="featureAcePot"/,"round score controls remain exposed");
 assert.ok(features.includes('bind("featureApplyPalette",applyPalette)'),"standalone palette action is not bound");
 assert.ok(features.includes("rollbackCanonicalLook"),"canonical look rollback path missing");
 assert.ok(features.includes("Canonical scene readback did not match"),"canonical scene readback verification missing");
