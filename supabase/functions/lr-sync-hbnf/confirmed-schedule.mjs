@@ -57,7 +57,7 @@ export function isSyntheticGlowFixtureWeek(week) {
   const cards = week?.cards && typeof week.cards === "object" ? Object.values(week.cards) : [];
   if (cards.some((card) => card?.finalized === true)) return false;
   return players.every((player) => typeof player?.name === "string"
-    && /^Fixture(?:\\s|$)/i.test(player.name.trim()));
+    && /^Fixture(?:\s|$)/i.test(player.name.trim()));
 }
 
 export function isCanceledGlowWeek(week) {
