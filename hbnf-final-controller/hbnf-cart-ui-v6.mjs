@@ -1,6 +1,10 @@
 const $=id=>document.getElementById(id);
 function syncSceneButtons(value){
-  document.querySelectorAll(".scene-button").forEach(b=>b.classList.toggle("active",b.dataset.scene===value));
+  document.querySelectorAll(".scene-button").forEach(b=>{
+    const selected=b.dataset.scene===value;
+    b.classList.toggle("active",selected);
+    b.setAttribute("aria-pressed",String(selected));
+  });
 }
 function sceneButtons(){
   const select=$("scene"),host=$("sceneButtons");
@@ -14,7 +18,7 @@ function sceneButtons(){
   ];
   for(const [value,label,description] of labels){
     const b=document.createElement("button");
-    b.type="button";b.className="scene-button";b.dataset.scene=value;
+    b.type="button";b.className="scene-button";b.dataset.scene=value;b.setAttribute("aria-pressed","false");
     const name=document.createElement("strong");name.className="scene-name";name.textContent=label;
     const detail=document.createElement("span");detail.className="scene-description";detail.textContent=description;
     b.append(name,detail);
@@ -38,37 +42,20 @@ const header = main && main.querySelector(".hero-v6");
 if (main && header && !document.getElementById("ownerNavigation")) {
   const css = document.createElement("style");
   css.textContent = `
-    body{max-width:900px;padding:16px 16px calc(24px + env(safe-area-inset-bottom));background:#071b24;color:#edf7f8}
-    .hero-v6{align-items:center;gap:12px}.hero-v6 h1{font-size:1.7rem;letter-spacing:-.02em}.eyebrow{color:#80d7c6;letter-spacing:.14em}
-    #ownerNavigation{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:sticky;top:0;z-index:5;padding:8px 0;background:#071b24}
-    #ownerNavigation button{min-height:48px;border-radius:14px;background:#102c37;border:1px solid #29515d;font-weight:800}
+    /* Layout rules only; visual design lives in hbnf-cart-ui-v6.css. */
+    #ownerNavigation{position:sticky;top:0;z-index:5}
+    .owner-view{display:grid;gap:14px;align-items:start}.owner-view[hidden]{display:none!important}
     .owner-view-heading{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    #ownerNavigation button[aria-current="page"]{background:#1b4a51;border-color:#70d5bb;color:#fff}
-    .owner-view{display:grid;gap:12px}.owner-view[hidden]{display:none!important}
-    .owner-view .panel{border-color:#28505a;border-radius:18px;background:linear-gradient(145deg,#102832,#0b2029);padding:16px}
-    .owner-view h2{letter-spacing:-.01em}.owner-view button,.owner-view select,.owner-view input:not([type=range]),.owner-view textarea{min-height:46px;border-radius:13px}
-    .owner-view button{font-weight:750}.owner-view button:disabled{opacity:.58;cursor:wait}
-    #status{order:3;margin:0;min-height:24px;color:#bfeee2;font-weight:650}
-    #truthBadge{border-radius:999px;padding:8px 12px;white-space:normal}
-    #scoresPanel .score-entry{margin-top:12px}.owner-score-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .owner-score-actions button{min-height:52px;background:#16434d;border-color:#3a7880}
-    .owner-view .course-status-grid{gap:8px}.owner-view .course-status-cell,.owner-view .truth-cell{border-radius:12px}
-    .owner-view .danger{background:#472832;border-color:#a5505a}
-    @media(min-width:900px) and (min-height:680px) and (orientation:landscape){
-      #ownerViewShow{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
-      #ownerViewShow>#lightsPanel,#ownerViewShow>.cart-commands{min-width:0}
-      #ownerViewShow>#textPanel{grid-column:1/-1}
-    }
-    @media(max-width:800px){.hero-v6{flex-wrap:wrap}.hero-v6>#status{flex-basis:100%}}
-    @media(max-width:540px){body{padding-left:12px;padding-right:12px}.owner-view .guest-invite{align-items:flex-start}.owner-score-actions{grid-template-columns:1fr}}
-    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    #scoresPanel .score-entry{margin-top:12px}
+    .owner-score-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    @media(max-width:699px){.hero-v6>#status{grid-column:1/-1}}
   `;
   document.head.appendChild(css);
 
   const nav = document.createElement("nav");
   nav.id = "ownerNavigation";
   nav.setAttribute("aria-label", "Cart controls");
-  nav.innerHTML = '<button type="button" data-owner-view="show" aria-current="page">Show</button><button type="button" data-owner-view="scores">Scores</button><button type="button" data-owner-view="system">System</button>';
+  nav.innerHTML = '<button type="button" data-owner-view="show" aria-controls="ownerViewShow" aria-current="page">Show</button><button type="button" data-owner-view="scores" aria-controls="ownerViewScores">Scores</button><button type="button" data-owner-view="system" aria-controls="ownerViewSystem">System</button>';
   header.after(nav);
 
   const views = {};
@@ -95,6 +82,24 @@ if (main && header && !document.getElementById("ownerNavigation")) {
     return element;
   };
   move("#lightsPanel", "show");
+  const showStyle = move("#showStylePanel", "show");
+  const sceneButtonsHost = main.querySelector("#sceneButtons");
+  const nativeScene = main.querySelector(".scene-native-wrap");
+  const pauseButton = main.querySelector('[data-command="LOCK"]');
+  const showStyleOptions = main.querySelector("#showStyleOptions");
+  const showStylePause = main.querySelector("#showStylePause");
+  if (showStyle && sceneButtonsHost && showStyleOptions) showStyleOptions.appendChild(sceneButtonsHost);
+  if (showStyle && nativeScene && showStyleOptions) showStyleOptions.appendChild(nativeScene);
+  if (showStyle && pauseButton && showStylePause) showStylePause.appendChild(pauseButton);
+  const oldSceneGrid = main.querySelector(".cart-commands .control-grid");
+  if (oldSceneGrid) oldSceneGrid.remove();
+  const oldSubControls = main.querySelector(".cart-commands .sub-controls");
+  if (oldSubControls) oldSubControls.remove();
+  const showHelp = document.createElement("p");
+  showHelp.className = "apply-note";
+  showHelp.textContent = "Next changes the look. Auto chooses a look for you.";
+  const sequenceRow = main.querySelector(".cart-commands .row");
+  if (sequenceRow) sequenceRow.after(showHelp);
   move(".cart-commands", "show");
   move("#textPanel", "show");
   move(".quick-tuning", "system");

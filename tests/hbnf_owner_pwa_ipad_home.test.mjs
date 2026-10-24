@@ -42,12 +42,13 @@ assert.match(css, /\.guest-invite\{[^}]*padding:14px/s);
 assert.match(css, /\.guest-invite img\{[^}]*padding:8px/s);
 assert.match(css, /summary::?-webkit-details-marker/);
 assert.match(css, /@media\(max-width:699px\)/);
-assert.match(css, /body>main\{width:min\(100%,920px\)!important;max-width:920px!important/);
+assert.match(css, /body\{width:auto;max-width:none!important/);
+assert.match(css, /body>main\{width:min\(100%,1080px\);max-width:1080px/);
 
 const uiModule = fs.readFileSync("hbnf-final-controller/hbnf-cart-ui-v6.mjs", "utf8");
-assert.match(uiModule, /@media\(min-width:900px\) and \(min-height:680px\) and \(orientation:landscape\)/);
-assert.match(uiModule, /#ownerViewShow>#textPanel\{grid-column:1\/-1\}/);
-assert.match(uiModule, /@media\(max-width:800px\)\{\.hero-v6\{flex-wrap:wrap\}\.hero-v6>#status\{flex-basis:100%\}\}/);
+assert.match(css, /@media\(min-width:900px\) and \(min-height:680px\) and \(orientation:landscape\)/);
+assert.match(css, /#ownerViewShow>#lightsPanel,#ownerViewShow>#textPanel\{grid-column:1\/-1\}/);
+assert.match(uiModule, /aria-controls="ownerViewShow"/);
 
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 assert.equal(new Set(ids).size, ids.length, "Owner PWA IDs remain unique after moving controls");
