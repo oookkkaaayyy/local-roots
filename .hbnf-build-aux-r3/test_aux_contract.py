@@ -18,8 +18,8 @@ m2=re.search(r"amount=\[([^\]]+)\]",src); assert m2
 assert [int(x) for x in m.group(1).split(",")]==style
 assert [int(x) for x in m2.group(1).split(",")]==amount
 assert "audioSyncEnabled = 2" in src
-assert "hbnf-wow-aux-r3-2026-09-22-v1" in src
-assert "registry28-tempo-lock-1d-v6-network-no-starve" in src
+assert "hbnf-wow-aux-r3-2026-10-25-uv-follow-v1" in src
+assert "registry28-tempo-lock-1d-v7-network-no-starve-uv-follow" in src
 print("HBNF_AUX_R3_PATCH_CONTRACT_PASS")
 
 assert 'mqtt_anchor' in src
@@ -55,6 +55,8 @@ assert contract["matrix"]["projection_link"]["discovery_port"]==11990
 assert contract["matrix"]["projection_link"]["geometry"]=="perimeter-5-6-5-6-v1"
 assert contract["sync"]["framebuffer_source_of_truth"]=="matrix"
 assert contract["matrix"]["buildWitness"]=="registry28-tempo-lock-v9-network-no-starve"
-assert contract["aux"]["buildWitness"]=="registry28-tempo-lock-1d-v6-network-no-starve"
+assert contract["aux"]["buildWitness"]=="registry28-tempo-lock-1d-v7-network-no-starve-uv-follow"
+assert contract["aux"]["uv"]["rhythm_follow_effect_id"]==248
+assert contract["aux"]["uv"]["outputs_verified_in_build"] is False
 
 print("HBNF_AUX_V4_FRAME_LOCK_CONTRACT_PASS")

@@ -27,8 +27,8 @@ The launcher:
 
 ## Proven firmware
 
-- Release: `hbnf-wow-aux-r3-2026-09-22-v1`
-- Engine/witness: `aux-r3-wow-1d` / `registry28-fixed-1d-v1`
+- Release: `hbnf-wow-aux-r3-2026-10-25-uv-follow-v1`
+- Engine/witness: `aux-r3-wow-1d` / `registry28-tempo-lock-1d-v7-network-no-starve-uv-follow`
 - Projection: `fold2-1d-v1`
 - Effects: fixed IDs 220–247
 - Firmware SHA-256: `2a70872fd2373a8ecdcd98c8c73c2e8d871dc902c92599f85081895fe98f744e`

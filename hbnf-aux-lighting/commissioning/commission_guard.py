@@ -26,7 +26,7 @@ SAFE_BOOT_MIN = 180
 SAFE_BOOT_MAX = 199
 CLOUD_BASE = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1"
 MATRIX_IDENTITY_KEYS = ("reachable","pixels","release","engine","buildWitness","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap")
-AUX_IDENTITY_KEYS = ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap")
+AUX_IDENTITY_KEYS = ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap")
 AUX_SYNC_KEYS = ("visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
 
 def all_true(d, keys): return bool(d) and all(d.get(k) is True for k in keys)

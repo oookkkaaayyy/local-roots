@@ -9,7 +9,7 @@ doctor=(ROOT/"hbnf-wow-bundle/backend/release_doctor.ts").read_text()
 m1=(ROOT/"supabase/migrations/20260922061932_create_hbnf_aux_commissioning_state.sql").read_text()
 m2=(ROOT/"supabase/migrations/20260922062015_harden_hbnf_aux_commissioning_gate.sql").read_text()
 
-assert 'sp803e-v11-fold2-r3-gate' in aux
+assert 'sp803e-v12-uv-follow-r4-gate' in aux
 assert 'safeDefaultClosed' in aux
 assert 'passive_probe' in aux
 assert 'dry_run' in aux
@@ -110,9 +110,9 @@ import local_commission as _lc
 assert "mqtt" not in _lc.AUX_CFG_PATCH["if"]
 print("HBNF_AUX_TURNKEY_COMMISSIONING_GATE_PASS")
 
-assert 'auxRelease:"hbnf-wow-aux-r3-2026-09-22-v1"' in aux
+assert 'auxRelease:"hbnf-wow-aux-r3-2026-10-25-uv-follow-v1"' in aux
 assert 'auxEngine:"aux-r3-wow-1d"' in aux
-assert 'auxBuildWitness:"registry28-fixed-1d-v1"' in aux
+assert 'auxBuildWitness:"registry28-tempo-lock-1d-v7-network-no-starve-uv-follow"' in aux
 assert 'AudioReactive UDP Sound Sync' in aux
 assert 'AUXWOW' in aux
 assert 'runtimeTrusted' in aux

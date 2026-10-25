@@ -17,6 +17,8 @@ export const UV_HARDWARE_CONFIG = Object.freeze({
   }),
 });
 
+export const UV_FOLLOW_EFFECT_ID = 248;
+
 const REQUIRED_BASE_GATES = ["hardware_wired", "power_verified", "gpio_verified", "current_limit_verified", "segments_verified"];
 const clamp8 = (value) => Math.max(0, Math.min(255, Math.round(Number.isFinite(Number(value)) ? Number(value) : 0)));
 
@@ -48,7 +50,7 @@ export function uvCommissioningReady(state = {}) {
 }
 
 export async function executeUvRequest({ request = {}, state = {}, auxEnabled = false, uvEnabled = false, hardware = UV_HARDWARE_CONFIG, publish }) {
-  const mode = String(request.mode || "OFF").toUpperCase();
+  const mode = String(request.mode || "FOLLOW_MATRIX").toUpperCase();
   if (!UV_MODES.includes(mode)) {
     return { status: 400, body: { ok: false, action: "uv_policy", mutationIssued: false, error: "Unknown UV response mode." } };
   }
@@ -71,25 +73,25 @@ export async function executeUvRequest({ request = {}, state = {}, auxEnabled = 
   }
 
   if (typeof publish !== "function") throw new TypeError("AUX publish function is required for an enabled UV command.");
-  const policy = {
-    enabled: true, hardwareAvailable: true,
-    maxBrightness: hardware.maxBrightness,
-    rampPerTick: hardware.maxBrightness,
-    segmentIds: ["main", "short"],
+  const caps = {
+    main: Math.min(requested.main, hardware.maxBrightness),
+    short: Math.min(requested.short, hardware.maxBrightness),
   };
-  const output = Object.fromEntries(nextUvOutputs({ mode, manualBrightnessBySegment: requested }, policy, {
-    matrixBrightness: request.matrixBrightness,
-    vibeEnvelope: request.vibeEnvelope,
-  }).map(({ id, brightness }) => [id, brightness]));
+  const followsAudio = mode === "FOLLOW_MATRIX" || mode === "VIBE_REACTIVE";
+  const segment = (id, cap) => {
+    if (mode === "OFF" || cap === 0) return { id, on: false, bri: 0, fx: 0, ix: 0, sel: false };
+    if (followsAudio) return { id, on: true, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: cap, sel: false, col: [[255,255,255]] };
+    return { id, on: true, bri: cap, fx: 0, ix: cap, sel: false, col: [[255,255,255]] };
+  };
   const payload = { on: true, mainseg: 0, seg: [
     { id: 0, sel: true },
-    { id: hardware.channels.main.segmentId, on: output.main > 0, bri: output.main, sel: false, col: [[255, 255, 255]] },
-    { id: hardware.channels.short.segmentId, on: output.short > 0, bri: output.short, sel: false, col: [[255, 255, 255]] },
+    segment(hardware.channels.main.segmentId, mode === "OFF" ? 0 : caps.main),
+    segment(hardware.channels.short.segmentId, mode === "OFF" ? 0 : caps.short),
   ] };
   await publish(payload, true);
   return { status: 200, body: {
     ok: true, action: "uv_policy", mutationIssued: true, preview: false,
-    mode, requested, output, payload,
+    mode, requested, caps, localAudioFollow: followsAudio, payload,
     acknowledgement: { transport: "mqtt", qos: 1, acceptedByBroker: true, deviceReadback: false },
   } };
 }

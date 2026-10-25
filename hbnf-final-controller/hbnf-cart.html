@@ -87,10 +87,11 @@
     <div class="light-group uv-controls" aria-label="UV channels">
       <h3>UV channels</h3>
       <div class="quick-brightness-grid">
-        <label class="device"><span class="range-head"><strong>Main UV limit</strong><output id="uvMainValue">0</output></span><input aria-label="Main UV brightness limit" id="uvMainBrightness" type="range" min="0" max="255" value="0"></label>
-        <label class="device"><span class="range-head"><strong>Short UV limit</strong><output id="uvShortValue">0</output></span><input aria-label="Short UV brightness limit" id="uvShortBrightness" type="range" min="0" max="255" value="0"></label>
+        <label class="device"><span class="range-head"><strong>Main UV cap</strong><output id="uvMainValue">64</output></span><input aria-label="Main UV brightness cap" id="uvMainBrightness" type="range" min="0" max="255" value="64"></label>
+        <label class="device"><span class="range-head"><strong>Short UV cap</strong><output id="uvShortValue">64</output></span><input aria-label="Short UV brightness cap" id="uvShortBrightness" type="range" min="0" max="255" value="64"></label>
       </div>
-      <p id="uvActionStatus" class="apply-note" role="status" aria-live="polite">Follow mode is not ready: Cart/AUX does not provide a fresh rhythm reading. UV stays off; these levels are local previews.</p>
+      <p id="uvActionStatus" class="apply-note" role="status" aria-live="polite">Default: follow the synchronized Matrix/AUX rhythm. Each slider sets that channel’s brightness cap. Output stays locked until the physical 5V path and fresh audio sync are verified.</p>
+      <button id="uvFollowApply" type="button" disabled>Apply rhythm limits</button>
       <details class="sub-controls uv-manual">
         <summary>Manual override (detached)</summary>
         <p class="apply-note">Manual output is available only after the in-place hardware and safety checks pass.</p>

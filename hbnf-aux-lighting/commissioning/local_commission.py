@@ -21,9 +21,9 @@ DIRECT_OPENER=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 R3_RELEASE="hbnf-wow-r3-max-2026-09-21-v3"
 R3_ENGINE="r3-wow-max"
 R3_WITNESS="registry28-tempo-lock-v9-network-no-starve"
-AUX_RELEASE="hbnf-wow-aux-r3-2026-09-22-v1"
+AUX_RELEASE="hbnf-wow-aux-r3-2026-10-25-uv-follow-v1"
 AUX_ENGINE="aux-r3-wow-1d"
-AUX_WITNESS="registry28-tempo-lock-1d-v6-network-no-starve"
+AUX_WITNESS="registry28-tempo-lock-1d-v7-network-no-starve-uv-follow"
 MATRIX_PIXELS=512
 AUDIO_PORT=11988
 EFFECTS=[
@@ -129,7 +129,10 @@ def check_aux(d):
         "projection":aux.get("projection")=="fold2-1d-v1",
         "fxRegistered":aux.get("fxRegistered")==28,
         "fxFailed":aux.get("fxFailed")==0,
-        "modeCount":aux.get("modeCount")==248,
+        "modeCount":aux.get("modeCount")==249,
+        "uvFollowEffectId":aux.get("uvFollowEffectId")==248,
+        "uvFollowRegistered":aux.get("uvFollowRegistered") is True,
+        "uvOutputsFailDark":aux.get("uvOutputsVerified") in (False, 0),
         "fxFirst":aux.get("fxFirst")==220,
         "fxLast":aux.get("fxLast")==247,
         "effectMap":_effect_map_ok(e),
@@ -171,7 +174,7 @@ def prepare_sync(matrix_ip,aux_ip):
     m=inspect(matrix_ip); a=inspect(aux_ip)
     mc=check_matrix(m); ac=check_aux(a)
     matrix_identity=all(mc[k] for k in ("reachable","pixels","release","engine","buildWitness","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap"))
-    aux_identity=all(ac[k] for k in ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap"))
+    aux_identity=all(ac[k] for k in ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap"))
     if not matrix_identity: raise RuntimeError("Matrix R3 identity failed; refusing sync mutation: "+json.dumps(mc,sort_keys=True))
     if not aux_identity: raise RuntimeError("Aux custom R3 identity failed; refusing sync mutation: "+json.dumps(ac,sort_keys=True))
     _post_cfg(matrix_ip,MATRIX_CFG_PATCH)
@@ -195,7 +198,7 @@ def selftest():
     }
     assert all(check_matrix(matrix).values())
     aux={
-      "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":248,"fxFirst":220,"fxLast":247},
+      "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":249,"fxFirst":220,"fxLast":247,"uvFollowEffectId":248,"uvFollowRegistered":True,"uvOutputsVerified":0},
                "mainseg":0,"seg":[{"id":0,"sel":True},{"id":1,"sel":False},{"id":2,"sel":False}]},
       "info":{"ver":"0.16.1","arch":"esp32","leds":{"count":100,"maxpwr":900}},"effects":fx,"pins":{},
       "cfg":{"if":{"sync":{"recv":{"bri":False,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},"send":{"en":False}},
@@ -203,7 +206,7 @@ def selftest():
              "um":{"AudioReactive":{"sync":{"mode":2,"port":11988}}}}
     }
     c=check_aux(aux)
-    required=("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap","visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
+    required=("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap","visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
     assert all(c[k] for k in required),c
     assert c["mqttConfigured"] is False
     assert MATRIX_CFG_PATCH["um"]["AudioReactive"]["sync"]["mode"]==1

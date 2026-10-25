@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 #include "hbnf_vibe16.h"
+#include "hbnf_uv_audio_follower.h"
 
 namespace hbnf {
 
@@ -13,7 +14,7 @@ class AnimartrixAudioBridge {
   AnimartrixAudioBridge(){ reset(); }
 
   void reset(){
-    lastMs_=0; frame_=0; active_=false; width_=32; height_=16;
+    lastMs_=0; frame_=0; active_=false; fresh_=false; width_=32; height_=16;
     profile_=PROFILE_BALANCED; style_=STYLE_CLEAN; amount_=0; sceneId_=0; variantCode_=0; variantSalt_=0; domainCode_=0;
     bass8_=mid8_=treble8_=pulse8_=energy8_=impact8_=drop8_=0;
     bassBody8_=midBody8_=trebleBody8_=0;
@@ -34,10 +35,19 @@ class AnimartrixAudioBridge {
 
     um_data_t *um=nullptr;
     if(!UsermodManager::getUMData(&um,USERMOD_ID_AUDIOREACTIVE) || !um || um->u_size<3 || !um->u_data || !um->u_data[0] || !um->u_data[2]){
-      active_=false;
+      active_=false; fresh_=false;
       bassLane8_=midLane8_=trebleLane8_=budget8_=0;
       return clampSpeed(baseSpeed);
     }
+
+    // Timestamp freshness is consumed only by the fail-dark UV effect. Keep
+    // the established local-microphone Matrix/underglow analysis unchanged.
+    fresh_=um->u_size>=9 && um->u_data[8] &&
+      uvAudioFresh(nowMs,*reinterpret_cast<uint32_t*>(um->u_data[8]));
+
+    // WLED may render several AUX segments in the same loop. Reuse one local
+    // audio analysis for that frame rather than processing the same FFT twice.
+    if(lastMs_ && (uint32_t)(nowMs-lastMs_)<5u) return clampSpeed(baseSpeed);
 
     float volume=*reinterpret_cast<float*>(um->u_data[0]);
     uint8_t *fft=reinterpret_cast<uint8_t*>(um->u_data[2]);
@@ -174,13 +184,14 @@ class AnimartrixAudioBridge {
   uint8_t treblePulse() const { return treble8_; }
   uint8_t pulse() const { return pulse8_; }
   uint8_t energy() const { return energy8_; }
+  bool fresh() const { return fresh_; }
   uint8_t impact() const { return impact8_; }
   uint8_t drop() const { return drop8_; }
 
  private:
   Vibe16 vibe_;
   uint32_t lastMs_=0,frame_=0;
-  bool active_=false;
+  bool active_=false, fresh_=false;
   uint16_t width_=32,height_=16;
   uint8_t sceneId_=0,variantCode_=0,variantSalt_=0,domainCode_=0;
   VibeProfile profile_=PROFILE_BALANCED;

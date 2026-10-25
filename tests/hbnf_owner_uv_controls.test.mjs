@@ -11,16 +11,18 @@ const auth = read("staging/coordinated-backend/hbnf-cart-control/guest-command.t
 const aux = read("hbnf-aux-lighting/backend/aux_control.ts");
 const css = read("hbnf-final-controller/hbnf-cart-ui-v6.css");
 
-assert.match(html, /id="uvMainBrightness"[^>]*value="0"/);
-assert.match(html, /id="uvShortBrightness"[^>]*value="0"/);
+assert.match(html, /id="uvMainBrightness"[^>]*value="64"/);
+assert.match(html, /id="uvShortBrightness"[^>]*value="64"/);
+assert.match(html, /id="uvFollowApply"[^>]*disabled>Apply rhythm limits/);
 assert.match(html, /id="uvApply"[^>]*disabled/);
 assert.match(html, /id="uvOff"[^>]*disabled/);
 assert.match(html, /<details class="sub-controls uv-manual">[\s\S]*Manual override \(detached\)/);
-assert.match(html, /Follow mode is not ready[\s\S]*UV stays off/);
+assert.match(html, /Default: follow the synchronized Matrix\/AUX rhythm[\s\S]*Output stays locked/);
 assert.match(html, /id="palettePanel"[^>]*hidden/);
 assert.match(html, /aria-label="Saved looks and advanced color"[^>]*hidden/);
 assert.match(html, /id="showStylePanel"/);
-assert.match(features, /function setUvControlsReady\(ready\)[\s\S]*?disabled = !ready/);
+assert.match(features, /function setUvControlsReady\(ready\)[\s\S]*uvFollowApply[\s\S]*?disabled = !ready/);
+assert.match(features, /sendUv\("FOLLOW_MATRIX"\)/);
 assert.match(features, /result\.uvControlEnabled === true/);
 assert.match(features, /async function checkUvReadiness\(updateStatus = true\)[\s\S]*?if \(updateStatus\) status\.textContent/);
 assert.match(features, /canonicalRead\("uv_policy"/);
@@ -38,4 +40,4 @@ assert.match(aux, /action==="uv_policy"\|\|action==="uv"\).*owner_uv_proxy_requi
 assert.match(read("hbnf-aux-lighting/backend/aux_uv_command.mjs"), /verified: false/);
 assert.match(read("hbnf-aux-lighting/backend/aux_uv_command.mjs"), /uvEnabled = false/);
 
-console.log("PASS: Cart UV controls start at zero, stay owner-authenticated and disabled until the AUX safety gate is confirmed");
+console.log("PASS: Cart UV rhythm-follow caps default independently, remain owner-authenticated, and stay disabled until AUX safety gates pass");

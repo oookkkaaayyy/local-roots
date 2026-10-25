@@ -7,6 +7,9 @@ if len(sys.argv)!=2:
 root=pathlib.Path(sys.argv[1]).resolve()
 p=root/"usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp"
 s=p.read_text()
+uv_header=pathlib.Path(__file__).with_name("hbnf_uv_audio_follower.h")
+uv_header_target=p.parent/"hbnf_uv_audio_follower.h"
+uv_header_target.write_bytes(uv_header.read_bytes())
 
 # This patch runs after apply_wowmax_v3.py. Keep the exact fixed effect IDs but
 # convert the runtime identity and derive scene style/amount from the synced
@@ -15,14 +18,20 @@ s=p.read_text()
 # aux configuration. This deterministic map reconstructs c1/c2 without allowing
 # Matrix geometry/options to overwrite the UV segments.
 for old,new in [
- ("hbnf-wow-r3-max-2026-09-21-v3","hbnf-wow-aux-r3-2026-09-22-v1"),
+ ("hbnf-wow-r3-max-2026-09-21-v3","hbnf-wow-aux-r3-2026-10-25-uv-follow-v1"),
  ("r3-wow-max","aux-r3-wow-1d"),
- ("registry28-tempo-lock-v9-network-no-starve","registry28-tempo-lock-1d-v6-network-no-starve"),
+ ("registry28-tempo-lock-v9-network-no-starve","registry28-tempo-lock-1d-v7-network-no-starve-uv-follow"),
  ('root["HBNFWOW"]','root["HBNFAUX"]'),
  ('root.createNestedObject("HBNFWOW")','root.createNestedObject("HBNFAUX")'),
  ('PSTR("%s/wow")','PSTR("%s/auxwow")'),
 ]:
     s=s.replace(old,new)
+
+include_anchor='#include "hbnf_animartrix_audio_bridge.h"'
+include_replacement=include_anchor+'\n#include "hbnf_uv_audio_follower.h"\n#ifndef HBNF_UV_OUTPUTS_VERIFIED\n#define HBNF_UV_OUTPUTS_VERIFIED 0\n#endif\nstatic bool hbnfUvFollowRegistered = false;\nstatic const char _data_FX_mode_HbnfUvFollow[] PROGMEM = "Z HBNF UV Follow@Speed;Cap;1;2";'
+if s.count(include_anchor)!=1:
+    raise RuntimeError("AUX UV follower include anchor mismatch")
+s=s.replace(include_anchor,include_replacement,1)
 
 mqtt_anchor='\\\"projectionLink\\\":\\\"frame-lock-v1\\\",'
 mqtt_repl=mqtt_anchor+'\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"projectionRole\\\":\\\"receiver\\\",\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\",'
@@ -58,6 +67,10 @@ static void hbnfAuxLiftLuma(uint8_t &r, uint8_t &g, uint8_t &b) {
 
 """
 s=s.replace(anchor,helpers+anchor,1)
+fresh_anchor='\tuint8_t hbnfEnergy() const { return hbnfAudio.energy(); }'
+if s.count(fresh_anchor)!=1:
+    raise RuntimeError("AUX audio freshness accessor anchor mismatch")
+s=s.replace(fresh_anchor,fresh_anchor+'\n\tbool hbnfFresh() const { return hbnfAudio.fresh(); }',1)
 
 # ANIMartRIX has selected effects that divide by (num_y-1). A native 1D
 # WLED segment reports virtualHeight()==1, which would produce NaN/Inf in
@@ -101,6 +114,30 @@ new="(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis
 if s.count(old)!=1:
     raise RuntimeError(f"audio mapping anchor mismatch: {s.count(old)}")
 s=s.replace(old,new,1)
+
+anim_anchor="ANIMartRIXMod anim;"
+uv_mode='''ANIMartRIXMod anim;
+void mode_HbnfUvFollow() {
+#if HBNF_UV_OUTPUTS_VERIFIED
+  const uint8_t segmentId = strip.getCurrSegmentId();
+  if (segmentId != 1 && segmentId != 2) { SEGMENT.fill(0); return; }
+  anim.initEffect();
+  const uint8_t level = hbnf::uvFollowLevel(anim.hbnfEnergy(), SEGMENT.intensity, anim.hbnfFresh(), true);
+  // TYPE_ANALOG_1CH writes the packed white channel. Supplying both full RGB
+  // and white keeps auto-white modes and MANUAL_ONLY from suppressing PWM.
+  SEGMENT.fill(RGBW32(level,level,level,level));
+#else
+  SEGMENT.fill(0);
+#endif
+}
+'''
+if s.count(anim_anchor)!=1:
+    raise RuntimeError("AUX UV mode insertion anchor mismatch")
+s=s.replace(anim_anchor,uv_mode,1)
+fx_anchor='strip.addEffect(247, &mode_Module_Experiment10, _data_FX_mode_Module_Experiment10);'
+if s.count(fx_anchor)!=1:
+    raise RuntimeError("AUX UV effect registration anchor mismatch")
+s=s.replace(fx_anchor,fx_anchor+' if (strip.addEffect(248, &mode_HbnfUvFollow, _data_FX_mode_HbnfUvFollow) == 248) hbnfUvFollowRegistered = true;',1)
 
 # Install the frame-locked Matrix projection receiver. The Matrix broadcasts a
 # 22-pixel downsample of its already-rendered framebuffer; AUX displays those
@@ -241,7 +278,7 @@ s=s.replace(state_proj,state_proj+'\n      wow["projectionRole"] = "receiver";',
 # therefore renders the same effect as a one-row projection while sharing the
 # same WLED timebase as the Matrix sender.
 needle='      wow["fxLast"] = hbnfFxLast;'
-replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["lumaPolicy"] = "camera-bright-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";\n      wow["projectionQueuePolicy"] = "newest-frame-v1";'
+replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["lumaPolicy"] = "camera-bright-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";\n      wow["projectionQueuePolicy"] = "newest-frame-v1";\n      wow["uvFollowEffectId"] = 248;\n      wow["uvFollowRegistered"] = hbnfUvFollowRegistered;\n      wow["uvOutputsVerified"] = HBNF_UV_OUTPUTS_VERIFIED;'
 if s.count(needle)!=1:
     raise RuntimeError("telemetry extension anchor mismatch")
 s=s.replace(needle,replacement,1)
@@ -277,12 +314,13 @@ ar.write_text(a)
 
 checks={
  p:[
-  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v6-network-no-starve",
+  "hbnf-wow-aux-r3-2026-10-25-uv-follow-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v7-network-no-starve-uv-follow",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
   'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','\\\"projectionRole\\\":\\\"receiver\\\"','\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\"',
   'wow["projection"] = "fold2-1d-v1"','wow["projectionRole"] = "receiver"','wow["projectionRxPackets"]','wow["lumaPolicy"] = "camera-bright-v1"',
   "hbnfAuxLiftLuma","HbnfProjectionReceiverV1","hbnfProjectionRx.tick()","source-coupled-v4","frame-lock-v1",
-  'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10'
+  'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10',
+  'strip.addEffect(248, &mode_HbnfUvFollow','mode_HbnfUvFollow()','uvFollowEffectId"] = 248','hbnfUvFollowRegistered = true','HBNF_UV_OUTPUTS_VERIFIED'
  ],
  ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort','um_data->u_size = 9','um_data->u_data[8] = &last_UDPTime','um_data->u_type[8] = UMT_UINT32']
 }

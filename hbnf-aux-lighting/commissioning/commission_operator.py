@@ -79,7 +79,7 @@ def choose_aux(matrix_ip:str,candidates:list[str],inspected:dict)->tuple[str|Non
     exact=[]
     for ip,d in inspected.items():
         c=lc.check_aux(d)
-        if all(c.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap")):
+        if all(c.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap")):
             exact.append(ip)
     if len(exact)==1: return exact[0],"exact-custom-r3"
     if len(exact)>1: return None,"multiple-exact-aux-nodes"
@@ -90,7 +90,7 @@ def choose_aux(matrix_ip:str,candidates:list[str],inspected:dict)->tuple[str|Non
 
 def next_action(aux_ip,aux_checks,selection_reason):
     if not aux_ip: return "POWER_OR_IDENTIFY_AUX" if selection_reason=="none" else "DISAMBIGUATE_AUX"
-    exact=all(aux_checks.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap"))
+    exact=all(aux_checks.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap"))
     if not exact: return "INSTALL_EXACT_AUX_FIRMWARE"
     if not aux_checks.get("visualSyncReceive") or not aux_checks.get("segmentOptionsIsolated") or not aux_checks.get("audioSyncReceive"):
         return "RUN_GUARDED_PREPARE_SYNC"
@@ -133,7 +133,7 @@ def selftest():
         # Verify negative-path sanity without reproducing frozen firmware bytes.
         assert verify_package(root)["ok"] is False
     fx=["x"]*220+lc.EFFECTS
-    exact={"state":{"HBNFAUX":{"release":lc.AUX_RELEASE,"engine":lc.AUX_ENGINE,"buildWitness":lc.AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":248,"fxFirst":220,"fxLast":247}},"info":{"ver":"0.16.1","leds":{"count":40}},"effects":fx,"cfg":{},"pins":{}}
+    exact={"state":{"HBNFAUX":{"release":lc.AUX_RELEASE,"engine":lc.AUX_ENGINE,"buildWitness":lc.AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":249,"fxFirst":220,"fxLast":247,"uvFollowEffectId":248,"uvFollowRegistered":True,"uvOutputsVerified":0}},"info":{"ver":"0.16.1","leds":{"count":40}},"effects":fx,"cfg":{},"pins":{}}
     ip,reason=choose_aux("192.168.1.2",["192.168.1.3"],{"192.168.1.3":exact})
     assert ip=="192.168.1.3" and reason=="exact-custom-r3"
     assert next_action(ip,lc.check_aux(exact),reason)=="RUN_GUARDED_PREPARE_SYNC"

@@ -867,7 +867,7 @@ function uvStateChanged() {
 }
 
 function setUvControlsReady(ready) {
-  ["uvApply", "uvOff"].forEach(id => { if ($(id)) $(id).disabled = !ready; });
+  ["uvFollowApply", "uvApply", "uvOff"].forEach(id => { if ($(id)) $(id).disabled = !ready; });
 }
 
 async function checkUvReadiness(updateStatus = true) {
@@ -878,9 +878,9 @@ async function checkUvReadiness(updateStatus = true) {
     const result = await canonicalRead("uv_status");
     if (result && result.uvControlEnabled === true) {
       setUvControlsReady(true);
-      if (updateStatus) status.textContent = "Manual override is available under Manual override (detached). Automatic Matrix/AUX rhythm following is not connected; output otherwise stays off.";
+      if (updateStatus) status.textContent = "Automatic Matrix/AUX rhythm following is active. The two sliders set independent brightness caps; manual override stays separate.";
     } else {
-      if (updateStatus) status.textContent = "Locked: 5V UV safety checks are not verified, and no fresh Matrix/AUX rhythm signal reaches UV control. No UV command was sent.";
+      if (updateStatus) status.textContent = "Locked: the 5V output path or fresh Matrix/AUX rhythm sync is not verified. Sliders are caps only; no UV command was sent.";
     }
   } catch (_) {
     if (updateStatus) status.textContent = "Locked: UV safety status is unavailable. Pair the Owner device and reconnect to check.";
@@ -892,7 +892,7 @@ async function sendUv(mode) {
   const main = $("uvMainBrightness"), short = $("uvShortBrightness");
   if (!status || !main || !short) return;
   setUvControlsReady(false);
-  status.textContent = mode === "OFF" ? "Requesting UV off…" : "Sending UV levels…";
+  status.textContent = mode === "OFF" ? "Requesting UV off…" : mode === "FOLLOW_MATRIX" ? "Applying rhythm limits…" : "Sending detached manual levels…";
   try {
     const result = await canonicalRead("uv_policy", {
       mode,
@@ -918,6 +918,7 @@ async function sendUv(mode) {
 ["uvMainBrightness", "uvShortBrightness"].forEach(id => {
   if ($(id)) $(id).addEventListener("input", uvStateChanged);
 });
+if ($("uvFollowApply")) $("uvFollowApply").addEventListener("click", () => sendUv("FOLLOW_MATRIX"));
 if ($("uvApply")) $("uvApply").addEventListener("click", () => sendUv("MANUAL"));
 if ($("uvOff")) $("uvOff").addEventListener("click", () => sendUv("OFF"));
 uvStateChanged();

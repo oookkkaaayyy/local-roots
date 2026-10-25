@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { executeUvRequest, uvCommissioningReady, uvHardwareReady } from "../backend/aux_uv_command.mjs";
+import { executeUvRequest, UV_FOLLOW_EFFECT_ID, uvCommissioningReady, uvHardwareReady } from "../backend/aux_uv_command.mjs";
 
 const gates = Object.freeze({
   hardware_wired: true, power_verified: true, gpio_verified: true,
@@ -43,9 +43,9 @@ test("verified two-channel request maps independent sliders and reports only bro
   });
   assert.equal(result.status, 200);
   assert.equal(result.body.mutationIssued, true);
-  assert.deepEqual(result.body.output, { main: 180, short: 80 });
-  assert.deepEqual(sent.payload.seg.slice(1).map(({ id, on, bri }) => ({ id, on, bri })), [
-    { id: 1, on: true, bri: 180 }, { id: 2, on: true, bri: 80 },
+  assert.deepEqual(result.body.caps, { main: 180, short: 80 });
+  assert.deepEqual(sent.payload.seg.slice(1).map(({ id, on, bri, fx, ix }) => ({ id, on, bri, fx, ix })), [
+    { id: 1, on: true, bri: 180, fx: 0, ix: 180 }, { id: 2, on: true, bri: 80, fx: 0, ix: 80 },
   ]);
   assert.equal(sent.allowed, true);
   assert.deepEqual(result.body.acknowledgement, {
@@ -71,19 +71,38 @@ test("missing AUX, UV, or prerequisite commissioning gate rejects before publish
   }
 });
 
-test("follow modes retain separate channel caps on the shared Matrix/WOW sample", async () => {
+test("follow modes send persistent independent caps for AUX-local audio following", async () => {
+  let matrixPayload = null;
   const matrix = await executeUvRequest({
-    request: { mode: "FOLLOW_MATRIX", brightnessBySegment: { main: 128, short: 64 }, matrixBrightness: 200 },
+    request: { mode: "FOLLOW_MATRIX", brightnessBySegment: { main: 128, short: 64 }, matrixBrightness: 255, vibeEnvelope: 255 },
     state: gates, auxEnabled: true, uvEnabled: true, hardware: verifiedHardware,
-    publish: async () => {},
+    publish: async (payload) => { matrixPayload = payload; },
   });
-  assert.deepEqual(matrix.body.output, { main: 100, short: 50 });
+  assert.equal(matrix.body.localAudioFollow, true);
+  assert.deepEqual(matrix.body.caps, { main: 128, short: 64 });
+  assert.deepEqual(matrixPayload.seg.slice(1).map(({ id, bri, fx, ix }) => ({ id, bri, fx, ix })), [
+    { id: 1, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: 128 },
+    { id: 2, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: 64 },
+  ]);
   const vibe = await executeUvRequest({
-    request: { mode: "VIBE_REACTIVE", brightnessBySegment: { main: 128, short: 64 }, vibeEnvelope: 200 },
+    request: { mode: "VIBE_REACTIVE", brightnessBySegment: { main: 128, short: 64 }, vibeEnvelope: 0 },
     state: gates, auxEnabled: true, uvEnabled: true, hardware: verifiedHardware,
     publish: async () => {},
   });
-  assert.deepEqual(vibe.body.output, { main: 100, short: 50 });
+  assert.deepEqual(vibe.body.caps, { main: 128, short: 64 });
+  assert.equal(vibe.body.localAudioFollow, true);
+});
+
+test("missing mode defaults to local Matrix rhythm following", async () => {
+  let sent;
+  const result = await executeUvRequest({
+    request: { brightnessBySegment: { main: 96, short: 48 } },
+    state: gates, auxEnabled: true, uvEnabled: true, hardware: verifiedHardware,
+    publish: async (payload) => { sent = payload; },
+  });
+  assert.equal(result.body.mode, "FOLLOW_MATRIX");
+  assert.equal(sent.seg[1].fx, UV_FOLLOW_EFFECT_ID);
+  assert.equal(sent.seg[2].ix, 48);
 });
 
 test("hardware mapping requires reviewed facts and exact proposed GPIO/segment pairing", () => {

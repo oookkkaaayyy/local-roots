@@ -1,5 +1,5 @@
 {
-  "version": "hbnf-aux-commissioning-v7",
+  "version": "hbnf-aux-commissioning-v8",
   "matrix": {
     "ip_hint": "192.168.68.89",
     "release": "hbnf-wow-r3-max-2026-09-21-v3",
@@ -35,9 +35,9 @@
   },
   "aux": {
     "controller": "SP803E",
-    "firmware_release": "hbnf-wow-aux-r3-2026-09-22-v1",
+    "firmware_release": "hbnf-wow-aux-r3-2026-10-25-uv-follow-v1",
     "engine": "aux-r3-wow-1d",
-    "buildWitness": "registry28-tempo-lock-1d-v6-network-no-starve",
+    "buildWitness": "registry28-tempo-lock-1d-v7-network-no-starve-uv-follow",
     "projection": "frame-lock-v1",
     "effect_ids": [
       220,
@@ -69,6 +69,8 @@
       "nominal_voltage": 5,
       "current_controller": "not-connected",
       "sp803e_pwm_direct_control": false,
+      "rhythm_follow_effect_id": 248,
+      "outputs_verified_in_build": false,
       "reason": "SP803E is presently powered from 12V for the WS2811 underglow; manufacturer guidance requires controller/strip voltage matching for direct PWM loads."
     },
     "spare_pwm_gpios": [
