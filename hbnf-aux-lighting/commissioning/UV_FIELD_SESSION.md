@@ -26,7 +26,7 @@ With power off and both UV loads disconnected, the owner and operator compare th
 
 Record the exact part identities, ratings, wiring/output mapping, and pass/fail observations in the existing commissioning record. If a value cannot be verified from the actual part markings, its manufacturer data, or a measurement, keep both loads disconnected and the UV profile/gates off. Do not infer galvanic isolation, current capacity, pin mapping, or UV safety from the fact that the assembly is complete. No production setting, AUX enable, or UV enable has been changed.
 
-The success response reports MQTT QoS 1 broker acceptance only (`deviceReadback:false`). It does not claim physical output acknowledgment; the field procedure must verify actual per-channel load behavior/readback before accepting the UV channel gates.
+The success response reports MQTT QoS 1 broker acceptance only (`deviceReadback:false`). It does not claim physical output acknowledgment; the field procedure must verify actual per-channel load behavior/readback before accepting the UV channel gates. The server also requires the existing UV-specific `uv_main_verified`, `uv_short_verified`, `uv_full_verified`, `thermal_verified`, and `mixed_load_verified` fields; the underglow-only commissioning flags cannot unlock UV by themselves.
 
 ## Known Cart/AUX baseline
 

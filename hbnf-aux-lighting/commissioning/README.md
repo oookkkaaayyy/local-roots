@@ -36,4 +36,4 @@ The launcher:
 
 ## Safety boundary
 
-UV readiness remains closed until each load's voltage/current, switching path, channel mapping, protection, and physical OFF behavior are verified. The documented 12V Main load and unresolved Short load must not be collapsed into a shared assumed 5V profile.
+UV readiness remains closed until each load's voltage/current, switching path, channel mapping, protection, and physical OFF behavior are verified. It also requires the existing UV-specific Main, Short, full-load, thermal, and mixed-load commissioning checks; passing only the underglow setup no longer opens UV control. The documented 12V Main load and unresolved Short load must not be collapsed into a shared assumed 5V profile.

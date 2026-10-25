@@ -23,6 +23,7 @@ export const UV_HARDWARE_CONFIG = Object.freeze({
 export const UV_FOLLOW_EFFECT_ID = 248;
 
 const REQUIRED_BASE_GATES = ["hardware_wired", "power_verified", "gpio_verified", "current_limit_verified", "segments_verified"];
+const REQUIRED_UV_GATES = ["uv_main_verified", "uv_short_verified", "uv_full_verified", "thermal_verified", "mixed_load_verified"];
 const clamp8 = (value) => Math.max(0, Math.min(255, Math.round(Number.isFinite(Number(value)) ? Number(value) : 0)));
 
 export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
@@ -56,7 +57,7 @@ export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
 }
 
 export function uvCommissioningReady(state = {}) {
-  return REQUIRED_BASE_GATES.every((key) => state?.[key] === true);
+  return [...REQUIRED_BASE_GATES, ...REQUIRED_UV_GATES].every((key) => state?.[key] === true);
 }
 
 export async function executeUvRequest({ request = {}, state = {}, auxEnabled = false, uvEnabled = false, hardware = UV_HARDWARE_CONFIG, publish }) {

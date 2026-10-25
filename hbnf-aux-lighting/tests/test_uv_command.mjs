@@ -5,6 +5,8 @@ import { executeUvRequest, UV_FOLLOW_EFFECT_ID, uvCommissioningReady, uvHardware
 const gates = Object.freeze({
   hardware_wired: true, power_verified: true, gpio_verified: true,
   current_limit_verified: true, segments_verified: true,
+  uv_main_verified: true, uv_short_verified: true, uv_full_verified: true,
+  thermal_verified: true, mixed_load_verified: true,
 });
 const verifiedHardware = Object.freeze({
   verified: true,
@@ -59,6 +61,12 @@ test("missing AUX, UV, or prerequisite commissioning gate rejects before publish
     { auxEnabled: false, uvEnabled: true, state: gates },
     { auxEnabled: true, uvEnabled: false, state: gates },
     { auxEnabled: true, uvEnabled: true, state: { ...gates, power_verified: false } },
+    { auxEnabled: true, uvEnabled: true, state: { ...gates, uv_main_verified: false } },
+    { auxEnabled: true, uvEnabled: true, state: { ...gates, uv_short_verified: false } },
+    { auxEnabled: true, uvEnabled: true, state: { ...gates, uv_full_verified: false } },
+    { auxEnabled: true, uvEnabled: true, state: { ...gates, thermal_verified: false } },
+    { auxEnabled: true, uvEnabled: true, state: { ...gates, mixed_load_verified: false } },
+    { auxEnabled: true, uvEnabled: true, state: { hardware_wired: true, power_verified: true, gpio_verified: true, current_limit_verified: true, segments_verified: true } },
   ]) {
     let published = false;
     const result = await executeUvRequest({
