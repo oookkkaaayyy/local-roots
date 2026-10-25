@@ -1,7 +1,8 @@
 import { UV_MODES, UV_OFFLINE_CONFIG, nextUvOutputs } from "./aux_uv_policy.mjs";
 
-// Deliberately incomplete until the power-off hardware evidence is reviewed.
-// Do not fill these fields from a browser request or commissioning notes.
+// Deliberately incomplete until the owner-recorded, in-person hardware
+// verification establishes the exact parts, safe ratings, and output mapping.
+// Never populate these fields from a browser request or unverified notes.
 export const UV_HARDWARE_CONFIG = Object.freeze({
   verified: false,
   evidence: null,

@@ -8,7 +8,7 @@ const gates = Object.freeze({
 });
 const verifiedHardware = Object.freeze({
   verified: true,
-  evidence: "owner-reviewed power-off wiring photo",
+  evidence: "owner-recorded in-person electrical verification",
   supply: { outputVoltage: 5, currentLimitMa: 500 },
   switching: { verified: true, isolated: true, outputVoltage: 5, controlInputMinVoltage: 3.0, controlInputMaxVoltage: 3.6, channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300 },
   fuse: { verified: true, ratingMa: 300 },

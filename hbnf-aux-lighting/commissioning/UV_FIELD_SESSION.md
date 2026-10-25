@@ -11,17 +11,19 @@ The installed UV load is documented as **5V USB**. The SP803E and its WS2811 und
 - The prepared Watch API maps `uv_main`/`uv_short` to that same guarded AUX action. It is not a separate UV transport.
 - Policy modes are Manual, Follow Matrix, Follow WOW audio, and Off. Main/Short levels are independent; follow modes share the sampled response envelope. This logic does not establish an electrical output path.
 
-## One physical proof needed before enabling the profile
+## One owner-supervised physical verification
 
-With power **off** and UV disconnected, provide one clear photo of the assembled UV power/control path, framed so all of these are readable in the same image:
+The owner reports that the hardware is assembled and is ready to verify it in place. That is enough to schedule one short supervised session; it is not proof that the electrical path, pin mapping, fail-dark behavior, or UV exposure is safe. No photo is required.
 
-1. UV strip/module label and its input-voltage/current markings.
-2. Exact 5V supply label and its output rating.
-3. Separate **galvanically isolated** switching driver/module label, 5V output and 3.3V controller-input compatibility, total and per-channel current ratings, and both channel terminals.
-4. Inline fuse and its rating.
-5. Both channel wires from the driver to Main and Short, readable wire-gauge/current rating if marked, and the controller/control-wire connection.
+With power off and both UV loads disconnected, the owner and operator compare the assembled path with its existing part records and verify in place:
 
-If the wiring or labels cannot all be seen in one image, the path is not yet verified. Keep both UV loads disconnected. This is the only owner evidence requested before the server-side profile can be bound to a real output route. The photo can establish visible parts and routing; ratings, galvanic isolation, or wire ampacity not legible from it remain unverified and must not be inferred. No production setting, AUX enable, or UV enable has been changed.
+1. The UV strip's input voltage/current and the actual 5V supply rating.
+2. The exact switching module and its isolation, 5V output, 3.3V-compatible control input, total/per-channel current limits, fuse, and wire ratings against the strip load.
+3. That the 5V UV supply is separate from the SP803E's 12V supply, with no path that can backfeed 12V into the strip or 5V into the controller supply.
+4. The installed SP803E revision, WLED output allocation, and which physical output drives each UV channel. GPIO25/Main and GPIO26/Short with WLED segments 1/2 are source candidates only; the candidate contract currently has no verified segment IDs. Confirm actual mapping from the installed device before binding any profile.
+5. The strip wavelength and placement/exposure review from its existing product record or measurement. Do not energize an unidentified UV source or any exposed UVC source.
+
+Record the exact part identities, ratings, wiring/output mapping, and pass/fail observations in the existing commissioning record. If a value cannot be verified from the actual part markings, its manufacturer data, or a measurement, keep both loads disconnected and the UV profile/gates off. Do not infer galvanic isolation, current capacity, pin mapping, or UV safety from the fact that the assembly is complete. No production setting, AUX enable, or UV enable has been changed.
 
 The success response reports MQTT QoS 1 broker acceptance only (`deviceReadback:false`). It does not claim physical output acknowledgment; the field procedure must verify actual per-channel load behavior/readback before accepting the UV channel gates.
 
@@ -32,15 +34,13 @@ The success response reports MQTT QoS 1 broker acceptance only (`deviceReadback:
 - AUX enable and mixed-load acceptance remain false. Do not change them for this session.
 - Matrix audio is documented as master; AUX receives AudioReactive UDP Sound Sync on port 11988. That synchronizes the existing AUX engine but does not itself provide safe 5V UV switching.
 
-## After the path is verified and a guarded software route exists
+## One consolidated low-output commissioning session
 
-Do not use UV commands until the power-off wiring proof is reviewed and the source profile is bound to the verified driver/channel mapping. Retain an exact rollback and prove the command acknowledgment/readback contract offline. Then conduct one supervised session:
+Only continue after the in-person checks above pass, the UV server profile is bound to the measured hardware and actual output mapping, an exact source-bound package/rollback is retained, and real device readback is available. The checked-in candidate currently satisfies none of the hardware-profile gates and stays preview-only.
 
-1. Confirm both channels command OFF; verify no UV illumination/current at idle and on AUX cold boot/reboot. Verify underglow remains on its separate 12V path.
-2. Enable only Main at the lowest supported nonzero level; verify the named Main load, output acknowledgment, supply voltage, measured current, and temperature. Turn it OFF and confirm readback.
-3. Repeat for Short with Main OFF; then confirm independent slider changes affect only their named channel.
-4. Set both OFF, reboot AUX, and confirm both remain OFF before enabling either.
-5. Select Follow Matrix and verify each channel tracks the live brightness sample while respecting its own slider cap; select Follow WOW audio and verify both follow the existing Matrix audio envelope without changing the Matrix/AUX audio master or underglow behavior.
-6. Interrupt the sample/network and confirm truthful stale/offline feedback and fail-dark UV outputs. Restore the connection, verify fresh readback and OFF state, then finish with both channels OFF.
+1. Confirm both channels OFF at idle and through AUX cold boot/reboot; confirm the separate 12V underglow still works.
+2. At the lowest controlled output, test Main alone; verify the physical channel, supply voltage/current/temperature, and device readback. Turn it OFF, confirm readback, then repeat for Short alone.
+3. Check independent slider levels, then Follow Matrix and Follow WOW audio with each channel's own brightness cap.
+4. Interrupt the source/network and verify stale/offline feedback and both UV outputs fail dark. Restore it, confirm fresh readback, and finish with both channels OFF.
 
 Stop immediately for unexpected current, voltage, heating, cross-channel activation, missing/stale acknowledgment, or any state not confirmed OFF. Do not alter router configuration or flash Matrix firmware as part of UV commissioning.
