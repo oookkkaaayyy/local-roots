@@ -5,12 +5,15 @@ const html=fs.readFileSync("hbnf-final-controller/hbnf-cart.html","utf8");
 const controller=fs.readFileSync("hbnf-final-controller/hbnf-cart.js","utf8");
 const features=fs.readFileSync("hbnf-final-controller/hbnf-cart-features.mjs","utf8");
 const stagedControl=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/index.ts","utf8");
+const uvProxy=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/uv-policy-proxy.mjs","utf8");
 
 for (const id of [
   "featureLook","featureColor","featurePalette","featureLookName","featureSavedLooks","featureApplyLook","featureSaveLook","featureApplySaved","featureDeleteSaved",
   "featureText","featureSendText","featureLive","featureRefreshLive","featureScoreboard",
   "featureAcePot","featureOtaStatus","featureOtaCheck","featureOtaInstall","featureOtaResult","featurePreflight","featurePreflightResult"
 ]) assert.ok(html.includes('id="'+id+'"'), "missing UI id "+id);
+for (const id of ["uvMainBrightness", "uvShortBrightness", "uvMainValue", "uvShortValue", "uvApply", "uvOff", "uvActionStatus"])
+  assert.ok(html.includes('id="'+id+'"'), "missing guarded UV control "+id);
 
 assert.ok(html.includes("hbnf-cart-features.mjs"),"feature module not loaded");
 assert.ok(controller.includes("window.HBNFCanonical"),"canonical browser bridge missing");
@@ -27,6 +30,16 @@ assert.ok(features.includes("canonicalOverlayIntentV1"),"overlay capability gate
 assert.ok(features.includes("canonicalPaletteIntentV1"),"palette capability gate missing");
 assert.ok(features.includes("syncOverlayAvailability"),"feature fail-closed UI gate missing");
 assert.ok(features.includes('canonicalRead("live_status"'),"live data is not routed through canonical cart backend");
+assert.ok(features.includes('canonicalRead("uv_status")'),"UV readiness does not use the authenticated Cart bridge");
+assert.ok(features.includes('canonicalRead("uv_policy"'),"UV requests do not use the authenticated Cart bridge");
+assert.ok(features.includes("setUvControlsReady(false)"),"UV controls must fail closed while status is unknown");
+assert.ok(features.includes("No UV command was sent"),"UV gate failure must be reported truthfully");
+assert.ok(features.includes("device output is not confirmed"),"UV feedback must distinguish broker acceptance from device output");
+assert.ok(stagedControl.includes('action === "uv_status"'),"protected Cart UV status proxy missing");
+assert.ok(stagedControl.includes('action === "uv_policy"'),"protected Cart UV command proxy missing");
+assert.ok(uvProxy.includes('["OFF", "MANUAL"]'),"UV proxy must reject unsupported response modes");
+assert.ok(!uvProxy.includes('matrixBrightness: request'),"UV proxy must not accept client supplied Matrix brightness");
+assert.ok(!html.includes("FOLLOW_MATRIX"),"Cart UI must not expose unverified Matrix-follow UV mode");
 assert.ok(stagedControl.includes('action === "live_status"'),"canonical backend live_status missing");
 assert.ok(stagedControl.includes("chooseLive"),"canonical live_status does not reuse current selector");
 

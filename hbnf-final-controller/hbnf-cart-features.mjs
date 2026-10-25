@@ -860,6 +860,69 @@ function bind(id,fn) {
   });
 }
 
+function uvStateChanged() {
+  const main = $("uvMainBrightness"), short = $("uvShortBrightness");
+  if ($("uvMainValue") && main) $("uvMainValue").value = String(main.value);
+  if ($("uvShortValue") && short) $("uvShortValue").value = String(short.value);
+}
+
+function setUvControlsReady(ready) {
+  ["uvApply", "uvOff"].forEach(id => { if ($(id)) $(id).disabled = !ready; });
+}
+
+async function checkUvReadiness(updateStatus = true) {
+  const status = $("uvActionStatus");
+  if (!status) return;
+  setUvControlsReady(false);
+  try {
+    const result = await canonicalRead("uv_status");
+    if (result && result.uvControlEnabled === true) {
+      setUvControlsReady(true);
+      if (updateStatus) status.textContent = "Manual override is available under Manual override (detached). Automatic Matrix/AUX rhythm following is not connected; output otherwise stays off.";
+    } else {
+      if (updateStatus) status.textContent = "Locked: 5V UV safety checks are not verified, and no fresh Matrix/AUX rhythm signal reaches UV control. No UV command was sent.";
+    }
+  } catch (_) {
+    if (updateStatus) status.textContent = "Locked: UV safety status is unavailable. Pair the Owner device and reconnect to check.";
+  }
+}
+
+async function sendUv(mode) {
+  const status = $("uvActionStatus");
+  const main = $("uvMainBrightness"), short = $("uvShortBrightness");
+  if (!status || !main || !short) return;
+  setUvControlsReady(false);
+  status.textContent = mode === "OFF" ? "Requesting UV off…" : "Sending UV levels…";
+  try {
+    const result = await canonicalRead("uv_policy", {
+      mode,
+      brightnessBySegment: { main: Number(main.value), short: Number(short.value) },
+    });
+    if (result && result.ok === true && result.acknowledgement && result.acknowledgement.acceptedByBroker === true) {
+      status.textContent = "AUX broker accepted the request; device output is not confirmed.";
+    } else {
+      status.textContent = "UV request was not confirmed. Check the Cart connection before retrying.";
+    }
+  } catch (error) {
+    const detail = error && error.data && error.data.error;
+    if (error && error.status === 409) {
+      status.textContent = String(detail || "UV safety checks are incomplete.") + " No UV command was sent.";
+    } else {
+      status.textContent = "UV result is unknown. Check the Cart before trying again.";
+    }
+  } finally {
+    checkUvReadiness(false);
+  }
+}
+
+["uvMainBrightness", "uvShortBrightness"].forEach(id => {
+  if ($(id)) $(id).addEventListener("input", uvStateChanged);
+});
+if ($("uvApply")) $("uvApply").addEventListener("click", () => sendUv("MANUAL"));
+if ($("uvOff")) $("uvOff").addEventListener("click", () => sendUv("OFF"));
+uvStateChanged();
+checkUvReadiness();
+
 populateLooks();
 renderSavedLooks("");
 syncOverlayAvailability();

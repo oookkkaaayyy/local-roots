@@ -1,0 +1,59 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART_OWNER_UV_CONTROLS_AND_OWNER_PROXY_20261024",
+  "summary": "Add independent zero-default UV level previews and a paired-owner-only Cart proxy to the existing gated AUX manual UV command path.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Owner PWA canonical Cart endpoint, existing hbnf-aux-control endpoint, existing MQTT UV policy, and existing physical commissioning gate; no new transport or controller.",
+      "affected_subsystem": "Cart Owner PWA UV level controls, authenticated Cart-to-AUX proxy, and UV command authorization.",
+      "rollback_reference": "Revert the scoped Cart PWA, Cart control proxy, AUX UV request-authorization, tests, and this change record. Do not install or mutate device settings as part of this source change.",
+      "evidence_sources": [
+        "hbnf-aux-lighting/commissioning/UV_FIELD_SESSION.md",
+        "hbnf-aux-lighting/backend/aux_uv_command.mjs",
+        "hbnf-aux-lighting/backend/aux_control.ts"
+      ],
+      "tests": [
+        "node --test tests/hbnf_owner_uv_controls.test.mjs tests/hbnf-coordinated-controller-contract.mjs staging/coordinated-backend/hbnf-cart-control/uv-policy-proxy.test.mjs hbnf-aux-lighting/tests/test_uv_command.mjs hbnf-wow-backend-prep/tests/test_uv_policy.mjs",
+        "python3 hbnf-aux-lighting/tests/test_readiness.py",
+        "Source trace: Matrix AudioReactive UDP reaches the AUX renderer, but no fresh envelope is surfaced to hbnf-aux-control or the Cart proxy. Follow mode remains unavailable and fail-dark."
+      ],
+      "renderedPreview": {
+        "sourceBaseCommit": "9fe29d6e60ab3dc2a679ff6eb81a17f88bc41fc8",
+        "previewSourceFilesSha256": {
+          "hbnf-final-controller/hbnf-cart.html": "f35c1e25cac996ffe4a4409430d6fc7c686c220fc2f8d3fe6d67778cd3970619",
+          "hbnf-final-controller/hbnf-cart-ui-v6.css": "ed4c6d395b62f212107991862424b8ef54c43f3837ee8b28848f7d04ccd186a6",
+          "hbnf-final-controller/hbnf-cart-features.mjs": "b0bfeab5d22832b97811c3ddc2250d21e3ac49f512c16ffdb893bfec0b5e0e5b",
+          "hbnf-final-controller/hbnf-cart.js": "53f807062606e5dbf328a8dcf9e153a7614f2c4d8955a8a6d9d212ebebeff616",
+          "hbnf-final-controller/hbnf-cart-ui-v6.mjs": "07d027ef857e628110cecb97e5bfd25eb04f010bc5872f4c53d69174cf8d2382"
+        },
+        "viewportCssPixels": ["744x1133 portrait", "1133x744 landscape"],
+        "results": {
+          "horizontalOverflow": "PASS: none",
+          "navigationAndTouchTargets": "PASS: visible buttons and summaries >=46px; range inputs 44px",
+          "offlineFeedback": "PASS: Connection issue; The Cart could not connect. No change was sent.",
+          "uvSafetyFeedback": "PASS: UV safety status unavailable; manual actions disabled; no request emitted",
+          "landscapeWhitespace": "IMPROVED: Text panel placed under Motion alongside the tall Lights panel"
+        },
+        "screenshots": {
+          "portrait": {"path": "evidence/owner-pwa-v114-uv-controls/portrait-744x1133.png", "sha256": "3ca48911b81190619c6aa418900307f6ada9a498d8c97d3aaa3ae06445a11d9a"},
+          "landscape": {"path": "evidence/owner-pwa-v114-uv-controls/landscape-1133x744.png", "sha256": "623e9fe9b2a77e6d335d8d8d0aee2ebf5e5626b7129a6d02f1f267a8fecc6d6a"}
+        }
+      }
+    },
+    "implementation_limits": {
+      "device_mutation": false,
+      "production_deployment": false,
+      "uv_output": "OFF; hardware profile incomplete and commissioning gates closed",
+      "matrix_or_audio_follow": "NOT IMPLEMENTED; no trusted fresh signal available to the existing control API",
+      "manual_channel_path": "Source-prepared through owner-authenticated Cart proxy and existing gated AUX command; physical output remains blocked until hardware gates pass"
+    }
+  }
+}

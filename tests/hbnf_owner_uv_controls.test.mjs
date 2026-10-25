@@ -1,0 +1,41 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const read = (path) => fs.readFileSync(path, "utf8");
+const html = read("hbnf-final-controller/hbnf-cart.html");
+const features = read("hbnf-final-controller/hbnf-cart-features.mjs");
+const controller = read("hbnf-final-controller/hbnf-cart.js");
+const cartControl = read("staging/coordinated-backend/hbnf-cart-control/index.ts");
+const uvProxy = read("staging/coordinated-backend/hbnf-cart-control/uv-policy-proxy.mjs");
+const auth = read("staging/coordinated-backend/hbnf-cart-control/guest-command.ts");
+const aux = read("hbnf-aux-lighting/backend/aux_control.ts");
+const css = read("hbnf-final-controller/hbnf-cart-ui-v6.css");
+
+assert.match(html, /id="uvMainBrightness"[^>]*value="0"/);
+assert.match(html, /id="uvShortBrightness"[^>]*value="0"/);
+assert.match(html, /id="uvApply"[^>]*disabled/);
+assert.match(html, /id="uvOff"[^>]*disabled/);
+assert.match(html, /<details class="sub-controls uv-manual">[\s\S]*Manual override \(detached\)/);
+assert.match(html, /Follow mode is not ready[\s\S]*UV stays off/);
+assert.match(html, /id="palettePanel"[^>]*hidden/);
+assert.match(html, /aria-label="Saved looks and advanced color"[^>]*hidden/);
+assert.match(html, /id="showStylePanel"/);
+assert.match(features, /function setUvControlsReady\(ready\)[\s\S]*?disabled = !ready/);
+assert.match(features, /result\.uvControlEnabled === true/);
+assert.match(features, /async function checkUvReadiness\(updateStatus = true\)[\s\S]*?if \(updateStatus\) status\.textContent/);
+assert.match(features, /canonicalRead\("uv_policy"/);
+assert.match(features, /finally \{\s*checkUvReadiness\(false\);/);
+assert.match(css, /grid-template-areas:"actions actions" "lights motion" "lights text"/);
+assert.match(features, /status\.textContent = "UV result is unknown/);
+assert.match(controller, /body\.action === "uv_policy" \? 12000/);
+assert.match(auth, /action === "uv_status" \|\| action === "uv_policy"/);
+assert.match(cartControl, /action === "uv_status"/);
+assert.match(cartControl, /action === "uv_policy"/);
+assert.match(uvProxy, /\["OFF", "MANUAL"\]/);
+assert.match(uvProxy, /Number\.isInteger\(value\)/);
+assert.doesNotMatch(uvProxy, /vibeEnvelope|matrixBrightness/);
+assert.match(aux, /action==="uv_policy"\|\|action==="uv"\).*owner_uv_proxy_required/);
+assert.match(read("hbnf-aux-lighting/backend/aux_uv_command.mjs"), /verified: false/);
+assert.match(read("hbnf-aux-lighting/backend/aux_uv_command.mjs"), /uvEnabled = false/);
+
+console.log("PASS: Cart UV controls start at zero, stay owner-authenticated and disabled until the AUX safety gate is confirmed");

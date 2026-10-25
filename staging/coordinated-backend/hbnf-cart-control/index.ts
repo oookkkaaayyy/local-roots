@@ -4,6 +4,7 @@ import { chooseLive, isMatrixLiveReadPath, projectSkinsForMatrix } from "./live.
 import { laDate, readSkinsScoreState, writeSkinsWinner, writeSkinsTiebreaker, writeSkinsAceWinner } from "./skins_scoring.ts";
 import { phase2VibeReady } from "./runtime-vibe.ts";
 import { handleMatrixRelay } from "./matrix-relay.ts";
+import { proxyUvAction } from "./uv-policy-proxy.mjs";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 const cors = {
@@ -166,6 +167,22 @@ Deno.serve(async (req: Request) => {
   if (action === "verify_local_pairing") {
     if (!pairedDeviceAuthorized) return response({ error: "owner_pairing_required" }, 401);
     return response({ paired: true });
+  }
+
+  if (action === "uv_status") {
+    const result = await proxyUvAction(action, request, {
+      operatorAuthorized, pairedDeviceAuthorized,
+      endpoint: `${url}/functions/v1/hbnf-aux-control`, serviceKey, anonKey: anon,
+    });
+    return response(result.body, result.status);
+  }
+
+  if (action === "uv_policy") {
+    const result = await proxyUvAction(action, request, {
+      operatorAuthorized, pairedDeviceAuthorized,
+      endpoint: `${url}/functions/v1/hbnf-aux-control`, serviceKey, anonKey: anon,
+    });
+    return response(result.body, result.status);
   }
 
   if (action === "live_status") {

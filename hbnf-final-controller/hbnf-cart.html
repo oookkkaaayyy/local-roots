@@ -11,7 +11,7 @@
   <meta name="hbnf-build" content="hbnf-cart2-owner-control-home-r6-20261024">
   <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261024-cart-night-earth-r2">
   <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261024-cart-control-home-r4">
-  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261024-hbnf-faded-phosphor-r1">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261025-cart-uv-r2">
   <title>HBNF Cart Control</title>
 </head>
 <body><main>
@@ -83,6 +83,22 @@
         <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
         <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
       </div>
+    </div>
+    <div class="light-group uv-controls" aria-label="UV channels">
+      <h3>UV channels</h3>
+      <div class="quick-brightness-grid">
+        <label class="device"><span class="range-head"><strong>Main UV limit</strong><output id="uvMainValue">0</output></span><input aria-label="Main UV brightness limit" id="uvMainBrightness" type="range" min="0" max="255" value="0"></label>
+        <label class="device"><span class="range-head"><strong>Short UV limit</strong><output id="uvShortValue">0</output></span><input aria-label="Short UV brightness limit" id="uvShortBrightness" type="range" min="0" max="255" value="0"></label>
+      </div>
+      <p id="uvActionStatus" class="apply-note" role="status" aria-live="polite">Follow mode is not ready: Cart/AUX does not provide a fresh rhythm reading. UV stays off; these levels are local previews.</p>
+      <details class="sub-controls uv-manual">
+        <summary>Manual override (detached)</summary>
+        <p class="apply-note">Manual output is available only after the in-place hardware and safety checks pass.</p>
+        <div class="row uv-actions">
+          <button id="uvApply" type="button" disabled>Apply manual levels</button>
+          <button id="uvOff" type="button" disabled>UV off</button>
+        </div>
+      </details>
     </div>
     <div id="palettePanel" class="light-group palette-controls" aria-label="Cart color palette" hidden>
       <h2>Color palette</h2>
@@ -301,4 +317,4 @@
     </div>
   </details>
 
-</main><script type="module" src="./hbnf-cart.js?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261024-cart-control-home-r5"></script></body></html>
+</main><script type="module" src="./hbnf-cart.js?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261025-cart-uv-r2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261024-cart-control-home-r5"></script></body></html>

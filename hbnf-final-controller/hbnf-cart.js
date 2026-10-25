@@ -226,7 +226,7 @@ async function callCloud(body) {
       headers,
       body: JSON.stringify(body),
       cache: "no-store",
-    }, HBNF_API_TIMEOUT_MS, "Cart control");
+    }, body.action === "uv_policy" ? 12000 : HBNF_API_TIMEOUT_MS, "Cart control");
     if (backendHealth) backendHealth.textContent = "Reachable";
   } catch (error) {
     if (backendHealth) backendHealth.textContent = "Unavailable";
