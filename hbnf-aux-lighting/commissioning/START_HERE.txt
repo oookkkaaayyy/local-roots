@@ -13,12 +13,16 @@ BEFORE THE LAUNCHER
 THEN
 1. Extract the ZIP completely.
 2. Double-click COMMISSION_HBNF_AUX.command.
-3. The launcher verifies package/target identity, backs up the AUX, and resumes from the first genuinely unfinished stage.
+3. The launcher verifies package/target identity and saves WLED configuration/state/preset data. This is NOT a firmware image or rollback.
+
+RELEASE STATUS
+- This build is REVIEW ONLY. The exact installed firmware rollback image is missing, so firmware OTA is blocked.
+- Resume only after freshly confirming the installed baseline, capturing the complete firmware image, verifying its hash, retaining it, and rehearsing restoration of those exact bytes.
 
 THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);
 - positively identify the AUX and refuse Matrix targets;
-- install the exact verified firmware without requiring Matrix presence;
+- refuse firmware OTA while RELEASE_ADMISSION.json is REVIEW ONLY;
 - use a standards-compliant WLED multipart OTA upload;
 - calibrate real underglow color order at low current;
 - configure ONLY the GPIO16 WS2811 underglow bus, with fail-dark boot and <=900 mA commissioning limit;

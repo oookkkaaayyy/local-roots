@@ -2,18 +2,19 @@
 """Read-only HBNF AUX commissioning operator.
 
 This wrapper intentionally performs NO device mutation. It verifies the frozen
-package, discovers Matrix/Aux WLED nodes, takes a timestamped backup of any
-unambiguous Aux candidate, and emits a machine-readable readiness report.
+package, discovers Matrix/Aux WLED nodes, saves timestamped WLED configuration,
+state and preset readbacks (not firmware), and emits a machine-readable report.
 Physical/visible mutation remains delegated to the separately guarded tools.
 """
 from __future__ import annotations
-import argparse, hashlib, json, pathlib, sys, time, urllib.request
+import argparse, hashlib, json, pathlib, re, sys, time, urllib.request
 
 HERE=pathlib.Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import local_commission as lc
 
 BACKUP_PATHS=["/json/cfg","/json/state","/json/info","/json/eff","/json/pins","/presets.json"]
+ADMISSION_FILE="RELEASE_ADMISSION.json"
 
 
 def sha256(path:pathlib.Path)->str:
@@ -28,7 +29,8 @@ def verify_package(root:pathlib.Path)->dict:
     metrics=root/"FINAL_METRICS.txt"
     contract=root/"contract.json"
     scenes=root/"WOW_SCENES_V2.json"
-    required=[fw,metrics,contract,scenes,root/"local_commission.py"]
+    admission_path=root/ADMISSION_FILE
+    required=[fw,metrics,contract,scenes,root/"local_commission.py",admission_path]
     missing=[p.name for p in required if not p.is_file()]
     if missing: return {"ok":False,"missing":missing}
     got_sha=sha256(fw); got_bytes=fw.stat().st_size
@@ -37,6 +39,24 @@ def verify_package(root:pathlib.Path)->dict:
         if '=' in line:
             k,v=line.split('=',1); kv[k]=v
     con=json.loads(contract.read_text()); sc=json.loads(scenes.read_text())
+    admission={};admission_valid=False;admission_reason="release admission is missing or invalid"
+    if admission_path.is_file():
+        try:
+            admission=json.loads(admission_path.read_text())
+            source=kv.get("github_sha","")
+            admission_valid=(admission.get("schema")=="hbnf-aux-release-admission-v1"
+                and admission.get("status")=="REVIEW_ONLY"
+                and re.fullmatch(r"[0-9a-f]{40}",source) is not None
+                and admission.get("candidate_source_commit")==source
+                and admission.get("candidate_firmware_sha256")==got_sha
+                and re.fullmatch(r"[0-9a-f]{64}",str(admission.get("installed_firmware_sha256",""))) is not None
+                and bool(str(admission.get("installed_baseline_evidence","")).strip())
+                and admission.get("rollback_artifact") is None
+                and admission.get("blocker_code")=="EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
+                and bool(str(admission.get("resumption_condition","")).strip()))
+            admission_reason=str(admission.get("blocker_code") or "review-only")
+        except Exception as e:
+            admission_reason=f"release admission could not be verified: {type(e).__name__}"
     checks={
       "firmwareSha":got_sha==kv.get("firmware_sha256"),
       "firmwareBytes":got_bytes==int(kv.get("firmware_bytes","-1")),
@@ -48,8 +68,11 @@ def verify_package(root:pathlib.Path)->dict:
       "projection":con["aux"].get("projection")=="frame-lock-v1" and con["aux"].get("projection_fallback")=="fold2-1d-v1",
       "brightnessIndependent":con["sync"].get("receive_brightness") is False,
       "audioPort":con["sync"].get("audio_port")==11988,
+      "releaseAdmissionValid":admission_valid,
     }
-    return {"ok":all(checks.values()),"checks":checks,"firmwareSha256":got_sha,"firmwareBytes":got_bytes}
+    return {"ok":all(checks.values()),"checks":checks,"firmwareSha256":got_sha,"firmwareBytes":got_bytes,
+      "installAdmissible":False,"releaseAdmission":{"status":admission.get("status"),"reason":admission_reason,
+      "resumptionCondition":admission.get("resumption_condition")}}
 
 
 def raw_get(ip:str,path:str,timeout=4.0)->bytes:
@@ -116,8 +139,12 @@ def run_preflight(args):
       "auxSelection":{"ip":aux_ip,"reason":reason},
       "aux":ac,
       "backupDir":backup_dir,
+      "backupScope":"WLED config/state/info/effects/pins/presets only; not firmware or rollback",
       "nextAction":next_action(aux_ip,ac or {},reason),
     }
+    if report["nextAction"]=="INSTALL_EXACT_AUX_FIRMWARE":
+        report["nextAction"]="RELEASE_REVIEW_ONLY"
+        report["releaseBlocker"]=(pkg.get("releaseAdmission") or {}).get("reason") or "exact firmware rollback is unavailable"
     out=json.dumps(report,indent=2,sort_keys=True)
     print(out)
     if args.report:

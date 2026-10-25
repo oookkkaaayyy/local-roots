@@ -6,7 +6,7 @@ import argparse, hashlib, pathlib, zipfile
 FILES=[
  "START_HERE.txt","COMMISSION_HBNF_AUX.command","commission_guard.py","commission_operator.py",
  "generate_aux_hardware_plan.py","local_commission.py","HBNF_SP803E_AUX_R3.bin","FINAL_METRICS.txt",
- "firmware-sha256.txt","contract.json","WOW_SCENES_V2.json","README.md","CODEX_RUNBOOK.md"
+ "firmware-sha256.txt","contract.json","WOW_SCENES_V2.json","README.md","CODEX_RUNBOOK.md","RELEASE_ADMISSION.json"
 ]
 STAMP=(2026,9,22,0,0,0)
 
@@ -15,6 +15,23 @@ def sha256(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def build(src,out):
     missing=[n for n in FILES if not (src/n).is_file()]
     if missing: raise FileNotFoundError("missing distribution files: "+", ".join(missing))
+    import json,re
+    admission=json.loads((src/"RELEASE_ADMISSION.json").read_text())
+    metrics={}
+    for line in (src/"FINAL_METRICS.txt").read_text().splitlines():
+        if "=" in line:
+            k,v=line.split("=",1);metrics[k.strip()]=v.strip()
+    firmware_sha=sha256(src/"HBNF_SP803E_AUX_R3.bin")
+    source_sha=metrics.get("github_sha","")
+    if not (admission.get("schema")=="hbnf-aux-release-admission-v1"
+            and admission.get("status")=="REVIEW_ONLY"
+            and re.fullmatch(r"[0-9a-f]{40}",source_sha)
+            and admission.get("candidate_source_commit")==source_sha
+            and admission.get("candidate_firmware_sha256")==firmware_sha==metrics.get("firmware_sha256")
+            and admission.get("rollback_artifact") is None
+            and admission.get("blocker_code")=="EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
+            and bool(str(admission.get("resumption_condition","")).strip())):
+        raise ValueError("distribution is not source/hash-bound REVIEW_ONLY with the exact rollback blocker")
     out.parent.mkdir(parents=True,exist_ok=True)
     if out.exists(): out.unlink()
     with zipfile.ZipFile(out,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
@@ -32,6 +49,14 @@ def selftest():
     with tempfile.TemporaryDirectory() as td:
         root=pathlib.Path(td);src=root/"src";src.mkdir()
         for n in FILES:(src/n).write_text(n+"\n")
+        import json,hashlib
+        fw=src/"HBNF_SP803E_AUX_R3.bin";fw.write_bytes(b"fixture firmware")
+        fw_sha=hashlib.sha256(fw.read_bytes()).hexdigest()
+        (src/"FINAL_METRICS.txt").write_text(f"github_sha={'a'*40}\nfirmware_sha256={fw_sha}\n")
+        (src/"RELEASE_ADMISSION.json").write_text(json.dumps({"schema":"hbnf-aux-release-admission-v1",
+            "status":"REVIEW_ONLY","candidate_source_commit":"a"*40,"candidate_firmware_sha256":fw_sha,
+            "installed_firmware_sha256":"1"*64,"rollback_artifact":None,
+            "blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING","resumption_condition":"fixture"}))
         m=build(src,root/"x.zip");assert m["files"]==len(FILES) and m["launcherMode"]=="0755"
     print("HBNF_AUX_DISTRIBUTION_SELFTEST_PASS")
 

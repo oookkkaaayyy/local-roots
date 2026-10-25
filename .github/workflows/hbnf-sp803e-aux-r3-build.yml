@@ -267,6 +267,10 @@ jobs:
             echo github_sha=$GITHUB_SHA
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
+          python hbnf-aux-lighting/commissioning/generate_release_admission.py \
+            --firmware /tmp/artifacts/HBNF_SP803E_AUX_R3.bin \
+            --metrics /tmp/artifacts/FINAL_METRICS.txt \
+            --out /tmp/artifacts/RELEASE_ADMISSION.json
 
       - name: Commission tooling selftest
         shell: bash
@@ -275,6 +279,7 @@ jobs:
           python hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py --selftest
           python hbnf-aux-lighting/commissioning/commission_guard.py --selftest
           python hbnf-aux-lighting/commissioning/build_commissioning_distribution.py --selftest
+          python hbnf-aux-lighting/commissioning/generate_release_admission.py --selftest
           cp /tmp/artifacts/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin
           cp /tmp/artifacts/FINAL_METRICS.txt hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
           python hbnf-aux-lighting/commissioning/commission_operator.py --selftest

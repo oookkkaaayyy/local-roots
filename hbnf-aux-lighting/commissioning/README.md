@@ -21,9 +21,9 @@ Double-click `COMMISSION_HBNF_AUX.command`.
 The launcher:
 1. verifies the frozen package and target identity;
 2. talks to local WLED devices without system/environment HTTP proxies;
-3. backs up AUX before mutation;
-4. installs the exact firmware using valid multipart OTA framing;
-5. allows AUX-only firmware/hardware phases even when Matrix is offline;
+3. saves a WLED configuration/state/preset snapshot before any permitted change (this is not a firmware image or rollback);
+4. refuses firmware OTA while the source-bound release admission is REVIEW ONLY;
+5. allows AUX-only hardware phases when Matrix is offline; firmware OTA requires a separately admitted exact rollback;
 6. calibrates the real WS2811 color order at low current;
 7. applies a one-bus GPIO16 underglow plan with rollback and fail-dark boot;
 8. requires Matrix only for Matrix→AUX visual/audio sync;
@@ -35,8 +35,10 @@ The launcher:
 - Engine/witness: `aux-r3-wow-1d` / `registry28-tempo-lock-1d-v7-network-no-starve-uv-follow`
 - Projection: `fold2-1d-v1`
 - Effects: fixed IDs 220–247
-- Firmware SHA-256: `2a70872fd2373a8ecdcd98c8c73c2e8d871dc902c92599f85081895fe98f744e`
-- Firmware bytes: 1,342,288
+- Firmware SHA-256: `178c070defcd080ce2acd3ef83acb9a8b31d2aebd4fa1ec1ad37fafd44191d0d`
+- Firmware bytes: 1,348,784
+
+The current package disposition is **REVIEW ONLY** because the exact installed firmware rollback is missing. `RELEASE_ADMISSION.json` binds the disposition to the build's exact source commit and firmware hash. The ordinary WLED HTTP backup contains settings and presets, not the firmware image.
 
 ## Safety boundary
 

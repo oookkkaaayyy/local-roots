@@ -45,6 +45,13 @@ def verified_package_firmware(fw):
         raise RuntimeError("AUX firmware bytes do not match the package manifest.")
     return package
 
+def require_install_admission(package):
+    if not package.get("installAdmissible"):
+        admission=package.get("releaseAdmission") or {}
+        reason=admission.get("reason") or "exact installed-firmware rollback is not verified"
+        resume=admission.get("resumptionCondition") or ""
+        raise RuntimeError(f"AUX firmware OTA blocked: {reason}. {resume}".strip())
+
 def local_ipv4s():
     out=[]
     for iface in ("en0","en1","en2","bridge0"):
@@ -297,7 +304,7 @@ def preflight(args):
         if a: backups["aux"]=str(backup_node(a,root,"aux"))
     if not package.get("ok"): nxt="PACKAGE_INVALID"
     elif not a: nxt="POWER_OR_IDENTIFY_AUX" if ids["auxReason"]=="none" else "DISAMBIGUATE_AUX"
-    elif not all_true(ac,AUX_IDENTITY_KEYS): nxt="INSTALL_EXACT_AUX_FIRMWARE"
+    elif not all_true(ac,AUX_IDENTITY_KEYS): nxt="INSTALL_EXACT_AUX_FIRMWARE" if package.get("installAdmissible") else "RELEASE_REVIEW_ONLY"
     elif not hardware_ok(ids["inspected"][a]) or not safe_boot_runtime_ok(a,ids["inspected"][a]): nxt="APPLY_HARDWARE_PLAN"
     elif not m: nxt="POWER_OR_IDENTIFY_MATRIX"
     elif not all_true(ac,AUX_SYNC_KEYS): nxt="RUN_GUARDED_PREPARE_SYNC"
@@ -327,7 +334,8 @@ def wait_wled(ip,timeout=90,exact_aux=False):
     raise RuntimeError("WLED did not return with the expected identity before timeout.")
 
 def ota_install(ip,fw,timeout=120):
-    verified_package_firmware(fw)
+    package=verified_package_firmware(fw)
+    require_install_admission(package)
     before=lc.inspect(ip)
     if not lc.looks_like_wled(before): raise RuntimeError("Aux target is not a reachable WLED node.")
     if all_true(lc.check_matrix(before),MATRIX_IDENTITY_KEYS): raise RuntimeError("Target is exact Matrix R3; refusing AUX firmware install.")
@@ -625,7 +633,7 @@ def require_ready(pf):
 
 def interactive(args):
     history=[];pf=preflight(args);history.append({"phase":"preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report));print(json.dumps(pf,indent=2,sort_keys=True))
-    if pf["nextAction"] in ("PACKAGE_INVALID","POWER_OR_IDENTIFY_AUX","DISAMBIGUATE_AUX"): return {"history":history,"current":pf}
+    if pf["nextAction"] in ("PACKAGE_INVALID","POWER_OR_IDENTIFY_AUX","DISAMBIGUATE_AUX","RELEASE_REVIEW_ONLY"): return {"history":history,"current":pf}
     a=require_aux_ready(pf)
     if pf["nextAction"]=="INSTALL_EXACT_AUX_FIRMWARE":
         print(f"\nTarget AUX: {a}. Fresh backups were created. Matrix is not required for this phase.")
@@ -671,11 +679,35 @@ def selftest():
         repo_root=HERE.parents[1]
         shutil.copy2(repo_root/"hbnf-wow-bundle/config/WOW_SCENES_V2.json",package_dir/"WOW_SCENES_V2.json")
         metrics=(f"release={lc.AUX_RELEASE}\nengine={lc.AUX_ENGINE}\nbuild_witness={lc.AUX_WITNESS}\n"
+                 f"github_sha={'a'*40}\n"
                  f"firmware_sha256={op.sha256(fw)}\nfirmware_bytes={fw.stat().st_size}\n")
         (package_dir/"FINAL_METRICS.txt").write_text(metrics)
+        (package_dir/op.ADMISSION_FILE).write_text(json.dumps({"schema":"hbnf-aux-release-admission-v1",
+            "status":"REVIEW_ONLY","candidate_source_commit":"a"*40,
+            "candidate_firmware_sha256":op.sha256(fw),
+            "installed_firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95",
+            "installed_baseline_evidence":"fixture","rollback_artifact":None,
+            "blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING",
+            "resumption_condition":"Provide exact matching rollback bytes."}))
         verified=verified_package_firmware(fw)
         assert verified["firmwareSha256"]==op.sha256(fw)
         assert verified["firmwareBytes"]==fw.stat().st_size
+        assert verified["ok"] and not verified["installAdmissible"]
+        try:
+            require_install_admission(verified);raise AssertionError("review-only package passed OTA guard")
+        except RuntimeError as e:
+            assert "EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING" in str(e)
+        original_inspect=lc.inspect
+        try:
+            lc.inspect=lambda _ip: (_ for _ in ()).throw(AssertionError("OTA guard contacted the target before admission"))
+            try: ota_install("192.0.2.1",fw);raise AssertionError("review-only package reached OTA request path")
+            except RuntimeError as e: assert "AUX firmware OTA blocked" in str(e)
+        finally:
+            lc.inspect=original_inspect
+        admission=json.loads((package_dir/op.ADMISSION_FILE).read_text())
+        admission["candidate_source_commit"]="b"*40
+        (package_dir/op.ADMISSION_FILE).write_text(json.dumps(admission))
+        assert not op.verify_package(package_dir)["ok"]
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
     wire_prefix=body[:512]
     assert b"\r\nContent-Disposition" in wire_prefix and b"\\r\\nContent-Disposition" not in wire_prefix
