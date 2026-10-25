@@ -90,8 +90,7 @@
         <label class="device"><span class="range-head"><strong>Main UV cap</strong><output id="uvMainValue">64</output></span><input aria-label="Main UV brightness cap" id="uvMainBrightness" type="range" min="0" max="255" value="64"></label>
         <label class="device"><span class="range-head"><strong>Short UV cap</strong><output id="uvShortValue">64</output></span><input aria-label="Short UV brightness cap" id="uvShortBrightness" type="range" min="0" max="255" value="64"></label>
       </div>
-      <p id="uvActionStatus" class="apply-note" role="status" aria-live="polite">Default: follow the synchronized Matrix/AUX rhythm. Each slider sets that channel’s brightness cap. Output stays locked until the physical 5V path and fresh audio sync are verified.</p>
-      <button id="uvFollowApply" type="button" disabled>Apply rhythm limits</button>
+      <p id="uvActionStatus" class="apply-note" role="status" aria-live="polite">Follows the Matrix/AUX rhythm automatically when the physical and firmware safety checks pass. Each slider sets that channel’s brightness cap. Missing or stale Matrix audio keeps the UV output dark.</p>
       <details class="sub-controls uv-manual">
         <summary>Manual override (detached)</summary>
         <p class="apply-note">Manual output is available only after the in-place hardware and safety checks pass.</p>

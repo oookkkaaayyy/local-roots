@@ -49,7 +49,7 @@ test("verified two-channel request maps independent sliders and reports only bro
   let sent = null;
   const result = await executeUvRequest({
     request: { mode: "MANUAL", brightnessBySegment: { main: 255, short: 80 } },
-    state: gates, auxEnabled: true, uvEnabled: true, hardware: verifiedHardware,
+    state: gates, auxEnabled: true, uvEnabled: true, uvOutputsVerified: true, hardware: verifiedHardware,
     publish: async (payload, allowed) => { sent = { payload, allowed }; },
   });
   assert.equal(result.status, 200);
@@ -62,6 +62,20 @@ test("verified two-channel request maps independent sliders and reports only bro
   assert.deepEqual(result.body.acknowledgement, {
     transport: "mqtt", qos: 1, acceptedByBroker: true, deviceReadback: false,
   });
+});
+
+test("output verification remains a mandatory no-publish gate even when every other gate passes", async () => {
+  let published = false;
+  const result = await executeUvRequest({
+    request: { mode: "FOLLOW_MATRIX", brightnessBySegment: { main: 128, short: 64 } },
+    state: gates, auxEnabled: true, uvEnabled: true, hardware: verifiedHardware,
+    publish: async () => { published = true; },
+  });
+  assert.equal(result.status, 409);
+  assert.equal(result.body.mutationIssued, false);
+  assert.equal(result.body.output.main, 0);
+  assert.equal(result.body.output.short, 0);
+  assert.equal(published, false);
 });
 
 test("missing AUX, UV, or prerequisite commissioning gate rejects before publish", async () => {
@@ -79,7 +93,7 @@ test("missing AUX, UV, or prerequisite commissioning gate rejects before publish
     let published = false;
     const result = await executeUvRequest({
       request: { mode: "MANUAL", brightnessBySegment: { main: 20, short: 10 } },
-      ...input, hardware: verifiedHardware,
+      ...input, uvOutputsVerified: true, hardware: verifiedHardware,
       publish: async () => { published = true; },
     });
     assert.equal(result.status, 409);
@@ -92,7 +106,7 @@ test("follow modes send persistent independent caps for AUX-local audio followin
   let matrixPayload = null;
   const matrix = await executeUvRequest({
     request: { mode: "FOLLOW_MATRIX", brightnessBySegment: { main: 128, short: 64 }, matrixBrightness: 255, vibeEnvelope: 255 },
-    state: gates, auxEnabled: true, uvEnabled: true, hardware: verifiedHardware,
+    state: gates, auxEnabled: true, uvEnabled: true, uvOutputsVerified: true, hardware: verifiedHardware,
     publish: async (payload) => { matrixPayload = payload; },
   });
   assert.equal(matrix.body.localAudioFollow, true);
@@ -103,7 +117,7 @@ test("follow modes send persistent independent caps for AUX-local audio followin
   ]);
   const vibe = await executeUvRequest({
     request: { mode: "VIBE_REACTIVE", brightnessBySegment: { main: 128, short: 64 }, vibeEnvelope: 0 },
-    state: gates, auxEnabled: true, uvEnabled: true, hardware: verifiedHardware,
+    state: gates, auxEnabled: true, uvEnabled: true, uvOutputsVerified: true, hardware: verifiedHardware,
     publish: async () => {},
   });
   assert.deepEqual(vibe.body.caps, { main: 128, short: 64 });
@@ -114,7 +128,7 @@ test("missing mode defaults to local Matrix rhythm following", async () => {
   let sent;
   const result = await executeUvRequest({
     request: { brightnessBySegment: { main: 96, short: 48 } },
-    state: gates, auxEnabled: true, uvEnabled: true, hardware: verifiedHardware,
+    state: gates, auxEnabled: true, uvEnabled: true, uvOutputsVerified: true, hardware: verifiedHardware,
     publish: async (payload) => { sent = payload; },
   });
   assert.equal(result.body.mode, "FOLLOW_MATRIX");

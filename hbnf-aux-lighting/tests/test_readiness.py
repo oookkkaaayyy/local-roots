@@ -24,6 +24,8 @@ assert 'if(action==="blackout"||action==="off")' in aux
 assert 'if(!enabled)return json' in aux
 assert 'mixed_load_verified' in aux
 assert 'databaseGateAccepted' in aux
+assert 'st.runtimeTrusted&&uvOutputsVerified' in aux
+assert 'expectedUvOutputsVerified=R3.uvFollow.outputsVerified===true?1:0' in aux
 
 assert 'v5-r3-runtime-gate' in orch
 assert 'TARGET_RELEASE="hbnf-wow-r3-max-2026-09-21-v3"' in orch

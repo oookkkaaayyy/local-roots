@@ -61,7 +61,7 @@ export function uvCommissioningReady(state = {}) {
   return [...REQUIRED_BASE_GATES, ...REQUIRED_UV_GATES].every((key) => state?.[key] === true);
 }
 
-export async function executeUvRequest({ request = {}, state = {}, auxEnabled = false, uvEnabled = false, hardware = UV_HARDWARE_CONFIG, publish }) {
+export async function executeUvRequest({ request = {}, state = {}, auxEnabled = false, uvEnabled = false, uvOutputsVerified = false, hardware = UV_HARDWARE_CONFIG, publish }) {
   const mode = String(request.mode || "FOLLOW_MATRIX").toUpperCase();
   if (!UV_MODES.includes(mode)) {
     return { status: 400, body: { ok: false, action: "uv_policy", mutationIssued: false, error: "Unknown UV response mode." } };
@@ -70,7 +70,7 @@ export async function executeUvRequest({ request = {}, state = {}, auxEnabled = 
     main: clamp8(request.brightnessBySegment?.main),
     short: clamp8(request.brightnessBySegment?.short),
   };
-  const liveReady = auxEnabled === true && uvEnabled === true && uvHardwareReady(hardware) && uvCommissioningReady(state);
+  const liveReady = auxEnabled === true && uvEnabled === true && uvOutputsVerified === true && uvHardwareReady(hardware) && uvCommissioningReady(state);
   if (!liveReady) {
     const offline = { ...UV_OFFLINE_CONFIG, segmentIds: ["main", "short"] };
     const output = Object.fromEntries(nextUvOutputs({ mode, manualBrightnessBySegment: requested }, offline, {

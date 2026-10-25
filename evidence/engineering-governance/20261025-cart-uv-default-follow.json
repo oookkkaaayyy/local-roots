@@ -1,0 +1,41 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART_UV_DEFAULT_FOLLOW_FAIL_DARK_20261025",
+  "summary": "Make the existing Cart UV follow mode start automatically only after AUX runtime and output-verification gates pass, serialize cap updates, and reject backend actuation unless output verification is explicitly true.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Cart Owner PWA UV controls, existing owner-authenticated UV policy proxy, existing AUX runtime status and Matrix-local audio follower. No new transport, controller, or high-frequency audio command loop.",
+      "affected_subsystem": "Cart UV follow readiness and cap updates; AUX runtime identity and output-verification gate; UV request authorization.",
+      "rollback_reference": "Revert this source commit. No device, settings, or production state is changed by this source slice.",
+      "evidence_sources": [
+        "hbnf-final-controller/hbnf-cart-features.mjs",
+        "hbnf-final-controller/hbnf-cart.html",
+        "hbnf-aux-lighting/backend/aux_control.ts",
+        "hbnf-aux-lighting/backend/aux_uv_command.mjs",
+        ".hbnf-build-aux-r3/hbnf_uv_audio_follower.h"
+      ],
+      "source_base_commit": "8a3dae00c2b39cc098a2da57e3a90d58554c412c",
+      "tests": [
+        "node --test tests/hbnf_owner_uv_controls.test.mjs staging/coordinated-backend/hbnf-cart-control/uv-policy-proxy.test.mjs hbnf-aux-lighting/tests/test_uv_command.mjs",
+        "g++ -std=c++17 -O2 -I.hbnf-build-aux-r3 .hbnf-build-aux-r3/test_uv_audio_follower.cpp; run resulting executable",
+        "python3 hbnf-aux-lighting/tests/test_readiness.py",
+        "git diff --check"
+      ],
+      "implementation_limits": {
+        "deployment": false,
+        "production_mutation": false,
+        "HBNF_UV_OUTPUTS_VERIFIED": 0,
+        "physical_output": "NOT CHECKED; remains locked by the existing false firmware output-verification gate",
+        "device_and_field_acceptance": "NOT CHECKED"
+      }
+    }
+  }
+}
