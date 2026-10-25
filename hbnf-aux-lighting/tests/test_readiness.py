@@ -53,8 +53,8 @@ assert contract["matrix"]["release"]=="hbnf-wow-r3-max-2026-09-21-v3"
 assert contract["matrix"]["effect_ids"]==[220,247]
 assert contract["aux"]["underglow"]["gpio"]==16
 assert contract["aux"]["uv"]["status"]=="per-channel-hardware-pending"
-assert contract["aux"]["uv"]["main_nominal_voltage"]==12
-assert contract["aux"]["uv"]["short_nominal_voltage"] is None
+assert contract["aux"]["uv"]["main_nominal_voltage"]==5
+assert contract["aux"]["uv"]["short_nominal_voltage"]==5
 assert contract["aux"]["uv"]["load_ratings_verified"] is False
 assert contract["aux"]["uv"]["sp803e_pwm_direct_control"] is False
 assert contract["aux"]["spare_pwm_gpios"]==[25,26,27]

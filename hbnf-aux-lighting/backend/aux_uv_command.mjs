@@ -6,17 +6,18 @@ import { UV_MODES, UV_OFFLINE_CONFIG, nextUvOutputs } from "./aux_uv_policy.mjs"
 export const UV_HARDWARE_CONFIG = Object.freeze({
   verified: false,
   evidence: null,
-  // The documented Main load is 12V; Short remains unknown. These are
-  // reference facts only. Every rating and channel must still be verified.
+  // Owner reports both installed UV strips are iNextStation 5V USB-A units.
+  // This is a reported load voltage, not proof of current, supply, switching,
+  // protection, or channel mapping. Keep the profile unverified and fail-dark.
   supplyByChannel: Object.freeze({
-    main: Object.freeze({ outputVoltageV: 12, currentLimitMa: 0 }),
+    main: Object.freeze({ outputVoltageV: null, currentLimitMa: 0 }),
     short: Object.freeze({ outputVoltageV: null, currentLimitMa: 0 }),
   }),
   switching: Object.freeze({ verified: false, isolated: false, maxLoadVoltageV: 0, controlInputMinVoltage: 0, controlInputMaxVoltage: 0, channels: 0, maxChannelCurrentMa: 0, maxTotalCurrentMa: 0 }),
   maxBrightness: 0,
   channels: Object.freeze({
-    main: Object.freeze({ gpio: null, segmentId: null, loadVoltageV: 12, loadCurrentMa: 0, fuseRatingMa: 0, wireCurrentRatingMa: 0 }),
-    short: Object.freeze({ gpio: null, segmentId: null, loadVoltageV: null, loadCurrentMa: 0, fuseRatingMa: 0, wireCurrentRatingMa: 0 }),
+    main: Object.freeze({ gpio: null, segmentId: null, loadVoltageV: 5, loadCurrentMa: 0, fuseRatingMa: 0, wireCurrentRatingMa: 0 }),
+    short: Object.freeze({ gpio: null, segmentId: null, loadVoltageV: 5, loadCurrentMa: 0, fuseRatingMa: 0, wireCurrentRatingMa: 0 }),
   }),
 });
 

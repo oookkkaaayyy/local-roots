@@ -2,7 +2,7 @@ HB NIGHT FLYERS — SP803E / AUX COMMISSIONING
 
 CURRENT SAFE SCOPE
 - Addressable underglow: 12V WS2811 on DATA / IO16.
-- Main/rim UV is documented as 12V YGS-Tech 395–405nm; Short UV voltage/current remain unresolved. Keep both outputs off until each load and its complete switching path are verified.
+- Owner reports both current UV loads are iNextStation 5V USB-A strips (RIM/Main 6–6.6 ft; SHORT 12–13 in). They remain standalone on power banks and are not connected to the SP803E. Current draw and the proposed 12V-controller/5V-strip PWM-return path are unverified; keep both outputs off.
 - Matrix is required only when the workflow reaches Matrix→AUX sync. It is NOT required for AUX firmware or underglow-local configuration.
 
 BEFORE THE LAUNCHER

@@ -3,7 +3,7 @@
 ## Non-negotiable hardware facts
 
 - Underglow is 12V WS2811 and uses SP803E DATA / GPIO16.
-- Main/rim UV is documented as 12V YGS-Tech 395–405nm; the Short UV load's exact voltage and current remain unresolved.
+- Owner reports both current UV loads are iNextStation 5V USB-A strips (RIM/Main 6–6.6 ft; SHORT 12–13 in). This supersedes older 12V YGS-Tech notes for the current build. Both remain standalone on power banks; current draw and channel mapping are unmeasured.
 - Do not assume the SP803E 12V PWM/VCC path is safe from voltage match alone. Verify each load, driver, supply, fuse, wiring, and fail-dark behavior first.
 - Do not configure GPIO25/26/27 as UV outputs until per-channel load and output mapping and ratings are verified.
 - Matrix firmware must not be reflashed during AUX commissioning.
@@ -32,4 +32,4 @@
 
 ## UV boundary
 
-Manufacturer guidance for SP803E direct PWM loads requires the controller supply voltage to match the LED load voltage. Main/rim UV is documented as 12V, while the Short load remains unresolved. A matching voltage alone does not establish safe current, thermal, boot/restart, channel mapping, or optical behavior. Keep outputs off until each exact path is qualified.
+The SP803E manual says controller input voltage must match the LED strip voltage and depicts direct PWM strips with positive connected to VCC. The proposed arrangement powers the controller at 12V and both UV strips from a separate 5V buck, with their returns on PWM outputs; this is outside the documented direct-PWM wiring. No manufacturer evidence presently confirms that external-supply topology or its common-ground/backfeed behavior. A voltage match alone would also not establish safe current, thermal, boot/restart, channel mapping, or optical behavior. Keep outputs off until the exact path is confirmed safe and qualified.

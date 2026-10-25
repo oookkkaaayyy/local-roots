@@ -6,7 +6,7 @@ This directory commissions the Rogue Iron cart SP803E safely from stock WLED thr
 
 - SP803E: ESP32, 5–24V controller.
 - Underglow: 12V WS2811, DATA on GPIO16.
-- Main/rim UV is documented in the current hardware handoff as **12V YGS-Tech 395–405nm**. The Short UV load's exact voltage, current, and mapping remain unverified; older records conflict.
+- Owner's 2026-10-25 hardware report identifies both current UV loads as iNextStation 5V USB-A strips: RIM/Main about 6–6.6 ft and SHORT about 12–13 in (a shortened strip). They remain standalone on power banks and are not connected to the SP803E or the off-Cart switching module. Voltage/model are owner-reported; current draw and channel mapping are unmeasured.
 - Do not infer that the SP803E PWM outputs are a safe driver for either UV load. Verify each load's actual rating and switching path, including boot/restart OFF behavior, before use.
 - GPIO25/26/27 remain unused until the exact channel mapping and electrical path are verified.
 
@@ -36,4 +36,4 @@ The launcher:
 
 ## Safety boundary
 
-UV readiness remains closed until each load's voltage/current, switching path, channel mapping, protection, and physical OFF behavior are verified. It also requires the existing UV-specific Main, Short, full-load, thermal, and mixed-load commissioning checks; passing only the underglow setup no longer opens UV control. The documented 12V Main load and unresolved Short load must not be collapsed into a shared assumed 5V profile.
+UV readiness remains closed until each load's voltage/current, switching path, channel mapping, protection, and physical OFF behavior are verified. It also requires the existing UV-specific Main, Short, full-load, thermal, and mixed-load commissioning checks; passing only the underglow setup no longer opens UV control. Both reported 5V strip ratings are recorded in source, but supply/current limits and the proposed external 5V low-side PWM topology are not verified. The SP803E manual says its input voltage must match the LED strip voltage and depicts strip positive on VCC; the proposed controller-at-12V / strips-at-5V arrangement does not meet that documented direct-PWM wiring. Do not connect or energize it unless the manufacturer confirms the proposed topology or the owner approves a separately engineered, verified driver path.

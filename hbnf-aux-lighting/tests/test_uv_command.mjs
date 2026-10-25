@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { executeUvRequest, UV_FOLLOW_EFFECT_ID, uvCommissioningReady, uvHardwareReady } from "../backend/aux_uv_command.mjs";
+import { executeUvRequest, UV_FOLLOW_EFFECT_ID, UV_HARDWARE_CONFIG, uvCommissioningReady, uvHardwareReady } from "../backend/aux_uv_command.mjs";
 
 const gates = Object.freeze({
   hardware_wired: true, power_verified: true, gpio_verified: true,
@@ -12,13 +12,13 @@ const verifiedHardware = Object.freeze({
   verified: true,
   evidence: "owner-recorded in-person electrical verification",
   supplyByChannel: {
-    main: { outputVoltageV: 12, currentLimitMa: 300 },
+    main: { outputVoltageV: 5, currentLimitMa: 300 },
     short: { outputVoltageV: 5, currentLimitMa: 200 },
   },
-  switching: { verified: true, isolated: true, maxLoadVoltageV: 12, controlInputMinVoltage: 3.0, controlInputMaxVoltage: 3.6, channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300 },
+  switching: { verified: true, isolated: true, maxLoadVoltageV: 5, controlInputMinVoltage: 3.0, controlInputMaxVoltage: 3.6, channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300 },
   maxBrightness: 180,
   channels: {
-    main: { gpio: 25, segmentId: 1, loadVoltageV: 12, loadCurrentMa: 100, fuseRatingMa: 150, wireCurrentRatingMa: 150 },
+    main: { gpio: 25, segmentId: 1, loadVoltageV: 5, loadCurrentMa: 100, fuseRatingMa: 150, wireCurrentRatingMa: 150 },
     short: { gpio: 26, segmentId: 2, loadVoltageV: 5, loadCurrentMa: 150, fuseRatingMa: 150, wireCurrentRatingMa: 150 },
   },
 });
@@ -35,6 +35,14 @@ test("incomplete/default hardware profile stays preview-only and never calls MQT
   assert.equal(result.body.preview, true);
   assert.deepEqual(result.body.output, { main: 0, short: 0 });
   assert.equal(published, false);
+});
+
+test("owner-reported 5V UV strip voltage is recorded without enabling an unverified path", () => {
+  assert.equal(UV_HARDWARE_CONFIG.channels.main.loadVoltageV, 5);
+  assert.equal(UV_HARDWARE_CONFIG.channels.short.loadVoltageV, 5);
+  assert.equal(UV_HARDWARE_CONFIG.supplyByChannel.main.outputVoltageV, null);
+  assert.equal(UV_HARDWARE_CONFIG.supplyByChannel.short.outputVoltageV, null);
+  assert.equal(uvHardwareReady(UV_HARDWARE_CONFIG), false);
 });
 
 test("verified two-channel request maps independent sliders and reports only broker acknowledgment", async () => {
@@ -120,5 +128,5 @@ test("hardware mapping requires reviewed facts and exact proposed GPIO/segment p
   assert.equal(uvHardwareReady({ ...verifiedHardware, channels: { ...verifiedHardware.channels, short: { ...verifiedHardware.channels.short, segmentId: 1 } } }), false);
   assert.equal(uvHardwareReady({ ...verifiedHardware, supplyByChannel: { ...verifiedHardware.supplyByChannel, short: { ...verifiedHardware.supplyByChannel.short, outputVoltageV: 12 } } }), false);
   assert.equal(uvHardwareReady({ ...verifiedHardware, channels: { ...verifiedHardware.channels, short: { ...verifiedHardware.channels.short, loadVoltageV: null } } }), false);
-  assert.equal(uvHardwareReady({ ...verifiedHardware, switching: { ...verifiedHardware.switching, maxLoadVoltageV: 5 } }), false);
+  assert.equal(uvHardwareReady({ ...verifiedHardware, switching: { ...verifiedHardware.switching, maxLoadVoltageV: 4.9 } }), false);
 });

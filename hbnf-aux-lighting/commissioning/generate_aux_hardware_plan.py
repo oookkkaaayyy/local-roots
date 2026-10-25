@@ -42,7 +42,7 @@ def build(pixels:int, order:str, reverse:bool, max_ma:int, led_ma:int):
         "postApplyChecks":{
             "totalLogicalLength":pixels,
             "underglow":{"gpio":16,"start":0,"stop":pixels,"selected":True},
-            "uv":{"status":"UNVERIFIED_PER_CHANNEL_PENDING","mainNominalVoltageV":12,"shortNominalVoltageV":None,"sp803ePwmConfigured":False,"mustRemainDisconnected":True},
+            "uv":{"status":"UNVERIFIED_PER_CHANNEL_PENDING","voltageBasis":"owner-reported iNextStation 5V USB-A strips; not independently measured","mainNominalVoltageV":5,"shortNominalVoltageV":5,"sp803ePwmConfigured":False,"mustRemainDisconnected":True},
             "spareGpios":[25,26,27],
             "doNotReceiveSegmentOptionsOrBounds":True,
             "doNotInferColorOrder":True,
@@ -63,6 +63,9 @@ def selftest():
     seg=p["statePatch"]["seg"]
     assert len(seg)==1 and seg[0]["stop"]==37 and seg[0]["sel"] is True
     assert p["postApplyChecks"]["uv"]["sp803ePwmConfigured"] is False
+    assert p["postApplyChecks"]["uv"]["mainNominalVoltageV"] == 5
+    assert p["postApplyChecks"]["uv"]["shortNominalVoltageV"] == 5
+    assert p["postApplyChecks"]["uv"]["mustRemainDisconnected"] is True
     for bad in (0,2049):
         try:
             build(bad,"RGB",False,900,55)

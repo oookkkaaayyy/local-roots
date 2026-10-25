@@ -66,14 +66,15 @@
     },
     "uv": {
       "status": "per-channel-hardware-pending",
-      "main_nominal_voltage": 12,
-      "short_nominal_voltage": null,
+      "main_nominal_voltage": 5,
+      "short_nominal_voltage": 5,
+      "voltage_basis": "owner-reported iNextStation 5V USB-A strips; not independently measured",
       "load_ratings_verified": false,
       "current_controller": "none-verified",
       "sp803e_pwm_direct_control": false,
       "rhythm_follow_effect_id": 248,
       "outputs_verified_in_build": false,
-      "reason": "Main/rim UV is documented as 12V and Short UV remains unresolved. Each load, matching supply, PWM path, ratings and physical fail-dark behavior must be verified before configuration or actuation."
+      "reason": "Owner reports both current UV strips are 5V USB-A iNextStation units; their current draw, supply, switching path, channel mapping, protection and physical fail-dark behavior remain unverified. The proposed 12V SP803E plus external 5V strip supply does not match the manual's documented direct-PWM voltage/wiring guidance and must remain off pending manufacturer confirmation or a separately approved, verified driver path."
     },
     "spare_pwm_gpios": [
       25,
