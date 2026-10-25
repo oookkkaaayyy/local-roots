@@ -50,6 +50,16 @@ test("UV channels keep separate brightness and owner levels while sharing Matrix
   assert.deepEqual(wledUvStatePatch(uncommissioned, { 1: 100, 2: 50 }).seg.map(({ id, on, bri }) => ({ id, on, bri })), [
     { id: 1, on: false, bri: 0 }, { id: 2, on: false, bri: 0 },
   ]);
+  const offlineChannels = { ...UV_OFFLINE_CONFIG, segmentIds: ["main", "short"] };
+  assert.deepEqual(nextUvOutputs({ mode: "VIBE_REACTIVE", manualBrightnessBySegment: { main: 255, short: 190 }, ownerOverrideBySegment: { main: 255, short: 255 } }, offlineChannels, { vibeEnvelope: 255 }), [
+    { id: "main", brightness: 0 }, { id: "short", brightness: 0 },
+  ]);
+  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { main: 255, short: 190 }), { on: true, seg: [] });
+  const offlinePreview = { ...UV_OFFLINE_CONFIG, segmentIds: ["main", "short"] };
+  assert.deepEqual(nextUvOutputs({ mode: "MANUAL", manualBrightnessBySegment: { main: 255, short: 128 } }, offlinePreview), [
+    { id: "main", brightness: 0 }, { id: "short", brightness: 0 },
+  ]);
+  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { main: 255, short: 128 }), { on: true, seg: [] });
 });
 
 test("native font and treatment menu is exact-source-bound and stays unfrozen", async () => {
@@ -76,6 +86,11 @@ test("AUX edge route fails closed without reaching MQTT publish for every UV ent
   assert.ok(legacyStart >= 0 && legacyEnd > legacyStart);
   assert.ok(modeStart >= 0 && modeEnd > modeStart);
   assert.match(source.slice(policyStart, policyEnd), /mutationIssued:false/);
+  assert.match(source.slice(policyStart, policyEnd), /brightnessBySegment/);
+  assert.match(source.slice(policyStart, policyEnd), /nextUvOutputs/);
+  assert.match(source.slice(policyStart, policyEnd), /output stays off/);
+  assert.match(source.slice(policyStart, policyEnd), /segmentIds:\["main","short"\]/);
+  assert.match(source.slice(policyStart, policyEnd), /wouldPublish:wledUvStatePatch/);
   assert.doesNotMatch(source.slice(policyStart, policyEnd), /publish\(/);
   assert.match(source.slice(legacyStart, legacyEnd), /mutationIssued:false/);
   assert.doesNotMatch(source.slice(legacyStart, legacyEnd), /publish\(/);

@@ -2,7 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import mqtt from "npm:mqtt@5.10.4";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { UV_OFFLINE_CONFIG, nextUvOutput, wledUvStatePatch } from "./aux_uv_policy.mjs";
+import { UV_OFFLINE_CONFIG, UV_MODES, nextUvOutputs, wledUvStatePatch } from "./aux_uv_policy.mjs";
 
 const ENV_ENABLED=(Deno.env.get("HBNF_AUX_ENABLED")||"").toLowerCase()==="true";
 const ENV_MIXED=(Deno.env.get("HBNF_AUX_MIXED_LOAD_ENABLED")||"").toLowerCase()==="true";
@@ -65,8 +65,11 @@ Deno.serve(async(req)=>{
  if(action==="dry_run"){try{return json({ok:true,action,mutationIssued:false,enabled,mixedLoadAccepted:mixed,wouldPublish:dryRun(b),syncPolicy:SYNC_POLICY,mirrorPolicy:MIRROR_POLICY});}catch(e){return json({ok:false,error:e instanceof Error?e.message:String(e)},400);}}
  if(action==="uv_policy"){
   const mode=String(b?.mode||"OFF").toUpperCase();
-  const output=nextUvOutput({mode,manualBrightness:b?.brightness,ownerOverride:b?.ownerOverride,currentOutput:b?.currentOutput},UV_OFFLINE_CONFIG,{matrixBrightness:b?.matrixBrightness,vibeEnvelope:b?.vibeEnvelope});
-  return json({ok:false,action,mutationIssued:false,error:"UV software capability is disabled until physical commissioning is accepted.",mode,output,policy:UV_OFFLINE_CONFIG,wouldPublish:wledUvStatePatch(UV_OFFLINE_CONFIG,output)},409);
+  if(!UV_MODES.includes(mode))return json({ok:false,action,mutationIssued:false,error:"Unknown UV response mode."},400);
+  const brightnessBySegment:any={main:clamp8(b?.brightnessBySegment?.main),short:clamp8(b?.brightnessBySegment?.short)};
+  const offlineChannels={...UV_OFFLINE_CONFIG,segmentIds:["main","short"]};
+  const output=Object.fromEntries(nextUvOutputs({mode,manualBrightnessBySegment:brightnessBySegment,ownerOverrideBySegment:b?.ownerOverrideBySegment,currentOutputBySegment:b?.currentOutputBySegment},offlineChannels,{matrixBrightness:b?.matrixBrightness,vibeEnvelope:b?.vibeEnvelope}).map(x=>[x.id,x.brightness]));
+  return json({ok:false,action,mutationIssued:false,error:"UV preview calculated; output stays off until physical commissioning is accepted.",mode,requested:brightnessBySegment,output,policy:UV_OFFLINE_CONFIG,wouldPublish:wledUvStatePatch(UV_OFFLINE_CONFIG,output)},409);
  }
  // Safety exception: a blackout is non-energizing and may be issued even before acceptance.
  if(action==="blackout"||action==="off"){try{await publish({on:false},true);return json({ok:true,mode:"off",safetyAction:true});}catch(e){return json({ok:false,error:e instanceof Error?e.message:String(e)},503);}}

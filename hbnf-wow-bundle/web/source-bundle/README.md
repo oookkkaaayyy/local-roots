@@ -1,17 +1,22 @@
 # Exact full-PWA source bundle
 
-Build: `hbnf-build-9.21.26-wow-max-v3-full`
-Mobile UI: `hbnf-mobile-ui-pass-2`
+Build: `hbnf-build-10.24.26-cart-uv-preview-v1`
+Mobile UI: `hbnf-mobile-ui-pass-2` with independent Cart UV response preview
 
 The six `HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.partXX` files concatenate to the exact tested source ZIP.
 
 Verified:
-- Base64 characters: 27,088
-- Base64 SHA256: `2399ce9c06377c10afdabe256365fe6ebc7013a2519ea565fe7af61b2586bd70`
-- decoded ZIP bytes: 20,316
-- decoded ZIP SHA256: `ad32a0e6e24c130c9b4ed831b2b4d1af9c009472fcdf57e74f8ff884eaf9bdcc`
+- Base64 characters: 29,692
+- Base64 SHA256: `6b4054fa08642c926bef4bec986235cd26b6f3af2bf5e3608fdede1cbf4e86b3`
+- decoded ZIP bytes: 22,267
+- decoded ZIP SHA256: `0dc5163592d6a5a6dfa2ad883e46da399e1a267067d449a60e4085cea8f5b91d`
 - JavaScript syntax: PASS
-- full-PWA regression: 30/30 PASS
+- full-PWA regression: 32/32 PASS
+- UV preview: Main and Short; Manual, Follow Matrix, Follow WOW audio, Off
+- Follow modes require fresh online values; WOW audio additionally requires exact runtime release and sample age <=15 seconds
+- AUX returns `mutationIssued:false`, computes zero output, and does not publish
+- exact viewport visual check: 744x1133 portrait preserved; 1133x744 landscape now uses full width
+- actual Safari/Home Screen and physical UV acceptance: NOT CHECKED
 
 Reconstruct:
 
@@ -22,4 +27,4 @@ tr -d '\n' < HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64 | base64 --decode > HBNF_MAT
 shasum -a 256 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
 ```
 
-The ZIP contains the exact tested mobile-first `matrix.html`, `matrix-control.js`, manifest, 30/30 regression suite, guarded Wrangler deploy script, and README. It does not mutate the Matrix by itself.
+The ZIP contains exact tested PWA files and is a source review artifact; it does not install itself.

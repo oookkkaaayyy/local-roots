@@ -13,8 +13,11 @@ Canonical source authority for the full `/matrix.html` Home Screen console.
 - No Matrix-specific service worker is registered.
 
 Verified source bundle:
-- ZIP SHA256: `ad32a0e6e24c130c9b4ed831b2b4d1af9c009472fcdf57e74f8ff884eaf9bdcc`
-- Base64 SHA256: `2399ce9c06377c10afdabe256365fe6ebc7013a2519ea565fe7af61b2586bd70`
-- Regression: 30/30 PASS
+- ZIP SHA256: `0dc5163592d6a5a6dfa2ad883e46da399e1a267067d449a60e4085cea8f5b91d`
+- Base64 SHA256: `6b4054fa08642c926bef4bec986235cd26b6f3af2bf5e3608fdede1cbf4e86b3`
+- Regression: 32/32 PASS
 
 Production publication still uses the authenticated Mac Wrangler static-worker path. Double-click `DEPLOY_HBNF_MATRIX_FULL_PWA.command` from the complete web-deploy package.
+
+
+Cart UV preview candidate (source-only): separate Main/Short levels support Manual, fresh Matrix brightness, and verified WOW audio-energy preview through the fail-dark AUX policy. The controls do not actuate outputs; hardware and real music-response acceptance remain pending.

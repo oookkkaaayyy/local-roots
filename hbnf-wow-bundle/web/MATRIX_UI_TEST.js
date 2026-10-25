@@ -1,7 +1,7 @@
 const fs=require('fs'),assert=require('assert');
 const html=fs.readFileSync(process.argv[2],'utf8'),js=fs.readFileSync(process.argv[3],'utf8'),manifest=JSON.parse(fs.readFileSync(process.argv[4],'utf8'));
 let n=0;const ok=(name,fn)=>{try{fn();n++;console.log('PASS '+name)}catch(e){console.error('FAIL '+name+': '+e.message);process.exitCode=1}};
-ok('WOW full build marker',()=>{assert(html.includes('hbnf-build-9.21.26-wow-max-v3-full'));assert(js.includes('hbnf-build-9.21.26-wow-max-v3-full'))});
+ok('WOW full build marker',()=>{assert(html.includes('hbnf-build-10.24.26-cart-uv-preview-v1'));assert(js.includes('hbnf-build-10.24.26-cart-uv-preview-v1'))});
 ok('host-first controls',()=>{for(const x of ['LIVE DATA','VISUALS ONLY','SCOREBOARD','ACE POT','NEXT LOOK','BLACKOUT'])assert(html.includes(x),x)});
 ok('familiar full-console nav',()=>{for(const x of ['>HOST<','>TEXT<','>SHOWS<','>LOOKS<','>TUNE<','>SYSTEM<'])assert(html.includes(x),x)});
 ok('Course plus legacy families',()=>{for(const x of ["['r2','COURSE'",'FIELD MIX','SHOWCASE','LEGACY AUDIO','COSMIC','PYRO','LEGACY SAFE'])assert(js.includes(x),x)});
@@ -13,9 +13,11 @@ ok('runtime WOW diagnostics',()=>{for(const x of ['wowEnergy','wowPulse','wowPro
 ok('expert FX extended',()=>{assert(html.includes('id="expertFx" type="number" min="0" max="255"'));assert(js.includes('Math.min(255'))});
 ok('audio max standard',()=>{assert(html.includes('id="audioLevel" type="range" min="64" max="255" value="255"'))});
 ok('cart feature gated',()=>{assert(html.includes('id="cart" hidden'));assert(html.includes('data-cart="showcase"'));assert(js.includes("const AUX='"));assert(js.includes("const CART='"));assert(js.includes('mixedAccepted'))});
+ok('per-channel UV controls use fresh Matrix/WOW samples, truthful output feedback, and remain preview-only',()=>{for(const x of ['id="uvResponseMode"','id="uvMainPreview"','id="uvShortPreview"','id="previewUvLevels"','Preview only. Follow modes require a fresh online Matrix sample'])assert(html.includes(x),x);for(const x of ['function captureUvResponseSample','wr?.release===WOW_RELEASE','Date.now()-uvResponseSample.observedAt','!lastOnline||age>15000','uvResponseSample=null','No fresh Matrix brightness sample; preview not sent.','No fresh verified WOW audio sample; preview not sent.','action:\'uv_policy\'','brightnessBySegment','d.mutationIssued===false','d.output?.main===0&&d.output?.short===0','→${d.output.main}','UV remains OFF.'])assert(js.includes(x),x);assert(!js.includes("fb($('#cartFeedback'),'Preview applied"))});
+ok('iPad Mini landscape uses available width while desktop cap stays intact',()=>{assert(html.includes('.shell{max-width:760px'));assert(html.includes('@media(min-width:761px) and (max-width:1200px){.shell{max-width:none;width:100%}}'))});
 ok('read-only release doctor',()=>{assert(html.includes('CHECK WOW MAX RELEASE'));assert(js.includes('hbnf-release-doctor'));assert(!html.includes('INSTALL / REFRESH HBNF SHOW LIBRARY'));assert(!js.includes("act('install_library'"))});
 ok('PWA identity preserved',()=>{assert(manifest.id==='/matrix.html');assert(manifest.start_url==='/matrix.html');assert(manifest.display==='standalone');assert(manifest.name.includes('WOW MAX'))});
-ok('cache bust advanced',()=>{assert(html.includes('matrix-control.js?v=9.21.26-wow-max-v3-full'));assert(html.includes('matrix-manifest.webmanifest?v=9.21.26-wow-max-v3-full'));assert(!html.includes('v=9.17.26_3'))});
+ok('cache bust advanced',()=>{assert(html.includes('matrix-control.js?v=10.24.26-cart-uv-preview-1'));assert(html.includes('matrix-manifest.webmanifest?v=10.24.26-cart-uv-preview-1'));assert(!html.includes('v=9.17.26_3'))});
 ok('no Matrix offline service worker',()=>{assert(!html.includes('serviceWorker.register'));assert(!js.includes('serviceWorker.register'))});
 ok('human now playing',()=>{assert(html.includes('id="nowPill"'));assert(js.includes('function nowPlaying'))});
 ok('field health retained',()=>{assert(html.includes('id="connectionHealth"'));assert(html.includes('id="playbackHealth"'));assert(js.includes('Last heard'))});
