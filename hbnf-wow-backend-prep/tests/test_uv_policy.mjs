@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { UV_OFFLINE_CONFIG, UV_MODES, nextUvOutput, wledUvStatePatch } from "../../hbnf-aux-lighting/backend/aux_uv_policy.mjs";
+import { UV_OFFLINE_CONFIG, UV_MODES, nextUvOutput, nextUvOutputs, wledUvStatePatch } from "../../hbnf-aux-lighting/backend/aux_uv_policy.mjs";
 import { readFile } from "node:fs/promises";
 
 test("integrated UV defaults fail closed with no output or WLED segment targets", () => {
@@ -23,6 +23,33 @@ test("enabled fixture demonstrates cap, owner override and smooth ramp without c
     on: true,
     seg: [{ id: 1, on: true, bri: 40 }, { id: 2, on: true, bri: 40 }],
   });
+});
+
+test("UV channels keep separate brightness and owner levels while sharing Matrix or vibe response", () => {
+  const cfg = { enabled: true, hardwareAvailable: true, maxBrightness: 100, rampPerTick: 100, segmentIds: [1, 2] };
+  assert.deepEqual(nextUvOutputs({ mode: "MANUAL", manualBrightnessBySegment: { 1: 18, 2: 63 } }, cfg), [
+    { id: 1, brightness: 18 }, { id: 2, brightness: 63 },
+  ]);
+  assert.deepEqual(nextUvOutputs({ mode: "MANUAL", manualBrightness: 5, manualBrightnessBySegment: { 1: 18, 2: 63 }, ownerOverrideBySegment: { 2: 27 } }, cfg), [
+    { id: 1, brightness: 18 }, { id: 2, brightness: 27 },
+  ]);
+  assert.deepEqual(nextUvOutputs({ mode: "VIBE_REACTIVE", manualBrightnessBySegment: { 1: 100, 2: 50 } }, cfg, { vibeEnvelope: 50 }), [
+    { id: 1, brightness: 20 }, { id: 2, brightness: 10 },
+  ]);
+  assert.deepEqual(nextUvOutputs({ mode: "FOLLOW_MATRIX", manualBrightnessBySegment: { 1: 100, 2: 50 } }, cfg, { matrixBrightness: 50 }), [
+    { id: 1, brightness: 20 }, { id: 2, brightness: 10 },
+  ]);
+  assert.deepEqual(wledUvStatePatch(cfg, { 1: 18, 2: 63 }).seg.map(({ id, on, bri }) => ({ id, on, bri })), [
+    { id: 1, on: true, bri: 18 }, { id: 2, on: true, bri: 63 },
+  ]);
+  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { 1: 18, 2: 63 }), { on: true, seg: [] });
+  const uncommissioned = { ...cfg, enabled: false };
+  assert.deepEqual(nextUvOutputs({ mode: "MANUAL", manualBrightnessBySegment: { 1: 100, 2: 50 } }, uncommissioned), [
+    { id: 1, brightness: 0 }, { id: 2, brightness: 0 },
+  ]);
+  assert.deepEqual(wledUvStatePatch(uncommissioned, { 1: 100, 2: 50 }).seg.map(({ id, on, bri }) => ({ id, on, bri })), [
+    { id: 1, on: false, bri: 0 }, { id: 2, on: false, bri: 0 },
+  ]);
 });
 
 test("native font and treatment menu is exact-source-bound and stays unfrozen", async () => {
