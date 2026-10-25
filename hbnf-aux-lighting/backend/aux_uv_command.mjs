@@ -67,7 +67,7 @@ export async function executeUvRequest({ request = {}, state = {}, auxEnabled = 
     }).map(({ id, brightness }) => [id, brightness]));
     return { status: 409, body: {
       ok: false, action: "uv_policy", mutationIssued: false, preview: true,
-      error: "UV remains preview-only until the verified 5V channel profile and commissioning gates are present.",
+      error: "UV remains preview-only until the exact load, switching path, and commissioning gates are verified.",
       mode, requested, output,
     } };
   }

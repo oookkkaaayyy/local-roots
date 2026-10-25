@@ -33,7 +33,7 @@ assert.match(controller, /body\.action === "uv_policy" \? 12000/);
 assert.match(auth, /action === "uv_status" \|\| action === "uv_policy"/);
 assert.match(cartControl, /action === "uv_status"/);
 assert.match(cartControl, /action === "uv_policy"/);
-assert.match(uvProxy, /\["OFF", "MANUAL"\]/);
+assert.match(uvProxy, /\["OFF", "MANUAL", "FOLLOW_MATRIX"\]/);
 assert.match(uvProxy, /Number\.isInteger\(value\)/);
 assert.doesNotMatch(uvProxy, /vibeEnvelope|matrixBrightness/);
 assert.match(aux, /action==="uv_policy"\|\|action==="uv"\).*owner_uv_proxy_required/);

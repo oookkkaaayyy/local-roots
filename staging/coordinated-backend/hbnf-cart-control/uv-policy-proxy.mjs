@@ -34,7 +34,10 @@ export async function proxyUvAction(action, request, {
 
   const mode = String(request?.mode ?? "").toUpperCase();
   const levels = request?.brightnessBySegment;
-  if (!["OFF", "MANUAL"].includes(mode) || !levels || typeof levels !== "object" ||
+  // Follow Matrix is implemented locally by the AUX WLED effect. The proxy
+  // forwards only the owner-selected per-channel caps; it never accepts an
+  // audio envelope from the browser.
+  if (!["OFF", "MANUAL", "FOLLOW_MATRIX"].includes(mode) || !levels || typeof levels !== "object" ||
       !validLevel(levels.main) || !validLevel(levels.short)) {
     return { status: 400, body: { error: "invalid_uv_request", mutationIssued: false } };
   }

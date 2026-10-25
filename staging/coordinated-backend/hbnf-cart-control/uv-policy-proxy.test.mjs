@@ -32,14 +32,29 @@ test("manual UV proxy sends only independent integer levels to AUX", async () =>
   assert.deepEqual(sent.body, { action: "uv_policy", mode: "MANUAL", brightnessBySegment: { main: 128, short: 64 } });
 });
 
-test("UV proxy rejects unsupported follow modes, malformed levels, and Guest requests before network access", async () => {
+test("Matrix follow forwards only independent caps for AUX-local rhythm processing", async () => {
+  let sent;
+  const result = await proxyUvAction("uv_policy", {
+    mode: "follow_matrix", brightnessBySegment: { main: 96, short: 40 }, matrixBrightness: 255, vibeEnvelope: 255,
+  }, {
+    ...options, operatorAuthorized: true,
+    fetchImpl: async (_url, init) => {
+      sent = JSON.parse(init.body);
+      return new Response(JSON.stringify({ ok: false, mutationIssued: false, preview: true }), { status: 409 });
+    },
+  });
+  assert.equal(result.status, 409);
+  assert.deepEqual(sent, { action: "uv_policy", mode: "FOLLOW_MATRIX", brightnessBySegment: { main: 96, short: 40 } });
+});
+
+test("UV proxy rejects unsupported modes, malformed levels, and Guest requests before network access", async () => {
   let calls = 0;
   const fetchImpl = async () => { calls++; throw new Error("must not call AUX"); };
   const unauthorized = await proxyUvAction("uv_policy", { mode: "MANUAL", brightnessBySegment: { main: 1, short: 1 } }, { ...options, fetchImpl });
-  const follow = await proxyUvAction("uv_policy", { mode: "VIBE_REACTIVE", brightnessBySegment: { main: 1, short: 1 } }, { ...options, pairedDeviceAuthorized: true, fetchImpl });
+  const unsupported = await proxyUvAction("uv_policy", { mode: "VIBE_REACTIVE", brightnessBySegment: { main: 1, short: 1 } }, { ...options, pairedDeviceAuthorized: true, fetchImpl });
   const malformed = await proxyUvAction("uv_policy", { mode: "MANUAL", brightnessBySegment: { main: "1", short: 256 } }, { ...options, operatorAuthorized: true, fetchImpl });
   assert.equal(unauthorized.status, 403);
-  assert.equal(follow.status, 400);
+  assert.equal(unsupported.status, 400);
   assert.equal(malformed.status, 400);
   assert.equal(calls, 0);
 });

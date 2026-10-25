@@ -6,9 +6,9 @@ This directory commissions the Rogue Iron cart SP803E safely from stock WLED thr
 
 - SP803E: ESP32, 5–24V controller.
 - Underglow: 12V WS2811, DATA on GPIO16.
-- Installed UV: **5V USB**, not 12V.
-- Therefore the SP803E's 12V VCC/PWM outputs are **not** used for the UV strip in the current commissioning plan.
-- GPIO25/26/27 remain unused until a separate 5V switching interface is verified.
+- Main/rim UV is documented in the current hardware handoff as **12V YGS-Tech 395–405nm**. The Short UV load's exact voltage, current, and mapping remain unverified; older records conflict.
+- Do not infer that the SP803E PWM outputs are a safe driver for either UV load. Verify each load's actual rating and switching path, including boot/restart OFF behavior, before use.
+- GPIO25/26/27 remain unused until the exact channel mapping and electrical path are verified.
 
 ## Preferred entry point
 
@@ -36,4 +36,4 @@ The launcher:
 
 ## Safety boundary
 
-The software never treats the 5V UV strip as a 12V PWM load. Full AUX/Supabase acceptance remains closed until an electrically verified 5V UV switching design is installed and its physical tests pass.
+UV readiness remains closed until each load's voltage/current, switching path, channel mapping, protection, and physical OFF behavior are verified. The documented 12V Main load and unresolved Short load must not be collapsed into a shared assumed 5V profile.

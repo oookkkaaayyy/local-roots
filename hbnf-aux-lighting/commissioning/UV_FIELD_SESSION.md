@@ -2,11 +2,11 @@
 
 ## Current decision: keep both UV channels off
 
-The installed UV load is documented as **5V USB**. The SP803E and its WS2811 underglow path are documented as **12V**. The existing runbook forbids connecting the UV load to SP803E 12V VCC/PWM, and keeps GPIO25/26/27 unused. No verified separate 5V switching interface, fuse rating, driver model/rating, supply identity, or UV output mapping is in the repository. Do not connect, configure, energize, or send UV commands until those facts are verified.
+The current hardware handoff documents Main/rim UV as **12V YGS-Tech 395–405nm**. The Short UV load's exact voltage/current and channel mapping remain unresolved; earlier records conflict. The SP803E and underglow path are 12V, but that alone does not prove its PWM outputs safe for either UV load. No verified switching path, fuse rating, driver model/rating, or UV output mapping is established in source. Do not connect, configure, energize, or send UV commands until those facts are verified.
 
 ## Existing source paths (read-only audit)
 
-- The Matrix PWA's Main/Short sliders use `POST hbnf-aux-control` with `action: "uv_policy"`, per-channel brightness, and fresh Matrix/WOW samples when a follow mode is selected. The endpoint can use the existing AUX MQTT request path only when the server-side 5V hardware profile is completed and verified, `HBNF_UV_ENABLED=true`, the global AUX gate is enabled, and wiring/power/GPIO/current/segment commissioning flags pass. The checked-in profile is deliberately incomplete (`verified:false`, no driver/fuse/current/channel facts) and the UV gate defaults false, so requests currently return HTTP 409, `mutationIssued:false`, zero output, and never publish.
+- The Matrix PWA's Main/Short sliders use `POST hbnf-aux-control` with `action: "uv_policy"` and per-channel brightness. The endpoint can publish only when a correctly voltage-matched per-load hardware profile is completed and verified, `HBNF_UV_ENABLED=true`, the global AUX gate is enabled, and wiring/power/GPIO/current/segment commissioning flags pass. The checked-in profile is deliberately incomplete (`verified:false`, no driver/fuse/current/channel facts) and the UV gate defaults false, so requests currently return HTTP 409, `mutationIssued:false`, zero output, and never publish.
 - The compact Cart Control PWA exposes only independent Main/Short manual levels and Off through its paired-owner Cart endpoint. There is no supported fresh audio envelope in the Cart/AUX command contract today: Matrix AudioReactive UDP synchronizes the existing AUX renderer, but neither the PWA nor `hbnf-aux-control` receives a verified per-frame music level. `VIBE_REACTIVE` is therefore not exposed by this UI or proxy. Do not pass browser-supplied/stale brightness or vibe values as a substitute. Manual command code is source-prepared, while all output remains locked until the in-place checks and server-side profile/gates are accepted.
 - The older buttons call `POST hbnf-aux-control` with `action: "uv"` and `mode: "full" | "main" | "short" | "off"`. They now use the same server-side profile and gates and cannot bypass them. Their dry-run payload describes WLED segment 1 as Main and segment 2 as Short, while segment 0 is underglow. These remain software assumptions, not field-verified wiring.
 - The prepared Watch API maps `uv_main`/`uv_short` to that same guarded AUX action. It is not a separate UV transport.
@@ -31,7 +31,7 @@ The success response reports MQTT QoS 1 broker acceptance only (`deviceReadback:
 ## Known Cart/AUX baseline
 
 - Existing AUX underglow: SP803E, GPIO16, WLED segment 0, 12V WS2811; commissioning current cap is at most 900 mA and its boot default is off.
-- UV candidates in source only: Main GPIO25 / WLED segment 1; Short GPIO26 / WLED segment 2; GPIO27 remains spare. None is configured or physically verified for the 5V UV strip.
+- UV candidates in source only: Main GPIO25 / WLED segment 1; Short GPIO26 / WLED segment 2; GPIO27 remains spare. These mappings are not physically verified; Main's documented 12V rating and Short's unresolved rating require per-load matching checks.
 - AUX enable and mixed-load acceptance remain false. Do not change them for this session.
 - Matrix audio is documented as master; AUX receives AudioReactive UDP Sound Sync on port 11988. That synchronizes the existing AUX engine but does not itself provide safe 5V UV switching.
 

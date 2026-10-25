@@ -37,7 +37,7 @@ assert.ok(features.includes("No UV command was sent"),"UV gate failure must be r
 assert.ok(features.includes("device output is not confirmed"),"UV feedback must distinguish broker acceptance from device output");
 assert.ok(stagedControl.includes('action === "uv_status"'),"protected Cart UV status proxy missing");
 assert.ok(stagedControl.includes('action === "uv_policy"'),"protected Cart UV command proxy missing");
-assert.ok(uvProxy.includes('["OFF", "MANUAL"]'),"UV proxy must reject unsupported response modes");
+assert.ok(uvProxy.includes('["OFF", "MANUAL", "FOLLOW_MATRIX"]'),"UV proxy must allow locally computed Matrix follow while rejecting other modes");
 assert.ok(!uvProxy.includes('matrixBrightness: request'),"UV proxy must not accept client supplied Matrix brightness");
 assert.ok(!html.includes("FOLLOW_MATRIX"),"Cart UI must not expose unverified Matrix-follow UV mode");
 assert.ok(stagedControl.includes('action === "live_status"'),"canonical backend live_status missing");
