@@ -52,10 +52,14 @@ contract=json.loads((ROOT/"hbnf-aux-lighting/commissioning/contract.json").read_
 assert contract["matrix"]["release"]=="hbnf-wow-r3-max-2026-09-21-v3"
 assert contract["matrix"]["effect_ids"]==[220,247]
 assert contract["aux"]["underglow"]["gpio"]==16
-assert contract["aux"]["uv"]["status"]=="external-5v-usb-pending"
+assert contract["aux"]["uv"]["status"]=="per-channel-hardware-pending"
+assert contract["aux"]["uv"]["main_nominal_voltage"]==12
+assert contract["aux"]["uv"]["short_nominal_voltage"] is None
+assert contract["aux"]["uv"]["load_ratings_verified"] is False
 assert contract["aux"]["uv"]["sp803e_pwm_direct_control"] is False
 assert contract["aux"]["spare_pwm_gpios"]==[25,26,27]
-assert contract["safety"]["uv_direct_from_12v_vcc_forbidden"] is True
+assert contract["safety"]["uv_direct_from_controller_vcc_forbidden"] is True
+assert contract["safety"]["uv_requires_verified_per_channel_pwm_path"] is True
 assert contract["sync"]["group_bitfield"]==1
 assert contract["sync"]["receive_segment_options"] is False
 assert contract["sync"]["receive_segment_bounds"] is False

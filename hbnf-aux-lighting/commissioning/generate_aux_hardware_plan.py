@@ -42,7 +42,7 @@ def build(pixels:int, order:str, reverse:bool, max_ma:int, led_ma:int):
         "postApplyChecks":{
             "totalLogicalLength":pixels,
             "underglow":{"gpio":16,"start":0,"stop":pixels,"selected":True},
-            "uv":{"status":"EXCLUDED_5V_USB_PENDING_EXTERNAL_CONTROL","sp803ePwmConfigured":False,"mustRemainDisconnected":True},
+            "uv":{"status":"UNVERIFIED_PER_CHANNEL_PENDING","mainNominalVoltageV":12,"shortNominalVoltageV":None,"sp803ePwmConfigured":False,"mustRemainDisconnected":True},
             "spareGpios":[25,26,27],
             "doNotReceiveSegmentOptionsOrBounds":True,
             "doNotInferColorOrder":True,
