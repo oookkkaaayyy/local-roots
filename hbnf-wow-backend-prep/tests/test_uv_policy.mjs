@@ -74,25 +74,24 @@ test("native font and treatment menu is exact-source-bound and stays unfrozen", 
   assert.ok(contract.invariants.includes("no_glyph_geometry_modification_during_hold"));
 });
 
-test("AUX edge route fails closed without reaching MQTT publish for every UV entrypoint", async () => {
+test("AUX edge route delegates UV writes to the gated command helper", async () => {
   const source = await readFile(new URL("../../hbnf-aux-lighting/backend/aux_control.ts", import.meta.url), "utf8");
   const policyStart = source.indexOf('if(action==="uv_policy")');
   const policyEnd = source.indexOf("\n }", policyStart);
   const legacyStart = source.indexOf('if(action==="uv")');
-  const legacyEnd = source.indexOf("\n  return", legacyStart);
+  const legacyEnd = source.indexOf("\n }", legacyStart);
   const modeStart = source.indexOf('if(action==="mode")');
   const modeEnd = source.indexOf("\n  if(action===", modeStart + 1);
   assert.ok(policyStart >= 0 && policyEnd > policyStart);
   assert.ok(legacyStart >= 0 && legacyEnd > legacyStart);
   assert.ok(modeStart >= 0 && modeEnd > modeStart);
-  assert.match(source.slice(policyStart, policyEnd), /mutationIssued:false/);
-  assert.match(source.slice(policyStart, policyEnd), /brightnessBySegment/);
-  assert.match(source.slice(policyStart, policyEnd), /nextUvOutputs/);
-  assert.match(source.slice(policyStart, policyEnd), /output stays off/);
-  assert.match(source.slice(policyStart, policyEnd), /segmentIds:\["main","short"\]/);
-  assert.match(source.slice(policyStart, policyEnd), /wouldPublish:wledUvStatePatch/);
+  assert.match(source, /HBNF_UV_ENABLED"\)\|\|""\)\.toLowerCase\(\)==="true"/);
+  assert.match(source.slice(policyStart, policyEnd), /executeUvRequest/);
+  assert.match(source.slice(policyStart, policyEnd), /UV_HARDWARE_CONFIG/);
+  assert.match(source.slice(policyStart, policyEnd), /uvEnabled:ENV_UV_ENABLED/);
   assert.doesNotMatch(source.slice(policyStart, policyEnd), /publish\(/);
-  assert.match(source.slice(legacyStart, legacyEnd), /mutationIssued:false/);
+  assert.match(source.slice(legacyStart, legacyEnd), /executeUvRequest/);
+  assert.doesNotMatch(source.slice(legacyStart, legacyEnd), /await publish\(/);
   assert.doesNotMatch(source.slice(legacyStart, legacyEnd), /publish\(/);
   assert.match(source.slice(modeStart, modeEnd), /mode==="glow_live"\)return json\(/);
 });

@@ -2,10 +2,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import mqtt from "npm:mqtt@5.10.4";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { UV_OFFLINE_CONFIG, UV_MODES, nextUvOutputs, wledUvStatePatch } from "./aux_uv_policy.mjs";
+import { UV_OFFLINE_CONFIG } from "./aux_uv_policy.mjs";
+import { UV_HARDWARE_CONFIG, executeUvRequest, uvCommissioningReady, uvHardwareReady } from "./aux_uv_command.mjs";
 
 const ENV_ENABLED=(Deno.env.get("HBNF_AUX_ENABLED")||"").toLowerCase()==="true";
 const ENV_MIXED=(Deno.env.get("HBNF_AUX_MIXED_LOAD_ENABLED")||"").toLowerCase()==="true";
+const ENV_UV_ENABLED=(Deno.env.get("HBNF_UV_ENABLED")||"").toLowerCase()==="true";
 const HOST=(Deno.env.get("HBNF_MQTT_HOST")||"broker.emqx.io").trim();
 const PORT=Math.max(1,Number(Deno.env.get("HBNF_MQTT_PORT")||1883));
 const USER=Deno.env.get("HBNF_MQTT_USER")||"",PASS=Deno.env.get("HBNF_MQTT_PASS")||"";
@@ -57,19 +59,21 @@ function dryRun(b:any){const op=String(b?.operation||b?.targetAction||"sync_arm"
 Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  const c=await gate(),enabled=ENV_ENABLED||c.aux_enabled===true,mixed=ENV_MIXED||c.mixed_load_verified===true;
- if(req.method==="GET")return json({ok:true,service:"hbnf-aux-control",version:"sp803e-v11-fold2-r3-gate",enabled,mixedLoadAccepted:mixed,envGate:ENV_ENABLED,databaseGate:c.aux_enabled===true,topic:TOPIC,modes:MODES,uvActions:UV_ACTION_PRESETS,selfTest:{ok:MODES.off===223&&UV_ACTION_PRESETS.off===MODES.music,globalOffPreset:MODES.off,uvOffReturnsToPreset:UV_ACTION_PRESETS.off,safeDefaultClosed:!ENV_ENABLED,databaseGateAccepted:c.aux_enabled===true,mixedLoadAccepted:mixed},commissioning:COMMISSIONING,commissioningState:c,hardware:HW,policy:{underglowMaxMilliamps:900,uvPriority:true,mixedLoadAccepted:mixed,matrixSlave:true,visualMaster:"matrix",mirrorBrightnessMax:MIRROR_BRI_MAX},mirrorPolicy:MIRROR_POLICY,syncPolicy:SYNC_POLICY,r3Integration:R3});
+ if(req.method==="GET")return json({ok:true,service:"hbnf-aux-control",version:"sp803e-v11-fold2-r3-gate",enabled,mixedLoadAccepted:mixed,uvControlEnabled:ENV_UV_ENABLED&&enabled&&uvHardwareReady(UV_HARDWARE_CONFIG)&&uvCommissioningReady(c),envGate:ENV_ENABLED,databaseGate:c.aux_enabled===true,topic:TOPIC,modes:MODES,uvActions:UV_ACTION_PRESETS,selfTest:{ok:MODES.off===223&&UV_ACTION_PRESETS.off===MODES.music,globalOffPreset:MODES.off,uvOffReturnsToPreset:UV_ACTION_PRESETS.off,safeDefaultClosed:!ENV_ENABLED,databaseGateAccepted:c.aux_enabled===true,mixedLoadAccepted:mixed},commissioning:COMMISSIONING,commissioningState:c,hardware:HW,policy:{underglowMaxMilliamps:900,uvPriority:true,mixedLoadAccepted:mixed,matrixSlave:true,visualMaster:"matrix",mirrorBrightnessMax:MIRROR_BRI_MAX},mirrorPolicy:MIRROR_POLICY,syncPolicy:SYNC_POLICY,r3Integration:R3});
  if(req.method!=="POST")return json({ok:false,error:"GET or POST required"},405);
  const b=await req.json().catch(()=>({})),action=String(b?.action||"status").toLowerCase();
  if(action==="status"||action==="passive_probe"){const st=await passiveStatus();return json({ok:true,action,enabled,mixedLoadAccepted:mixed,...st,commissioningState:c,nextAction:nextStep(c,st.online)});}
  if(action==="commissioning_plan"||action==="selftest"){const st=await passiveStatus(900);return json({ok:true,action,enabled,mixedLoadAccepted:mixed,selfTest:{ok:MODES.off===223&&UV_ACTION_PRESETS.off===MODES.music,globalOffPreset:MODES.off,uvOffReturnsToPreset:UV_ACTION_PRESETS.off,safeDefaultClosed:!(ENV_ENABLED||c.aux_enabled===true)},commissioning:COMMISSIONING,commissioningState:c,passiveProbe:st,nextAction:nextStep(c,st.online),modes:MODES,uvActions:UV_ACTION_PRESETS});}
  if(action==="dry_run"){try{return json({ok:true,action,mutationIssued:false,enabled,mixedLoadAccepted:mixed,wouldPublish:dryRun(b),syncPolicy:SYNC_POLICY,mirrorPolicy:MIRROR_POLICY});}catch(e){return json({ok:false,error:e instanceof Error?e.message:String(e)},400);}}
  if(action==="uv_policy"){
-  const mode=String(b?.mode||"OFF").toUpperCase();
-  if(!UV_MODES.includes(mode))return json({ok:false,action,mutationIssued:false,error:"Unknown UV response mode."},400);
-  const brightnessBySegment:any={main:clamp8(b?.brightnessBySegment?.main),short:clamp8(b?.brightnessBySegment?.short)};
-  const offlineChannels={...UV_OFFLINE_CONFIG,segmentIds:["main","short"]};
-  const output=Object.fromEntries(nextUvOutputs({mode,manualBrightnessBySegment:brightnessBySegment,ownerOverrideBySegment:b?.ownerOverrideBySegment,currentOutputBySegment:b?.currentOutputBySegment},offlineChannels,{matrixBrightness:b?.matrixBrightness,vibeEnvelope:b?.vibeEnvelope}).map(x=>[x.id,x.brightness]));
-  return json({ok:false,action,mutationIssued:false,error:"UV preview calculated; output stays off until physical commissioning is accepted.",mode,requested:brightnessBySegment,output,policy:UV_OFFLINE_CONFIG,wouldPublish:wledUvStatePatch(UV_OFFLINE_CONFIG,output)},409);
+  try{const result=await executeUvRequest({request:b,state:c,auxEnabled:enabled,uvEnabled:ENV_UV_ENABLED,hardware:UV_HARDWARE_CONFIG,publish});return json({...result.body,policy:UV_OFFLINE_CONFIG},result.status);}
+  catch(e){return json({ok:false,action,mutationIssued:"unknown",acknowledgement:{transport:"mqtt",qos:1,acceptedByBroker:false,deviceReadback:false},error:e instanceof Error?e.message:String(e)},503);}
+ }
+ if(action==="uv"){
+  const mode=String(b?.mode||"off").toLowerCase();
+  if(!Object.prototype.hasOwnProperty.call(UV_ACTION_PRESETS,mode))return json({ok:false,action,mutationIssued:false,error:"UV mode must be full/main/short/off."},400);
+  try{const result=await executeUvRequest({request:{mode:mode==="off"?"OFF":"MANUAL",brightnessBySegment:{main:mode==="full"||mode==="main"?255:0,short:mode==="full"||mode==="short"?255:0}},state:c,auxEnabled:enabled,uvEnabled:ENV_UV_ENABLED,hardware:UV_HARDWARE_CONFIG,publish});return json({...result.body,action:"uv",policy:UV_OFFLINE_CONFIG},result.status);}
+  catch(e){return json({ok:false,action,mutationIssued:"unknown",acknowledgement:{transport:"mqtt",qos:1,acceptedByBroker:false,deviceReadback:false},error:e instanceof Error?e.message:String(e)},503);}
  }
  // Safety exception: a blackout is non-energizing and may be issued even before acceptance.
  if(action==="blackout"||action==="off"){try{await publish({on:false},true);return json({ok:true,mode:"off",safetyAction:true});}catch(e){return json({ok:false,error:e instanceof Error?e.message:String(e)},503);}}
@@ -79,7 +83,6 @@ Deno.serve(async(req)=>{
   if(action==="mirror_visual"){const m=mirrorPayload(b?.visual??b);await publish(m.payload,enabled);return json({ok:true,action,matrixSlave:true,segment:0,applied:m.seg,uvPreserved:true,brightnessClamped:m.requested!==m.bri,mirrorPolicy:MIRROR_POLICY});}
   if(action==="mode"){const mode=String(b?.mode||"").toLowerCase();if(!(mode in MODES))return json({ok:false,error:"Unknown aux mode"},400);if(mode==="glow_live")return json({ok:false,error:"UV remains disabled until physical commissioning is accepted.",mutationIssued:false},409);const m=modePayload(mode);await publish(m.payload,enabled);return json({ok:true,mode,matrixSlave:true,visualMaster:"matrix",uv:m.uv,syncPolicy:SYNC_POLICY});}
   if(action==="underglow_brightness"){const bri=Math.max(1,Math.min(MIRROR_BRI_MAX,Math.round(Number(b?.brightness)||96)));const payload={on:true,bri:255,seg:{id:0,on:true,bri}};await publish(payload,enabled);return json({ok:true,brightness:bri,max:MIRROR_BRI_MAX});}
-  if(action==="uv"){return json({ok:false,error:"UV remains disabled until physical commissioning is accepted.",mutationIssued:false,policy:UV_OFFLINE_CONFIG},409);}
   return json({ok:false,error:"Unknown action"},400);
  }catch(e){return json({ok:false,error:e instanceof Error?e.message:String(e)},503);}
 });

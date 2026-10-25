@@ -13,11 +13,11 @@ Canonical source authority for the full `/matrix.html` Home Screen console.
 - No Matrix-specific service worker is registered.
 
 Verified source bundle:
-- ZIP SHA256: `0dc5163592d6a5a6dfa2ad883e46da399e1a267067d449a60e4085cea8f5b91d`
-- Base64 SHA256: `6b4054fa08642c926bef4bec986235cd26b6f3af2bf5e3608fdede1cbf4e86b3`
-- Regression: 32/32 PASS
+- ZIP SHA256: `a68efa5f253750c2c0466437eb94228897135657b3d12db1f239c6676ac496bf`
+- Base64 SHA256: `b445a825942f11cecb14069c639d5462ea4c7b56b1fdd84fe66e65deecca0406`
+- Regression: 33/33 PASS
 
 Production publication still uses the authenticated Mac Wrangler static-worker path. Double-click `DEPLOY_HBNF_MATRIX_FULL_PWA.command` from the complete web-deploy package.
 
 
-Cart UV preview candidate (source-only): separate Main/Short levels support Manual, fresh Matrix brightness, and verified WOW audio-energy preview through the fail-dark AUX policy. The controls do not actuate outputs; hardware and real music-response acceptance remain pending.
+Cart UV control candidate (source-only): Main/Short sliders use the existing AUX request path with Manual, fresh Matrix brightness, and verified WOW audio-energy modes. The checked-in server profile and UV enable gate remain fail-closed, so the current response stays preview-only with zero output. If later verified hardware facts and commissioning gates enable the route, success reports MQTT broker acknowledgment only; device readback is separate. No package was deployed; hardware and physical acceptance remain pending.
