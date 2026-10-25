@@ -37,6 +37,14 @@ def sha256(path):
         for chunk in iter(lambda:f.read(1024*1024),b""): h.update(chunk)
     return h.hexdigest()
 
+def verified_package_firmware(fw):
+    package=op.verify_package(fw.parent)
+    if not package.get("ok"):
+        raise RuntimeError(f"AUX firmware package verification failed: {package}")
+    if sha256(fw)!=package["firmwareSha256"] or fw.stat().st_size!=package["firmwareBytes"]:
+        raise RuntimeError("AUX firmware bytes do not match the package manifest.")
+    return package
+
 def local_ipv4s():
     out=[]
     for iface in ("en0","en1","en2","bridge0"):
@@ -319,6 +327,7 @@ def wait_wled(ip,timeout=90,exact_aux=False):
     raise RuntimeError("WLED did not return with the expected identity before timeout.")
 
 def ota_install(ip,fw,timeout=120):
+    verified_package_firmware(fw)
     before=lc.inspect(ip)
     if not lc.looks_like_wled(before): raise RuntimeError("Aux target is not a reachable WLED node.")
     if all_true(lc.check_matrix(before),MATRIX_IDENTITY_KEYS): raise RuntimeError("Target is exact Matrix R3; refusing AUX firmware install.")
@@ -327,7 +336,6 @@ def ota_install(ip,fw,timeout=120):
     flash_mb=int(info.get("flash") or 0)
     if "esp32" not in arch: raise RuntimeError(f"Aux target architecture is {arch!r}, not ESP32.")
     if flash_mb!=4: raise RuntimeError(f"Aux target reports {flash_mb} MB flash; expected the verified SP803E 4 MB target.")
-    if sha256(fw)!=op.EXPECTED_FW_SHA or fw.stat().st_size!=op.EXPECTED_FW_BYTES: raise RuntimeError("Frozen firmware hash/size mismatch.")
     body,ctype=multipart_firmware(fw)
     req=urllib.request.Request(f"http://{ip}/update",data=body,method="POST",headers={"Content-Type":ctype,"Content-Length":str(len(body))})
     try:
@@ -522,7 +530,8 @@ def _accept_prompt(ev,path,key,prompt,details=None):
 def physical_acceptance(args,matrix_ip,aux_ip,history):
     ep=evidence_path(args.evidence);ev=load_evidence(ep)
     ev["matrixIp"]=matrix_ip;ev["auxIp"]=aux_ip
-    ev["firmwareSha256"]=op.EXPECTED_FW_SHA;ev["packageDir"]=str(pathlib.Path(args.package_dir).resolve())
+    package=verified_package_firmware(pathlib.Path(args.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin")
+    ev["firmwareSha256"]=package["firmwareSha256"];ev["packageDir"]=str(pathlib.Path(args.package_dir).resolve())
     ev["commissioningMode"]="underglow-only-v1";ev["uvArchitecturePending"]=True
     save_evidence(ev,ep)
     print(f"\nUNDERGLOW ACCEPTANCE — resumable evidence file: {ep}")
@@ -646,10 +655,27 @@ def interactive(args):
     return {"history":history,"current":pf,"evidence":str(evidence_path(args.evidence))}
 
 def selftest():
-    import tempfile
+    import tempfile, shutil
     with tempfile.TemporaryDirectory() as td:
-        probe=pathlib.Path(td)/"probe.bin";probe.write_bytes(b"HBNF")
+        root=pathlib.Path(td);probe=root/"probe.bin";probe.write_bytes(b"HBNF")
         body,ctype=multipart_firmware(probe)
+        try:
+            verified_package_firmware(probe)
+            raise AssertionError("incomplete firmware package passed verification")
+        except RuntimeError as e:
+            assert "package verification failed" in str(e)
+        package_dir=root/"valid-package";package_dir.mkdir()
+        fw=package_dir/"HBNF_SP803E_AUX_R3.bin";fw.write_bytes(b"verified-firmware-fixture")
+        shutil.copy2(HERE/"contract.json",package_dir/"contract.json")
+        shutil.copy2(HERE/"local_commission.py",package_dir/"local_commission.py")
+        repo_root=HERE.parents[1]
+        shutil.copy2(repo_root/"hbnf-wow-bundle/config/WOW_SCENES_V2.json",package_dir/"WOW_SCENES_V2.json")
+        metrics=(f"release={lc.AUX_RELEASE}\nengine={lc.AUX_ENGINE}\nbuild_witness={lc.AUX_WITNESS}\n"
+                 f"firmware_sha256={op.sha256(fw)}\nfirmware_bytes={fw.stat().st_size}\n")
+        (package_dir/"FINAL_METRICS.txt").write_text(metrics)
+        verified=verified_package_firmware(fw)
+        assert verified["firmwareSha256"]==op.sha256(fw)
+        assert verified["firmwareBytes"]==fw.stat().st_size
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
     wire_prefix=body[:512]
     assert b"\r\nContent-Disposition" in wire_prefix and b"\\r\\nContent-Disposition" not in wire_prefix
