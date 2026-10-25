@@ -25,7 +25,7 @@ assert.match(features, /result\.uvControlEnabled === true/);
 assert.match(features, /async function checkUvReadiness\(updateStatus = true\)[\s\S]*?if \(updateStatus\) status\.textContent/);
 assert.match(features, /canonicalRead\("uv_policy"/);
 assert.match(features, /finally \{\s*checkUvReadiness\(false\);/);
-assert.match(css, /grid-template-areas:"actions actions" "lights motion" "lights text"/);
+assert.match(css, /grid-template-areas:"actions actions" "lights motion" "text text"/);
 assert.match(features, /status\.textContent = "UV result is unknown/);
 assert.match(controller, /body\.action === "uv_policy" \? 12000/);
 assert.match(auth, /action === "uv_status" \|\| action === "uv_policy"/);
