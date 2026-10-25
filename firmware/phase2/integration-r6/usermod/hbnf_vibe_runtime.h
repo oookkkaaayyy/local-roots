@@ -51,7 +51,9 @@ class VibeAudioFeatures {
     out.lowPressure=mix(fast[0],medium[0],82,173);
     out.lowTransient=in.silent?0:unit(in.bassPulse);
     out.midBody=mix(fast[1],medium[1],77,178);
-    const uint8_t midDelta=absDiff(out.midBody,previousMid_);
+    // Establish the first mid-band sample as the baseline. Comparing it with
+    // zero invents a change whenever the controller starts during steady music.
+    const uint8_t midDelta=initialized_?absDiff(out.midBody,previousMid_):0;
     previousMid_=out.midBody;
     midChange_=smooth(midChange_,(uint8_t)min8(255u,(uint16_t)midDelta*5u),dt,180u);
     out.midChange=midChange_;
