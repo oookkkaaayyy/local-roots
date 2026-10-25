@@ -9,14 +9,15 @@ const gates = Object.freeze({
 const verifiedHardware = Object.freeze({
   verified: true,
   evidence: "owner-recorded in-person electrical verification",
-  supply: { outputVoltage: 5, currentLimitMa: 500 },
-  switching: { verified: true, isolated: true, outputVoltage: 5, controlInputMinVoltage: 3.0, controlInputMaxVoltage: 3.6, channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300 },
-  fuse: { verified: true, ratingMa: 300 },
-  wire: { currentRatingMa: 300 },
+  supplyByChannel: {
+    main: { outputVoltageV: 12, currentLimitMa: 300 },
+    short: { outputVoltageV: 5, currentLimitMa: 200 },
+  },
+  switching: { verified: true, isolated: true, maxLoadVoltageV: 12, controlInputMinVoltage: 3.0, controlInputMaxVoltage: 3.6, channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300 },
   maxBrightness: 180,
   channels: {
-    main: { gpio: 25, segmentId: 1, loadCurrentMa: 100 },
-    short: { gpio: 26, segmentId: 2, loadCurrentMa: 150 },
+    main: { gpio: 25, segmentId: 1, loadVoltageV: 12, loadCurrentMa: 100, fuseRatingMa: 150, wireCurrentRatingMa: 150 },
+    short: { gpio: 26, segmentId: 2, loadVoltageV: 5, loadCurrentMa: 150, fuseRatingMa: 150, wireCurrentRatingMa: 150 },
   },
 });
 
@@ -109,4 +110,7 @@ test("hardware mapping requires reviewed facts and exact proposed GPIO/segment p
   assert.equal(uvHardwareReady(verifiedHardware), true);
   assert.equal(uvCommissioningReady(gates), true);
   assert.equal(uvHardwareReady({ ...verifiedHardware, channels: { ...verifiedHardware.channels, short: { ...verifiedHardware.channels.short, segmentId: 1 } } }), false);
+  assert.equal(uvHardwareReady({ ...verifiedHardware, supplyByChannel: { ...verifiedHardware.supplyByChannel, short: { ...verifiedHardware.supplyByChannel.short, outputVoltageV: 12 } } }), false);
+  assert.equal(uvHardwareReady({ ...verifiedHardware, channels: { ...verifiedHardware.channels, short: { ...verifiedHardware.channels.short, loadVoltageV: null } } }), false);
+  assert.equal(uvHardwareReady({ ...verifiedHardware, switching: { ...verifiedHardware.switching, maxLoadVoltageV: 5 } }), false);
 });

@@ -2,7 +2,7 @@
 
 ## Current decision: keep both UV channels off
 
-The current hardware handoff documents Main/rim UV as **12V YGS-Tech 395–405nm**. The Short UV load's exact voltage/current and channel mapping remain unresolved; earlier records conflict. The SP803E and underglow path are 12V, but that alone does not prove its PWM outputs safe for either UV load. No verified switching path, fuse rating, driver model/rating, or UV output mapping is established in source. Do not connect, configure, energize, or send UV commands until those facts are verified.
+The current hardware handoff documents Main/rim UV as **12V YGS-Tech 395–405nm**. The Short UV load's exact voltage/current and channel mapping remain unresolved; earlier records conflict. The SP803E and underglow path are 12V, but that alone does not prove its PWM outputs safe for either UV load. No verified switching path, fuse rating, driver model/rating, or UV output mapping is established in source. The fail-closed readiness check now requires separate load/supply voltage matches and per-channel supply, fuse, wire, and switch ratings; the unknown Short channel cannot pass. Do not connect, configure, energize, or send UV commands until those facts are verified.
 
 ## Existing source paths (read-only audit)
 

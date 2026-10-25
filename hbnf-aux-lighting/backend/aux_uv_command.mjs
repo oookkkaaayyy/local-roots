@@ -6,14 +6,17 @@ import { UV_MODES, UV_OFFLINE_CONFIG, nextUvOutputs } from "./aux_uv_policy.mjs"
 export const UV_HARDWARE_CONFIG = Object.freeze({
   verified: false,
   evidence: null,
-  supply: Object.freeze({ outputVoltage: 5, currentLimitMa: 0 }),
-  switching: Object.freeze({ verified: false, isolated: false, outputVoltage: 5, controlInputMinVoltage: 0, controlInputMaxVoltage: 0, channels: 0, maxChannelCurrentMa: 0, maxTotalCurrentMa: 0 }),
-  fuse: Object.freeze({ verified: false, ratingMa: 0 }),
-  wire: Object.freeze({ currentRatingMa: 0 }),
+  // The documented Main load is 12V; Short remains unknown. These are
+  // reference facts only. Every rating and channel must still be verified.
+  supplyByChannel: Object.freeze({
+    main: Object.freeze({ outputVoltageV: 12, currentLimitMa: 0 }),
+    short: Object.freeze({ outputVoltageV: null, currentLimitMa: 0 }),
+  }),
+  switching: Object.freeze({ verified: false, isolated: false, maxLoadVoltageV: 0, controlInputMinVoltage: 0, controlInputMaxVoltage: 0, channels: 0, maxChannelCurrentMa: 0, maxTotalCurrentMa: 0 }),
   maxBrightness: 0,
   channels: Object.freeze({
-    main: Object.freeze({ gpio: null, segmentId: null, loadCurrentMa: 0 }),
-    short: Object.freeze({ gpio: null, segmentId: null, loadCurrentMa: 0 }),
+    main: Object.freeze({ gpio: null, segmentId: null, loadVoltageV: 12, loadCurrentMa: 0, fuseRatingMa: 0, wireCurrentRatingMa: 0 }),
+    short: Object.freeze({ gpio: null, segmentId: null, loadVoltageV: null, loadCurrentMa: 0, fuseRatingMa: 0, wireCurrentRatingMa: 0 }),
   }),
 });
 
@@ -25,20 +28,27 @@ const clamp8 = (value) => Math.max(0, Math.min(255, Math.round(Number.isFinite(N
 export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
   const main = config?.channels?.main;
   const short = config?.channels?.short;
-  const supplyMa = Number(config?.supply?.currentLimitMa) || 0;
   const switchChannelMa = Number(config?.switching?.maxChannelCurrentMa) || 0;
   const switchTotalMa = Number(config?.switching?.maxTotalCurrentMa) || 0;
-  const fuseMa = Number(config?.fuse?.ratingMa) || 0;
-  const wireMa = Number(config?.wire?.currentRatingMa) || 0;
+  const supplyMainMa = Number(config?.supplyByChannel?.main?.currentLimitMa) || 0;
+  const supplyShortMa = Number(config?.supplyByChannel?.short?.currentLimitMa) || 0;
   const loadsMa = (Number(main?.loadCurrentMa) || 0) + (Number(short?.loadCurrentMa) || 0);
+  const channelSafe = (channel, supply, supplyMa) => Number.isFinite(channel?.loadVoltageV)
+    && channel.loadVoltageV > 0
+    && supply?.outputVoltageV === channel.loadVoltageV
+    && supplyMa >= channel.loadCurrentMa
+    && Number(channel?.loadCurrentMa) > 0
+    && Number(channel?.fuseRatingMa) >= channel.loadCurrentMa
+    && channel.fuseRatingMa <= supplyMa
+    && Number(channel?.wireCurrentRatingMa) >= channel.fuseRatingMa;
   return config?.verified === true
     && typeof config.evidence === "string" && config.evidence.trim().length > 0
-    && config.supply?.outputVoltage === 5 && supplyMa > 0
-    && config.switching?.verified === true && config.switching?.isolated === true && config.switching?.outputVoltage === 5
+    && channelSafe(main, config.supplyByChannel?.main, supplyMainMa)
+    && channelSafe(short, config.supplyByChannel?.short, supplyShortMa)
+    && config.switching?.verified === true && config.switching?.isolated === true
+    && Number(config.switching?.maxLoadVoltageV) >= Math.max(main?.loadVoltageV || Infinity, short?.loadVoltageV || Infinity)
     && config.switching?.controlInputMinVoltage <= 3.3 && config.switching?.controlInputMaxVoltage >= 3.3
     && config.switching?.channels === 2 && switchChannelMa > 0 && switchTotalMa >= loadsMa
-    && config.fuse?.verified === true && fuseMa >= loadsMa && fuseMa <= supplyMa
-    && fuseMa <= switchTotalMa && fuseMa <= wireMa && wireMa > 0 && loadsMa > 0 && supplyMa >= loadsMa
     && config.maxBrightness > 0 && config.maxBrightness <= 255
     && main?.gpio === 25 && main?.segmentId === 1 && main?.loadCurrentMa > 0 && main.loadCurrentMa <= switchChannelMa
     && short?.gpio === 26 && short?.segmentId === 2 && short?.loadCurrentMa > 0 && short.loadCurrentMa <= switchChannelMa
