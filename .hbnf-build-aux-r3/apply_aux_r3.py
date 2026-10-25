@@ -251,6 +251,20 @@ p.write_text(s)
 # can use the Matrix controller's FFT stream instead of a second microphone.
 ar=root/"usermods/audioreactive/audio_reactive.cpp"
 a=ar.read_text()
+data_anchor='''        um_data->u_size = 8;
+        um_data->u_type = new um_types_t[um_data->u_size];'''
+data_replacement='''        um_data->u_size = 9;
+        um_data->u_type = new um_types_t[um_data->u_size];'''
+if a.count(data_anchor)!=1:
+    raise RuntimeError(f"AudioReactive UMData size anchor mismatch: {a.count(data_anchor)}")
+a=a.replace(data_anchor,data_replacement,1)
+bin_anchor='''        um_data->u_data[7] = &binNum;          // assigned in effect function from UI element!!! (Puddlepeak, Ripplepeak, Waterfall)
+        um_data->u_type[7] = UMT_BYTE;'''
+bin_replacement=bin_anchor+'''\n        um_data->u_data[8] = &last_UDPTime;    // timestamp of last valid synced audio packet
+        um_data->u_type[8] = UMT_UINT32;'''
+if a.count(bin_anchor)!=1:
+    raise RuntimeError(f"AudioReactive freshness export anchor mismatch: {a.count(bin_anchor)}")
+a=a.replace(bin_anchor,bin_replacement,1)
 old="static uint8_t audioSyncEnabled = 0;"
 if a.count(old)!=1:
     raise RuntimeError(f"audioSyncEnabled anchor mismatch: {a.count(old)}")
@@ -270,7 +284,7 @@ checks={
   "hbnfAuxLiftLuma","HbnfProjectionReceiverV1","hbnfProjectionRx.tick()","source-coupled-v4","frame-lock-v1",
   'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10'
  ],
- ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort']
+ ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort','um_data->u_size = 9','um_data->u_data[8] = &last_UDPTime','um_data->u_type[8] = UMT_UINT32']
 }
 for path,needles in checks.items():
     text=path.read_text()

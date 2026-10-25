@@ -122,7 +122,7 @@ jobs:
             -D SR_DMTYPE=254
           EOF
           python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
-          cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_generative_v4.h" /tmp/wled/usermods/usermod_v2_animartrix/
+          cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_vibe16.h" "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_animartrix_audio_bridge.h" "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_generative_v4.h" /tmp/wled/usermods/usermod_v2_animartrix/
           cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_projection_link_v1.h" /tmp/wled/usermods/usermod_v2_animartrix/
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/apply_aux_r3.py" /tmp/wled
@@ -137,6 +137,7 @@ jobs:
           grep -q 'camera-bright-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnfAuxLiftLuma' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'static uint8_t audioSyncEnabled = 2;' usermods/audioreactive/audio_reactive.cpp
+          python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/test_audio_sync_contract.py" /tmp/wled
           ! grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           ! grep -q 'hbnf_flow' platformio_override.ini
           git diff --check
@@ -190,7 +191,7 @@ jobs:
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
           AUXPATCH=$(sha256sum .hbnf-build-aux-r3/apply_aux_r3.py | awk '{print $1}')
           cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-aux-r3-source.patch /tmp/fold2-audit.log /tmp/aux-generative-v4.log /tmp/aux-audio-domains-v4.log /tmp/aux-projection-link-v1.log /tmp/artifacts/
-          cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/audit_animartrix_projection.py .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h /tmp/artifacts/
+          cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/test_audio_sync_contract.py .hbnf-build-aux-r3/audit_animartrix_projection.py .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/local_commission.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/commission_operator.py /tmp/artifacts/
