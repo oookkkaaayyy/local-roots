@@ -23,12 +23,18 @@ THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);
 - positively identify the AUX and refuse Matrix targets;
 - refuse firmware OTA while RELEASE_ADMISSION.json is REVIEW ONLY;
+- report OTA runtime identity as pending until a complete durable release receipt validates;
 - use a standards-compliant WLED multipart OTA upload;
 - calibrate real underglow color order at low current;
 - configure ONLY the GPIO16 WS2811 underglow bus, with fail-dark boot and <=900 mA commissioning limit;
 - keep GPIO25/26/27 unused while per-channel UV ratings and output mapping are unresolved;
 - later require exact Matrix identity before changing Matrix/AUX sync;
 - preserve physical observations in HBNF_AUX_ACCEPTANCE_EVIDENCE.json.
+
+RELEASE RECEIPT
+The build-bound RELEASE_RECEIPT.json is INCOMPLETE. After any future firmware install, complete it with actual before/after image readbacks, the exact rollback and its durable readback, install identity/time/operator, outcome, and evidence links. Upload the receipt, download it again byte-for-byte, then run:
+  python3 commission_guard.py --phase validate-release-receipt --release-receipt RELEASE_RECEIPT.json
+Only exit 0 validates the transaction receipt. The Desktop report is not durable evidence. Never add credentials or secrets.
 
 FULL AUX / UV ACCEPTANCE
 The database AUX gate remains closed until both UV channels' exact electrical paths are physically verified and tested. Underglow can be commissioned independently without pretending UV acceptance exists.

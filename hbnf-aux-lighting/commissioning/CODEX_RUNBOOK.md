@@ -7,6 +7,7 @@
 - Do not assume the SP803E 12V PWM/VCC path is safe from voltage match alone. Verify each load, driver, supply, fuse, wiring, and fail-dark behavior first.
 - Do not configure GPIO25/26/27 as UV outputs until per-channel load and output mapping and ratings are verified.
 - Matrix firmware must not be reflashed during AUX commissioning.
+- An AUX OTA HTTP response plus runtime identity is not release success. The installer reports `PENDING_COMPLETE_DURABLE_RECEIPT` until the complete source-bound receipt and exact rollback evidence have been durably retained, retrieved, and validated.
 
 ## Current commissioning order
 

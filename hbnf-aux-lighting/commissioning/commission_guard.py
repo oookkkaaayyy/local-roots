@@ -333,6 +333,12 @@ def wait_wled(ip,timeout=90,exact_aux=False):
         time.sleep(2)
     raise RuntimeError("WLED did not return with the expected identity before timeout.")
 
+def pending_release_result(ip,after):
+    return {"deviceRuntimeIdentityVerified":True,"releaseAccepted":False,
+      "releaseStatus":"PENDING_COMPLETE_DURABLE_RECEIPT","receiptTemplate":"RELEASE_RECEIPT.json",
+      "receiptValidator":"validate_release_receipt.py","ip":ip,"checks":lc.check_aux(after),
+      "note":"Runtime identity alone is not release success. Complete the source-bound receipt, verify exact candidate and rollback readbacks, publish it durably, retrieve it, then validate it."}
+
 def ota_install(ip,fw,timeout=120):
     package=verified_package_firmware(fw)
     require_install_admission(package)
@@ -354,7 +360,7 @@ def ota_install(ip,fw,timeout=120):
         raise RuntimeError(f"OTA HTTP {e.code}: {detail[:400]}") from e
     if status!=200 or "Update successful" not in response: raise RuntimeError(f"OTA did not return success (HTTP {status}).")
     after=wait_wled(ip,timeout,True)
-    return {"ok":True,"ip":ip,"checks":lc.check_aux(after)}
+    return pending_release_result(ip,after)
 
 def cfg_post(ip,patch):
     body=dict(patch);body["sv"]=True
@@ -640,6 +646,7 @@ def interactive(args):
         print("This uploads the exact proven AUX firmware and reboots ONLY the identified AUX node.")
         if not prompt_yes("Install exact AUX firmware now?"): return {"history":history,"current":pf}
         r=ota_install(a,pathlib.Path(args.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin");history.append({"phase":"install-firmware","result":r});pf=preflight(args);history.append({"phase":"post-firmware-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
+        return {"history":history,"current":pf,"releaseStatus":r["releaseStatus"],"releaseAccepted":False}
     if pf["nextAction"]=="APPLY_HARDWARE_PLAN":
         print("\nUnderglow config needs the ACTUAL installed WS2811 logical group count. UV stays excluded/disconnected.")
         pixels=int(input("Actual installed WS2811 logical pixel/group count: ").strip())
@@ -676,12 +683,18 @@ def selftest():
         fw=package_dir/"HBNF_SP803E_AUX_R3.bin";fw.write_bytes(b"verified-firmware-fixture")
         shutil.copy2(HERE/"contract.json",package_dir/"contract.json")
         shutil.copy2(HERE/"local_commission.py",package_dir/"local_commission.py")
+        for name in ("RELEASE_RECEIPT.schema.json","RELEASE_RECEIPT.template.json","validate_release_receipt.py","generate_release_receipt.py"):
+            shutil.copy2(HERE/name,package_dir/name)
         repo_root=HERE.parents[1]
         shutil.copy2(repo_root/"hbnf-wow-bundle/config/WOW_SCENES_V2.json",package_dir/"WOW_SCENES_V2.json")
         metrics=(f"release={lc.AUX_RELEASE}\nengine={lc.AUX_ENGINE}\nbuild_witness={lc.AUX_WITNESS}\n"
-                 f"github_sha={'a'*40}\n"
+                 f"github_sha={'a'*40}\ngithub_run_id=123\ngithub_run_url=https://github.com/example/repo/actions/runs/123\ngithub_ref=refs/heads/test\nworkflow_path=.github/workflows/build.yml\n"
+                 f"toolchain_python=3.12\ntoolchain_platformio=6.1.17\ntoolchain_node=20\ntoolchain_pip=pip-24\n"
+                 f"input_wled_commit={'b'*40}\ninput_source_bundle_sha256={'c'*64}\ninput_wled_requirements_sha256={'d'*64}\ninput_aux_patch_sha256={'e'*64}\n"
                  f"firmware_sha256={op.sha256(fw)}\nfirmware_bytes={fw.stat().st_size}\n")
         (package_dir/"FINAL_METRICS.txt").write_text(metrics)
+        from generate_release_receipt import generate as generate_receipt
+        generate_receipt(fw,package_dir/"FINAL_METRICS.txt",HERE/"RELEASE_RECEIPT.template.json",package_dir/"RELEASE_RECEIPT.json")
         (package_dir/op.ADMISSION_FILE).write_text(json.dumps({"schema":"hbnf-aux-release-admission-v1",
             "status":"REVIEW_ONLY","candidate_source_commit":"a"*40,
             "candidate_firmware_sha256":op.sha256(fw),
@@ -722,6 +735,8 @@ def selftest():
     assert safe_boot_preset_valid(safe_preset,37)
     bad_preset=json.loads(json.dumps(safe_preset));bad_preset["seg"].append({"id":1,"start":37,"stop":38,"on":False});assert not safe_boot_preset_valid(bad_preset,37)
     assert candidate_subnets("192.168.1.0/24",None)==["192.168.1.0/24"]
+    pending=pending_release_result("192.0.2.1",{"state":{"HBNFAUX":{}}})
+    assert pending["releaseAccepted"] is False and pending["releaseStatus"]=="PENDING_COMPLETE_DURABLE_RECEIPT" and "ok" not in pending
     sample="en0: flags=8863<UP>\n\tinet 192.168.68.77 netmask 0xfffffc00 broadcast 192.168.71.255\nlo0: flags=8049<UP>\n\tinet 127.0.0.1 netmask 0xff000000\n"
     assert parse_ifconfig_networks(sample)==["192.168.68.0/22"]
     assert infer_color_order(["G","R","B"])=="GRB"
@@ -738,16 +753,25 @@ def selftest():
 
 def main():
     p=argparse.ArgumentParser(description="Guarded HBNF AUX commissioning state machine")
-    p.add_argument("--phase",choices=["preflight","install-firmware","apply-hardware","prepare-sync","verify","interactive"],default="preflight")
+    p.add_argument("--phase",choices=["preflight","install-firmware","apply-hardware","prepare-sync","verify","interactive","validate-release-receipt"],default="preflight")
     p.add_argument("--matrix-hint",default="192.168.68.89");p.add_argument("--aux",default="auto");p.add_argument("--subnet")
     p.add_argument("--package-dir",default=str(HERE));p.add_argument("--backup",action="store_true",default=True);p.add_argument("--no-backup",dest="backup",action="store_false")
-    p.add_argument("--backup-root",default="~/Desktop");p.add_argument("--report");p.add_argument("--evidence");p.add_argument("--field-ssid")
+    p.add_argument("--backup-root",default="~/Desktop");p.add_argument("--report");p.add_argument("--evidence");p.add_argument("--release-receipt");p.add_argument("--field-ssid")
     p.add_argument("--pixels",type=int);p.add_argument("--order",choices=list(hp.ORDER_CODES));p.add_argument("--reverse",action="store_true");p.add_argument("--yes",action="store_true");p.add_argument("--selftest",action="store_true")
     a=p.parse_args()
     if a.selftest: selftest();return 0
+    if a.phase=="validate-release-receipt":
+        if not a.release_receipt: raise SystemExit("--phase validate-release-receipt requires --release-receipt")
+        receipt_path=pathlib.Path(a.release_receipt).expanduser().resolve()
+        try:receipt=json.loads(receipt_path.read_text())
+        except Exception as e:raise SystemExit(f"release receipt unreadable: {type(e).__name__}")
+        errors=op.receipt_validator.validate(receipt,receipt_path.parent,receipt_path)
+        result={"valid":not errors,"status":"COMPLETE" if not errors else "INCOMPLETE_OR_INVALID","errors":errors}
+        print(json.dumps(result,indent=2,sort_keys=True))
+        return 0 if not errors else 3
     rp=report_path(a.report)
     if a.phase=="interactive":
-        result=interactive(a);write_report(result,rp);print(f"\nReport: {rp}");return 0
+        result=interactive(a);write_report(result,rp);print(f"\nReport: {rp}");return 3 if result.get("releaseAccepted") is False else 0
     pf=preflight(a)
     if a.phase in ("preflight","verify"): write_report(pf,rp);print(json.dumps(pf,indent=2,sort_keys=True));return 0 if pf.get("package",{}).get("ok") else 2
     if not a.yes: raise SystemExit("Mutation phase requires --yes, or use --phase interactive.")
@@ -759,6 +783,6 @@ def main():
         result=apply_hardware(aip,hp.build(a.pixels,a.order,a.reverse,900,55))
     elif a.phase=="prepare-sync":
         m,aip=require_ready(pf);result=prepare_sync_with_rollback(m,aip)
-    final=preflight(a);out={"mutationIssued":True,"phase":a.phase,"result":result,"current":final};write_report(out,rp);print(json.dumps(out,indent=2,sort_keys=True));return 0
+    final=preflight(a);out={"mutationIssued":True,"phase":a.phase,"result":result,"current":final};write_report(out,rp);print(json.dumps(out,indent=2,sort_keys=True));return 3 if a.phase=="install-firmware" and result.get("releaseAccepted") is not True else 0
 
 if __name__=="__main__": raise SystemExit(main())

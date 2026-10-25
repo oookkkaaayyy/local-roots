@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hbnf:aux-release-receipt:v1",
+  "title": "HBNF AUX Release Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "source", "build", "candidate", "pre_install", "rollback", "installation", "post_install", "acceptance", "evidence_refs"],
+  "properties": {
+    "schema": {"const": "hbnf-aux-release-receipt-v1"},
+    "status": {"const": "COMPLETE"},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commit"],
+      "properties": {"commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}
+    },
+    "build": {
+      "type": "object", "additionalProperties": false,
+      "required": ["workflow_path", "workflow_ref", "run_id", "run_url", "toolchain", "pinned_inputs"],
+      "properties": {
+        "workflow_path": {"type": "string", "minLength": 1},
+        "workflow_ref": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "run_url": {"type": "string", "format": "uri"},
+        "toolchain": {"type": "object", "minProperties": 2, "additionalProperties": {"type": "string", "minLength": 1}},
+        "pinned_inputs": {"type": "object", "minProperties": 2, "additionalProperties": {"type": "string", "minLength": 1}}
+      }
+    },
+    "candidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["filename", "size", "sha256", "path"],
+      "properties": {
+        "filename": {"type": "string", "minLength": 1}, "size": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "path": {"type": "string", "minLength": 1}
+      }
+    },
+    "pre_install": {
+      "type": "object", "additionalProperties": false,
+      "required": ["release", "firmware_sha256", "readback_evidence_ref", "firmware_image_path"],
+      "properties": {
+        "release": {"type": "string", "minLength": 1}, "firmware_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "readback_evidence_ref": {"type": "string", "minLength": 1}, "firmware_image_path": {"type": "string", "minLength": 1}
+      }
+    },
+    "rollback": {
+      "type": "object", "additionalProperties": false,
+      "required": ["filename", "size", "sha256", "path", "durable_location", "durable_readback_path"],
+      "properties": {
+        "filename": {"type": "string", "minLength": 1}, "size": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "path": {"type": "string", "minLength": 1},
+        "durable_location": {"type": "string", "minLength": 1}, "durable_readback_path": {"type": "string", "minLength": 1}
+      }
+    },
+    "installation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["timestamp", "operator", "action", "target_identity", "durable_receipt_location", "durable_receipt_readback_path"],
+      "properties": {
+        "timestamp": {"type": "string", "format": "date-time"}, "operator": {"type": "string", "minLength": 1},
+        "action": {"enum": ["OTA_INSTALL", "ROLLBACK_RESTORE"]}, "target_identity": {"type": "string", "minLength": 1},
+        "durable_receipt_location": {"type": "string", "minLength": 1}, "durable_receipt_readback_path": {"type": "string", "minLength": 1}
+      }
+    },
+    "post_install": {
+      "type": "object", "additionalProperties": false,
+      "required": ["firmware_version", "release", "engine", "build_witness", "firmware_sha256", "firmware_image_path", "readback_evidence_ref", "runtime_readback_path", "runtime_readback_sha256"],
+      "properties": {
+        "firmware_version": {"type": "string", "minLength": 1}, "release": {"type": "string", "minLength": 1},
+        "engine": {"type": "string", "minLength": 1}, "build_witness": {"type": "string", "minLength": 1},
+        "firmware_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "firmware_image_path": {"type": "string", "minLength": 1}, "readback_evidence_ref": {"type": "string", "minLength": 1},
+        "runtime_readback_path": {"type": "string", "minLength": 1}, "runtime_readback_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "acceptance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["runtime", "physical_uv", "rollback"],
+      "properties": {
+        "runtime": {"enum": ["PASS", "FAIL"]}, "physical_uv": {"enum": ["NOT_CHECKED", "PASS", "FAIL"]},
+        "rollback": {"enum": ["NOT_NEEDED", "RESTORED", "FAILED"]}
+      }
+    },
+    "evidence_refs": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}}
+  }
+}

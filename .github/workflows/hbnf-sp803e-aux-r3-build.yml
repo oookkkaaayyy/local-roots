@@ -204,6 +204,15 @@ jobs:
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
           AUXPATCH=$(sha256sum .hbnf-build-aux-r3/apply_aux_r3.py | awk '{print $1}')
+          PYVER=$(python --version 2>&1)
+          PIOVER=$(pio --version 2>&1 | tr '\n' ' ')
+          NODEVER=$(node --version)
+          PIPVER=$(python -m pip --version)
+          REQSHA=$(sha256sum /tmp/wled/requirements.txt | awk '{print $1}')
+          WOWPATCH=$(sha256sum .hbnf-build-r3max/apply_wowmax_v3.py | awk '{print $1}')
+          UVFOLLOW=$(sha256sum .hbnf-build-aux-r3/hbnf_uv_audio_follower.h | awk '{print $1}')
+          PROJECTION=$(sha256sum .hbnf-build-r3max/hbnf_projection_link_v1.h | awk '{print $1}')
+          GEN4=$(sha256sum .hbnf-build-r3max/hbnf_generative_v4.h | awk '{print $1}')
           cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-aux-r3-source.patch /tmp/fold2-audit.log /tmp/aux-generative-v4.log /tmp/aux-audio-domains-v4.log /tmp/aux-projection-link-v1.log /tmp/artifacts/
           cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/test_audio_sync_contract.py .hbnf-build-aux-r3/test_uv_audio_follower.cpp .hbnf-build-aux-r3/hbnf_uv_audio_follower.h .hbnf-build-aux-r3/audit_animartrix_projection.py .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
@@ -212,6 +221,7 @@ jobs:
           cp hbnf-aux-lighting/commissioning/commission_guard.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/build_commissioning_distribution.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/generate_release_receipt.py hbnf-aux-lighting/commissioning/validate_release_receipt.py hbnf-aux-lighting/commissioning/test_release_receipt.py hbnf-aux-lighting/commissioning/RELEASE_RECEIPT.schema.json hbnf-aux-lighting/commissioning/RELEASE_RECEIPT.template.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/START_HERE.txt /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/COMMISSION_HBNF_AUX.command /tmp/artifacts/
           chmod +x /tmp/artifacts/COMMISSION_HBNF_AUX.command
@@ -264,13 +274,33 @@ jobs:
             echo LOCAL_SYNC_CONFIGURES_MQTT=NO
             echo SOURCE_DATE_EPOCH=1790035200
             echo github_run_id=$GITHUB_RUN_ID
+            echo github_run_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+            echo github_ref=$GITHUB_REF
             echo github_sha=$GITHUB_SHA
+            echo workflow_path=.github/workflows/hbnf-sp803e-aux-r3-build.yml
+            echo toolchain_python=$PYVER
+            echo toolchain_platformio=$PIOVER
+            echo toolchain_node=$NODEVER
+            echo toolchain_pip=$PIPVER
+            echo input_wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
+            echo input_source_bundle_sha256=a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb
+            echo input_wled_requirements_sha256=$REQSHA
+            echo input_aux_patch_sha256=$AUXPATCH
+            echo input_wowmax_patch_sha256=$WOWPATCH
+            echo input_uv_follower_sha256=$UVFOLLOW
+            echo input_projection_header_sha256=$PROJECTION
+            echo input_generative_v4_sha256=$GEN4
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
           python hbnf-aux-lighting/commissioning/generate_release_admission.py \
             --firmware /tmp/artifacts/HBNF_SP803E_AUX_R3.bin \
             --metrics /tmp/artifacts/FINAL_METRICS.txt \
             --out /tmp/artifacts/RELEASE_ADMISSION.json
+          python hbnf-aux-lighting/commissioning/generate_release_receipt.py \
+            --firmware /tmp/artifacts/HBNF_SP803E_AUX_R3.bin \
+            --metrics /tmp/artifacts/FINAL_METRICS.txt \
+            --template /tmp/artifacts/RELEASE_RECEIPT.template.json \
+            --out /tmp/artifacts/RELEASE_RECEIPT.json
 
       - name: Commission tooling selftest
         shell: bash
@@ -280,6 +310,9 @@ jobs:
           python hbnf-aux-lighting/commissioning/commission_guard.py --selftest
           python hbnf-aux-lighting/commissioning/build_commissioning_distribution.py --selftest
           python hbnf-aux-lighting/commissioning/generate_release_admission.py --selftest
+          python hbnf-aux-lighting/commissioning/generate_release_receipt.py --selftest
+          python hbnf-aux-lighting/commissioning/validate_release_receipt.py ignored.json --selftest
+          python hbnf-aux-lighting/commissioning/test_release_receipt.py
           cp /tmp/artifacts/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin
           cp /tmp/artifacts/FINAL_METRICS.txt hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
           python hbnf-aux-lighting/commissioning/commission_operator.py --selftest

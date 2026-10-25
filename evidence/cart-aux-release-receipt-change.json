@@ -1,0 +1,30 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-aux-release-receipt-20261025",
+  "summary": "Require a complete source-bound AUX release receipt with hash-verified candidate and exact retrievable rollback evidence before reporting an installation as successful.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing HBNF Cart release protocol and the checked-in fail-closed AUX admission/commissioning path; no new release authority or system is introduced.",
+      "affected_subsystem": "AUX R3 build package, release admission, commissioning installer result, and durable release evidence.",
+      "rollback_reference": "Revert this source commit; the current REVIEW_ONLY admission and no-rollback OTA block remain unchanged.",
+      "evidence_sources": [
+        "GitHub issue #116 recovery and release receipts",
+        "HBNF_CONTROL_MODEL.json and repository AGENTS.md release rules",
+        "Current AUX commissioning package and installer source at a3cd1f1f575358f96bd24acd2c590f0af973284d"
+      ],
+      "tests": [
+        "python3 hbnf-aux-lighting/commissioning/test_release_receipt.py",
+        "python3 hbnf-aux-lighting/commissioning/commission_guard.py --selftest",
+        "python3 hbnf-aux-lighting/commissioning/build_commissioning_distribution.py --selftest"
+      ]
+    }
+  }
+}

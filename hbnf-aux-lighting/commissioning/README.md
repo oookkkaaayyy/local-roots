@@ -29,6 +29,20 @@ The launcher:
 8. requires Matrix only for Matrix→AUX visual/audio sync;
 9. records underglow physical acceptance separately from the still-pending UV architecture.
 
+## Release receipt (mandatory after any future firmware install)
+
+`RELEASE_RECEIPT.template.json` is incomplete by design. The build creates a candidate-bound copy with the exact Git commit, workflow run, toolchain, pinned input hashes, and firmware filename/size/SHA-256. It cannot be treated as an installation receipt.
+
+After a future install, complete `RELEASE_RECEIPT.json` using actual pre-install and post-install firmware readbacks. Include the exact rollback image, its durable location, and a downloaded copy; the validator hashes both copies against the installed pre-state. Upload the completed receipt to the durable evidence location, download it again to `durable_receipt_readback_path`, and keep that byte-identical readback with the evidence files. Do not include credentials or secrets.
+
+Validate from the evidence directory with:
+
+```sh
+python3 commission_guard.py --phase validate-release-receipt --release-receipt RELEASE_RECEIPT.json
+```
+
+Exit 0 means the receipt, candidate, installed-before image, exact rollback, post-install image/readback, and durable readbacks match. The Desktop commission report is diagnostic output only; an HTTP OTA response or WLED identity check alone is not release success. `physical_uv: NOT_CHECKED` remains explicitly not accepted.
+
 ## Proven firmware
 
 - Release: `hbnf-wow-aux-r3-2026-10-25-uv-follow-v1`

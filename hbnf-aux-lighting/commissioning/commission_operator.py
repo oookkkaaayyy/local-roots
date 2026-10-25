@@ -12,9 +12,11 @@ import argparse, hashlib, json, pathlib, re, sys, time, urllib.request
 HERE=pathlib.Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import local_commission as lc
+import validate_release_receipt as receipt_validator
 
 BACKUP_PATHS=["/json/cfg","/json/state","/json/info","/json/eff","/json/pins","/presets.json"]
 ADMISSION_FILE="RELEASE_ADMISSION.json"
+RECEIPT_FILE="RELEASE_RECEIPT.json"
 
 
 def sha256(path:pathlib.Path)->str:
@@ -30,7 +32,8 @@ def verify_package(root:pathlib.Path)->dict:
     contract=root/"contract.json"
     scenes=root/"WOW_SCENES_V2.json"
     admission_path=root/ADMISSION_FILE
-    required=[fw,metrics,contract,scenes,root/"local_commission.py",admission_path]
+    receipt_path=root/RECEIPT_FILE
+    required=[fw,metrics,contract,scenes,root/"local_commission.py",admission_path,receipt_path,root/"RELEASE_RECEIPT.schema.json",root/"RELEASE_RECEIPT.template.json",root/"validate_release_receipt.py"]
     missing=[p.name for p in required if not p.is_file()]
     if missing: return {"ok":False,"missing":missing}
     got_sha=sha256(fw); got_bytes=fw.stat().st_size
@@ -39,6 +42,8 @@ def verify_package(root:pathlib.Path)->dict:
         if '=' in line:
             k,v=line.split('=',1); kv[k]=v
     con=json.loads(contract.read_text()); sc=json.loads(scenes.read_text())
+    template=json.loads(receipt_path.read_text())
+    receipt_errors=receipt_validator.validate_template(template,kv,fw)
     admission={};admission_valid=False;admission_reason="release admission is missing or invalid"
     if admission_path.is_file():
         try:
@@ -69,8 +74,10 @@ def verify_package(root:pathlib.Path)->dict:
       "brightnessIndependent":con["sync"].get("receive_brightness") is False,
       "audioPort":con["sync"].get("audio_port")==11988,
       "releaseAdmissionValid":admission_valid,
+      "releaseReceiptTemplateValid":not receipt_errors,
     }
-    return {"ok":all(checks.values()),"checks":checks,"firmwareSha256":got_sha,"firmwareBytes":got_bytes,
+    return {"ok":all(checks.values()) and not receipt_errors,"checks":checks,"firmwareSha256":got_sha,"firmwareBytes":got_bytes,
+      "releaseReceiptTemplateErrors":receipt_errors,"releaseReceiptStatus":template.get("status"),
       "installAdmissible":False,"releaseAdmission":{"status":admission.get("status"),"reason":admission_reason,
       "resumptionCondition":admission.get("resumption_condition")}}
 

@@ -6,7 +6,8 @@ import argparse, hashlib, pathlib, zipfile
 FILES=[
  "START_HERE.txt","COMMISSION_HBNF_AUX.command","commission_guard.py","commission_operator.py",
  "generate_aux_hardware_plan.py","local_commission.py","HBNF_SP803E_AUX_R3.bin","FINAL_METRICS.txt",
- "firmware-sha256.txt","contract.json","WOW_SCENES_V2.json","README.md","CODEX_RUNBOOK.md","RELEASE_ADMISSION.json"
+ "firmware-sha256.txt","contract.json","WOW_SCENES_V2.json","README.md","CODEX_RUNBOOK.md","RELEASE_ADMISSION.json",
+ "RELEASE_RECEIPT.schema.json","RELEASE_RECEIPT.template.json","RELEASE_RECEIPT.json","validate_release_receipt.py","generate_release_receipt.py","test_release_receipt.py"
 ]
 STAMP=(2026,9,22,0,0,0)
 
@@ -32,6 +33,11 @@ def build(src,out):
             and admission.get("blocker_code")=="EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
             and bool(str(admission.get("resumption_condition","")).strip())):
         raise ValueError("distribution is not source/hash-bound REVIEW_ONLY with the exact rollback blocker")
+    receipt=json.loads((src/"RELEASE_RECEIPT.json").read_text())
+    from validate_release_receipt import validate_template
+    receipt_errors=validate_template(receipt,metrics,src/"HBNF_SP803E_AUX_R3.bin")
+    if receipt_errors: raise ValueError("release receipt template is not source/hash-bound: "+"; ".join(receipt_errors))
+    if receipt.get("status")!="INCOMPLETE": raise ValueError("package receipt must remain INCOMPLETE until installation and durable evidence are verified")
     out.parent.mkdir(parents=True,exist_ok=True)
     if out.exists(): out.unlink()
     with zipfile.ZipFile(out,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
@@ -45,14 +51,21 @@ def build(src,out):
     return {"sha256":sha256(out),"bytes":out.stat().st_size,"files":len(FILES),"launcherMode":"0755"}
 
 def selftest():
-    import tempfile
+    import tempfile, shutil, sys
     with tempfile.TemporaryDirectory() as td:
         root=pathlib.Path(td);src=root/"src";src.mkdir()
         for n in FILES:(src/n).write_text(n+"\n")
         import json,hashlib
         fw=src/"HBNF_SP803E_AUX_R3.bin";fw.write_bytes(b"fixture firmware")
         fw_sha=hashlib.sha256(fw.read_bytes()).hexdigest()
-        (src/"FINAL_METRICS.txt").write_text(f"github_sha={'a'*40}\nfirmware_sha256={fw_sha}\n")
+        metrics=(f"github_sha={'a'*40}\ngithub_run_id=123\ngithub_run_url=https://github.com/example/repo/actions/runs/123\ngithub_ref=refs/heads/test\nworkflow_path=.github/workflows/build.yml\nfirmware_sha256={fw_sha}\nfirmware_bytes={fw.stat().st_size}\ntoolchain_python=3.12\ntoolchain_platformio=6.1.17\ntoolchain_node=20\ntoolchain_pip=pip-24\ninput_wled_commit={'b'*40}\ninput_source_bundle_sha256={'c'*64}\ninput_wled_requirements_sha256={'d'*64}\ninput_aux_patch_sha256={'e'*64}\n")
+        (src/"FINAL_METRICS.txt").write_text(metrics)
+        here=pathlib.Path(__file__).resolve().parent
+        for n in ("RELEASE_RECEIPT.schema.json","RELEASE_RECEIPT.template.json","validate_release_receipt.py","generate_release_receipt.py","test_release_receipt.py"):
+            shutil.copy2(here/n,src/n)
+        sys.path.insert(0,str(here))
+        from generate_release_receipt import generate
+        generate(fw,src/"FINAL_METRICS.txt",src/"RELEASE_RECEIPT.template.json",src/"RELEASE_RECEIPT.json")
         (src/"RELEASE_ADMISSION.json").write_text(json.dumps({"schema":"hbnf-aux-release-admission-v1",
             "status":"REVIEW_ONLY","candidate_source_commit":"a"*40,"candidate_firmware_sha256":fw_sha,
             "installed_firmware_sha256":"1"*64,"rollback_artifact":None,
