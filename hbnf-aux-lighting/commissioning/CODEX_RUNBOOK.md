@@ -3,9 +3,9 @@
 ## Non-negotiable hardware facts
 
 - Underglow is 12V WS2811 and uses SP803E DATA / GPIO16.
-- The installed UV strip is 5V USB.
-- Do not connect the 5V UV strip to the SP803E's 12V VCC output.
-- Do not configure GPIO25/26/27 as UV outputs until a separate verified 5V switching interface exists.
+- Main/rim UV is documented as 12V YGS-Tech 395–405nm; the Short UV load's exact voltage and current remain unresolved.
+- Do not assume the SP803E 12V PWM/VCC path is safe from voltage match alone. Verify each load, driver, supply, fuse, wiring, and fail-dark behavior first.
+- Do not configure GPIO25/26/27 as UV outputs until per-channel load and output mapping and ratings are verified.
 - Matrix firmware must not be reflashed during AUX commissioning.
 
 ## Current commissioning order
@@ -20,7 +20,7 @@
    - Matrix AudioReactive SEND / AUX RECEIVE on UDP 11988
    - AUX receives color/effect/palette but not brightness or segment bounds/options.
 7. Run underglow visual/audio and thermal acceptance.
-8. Keep full AUX database gates closed until a separate 5V UV switching architecture has been installed and physically accepted.
+8. Keep full AUX database gates closed until each UV channel's matching supply/switch path and physical behavior have been verified and accepted.
 
 ## Recovery rules
 
@@ -32,4 +32,4 @@
 
 ## UV boundary
 
-Manufacturer guidance for SP803E direct PWM loads requires the controller supply voltage to match the LED load voltage. The cart presently runs the SP803E/underglow from 12V, while the actual UV strip is 5V USB. Treat direct SP803E PWM control of that UV strip as unsupported in the current wiring. A separate 5V switching solution is required before UV control can be commissioned.
+Manufacturer guidance for SP803E direct PWM loads requires the controller supply voltage to match the LED load voltage. Main/rim UV is documented as 12V, while the Short load remains unresolved. A matching voltage alone does not establish safe current, thermal, boot/restart, channel mapping, or optical behavior. Keep outputs off until each exact path is qualified.

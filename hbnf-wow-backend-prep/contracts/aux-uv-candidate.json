@@ -27,8 +27,8 @@
       "read back exact installed WLED firmware and LED output topology without writing",
       "confirm installed SP803E board revision matches FCC-filed model/manual",
       "bench-confirm onboard NMOS PWM channels remain OFF during power-up/reset and WLED restart",
-      "resolve safe 5V UV load supply path while SP803E and addressable strip remain on 12V",
-      "verify no backfeed or overcurrent if the UV strip uses a separate 5V supply",
+      "verify each UV load voltage/current and its matching supply and switching path",
+      "verify no backfeed or overcurrent between UV rails and the SP803E/controller supply",
       "verify fail-dark PWM output through power-up, reboot, Wi-Fi loss, and WLED restart",
       "measure strip wavelength and irradiance; complete placement/exposure review",
       "bench-check underglow coexistence and current/thermal limits"
@@ -36,6 +36,6 @@
   },
   "controls": ["OFF", "MANUAL", "FOLLOW_MATRIX", "VIBE_REACTIVE"],
   "owner_override": "existing owner control boundary has priority",
-  "integration": "Use aux_uv_policy.py and existing WLED JSON/segment route after segment IDs and physical 5V load path are qualified. No new transport or firmware protocol.",
+  "integration": "Use aux_uv_policy.py and existing WLED JSON/segment route after per-channel ratings and segment IDs are qualified. No new transport or firmware protocol.",
   "fail_safe": "OFF on disabled feature, hardware unavailable, missing configuration, or invalid setpoint"
 }

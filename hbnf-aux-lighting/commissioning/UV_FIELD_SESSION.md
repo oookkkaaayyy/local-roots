@@ -18,9 +18,9 @@ The owner reports that the hardware is assembled and is ready to verify it in pl
 
 With power off and both UV loads disconnected, the owner and operator compare the assembled path with its existing part records and verify in place:
 
-1. The UV strip's input voltage/current and the actual 5V supply rating.
+1. Each UV load's input voltage/current and its matching supply channel rating.
 2. The exact switching module and its isolation, 5V output, 3.3V-compatible control input, total/per-channel current limits, fuse, and wire ratings against the strip load.
-3. That the 5V UV supply is separate from the SP803E's 12V supply, with no path that can backfeed 12V into the strip or 5V into the controller supply.
+3. Whether the channels share or separate supply rails; verify there is no backfeed between any UV rail and the SP803E/controller supply.
 4. The installed SP803E revision, WLED output allocation, and which physical output drives each UV channel. GPIO25/Main and GPIO26/Short with WLED segments 1/2 are source candidates only; the candidate contract currently has no verified segment IDs. Confirm actual mapping from the installed device before binding any profile.
 5. The strip wavelength and placement/exposure review from its existing product record or measurement. Do not energize an unidentified UV source or any exposed UVC source.
 
@@ -33,7 +33,7 @@ The success response reports MQTT QoS 1 broker acceptance only (`deviceReadback:
 - Existing AUX underglow: SP803E, GPIO16, WLED segment 0, 12V WS2811; commissioning current cap is at most 900 mA and its boot default is off.
 - UV candidates in source only: Main GPIO25 / WLED segment 1; Short GPIO26 / WLED segment 2; GPIO27 remains spare. These mappings are not physically verified; Main's documented 12V rating and Short's unresolved rating require per-load matching checks.
 - AUX enable and mixed-load acceptance remain false. Do not change them for this session.
-- Matrix audio is documented as master; AUX receives AudioReactive UDP Sound Sync on port 11988. That synchronizes the existing AUX engine but does not itself provide safe 5V UV switching.
+- Matrix audio is documented as master; AUX receives AudioReactive UDP Sound Sync on port 11988. That synchronizes the existing AUX engine but does not itself provide a safe UV load path.
 
 ## Source-level Matrix audio reuse audit (2026-10-25)
 
@@ -41,13 +41,13 @@ The no-live-HTTP-sample finding does **not** make local rhythm follow infeasible
 
 One narrow source gap remains for safe fail-dark follow: WLED updates private `last_UDPTime` only after a valid UDP packet, but the current exported AudioReactive UMData array does not include that timestamp. The AUX build patch now exports it as UMData index 8 (`UMT_UINT32`), retaining the existing envelope at index 0. The pinned-build workflow runs `test_audio_sync_contract.py` against its exact reconstructed WLED source; this check proves the packet-to-envelope path, timestamp freshness source, existing local UMData consumer, and WLED's one-channel PWM bus implementation. A follow consumer must use a short, wrap-safe age check (fresh sample required) and emit zero immediately once stale. It must reuse the existing local usermod loop and must not add FFT or high-frequency network traffic.
 
-This source proof does not establish output readiness. The current AUX runtime configuration is a single GPIO16 12V WS2811 bus; the 5V UV loads, separate switching driver, GPIO25/26 assignment, and WLED PWM segments 1/2 remain unverified. The default-off hardware profile, `HBNF_UV_ENABLED` gate, AUX commissioning gates, and separate-supply prohibition remain in force. The patched AUX firmware binary compiled successfully twice and was byte-identical (SHA-256 `8dc96962bdbac9eecd93b75f60846193702328a41445a2fba2d88d8c5fd2ad8b`, 1,348,448 bytes); no installable commissioning package with matching rollback was assembled and no firmware was flashed. Before local follow can actuate anything, the existing field session must verify the 5V driver, safe electrical ratings, channel-to-pin/segment mapping, stale-sync fail-dark behavior, and rollback. Until then this is a source-feasibility PASS and physical actuation NOT CHECKED; it is not a commissioned UV feature.
+This source proof does not establish output readiness. The current AUX runtime configuration is a single GPIO16 12V WS2811 bus; the documented 12V Main and unresolved Short load, switching path, GPIO25/26 assignment, and WLED PWM segments 1/2 remain unverified. The default-off hardware profile, `HBNF_UV_ENABLED` gate, and AUX commissioning gates remain in force. The patched AUX firmware binary compiled successfully twice and was byte-identical (SHA-256 `8dc96962bdbac9eecd93b75f60846193702328a41445a2fba2d88d8c5fd2ad8b`, 1,348,448 bytes); no installable commissioning package with matching rollback was assembled and no firmware was flashed. Before local follow can actuate anything, the field session must verify both loads' safe electrical ratings, channel-to-pin/segment mapping, stale-sync fail-dark behavior, and rollback. Until then this is a source-feasibility PASS and physical actuation NOT CHECKED; it is not a commissioned UV feature.
 
 ## One consolidated low-output commissioning session
 
 Only continue after the in-person checks above pass, the UV server profile is bound to the measured hardware and actual output mapping, an exact source-bound package/rollback is retained, and real device readback is available. The checked-in candidate currently satisfies none of the hardware-profile gates and stays preview-only.
 
-1. Confirm both channels OFF at idle and through AUX cold boot/reboot; confirm the separate 12V underglow still works.
+1. Confirm both channels OFF at idle and through AUX cold boot/reboot; confirm the 12V underglow still works.
 2. At the lowest controlled output, test Main alone; verify the physical channel, supply voltage/current/temperature, and device readback. Turn it OFF, confirm readback, then repeat for Short alone.
 3. Check independent slider levels, then Follow Matrix and Follow WOW audio with each channel's own brightness cap.
 4. Interrupt the source/network and verify stale/offline feedback and both UV outputs fail dark. Restore it, confirm fresh readback, and finish with both channels OFF.

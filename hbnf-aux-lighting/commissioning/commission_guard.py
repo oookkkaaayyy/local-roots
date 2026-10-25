@@ -485,7 +485,7 @@ def ensure_field_wifi_profile(matrix_ip,aux_ip,explicit_ssid=None):
     return {"changed":True,"prepared":True,"ssid":candidate,"matrixSsids":matrix_ssids,"auxSsids":after_ssids}
 
 def _local_uv(ip,mode):
-    raise RuntimeError("UV control is intentionally unavailable: the installed UV strip is 5V USB and no verified external switching interface is commissioned.")
+    raise RuntimeError("UV control is intentionally unavailable: per-channel UV load ratings, switching paths, and commissioning evidence are incomplete.")
 
 def _uv_off(ip):
     return None
@@ -569,7 +569,7 @@ def physical_acceptance(args,matrix_ip,aux_ip,history):
             accept_evidence(ev,"cold_boot_verified",{"matrixIp":post["matrix"]["ip"],"auxIp":post["aux"]["ip"],"nextAction":post["nextAction"]});save_evidence(ev,ep)
     underglow_keys=("hardware_wired","power_verified","gpio_verified","current_limit_verified","segments_verified","audio_input_verified","udp_sync_verified","underglow_sync_verified","underglow_thermal_verified")
     ev["underglowPhysicalReady"]=all(ev.get("accepted",{}).get(k) is True for k in underglow_keys)
-    # Full AUX gate intentionally stays closed until a separately verified 5V UV switching architecture exists and its real tests pass.
+    # Full AUX gate intentionally stays closed until both UV channels' exact paths are verified and their real tests pass.
     ev["physicalGateReady"]=False
     ev["readyForGateImport"]=False
     ev["courseFieldReady"]=False

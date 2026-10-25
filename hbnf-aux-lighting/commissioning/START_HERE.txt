@@ -2,7 +2,7 @@ HB NIGHT FLYERS — SP803E / AUX COMMISSIONING
 
 CURRENT SAFE SCOPE
 - Addressable underglow: 12V WS2811 on DATA / IO16.
-- Installed UV strip: 5V USB. It is NOT a 12V load and must remain disconnected from SP803E VCC/PWM until a separate verified 5V switching interface is installed.
+- Main/rim UV is documented as 12V YGS-Tech 395–405nm; Short UV voltage/current remain unresolved. Keep both outputs off until each load and its complete switching path are verified.
 - Matrix is required only when the workflow reaches Matrix→AUX sync. It is NOT required for AUX firmware or underglow-local configuration.
 
 BEFORE THE LAUNCHER
@@ -22,9 +22,9 @@ THE LAUNCHER WILL
 - use a standards-compliant WLED multipart OTA upload;
 - calibrate real underglow color order at low current;
 - configure ONLY the GPIO16 WS2811 underglow bus, with fail-dark boot and <=900 mA commissioning limit;
-- keep GPIO25/26/27 unused while 5V USB UV control is unresolved;
+- keep GPIO25/26/27 unused while per-channel UV ratings and output mapping are unresolved;
 - later require exact Matrix identity before changing Matrix/AUX sync;
 - preserve physical observations in HBNF_AUX_ACCEPTANCE_EVIDENCE.json.
 
 FULL AUX / UV ACCEPTANCE
-The database AUX gate remains closed until the separate 5V UV control architecture is physically implemented and tested. Underglow can be commissioned independently without pretending UV acceptance exists.
+The database AUX gate remains closed until both UV channels' exact electrical paths are physically verified and tested. Underglow can be commissioned independently without pretending UV acceptance exists.
