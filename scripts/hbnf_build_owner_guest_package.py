@@ -36,7 +36,7 @@ def build(
     *,
     package_name: str = PACKAGE,
     manifest_schema: str = "hbnf-cart2-owner-guest-vibe-package-v2",
-    build_marker: str = "hbnf-cart2-owner-control-guest-qr-v1-20261016",
+    build_marker: str = "hbnf-cart2-owner-control-home-r6-20261024",
     scope: str = "controller-only-no-firmware-no-phase2-hardware",
 ) -> tuple[Path, str]:
     source_root = source_root.resolve()
@@ -97,7 +97,7 @@ def main() -> None:
     ap.add_argument("--source-commit", required=True)
     ap.add_argument("--package-name", default=PACKAGE)
     ap.add_argument("--manifest-schema", default="hbnf-cart2-owner-guest-vibe-package-v2")
-    ap.add_argument("--build-marker", default="hbnf-cart2-owner-control-guest-qr-v1-20261016")
+    ap.add_argument("--build-marker", default="hbnf-cart2-owner-control-home-r6-20261024")
     ap.add_argument("--scope", default="controller-only-no-firmware-no-phase2-hardware")
     args = ap.parse_args()
     archive, sha = build(
