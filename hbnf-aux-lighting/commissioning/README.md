@@ -10,6 +10,10 @@ This directory commissions the Rogue Iron cart SP803E safely from stock WLED thr
 - Do not infer that the SP803E PWM outputs are a safe driver for either UV load. Verify each load's actual rating and switching path, including boot/restart OFF behavior, before use.
 - GPIO25/26/27 remain unused until the exact channel mapping and electrical path are verified.
 
+## Owner PWA baseline (separate from AUX firmware)
+
+The latest direct Opal readback recorded for this work is Owner PWA **v1.0.13**, with all 17 served assets matching its saved manifest (GitHub #116 comment 6394889462). The pasted SSH transcript showing v1.0.12 is an older snapshot and is superseded; v1.0.12 is retained as the rollback package, not the current installed version. This PR changes AUX firmware/source and did not change the Owner PWA. Recheck the PWA version only after a later PWA installation or a newer direct runtime readback.
+
 ## Preferred entry point
 
 Double-click `COMMISSION_HBNF_AUX.command`.
