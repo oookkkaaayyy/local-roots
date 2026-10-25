@@ -153,9 +153,16 @@ jobs:
         shell: bash
         env:
           SOURCE_DATE_EPOCH: '1790035200'
+          # WLED enables a shared ~/.buildcache. A cached ELF can carry build-path
+          # debug strings from a different checkout root, changing ESP's embedded
+          # app_elf_sha256 while leaving executable firmware sections unchanged.
+          # Give each clean build an isolated cache so this gate compares fresh
+          # compiler/linker outputs from the same /tmp/wled source path.
+          PLATFORMIO_BUILD_CACHE_DIR: /tmp/hbnf-build-cache-first
         run: |
           set -euo pipefail
           cd /tmp/wled
+          rm -rf /tmp/hbnf-build-cache-first /tmp/hbnf-build-cache-second
           pio run -e hbnf_aux_sp803e_r3 2>&1 | tee /tmp/build-first.log
           mkdir -p /tmp/artifacts
           cp .pio/build/hbnf_aux_sp803e_r3/firmware.bin /tmp/artifacts/HBNF_SP803E_AUX_R3.bin
@@ -174,6 +181,7 @@ jobs:
         shell: bash
         env:
           SOURCE_DATE_EPOCH: '1790035200'
+          PLATFORMIO_BUILD_CACHE_DIR: /tmp/hbnf-build-cache-second
         run: |
           set -euo pipefail
           cd /tmp/wled

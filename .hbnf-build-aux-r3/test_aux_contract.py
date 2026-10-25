@@ -60,3 +60,11 @@ assert contract["aux"]["uv"]["rhythm_follow_effect_id"]==248
 assert contract["aux"]["uv"]["outputs_verified_in_build"] is False
 
 print("HBNF_AUX_V4_FRAME_LOCK_CONTRACT_PASS")
+
+# The workflow's strict binary reproducibility gate must not reuse WLED's
+# cross-checkout ~/.buildcache between the two clean builds.
+workflow=(repo/".github/workflows/hbnf-sp803e-aux-r3-build.yml").read_text()
+cache_paths=re.findall(r"PLATFORMIO_BUILD_CACHE_DIR:\s*(/tmp/hbnf-build-cache-[a-z]+)",workflow)
+assert cache_paths[:2]==["/tmp/hbnf-build-cache-first","/tmp/hbnf-build-cache-second"]
+assert cache_paths[0]!=cache_paths[1]
+print("HBNF_AUX_REPRODUCIBILITY_CACHE_ISOLATION_PASS")
