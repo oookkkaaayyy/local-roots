@@ -138,19 +138,20 @@ try {
 
 const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
 const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");
-assert.match(guestHtml, /Use cellular or another network with internet; HBNF-Cart Wi-Fi is not required/);
+assert.match(guestHtml, /Use these controls over cellular while Guest Mode is on/);
 assert.match(guestHtml, /Skins scoring/);
 assert.match(guestHtml, /Glow scoring/);
-assert.match(guestHtml, /Matrix\/AUX command acknowledgements not confirmed/);
-assert.match(guestJs, /AUX illumination is not verified by this acknowledgement/);
-assert.match(guestJs, /GUEST SERVICE OFFLINE/);
+assert.match(guestHtml, /id="deviceStatus" class="device-status"/);
+assert.match(guestJs, /reported\.confirmed===true/);
+assert.match(guestJs, /matrix==="Responding"&&aux==="Responding"/);
+assert.match(guestJs, /Status unavailable/);
 for (const vibe of ["chill", "groove", "heavy", "psychedelic", "cosmic"]) {
   assert.match(guestHtml, new RegExp(`data-value="${vibe}"`), `Guest page exposes approved ${vibe} name`);
 }
 assert.match(guestHtml, /data-guest-action="vibe_auto" data-vibe-control disabled/);
-assert.match(guestHtml, /Guest Vibes stay disabled until the Cart’s matching Vibe runtime is qualified/);
+assert.match(guestHtml, /data-vibe-control disabled/);
 assert.doesNotMatch(guestHtml, /data-value="(?:mellow|moderate|energetic|peak)"/);
 assert.match(guestJs, /control\.hasAttribute\("data-vibe-control"\)/, "Guest status refresh must never enable an unqualified Vibe action");
-assert.match(guestJs, /Vibe selection is unavailable until the matching Cart runtime is qualified/);
+assert.match(guestJs, /vibeRuntimeReady=!!\(snapshot&&snapshot\.capabilities&&snapshot\.capabilities\.phase2VibeRuntimeV1===true\)/);
 
 console.log("HBNF owner PWA package closure: PASS");
