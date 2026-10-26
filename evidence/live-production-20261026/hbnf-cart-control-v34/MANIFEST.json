@@ -15,4 +15,4 @@
     "deno.json"
   ],
   "purpose": "Exact pre-deployment rollback source; captured from active Supabase function before pairing-expiry deployment."
-}\n
+}
