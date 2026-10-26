@@ -93,4 +93,4 @@ matrix_topology_valid "$matrix_leds" "$matrix_seg0_start" "$matrix_seg0_stop" "$
 echo "PREFLIGHT_OK: Opal/Nginx prerequisites, restrictive WAN input policy, local DNS, certificate, exact Matrix release, device identities, 32x16 Matrix segment, and 22-pixel companion topology are present."
 echo "NGINX_ISOLATION: existing GL.iNet Nginx/global workers/listeners remain untouched; a separate 8443 instance uses a root master only to open the root-only TLS key and a single nobody/nogroup request worker."
 echo "SESSION_STORAGE: persistent /etc parent will be root:nogroup 0710; session, revocation, and request-temp directories will be nobody:nogroup 0700."
-echo "NOT_CHECKED: guest/unpaired-to-WLED isolation, PWA certificate trust and physical iPad behavior. Guest isolation requires an actual negative control test from an unpaired guest client; no marker file is accepted as proof."
+echo "OWNER_ACCEPTED_NETWORK_EXPOSURE: direct unpaired-client WLED isolation was NOT_TESTED and is not an admission gate by owner decision; raw WLED API calls can bypass Owner/Guest UI constraints. PWA certificate trust and physical iPad behavior remain NOT_CHECKED."

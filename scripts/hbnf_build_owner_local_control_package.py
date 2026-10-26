@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.10"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.12"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
 OWNER_HTTP_TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js")
@@ -88,6 +88,11 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         raise ValueError("UV commissioning gates do not match the shared profile")
     if source_base.get("opal_rollback_transport_sha256") != EXPECTED_ROLLBACK:
         raise ValueError("recorded exact Opal rollback identity changed")
+    exposure = source_base.get("owner_accepted_network_exposure") or {}
+    if (exposure.get("owner_accepted") is not True
+        or exposure.get("isolation_test_required_for_admission") is not False
+        or exposure.get("observation_status") != "NOT_TESTED"):
+        raise ValueError("SOURCE_BASE must explicitly record owner-accepted direct WLED network exposure without claiming a test")
     rollback = (root / "rollback.sh").read_text()
     installer = (root / "install.sh").read_text()
     if f"EXPECTED_OLD_TRANSPORT={EXPECTED_ROLLBACK}" not in installer:
@@ -108,6 +113,7 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         "baseCommit": source_base["base_commit"],
         "rollbackTransportSourceCommit": source_base["opal_rollback_transport_source_commit"],
         "rollbackTransportSourcePath": source_base["opal_rollback_transport_source_path"],
+        "ownerAcceptedNetworkExposure": exposure,
         "installedTransportSha256": sha(transport),
         "ownerPwaTransportSha256": sha(owner_http_transport),
         "rollbackTransportSha256": EXPECTED_ROLLBACK,

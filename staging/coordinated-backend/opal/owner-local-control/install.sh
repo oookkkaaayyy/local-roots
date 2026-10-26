@@ -9,7 +9,7 @@ SERVER_CONF=$BASE/nginx-server.conf
 SERVICE=/etc/init.d/hbnf-owner-local-control
 TARGET=/www/mission-control-local/local-transport.js
 OWNER_HTTP_TARGET=/www/mission-control-local/owner-http-transport.js
-BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.10
+BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.12
 EXPECTED_OLD_TRANSPORT=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a
 HOST=cart-control.hbnightflyers.com
 LOG_DIR=/var/log/hbnf-owner-local-control-nginx
@@ -28,9 +28,10 @@ fail(){ echo "INSTALL BLOCKED: $*" >&2; exit 1; }
 [ -f "$TARGET" ] || fail "expected existing Mission Control transport is missing"
 [ ! -e "$OWNER_HTTP_TARGET" ] || fail "Owner PWA HTTP transport target already exists; inspect before proceeding"
 [ -d "$BASE/tls" ] || fail "install the DNS-01 certificate first; do not create or replace it here"
-# This presence check is not evidence. A real unpaired guest-client negative
-# control test remains mandatory in the release admission.
-[ -f "$BASE/owner-network-isolation-verified" ] || fail "legacy isolation prerequisite is absent; a real guest-client negative control test is mandatory and the marker alone is not proof"
+# The owner accepts that unpaired Cart-Wi-Fi clients can call the unauthenticated
+# WLED API directly. This exposure is recorded in SOURCE_BASE/PACKAGE-MANIFEST;
+# it is not represented as tested or blocked. Gateway authentication still
+# applies to requests that use this dedicated service.
 [ ! -e "$BASE/lua" ] || fail "Owner Control Lua files already exist; inspect before install"
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
 (cd "$PKG" && sha256sum -c SHA256SUMS >/dev/null) || fail "package hash verification failed"
@@ -130,4 +131,4 @@ expected=$(grep 'owner-http-transport.js$' "$PKG/SHA256SUMS" | awk '{print $1}')
 
 trap - EXIT HUP INT TERM
 echo "INSTALL_OK: authenticated local Owner Control endpoint installed on isolated Nginx :8443; request worker is nobody. Existing GL.iNet :80/:443 Nginx and Skins relay were not reloaded. Exact rollback: $BACKUP/rollback.sh"
-echo "This does not prove iPad trust, guest isolation, physical output, or AUX illumination; those acceptance checks remain required."
+echo "This does not prove iPad trust, physical output, or AUX illumination; those acceptance checks remain required. Unpaired Cart-Wi-Fi clients retain direct unauthenticated WLED API access by owner-accepted design."

@@ -8,7 +8,7 @@ CURRENT SAFE SCOPE
 BEFORE THE LAUNCHER
 - Put the SP803E on the same current LAN as the Mac.
 - Keep the staged UV module disconnected and unpowered until its combined field session.
-- For a UV output-capable candidate, first use a SECOND, unpaired client on Cart Wi-Fi to confirm `http://<AUX-IP>/json/info` is blocked. The candidate contains effect 248, so the closed Owner/Opal controls do not stop an unpaired LAN client if WLED's direct API is reachable.
+- Owner-accepted exposure: no unpaired-client `/json/info` denial test is required or claimed. Unpaired Cart-Wi-Fi clients can call the unauthenticated WLED API directly, bypassing Owner/Guest PWA visibility and command constraints and potentially setting supported device states/effects. Owner gateway authentication applies only to traffic routed through the gateway.
 - For underglow color calibration, connect only the correctly wired WS2811 underglow when the launcher explicitly asks for the physical test.
 
 THEN
@@ -19,13 +19,13 @@ THEN
 RELEASE STATUS
 - The owner confirms AUX V7 is installed and no later firmware was installed. Its exact image (`HBNF_SP803E_AUX_V7_ROLLBACK.bin`, 1,348,624 bytes, SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`) and recovery manifest are retained in this source tree and the verified continuation bundle. Do not repeat V6 recovery.
 - Every candidate package now includes that V7 image and manifest as rollback. The installer still re-reads AUX identity immediately before mutation and requires candidate-specific release admission. The UV module stays unpowered until the combined field session.
-- The staged output-capable candidate is Actions run `40399701154`, attempt 1, source `4c0962628237b4c6c355d313ab9683414eba9961`; commissioning ZIP SHA-256 `9dd7fb0aeee7506ffe115e5c0f1558b7830aded86f7737152c9d35ef2e8d83e4`, firmware SHA-256 `94afbf7af2dd672952e95978841cf28ff49bb10c6d209fd852fe651c66f7ab29` (1,348,736 bytes). The ZIP, separate pointer, and exact V7 rollback are retained on private branch `hbnf-aux-r3-artifact-run-40399701154-attempt-1`. It is `REVIEW_ONLY`: do not install until fresh same-target V7 preflight passes and an unpaired Cart-Wi-Fi client is confirmed unable to reach WLED `/json/info`.
+- The latest candidate run, exact source, package, firmware, and rollback hashes are recorded in `UV_FIELD_SESSION.md`. Admission remains `REVIEW_ONLY` until fresh same-target V7 preflight passes; direct WLED exposure is owner-accepted, not represented as blocked.
 
 THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);
 - positively identify the AUX and refuse Matrix targets;
 - allow one AUX firmware OTA only when the exact Actions build receipt and V7 rollback package match, a fresh read identifies the owner-confirmed V7 AUX baseline, and the pre-install snapshot is saved; a second attempt for the same candidate is blocked;
-- for UV output-capable firmware, require a same-target, candidate-hash-bound, 30-minute unpaired-client WLED isolation observation before installation; without it, preflight stops at `VERIFY_UV_DIRECT_WLED_NETWORK_GATE`;
+- for UV output-capable firmware, preserve the owner-accepted direct WLED exposure record in the source-bound admission; do not claim a denial test. Fresh target identity, exact V7 rollback, one-attempt control, and receipt remain required;
 - report OTA runtime identity as pending until a complete durable release receipt validates;
 - use a standards-compliant WLED multipart OTA upload;
 - calibrate real underglow color order at low current;
@@ -40,6 +40,4 @@ The build-bound RELEASE_RECEIPT.json is INCOMPLETE. After any future firmware in
 Only exit 0 validates the transaction receipt. The Desktop report is not durable evidence. Never add credentials or secrets. The install-time receipt in the package must match the GitHub Actions run from which the complete ZIP was downloaded; the local package check alone does not prove where a ZIP came from.
 
 FULL AUX / UV ACCEPTANCE
-The database AUX gate, Opal hardware profile, and commissioning gates remain closed until both UV channels' exact electrical paths are physically verified and tested. The output-capable firmware can be installed only after the separate direct-WLED network gate passes; that does not open UV controls. After the unpaired-client probe, record it with:
-  python3 commission_guard.py --phase record-uv-network-gate --aux 192.168.77.11 --package-dir .
-Then rerun preflight. If the direct WLED endpoint returns JSON to the unpaired client, do not install or activate UV; the network boundary needs an approved fix and a new field check. Underglow can be commissioned independently without pretending UV acceptance exists.
+The database AUX gate, Opal hardware profile, and commissioning gates remain closed until both UV channels' exact electrical paths are physically verified and tested. Direct WLED API exposure on shared Wi-Fi is accepted by the owner and is not an installation gate. Preserve fresh V7 identity/rollback and durable receipt checks; do not treat Owner-gateway authentication as protection for direct WLED requests. Underglow can be commissioned independently without opening UV activation.

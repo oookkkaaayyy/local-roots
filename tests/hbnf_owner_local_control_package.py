@@ -34,7 +34,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
             self.assertEqual(archive_a.read_bytes(), archive_b.read_bytes())
             with zipfile.ZipFile(archive_a) as package:
                 names = package.namelist()
-                prefix = "hbnf-owner-local-control-v1.0.10/"
+                prefix = "hbnf-owner-local-control-v1.0.12/"
                 self.assertIn(prefix + "install.sh", names)
                 self.assertIn(prefix + "matrix_topology.sh", names)
                 self.assertIn(prefix + "aux_command_access.lua", names)
@@ -52,6 +52,9 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 self.assertEqual(manifest["rollbackTransportSha256"], EXPECTED_ROLLBACK)
                 self.assertEqual(manifest["rollbackTransportSourceCommit"], manifest["baseCommit"])
                 self.assertEqual(manifest["rollbackTransportSourcePath"], "staging/coordinated-backend/opal/mission-control-local/local-transport.js")
+                self.assertTrue(manifest["ownerAcceptedNetworkExposure"]["owner_accepted"])
+                self.assertEqual(manifest["ownerAcceptedNetworkExposure"]["observation_status"], "NOT_TESTED")
+                self.assertFalse(manifest["ownerAcceptedNetworkExposure"]["isolation_test_required_for_admission"])
                 transport_sha = hashlib.sha256(package.read(prefix + "local-transport.js")).hexdigest()
                 self.assertEqual(manifest["installedTransportSha256"], transport_sha)
                 owner_http_sha = hashlib.sha256(package.read(prefix + "owner-http-transport.js")).hexdigest()

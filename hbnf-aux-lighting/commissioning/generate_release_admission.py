@@ -14,6 +14,18 @@ BASELINE_WITNESS = "registry28-tempo-lock-1d-v7-network-no-starve-uv-follow"
 BASELINE_SOURCE = "e78fc74c9470b0bafaf43ca6a2823f60f1a4b51e"
 BASELINE_RUN_ID = "40276725561"
 BASELINE_ARCHIVE_SHA256 = "1dad4eba787a55eba0febd076477ae85cbc9dd339d94e43231182dbae011c86d"
+OWNER_ACCEPTED_NETWORK_EXPOSURE = {
+    "owner_accepted": True,
+    "decision": "OWNER_ACCEPTED_EXPOSURE",
+    "observation_status": "NOT_TESTED",
+    "isolation_test_required_for_admission": False,
+    "scope": "Unpaired clients on the shared Cart Wi-Fi may access Matrix/AUX WLED JSON HTTP APIs without authentication.",
+    "consequences": [
+        "Raw WLED API requests bypass Owner/Guest PWA visibility and command constraints.",
+        "Clients may directly set supported device state and effects, including firmware-supported UV outputs, subject to device firmware behavior.",
+        "Owner gateway authentication applies only to its HTTPS endpoints and does not protect direct WLED requests."
+    ]
+}
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -114,15 +126,16 @@ def generate(firmware: pathlib.Path, metrics: pathlib.Path, rollback: pathlib.Pa
           "artifact_name":bundle["file"],"artifact_zip_sha256":bundle["sha256"],
           "drive_file_ids":drive_ids or {}}
     fresh_gate="FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED" if artifact else "EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
-    resume=("Before any UV output-capable installation, first record a fresh same-target unpaired-client probe showing WLED /json/info is unreachable; then re-read AUX identity and confirm it still matches this exact rollback. At install time the output-capable firmware profile remains distinct from the closed Owner/Opal/database UV activation gates; do not open activation until the named electrical and physical acceptance passes." if artifact else
+    resume=("Before any UV output-capable installation, perform a fresh same-target AUX identity/readback and confirm the exact owner-confirmed V7 rollback still matches. The owner has accepted the shared-Wi-Fi direct WLED API exposure; no unpaired-client isolation probe is required or claimed. Preserve the one-attempt install limit, exact rollback and durable receipt. Keep Owner/Opal/database UV activation closed until powered electrical and physical acceptance passes." if artifact else
       "Retain and verify the exact installed AUX firmware image, then create a source-bound package containing that image as rollback.")
     return {"schema":"hbnf-aux-release-admission-v1","status":"REVIEW_ONLY",
       "candidate_source_commit":source,"candidate_firmware_sha256":firmware_sha,
       "installed_firmware_sha256":INSTALLED_AUX_SHA256,
       "installed_baseline_evidence":"Exact V7 image, source/run identity, continuation bundle hash, and owner-confirmed current baseline are recorded; fresh target preflight remains required.",
       "rollback_artifact":artifact,"blocker_code":fresh_gate,"resumption_condition":resume,
+      "network_exposure":OWNER_ACCEPTED_NETWORK_EXPOSURE,
       "uv_activation":{"compile_capability":"METRICS_BOUND","owner_opal_database_gates":"CLOSED",
-        "direct_wled_network_isolation":"NOT_CHECKED","physical_uv_acceptance":"NOT_CHECKED"}}
+        "direct_wled_network_isolation":"OWNER_ACCEPTED_NOT_REQUIRED","physical_uv_acceptance":"NOT_CHECKED"}}
 
 def selftest():
     validate_recovery_source(HERE/ROLLBACK_FILE,HERE/ROLLBACK_MANIFEST)
@@ -149,6 +162,10 @@ def selftest():
         candidate_metrics.write_text(f"github_sha={commit}\nfirmware_sha256={sha}\n")
         result=generate(fw,candidate_metrics,HERE/ROLLBACK_FILE,HERE/ROLLBACK_MANIFEST)
         assert result["blocker_code"]=="FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED"
+        assert result["network_exposure"]["owner_accepted"] is True
+        assert result["network_exposure"]["observation_status"]=="NOT_TESTED"
+        assert result["network_exposure"]["isolation_test_required_for_admission"] is False
+        assert result["uv_activation"]["direct_wled_network_isolation"]=="OWNER_ACCEPTED_NOT_REQUIRED"
         assert result["rollback_artifact"]["sha256"]==INSTALLED_AUX_SHA256
         (root/ROLLBACK_FILE).write_bytes((HERE/ROLLBACK_FILE).read_bytes())
         (root/ROLLBACK_MANIFEST).write_bytes((HERE/ROLLBACK_MANIFEST).read_bytes())

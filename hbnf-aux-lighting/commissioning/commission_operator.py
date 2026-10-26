@@ -109,7 +109,12 @@ def verify_package(root:pathlib.Path)->dict:
                 and re.fullmatch(r"[0-9a-f]{64}",str(admission.get("installed_firmware_sha256",""))) is not None
                 and bool(str(admission.get("installed_baseline_evidence","")).strip())
                 and admission.get("uv_activation",{}).get("owner_opal_database_gates")=="CLOSED"
-                and admission.get("uv_activation",{}).get("direct_wled_network_isolation")=="NOT_CHECKED"
+                and admission.get("uv_activation",{}).get("direct_wled_network_isolation")=="OWNER_ACCEPTED_NOT_REQUIRED"
+                and admission.get("network_exposure",{}).get("owner_accepted") is True
+                and admission.get("network_exposure",{}).get("decision")=="OWNER_ACCEPTED_EXPOSURE"
+                and admission.get("network_exposure",{}).get("observation_status")=="NOT_TESTED"
+                and admission.get("network_exposure",{}).get("isolation_test_required_for_admission") is False
+                and len(admission.get("network_exposure",{}).get("consequences",[]))>=2
                 and admission.get("uv_activation",{}).get("physical_uv_acceptance")=="NOT_CHECKED"
                 and rollback_verified
                 and bool(str(admission.get("resumption_condition","")).strip()))

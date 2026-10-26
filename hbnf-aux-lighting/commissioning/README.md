@@ -8,6 +8,7 @@ This directory commissions the Rogue Iron cart SP803E safely from stock WLED thr
 - Underglow: 12V WS2811, DATA on GPIO16.
 - The owner-confirmed physical integration review is PASS. The removable UV module is assembled and staged off-Cart, but disconnected and unpowered. The owner reports the unpowered meter checks complete. Loaded voltage/current, temperature, PWM response, combined-load behavior, and device readback remain for one combined field session. Do not repeat conceptual design review or assembly work.
 - The owner confirms AUX V7 is installed and no later firmware was installed. Its exact recovery image is retained here as `HBNF_SP803E_AUX_V7_ROLLBACK.bin` (1,348,624 bytes; SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`) with `AUX_V7_RECOVERY_MANIFEST.json`, and in the verified continuation bundle. V6 is historical, not the current rollback.
+- **Owner-accepted network exposure:** unpaired clients on shared Cart Wi-Fi may access Matrix/AUX WLED JSON APIs without authentication. Raw API requests bypass Owner/Guest PWA visibility and command limits and may directly set supported WLED states/effects, including firmware-supported UV outputs. The Owner gateway authenticates only traffic sent through its HTTPS endpoints; it does not protect direct WLED access. This exposure has not been probed or blocked, and an isolation test is not a release-admission requirement by owner decision. No router/network changes are included.
 - RIM/Cart and SHORT/Bar are intended for GPIO25 and GPIO26 respectively. Keep outputs and commissioning gates closed until the combined field session records actual operating limits and readbacks.
 
 ## Owner PWA baseline (separate from AUX firmware)
@@ -22,7 +23,7 @@ The launcher:
 1. verifies the frozen package and target identity;
 2. talks to local WLED devices without system/environment HTTP proxies;
 3. saves a WLED configuration/state/preset snapshot before any permitted change (this is not a firmware image or rollback);
-4. allows one AUX-only firmware attempt after the packaged run receipt matches the candidate, the exact V7 rollback is present, and a fresh device read matches the owner-confirmed current V7 release/build witness; output-capable UV candidates also require fresh same-target evidence that an unpaired Cart-Wi-Fi client cannot reach WLED `/json/info`;
+4. allows one AUX-only firmware attempt after the packaged run receipt matches the candidate, the exact V7 rollback is present, and a fresh device read matches the owner-confirmed current V7 release/build witness; the shared-Wi-Fi direct WLED exposure is source-recorded as owner-accepted, not tested or blocked;
 5. allows AUX-only hardware phases when Matrix is offline; firmware OTA requires a separately admitted exact rollback;
 6. calibrates the real WS2811 color order at low current;
 7. applies a one-bus GPIO16 underglow plan with rollback and fail-dark boot;
@@ -46,11 +47,11 @@ Exit 0 means the receipt, candidate, installed-before image, exact rollback, pos
 ## Current baseline and staged output-capable candidate
 
 - **Installed baseline (owner-confirmed):** AUX V7 image `HBNF_SP803E_AUX_V7_ROLLBACK.bin`, 1,348,624 bytes, SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`. This exact image is the firmware rollback; the owner reports that no later firmware has been installed.
-- **Candidate (not installed):** Actions run `40399701154`, attempt 1; source commit `4c0962628237b4c6c355d313ab9683414eba9961`; commissioning ZIP SHA-256 `9dd7fb0aeee7506ffe115e5c0f1558b7830aded86f7737152c9d35ef2e8d83e4` (2,061,469 bytes); firmware SHA-256 `94afbf7af2dd672952e95978841cf28ff49bb10c6d209fd852fe651c66f7ab29` (1,348,736 bytes). The ZIP and external hash pointer are retained together on private branch `hbnf-aux-r3-artifact-run-40399701154-attempt-1`; the package carries the exact V7 rollback image and manifest.
+- **Candidate (not installed):** the latest source-bound Actions package is identified by its exact run, source, package, and firmware hashes in `UV_FIELD_SESSION.md`. The prior run 40399701154 remains historical and is not the current package candidate.
 
-Exact-source compile, clean rebuild, commissioning checks, package verification, and independent ZIP/readback checks passed. Release disposition remains **REVIEW_ONLY** until fresh same-target preflight passes and an unpaired Cart-Wi-Fi client is confirmed unable to reach WLED `/json/info`. Do not install before those gates pass. Opal and database activation remain closed until powered channel and physical acceptance pass. Follow `UV_FIELD_SESSION.md` for the controlled install and receipt steps. The installer’s local settings/state snapshot is not a firmware rollback.
+The current exact-source compile, clean rebuild, commissioning checks, package verification, and independent ZIP/readback results are recorded in `UV_FIELD_SESSION.md`. Release disposition remains **REVIEW_ONLY** until fresh same-target V7 identity/baseline checks and release admission pass. Direct WLED exposure is explicitly owner-accepted; no isolation observation is claimed or required. The exact V7 firmware rollback, install transaction, and durable receipt remain mandatory. Opal/database activation and physical UV acceptance stay closed until powered channel checks pass. Follow `UV_FIELD_SESSION.md` for the current candidate identity and controlled install/receipt steps.
 
-The build workflow adds the retained V7 rollback image and manifest from the exact source commit, verifies both against the recorded V7 identity and hash, and binds them into the candidate package. No expired V6 Actions artifact is needed. Admission is `REVIEW_ONLY` because the network isolation observation and fresh target preflight are field checks, not because the V7 baseline or rollback is missing. Do not use `--no-backup` for a firmware install.
+The build workflow adds the retained V7 rollback image and manifest from the exact source commit, verifies both against the recorded V7 identity and hash, and binds them into the candidate package. No expired V6 Actions artifact is needed. Admission is `REVIEW_ONLY` pending the fresh target preflight and install transaction; the owner-accepted direct WLED exposure is encoded in the source-bound admission. Do not use `--no-backup` for a firmware install.
 
 ## Safety boundary
 

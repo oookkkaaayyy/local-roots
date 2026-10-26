@@ -32,7 +32,12 @@ def build(src,out):
         and re.fullmatch(r"[0-9a-f]{40}",source_sha)
         and admission.get("candidate_source_commit")==source_sha
         and admission.get("candidate_firmware_sha256")==firmware_sha==metrics.get("firmware_sha256")
-        and bool(str(admission.get("resumption_condition","")).strip()))
+        and bool(str(admission.get("resumption_condition","")).strip())
+        and admission.get("network_exposure",{}).get("owner_accepted") is True
+        and admission.get("network_exposure",{}).get("decision")=="OWNER_ACCEPTED_EXPOSURE"
+        and admission.get("network_exposure",{}).get("observation_status")=="NOT_TESTED"
+        and admission.get("network_exposure",{}).get("isolation_test_required_for_admission") is False
+        and admission.get("uv_activation",{}).get("direct_wled_network_isolation")=="OWNER_ACCEPTED_NOT_REQUIRED")
     if not base_valid: raise ValueError("distribution admission is not bound to this exact source and firmware")
     rollback_artifact=admission.get("rollback_artifact")
     names=list(FILES)
@@ -88,7 +93,9 @@ def selftest():
         sys.path.insert(0,str(here))
         from generate_release_receipt import generate
         generate(fw,src/"FINAL_METRICS.txt",src/"RELEASE_RECEIPT.template.json",src/"RELEASE_RECEIPT.json")
-        admission={"schema":"hbnf-aux-release-admission-v1","status":"REVIEW_ONLY","candidate_source_commit":"a"*40,"candidate_firmware_sha256":fw_sha,"installed_firmware_sha256":"1"*64,"rollback_artifact":None,"blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING","resumption_condition":"fixture"}
+        admission={"schema":"hbnf-aux-release-admission-v1","status":"REVIEW_ONLY","candidate_source_commit":"a"*40,"candidate_firmware_sha256":fw_sha,"installed_firmware_sha256":"1"*64,"rollback_artifact":None,"blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING","resumption_condition":"fixture",
+            "network_exposure":{"owner_accepted":True,"decision":"OWNER_ACCEPTED_EXPOSURE","observation_status":"NOT_TESTED","isolation_test_required_for_admission":False}}
+        admission["uv_activation"]={"direct_wled_network_isolation":"OWNER_ACCEPTED_NOT_REQUIRED"}
         (src/"RELEASE_ADMISSION.json").write_text(json.dumps(admission))
         m=build(src,root/"x.zip");assert m["files"]==len(FILES)+1 and m["launcherMode"]=="0755" and not m["rollbackIncluded"]
         # A rollback-bearing bundle is accepted only when exact V7 image and manifest agree.

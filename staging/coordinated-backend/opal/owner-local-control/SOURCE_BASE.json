@@ -1,11 +1,23 @@
 {
-  "schema": "hbnf-owner-local-control-staged-v4",
+  "schema": "hbnf-owner-local-control-staged-v6",
   "repository": "oookkkaaayyy/local-roots",
   "branch": "codex/cart-uv-local-policy-scaffold-20261026",
   "base_commit": "8690ae711767ccfa644e538a169c6c2228272f64",
   "opal_rollback_transport_sha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
   "opal_rollback_transport_source_commit": "8690ae711767ccfa644e538a169c6c2228272f64",
   "opal_rollback_transport_source_path": "staging/coordinated-backend/opal/mission-control-local/local-transport.js",
+  "owner_accepted_network_exposure": {
+    "owner_accepted": true,
+    "observation_status": "NOT_TESTED",
+    "isolation_test_required_for_admission": false,
+    "scope": "Unpaired clients on the shared Cart Wi-Fi may access Matrix/AUX WLED JSON HTTP APIs without authentication.",
+    "consequences": [
+      "Raw WLED API requests bypass Owner/Guest PWA visibility and command constraints.",
+      "Clients may directly set supported device state and effects, including firmware-supported UV outputs, subject to device firmware behavior.",
+      "The Owner gateway's authentication applies only to requests sent through its HTTPS endpoints and does not protect direct WLED requests."
+    ],
+    "access_boundary": "No network or router change is included in this package."
+  },
   "scope": [
     "existing Opal Nginx authenticated local proxy",
     "authenticated local UV routes with fixed segments, AUX readback, and shared default-off hardware-profile/commissioning-gate enforcement",

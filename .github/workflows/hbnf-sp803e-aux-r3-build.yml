@@ -419,7 +419,13 @@ jobs:
                   assert metrics['UV_ACTIVATION_GATES']=='CLOSED'
                   assert metrics['UV_DIRECT_WLED_ACCESS']=='NOT_CHECKED'
                   assert admission.get('uv_activation',{}).get('owner_opal_database_gates')=='CLOSED'
-                  assert admission.get('uv_activation',{}).get('direct_wled_network_isolation')=='NOT_CHECKED'
+                  assert admission.get('uv_activation',{}).get('direct_wled_network_isolation')=='OWNER_ACCEPTED_NOT_REQUIRED'
+                  exposure=admission.get('network_exposure',{})
+                  assert exposure.get('owner_accepted') is True
+                  assert exposure.get('decision')=='OWNER_ACCEPTED_EXPOSURE'
+                  assert exposure.get('observation_status')=='NOT_TESTED'
+                  assert exposure.get('isolation_test_required_for_admission') is False
+                  assert len(exposure.get('consequences',[]))>=2
           print('HBNF_AUX_DISTRIBUTION_MODE_GATE_PASS')
           PY2
 

@@ -1,5 +1,7 @@
 # Include from OpenWrt /etc/nginx/conf.d/hbnf-owner-local.conf only after the
-# DNS-01 certificate is installed and the owner-network isolation gate passes.
+# DNS-01 certificate is installed and existing package admission passes.
+# Owner accepts direct unauthenticated WLED API access from unpaired Cart-Wi-Fi
+# clients; this gateway does not isolate that traffic.
 # This file does not replace existing GL.iNet server blocks.
 lua_shared_dict hbnf_owner_sessions 32k;
 lua_shared_dict hbnf_owner_rate 8k;

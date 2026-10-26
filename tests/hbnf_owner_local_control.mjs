@@ -332,11 +332,15 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   const dedicated = await readFile(new URL("dedicated-nginx.conf.example", root), "utf8");
   const service = await readFile(new URL("hbnf-owner-local-control.init", root), "utf8");
   const sourceBase = JSON.parse(await readFile(new URL("SOURCE_BASE.json", root), "utf8"));
-  assert.match(installer, /owner-network-isolation-verified/);
   assert.match(installer, /EXPECTED_OLD_TRANSPORT=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a/);
-  assert.match(installer, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.10/);
+  assert.match(installer, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.12/);
   assert.equal(sourceBase.opal_rollback_transport_sha256, "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a");
   assert.equal(sourceBase.opal_rollback_transport_source_commit, sourceBase.base_commit);
+  assert.equal(sourceBase.owner_accepted_network_exposure.owner_accepted, true);
+  assert.equal(sourceBase.owner_accepted_network_exposure.observation_status, "NOT_TESTED");
+  assert.equal(sourceBase.owner_accepted_network_exposure.isolation_test_required_for_admission, false);
+  assert.match(sourceBase.owner_accepted_network_exposure.consequences[0], /bypass Owner\/Guest PWA/);
+  assert.doesNotMatch(installer, /owner-network-isolation-verified/);
   const rollbackCapture = installer.slice(installer.indexOf('cp -p "$TARGET" "$BACKUP/local-transport.js"'), installer.indexOf("rollback_now(){"));
   assert.match(rollbackCapture, /backup_transport_sha=\$\(sha256sum "\$BACKUP\/local-transport\.js"/);
   assert.match(rollbackCapture, /\[ "\$backup_transport_sha" = "\$EXPECTED_OLD_TRANSPORT" \]/);
@@ -359,7 +363,8 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(preflight, /worker_uid.*-ne 0/);
   assert.match(preflight, /nobody/);
   assert.doesNotMatch(preflight, /owner-network-isolation-verified/);
-  assert.match(preflight, /guest-lane|guest.*isolation.*external|NOT_CHECKED/i);
+  assert.match(preflight, /OWNER_ACCEPTED_NETWORK_EXPOSURE/);
+  assert.doesNotMatch(preflight, /negative control test from an unpaired guest client/);
   assert.match(installer, /chown "\$worker_uid:\$worker_gid" "\$STATE\/sessions"/);
   assert.match(installer, /STATE=\/etc\/hbnf-local-control-state/);
   assert.match(rollback, /STATE=\/etc\/hbnf-local-control-state/);
@@ -392,7 +397,7 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(rollback, /\$SERVICE" stop/);
   assert.match(rollback, /\$SERVICE" disable/);
   assert.match(rollback, /EXPECTED_ROLLBACK_TRANSPORT_SHA=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a/);
-  assert.match(rollback, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.10/);
+  assert.match(rollback, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.12/);
   for (const name of ["install.sh", "rollback.sh", "preflight.sh", "matrix_topology.sh", "hbnf-owner-local-control.init"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
 });
 
