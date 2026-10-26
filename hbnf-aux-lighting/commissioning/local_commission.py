@@ -79,7 +79,14 @@ def discover(matrix_ip:str,subnet:str|None):
     return sorted(out,key=lambda x:tuple(map(int,x.split("."))))
 
 def _effect_map_ok(e):
-    return isinstance(e,list) and len(e)>=248 and e[220:248]==EFFECTS
+    if not isinstance(e,list) or len(e)<248:
+        return False
+    # On the installed WLED runtime, the effects endpoint decorates these
+    # names with the display marker "Z💡". Strip only that observed prefix
+    # before comparing the contracted effect IDs.
+    names=e[220:248]
+    canonical=[name.removeprefix("Z💡") if isinstance(name,str) else None for name in names]
+    return canonical==EFFECTS
 
 def check_matrix(d):
     s=d.get("state") or {}; i=d.get("info") or {}; e=d.get("effects") or []
@@ -197,6 +204,8 @@ def selftest():
       "cfg":{"if":{"sync":{"send":{"en":True,"grp":1}}},"um":{"AudioReactive":{"sync":{"mode":1,"port":11988}}}}
     }
     assert all(check_matrix(matrix).values())
+    assert _effect_map_ok(["x"]*220+["Z💡"+name for name in EFFECTS])
+    assert not _effect_map_ok(["x"]*220+["wrong" for _ in EFFECTS])
     aux={
       "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":249,"fxFirst":220,"fxLast":247,"uvFollowEffectId":248,"uvFollowRegistered":True,"uvOutputsVerified":0},
                "mainseg":0,"seg":[{"id":0,"sel":True},{"id":1,"sel":False},{"id":2,"sel":False}]},
