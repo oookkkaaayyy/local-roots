@@ -222,8 +222,8 @@ def main() -> None:
         help="exact prior installable ZIP to include as a nested recovery companion")
     parser.add_argument("--rollback-baseline-package-drive-file-id",
         help="approved private-vault identity for an exact baseline ZIP stored outside source control")
-    parser.add_argument("--release-slice", choices=("cart-owner-pwa-ui-v1.0.13",),
-        help="label an owner-approved independent UI slice without claiming scoring acceptance")
+    parser.add_argument("--release-slice", choices=("cart-owner-pwa-ui-v1.0.13", "cart-owner-pwa-uv-v1.0.14"),
+        help="label an independent Owner PWA UI release slice")
     parser.add_argument("--rollback-baseline-owner-pwa-version", default="1.0.8")
     parser.add_argument("--rollback-baseline-manifest", type=Path,
         help="explicit existing installed-tree manifest; defaults to the version-local manifest")
@@ -543,8 +543,12 @@ def main() -> None:
     if args.transaction_id:
         if not re.fullmatch(r"[A-Z0-9][A-Z0-9-]{7,100}", args.transaction_id):
             raise SystemExit("--transaction-id must be a bounded uppercase transaction identifier")
-    if args.release_slice and (version != "1.0.13" or args.review_only or not args.transaction_id):
-        raise SystemExit("The Cart UI release slice requires an installable v1.0.13 package with a transaction identity")
+    expected_slice_version = {
+        "cart-owner-pwa-ui-v1.0.13": "1.0.13",
+        "cart-owner-pwa-uv-v1.0.14": "1.0.14",
+    }
+    if args.release_slice and (version != expected_slice_version[args.release_slice] or args.review_only or not args.transaction_id):
+        raise SystemExit("The selected Owner PWA release slice requires its installable package version and a transaction identity")
 
     package_tools = []
     if args.review_only:
@@ -575,7 +579,9 @@ def main() -> None:
         "releaseDisposition": "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED" if args.review_only else "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
         "releaseSlice": ({
             "id": args.release_slice,
-            "scope": "Owner PWA interface and existing client-side command feedback only; no scoring logic, backend, score data, Matrix projection, or device settings",
+            "scope": ("Owner PWA UV controls and authenticated local gateway requests; no AUX firmware, gateway service, network policy, or scoring changes"
+                if args.release_slice == "cart-owner-pwa-uv-v1.0.14" else
+                "Owner PWA interface and existing client-side command feedback only; no scoring logic, backend, score data, Matrix projection, or device settings"),
             "scoringOrder1": "OPEN_NOT_CLAIMED",
             "T4T5": "UNCHANGED_AND_STILL_REQUIRE_ALL_EXISTING_ACCEPTANCE",
         } if args.release_slice else None),

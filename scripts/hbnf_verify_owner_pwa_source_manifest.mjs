@@ -63,8 +63,8 @@ for (const asset of manifest.assets) {
 assert.equal(manifest.rollbackBaseline.entries, 20, "Expected exact 20-file installed Owner PWA baseline");
 assert.match(manifest.rollbackBaseline.sha256, /^[0-9a-f]{64}$/);
 const rollbackArchive = manifest.rollbackBaseline.packageArchive;
-if (manifest.releaseSlice?.id === "cart-owner-pwa-ui-v1.0.13") {
-  assert.ok(rollbackArchive, "UI release slice requires its exact retained baseline package");
+if (["cart-owner-pwa-ui-v1.0.13", "cart-owner-pwa-uv-v1.0.14"].includes(manifest.releaseSlice?.id)) {
+  assert.ok(rollbackArchive, "Owner PWA release slice requires its exact retained baseline package");
 }
 if (rollbackArchive) {
   assert.equal(rollbackArchive.path, "ROLLBACK_BASELINE.zip");
