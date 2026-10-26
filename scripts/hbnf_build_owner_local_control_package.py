@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.5"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.6"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
 OWNER_HTTP_TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js")
