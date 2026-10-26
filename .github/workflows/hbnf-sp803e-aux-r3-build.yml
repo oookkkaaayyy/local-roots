@@ -478,11 +478,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          test -n "$GH_TOKEN"
           package=/tmp/artifacts/HBNF_SP803E_AUX_R3_COMMISSIONING.zip
           test -s "$package"
           branch="hbnf-aux-r3-artifact-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}"
           temp_repo="$(mktemp -d)"
-          trap 'rm -rf "$temp_repo"' EXIT
+          trap 'git -C "$temp_repo" config --unset-all http.https://github.com/.extraheader 2>/dev/null || true; rm -rf "$temp_repo"' EXIT
           cp "$package" "$temp_repo/HBNF_SP803E_AUX_R3_COMMISSIONING.zip"
           python - "$temp_repo" "$package" <<'PY2'
           import hashlib, json, pathlib, sys, zipfile
@@ -500,11 +501,10 @@ jobs:
           git -C "$temp_repo" add ARTIFACT_POINTER.json HBNF_SP803E_AUX_R3_COMMISSIONING.zip
           git -C "$temp_repo" commit -m "Preserve HBNF AUX run ${GITHUB_RUN_ID} package"
           git -C "$temp_repo" remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
-          export GIT_CONFIG_COUNT=1
-          export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
-          export GIT_CONFIG_VALUE_0="AUTHORIZATION: bearer ${GH_TOKEN}"
+          git -C "$temp_repo" config http.https://github.com/.extraheader "AUTHORIZATION: bearer ${GH_TOKEN}"
           git -C "$temp_repo" push origin "HEAD:refs/heads/${branch}"
-          unset GIT_CONFIG_VALUE_0 GH_TOKEN
+          git -C "$temp_repo" config --unset-all http.https://github.com/.extraheader
+          unset GH_TOKEN
           echo "HBNF_AUX_PACKAGE_PUBLISHED branch=${branch}"
 
       - name: Upload artifacts for other workflow refs
