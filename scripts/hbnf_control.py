@@ -624,6 +624,41 @@ OWNER_PWA_V113_ARTIFACTS={
     "rollback_script":OWNER_PWA_V113_ROLLBACK_SHA256,
 }
 
+# Exact UV-controls PWA successor. The candidate is bound to the direct v1.0.12
+# Opal readback and its full retained rollback package; admission still requires
+# a fresh device preflight immediately before installation.
+OWNER_PWA_V114_PROFILE="owner-uv-v1.0.14"
+OWNER_PWA_V114_TRANSACTION_ID="OWNER-PWA-LOCAL-V114-UV-20261026-01"
+OWNER_PWA_V114_SOURCE_COMMIT="4ea235ffbed9010e657e2d3647434c01fbb64706"
+OWNER_PWA_V114_PACKAGE_SHA256="3eed5d5a9b62e410f7d3df18775b8584c917ccb68820751feea1606c005f8de7"
+OWNER_PWA_V114_PACKAGE_MANIFEST_SHA256="4de166bbcc69eadc2b05aa8d9a27395dcfcb9d1c7362d332c5c1c926d92f74e5"
+OWNER_PWA_V114_PACKAGE_CHECKSUM_SHA256="8e6b0ab0e1aeb254e10d0c7161c8481eb91a36b01b45e3dfa9bcbaf9ff3829ea"
+OWNER_PWA_V114_PAYLOAD_MANIFEST_SHA256="f92f8aeba241abfe09fae3e361021f7639c20b22e684ae09e016a79cd8b861d8"
+OWNER_PWA_V114_BASELINE_MANIFEST_SHA256="054155fdca281f07d377fa1e03b33a127088499c6e97c59082a579587624cf80"
+OWNER_PWA_V114_BASELINE_READBACK_SHA256="a8d9ce270ab6c72492a2165b4ca713f657b5b7214c0f8571fc45782ad7c8f48c"
+OWNER_PWA_V114_BASELINE_PACKAGE_SHA256="a24f480aa5dd9cdfc8fe5c415b277f4605db1c506054b8c9e5918bd03ccf62b6"
+OWNER_PWA_V114_INSTALLER_SHA256="e159420f330e587fab7f7fa8e3c00666ae047c2b76bc74e46dfef9a92ffcdca1"
+OWNER_PWA_V114_ROLLBACK_SHA256="072afb9e057aea85ec1747e337549a699e5f78151e7ce9ebc6598dcccc2361d4"
+OWNER_PWA_V114_ROLLBACK_CHECKSUM_SHA256="a47f3effa4a89d10a4944923a23c402f880efbf8633c8c212f36e691498764db"
+OWNER_PWA_V114_PACKAGE_DIR=ROOT/"staging/coordinated-backend/opal/owner-pwa-local-v1.0.14"
+OWNER_PWA_V114_BASELINE_READBACK=ROOT/"evidence/owner-pwa-v112-tx02-direct-readback-20261024/READONLY_BASELINE.json"
+OWNER_PWA_V114_BASELINE_PACKAGE_DIR=ROOT/"staging/coordinated-backend/opal/owner-pwa-local-v1.0.12-tx02-package"
+OWNER_PWA_V114_PROFILE_CACHE=None
+OWNER_PWA_V114_TARGETS=tuple(OWNER_PWA_TARGETS)+("owner-pwa/hbnf-faded-phosphor.png",)
+OWNER_PWA_V114_NEW_PATHS=("owner-pwa/hbnf-faded-phosphor.png",)
+OWNER_PWA_V114_ARTIFACTS={
+    "candidate_zip":OWNER_PWA_V114_PACKAGE_SHA256,
+    "candidate_manifest":OWNER_PWA_V114_PACKAGE_MANIFEST_SHA256,
+    "candidate_package_checksum":OWNER_PWA_V114_PACKAGE_CHECKSUM_SHA256,
+    "payload_manifest":OWNER_PWA_V114_PAYLOAD_MANIFEST_SHA256,
+    "baseline_manifest":OWNER_PWA_V114_BASELINE_MANIFEST_SHA256,
+    "baseline_readback":OWNER_PWA_V114_BASELINE_READBACK_SHA256,
+    "served_baseline_zip":OWNER_PWA_V114_BASELINE_PACKAGE_SHA256,
+    "installer":OWNER_PWA_V114_INSTALLER_SHA256,
+    "rollback_script":OWNER_PWA_V114_ROLLBACK_SHA256,
+    "rollback_checksum":OWNER_PWA_V114_ROLLBACK_CHECKSUM_SHA256,
+}
+
 def _owner_pwa_v112_profile():
     """Pin the integrated v1.0.12 candidate and exact installed v1.0.11 rollback baseline."""
     global OWNER_PWA_V112_PROFILE_CACHE
@@ -785,6 +820,100 @@ def _owner_pwa_v113_profile():
         "mission_control_hashes":mission,"new_paths":OWNER_PWA_V113_NEW_PATHS}
     return OWNER_PWA_V113_PROFILE_CACHE
 
+def _owner_pwa_v114_profile():
+    """Validate the exact UV-controls v1.0.14 package and v1.0.12 rollback."""
+    global OWNER_PWA_V114_PROFILE_CACHE
+    if OWNER_PWA_V114_PROFILE_CACHE is not None: return OWNER_PWA_V114_PROFILE_CACHE
+    d=OWNER_PWA_V114_PACKAGE_DIR
+    paths={"candidate_zip":d/"hbnf-owner-pwa-local-v1.0.14.zip","package_manifest":d/"PACKAGE.json",
+        "package_checksum":d/"PACKAGE.SHA256","payload_manifest":d/"PAYLOAD.SHA256SUMS",
+        "baseline_manifest":d/"BASELINE.SHA256SUMS","rollback_checksum":d/"ROLLBACK_BASELINE.SHA256",
+        "baseline_package":d/"ROLLBACK_BASELINE.zip","installer":d/"install.sh","rollback_script":d/"rollback.sh",
+        "baseline_readback":OWNER_PWA_V114_BASELINE_READBACK}
+    expected={"candidate_zip":OWNER_PWA_V114_PACKAGE_SHA256,"package_manifest":OWNER_PWA_V114_PACKAGE_MANIFEST_SHA256,
+        "package_checksum":OWNER_PWA_V114_PACKAGE_CHECKSUM_SHA256,"payload_manifest":OWNER_PWA_V114_PAYLOAD_MANIFEST_SHA256,
+        "baseline_manifest":OWNER_PWA_V114_BASELINE_MANIFEST_SHA256,"rollback_checksum":OWNER_PWA_V114_ROLLBACK_CHECKSUM_SHA256,
+        "baseline_package":OWNER_PWA_V114_BASELINE_PACKAGE_SHA256,"installer":OWNER_PWA_V114_INSTALLER_SHA256,
+        "rollback_script":OWNER_PWA_V114_ROLLBACK_SHA256,"baseline_readback":OWNER_PWA_V114_BASELINE_READBACK_SHA256}
+    if any(not p.is_file() or sha256_file(p)!=expected[k] for k,p in paths.items()):
+        raise ValueError("v1.0.14 package or exact v1.0.12 rollback evidence is missing or changed")
+    baseline_zip=OWNER_PWA_V114_BASELINE_PACKAGE_DIR/"hbnf-owner-pwa-local-v1.0.12.zip"
+    if not baseline_zip.is_file() or sha256_file(baseline_zip)!=OWNER_PWA_V114_BASELINE_PACKAGE_SHA256:
+        raise ValueError("exact v1.0.12 rollback ZIP is missing or changed")
+    package=load(paths["package_manifest"]); readback=load(paths["baseline_readback"])
+    with zipfile.ZipFile(paths["candidate_zip"]) as zf:
+        names=zf.namelist()
+        required={"PACKAGE.json","PAYLOAD.SHA256SUMS","BASELINE.SHA256SUMS","ROLLBACK_BASELINE.zip",
+            "ROLLBACK_BASELINE.SHA256","install.sh","rollback.sh"}
+        if len(names)!=len(set(names)) or not required.issubset(names): raise ValueError("v1.0.14 ZIP is incomplete or has duplicate files")
+        for name,key in (("PACKAGE.json","package_manifest"),("PAYLOAD.SHA256SUMS","payload_manifest"),
+            ("BASELINE.SHA256SUMS","baseline_manifest"),("ROLLBACK_BASELINE.SHA256","rollback_checksum"),
+            ("install.sh","installer"),("rollback.sh","rollback_script")):
+            if zf.read(name)!=paths[key].read_bytes(): raise ValueError("v1.0.14 ZIP differs from its pinned "+name)
+        for asset in package.get("assets",[]):
+            if hashlib.sha256(zf.read("owner-pwa/"+asset["path"])).hexdigest()!=asset["sha256"]:
+                raise ValueError("v1.0.14 ZIP payload hash differs from its package manifest: "+asset["path"])
+        if hashlib.sha256(zf.read("ROLLBACK_BASELINE.zip")).hexdigest()!=OWNER_PWA_V114_BASELINE_PACKAGE_SHA256:
+            raise ValueError("v1.0.14 nested rollback is not the exact retained v1.0.12 package")
+    rollback=package.get("rollbackBaseline",{}); companion=rollback.get("packageArchive",{})
+    if (package.get("package")!="hbnf-owner-pwa-local-v1.0.14" or package.get("sourceCommit")!=OWNER_PWA_V114_SOURCE_COMMIT
+        or package.get("transactionId")!=OWNER_PWA_V114_TRANSACTION_ID
+        or package.get("releaseDisposition")!="INSTALLABLE_REQUIRES_EXISTING_ADMISSION"
+        or package.get("releaseSlice",{}).get("id")!="cart-owner-pwa-uv-v1.0.14"
+        or package.get("releaseSlice",{}).get("scoringOrder1")!="OPEN_NOT_CLAIMED"
+        or package.get("releaseSlice",{}).get("T4T5")!="UNCHANGED_AND_STILL_REQUIRE_ALL_EXISTING_ACCEPTANCE"
+        or rollback.get("sha256")!=OWNER_PWA_V114_BASELINE_MANIFEST_SHA256
+        or rollback.get("installedReadback",{}).get("sha256")!=OWNER_PWA_V114_BASELINE_READBACK_SHA256
+        or companion.get("sha256")!=OWNER_PWA_V114_BASELINE_PACKAGE_SHA256
+        or companion.get("sourcePath")!="staging/coordinated-backend/opal/owner-pwa-local-v1.0.12-tx02-package/hbnf-owner-pwa-local-v1.0.12.zip"):
+        raise ValueError("v1.0.14 manifest does not bind the UV source and exact v1.0.12 rollback")
+    if (readback.get("schema")!="hbnf-owner-pwa-live-readback-v1" or readback.get("status")!="PASS"
+        or readback.get("runtime_version")!="1.0.12" or readback.get("source_commit")!="fa51d12e1f4dd96b31223e7e5a9f3221eb7a63be"
+        or readback.get("baseline_manifest_sha256")!=OWNER_PWA_V114_BASELINE_MANIFEST_SHA256
+        or readback.get("baseline_package_sha256")!=OWNER_PWA_V114_BASELINE_PACKAGE_SHA256
+        or readback.get("observed_expected_path_count")!=20 or readback.get("served_payload_hashes_verified") is not True
+        or readback.get("filesystem_completeness")!="REQUIRES_FRESH_INSTALLER_PREFLIGHT"):
+        raise ValueError("v1.0.12 direct readback does not match the pinned installed baseline")
+    baseline={}
+    for line in paths["baseline_manifest"].read_text().splitlines():
+        match=re.fullmatch(r"([a-f0-9]{64})  ([^/]+)",line)
+        if not match or "owner-pwa/"+match.group(2) in baseline: raise ValueError("v1.0.12 baseline manifest is malformed")
+        baseline["owner-pwa/"+match.group(2)]=match.group(1)
+    served=readback.get("installed_sha256_by_path",{}); statuses=readback.get("http_status_by_path",{})
+    if len(baseline)!=20 or served!=baseline or set(statuses)!=set(served) or any(x!=200 for x in statuses.values()):
+        raise ValueError("v1.0.12 direct-readback hashes or HTTP set differ from its exact baseline manifest")
+    mission_raw=readback.get("mission_control",{}).get("sha256_by_path",{})
+    mission_names={".hbnf-package-marker",".hbnf-package-version","index.html","styles.css","app.js","local-transport.js"}
+    if set(mission_raw)!=mission_names: raise ValueError("v1.0.12 readback does not bind all six Mission Control files")
+    mission={"mission-control-local/"+k:v for k,v in mission_raw.items()}
+    filesystem=dict(baseline); filesystem.update(mission)
+    served_with_transport=dict(served); served_with_transport["mission-control-local/local-transport.js"]=mission_raw["local-transport.js"]
+    candidate={}; assets=package.get("assets")
+    if not isinstance(assets,list) or len(assets)!=17: raise ValueError("v1.0.14 must contain exactly 17 Owner PWA assets")
+    for item in assets:
+        if not isinstance(item,dict) or not isinstance(item.get("path"),str) or not re.fullmatch(r"[a-f0-9]{64}",str(item.get("sha256",""))):
+            raise ValueError("v1.0.14 package contains a malformed asset entry")
+        key="owner-pwa/"+item["path"]
+        if key in candidate: raise ValueError("v1.0.14 package contains a duplicate asset path")
+        candidate[key]=item["sha256"]
+    transport="mission-control-local/local-transport.js"
+    if set(candidate)!=(set(OWNER_PWA_V114_TARGETS)-{transport}) or "owner-pwa/hbnf-faded-phosphor.png" not in candidate:
+        raise ValueError("v1.0.14 candidate paths differ from its UV release allowlist")
+    candidate[transport]=mission_raw["local-transport.js"]
+    payload={}
+    for line in paths["payload_manifest"].read_text().splitlines():
+        match=re.fullmatch(r"([a-f0-9]{64})  (owner-pwa/.+)",line)
+        if not match or match.group(2) in payload: raise ValueError("v1.0.14 payload manifest is malformed or duplicated")
+        payload[match.group(2)]=match.group(1)
+    if payload!={k:v for k,v in candidate.items() if k.startswith("owner-pwa/")}:
+        raise ValueError("v1.0.14 payload manifest differs from its exact package assets")
+    OWNER_PWA_V114_PROFILE_CACHE={"artifacts":OWNER_PWA_V114_ARTIFACTS,"targets":OWNER_PWA_V114_TARGETS,
+        "candidate_hashes":candidate,"candidate_commit":OWNER_PWA_V114_SOURCE_COMMIT,
+        "transaction_id":OWNER_PWA_V114_TRANSACTION_ID,"candidate_sha256":OWNER_PWA_V114_PACKAGE_SHA256,
+        "baseline_served_hashes":served_with_transport,"baseline_filesystem_hashes":filesystem,
+        "mission_control_hashes":mission,"new_paths":OWNER_PWA_V114_NEW_PATHS}
+    return OWNER_PWA_V114_PROFILE_CACHE
+
 def _owner_pwa_v109_profile():
     """Validate the exact v1.0.9 package and the recorded v1.0.8 baseline."""
     global OWNER_PWA_V109_PROFILE_CACHE
@@ -915,8 +1044,9 @@ def _owner_pwa_v108_candidate_hashes():
 
 def _owner_pwa_profile(manifest):
     selected=manifest.get("candidate_profile") if isinstance(manifest,dict) else None
-    if selected not in (None,OWNER_PWA_V108_PROFILE,OWNER_PWA_V109_PROFILE,OWNER_PWA_V110_PROFILE,OWNER_PWA_V111_PROFILE,OWNER_PWA_V112_PROFILE,OWNER_PWA_V113_PROFILE):
+    if selected not in (None,OWNER_PWA_V108_PROFILE,OWNER_PWA_V109_PROFILE,OWNER_PWA_V110_PROFILE,OWNER_PWA_V111_PROFILE,OWNER_PWA_V112_PROFILE,OWNER_PWA_V113_PROFILE,OWNER_PWA_V114_PROFILE):
         raise ValueError("unknown Owner PWA candidate profile")
+    if selected==OWNER_PWA_V114_PROFILE: return _owner_pwa_v114_profile()
     if selected==OWNER_PWA_V113_PROFILE: return _owner_pwa_v113_profile()
     if selected==OWNER_PWA_V112_PROFILE: return _owner_pwa_v112_profile()
     if selected==OWNER_PWA_V111_PROFILE: return _owner_pwa_v111_profile()
@@ -1294,6 +1424,11 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
         if manifest.get("candidate_package_sha256")!=OWNER_PWA_V113_PACKAGE_SHA256: errors.append("v1.0.13 package hash differs from the pinned candidate")
         if manifest.get("package_path")!="staging/coordinated-backend/opal/owner-pwa-local-v1.0.13/hbnf-owner-pwa-local-v1.0.13.zip": errors.append("v1.0.13 package path differs from its pinned local artifact")
         if manifest.get("drive_file_id") is not None: errors.append("v1.0.13 admission must use its pinned local ZIP and verified vault readback")
+    elif manifest.get("candidate_profile")==OWNER_PWA_V114_PROFILE:
+        if manifest.get("transaction_id")!=OWNER_PWA_V114_TRANSACTION_ID: errors.append("v1.0.14 transaction identity differs from the exact UV package")
+        if manifest.get("candidate_package_sha256")!=OWNER_PWA_V114_PACKAGE_SHA256: errors.append("v1.0.14 package hash differs from the pinned UV candidate")
+        if manifest.get("package_path")!="staging/coordinated-backend/opal/owner-pwa-local-v1.0.14/hbnf-owner-pwa-local-v1.0.14.zip": errors.append("v1.0.14 package path differs from its pinned local artifact")
+        if manifest.get("drive_file_id") is not None: errors.append("v1.0.14 admission must use its pinned local package")
     elif manifest.get("candidate_profile")==OWNER_PWA_V111_PROFILE:
         if manifest.get("transaction_id")!=OWNER_PWA_V111_TRANSACTION_ID: errors.append("v1.0.11 transaction identity differs from the exact candidate package")
         if manifest.get("candidate_package_sha256")!=OWNER_PWA_V111_PACKAGE_SHA256: errors.append("v1.0.11 candidate package hash differs from the exact reviewed package")
@@ -1331,7 +1466,7 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
         permissions=pre.get("permissions",{})
         if permissions!={"owner_files_regular_no_symlinks":True,"transport_regular_no_symlink":True,"root_install_available":True,"recovery_paths_clear":True}:
             errors.append("live Owner PWA permissions or recovery-path preflight failed")
-        if manifest.get("candidate_profile") in (OWNER_PWA_V109_PROFILE,OWNER_PWA_V110_PROFILE,OWNER_PWA_V111_PROFILE,OWNER_PWA_V112_PROFILE,OWNER_PWA_V113_PROFILE):
+        if manifest.get("candidate_profile") in (OWNER_PWA_V109_PROFILE,OWNER_PWA_V110_PROFILE,OWNER_PWA_V111_PROFILE,OWNER_PWA_V112_PROFILE,OWNER_PWA_V113_PROFILE,OWNER_PWA_V114_PROFILE):
             expected_identity={"model":"GL-SFT1200","board":"glinet,gl-sft1200",
                 "br_lan_mac":OWNER_PWA_RECOVERY_HISTORICAL_MAC,"kernel":"4.14.90",
                 "firmware":"OpenWrt 18.06","firmware_release_id":"OpenWrt",
@@ -1361,6 +1496,13 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
                 "exact_backup_path_clear":True,"same_filesystem":True,"sha256sum_available":True}
             if pre.get("rollback")!=expected_rollback:
                 errors.append("fresh v1.0.13 preflight did not verify the exact v1.0.12 package and rollback prerequisites")
+        elif manifest.get("candidate_profile")==OWNER_PWA_V114_PROFILE:
+            expected_rollback={"baseline_zip_sha256":OWNER_PWA_V114_BASELINE_PACKAGE_SHA256,
+                "baseline_manifest_sha256":OWNER_PWA_V114_BASELINE_MANIFEST_SHA256,
+                "baseline_readback_sha256":OWNER_PWA_V114_BASELINE_READBACK_SHA256,
+                "exact_backup_path_clear":True,"same_filesystem":True,"sha256sum_available":True}
+            if pre.get("rollback")!=expected_rollback:
+                errors.append("fresh v1.0.14 preflight did not verify the exact v1.0.12 baseline and rollback prerequisites")
         elif manifest.get("candidate_profile")==OWNER_PWA_V111_PROFILE:
             expected_rollback={"baseline_zip_sha256":profile["artifacts"]["served_baseline_zip"],
                 "baseline_manifest_sha256":OWNER_PWA_V111_BASELINE_MANIFEST_SHA256,
