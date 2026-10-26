@@ -17,7 +17,7 @@
 
 ## Remaining release gates
 
-The source-level parity gap is closed. The populated/accepted hardware profile and live gateway/network checks remain field gates; profile records and unit tests cannot substitute for them. The Opal package also records unresolved pairing-expiry authority and certificate/split-DNS setup requirements. None is established by the offline package.
+The source-level parity gap is closed. The owner-confirmed physical integration review is PASS; do not repeat it. The pairing-expiry contract is now live: migration `20261026160033_hbnf_cart_device_session_expiry` and Cart control v35 return the authoritative stored expiry after device-session validation. The exact v34 rollback source and v35 live source are retained under `evidence/live-production-20261026/`. Certificate/split-DNS setup and the live gateway/network checks remain separate field/setup items; the hardware profile intentionally remains default-off until powered channel acceptance.
 
 The Opal package also records that unpaired clients on the shared Cart Wi-Fi can reach WLED's unauthenticated API directly. Router/device network controls need a real negative access check on the Cart network; gateway authentication by itself does not block that path. This is separate from V7 recovery and does not invalidate the owner-accepted physical integration PASS.
 

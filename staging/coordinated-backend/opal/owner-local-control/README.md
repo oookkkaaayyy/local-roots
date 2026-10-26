@@ -31,7 +31,7 @@ Read-only inventory confirmed GL-SFT1200/OpenWrt 18.06, Nginx 1.17.7 with TLS/Lu
 
 The live wireless configuration places both active HBNF-Cart radios on the main `lan` bridge; guest SSIDs are disabled. Matrix and AUX share that LAN, where WLED native control APIs are unauthenticated. Therefore unpaired clients on the main Wi-Fi can bypass the Owner gateway. This is a confirmed release blocker. No marker file is accepted as proof of isolation; a safe network isolation design and a negative control test from unpaired clients are still required. Do not install this gateway as a security-complete Owner PWA while that bypass remains.
 
-The deployed v25 pairing verifier returns only `{paired:true}`. The authoritative paired-session expiry schema could not be recovered from repository migrations or available bounded read-only backend access. Enrollment fails closed when `expiresAtEpoch` is unavailable; do not infer expiry from browser input. The verifier/schema correction remains blocked pending the authoritative database contract.
+The deployed Cart control function is v35. Its pairing verifier returns `{paired:true, expiresAtEpoch}` using the expiry stored in `hbnf_internal.cart_device_sessions.expires_at`; the new database function is executable only by `service_role`. The exact pre-deployment function v34 source is retained at `evidence/live-production-20261026/hbnf-cart-control-v34/`, and v35 readback is retained beside it. The endpoint fails closed with 503 if the authoritative expiry cannot be read; it never trusts browser-supplied expiry.
 
 ## TLS and local DNS
 
@@ -45,4 +45,4 @@ Session expiry/revocation files are stored under persistent `/etc/hbnf-local-con
 
 ## Release status
 
-Staged, not installed. Remaining mandatory gates: authoritative server pairing expiry; trusted DNS-01 certificate and split DNS; proven isolation from direct WLED control for every unpaired client; external WAN-denial and runtime config checks; iOS 12 device acceptance; populated hardware profile from the coordinated field checks; and physical Matrix/AUX readback/illumination confirmation. Do not treat host tests or this package as physical acceptance.
+Staged, not installed. The authoritative pairing-expiry contract is deployed and read back. The owner-confirmed physical integration review is PASS; the removable module is assembled but disconnected and unpowered. The separate powered field acceptance still needs low-output voltage/current/temperature readings, live channel/PWM checks, combined-load behavior, Matrix/AUX readback, and confirmation that underglow remains functional. Remaining software/network setup is trusted DNS-01 certificate plus local split DNS, and an effective unpaired-client boundary against direct WLED control; then verify WAN denial, runtime configuration, and iOS 12 behavior. Host checks and source readbacks do not establish those field results or physical illumination.
