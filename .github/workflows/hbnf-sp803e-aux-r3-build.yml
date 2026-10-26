@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 # Rapid tool-driven development can create many tiny commits while a full
@@ -38,6 +38,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Python
         uses: actions/setup-python@v5
@@ -369,6 +371,7 @@ jobs:
             echo LOCAL_SYNC_CONFIGURES_MQTT=NO
             echo SOURCE_DATE_EPOCH=1790035200
             echo github_run_id=$GITHUB_RUN_ID
+            echo github_run_attempt=$GITHUB_RUN_ATTEMPT
             echo github_run_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
             echo github_ref=$GITHUB_REF
             echo github_sha=$GITHUB_SHA
@@ -449,6 +452,11 @@ jobs:
               assert 'HBNF_SP803E_AUX_R3.bin' in z.namelist()
               assert 'HBNF_SP803E_AUX_V6_ROLLBACK.bin' in z.namelist()
               assert 'AUX_V6_RECOVERY_MANIFEST.json' in z.namelist()
+              assert 'ARTIFACT_POINTER.json' in z.namelist()
+              pointer=__import__('json').loads(z.read('ARTIFACT_POINTER.json'))
+              assert str(pointer['run_id'])==__import__('os').environ['GITHUB_RUN_ID']
+              assert pointer['run_attempt']==int(__import__('os').environ['GITHUB_RUN_ATTEMPT'])
+              assert pointer['source_commit']==__import__('os').environ['GITHUB_SHA']
               admission=__import__('json').loads(z.read('RELEASE_ADMISSION.json'))
               assert admission['status']=='REVIEW_ONLY'
               assert admission['blocker_code']=='FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED'
@@ -460,7 +468,44 @@ jobs:
           print('HBNF_AUX_DISTRIBUTION_MODE_GATE_PASS')
           PY2
 
-      - name: Upload artifact
+      - name: Preserve exact commissioning ZIP in a private run branch
+        if: github.ref == 'refs/heads/codex/cart-order2-cumulative-20261024'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          package=/tmp/artifacts/HBNF_SP803E_AUX_R3_COMMISSIONING.zip
+          test -s "$package"
+          branch="hbnf-aux-r3-artifact-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}"
+          temp_repo="$(mktemp -d)"
+          trap 'rm -rf "$temp_repo"' EXIT
+          cp "$package" "$temp_repo/HBNF_SP803E_AUX_R3_COMMISSIONING.zip"
+          python - "$temp_repo" "$package" <<'PY2'
+          import hashlib, json, pathlib, sys, zipfile
+          out=pathlib.Path(sys.argv[1]); package=pathlib.Path(sys.argv[2])
+          with zipfile.ZipFile(package) as archive:
+              pointer=json.loads(archive.read('ARTIFACT_POINTER.json'))
+          pointer['run_attempt']=int(__import__('os').environ['GITHUB_RUN_ATTEMPT'])
+          pointer['package_file']=package.name
+          pointer['package_sha256']=hashlib.sha256(package.read_bytes()).hexdigest()
+          (out/'ARTIFACT_POINTER.json').write_text(json.dumps(pointer,indent=2,sort_keys=True)+'\n')
+          PY2
+          git -C "$temp_repo" init --initial-branch "$branch"
+          git -C "$temp_repo" config user.name "github-actions[bot]"
+          git -C "$temp_repo" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$temp_repo" add ARTIFACT_POINTER.json HBNF_SP803E_AUX_R3_COMMISSIONING.zip
+          git -C "$temp_repo" commit -m "Preserve HBNF AUX run ${GITHUB_RUN_ID} package"
+          git -C "$temp_repo" remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: bearer ${GH_TOKEN}"
+          git -C "$temp_repo" push origin "HEAD:refs/heads/${branch}"
+          unset GIT_CONFIG_VALUE_0 GH_TOKEN
+          echo "HBNF_AUX_PACKAGE_PUBLISHED branch=${branch}"
+
+      - name: Upload artifacts for other workflow refs
+        if: github.ref != 'refs/heads/codex/cart-order2-cumulative-20261024'
         uses: actions/upload-artifact@v4
         with:
           name: HBNF-SP803E-AUX-R3

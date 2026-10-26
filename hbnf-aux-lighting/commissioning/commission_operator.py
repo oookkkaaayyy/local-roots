@@ -7,7 +7,8 @@ state and preset readbacks (not firmware), and emits a machine-readable report.
 Physical/visible mutation remains delegated to the separately guarded tools.
 """
 from __future__ import annotations
-import argparse, hashlib, json, pathlib, re, sys, time, urllib.request
+import argparse, hashlib, json, os, pathlib, re, sys, time, urllib.request
+import zipfile
 
 HERE=pathlib.Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
@@ -27,6 +28,34 @@ def sha256(path:pathlib.Path)->str:
     return h.hexdigest()
 
 
+def verify_artifact_archive(root:pathlib.Path,pointer:dict|None=None)->bool:
+    try:
+        root=pathlib.Path(root).resolve()
+        pointer=pointer or json.loads((root/"ARTIFACT_POINTER.json").read_text())
+        name=pointer.get("package_file")
+        if name!="HBNF_SP803E_AUX_R3_COMMISSIONING.zip":return False
+        archive=root/name
+        if not archive.is_file() or sha256(archive)!=pointer.get("package_sha256"):return False
+        with zipfile.ZipFile(archive) as z:
+            if z.testzip() is not None:return False
+            names=z.namelist()
+            if len(names)!=len(set(names)):return False
+            if not {"HBNF_SP803E_AUX_R3.bin","FINAL_METRICS.txt","RELEASE_RECEIPT.json","ARTIFACT_POINTER.json"}.issubset(names):return False
+            embedded=json.loads(z.read("ARTIFACT_POINTER.json"))
+            outer={k:v for k,v in pointer.items() if k not in ("package_file","package_sha256")}
+            if embedded!=outer:return False
+            for item in names:
+                if pathlib.PurePosixPath(item).name!=item:return False
+                local=root/item
+                if not local.is_file():return False
+                if item=="ARTIFACT_POINTER.json":
+                    local_pointer=json.loads(local.read_text())
+                    if local_pointer!=pointer:return False
+                elif local.read_bytes()!=z.read(item):return False
+        return True
+    except Exception:return False
+
+
 def verify_package(root:pathlib.Path)->dict:
     fw=root/"HBNF_SP803E_AUX_R3.bin"
     metrics=root/"FINAL_METRICS.txt"
@@ -34,7 +63,8 @@ def verify_package(root:pathlib.Path)->dict:
     scenes=root/"WOW_SCENES_V2.json"
     admission_path=root/ADMISSION_FILE
     receipt_path=root/RECEIPT_FILE
-    required=[fw,metrics,contract,scenes,root/"local_commission.py",admission_path,receipt_path,root/"RELEASE_RECEIPT.schema.json",root/"RELEASE_RECEIPT.template.json",root/"validate_release_receipt.py",root/"generate_release_admission.py"]
+    pointer_path=root/"ARTIFACT_POINTER.json"
+    required=[fw,metrics,contract,scenes,root/"local_commission.py",admission_path,receipt_path,pointer_path,root/"RELEASE_RECEIPT.schema.json",root/"RELEASE_RECEIPT.template.json",root/"validate_release_receipt.py",root/"generate_release_admission.py"]
     missing=[p.name for p in required if not p.is_file()]
     if missing: return {"ok":False,"missing":missing}
     got_sha=sha256(fw); got_bytes=fw.stat().st_size
@@ -44,7 +74,17 @@ def verify_package(root:pathlib.Path)->dict:
             k,v=line.split('=',1); kv[k]=v
     con=json.loads(contract.read_text()); sc=json.loads(scenes.read_text())
     template=json.loads(receipt_path.read_text())
+    pointer=json.loads(pointer_path.read_text())
     receipt_errors=receipt_validator.validate_template(template,kv,fw)
+    pointer_matches=(pointer.get("schema")=="hbnf-aux-run-artifact-pointer-v1"
+      and pointer.get("run_id")==kv.get("github_run_id")
+      and str(pointer.get("run_attempt"))==kv.get("github_run_attempt")
+      and pointer.get("run_url")==kv.get("github_run_url")
+      and pointer.get("source_commit")==kv.get("github_sha")
+      and pointer.get("workflow_ref")==kv.get("github_ref")
+      and pointer.get("workflow_path")==kv.get("workflow_path")
+      and pointer.get("firmware_sha256")==got_sha==kv.get("firmware_sha256")
+      and pointer.get("firmware_bytes")==got_bytes==int(kv.get("firmware_bytes","-1")))
     admission={};admission_valid=False;admission_reason="release admission is missing or invalid"
     if admission_path.is_file():
         try:
@@ -82,9 +122,11 @@ def verify_package(root:pathlib.Path)->dict:
       "audioPort":con["sync"].get("audio_port")==11988,
       "releaseAdmissionValid":admission_valid,
       "releaseReceiptTemplateValid":not receipt_errors,
+      "artifactPointerMatchesRunReceipt":pointer_matches,
+      "downloadedArchiveMatchesPointer":verify_artifact_archive(root,pointer),
     }
     return {"ok":all(checks.values()) and not receipt_errors,"checks":checks,"firmwareSha256":got_sha,"firmwareBytes":got_bytes,
-      "releaseReceiptTemplateErrors":receipt_errors,"releaseReceiptStatus":template.get("status"),
+      "releaseReceiptTemplateErrors":receipt_errors,"releaseReceiptStatus":template.get("status"),"artifactPointer":pointer,
       "installAdmissible":False,"releaseAdmission":{"status":admission.get("status"),"reason":admission_reason,
       "resumptionCondition":admission.get("resumption_condition"),
       "rollbackVerified":bool(admission.get("rollback_artifact") and admission_valid),
@@ -99,7 +141,8 @@ def raw_get(ip:str,path:str,timeout=4.0)->bytes:
 def backup(ip:str,out_root:pathlib.Path)->pathlib.Path:
     stamp=time.strftime("%Y%m%d-%H%M%S")
     out=out_root/f"HBNF_AUX_BACKUP_{ip.replace('.','-')}_{stamp}"
-    out.mkdir(parents=True,exist_ok=False)
+    out.mkdir(parents=True,exist_ok=False,mode=0o700)
+    os.chmod(out,0o700)
     manifest={"ip":ip,"created":stamp,"files":{}}
     for path in BACKUP_PATHS:
         name=path.strip('/').replace('/','__') or 'root'
@@ -107,11 +150,47 @@ def backup(ip:str,out_root:pathlib.Path)->pathlib.Path:
         try:
             data=raw_get(ip,path)
             dest.write_bytes(data)
+            os.chmod(dest,0o600)
             manifest["files"][path]={"ok":True,"file":dest.name,"bytes":len(data),"sha256":hashlib.sha256(data).hexdigest()}
         except Exception as e:
             manifest["files"][path]={"ok":False,"error":f"{type(e).__name__}: {e}"}
-    (out/"BACKUP_MANIFEST.json").write_text(json.dumps(manifest,indent=2,sort_keys=True)+"\n")
+    manifest_path=out/"BACKUP_MANIFEST.json"
+    manifest_path.write_text(json.dumps(manifest,indent=2,sort_keys=True)+"\n")
+    os.chmod(manifest_path,0o600)
     return out
+
+
+def install_snapshot_errors(preflight:dict,ip:str)->list[str]:
+    backup_dir=((preflight.get("backups") or {}).get("aux"))
+    if not backup_dir:return ["AUX pre-install snapshot is missing."]
+    root=pathlib.Path(backup_dir).expanduser().resolve()
+    try: manifest=json.loads((root/"BACKUP_MANIFEST.json").read_text())
+    except Exception:return ["AUX pre-install snapshot manifest is missing or unreadable."]
+    errors=[]
+    if manifest.get("ip")!=ip:errors.append("Snapshot belongs to a different AUX address.")
+    files=manifest.get("files") or {}
+    for route in ("/json/cfg","/json/state","/json/info","/presets.json"):
+        entry=files.get(route) or {}
+        if entry.get("ok") is not True:
+            errors.append(f"Snapshot is missing a successful {route} readback.");continue
+        item=(root/str(entry.get("file") or "")).resolve()
+        if item.parent!=root or not item.is_file():
+            errors.append(f"Snapshot file for {route} is missing.");continue
+        if item.stat().st_size!=entry.get("bytes") or sha256(item)!=entry.get("sha256"):
+            errors.append(f"Snapshot file for {route} does not match its manifest.")
+            continue
+        try:
+            payload=json.loads(item.read_text())
+            if not isinstance(payload,dict):raise ValueError("expected object")
+            if route=="/json/cfg" and not {"hw","light"}.issubset(payload):
+                raise ValueError("missing WLED config sections")
+            if route=="/json/state" and not {"on","bri","seg"}.issubset(payload):
+                raise ValueError("missing WLED state fields")
+            if route=="/json/info" and not any(k in payload for k in ("ver","arch","leds")):
+                raise ValueError("missing WLED info fields")
+        except Exception:
+            errors.append(f"Snapshot file for {route} is not a valid WLED JSON response.")
+    return errors
 
 
 def choose_aux(matrix_ip:str,candidates:list[str],inspected:dict)->tuple[str|None,str]:
@@ -169,12 +248,36 @@ def run_preflight(args):
 
 
 def selftest():
-    import tempfile
+    import tempfile, hashlib, json
     with tempfile.TemporaryDirectory() as td:
         root=pathlib.Path(td)
         (root/"HBNF_SP803E_AUX_R3.bin").write_bytes(b'x')
         # Verify negative-path sanity without reproducing frozen firmware bytes.
         assert verify_package(root)["ok"] is False
+        assert install_snapshot_errors({},"192.168.77.11")
+        snap=root/"snapshot";snap.mkdir()
+        files={}
+        for route in ("/json/cfg","/json/state","/json/info","/presets.json"):
+            name=route.strip('/').replace('/','__')
+            target=snap/(name+('.json' if not name.endswith('.json') else ''))
+            payload={"ver":"0.16.1"} if route=="/json/info" else ({"hw":{},"light":{}} if route=="/json/cfg" else ({"on":True,"bri":128,"seg":[]} if route=="/json/state" else {}))
+            target.write_text(json.dumps(payload)+'\n');data=target.read_bytes()
+            files[route]={"ok":True,"file":target.name,"bytes":len(data),"sha256":hashlib.sha256(data).hexdigest()}
+        (snap/"BACKUP_MANIFEST.json").write_text(json.dumps({"ip":"192.168.77.11","files":files}))
+        assert install_snapshot_errors({"backups":{"aux":str(snap)}},"192.168.77.11")==[]
+        target=snap/"json__state.json";target.write_text("{}\n");data=target.read_bytes()
+        files["/json/state"].update(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+        (snap/"BACKUP_MANIFEST.json").write_text(json.dumps({"ip":"192.168.77.11","files":files}))
+        assert install_snapshot_errors({"backups":{"aux":str(snap)}},"192.168.77.11")
+        target.write_text(json.dumps({"on":True,"bri":128,"seg":[]})+'\n');data=target.read_bytes()
+        files["/json/state"].update(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+        (snap/"BACKUP_MANIFEST.json").write_text(json.dumps({"ip":"192.168.77.11","files":files}))
+        target=snap/"json__state.json";target.write_text("not-json\n");data=target.read_bytes()
+        files["/json/state"].update(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+        (snap/"BACKUP_MANIFEST.json").write_text(json.dumps({"ip":"192.168.77.11","files":files}))
+        assert install_snapshot_errors({"backups":{"aux":str(snap)}},"192.168.77.11")
+        (snap/"json__state.json").write_text("tampered\n")
+        assert install_snapshot_errors({"backups":{"aux":str(snap)}},"192.168.77.11")
     fx=["x"]*220+lc.EFFECTS
     exact={"state":{"HBNFAUX":{"release":lc.AUX_RELEASE,"engine":lc.AUX_ENGINE,"buildWitness":lc.AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":249,"fxFirst":220,"fxLast":247,"uvFollowEffectId":248,"uvFollowRegistered":True,"uvOutputsVerified":0}},"info":{"ver":"0.16.1","leds":{"count":40}},"effects":fx,"cfg":{},"pins":{}}
     ip,reason=choose_aux("192.168.1.2",["192.168.1.3"],{"192.168.1.3":exact})

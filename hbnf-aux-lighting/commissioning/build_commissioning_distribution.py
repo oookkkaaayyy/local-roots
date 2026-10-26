@@ -51,6 +51,15 @@ def build(src,out):
     errors=validate_template(receipt,metrics,src/"HBNF_SP803E_AUX_R3.bin")
     if errors: raise ValueError("release receipt template is not source/hash-bound: "+"; ".join(errors))
     if receipt.get("status")!="INCOMPLETE": raise ValueError("package receipt must remain INCOMPLETE until installation and durable evidence are verified")
+    run_id=metrics.get("github_run_id","");run_url=metrics.get("github_run_url","")
+    if not run_id.isdigit() or not run_url.endswith(f"/actions/runs/{run_id}"):
+        raise ValueError("artifact pointer requires the exact Actions run identity")
+    pointer={"schema":"hbnf-aux-run-artifact-pointer-v1","run_id":run_id,
+        "run_attempt":int(metrics.get("github_run_attempt","1")),"run_url":run_url,
+        "source_commit":source_sha,"workflow_ref":metrics.get("github_ref"),"workflow_path":metrics.get("workflow_path"),
+        "firmware_sha256":firmware_sha,"firmware_bytes":(src/"HBNF_SP803E_AUX_R3.bin").stat().st_size}
+    (src/"ARTIFACT_POINTER.json").write_text(json.dumps(pointer,indent=2,sort_keys=True)+"\n")
+    names.append("ARTIFACT_POINTER.json")
     out.parent.mkdir(parents=True,exist_ok=True)
     if out.exists(): out.unlink()
     with zipfile.ZipFile(out,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
@@ -71,7 +80,7 @@ def selftest():
         for n in FILES:(src/n).write_text(n+"\n")
         fw=src/"HBNF_SP803E_AUX_R3.bin";fw.write_bytes(b"fixture firmware")
         fw_sha=hashlib.sha256(fw.read_bytes()).hexdigest()
-        metrics=(f"github_sha={'a'*40}\ngithub_run_id=123\ngithub_run_url=https://github.com/example/repo/actions/runs/123\ngithub_ref=refs/heads/test\nworkflow_path=.github/workflows/build.yml\nfirmware_sha256={fw_sha}\nfirmware_bytes={fw.stat().st_size}\ntoolchain_python=3.12\ntoolchain_platformio=6.1.17\ntoolchain_node=20\ntoolchain_pip=pip-24\ninput_wled_commit={'b'*40}\ninput_source_bundle_sha256={'c'*64}\ninput_wled_requirements_sha256={'d'*64}\ninput_aux_patch_sha256={'e'*64}\n")
+        metrics=(f"github_sha={'a'*40}\ngithub_run_id=123\ngithub_run_attempt=1\ngithub_run_url=https://github.com/example/repo/actions/runs/123\ngithub_ref=refs/heads/test\nworkflow_path=.github/workflows/build.yml\nfirmware_sha256={fw_sha}\nfirmware_bytes={fw.stat().st_size}\ntoolchain_python=3.12\ntoolchain_platformio=6.1.17\ntoolchain_node=20\ntoolchain_pip=pip-24\ninput_wled_commit={'b'*40}\ninput_source_bundle_sha256={'c'*64}\ninput_wled_requirements_sha256={'d'*64}\ninput_aux_patch_sha256={'e'*64}\n")
         (src/"FINAL_METRICS.txt").write_text(metrics)
         here=pathlib.Path(__file__).resolve().parent
         for n in ("RELEASE_RECEIPT.schema.json","RELEASE_RECEIPT.template.json","validate_release_receipt.py","generate_release_receipt.py","generate_release_admission.py","test_release_receipt.py"):
@@ -81,7 +90,7 @@ def selftest():
         generate(fw,src/"FINAL_METRICS.txt",src/"RELEASE_RECEIPT.template.json",src/"RELEASE_RECEIPT.json")
         admission={"schema":"hbnf-aux-release-admission-v1","status":"REVIEW_ONLY","candidate_source_commit":"a"*40,"candidate_firmware_sha256":fw_sha,"installed_firmware_sha256":"1"*64,"rollback_artifact":None,"blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING","resumption_condition":"fixture"}
         (src/"RELEASE_ADMISSION.json").write_text(json.dumps(admission))
-        m=build(src,root/"x.zip");assert m["files"]==len(FILES) and m["launcherMode"]=="0755" and not m["rollbackIncluded"]
+        m=build(src,root/"x.zip");assert m["files"]==len(FILES)+1 and m["launcherMode"]=="0755" and not m["rollbackIncluded"]
         # A rollback-bearing bundle is accepted only when exact image and manifest agree.
         import generate_release_admission as ga
         old=ga.INSTALLED_AUX_SHA256
@@ -92,7 +101,7 @@ def selftest():
             artifact={"file":ga.ROLLBACK_FILE,"bytes":rb.stat().st_size,"sha256":rbsha,"manifest_file":ga.ROLLBACK_MANIFEST,"manifest_sha256":ga.sha256(src/ga.ROLLBACK_MANIFEST),"source_commit":"b"*40,"workflow_run_id":"9","artifact_zip_sha256":"c"*64}
             admission.update({"installed_firmware_sha256":rbsha,"rollback_artifact":artifact,"blocker_code":"FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED"})
             (src/"RELEASE_ADMISSION.json").write_text(json.dumps(admission))
-            m=build(src,root/"with-rollback.zip");assert m["rollbackIncluded"] and m["files"]==len(FILES)+len(ROLLBACK_FILES)
+            m=build(src,root/"with-rollback.zip");assert m["rollbackIncluded"] and m["files"]==len(FILES)+len(ROLLBACK_FILES)+1
             rb.write_bytes(b"tampered")
             try:build(src,root/"must-fail.zip");raise AssertionError("tampered rollback was packaged")
             except ValueError as e:assert "rollback bytes/manifest" in str(e)

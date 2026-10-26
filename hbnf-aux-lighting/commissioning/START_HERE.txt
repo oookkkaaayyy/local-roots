@@ -11,19 +11,19 @@ BEFORE THE LAUNCHER
 - For underglow color calibration, connect only the correctly wired WS2811 underglow when the launcher explicitly asks for the physical test.
 
 THEN
-1. Extract the ZIP completely.
+1. From the signed-in GitHub run, open its private branch named `hbnf-aux-r3-artifact-run-<run ID>-attempt-<attempt>`. Download both `HBNF_SP803E_AUX_R3_COMMISSIONING.zip` and the separate `ARTIFACT_POINTER.json` from that same branch. Extract the ZIP, then replace the extracted `ARTIFACT_POINTER.json` with the separately downloaded pointer. Keep the ZIP beside the extracted files. The launcher checks the pointer's ZIP hash and compares the ZIP contents with the extracted files.
 2. Double-click COMMISSION_HBNF_AUX.command.
 3. The launcher verifies package/target identity and saves WLED configuration/state/preset data. This is NOT a firmware image or rollback.
 
 RELEASE STATUS
-- The build workflow artifact is a source-bound review build. The exact installed AUX V6 image has since been recovered from successful Actions run 36354143870 and hash-verified against its manifest and embedded artifact bytes.
-- The completed candidate package must include that exact V6 rollback image and manifest. It remains REVIEW ONLY until a fresh pre-install AUX identity check and candidate-specific release admission pass. UV stays fail-dark and disconnected until its electrical path and physical acceptance pass.
+- The build workflow creates a source-bound review build. The exact installed AUX V6 image has since been recovered from successful Actions run 36354143870 and hash-verified against its manifest and embedded artifact bytes.
+- The completed candidate package must include that exact V6 rollback image and manifest. Retrieve the ZIP and separate pointer from the run-specific private branch named above; the pointer hash must match the ZIP. The receipt inside the ZIP alone does not prove its origin. It remains REVIEW ONLY until a fresh pre-install AUX identity check and candidate-specific release admission pass. UV stays fail-dark and disconnected until its electrical path and physical acceptance pass.
 - The captured read-only AUX identity still matched V6 during preparation; repeat it immediately before any future installation.
 
 THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);
 - positively identify the AUX and refuse Matrix targets;
-- refuse firmware OTA while RELEASE_ADMISSION.json is REVIEW ONLY;
+- allow one AUX firmware OTA only when the exact Actions build receipt and V6 rollback package match, a fresh read identifies the same installed V6 AUX, and the pre-install snapshot is saved; a second attempt for the same candidate is blocked;
 - report OTA runtime identity as pending until a complete durable release receipt validates;
 - use a standards-compliant WLED multipart OTA upload;
 - calibrate real underglow color order at low current;
@@ -35,7 +35,7 @@ THE LAUNCHER WILL
 RELEASE RECEIPT
 The build-bound RELEASE_RECEIPT.json is INCOMPLETE. After any future firmware install, complete it with actual before/after image readbacks, the exact rollback and its durable readback, install identity/time/operator, outcome, and evidence links. Upload the receipt, download it again byte-for-byte, then run:
   python3 commission_guard.py --phase validate-release-receipt --release-receipt RELEASE_RECEIPT.json
-Only exit 0 validates the transaction receipt. The Desktop report is not durable evidence. Never add credentials or secrets.
+Only exit 0 validates the transaction receipt. The Desktop report is not durable evidence. Never add credentials or secrets. The install-time receipt in the package must match the GitHub Actions run from which the complete ZIP was downloaded; the local package check alone does not prove where a ZIP came from.
 
 FULL AUX / UV ACCEPTANCE
 The database AUX gate remains closed until both UV channels' exact electrical paths are physically verified and tested. Underglow can be commissioned independently without pretending UV acceptance exists.

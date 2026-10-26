@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
   "change_id": "cart-aux-exact-rollback-package-20261025",
-  "summary": "Carry the verified installed AUX V6 image and provenance into a complete candidate package, retrieve it with origin-safe Actions authentication, and admit one OTA attempt only after exact Actions receipt and fresh V6 device identity checks; keep UV fail-dark pending physical/electrical acceptance.",
+  "summary": "Carry the verified installed AUX V6 image and provenance into a complete candidate package, preserve each trusted-branch run package in a private attempt-specific branch when Actions storage is unavailable, and admit one OTA attempt only after matching run receipts, a complete local pre-install snapshot, and fresh V6 device identity checks; keep UV fail-dark pending physical/electrical acceptance.",
   "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
   "impact": {
     "architecture": false,
@@ -13,21 +13,23 @@
   "evidence": {
     "scoped_evidence": {
       "approved_architecture_reference": "Existing HBNF AUX fail-closed commissioning flow and artifact-release golden path; no new controller or release authority.",
-      "affected_subsystem": "AUX source-bound firmware admission metadata, commissioning ZIP, one-time OTA admission, and rollback verification.",
+      "affected_subsystem": "AUX source-bound firmware admission metadata, exact run package preservation, protected local pre-install snapshot, atomic one-time OTA admission, and rollback verification.",
       "rollback_reference": "Revert this source commit; preserve the existing review-only behavior. No live device mutation is included.",
       "evidence_sources": [
         "Indexed private Drive recovery folder 1mZWMyzLIKnSjBTP82-EfGOqktld17X84",
         "Actions run 36354143870, source b76903cf63be497e9ef855c641a12916eff7149f",
+        "Actions run 40261385351 compiled source 5aebbff079624b401beeffddc4d03c0b6d8797b1 and produced firmware c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a; upload was rejected because Actions storage quota is full",
+        "Actions run 40261385351 has no saved artifact; the follow-on build changes package preservation to a private run-and-attempt branch and adds a package pointer with the outer ZIP hash",
         "Fresh read-only AUX /json/info and /json/state response on 2026-10-26",
         "Current HBNF AUX commissioning and release source at 70f9af968ca857650f3340a5465629c99eba061a"
       ],
       "tests": [
-        "python3 -m py_compile hbnf-aux-lighting/commissioning/commission_guard.py",
+        "python3 -m py_compile hbnf-aux-lighting/commissioning/commission_guard.py hbnf-aux-lighting/commissioning/commission_operator.py hbnf-aux-lighting/commissioning/build_commissioning_distribution.py",
         "python3 hbnf-aux-lighting/commissioning/commission_guard.py --selftest",
         "python3 hbnf-aux-lighting/commissioning/generate_release_admission.py --selftest",
         "python3 hbnf-aux-lighting/commissioning/build_commissioning_distribution.py --selftest",
         "python3 hbnf-aux-lighting/commissioning/commission_operator.py --selftest",
-        "python3 hbnf-aux-lighting/commissioning/commission_guard.py --selftest",
+        "python3 hbnf-aux-lighting/commissioning/build_commissioning_distribution.py --selftest",
         "python3 hbnf-aux-lighting/commissioning/test_release_receipt.py",
         "Mocked Actions artifact download: preserve bearer token only on GitHub API origin, strip it on cross-origin redirect, reject HTTP downgrade, and verify artifact and rollback SHA-256"
       ]

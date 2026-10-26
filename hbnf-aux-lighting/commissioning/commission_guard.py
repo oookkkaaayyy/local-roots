@@ -10,8 +10,8 @@ separate evidence gate after real electrical/visual/thermal testing.
 """
 from __future__ import annotations
 
-import argparse, getpass, hashlib, ipaddress, json, pathlib, re, socket, subprocess, sys, time
-import urllib.error, urllib.request, uuid
+import argparse, getpass, hashlib, ipaddress, json, os, pathlib, re, socket, subprocess, sys, time
+import urllib.error, urllib.request, uuid, zipfile
 
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -40,16 +40,28 @@ def _metrics(path):
     return values
 
 def _candidate_actions_receipt(root,package):
-    """Require a complete package from the exact successful Actions artifact path."""
+    """Check embedded run-receipt consistency; authenticated Actions retrieval is external."""
     try:
         root=pathlib.Path(root).resolve()
         metrics=_metrics(root/"FINAL_METRICS.txt")
         receipt=json.loads((root/"RELEASE_RECEIPT.json").read_text())
+        pointer=json.loads((root/"ARTIFACT_POINTER.json").read_text())
         build=receipt.get("build") or {};source=receipt.get("source") or {};candidate=receipt.get("candidate") or {}
         run_id=str(metrics.get("github_run_id") or "")
+        run_attempt=str(metrics.get("github_run_attempt") or "")
         run_url=f"https://github.com/oookkkaaayyy/local-roots/actions/runs/{run_id}"
         return bool(
             run_id.isdigit()
+            and run_attempt.isdigit()
+            and pointer.get("schema")=="hbnf-aux-run-artifact-pointer-v1"
+            and str(pointer.get("run_id"))==run_id
+            and str(pointer.get("run_attempt"))==run_attempt
+            and pointer.get("run_url")==run_url
+            and pointer.get("source_commit")==metrics.get("github_sha")
+            and pointer.get("workflow_ref")==metrics.get("github_ref")==EXPECTED_WORKFLOW_REF
+            and pointer.get("workflow_path")==metrics.get("workflow_path")==EXPECTED_WORKFLOW_PATH
+            and pointer.get("firmware_sha256")==package.get("firmwareSha256")==metrics.get("firmware_sha256")
+            and pointer.get("firmware_bytes")==package.get("firmwareBytes")==int(metrics.get("firmware_bytes","-1"))
             and metrics.get("github_sha")==source.get("commit")==package.get("releaseAdmission",{}).get("candidate_source_commit")
             and metrics.get("github_ref")==EXPECTED_WORKFLOW_REF
             and metrics.get("workflow_path")==EXPECTED_WORKFLOW_PATH
@@ -113,7 +125,7 @@ def require_install_admission(package,package_dir,device=None):
         admission=package.get("releaseAdmission") or {}
         reason=admission.get("reason") or "exact installed-firmware rollback is not verified"
         resume=admission.get("resumptionCondition") or ""
-        raise RuntimeError(f"AUX firmware OTA blocked: exact Actions package verification failed ({reason}). {resume}".strip())
+        raise RuntimeError(f"AUX firmware OTA blocked: package build receipt does not match the expected run ({reason}). {resume}".strip())
     if device is None:
         return None
     if not _installed_v6_baseline(device,package_dir,package):
@@ -233,6 +245,17 @@ def report_path(path):
 def write_report(report,path):
     path.parent.mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(report,indent=2,sort_keys=True)+"\n")
+
+def write_install_admission_once(report,path):
+    """Atomically reserve the sole OTA attempt for this candidate on this account."""
+    path=pathlib.Path(path)
+    path.parent.mkdir(parents=True,exist_ok=True)
+    try:
+        fd=os.open(str(path),os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+    except FileExistsError as e:
+        raise RuntimeError(f"AUX firmware OTA blocked: a transaction record already exists for this exact candidate: {path}") from e
+    with os.fdopen(fd,"w") as stream:
+        json.dump(report,stream,indent=2,sort_keys=True);stream.write("\n");stream.flush();os.fsync(stream.fileno())
 
 def backup_node(ip,root,label):
     out=op.backup(ip,root)
@@ -424,9 +447,11 @@ def pending_release_result(ip,after):
       "receiptValidator":"validate_release_receipt.py","ip":ip,"checks":lc.check_aux(after),
       "note":"Runtime identity alone is not release success. Complete the source-bound receipt, verify exact candidate and rollback readbacks, publish it durably, retrieve it, then validate it."}
 
-def ota_install(ip,fw,timeout=120):
+def ota_install(ip,fw,timeout=120,preflight_result=None):
     package=verified_package_firmware(fw)
     require_install_admission(package,fw.parent)
+    snapshot_errors=op.install_snapshot_errors(preflight_result or {},ip)
+    if snapshot_errors: raise RuntimeError("AUX firmware OTA blocked: "+ " ".join(snapshot_errors))
     before=lc.inspect(ip)
     admission=require_install_admission(package,fw.parent,before)
     if not lc.looks_like_wled(before): raise RuntimeError("Aux target is not a reachable WLED node.")
@@ -437,12 +462,10 @@ def ota_install(ip,fw,timeout=120):
     if "esp32" not in arch: raise RuntimeError(f"Aux target architecture is {arch!r}, not ESP32.")
     if flash_mb!=4: raise RuntimeError(f"Aux target reports {flash_mb} MB flash; expected the verified SP803E 4 MB target.")
     admission_path=pathlib.Path.home()/"Desktop"/f"HBNF_AUX_INSTALL_ADMISSION_{package['firmwareSha256'][:12]}.json"
-    if admission_path.exists():
-        raise RuntimeError(f"AUX firmware OTA blocked: a transaction record already exists for this exact candidate: {admission_path}")
     admission["status"]="STARTED"
     admission["attempt_limit"]=1
     admission["attempts_used"]=1
-    write_report(admission,admission_path)
+    write_install_admission_once(admission,admission_path)
     body,ctype=multipart_firmware(fw)
     req=urllib.request.Request(f"http://{ip}/update",data=body,method="POST",headers={"Content-Type":ctype,"Content-Length":str(len(body))})
     try:
@@ -734,12 +757,14 @@ def require_ready(pf):
 def interactive(args):
     history=[];pf=preflight(args);history.append({"phase":"preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report));print(json.dumps(pf,indent=2,sort_keys=True))
     if pf["nextAction"] in ("PACKAGE_INVALID","POWER_OR_IDENTIFY_AUX","DISAMBIGUATE_AUX","RELEASE_REVIEW_ONLY"): return {"history":history,"current":pf}
+    if pf["nextAction"]=="INSTALL_EXACT_AUX_FIRMWARE" and not args.backup:
+        raise RuntimeError("AUX firmware install requires the pre-install device snapshot; remove --no-backup and rerun.")
     a=require_aux_ready(pf)
     if pf["nextAction"]=="INSTALL_EXACT_AUX_FIRMWARE":
         print(f"\nTarget AUX: {a}. Fresh backups were created. Matrix is not required for this phase.")
         print("This uploads the exact proven AUX firmware and reboots ONLY the identified AUX node.")
         if not prompt_yes("Install exact AUX firmware now?"): return {"history":history,"current":pf}
-        r=ota_install(a,pathlib.Path(args.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin");history.append({"phase":"install-firmware","result":r});pf=preflight(args);history.append({"phase":"post-firmware-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
+        r=ota_install(a,pathlib.Path(args.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin",preflight_result=pf);history.append({"phase":"install-firmware","result":r});pf=preflight(args);history.append({"phase":"post-firmware-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
         return {"history":history,"current":pf,"releaseStatus":r["releaseStatus"],"releaseAccepted":False}
     if pf["nextAction"]=="APPLY_HARDWARE_PLAN":
         print("\nUnderglow config needs the ACTUAL installed WS2811 logical group count. UV stays excluded/disconnected.")
@@ -783,10 +808,15 @@ def selftest():
         shutil.copy2(repo_root/"hbnf-wow-bundle/config/WOW_SCENES_V2.json",package_dir/"WOW_SCENES_V2.json")
         metrics=(f"release={lc.AUX_RELEASE}\nengine={lc.AUX_ENGINE}\nbuild_witness={lc.AUX_WITNESS}\n"
                  f"github_sha={'a'*40}\ngithub_run_id=123\ngithub_run_url=https://github.com/example/repo/actions/runs/123\ngithub_ref=refs/heads/test\nworkflow_path=.github/workflows/build.yml\n"
+                 f"github_run_attempt=1\n"
                  f"toolchain_python=3.12\ntoolchain_platformio=6.1.17\ntoolchain_node=20\ntoolchain_pip=pip-24\n"
                  f"input_wled_commit={'b'*40}\ninput_source_bundle_sha256={'c'*64}\ninput_wled_requirements_sha256={'d'*64}\ninput_aux_patch_sha256={'e'*64}\n"
                  f"firmware_sha256={op.sha256(fw)}\nfirmware_bytes={fw.stat().st_size}\n")
         (package_dir/"FINAL_METRICS.txt").write_text(metrics)
+        (package_dir/"ARTIFACT_POINTER.json").write_text(json.dumps({"schema":"hbnf-aux-run-artifact-pointer-v1","run_id":"123",
+            "run_attempt":1,"run_url":"https://github.com/example/repo/actions/runs/123","source_commit":"a"*40,
+            "workflow_ref":"refs/heads/test","workflow_path":".github/workflows/build.yml",
+            "firmware_sha256":op.sha256(fw),"firmware_bytes":fw.stat().st_size}))
         from generate_release_receipt import generate as generate_receipt
         generate_receipt(fw,package_dir/"FINAL_METRICS.txt",HERE/"RELEASE_RECEIPT.template.json",package_dir/"RELEASE_RECEIPT.json")
         (package_dir/op.ADMISSION_FILE).write_text(json.dumps({"schema":"hbnf-aux-release-admission-v1",
@@ -796,6 +826,13 @@ def selftest():
             "installed_baseline_evidence":"fixture","rollback_artifact":None,
             "blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING",
             "resumption_condition":"Provide exact matching rollback bytes."}))
+        archive_path=package_dir/"HBNF_SP803E_AUX_R3_COMMISSIONING.zip"
+        with zipfile.ZipFile(archive_path,"w",zipfile.ZIP_DEFLATED) as z:
+            for item in package_dir.iterdir():
+                if item.name!=archive_path.name:z.write(item,item.name)
+        pointer=json.loads((package_dir/"ARTIFACT_POINTER.json").read_text())
+        pointer.update(package_file=archive_path.name,package_sha256=op.sha256(archive_path))
+        (package_dir/"ARTIFACT_POINTER.json").write_text(json.dumps(pointer))
         verified=verified_package_firmware(fw)
         assert verified["firmwareSha256"]==op.sha256(fw)
         assert verified["firmwareBytes"]==fw.stat().st_size
@@ -819,12 +856,15 @@ def selftest():
         root=pathlib.Path(td);source="a"*40;run_id="123456789";candidate_sha="b"*64;candidate_bytes=1348784
         run_url=f"https://github.com/oookkkaaayyy/local-roots/actions/runs/{run_id}"
         (root/"FINAL_METRICS.txt").write_text(
-            f"github_sha={source}\ngithub_run_id={run_id}\ngithub_run_url={run_url}\ngithub_ref={EXPECTED_WORKFLOW_REF}\n"
+            f"github_sha={source}\ngithub_run_id={run_id}\ngithub_run_attempt=1\ngithub_run_url={run_url}\ngithub_ref={EXPECTED_WORKFLOW_REF}\n"
             f"workflow_path={EXPECTED_WORKFLOW_PATH}\nfirmware_sha256={candidate_sha}\nfirmware_bytes={candidate_bytes}\n"
             "UV_OUTPUTS_VERIFIED=NO\nUV_COMPILE_GATE_DEFAULT=0\n")
         receipt={"status":"INCOMPLETE","source":{"commit":source},"candidate":{"sha256":candidate_sha,"size":candidate_bytes},
                  "build":{"run_id":run_id,"run_url":run_url,"workflow_ref":EXPECTED_WORKFLOW_REF,"workflow_path":EXPECTED_WORKFLOW_PATH}}
         (root/"RELEASE_RECEIPT.json").write_text(json.dumps(receipt))
+        (root/"ARTIFACT_POINTER.json").write_text(json.dumps({"schema":"hbnf-aux-run-artifact-pointer-v1","run_id":run_id,
+            "run_attempt":1,"run_url":run_url,"source_commit":source,"workflow_ref":EXPECTED_WORKFLOW_REF,
+            "workflow_path":EXPECTED_WORKFLOW_PATH,"firmware_sha256":candidate_sha,"firmware_bytes":candidate_bytes}))
         (root/"AUX_V6_RECOVERY_MANIFEST.json").write_text(json.dumps({"firmware_release":"hbnf-wow-aux-r3-2026-09-22-v1",
             "engine":"aux-r3-wow-1d","build_witness":"registry28-tempo-lock-1d-v6-network-no-starve",
             "firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95","firmware_bytes":1348272}))
@@ -845,6 +885,15 @@ def selftest():
         device["info"]["mac"]=INSTALLED_AUX_MAC
         (root/"FINAL_METRICS.txt").write_text((root/"FINAL_METRICS.txt").read_text().replace("UV_COMPILE_GATE_DEFAULT=0","UV_COMPILE_GATE_DEFAULT=1"))
         assert not _candidate_actions_receipt(root,package)
+    with tempfile.TemporaryDirectory() as td:
+        lock=pathlib.Path(td)/"install.json"
+        payload={"status":"STARTED","attempts_used":1}
+        write_install_admission_once(payload,lock)
+        assert json.loads(lock.read_text())==payload and lock.stat().st_mode & 0o777==0o600
+        try:
+            write_install_admission_once(payload,lock);raise AssertionError("second OTA attempt was not blocked")
+        except RuntimeError as e:
+            assert "already exists" in str(e)
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
     wire_prefix=body[:512]
     assert b"\r\nContent-Disposition" in wire_prefix and b"\\r\\nContent-Disposition" not in wire_prefix
@@ -900,7 +949,8 @@ def main():
     if a.phase in ("preflight","verify"): write_report(pf,rp);print(json.dumps(pf,indent=2,sort_keys=True));return 0 if pf.get("package",{}).get("ok") else 2
     if not a.yes: raise SystemExit("Mutation phase requires --yes, or use --phase interactive.")
     if a.phase=="install-firmware":
-        aip=require_aux_ready(pf);result=ota_install(aip,pathlib.Path(a.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin")
+        if not a.backup: raise SystemExit("Firmware install requires the pre-install device snapshot; remove --no-backup.")
+        aip=require_aux_ready(pf);result=ota_install(aip,pathlib.Path(a.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin",preflight_result=pf)
     elif a.phase=="apply-hardware":
         aip=require_aux_ready(pf)
         if a.pixels is None or a.order is None: raise SystemExit("apply-hardware requires --pixels and --order")
