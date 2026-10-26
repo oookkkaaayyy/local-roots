@@ -58,7 +58,8 @@ assert "class BusPwm" in bus_h and "PinOwner::BusPwm" in bus
 assert contract["aux"]["uv"]["sp803e_pwm_direct_control"] is False
 assert contract["aux"]["uv"]["status"] == "assembled-staged-unpowered"
 assert contract["safety"]["uv_requires_verified_per_channel_pwm_path"] is True
-assert 'verified: false' in uv_command
-assert 'segmentId: null' in uv_command
+assert "return config?.verified === true" in uv_command
+assert "main?.segmentId === UV_POLICY_SPEC.channels.main.segmentId" in uv_command
+assert "short?.segmentId === UV_POLICY_SPEC.channels.short.segmentId" in uv_command
 
 print("HBNF_AUX_LOCAL_AUDIO_FRESHNESS_AND_PWM_SOURCE_PASS")
