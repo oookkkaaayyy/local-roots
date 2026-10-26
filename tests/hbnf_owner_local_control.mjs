@@ -14,7 +14,7 @@ function response(status, value) {
   return { status, ok: status >= 200 && status < 300, json: async () => value };
 }
 
-function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentStatus = 200, applyAuxControl = true } = {}) {
+function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentStatus = 200, applyAuxControl = true, uvPolicyStatus = 503 } = {}) {
   const calls = [];
   const owner = { current: baseState(), auxState: { bri: 255, on: true }, applyAuxControl, applyMatrixControl: true, matrixAvailable: true };
   let currentSessionStatus = sessionStatus;
@@ -31,6 +31,8 @@ function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentSta
     if (parsed.pathname === "/api/session/enroll") return response(enrollmentStatus, enrollmentStatus === 200 ? { enrolled: true, expiresAt: expiry } : { error: "cloud_pair_validation_failed" });
     if (parsed.pathname === "/api/session/revalidate") return response(currentRevalidationStatus, currentRevalidationStatus === 200 ? { authenticated: true, cloudValidated: true, expiresAt: expiry } : { error: "cloud_pairing_revoked" });
     if (parsed.pathname === "/api/session/revoke") return response(200, { revoked: true, scope: "this_opal" });
+    if (parsed.pathname === "/api/aux/uv-status") return response(200, { available: false, uvControlEnabled: false, mutationIssued: false, reason: "local_uv_readiness_unverified" });
+    if (parsed.pathname === "/api/aux/uv-policy") return response(uvPolicyStatus, { error: "local_uv_policy_readiness_unverified", mutationIssued: false });
     if (parsed.pathname === "/api/matrix/json/info") return response(200, { mac: LOCAL_MATRIX_MAC });
     if (parsed.pathname === "/api/matrix/json/state") return owner.matrixAvailable ? response(200, JSON.parse(JSON.stringify(owner.current))) : response(503, { error: "device_unavailable" });
     if (parsed.pathname === "/api/matrix/control") {
@@ -82,6 +84,37 @@ test("paired local status and per-command HTTP writes use only Opal on the WAN-o
   assert.equal(f.calls.some(call => call.path === "/api/matrix/json/state" && call.method === "GET"), true);
   assert.ok(f.calls.every(call => call.url.startsWith(LOCAL_CONTROL_ORIGIN)));
   assert.ok(f.calls.every(call => !call.url.includes(token)));
+});
+
+test("local UV status and policy use the authenticated Opal origin and policy remains fail-closed", async (t) => {
+  const f = fixture();
+  const client = makeClient(f);
+  t.after(() => client.disconnectTransport());
+
+  const status = await client.uvStatus(token);
+  assert.deepEqual(status, {
+    available: false,
+    uvControlEnabled: false,
+    mutationIssued: false,
+    reason: "local_uv_readiness_unverified",
+  });
+  const statusRequest = f.calls.find(call => call.path === "/api/aux/uv-status");
+  assert.ok(statusRequest);
+  assert.equal(statusRequest.url.startsWith(LOCAL_CONTROL_ORIGIN), true);
+  assert.equal(statusRequest.method, "GET");
+  assert.equal(statusRequest.headers["X-HBNF-Device"], token);
+
+  await assert.rejects(
+    client.uvPolicy(token, { mode: "MANUAL", brightnessBySegment: { main: 90, short: 60 } }),
+    error => error.status === 503 && error.data.mutationIssued === false,
+  );
+  const policyRequest = f.calls.find(call => call.path === "/api/aux/uv-policy");
+  assert.ok(policyRequest);
+  assert.equal(policyRequest.url.startsWith(LOCAL_CONTROL_ORIGIN), true);
+  assert.equal(policyRequest.method, "POST");
+  assert.equal(policyRequest.headers["X-HBNF-Device"], token);
+  assert.deepEqual(JSON.parse(policyRequest.body), { mode: "MANUAL", brightnessBySegment: { main: 90, short: 60 } });
+  assert.equal(f.calls.some(call => /supabase|functions\/v1/.test(call.url)), false);
 });
 
 test("id-less and documented legacy palette readbacks get a rollback alias; unknown IDs stay unconfirmed", async (t) => {

@@ -88,6 +88,12 @@ export class LocalOwnerControl {
     });
   }
 
+  async uvStatus(token) {
+    if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV status.");
+    await this.ensureSession(token);
+    return this.request(token, "/api/aux/uv-status");
+  }
+
   async ensureSession(token, expiresAtEpoch) {
     try {
       return await this.request(token, "/api/session");

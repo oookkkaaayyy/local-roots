@@ -11,6 +11,11 @@ local commissioning record, verified hardware profile, fresh AUX identity and
 runtime readback, or accepted isolation from unpaired clients. It has no WLED
 proxy. This shared contract does not claim that the full Deno policy or live
 readiness checks have been ported. Offline UV settings remain saved UI intent.
+The authenticated read-only `/api/aux/uv-status` endpoint reports
+`available:false`, `uvControlEnabled:false`, and `mutationIssued:false` until
+trusted local readiness evidence exists. The Opal-hosted PWA sends both UV
+status and policy requests to this gateway and does not fall back to Supabase
+when the local request fails.
 
 The dedicated Nginx instance listens only on `192.168.77.1:8443`, uses the installed TLS/Lua-enabled Nginx binary, and drops its single request worker to `nobody:nogroup`. The Nginx master remains root only to open its root-only key and supervise the process. The global GL.iNet Nginx, its 80/443 listeners, and the Skins relay are not reloaded or modified.
 

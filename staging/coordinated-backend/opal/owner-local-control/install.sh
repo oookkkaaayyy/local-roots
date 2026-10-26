@@ -81,7 +81,7 @@ mkdir -m 0700 "$STATE/sessions" "$STATE/revoked" "$STATE/tmp" "$STATE/tmp/client
 chown "$worker_uid:$worker_gid" "$STATE/sessions" "$STATE/revoked" "$STATE/tmp" "$STATE/tmp/client_body" "$STATE/tmp/proxy"
 mkdir -m 0700 "$LOG_DIR"
 mkdir -m 0755 "$BASE/lua"
-cp "$PKG/auth.lua" "$PKG/session.lua" "$PKG/enroll.lua" "$PKG/revalidate.lua" "$PKG/revoke.lua" "$PKG/auth_owner.lua" "$PKG/auth_origin.lua" "$PKG/aux_command_access.lua" "$PKG/uv_policy_access.lua" "$PKG/uv_policy_spec.json" "$PKG/matrix_command_access.lua" "$BASE/lua/"
+cp "$PKG/auth.lua" "$PKG/session.lua" "$PKG/enroll.lua" "$PKG/revalidate.lua" "$PKG/revoke.lua" "$PKG/auth_owner.lua" "$PKG/auth_origin.lua" "$PKG/aux_command_access.lua" "$PKG/uv_policy_access.lua" "$PKG/uv_status_access.lua" "$PKG/uv_policy_spec.json" "$PKG/matrix_command_access.lua" "$BASE/lua/"
 cp "$PKG/dedicated-nginx.conf.example" "$CONF"
 cp "$PKG/nginx.conf.example" "$SERVER_CONF"
 cp "$PKG/hbnf-owner-local-control.init" "$SERVICE"

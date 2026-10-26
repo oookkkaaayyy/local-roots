@@ -42,6 +42,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 self.assertIn(prefix + "owner-http-transport.js", names)
                 self.assertIn(prefix + "matrix_command_access.lua", names)
                 self.assertIn(prefix + "uv_policy_access.lua", names)
+                self.assertIn(prefix + "uv_status_access.lua", names)
                 self.assertIn(prefix + "uv_policy_spec.json", names)
                 manifest = json.loads(package.read(prefix + "PACKAGE-MANIFEST.json"))
                 self.assertEqual(manifest["sourceCommit"], source)

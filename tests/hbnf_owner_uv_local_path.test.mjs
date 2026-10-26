@@ -10,13 +10,27 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   const localClient = await source("../hbnf-final-controller/hbnf-cart-local.mjs");
   const localAcl = await source("../staging/coordinated-backend/opal/owner-local-control/aux_command_access.lua");
   const localUv = await source("../staging/coordinated-backend/opal/owner-local-control/uv_policy_access.lua");
+  const localUvStatus = await source("../staging/coordinated-backend/opal/owner-local-control/uv_status_access.lua");
   const nginx = await source("../staging/coordinated-backend/opal/owner-local-control/nginx.conf.example");
   const cartFeatures = await source("../hbnf-final-controller/hbnf-cart-features.mjs");
+  const packageBuilder = await source("../scripts/hbnf_build_owner_local_control_package.py");
+  const installer = await source("../staging/coordinated-backend/opal/owner-local-control/install.sh");
 
   assert.match(cart, /const OPAL_LOCAL_COMMANDS = new Set\(\["OFF", "ON", "SCENE", "VIBE", "VIBE_AUTO", "PALETTE", "OVERLAY_START", "OVERLAY_CLEAR"\]\)/);
   assert.match(cart, /if \(OPAL_LOCAL_PWA && body\.action === "status"\)/);
   assert.match(cart, /if \(OPAL_LOCAL_PWA && body\.action === "command"\)/);
+  assert.match(cart, /if \(OPAL_LOCAL_PWA && body\.action === "uv_status"\)\s*\{\s*return localOwnerControl\.uvStatus\(deviceToken\(\)\);\s*\}/);
+  assert.match(cart, /if \(OPAL_LOCAL_PWA && body\.action === "uv_policy"\)\s*\{\s*return localOwnerControl\.uvPolicy\(deviceToken\(\), body\);\s*\}/);
   assert.match(cart, /const result = await callCloud\(cloudBody\)/);
+  const localUvRouting = cart.match(/async function call\(body\) \{([\s\S]*?)\n\}\n\nfunction revalidateLocalPairOnline/)?.[1] || "";
+  const route = new Function("OPAL_LOCAL_PWA", "localOwnerControl", "deviceToken", "callCloud", `return async body => {${localUvRouting}}`)(
+    true,
+    { uvStatus: async () => ({ local: true }), uvPolicy: async () => { throw new Error("local gateway unavailable"); } },
+    () => "a".repeat(64),
+    async () => { throw new Error("cloud fallback must not run"); },
+  );
+  assert.deepEqual(await route({ action: "uv_status" }), { local: true });
+  await assert.rejects(route({ action: "uv_policy" }), /local gateway unavailable/);
   assert.match(cartFeatures, /canonicalRead\("uv_status"\)/);
   assert.match(cartFeatures, /canonicalRead\("uv_policy"/);
 
@@ -24,12 +38,24 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   assert.deepEqual([...new Set(acceptedKeys)].sort(), ["bri", "on"]);
   assert.match(nginx, /location = \/api\/aux\/control[\s\S]*?aux_command_access\.lua[\s\S]*?proxy_pass http:\/\/192\.168\.77\.11\/json\/state/);
   assert.match(localClient, /async uvPolicy\(token, request = \{\}\)/);
+  assert.match(localClient, /async uvStatus\(token\)[\s\S]*?request\(token, "\/api\/aux\/uv-status"\)/);
   assert.match(nginx, /location = \/api\/aux\/uv-policy[\s\S]*?auth_owner\.lua[\s\S]*?uv_policy_access\.lua/);
   const uvLocation = nginx.match(/location = \/api\/aux\/uv-policy \{([\s\S]*?)\n    \}/)?.[1] || "";
   assert.doesNotMatch(uvLocation, /proxy_pass/);
   assert.match(localUv, /local_uv_policy_readiness_unverified/);
   assert.match(localUv, /mutationIssued = false/);
   assert.match(localUv, /if auth\.owner_access\(false\) ~= true then return end/);
+  assert.match(nginx, /location = \/api\/aux\/uv-status[\s\S]*?auth_owner\.lua[\s\S]*?uv_status_access\.lua/);
+  const uvStatusLocation = nginx.match(/location = \/api\/aux\/uv-status \{([\s\S]*?)\n    \}/)?.[1] || "";
+  assert.doesNotMatch(uvStatusLocation, /proxy_pass/);
+  assert.match(localUvStatus, /available = false/);
+  assert.match(localUvStatus, /uvControlEnabled = false/);
+  assert.match(localUvStatus, /mutationIssued = false/);
+  assert.match(localUvStatus, /local_uv_readiness_unverified/);
+  assert.match(localUvStatus, /return ngx\.exit\(200\)/);
+  assert.doesNotMatch(localUvStatus, /proxy_pass|publish|wled/i);
+  assert.match(installer, /"\$PKG\/uv_status_access\.lua"/);
+  assert.match(packageBuilder, /"uv_status_access\.lua"/);
 });
 
 test("current UV profile fails closed and never publishes manual brightness", async () => {

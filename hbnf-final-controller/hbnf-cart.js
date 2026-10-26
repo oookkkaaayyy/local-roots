@@ -262,6 +262,14 @@ function hydrateLocalControls(state) {
 }
 
 async function call(body) {
+  // The Opal-hosted Owner PWA must keep UV traffic on its authenticated local
+  // gateway. A local failure is surfaced to the UI; UV never falls back to WAN.
+  if (OPAL_LOCAL_PWA && body.action === "uv_status") {
+    return localOwnerControl.uvStatus(deviceToken());
+  }
+  if (OPAL_LOCAL_PWA && body.action === "uv_policy") {
+    return localOwnerControl.uvPolicy(deviceToken(), body);
+  }
   if (OPAL_LOCAL_PWA && body.action === "status") {
     localPathStatus = "checking";
     try {

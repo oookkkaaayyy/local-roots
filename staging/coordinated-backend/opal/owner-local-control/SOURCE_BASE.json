@@ -6,6 +6,7 @@
   "opal_rollback_transport_sha256": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
   "scope": [
     "existing Opal Nginx authenticated local proxy",
+    "authenticated fail-closed local UV status and policy routes",
     "separate per-command HTTPS transport for the existing Owner PWA",
     "no firmware, backend deployment, scoring, or live router changes"
   ]
