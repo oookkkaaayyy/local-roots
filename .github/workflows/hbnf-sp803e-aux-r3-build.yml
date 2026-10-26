@@ -501,7 +501,10 @@ jobs:
           git -C "$temp_repo" add ARTIFACT_POINTER.json HBNF_SP803E_AUX_R3_COMMISSIONING.zip
           git -C "$temp_repo" commit -m "Preserve HBNF AUX run ${GITHUB_RUN_ID} package"
           git -C "$temp_repo" remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
-          git -C "$temp_repo" config http.https://github.com/.extraheader "AUTHORIZATION: bearer ${GH_TOKEN}"
+          auth_b64="$(python -c 'import base64,os; print(base64.b64encode(("x-access-token:"+os.environ["GH_TOKEN"]).encode()).decode())')"
+          echo "::add-mask::${auth_b64}"
+          git -C "$temp_repo" config http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_b64}"
+          unset auth_b64
           git -C "$temp_repo" push origin "HEAD:refs/heads/${branch}"
           git -C "$temp_repo" config --unset-all http.https://github.com/.extraheader
           unset GH_TOKEN
