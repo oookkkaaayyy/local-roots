@@ -1,0 +1,31 @@
+{
+  "artifact_type": "exact installed AUX firmware recovery image",
+  "captured_at": "2026-10-25",
+  "device_identity": "SP803E AUX; installed identity from recorded read-only device readback and Sep 27 handoff",
+  "firmware_release": "hbnf-wow-aux-r3-2026-09-22-v1",
+  "engine": "aux-r3-wow-1d",
+  "build_witness": "registry28-tempo-lock-1d-v6-network-no-starve",
+  "firmware_file": "HBNF_SP803E_AUX_V6_INSTALLED.bin",
+  "firmware_bytes": 1348272,
+  "firmware_sha256": "152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95",
+  "provenance": {
+    "repository": "oookkkaaayyy/local-roots",
+    "workflow": ".github/workflows/hbnf-sp803e-aux-r3-build.yml",
+    "source_commit": "b76903cf63be497e9ef855c641a12916eff7149f",
+    "workflow_run_id": 36354143870,
+    "run_url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/36354143870",
+    "run_result": "success",
+    "artifact_id": 10943550935,
+    "artifact_name": "HBNF-SP803E-AUX-R3",
+    "github_artifact_zip_sha256": "9730f03419cb498d9c494da7723a54f5212edb1e8a612a7fc51a7463b0dd6be0",
+    "artifact_embedded_metrics_match_installed_identity": true
+  },
+  "verification": {
+    "downloaded_github_artifact_sha256_matches_github_digest": true,
+    "zip_integrity_passed": true,
+    "embedded_firmware_hash_matches_recorded_installed_hash": true,
+    "embedded_source_commit_matches_workflow_run_head": true,
+    "embedded_build_witness_matches_recorded_installed_witness": true
+  },
+  "disposition": "Exact firmware image recovered and hash-matched to recorded installed V6 identity. Preserved for rollback/recovery. No device operation or firmware installation was performed by this backup task. Keep fail-dark UV output state until separate physical/electrical acceptance and authorized rollout."
+}
