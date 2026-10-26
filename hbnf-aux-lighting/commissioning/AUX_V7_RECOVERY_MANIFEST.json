@@ -1,0 +1,29 @@
+{
+  "schema": "hbnf-aux-recovery-manifest-v1",
+  "artifact_type": "exact installed AUX firmware recovery image",
+  "firmware_file": "HBNF_SP803E_AUX_V7_ROLLBACK.bin",
+  "firmware_release": "hbnf-wow-aux-r3-2026-10-25-uv-follow-v1",
+  "engine": "aux-r3-wow-1d",
+  "build_witness": "registry28-tempo-lock-1d-v7-network-no-starve-uv-follow",
+  "firmware_bytes": 1348624,
+  "firmware_sha256": "c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a",
+  "provenance": {
+    "source_commit": "e78fc74c9470b0bafaf43ca6a2823f60f1a4b51e",
+    "workflow_run_id": "40276725561",
+    "run_url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/40276725561",
+    "status": "owner_confirmed_current_and_retained_in_verified_continuation_bundle"
+  },
+  "recovery_bundle": {
+    "file": "HBNF_AUX_UV_CONTINUATION_20261026_v4.zip",
+    "sha256": "1dad4eba787a55eba0febd076477ae85cbc9dd339d94e43231182dbae011c86d",
+    "drive_file_id": "1-W1pAyyc4aSdOmcDx2dj0siRRc9rHVBD",
+    "member": "aux-v7-rollback.bin"
+  },
+  "verification": {
+    "bundle_manifest_matches_v7_image": true,
+    "rollback_image_hash_matches_bundle_manifest": true,
+    "durable_bundle_readback_matches": true,
+    "owner_confirmed_v7_current": true
+  },
+  "disposition": "EXACT_V7_ROLLBACK_RETAINED; RECHECK_LIVE_TARGET_IDENTITY_BEFORE_INSTALL"
+}

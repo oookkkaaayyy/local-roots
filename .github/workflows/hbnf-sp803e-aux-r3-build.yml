@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/cart-order2-cumulative-20261024
+      - codex/cart-uv-local-policy-scaffold-20261026
       - hbnf-matrix-wow-bundle-r3-20260921
       - hbnf-aux-luminance-v1-source-coupled-20260927
       - hbnf-generative-projection-v4-20260927
@@ -51,96 +52,39 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Recover and verify exact installed AUX V6 rollback
+      - name: Verify the retained exact current AUX V7 rollback
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           python - <<'PY2'
-          import hashlib, json, os, pathlib, shutil, urllib.error, urllib.request, urllib.parse, zipfile
-
-          class SameOriginAuthRedirectHandler(urllib.request.HTTPRedirectHandler):
-              def redirect_request(self, req, fp, code, msg, headers, newurl):
-                  old = urllib.parse.urlsplit(req.full_url)
-                  new = urllib.parse.urlsplit(newurl)
-                  if new.scheme.lower() != 'https':
-                      raise urllib.error.HTTPError(newurl, code, 'Refusing non-HTTPS artifact redirect', headers, fp)
-                  redirected = super().redirect_request(req, fp, code, msg, headers, newurl)
-                  if redirected is not None:
-                      old_origin = (old.scheme.lower(), old.netloc.lower())
-                      new_origin = (new.scheme.lower(), new.netloc.lower())
-                      if old_origin != new_origin:
-                          for header_map in (redirected.headers, redirected.unredirected_hdrs):
-                              for name in list(header_map):
-                                  if name.lower() in ('authorization', 'proxy-authorization'):
-                                      del header_map[name]
-                  return redirected
-
-          manifest_path = pathlib.Path('hbnf-aux-lighting/commissioning/AUX_V6_RECOVERY_MANIFEST.json')
-          manifest_bytes = manifest_path.read_bytes()
-          assert hashlib.sha256(manifest_bytes).hexdigest() == '26c75b316f8ea8937440f689df511e7f85d2432f817f8de8b8293050555f725e'
-          manifest = json.loads(manifest_bytes)
+          import hashlib, json, pathlib, shutil
+          root = pathlib.Path('hbnf-aux-lighting/commissioning')
+          image_path = root / 'HBNF_SP803E_AUX_V7_ROLLBACK.bin'
+          manifest_path = root / 'AUX_V7_RECOVERY_MANIFEST.json'
+          image = image_path.read_bytes()
+          manifest = json.loads(manifest_path.read_text())
           expected = {
-              'artifact_id': '10943550935',
-              'workflow_run_id': '36354143870',
-              'source_commit': 'b76903cf63be497e9ef855c641a12916eff7149f',
-              'artifact_zip_sha256': '9730f03419cb498d9c494da7723a54f5212edb1e8a612a7fc51a7463b0dd6be0',
-              'firmware_sha256': '152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95',
-              'firmware_bytes': 1348272,
+              'source_commit': 'e78fc74c9470b0bafaf43ca6a2823f60f1a4b51e',
+              'workflow_run_id': '40276725561',
+              'archive_sha256': '1dad4eba787a55eba0febd076477ae85cbc9dd339d94e43231182dbae011c86d',
+              'firmware_sha256': 'c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a',
+              'firmware_bytes': 1348624,
           }
           provenance = manifest['provenance']
-          assert str(provenance['artifact_id']) == expected['artifact_id']
-          assert str(provenance['workflow_run_id']) == expected['workflow_run_id']
-          assert provenance['source_commit'] == expected['source_commit']
-          assert provenance['github_artifact_zip_sha256'] == expected['artifact_zip_sha256']
+          assert hashlib.sha256(image).hexdigest() == expected['firmware_sha256']
+          assert len(image) == expected['firmware_bytes']
           assert manifest['firmware_sha256'] == expected['firmware_sha256']
           assert manifest['firmware_bytes'] == expected['firmware_bytes']
-          assert manifest['artifact_type'] == 'exact installed AUX firmware recovery image'
-          assert manifest['verification']['zip_integrity_passed'] is True
-
-          repository = os.environ['GITHUB_REPOSITORY']
-          api = os.environ.get('GITHUB_API_URL', 'https://api.github.com').rstrip('/')
-          if urllib.parse.urlsplit(api).scheme.lower() != 'https':
-              raise ValueError('Refusing non-HTTPS GitHub API URL for recovery artifact')
-          url = f"{api}/repos/{repository}/actions/artifacts/{expected['artifact_id']}/zip"
-          request = urllib.request.Request(url, headers={
-              'Accept': 'application/vnd.github+json',
-              'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
-              'X-GitHub-Api-Version': '2022-11-28',
-          })
-          recovery_dir = pathlib.Path('/tmp/hbnf-aux-v6-recovery')
-          recovery_dir.mkdir(parents=True, exist_ok=True)
-          archive_path = recovery_dir / 'GITHUB_ACTIONS_ARTIFACT_RUN_36354143870.zip'
-          opener = urllib.request.build_opener(SameOriginAuthRedirectHandler())
-          with opener.open(request, timeout=60) as response, archive_path.open('wb') as target:
-              shutil.copyfileobj(response, target)
-          h = hashlib.sha256()
-          with archive_path.open('rb') as artifact:
-              for chunk in iter(lambda: artifact.read(1024 * 1024), b''):
-                  h.update(chunk)
-          assert h.hexdigest() == expected['artifact_zip_sha256'], 'retained recovery artifact ZIP hash mismatch'
-
-          with zipfile.ZipFile(archive_path) as artifact:
-              assert artifact.testzip() is None, 'recovery artifact ZIP integrity failure'
-              metrics = {}
-              for line in artifact.read('FINAL_METRICS.txt').decode('utf-8').splitlines():
-                  if '=' in line:
-                      key, value = line.split('=', 1)
-                      metrics[key.strip()] = value.strip()
-              assert metrics['github_sha'] == expected['source_commit']
-              assert metrics['github_run_id'] == expected['workflow_run_id']
-              assert metrics['firmware_sha256'] == expected['firmware_sha256']
-              assert metrics['build_witness'] == manifest['build_witness']
-              image = artifact.read('HBNF_SP803E_AUX_R3.bin')
-          assert len(image) == expected['firmware_bytes']
-          assert hashlib.sha256(image).hexdigest() == expected['firmware_sha256']
-
+          assert provenance['source_commit'] == expected['source_commit']
+          assert str(provenance['workflow_run_id']) == expected['workflow_run_id']
+          assert manifest['recovery_bundle']['sha256'] == expected['archive_sha256']
+          assert manifest['firmware_file'] == image_path.name
+          assert manifest['verification']['owner_confirmed_v7_current'] is True
           artifact_dir = pathlib.Path('/tmp/artifacts')
           artifact_dir.mkdir(parents=True, exist_ok=True)
-          (artifact_dir / 'HBNF_SP803E_AUX_V6_ROLLBACK.bin').write_bytes(image)
+          (artifact_dir / image_path.name).write_bytes(image)
           shutil.copyfile(manifest_path, artifact_dir / manifest_path.name)
-          print('HBNF_AUX_EXACT_V6_ROLLBACK_RECOVERY_PASS')
+          print('HBNF_AUX_EXACT_V7_ROLLBACK_READBACK_PASS')
           PY2
 
       - name: Aux host contract
@@ -394,12 +338,8 @@ jobs:
             --firmware /tmp/artifacts/HBNF_SP803E_AUX_R3.bin \
             --metrics /tmp/artifacts/FINAL_METRICS.txt \
             --out /tmp/artifacts/RELEASE_ADMISSION.json \
-            --rollback /tmp/artifacts/HBNF_SP803E_AUX_V6_ROLLBACK.bin \
-            --rollback-manifest /tmp/artifacts/AUX_V6_RECOVERY_MANIFEST.json \
-            --rollback-archive /tmp/hbnf-aux-v6-recovery/GITHUB_ACTIONS_ARTIFACT_RUN_36354143870.zip \
-            --rollback-image-drive-id 1_8pQt8s_32rsX5Crf9frfhLkKGYW4Rov \
-            --rollback-manifest-drive-id 1a7UzOD9AYADvAwW0226gYQwWynYEP--a \
-            --rollback-archive-drive-id 13eYUbvz0g33UtHpEQwoEGBI3HTjAjaSB
+            --rollback /tmp/artifacts/HBNF_SP803E_AUX_V7_ROLLBACK.bin \
+            --rollback-manifest /tmp/artifacts/AUX_V7_RECOVERY_MANIFEST.json
           python hbnf-aux-lighting/commissioning/generate_release_receipt.py \
             --firmware /tmp/artifacts/HBNF_SP803E_AUX_R3.bin \
             --metrics /tmp/artifacts/FINAL_METRICS.txt \
@@ -435,8 +375,8 @@ jobs:
               assert mode==0o755,oct(mode)
               assert 'commission_guard.py' in z.namelist()
               assert 'HBNF_SP803E_AUX_R3.bin' in z.namelist()
-              assert 'HBNF_SP803E_AUX_V6_ROLLBACK.bin' in z.namelist()
-              assert 'AUX_V6_RECOVERY_MANIFEST.json' in z.namelist()
+              assert 'HBNF_SP803E_AUX_V7_ROLLBACK.bin' in z.namelist()
+              assert 'AUX_V7_RECOVERY_MANIFEST.json' in z.namelist()
               assert 'ARTIFACT_POINTER.json' in z.namelist()
               pointer=__import__('json').loads(z.read('ARTIFACT_POINTER.json'))
               assert str(pointer['run_id'])==__import__('os').environ['GITHUB_RUN_ID']
@@ -446,7 +386,7 @@ jobs:
               assert admission['status']=='REVIEW_ONLY'
               assert admission['blocker_code']=='FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED'
               assert admission['candidate_source_commit']==__import__('os').environ['GITHUB_SHA']
-              assert admission['rollback_artifact']['sha256']=='152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95'
+              assert admission['rollback_artifact']['sha256']=='c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a'
               receipt=__import__('json').loads(z.read('RELEASE_RECEIPT.json'))
               assert receipt['status']=='INCOMPLETE'
               assert receipt['source']['commit']==__import__('os').environ['GITHUB_SHA']
@@ -472,7 +412,7 @@ jobs:
           PY2
 
       - name: Preserve exact commissioning ZIP in a private run branch
-        if: github.ref == 'refs/heads/codex/cart-order2-cumulative-20261024'
+        if: github.ref == 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -511,7 +451,7 @@ jobs:
           echo "HBNF_AUX_PACKAGE_PUBLISHED branch=${branch}"
 
       - name: Upload artifacts for other workflow refs
-        if: github.ref != 'refs/heads/codex/cart-order2-cumulative-20261024'
+        if: github.ref != 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
         uses: actions/upload-artifact@v4
         with:
           name: HBNF-SP803E-AUX-R3

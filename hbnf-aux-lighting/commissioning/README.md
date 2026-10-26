@@ -1,14 +1,14 @@
-# HBNF Aux Commissioning — guarded underglow-first path
+# HBNF AUX Commissioning — current UV release path
 
 This directory commissions the Rogue Iron cart SP803E safely from stock WLED through the proven HBNF AUX firmware and the real 12V WS2811 underglow.
 
-## Current hardware truth
+## Current hardware and baseline
 
 - SP803E: ESP32, 5–24V controller.
 - Underglow: 12V WS2811, DATA on GPIO16.
-- Owner's 2026-10-25 hardware report identifies both current UV loads as iNextStation 5V USB-A strips: RIM/Main about 6–6.6 ft and SHORT about 12–13 in (a shortened strip). They remain standalone on power banks and are not connected to the SP803E or the off-Cart switching module. Voltage/model are owner-reported; current draw and channel mapping are unmeasured.
-- Do not infer that the SP803E PWM outputs are a safe driver for either UV load. Verify each load's actual rating and switching path, including boot/restart OFF behavior, before use.
-- GPIO25/26/27 remain unused until the exact channel mapping and electrical path are verified.
+- The owner-confirmed physical integration review is PASS. The removable UV module is assembled and staged off-Cart, but disconnected and unpowered. The owner reports the unpowered meter checks complete. Loaded voltage/current, temperature, PWM response, combined-load behavior, and device readback remain for one combined field session. Do not repeat conceptual design review or assembly work.
+- The owner confirms AUX V7 is installed and no later firmware was installed. Its exact recovery image is retained here as `HBNF_SP803E_AUX_V7_ROLLBACK.bin` (1,348,624 bytes; SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`) with `AUX_V7_RECOVERY_MANIFEST.json`, and in the verified continuation bundle. V6 is historical, not the current rollback.
+- RIM/Cart and SHORT/Bar are intended for GPIO25 and GPIO26 respectively. Keep outputs and commissioning gates closed until the combined field session records actual operating limits and readbacks.
 
 ## Owner PWA baseline (separate from AUX firmware)
 
@@ -22,7 +22,7 @@ The launcher:
 1. verifies the frozen package and target identity;
 2. talks to local WLED devices without system/environment HTTP proxies;
 3. saves a WLED configuration/state/preset snapshot before any permitted change (this is not a firmware image or rollback);
-4. allows one AUX-only firmware attempt after the packaged run receipt matches the candidate, the exact V6 rollback is present, and a fresh device read matches the installed V6 identity;
+4. allows one AUX-only firmware attempt after the packaged run receipt matches the candidate, the exact V7 rollback is present, and a fresh device read matches the owner-confirmed current V7 release/build witness;
 5. allows AUX-only hardware phases when Matrix is offline; firmware OTA requires a separately admitted exact rollback;
 6. calibrates the real WS2811 color order at low current;
 7. applies a one-bus GPIO16 underglow plan with rollback and fail-dark boot;
@@ -52,10 +52,10 @@ Exit 0 means the receipt, candidate, installed-before image, exact rollback, pos
 - Firmware SHA-256: `178c070defcd080ce2acd3ef83acb9a8b31d2aebd4fa1ec1ad37fafd44191d0d`
 - Firmware bytes: 1,348,784
 
-The build workflow emits a source-bound review package and publishes the exact ZIP plus a separate hash pointer on a private branch named `hbnf-aux-r3-artifact-run-<run ID>-attempt-<attempt>`. Download both files from the same branch, extract the ZIP, replace the extracted `ARTIFACT_POINTER.json` with the separate branch copy, and keep the ZIP beside the extracted files. The installer verifies the sidecar hash, ZIP integrity, and every extracted file against the ZIP. A complete candidate package also carries the exact recovered V6 image and its recovery manifest. The original rollback artifact, manifest, and extracted firmware are retained in the private Drive recovery folder; their ZIP and firmware hashes were checked, the ZIP passed integrity validation, and the embedded firmware exactly matches the recorded installed V6 hash. The candidate remains **REVIEW ONLY** until the package and sidecar are retrieved from the named run branch and pre-install checks pass. The embedded receipt alone cannot prove where the ZIP came from. The installer saves one local pre-install settings/state snapshot with owner-only file permissions; it is not a firmware rollback.
+The build workflow emits a source-bound review package and publishes the exact ZIP plus a separate hash pointer on a private branch named `hbnf-aux-r3-artifact-run-<run ID>-attempt-<attempt>`. Download both files from the same branch, extract the ZIP, replace the extracted `ARTIFACT_POINTER.json` with the separate branch copy, and keep the ZIP beside the extracted files. The installer verifies the sidecar hash, ZIP integrity, and every extracted file against the ZIP. Each package carries the exact owner-confirmed V7 rollback image and its manifest, retained in this source tree and in the verified continuation bundle. The candidate remains **REVIEW ONLY** until the package and sidecar are retrieved from the named run branch and pre-install checks pass. The embedded receipt alone cannot prove where the ZIP came from. The installer saves one local pre-install settings/state snapshot with owner-only file permissions; it is not a firmware rollback.
 
-To assemble the complete candidate-and-rollback ZIP from the exact build artifact, place the candidate files, `HBNF_SP803E_AUX_V6_ROLLBACK.bin`, and the exact `AUX_V6_RECOVERY_MANIFEST.json` in one temporary directory. Run `generate_release_admission.py` with the candidate firmware/metrics, the rollback image, manifest, and original verified workflow ZIP; then run `build_commissioning_distribution.py` on that directory. The generator verifies that the original ZIP contains the exact rollback bytes and matching installed-build identity. The generated admission stays `REVIEW_ONLY`; only the commissioning guard can allow the single OTA attempt, after the package has been obtained from the named Actions run and the live V6 device checks pass. Do not use `--no-backup` for a firmware install.
+The build workflow adds the retained V7 rollback image and manifest from this exact source commit, verifies both against the recorded V7 identity and hash, and binds them into the candidate package. No expired V6 Actions artifact is needed. The generated admission stays `REVIEW_ONLY`; the commissioning guard still requires the named Actions package and a fresh live read matching the owner-confirmed V7 baseline before an OTA attempt. Do not use `--no-backup` for a firmware install.
 
 ## Safety boundary
 
-UV readiness remains closed until each load's voltage/current, switching path, channel mapping, protection, and physical OFF behavior are verified. It also requires the existing UV-specific Main, Short, full-load, thermal, and mixed-load commissioning checks; passing only the underglow setup no longer opens UV control. Both reported 5V strip ratings are recorded in source, but their currents and supply limits remain unmeasured. The SP803E manual documents direct wiring with the strip positive on VCC and says input voltage should match the strip. It does not establish whether the exact board's PWM FETs can safely sink an externally powered 5V strip while the controller runs at 12V. No public board schematic/topology confirmation was found; compatibility remains UNKNOWN. Amazon's current listing for proposed buck ASIN B0F1F71F2B identifies the 5V/5A (25W) option; the 10A option has a different ASIN, and the installed unit's continuous rating is not independently confirmed. Keep the proposed path disconnected until the exact return/common-ground behavior, ratings, backfeed behavior, and power budget are verified.
+The physical integration review for the staged module is accepted; do not repeat the conceptual compatibility review or assembly checks. UV output remains disabled until one field session verifies loaded voltage/current, thermal behavior, PWM response, both channels and their mapping, combined load, and physical OFF behavior, then records device readback and release receipt. The module remains disconnected and unpowered until that session. These are commissioning acceptance gates, not a reason to reopen the accepted design review.

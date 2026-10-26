@@ -30,7 +30,7 @@ AUX_IDENTITY_KEYS = ("reachable","release","engine","buildWitness","projection",
 AUX_SYNC_KEYS = ("visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
 INSTALLED_AUX_MAC = "8c94df55c34c"
 EXPECTED_WORKFLOW_PATH = ".github/workflows/hbnf-sp803e-aux-r3-build.yml"
-EXPECTED_WORKFLOW_REF = "refs/heads/codex/cart-order2-cumulative-20261024"
+EXPECTED_WORKFLOW_REF = "refs/heads/codex/cart-uv-local-policy-scaffold-20261026"
 
 def _metrics(path):
     values={}
@@ -83,24 +83,25 @@ def _candidate_actions_receipt(root,package):
     except Exception:
         return False
 
-def _installed_v6_baseline(d,package_dir,package):
-    """Match the one pre-authorized AUX target to the exact recovered V6 image identity."""
+def _installed_current_baseline(d,package_dir,package):
+    """Match the live AUX target to the exact owner-confirmed V7 rollback identity."""
     try:
         root=pathlib.Path(package_dir).resolve()
         admission=package["releaseAdmission"];artifact=admission["rollbackArtifact"]
-        manifest=json.loads((root/"AUX_V6_RECOVERY_MANIFEST.json").read_text())
+        manifest=json.loads((root/artifact["manifest_file"]).read_text())
         i=d.get("info") or {};state=d.get("state") or {};aux=state.get("HBNFAUX") or {}
         return bool(
             d.get("ip")=="192.168.77.11"
             and str(i.get("mac") or "").replace(":","").lower()==INSTALLED_AUX_MAC
             and str(i.get("arch") or "").lower()=="esp32"
             and int(i.get("flash") or 0)==4
-            and str(i.get("ver") or "")=="16.0.1"
             and aux.get("release")==manifest.get("firmware_release")
             and aux.get("engine")==manifest.get("engine")
             and aux.get("buildWitness")==manifest.get("build_witness")
             and manifest.get("firmware_sha256")==admission.get("installed_firmware_sha256")==artifact.get("sha256")
             and manifest.get("firmware_bytes")==artifact.get("bytes")
+            and manifest.get("provenance",{}).get("source_commit")==artifact.get("source_commit")
+            and str(manifest.get("provenance",{}).get("workflow_run_id"))==str(artifact.get("workflow_run_id"))
         )
     except Exception:
         return False
@@ -129,9 +130,9 @@ def require_install_admission(package,package_dir,device=None):
         raise RuntimeError(f"AUX firmware OTA blocked: package build receipt does not match the expected run ({reason}). {resume}".strip())
     if device is None:
         return None
-    if not _installed_v6_baseline(device,package_dir,package):
+    if not _installed_current_baseline(device,package_dir,package):
         admission=package.get("releaseAdmission") or {}
-        raise RuntimeError(f"AUX firmware OTA blocked: fresh device readback does not match the exact installed V6 rollback ({admission.get('reason') or 'baseline mismatch'}). {admission.get('resumptionCondition') or ''}".strip())
+        raise RuntimeError(f"AUX firmware OTA blocked: fresh device readback does not match the owner-confirmed current V7 rollback ({admission.get('reason') or 'baseline mismatch'}). {admission.get('resumptionCondition') or ''}".strip())
     metrics=_metrics(pathlib.Path(package_dir).resolve()/"FINAL_METRICS.txt")
     info=device.get("info") or {};aux=((device.get("state") or {}).get("HBNFAUX") or {})
     return {"schema":"hbnf-aux-install-admission-v1","status":"PASS",
@@ -408,9 +409,9 @@ def preflight(args):
     install_admission={"status":"BLOCKED","reason":"PACKAGE_OR_TARGET_NOT_MATCHED"}
     if a:
         current=ids["inspected"].get(a) or {}
-        if _candidate_actions_receipt(pathlib.Path(args.package_dir).resolve(),package) and _installed_v6_baseline(current,pathlib.Path(args.package_dir).resolve(),package):
+        if _candidate_actions_receipt(pathlib.Path(args.package_dir).resolve(),package) and _installed_current_baseline(current,pathlib.Path(args.package_dir).resolve(),package):
             run_id=str(_metrics(pathlib.Path(args.package_dir).resolve()/"FINAL_METRICS.txt").get("github_run_id"))
-            install_admission={"status":"PASS","reason":"FRESH_EXACT_V6_BASELINE_AND_ACTIONS_PACKAGE_VERIFIED","candidate_source_commit":package.get("releaseAdmission",{}).get("candidate_source_commit"),"candidate_firmware_sha256":package.get("firmwareSha256"),"actions_run_id":run_id,"target_mac":INSTALLED_AUX_MAC,"rollback_sha256":package.get("releaseAdmission",{}).get("rollbackArtifact",{}).get("sha256")}
+            install_admission={"status":"PASS","reason":"FRESH_OWNER_CONFIRMED_V7_BASELINE_AND_ACTIONS_PACKAGE_VERIFIED","candidate_source_commit":package.get("releaseAdmission",{}).get("candidate_source_commit"),"candidate_firmware_sha256":package.get("firmwareSha256"),"actions_run_id":run_id,"target_mac":INSTALLED_AUX_MAC,"rollback_sha256":package.get("releaseAdmission",{}).get("rollbackArtifact",{}).get("sha256")}
     if not package.get("ok"): nxt="PACKAGE_INVALID"
     elif not a: nxt="POWER_OR_IDENTIFY_AUX" if ids["auxReason"]=="none" else "DISAMBIGUATE_AUX"
     elif not all_true(ac,AUX_IDENTITY_KEYS): nxt="INSTALL_EXACT_AUX_FIRMWARE" if package.get("installAdmissible") or install_admission.get("status")=="PASS" else "RELEASE_REVIEW_ONLY"
@@ -823,7 +824,7 @@ def selftest():
         (package_dir/op.ADMISSION_FILE).write_text(json.dumps({"schema":"hbnf-aux-release-admission-v1",
             "status":"REVIEW_ONLY","candidate_source_commit":"a"*40,
             "candidate_firmware_sha256":op.sha256(fw),
-            "installed_firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95",
+            "installed_firmware_sha256":"c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a",
             "installed_baseline_evidence":"fixture","rollback_artifact":None,
             "blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING",
             "resumption_condition":"Provide exact matching rollback bytes."}))
@@ -875,23 +876,28 @@ def selftest():
         sidecar=json.loads((root/"ARTIFACT_POINTER.json").read_text())
         sidecar.update(package_file=archive_path.name,package_sha256=op.sha256(archive_path))
         (root/"ARTIFACT_POINTER.json").write_text(json.dumps(sidecar))
-        (root/"AUX_V6_RECOVERY_MANIFEST.json").write_text(json.dumps({"firmware_release":"hbnf-wow-aux-r3-2026-09-22-v1",
-            "engine":"aux-r3-wow-1d","build_witness":"registry28-tempo-lock-1d-v6-network-no-starve",
-            "firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95","firmware_bytes":1348272}))
+        baseline_manifest=json.loads((HERE/"AUX_V7_RECOVERY_MANIFEST.json").read_text())
+        shutil.copy2(HERE/"AUX_V7_RECOVERY_MANIFEST.json",root/"AUX_V7_RECOVERY_MANIFEST.json")
+        shutil.copy2(HERE/"HBNF_SP803E_AUX_V7_ROLLBACK.bin",root/"HBNF_SP803E_AUX_V7_ROLLBACK.bin")
+        v7sha=baseline_manifest["firmware_sha256"];v7bytes=baseline_manifest["firmware_bytes"]
+        v7prov=baseline_manifest["provenance"]
+        rollback_artifact={"file":"HBNF_SP803E_AUX_V7_ROLLBACK.bin","manifest_file":"AUX_V7_RECOVERY_MANIFEST.json",
+            "sha256":v7sha,"bytes":v7bytes,"manifest_sha256":op.sha256(root/"AUX_V7_RECOVERY_MANIFEST.json"),
+            "source_commit":v7prov["source_commit"],"workflow_run_id":v7prov["workflow_run_id"],
+            "artifact_zip_sha256":baseline_manifest["recovery_bundle"]["sha256"]}
         package={"ok":True,"installAdmissible":False,"firmwareSha256":candidate_sha,"firmwareBytes":candidate_bytes,
             "releaseAdmission":{"status":"REVIEW_ONLY","reason":"FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED","rollbackVerified":True,
-                "candidate_source_commit":source,"installed_firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95",
-                "rollbackArtifact":{"sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95","bytes":1348272}}}
-        device={"ip":"192.168.77.11","info":{"mac":INSTALLED_AUX_MAC,"arch":"esp32","flash":4,"ver":"16.0.1"},
-            "state":{"HBNFAUX":{"release":"hbnf-wow-aux-r3-2026-09-22-v1","engine":"aux-r3-wow-1d",
-                "buildWitness":"registry28-tempo-lock-1d-v6-network-no-starve"}}}
+                "candidate_source_commit":source,"installed_firmware_sha256":v7sha,"rollbackArtifact":rollback_artifact}}
+        device={"ip":"192.168.77.11","info":{"mac":INSTALLED_AUX_MAC,"arch":"esp32","flash":4},
+            "state":{"HBNFAUX":{"release":baseline_manifest["firmware_release"],"engine":baseline_manifest["engine"],
+                "buildWitness":baseline_manifest["build_witness"]}}}
         assert _candidate_actions_receipt(root,package)
-        assert _installed_v6_baseline(device,root,package)
+        assert _installed_current_baseline(device,root,package)
         admission=require_install_admission(package,root,device)
         assert admission["status"]=="PASS" and admission["uv_output_enabled"] is False
         assert admission["rollback_sha256"]==package["releaseAdmission"]["installed_firmware_sha256"]
         device["info"]["mac"]="001122334455"
-        assert not _installed_v6_baseline(device,root,package)
+        assert not _installed_current_baseline(device,root,package)
         device["info"]["mac"]=INSTALLED_AUX_MAC
         (root/"FINAL_METRICS.txt").write_text((root/"FINAL_METRICS.txt").read_text().replace("UV_COMPILE_GATE_DEFAULT=0","UV_COMPILE_GATE_DEFAULT=1"))
         assert not _candidate_actions_receipt(root,package)

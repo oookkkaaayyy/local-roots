@@ -2,12 +2,12 @@ HB NIGHT FLYERS — SP803E / AUX COMMISSIONING
 
 CURRENT SAFE SCOPE
 - Addressable underglow: 12V WS2811 on DATA / IO16.
-- Owner reports both current UV loads are iNextStation 5V USB-A strips (RIM/Main 6–6.6 ft; SHORT 12–13 in). They remain standalone on power banks and are not connected to the SP803E. Current draw and the proposed 12V-controller/5V-strip PWM-return path are unverified; keep both outputs off.
+- The removable UV module is assembled off-Cart using the reported TOBSUN EA50-5V supply, USB-A adapters, shared fused 5V positive, and separate intended PWM return leads. The owner-confirmed physical integration review is PASS. The module remains disconnected and unpowered; powered channel/current/temperature and live PWM acceptance remain for the combined field session.
 - Matrix is required only when the workflow reaches Matrix→AUX sync. It is NOT required for AUX firmware or underglow-local configuration.
 
 BEFORE THE LAUNCHER
 - Put the SP803E on the same current LAN as the Mac.
-- Keep UV disconnected.
+- Keep the staged UV module disconnected and unpowered until its combined field session.
 - For underglow color calibration, connect only the correctly wired WS2811 underglow when the launcher explicitly asks for the physical test.
 
 THEN
@@ -16,19 +16,18 @@ THEN
 3. The launcher verifies package/target identity and saves WLED configuration/state/preset data. This is NOT a firmware image or rollback.
 
 RELEASE STATUS
-- The build workflow creates a source-bound review build. The exact installed AUX V6 image has since been recovered from successful Actions run 36354143870 and hash-verified against its manifest and embedded artifact bytes.
-- The completed candidate package must include that exact V6 rollback image and manifest. Retrieve the ZIP and separate pointer from the run-specific private branch named above; the pointer hash must match the ZIP. The receipt inside the ZIP alone does not prove its origin. It remains REVIEW ONLY until a fresh pre-install AUX identity check and candidate-specific release admission pass. UV stays fail-dark and disconnected until its electrical path and physical acceptance pass.
-- The captured read-only AUX identity still matched V6 during preparation; repeat it immediately before any future installation.
+- The owner confirms AUX V7 is installed and no later firmware was installed. Its exact image (`HBNF_SP803E_AUX_V7_ROLLBACK.bin`, 1,348,624 bytes, SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`) and recovery manifest are retained in this source tree and the verified continuation bundle. Do not repeat V6 recovery.
+- Every candidate package now includes that V7 image and manifest as rollback. The installer still re-reads AUX identity immediately before mutation and requires candidate-specific release admission. The UV module stays unpowered until the combined field session.
 
 THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);
 - positively identify the AUX and refuse Matrix targets;
-- allow one AUX firmware OTA only when the exact Actions build receipt and V6 rollback package match, a fresh read identifies the same installed V6 AUX, and the pre-install snapshot is saved; a second attempt for the same candidate is blocked;
+- allow one AUX firmware OTA only when the exact Actions build receipt and V7 rollback package match, a fresh read identifies the owner-confirmed V7 AUX baseline, and the pre-install snapshot is saved; a second attempt for the same candidate is blocked;
 - report OTA runtime identity as pending until a complete durable release receipt validates;
 - use a standards-compliant WLED multipart OTA upload;
 - calibrate real underglow color order at low current;
 - configure ONLY the GPIO16 WS2811 underglow bus, with fail-dark boot and <=900 mA commissioning limit;
-- keep GPIO25/26/27 unused while per-channel UV ratings and output mapping are unresolved;
+- keep the reported Cart/RIM GPIO25 and Bar/SHORT GPIO26 mapping gated off until powered channel and combined-load acceptance is recorded;
 - later require exact Matrix identity before changing Matrix/AUX sync;
 - preserve physical observations in HBNF_AUX_ACCEPTANCE_EVIDENCE.json.
 
