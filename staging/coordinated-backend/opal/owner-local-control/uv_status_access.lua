@@ -5,14 +5,16 @@ if auth.owner_access(false) ~= true then return end
 local cjson = require "cjson.safe"
 local runtime = dofile("/etc/hbnf-local-control/lua/uv_runtime.lua")
 local current, reason = runtime.read_state()
+local profile_ready, profile_reason = runtime.profile_ready()
 local response = {
   available = current ~= nil,
-  uvControlEnabled = current ~= nil,
+  uvControlEnabled = current ~= nil and profile_ready == true,
   mutationIssued = false,
-  reason = reason,
+  reason = reason or profile_reason,
+  hardwareProfileReady = profile_ready == true,
 }
 if current then
-  response.reason = nil
+  if profile_ready then response.reason = nil end
   response.release = runtime.RELEASE
   response.engine = runtime.ENGINE
   response.buildWitness = runtime.BUILD_WITNESS

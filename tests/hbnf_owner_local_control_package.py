@@ -33,7 +33,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
             self.assertEqual(archive_a.read_bytes(), archive_b.read_bytes())
             with zipfile.ZipFile(archive_a) as package:
                 names = package.namelist()
-                prefix = "hbnf-owner-local-control-v1.0.7/"
+                prefix = "hbnf-owner-local-control-v1.0.8/"
                 self.assertIn(prefix + "install.sh", names)
                 self.assertIn(prefix + "matrix_topology.sh", names)
                 self.assertIn(prefix + "aux_command_access.lua", names)
@@ -44,6 +44,8 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 self.assertIn(prefix + "uv_policy_access.lua", names)
                 self.assertIn(prefix + "uv_status_access.lua", names)
                 self.assertIn(prefix + "uv_policy_spec.json", names)
+                self.assertIn(prefix + "uv_hardware_profile.json", names)
+                self.assertIn(prefix + "uv_runtime.lua", names)
                 manifest = json.loads(package.read(prefix + "PACKAGE-MANIFEST.json"))
                 self.assertEqual(manifest["sourceCommit"], source)
                 self.assertEqual(manifest["rollbackTransportSha256"], "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e")
@@ -54,6 +56,14 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 policy_spec = package.read(prefix + "uv_policy_spec.json")
                 self.assertEqual(hashlib.sha256(policy_spec).hexdigest(), manifest["files"]["uv_policy_spec.json"])
                 self.assertEqual(json.loads(policy_spec)["schema"], "hbnf-aux-uv-policy-spec-v1")
+                profile = package.read(prefix + "uv_hardware_profile.json")
+                self.assertEqual(hashlib.sha256(profile).hexdigest(), manifest["files"]["uv_hardware_profile.json"])
+                profile_data = json.loads(profile)
+                self.assertFalse(profile_data["verified"])
+                self.assertTrue(all(value is False for value in profile_data["runtimeGates"].values()))
+                self.assertTrue(all(value is False for value in profile_data["commissioningGates"].values()))
+                runtime_lua = package.read(prefix + "uv_runtime.lua").decode()
+                self.assertIn('key ~= "hardwareReady"', runtime_lua)
                 self.assertEqual(manifest["rollbackTransportSha256"], "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e")
                 sums = package.read(prefix + "SHA256SUMS").decode()
                 self.assertIn(f"{transport_sha}  local-transport.js", sums)

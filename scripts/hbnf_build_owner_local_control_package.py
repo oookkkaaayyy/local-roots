@@ -9,11 +9,12 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.7"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.8"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
 OWNER_HTTP_TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js")
 UV_POLICY_SPEC = Path("hbnf-aux-lighting/backend/aux_uv_policy_spec.json")
+UV_HARDWARE_PROFILE = Path("hbnf-aux-lighting/backend/uv_hardware_profile.json")
 FILES = (
     "README.md", "SOURCE_BASE.json", "auth.lua", "auth_origin.lua", "auth_owner.lua",
     "auth_websocket.lua", "aux_command_access.lua", "dedicated-nginx.conf.example", "matrix_command_access.lua", "uv_policy_access.lua", "uv_status_access.lua", "uv_runtime.lua",
@@ -36,23 +37,43 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     transport = (repo / TRANSPORT).read_bytes()
     owner_http_transport = (repo / OWNER_HTTP_TRANSPORT).read_bytes()
     uv_policy_spec = (repo / UV_POLICY_SPEC).read_bytes()
+    uv_hardware_profile = (repo / UV_HARDWARE_PROFILE).read_bytes()
     payload["local-transport.js"] = transport
     payload["owner-http-transport.js"] = owner_http_transport
     payload["uv_policy_spec.json"] = uv_policy_spec
+    payload["uv_hardware_profile.json"] = uv_hardware_profile
     resolved_commit = subprocess.check_output(
         ["git", "-C", str(repo), "rev-parse", f"{source_commit}^{{commit}}"], text=True
     ).strip()
     if resolved_commit != source_commit:
         raise ValueError("source commit must resolve to the exact full Git commit ID")
     for name, data in payload.items():
-        path = (TRANSPORT if name == "local-transport.js" else OWNER_HTTP_TRANSPORT if name == "owner-http-transport.js" else UV_POLICY_SPEC if name == "uv_policy_spec.json" else SOURCE_DIR / name).as_posix()
+        path_by_name = {
+            "local-transport.js": TRANSPORT,
+            "owner-http-transport.js": OWNER_HTTP_TRANSPORT,
+            "uv_policy_spec.json": UV_POLICY_SPEC,
+            "uv_hardware_profile.json": UV_HARDWARE_PROFILE,
+        }
+        path = path_by_name.get(name, SOURCE_DIR / name).as_posix()
         committed = subprocess.check_output(["git", "-C", str(repo), "show", f"{source_commit}:{path}"])
         if committed != data:
             raise ValueError(f"working package input differs from {source_commit}:{path}")
     source_base = json.loads(payload["SOURCE_BASE.json"])
     policy_spec = json.loads(payload["uv_policy_spec.json"])
+    hardware_profile = json.loads(payload["uv_hardware_profile.json"])
     if policy_spec.get("schema") != "hbnf-aux-uv-policy-spec-v1" or policy_spec.get("networkBoundary", {}).get("directWledRouteAllowed") is not False:
         raise ValueError("shared UV policy contract missing or permits direct WLED access")
+    if hardware_profile.get("schema") != "hbnf-aux-uv-hardware-profile-v1":
+        raise ValueError("shared UV hardware profile schema missing")
+    if hardware_profile.get("verified") is not False or any(
+        value is not False for group in (hardware_profile.get("runtimeGates", {}), hardware_profile.get("commissioningGates", {}))
+        for value in group.values()
+    ):
+        raise ValueError("packaged UV hardware profile must remain default-off")
+    if policy_spec.get("requiredRuntimeGates") != ["auxEnabled", "uvEnabled", "uvOutputsVerified", "hardwareReady"]:
+        raise ValueError("UV runtime gate contract changed; update Opal gate implementation and package admission")
+    if policy_spec.get("requiredCommissioningGates") != list(hardware_profile.get("commissioningGates", {})):
+        raise ValueError("UV commissioning gates do not match the shared profile")
     if source_base.get("opal_rollback_transport_sha256") != EXPECTED_ROLLBACK:
         raise ValueError("recorded exact Opal rollback identity changed")
     rollback = (root / "rollback.sh").read_text()
@@ -71,7 +92,7 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         "installedTransportSha256": sha(transport),
         "ownerPwaTransportSha256": sha(owner_http_transport),
         "rollbackTransportSha256": EXPECTED_ROLLBACK,
-        "scope": ["separate Opal Nginx/Lua gateway on TCP 8443 with nobody request worker", "existing Opal Mission Control WebSocket transport upgraded with the current compatible command mappings", "separate authenticated per-command HTTPS transport for the existing Owner PWA", "authenticated local UV status and policy routes for fixed segments 1 and 2 with AUX build identity and command readback", "shared versioned UV request contract consumed by backend JavaScript and Opal Lua validation"],
+        "scope": ["separate Opal Nginx/Lua gateway on TCP 8443 with nobody request worker", "existing Opal Mission Control WebSocket transport upgraded with the current compatible command mappings", "separate authenticated per-command HTTPS transport for the existing Owner PWA", "authenticated local UV status and policy routes for fixed segments 1 and 2 with AUX build identity, shared default-off hardware profile and commissioning-gate checks, and command readback", "shared versioned UV request contract and hardware profile consumed by backend JavaScript and Opal Lua validation"],
         "releaseDisposition": "SOURCE_BOUND_NOT_INSTALLED",
         "notIncluded": ["TLS private key", "DNS provider credential", "router network policy marker", "firmware", "Supabase production payload"],
         "files": hashes,

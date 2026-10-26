@@ -1,12 +1,12 @@
 {
-  "schema": "hbnf-owner-local-control-staged-v2",
+  "schema": "hbnf-owner-local-control-staged-v3",
   "repository": "oookkkaaayyy/local-roots",
   "branch": "codex/cart-uv-local-policy-scaffold-20261026",
   "base_commit": "8690ae711767ccfa644e538a169c6c2228272f64",
   "opal_rollback_transport_sha256": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
   "scope": [
     "existing Opal Nginx authenticated local proxy",
-    "authenticated local UV status and policy routes with fixed UV segment IDs and AUX state acknowledgement",
+    "authenticated local UV routes with fixed segments, AUX readback, and shared default-off hardware-profile/commissioning-gate enforcement",
     "separate per-command HTTPS transport for the existing Owner PWA",
     "no firmware installation, backend deployment, scoring, or live router changes"
   ]

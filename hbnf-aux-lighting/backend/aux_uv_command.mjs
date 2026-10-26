@@ -1,25 +1,16 @@
 import { UV_MODES, UV_OFFLINE_CONFIG, UV_POLICY_SPEC, nextUvOutputs } from "./aux_uv_policy.mjs";
+import UV_HARDWARE_PROFILE from "./uv_hardware_profile.json" with { type: "json" };
 
-// Deliberately incomplete until the owner-recorded, in-person hardware
-// verification establishes the exact parts, safe ratings, and output mapping.
-// Never populate these fields from a browser request or unverified notes.
-export const UV_HARDWARE_CONFIG = Object.freeze({
-  verified: false,
-  evidence: null,
-  // Owner reports both installed UV strips are iNextStation 5V USB-A units.
-  // This is a reported load voltage, not proof of current, supply, switching,
-  // protection, or channel mapping. Keep the profile unverified and fail-dark.
-  supplyByChannel: Object.freeze({
-    main: Object.freeze({ outputVoltageV: null, currentLimitMa: 0 }),
-    short: Object.freeze({ outputVoltageV: null, currentLimitMa: 0 }),
-  }),
-  switching: Object.freeze({ verified: false, isolated: false, maxLoadVoltageV: 0, controlInputMinVoltage: 0, controlInputMaxVoltage: 0, channels: 0, maxChannelCurrentMa: 0, maxTotalCurrentMa: 0 }),
-  maxBrightness: 0,
-  channels: Object.freeze({
-    main: Object.freeze({ gpio: null, segmentId: null, loadVoltageV: 5, loadCurrentMa: 0, fuseRatingMa: 0, wireCurrentRatingMa: 0 }),
-    short: Object.freeze({ gpio: null, segmentId: null, loadVoltageV: 5, loadCurrentMa: 0, fuseRatingMa: 0, wireCurrentRatingMa: 0 }),
-  }),
-});
+// Shared with the local Opal gateway. Owner-reported mapping/status is retained
+// in the profile, while every operational gate remains false until acceptance.
+const deepFreeze = value => {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.values(value).forEach(deepFreeze);
+    Object.freeze(value);
+  }
+  return value;
+};
+export const UV_HARDWARE_CONFIG = deepFreeze(UV_HARDWARE_PROFILE);
 
 export const UV_FOLLOW_EFFECT_ID = UV_POLICY_SPEC.followEffectId;
 const REQUIRED_COMMISSIONING_GATES = UV_POLICY_SPEC.requiredCommissioningGates;

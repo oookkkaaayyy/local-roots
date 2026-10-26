@@ -9,7 +9,7 @@ SERVER_CONF=$BASE/nginx-server.conf
 SERVICE=/etc/init.d/hbnf-owner-local-control
 TARGET=/www/mission-control-local/local-transport.js
 OWNER_HTTP_TARGET=/www/mission-control-local/owner-http-transport.js
-BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.7
+BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.8
 EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e
 HOST=cart-control.hbnightflyers.com
 LOG_DIR=/var/log/hbnf-owner-local-control-nginx
@@ -84,6 +84,9 @@ mkdir -m 0710 "$STATE"
 chown "0:$worker_gid" "$STATE"
 mkdir -m 0700 "$STATE/sessions" "$STATE/revoked" "$STATE/tmp" "$STATE/tmp/client_body" "$STATE/tmp/proxy"
 chown "$worker_uid:$worker_gid" "$STATE/sessions" "$STATE/revoked" "$STATE/tmp" "$STATE/tmp/client_body" "$STATE/tmp/proxy"
+cp "$PKG/uv_hardware_profile.json" "$STATE/uv_hardware_profile.json"
+chown "0:$worker_gid" "$STATE/uv_hardware_profile.json"
+chmod 0640 "$STATE/uv_hardware_profile.json"
 mkdir -m 0700 "$LOG_DIR"
 mkdir -m 0755 "$BASE/lua"
 cp "$PKG/auth.lua" "$PKG/session.lua" "$PKG/enroll.lua" "$PKG/revalidate.lua" "$PKG/revoke.lua" "$PKG/auth_owner.lua" "$PKG/auth_origin.lua" "$PKG/aux_command_access.lua" "$PKG/uv_policy_access.lua" "$PKG/uv_status_access.lua" "$PKG/uv_runtime.lua" "$PKG/uv_policy_spec.json" "$PKG/matrix_command_access.lua" "$BASE/lua/"

@@ -1,4 +1,4 @@
-# Opal Owner Local Control — staged v1.0.7
+# Opal Owner Local Control — staged v1.0.8
 
 Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmware changes are made until a separately admitted installation. This release retains the existing Opal Mission Control WebSocket interface and adds a separate authenticated HTTP transport module for the production Owner PWA. The updated existing transport keeps its WebSocket class and current command mappings; rollback restores its exact v1.0.1 source.
 
@@ -6,11 +6,15 @@ Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmw
 
 The authenticated `/api/aux/uv-policy` route validates the mode and both
 brightness caps, checks the expected UV-enabled AUX build witness and segments
-1/2, then constructs a WLED state update for only those two segments. It leaves
-the underglow segment and global power state untouched. The route reports
-success only when the AUX state response matches both requested channel values.
-The read-only `/api/aux/uv-status` route reports ready only for that same AUX
-build witness with both UV segments present. The Opal-hosted PWA sends UV
+1/2, then applies the same hardware-profile and commissioning-gate policy as
+the AUX command path before constructing a WLED state update for only those two
+segments. The packaged profile is shared with the AUX source and defaults to
+disabled; missing profile data, any false gate, or a limit mismatch returns
+`mutationIssued:false` before WLED is called. The route leaves the underglow
+segment and global power state untouched. Success requires AUX state readback
+matching both requested channel values. The read-only `/api/aux/uv-status`
+route reports control ready only when the exact AUX build witness, both UV
+segments, and the same shared hardware profile/gates pass. The Opal-hosted PWA sends UV
 requests to this gateway and does not fall back to Supabase when local control
 fails. Opening the PWA does not send an output command; the owner must choose
 Apply manual override, Follow Matrix, or UV off.
@@ -41,4 +45,4 @@ Session expiry/revocation files are stored under persistent `/etc/hbnf-local-con
 
 ## Release status
 
-Staged, not installed. Remaining mandatory gates: authoritative server pairing expiry; trusted DNS-01 certificate and split DNS; proven isolation from direct WLED control for every unpaired client; external WAN-denial and runtime config checks; iOS 12 device acceptance; and physical Matrix/AUX readback/illumination confirmation. Do not treat host tests or this package as physical acceptance.
+Staged, not installed. Remaining mandatory gates: authoritative server pairing expiry; trusted DNS-01 certificate and split DNS; proven isolation from direct WLED control for every unpaired client; external WAN-denial and runtime config checks; iOS 12 device acceptance; populated hardware profile from the coordinated field checks; and physical Matrix/AUX readback/illumination confirmation. Do not treat host tests or this package as physical acceptance.

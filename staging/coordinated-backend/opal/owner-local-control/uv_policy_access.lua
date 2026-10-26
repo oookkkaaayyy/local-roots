@@ -42,6 +42,10 @@ end
 
 local current, readiness_error = runtime.read_state()
 if not current then return respond(503, { error = readiness_error, mutationIssued = false }) end
+local profile_ready, profile_error = runtime.profile_ready()
+if profile_ready ~= true then
+  return respond(503, { error = profile_error or "uv_commissioning_gates_incomplete", mutationIssued = false })
+end
 
 local effect = mode == "FOLLOW_MATRIX" and runtime.FOLLOW_EFFECT_ID or 0
 local function make_segment(id, cap)
