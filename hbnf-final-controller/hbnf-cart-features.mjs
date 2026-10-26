@@ -17,6 +17,7 @@ const SHOWS = [
 const SAVED_LOOKS_KEY = "hbnf_cart_saved_looks_v1";
 const LEGACY_SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
 const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
+const UV_CAPS_STORAGE_KEY = "hbnf_cart_uv_caps_v1";
 const LIVE_CACHE_MAX_MS = 12 * 60 * 60 * 1000;
 const HBNF_ENDPOINT_IMAGE_URL = "https://hbnightflyers.com/hbnf-cart-icon-180.png";
 const HBNF_ENDPOINT_PROBE_INTERVAL_MS = 60000;
@@ -34,6 +35,8 @@ let uvDefaultFollowAttempted = false;
 let uvFollowActive = false;
 let uvRequestInFlight = false;
 let uvFollowCapsPending = false;
+let uvReadiness = "checking";
+let uvCapsStorageAvailable = true;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -864,13 +867,72 @@ function bind(id,fn) {
   });
 }
 
-function uvStateChanged() {
+function readUvCaps(storage) {
+  try {
+    const raw = storage.getItem(UV_CAPS_STORAGE_KEY);
+    if (!raw) return { main: 64, short: 64, storageAvailable: true };
+    const saved = JSON.parse(raw);
+    const valid = value => Number.isInteger(value) && value >= 0 && value <= 255;
+    return {
+      main: valid(saved && saved.main) ? saved.main : 64,
+      short: valid(saved && saved.short) ? saved.short : 64,
+      storageAvailable: true,
+    };
+  } catch (_) {
+    return { main: 64, short: 64, storageAvailable: false };
+  }
+}
+
+function writeUvCaps(storage, main, short) {
+  const valid = value => Number.isInteger(value) && value >= 0 && value <= 255;
+  if (!valid(main) || !valid(short)) return false;
+  try {
+    storage.setItem(UV_CAPS_STORAGE_KEY, JSON.stringify({ main, short }));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function uvLevelSavedMessage() {
+  return uvCapsStorageAvailable
+    ? "Brightness levels are saved on this iPad."
+    : "Brightness levels are set for this screen, but this browser could not save them.";
+}
+
+function uvStateChanged(persist = true) {
   const main = $("uvMainBrightness"), short = $("uvShortBrightness");
   if ($("uvMainValue") && main) $("uvMainValue").value = String(main.value);
   if ($("uvShortValue") && short) $("uvShortValue").value = String(short.value);
   if ($("uvSharedValue") && main && short) {
-    $("uvSharedValue").value = Number(main.value) === Number(short.value) ? String(main.value) : "Mixed";
+    const mainLevel = Number(main.value), shortLevel = Number(short.value);
+    const mixed = mainLevel !== shortLevel;
+    $("uvSharedValue").value = mixed ? "Mixed" : String(mainLevel);
+    if ($("uvSharedBrightness")) $("uvSharedBrightness").value = String(mixed ? Math.round((mainLevel + shortLevel) / 2) : mainLevel);
   }
+  if (persist && main && short) {
+    try {
+      uvCapsStorageAvailable = writeUvCaps(window.localStorage, Number(main.value), Number(short.value));
+    } catch (_) {
+      uvCapsStorageAvailable = false;
+    }
+  }
+  const status = $("uvActionStatus");
+  if (status && !uvRequestInFlight) {
+    if (uvReadiness === "ready") status.textContent = `${uvLevelSavedMessage()} Use Apply to send manual levels.`;
+    else if (uvReadiness === "unavailable") status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} No command was sent.`;
+    else if (uvReadiness === "unsafe") status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
+  }
+}
+
+function restoreUvCaps() {
+  let caps;
+  try { caps = readUvCaps(window.localStorage); }
+  catch (_) { caps = { main: 64, short: 64, storageAvailable: false }; }
+  const main = $("uvMainBrightness"), short = $("uvShortBrightness");
+  if (main) main.value = String(caps.main);
+  if (short) short.value = String(caps.short);
+  uvCapsStorageAvailable = caps.storageAvailable;
 }
 
 function setUvControlsReady(ready) {
@@ -888,6 +950,7 @@ async function checkUvReadiness(updateStatus = true) {
   try {
     const result = await canonicalRead("uv_status");
     if (result && result.uvControlEnabled === true) {
+      uvReadiness = "ready";
       setUvControlsReady(true);
       if (!uvDefaultFollowAttempted) {
         uvDefaultFollowAttempted = true;
@@ -899,12 +962,14 @@ async function checkUvReadiness(updateStatus = true) {
         ? "Automatic follow is configured. Fresh Matrix audio is required for light; the device has not confirmed output. The two caps are independent."
         : "UV safety checks passed. Automatic follow could not be confirmed; check the Cart before retrying.";
     } else {
+      uvReadiness = "unsafe";
       uvFollowActive = false;
       uvDefaultFollowAttempted = false;
-      if (updateStatus) status.textContent = "Locked: UV safety checks are incomplete. No command was sent.";
+      if (updateStatus) status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
     }
   } catch (_) {
-    if (updateStatus) status.textContent = "Locked: UV status unavailable. Reconnect to check.";
+    uvReadiness = "unavailable";
+    if (updateStatus) status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} No command was sent.`;
   }
 }
 
@@ -977,9 +1042,10 @@ if ($("uvSharedBrightness")) {
     if (uvFollowActive) void sendUv("FOLLOW_MATRIX");
   });
 }
+restoreUvCaps();
 if ($("uvApply")) $("uvApply").addEventListener("click", () => sendUv("MANUAL"));
 if ($("uvOff")) $("uvOff").addEventListener("click", () => sendUv("OFF"));
-uvStateChanged();
+uvStateChanged(false);
 checkUvReadiness();
 
 populateLooks();

@@ -93,14 +93,15 @@ test("layout uses available wide screens and preserves touch-sized primary contr
 });
 
 test("changed Owner PWA assets use a fresh matching cache revision", () => {
-  const revision = "20261024-cart-control-home-r5";
-  assert.match(html, /hbnf-cart-ui-v6\.css\?v=20261024-hbnf-faded-phosphor-r1/);
+  assert.match(html, /hbnf-cart-ui-v6\.css\?v=20261025-cart-uv-r3/);
   assert.match(html, /hbnf-cart-manifest\.webmanifest\?v=20261024-cart-night-earth-r2/);
   assert.match(serviceWorker, /hbnf-faded-phosphor\.png\?v=20261024-hbnf-faded-phosphor-r1/);
-  assert.match(serviceWorker, /v18-hbnf-mark-20261024/);
-  for (const asset of ["hbnf-cart.js", "hbnf-cart-ui-v6.mjs", "hbnf-cart-features.mjs", "hbnf-cart-skins-score.mjs"]) {
-    assert.match(html, new RegExp(`${asset.replaceAll(".", "\\.")}\\?v=${revision}`));
-  }
+  assert.match(serviceWorker, /v19-cart-uv-controls-20261026/);
+  assert.match(serviceWorker, /20261026-cart-uv-controls-r1/);
+  assert.match(html, /hbnf-cart\.js\?v=20261024-cart-control-home-r5/);
+  assert.match(html, /hbnf-cart-ui-v6\.mjs\?v=20261026-cart-uv-controls-r1/);
+  assert.match(html, /hbnf-cart-features\.mjs\?v=20261026-cart-uv-levels-r1/);
+  assert.match(html, /hbnf-cart-skins-score\.mjs\?v=20261024-cart-control-home-r5/);
   assert.match(html, /hbnf-cart2-owner-control-home-r6-20261024/);
   for (const source of [js, readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8")]) {
     assert.match(source, /hbnf-cart-readiness\.mjs\?v=20261024-cart-control-home-r4/);

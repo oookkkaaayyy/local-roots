@@ -98,6 +98,7 @@ if (main && header && !document.getElementById("ownerNavigation")) {
     commandPanel.remove();
   }
   move(".quick-tuning", "system");
+  move("#uvSystemControls", "system");
   if (status) {
     const statusDetails = document.createElement("details");
     statusDetails.className = "panel status-details-panel";
