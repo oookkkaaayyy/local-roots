@@ -27,7 +27,7 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   assert.match(nginx, /location = \/api\/aux\/uv-policy[\s\S]*?auth_owner\.lua[\s\S]*?uv_policy_access\.lua/);
   const uvLocation = nginx.match(/location = \/api\/aux\/uv-policy \{([\s\S]*?)\n    \}/)?.[1] || "";
   assert.doesNotMatch(uvLocation, /proxy_pass/);
-  assert.match(localUv, /local_uv_policy_runtime_unavailable/);
+  assert.match(localUv, /local_uv_policy_readiness_unverified/);
   assert.match(localUv, /mutationIssued = false/);
   assert.match(localUv, /if auth\.owner_access\(false\) ~= true then return end/);
 });
@@ -50,4 +50,4 @@ test("current UV profile fails closed and never publishes manual brightness", as
   assert.equal(publishCount, 0);
 });
 
-console.log("PASS: authenticated local UV route fails closed without a shared policy runtime; no raw WLED mutation path is introduced");
+console.log("PASS: Opal and backend share UV request contract; local route fails closed without trusted readiness and has no raw WLED path");

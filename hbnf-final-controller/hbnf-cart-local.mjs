@@ -70,14 +70,14 @@ export class LocalOwnerControl {
   }
 
   // This path deliberately does not require a live Matrix transport. The
-  // Opal endpoint owns authorization and must run the same UV policy locally;
-  // until that policy runtime is installed it returns a fail-closed 503.
+  // Opal owns authorization and reads the shared policy contract. It remains
+  // fail-closed until trusted local commissioning/runtime evidence is present.
   async uvPolicy(token, request = {}) {
     if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV policy.");
     const mode = String(request.mode || "").toUpperCase();
     const levels = request.brightnessBySegment;
     const validLevel = value => Number.isInteger(value) && value >= 0 && value <= 255;
-    if (!["OFF", "MANUAL", "FOLLOW_MATRIX"].includes(mode) || !levels ||
+    if (!mode || !levels ||
         !validLevel(levels.main) || !validLevel(levels.short)) {
       throw new Error("Invalid local UV policy request; no command was sent.");
     }

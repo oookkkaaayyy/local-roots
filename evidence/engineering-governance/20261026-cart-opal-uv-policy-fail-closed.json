@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
   "change_id": "CART_OPAL_LOCAL_UV_POLICY_FAIL_CLOSED_20261026",
-  "summary": "Add a paired-owner authenticated, strictly validated Opal UV policy endpoint and client contract that cannot issue a WLED mutation until the canonical shared policy can run on the installed Opal runtime.",
+  "summary": "Add a paired-owner authenticated Opal UV policy endpoint whose validation consumes a versioned shared policy contract, while it remains unable to issue WLED mutations until trusted local readiness evidence exists.",
   "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
   "impact": {
     "architecture": false,
@@ -21,12 +21,13 @@
         "staging/coordinated-backend/opal/owner-local-control/auth_owner.lua"
       ],
       "tests": [
-        "node --test tests/hbnf_owner_local_uv_policy.test.mjs tests/hbnf_owner_uv_local_path.test.mjs",
+        "node --test tests/hbnf_owner_local_uv_policy.test.mjs tests/hbnf_owner_uv_local_path.test.mjs hbnf-aux-lighting/tests/test_uv_command.mjs",
+        "python3 hbnf-aux-lighting/tests/test_readiness.py",
         "python3 -m unittest -v tests.hbnf_owner_local_control_package",
         "sh -n staging/coordinated-backend/opal/owner-local-control/install.sh; sh -n staging/coordinated-backend/opal/owner-local-control/rollback.sh",
         "git diff --check"
       ],
-      "limitations": "The installed OpenResty/Lua runtime cannot load the existing Deno JavaScript policy module. The endpoint validates and returns 503 with mutationIssued:false; no local UV actuation or hardware acceptance is claimed. Existing UV hardware profile and physical commissioning gates remain closed."
+      "limitations": "The endpoint and Deno/JavaScript backend consume the same versioned JSON policy contract, but Opal does not yet have trusted local commissioning state, verified hardware profile, fresh AUX identity/runtime readback, or accepted unpaired-client isolation. It validates requests and returns 503 with mutationIssued:false. No local UV actuation or hardware acceptance is claimed."
     }
   }
 }
