@@ -32,7 +32,7 @@
     },
     {
       "path": "hbnf-cart-manifest.webmanifest",
-      "sha256": "1c7fe06b8f88cac6f96e007c490d1bbadfae60ccc34e46825f44ab96f7776c9c",
+      "sha256": "fcbdb98592acfa60cfbcb67753d1baa507c0c3ddeac9b50d6bb1e60997094a73",
       "size": 533
     },
     {
@@ -88,7 +88,7 @@
   ],
   "builder": {
     "path": "scripts/hbnf_build_local_owner_pwa.py",
-    "sha256": "6990c0a9d8e710f95d063aeb33718a200f94283ee46ed29cca0dd638343a76b2"
+    "sha256": "7019459887d509b7af20985d59d463e9fde8e88f0778da76719d4b5d2b80faba"
   },
   "cloudScoring": "remote-only; live results are fetched on demand and cached entries are labeled CACHED",
   "destination": "/www/mission-control-local/owner-pwa",
@@ -103,41 +103,38 @@
     "scoringOrder1": "OPEN_NOT_CLAIMED"
   },
   "rollbackBaseline": {
-    "entries": 20,
+    "entries": 21,
     "installedReadback": {
       "deviceSidePriorRollbackCopy": "NOT_CHECKED",
+      "evidenceLevel": "OWNER_REPORTED_HISTORICAL_SERVING_ASSET_READBACK",
+      "expectedInstalledRegularFiles": 21,
       "filesystemCompleteness": "REQUIRES_FRESH_INSTALLER_PREFLIGHT",
       "filesystemEntryCount": "NOT_CHECKED",
       "installerMustVerifyExactDirectoryAndCreateFreshRollbackBeforeSwap": true,
-      "observedExpectedHttpPaths": 20,
-      "path": "evidence/owner-pwa-v112-tx02-direct-readback-20261024/READONLY_BASELINE.json",
+      "observedExpectedHttpPaths": 17,
+      "path": "evidence/owner-pwa-v113-readback-20261025/READONLY_BASELINE.json",
       "rollbackArtifactAvailable": true,
-      "runtimeVersion": "1.0.12",
-      "servedPayloadHashesVerified": 16,
-      "sha256": "a8d9ce270ab6c72492a2165b4ca713f657b5b7214c0f8571fc45782ad7c8f48c"
+      "runtimeVersion": "1.0.13",
+      "servedPayloadHashesVerified": 17,
+      "sha256": "b91d5968a80afa0f22b240c93d92b845a0c25cb118a6c88183f41dbe5d5b6274"
     },
     "packageArchive": {
       "driveFileId": null,
       "path": "ROLLBACK_BASELINE.zip",
-      "sha256": "a24f480aa5dd9cdfc8fe5c415b277f4605db1c506054b8c9e5918bd03ccf62b6",
-      "size": 472203,
-      "sourcePath": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.12-tx02-package/hbnf-owner-pwa-local-v1.0.12.zip"
+      "sha256": "60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a",
+      "size": 1323693,
+      "sourcePath": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.13/hbnf-owner-pwa-local-v1.0.13.zip"
     },
-    "path": "BASELINE.SHA256SUMS",
-    "sha256": "054155fdca281f07d377fa1e03b33a127088499c6e97c59082a579587624cf80",
+    "path": "INSTALLED_V113_EXPECTED.SHA256SUMS",
+    "sha256": "83bf71e7125ad24a59707e956fc42083700266193c9e002ec5665e1a8a382f0c",
     "source": null
   },
-  "sourceCommit": "4ea235ffbed9010e657e2d3647434c01fbb64706",
+  "sourceCommit": "70435e5df3d9cfc0d68bbf88c99308960ef09b56",
   "sourceInputs": [
     {
-      "path": "evidence/owner-pwa-v112-tx02-direct-readback-20261024/BASELINE.SHA256SUMS",
-      "sha256": "054155fdca281f07d377fa1e03b33a127088499c6e97c59082a579587624cf80",
-      "size": 1741
-    },
-    {
-      "path": "evidence/owner-pwa-v112-tx02-direct-readback-20261024/READONLY_BASELINE.json",
-      "sha256": "a8d9ce270ab6c72492a2165b4ca713f657b5b7214c0f8571fc45782ad7c8f48c",
-      "size": 5320
+      "path": "evidence/owner-pwa-v113-readback-20261025/READONLY_BASELINE.json",
+      "sha256": "b91d5968a80afa0f22b240c93d92b845a0c25cb118a6c88183f41dbe5d5b6274",
+      "size": 4382
     },
     {
       "path": "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h",
@@ -231,27 +228,32 @@
     },
     {
       "path": "scripts/hbnf_build_local_owner_pwa.py",
-      "sha256": "6990c0a9d8e710f95d063aeb33718a200f94283ee46ed29cca0dd638343a76b2",
-      "size": 40414
+      "sha256": "7019459887d509b7af20985d59d463e9fde8e88f0778da76719d4b5d2b80faba",
+      "size": 43121
     },
     {
       "path": "scripts/hbnf_verify_owner_pwa_source_manifest.mjs",
-      "sha256": "556a0ce061c5c5674667d9f68eac02a267189e19ab406b4ac728aefd5adef0a1",
-      "size": 4558
+      "sha256": "0966e966ea7dc928fce4fe20802b5a1d0d224dea64e86e8879055b351ab690e8",
+      "size": 4704
     },
     {
-      "path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.12-tx02-package/hbnf-owner-pwa-local-v1.0.12.zip",
-      "sha256": "a24f480aa5dd9cdfc8fe5c415b277f4605db1c506054b8c9e5918bd03ccf62b6",
-      "size": 472203
+      "path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.13/INSTALLED_V113_EXPECTED.SHA256SUMS",
+      "sha256": "83bf71e7125ad24a59707e956fc42083700266193c9e002ec5665e1a8a382f0c",
+      "size": 1831
+    },
+    {
+      "path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.13/hbnf-owner-pwa-local-v1.0.13.zip",
+      "sha256": "60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a",
+      "size": 1323693
     },
     {
       "path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.14/install.sh",
-      "sha256": "e159420f330e587fab7f7fa8e3c00666ae047c2b76bc74e46dfef9a92ffcdca1",
-      "size": 6786
+      "sha256": "90ce88b1efb344047d1f77f141adf7726567b991c23676dcd469e9199101564e",
+      "size": 6647
     },
     {
       "path": "staging/coordinated-backend/opal/owner-pwa-local-v1.0.14/rollback.sh",
-      "sha256": "072afb9e057aea85ec1747e337549a699e5f78151e7ce9ebc6598dcccc2361d4",
+      "sha256": "1c5717c70ee28127ee0ba3cf8de8c1ebd1298870c6971cab84e0d21713c0a3d0",
       "size": 2066
     }
   ],
