@@ -28,6 +28,69 @@ CLOUD_BASE = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1"
 MATRIX_IDENTITY_KEYS = ("reachable","pixels","release","engine","buildWitness","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap")
 AUX_IDENTITY_KEYS = ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap")
 AUX_SYNC_KEYS = ("visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
+INSTALLED_AUX_MAC = "8c94df55c34c"
+EXPECTED_WORKFLOW_PATH = ".github/workflows/hbnf-sp803e-aux-r3-build.yml"
+EXPECTED_WORKFLOW_REF = "refs/heads/codex/cart-order2-cumulative-20261024"
+
+def _metrics(path):
+    values={}
+    for line in path.read_text().splitlines():
+        if "=" in line:
+            key,value=line.split("=",1);values[key.strip()]=value.strip()
+    return values
+
+def _candidate_actions_receipt(root,package):
+    """Require a complete package from the exact successful Actions artifact path."""
+    try:
+        root=pathlib.Path(root).resolve()
+        metrics=_metrics(root/"FINAL_METRICS.txt")
+        receipt=json.loads((root/"RELEASE_RECEIPT.json").read_text())
+        build=receipt.get("build") or {};source=receipt.get("source") or {};candidate=receipt.get("candidate") or {}
+        run_id=str(metrics.get("github_run_id") or "")
+        run_url=f"https://github.com/oookkkaaayyy/local-roots/actions/runs/{run_id}"
+        return bool(
+            run_id.isdigit()
+            and metrics.get("github_sha")==source.get("commit")==package.get("releaseAdmission",{}).get("candidate_source_commit")
+            and metrics.get("github_ref")==EXPECTED_WORKFLOW_REF
+            and metrics.get("workflow_path")==EXPECTED_WORKFLOW_PATH
+            and metrics.get("github_run_url")==run_url==build.get("run_url")
+            and build.get("run_id")==run_id
+            and build.get("workflow_ref")==EXPECTED_WORKFLOW_REF
+            and build.get("workflow_path")==EXPECTED_WORKFLOW_PATH
+            and metrics.get("UV_OUTPUTS_VERIFIED")=="NO"
+            and metrics.get("UV_COMPILE_GATE_DEFAULT")=="0"
+            and candidate.get("sha256")==package.get("firmwareSha256")==metrics.get("firmware_sha256")
+            and candidate.get("size")==package.get("firmwareBytes")==int(metrics.get("firmware_bytes","-1"))
+            and receipt.get("status")=="INCOMPLETE"
+            and package.get("ok") is True
+            and package.get("installAdmissible") is False
+            and package.get("releaseAdmission",{}).get("reason")=="FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED"
+            and package.get("releaseAdmission",{}).get("rollbackVerified") is True
+        )
+    except Exception:
+        return False
+
+def _installed_v6_baseline(d,package_dir,package):
+    """Match the one pre-authorized AUX target to the exact recovered V6 image identity."""
+    try:
+        root=pathlib.Path(package_dir).resolve()
+        admission=package["releaseAdmission"];artifact=admission["rollbackArtifact"]
+        manifest=json.loads((root/"AUX_V6_RECOVERY_MANIFEST.json").read_text())
+        i=d.get("info") or {};state=d.get("state") or {};aux=state.get("HBNFAUX") or {}
+        return bool(
+            d.get("ip")=="192.168.77.11"
+            and str(i.get("mac") or "").replace(":","").lower()==INSTALLED_AUX_MAC
+            and str(i.get("arch") or "").lower()=="esp32"
+            and int(i.get("flash") or 0)==4
+            and str(i.get("ver") or "")=="16.0.1"
+            and aux.get("release")==manifest.get("firmware_release")
+            and aux.get("engine")==manifest.get("engine")
+            and aux.get("buildWitness")==manifest.get("build_witness")
+            and manifest.get("firmware_sha256")==admission.get("installed_firmware_sha256")==artifact.get("sha256")
+            and manifest.get("firmware_bytes")==artifact.get("bytes")
+        )
+    except Exception:
+        return False
 
 def all_true(d, keys): return bool(d) and all(d.get(k) is True for k in keys)
 
@@ -45,12 +108,28 @@ def verified_package_firmware(fw):
         raise RuntimeError("AUX firmware bytes do not match the package manifest.")
     return package
 
-def require_install_admission(package):
-    if not package.get("installAdmissible"):
+def require_install_admission(package,package_dir,device=None):
+    if not _candidate_actions_receipt(package_dir,package):
         admission=package.get("releaseAdmission") or {}
         reason=admission.get("reason") or "exact installed-firmware rollback is not verified"
         resume=admission.get("resumptionCondition") or ""
-        raise RuntimeError(f"AUX firmware OTA blocked: {reason}. {resume}".strip())
+        raise RuntimeError(f"AUX firmware OTA blocked: exact Actions package verification failed ({reason}). {resume}".strip())
+    if device is None:
+        return None
+    if not _installed_v6_baseline(device,package_dir,package):
+        admission=package.get("releaseAdmission") or {}
+        raise RuntimeError(f"AUX firmware OTA blocked: fresh device readback does not match the exact installed V6 rollback ({admission.get('reason') or 'baseline mismatch'}). {admission.get('resumptionCondition') or ''}".strip())
+    metrics=_metrics(pathlib.Path(package_dir).resolve()/"FINAL_METRICS.txt")
+    info=device.get("info") or {};aux=((device.get("state") or {}).get("HBNFAUX") or {})
+    return {"schema":"hbnf-aux-install-admission-v1","status":"PASS",
+        "captured_at_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),
+        "source_commit":metrics["github_sha"],"candidate_sha256":package["firmwareSha256"],
+        "github_actions_run_id":str(metrics["github_run_id"]),"github_actions_run_url":metrics["github_run_url"],
+        "device_ip":device.get("ip"),"device_mac":INSTALLED_AUX_MAC,"device_firmware_version":info.get("ver"),
+        "installed_release":aux.get("release"),"installed_engine":aux.get("engine"),
+        "installed_build_witness":aux.get("buildWitness"),
+        "rollback_sha256":package.get("releaseAdmission",{}).get("rollbackArtifact",{}).get("sha256"),
+        "uv_output_enabled":False,"owner_install_authorization":"SESSION_EXPLICIT"}
 
 def local_ipv4s():
     out=[]
@@ -302,14 +381,20 @@ def preflight(args):
     if args.backup:
         if m: backups["matrix"]=str(backup_node(m,root,"matrix"))
         if a: backups["aux"]=str(backup_node(a,root,"aux"))
+    install_admission={"status":"BLOCKED","reason":"PACKAGE_OR_TARGET_NOT_MATCHED"}
+    if a:
+        current=ids["inspected"].get(a) or {}
+        if _candidate_actions_receipt(pathlib.Path(args.package_dir).resolve(),package) and _installed_v6_baseline(current,pathlib.Path(args.package_dir).resolve(),package):
+            run_id=str(_metrics(pathlib.Path(args.package_dir).resolve()/"FINAL_METRICS.txt").get("github_run_id"))
+            install_admission={"status":"PASS","reason":"FRESH_EXACT_V6_BASELINE_AND_ACTIONS_PACKAGE_VERIFIED","candidate_source_commit":package.get("releaseAdmission",{}).get("candidate_source_commit"),"candidate_firmware_sha256":package.get("firmwareSha256"),"actions_run_id":run_id,"target_mac":INSTALLED_AUX_MAC,"rollback_sha256":package.get("releaseAdmission",{}).get("rollbackArtifact",{}).get("sha256")}
     if not package.get("ok"): nxt="PACKAGE_INVALID"
     elif not a: nxt="POWER_OR_IDENTIFY_AUX" if ids["auxReason"]=="none" else "DISAMBIGUATE_AUX"
-    elif not all_true(ac,AUX_IDENTITY_KEYS): nxt="INSTALL_EXACT_AUX_FIRMWARE" if package.get("installAdmissible") else "RELEASE_REVIEW_ONLY"
+    elif not all_true(ac,AUX_IDENTITY_KEYS): nxt="INSTALL_EXACT_AUX_FIRMWARE" if package.get("installAdmissible") or install_admission.get("status")=="PASS" else "RELEASE_REVIEW_ONLY"
     elif not hardware_ok(ids["inspected"][a]) or not safe_boot_runtime_ok(a,ids["inspected"][a]): nxt="APPLY_HARDWARE_PLAN"
     elif not m: nxt="POWER_OR_IDENTIFY_MATRIX"
     elif not all_true(ac,AUX_SYNC_KEYS): nxt="RUN_GUARDED_PREPARE_SYNC"
     else: nxt="BEGIN_UNDERGLOW_ACCEPTANCE"
-    return {"mutationIssued":False,"package":package,"subnets":subnets,"wledNodes":nodes,"matrix":{"ip":m,"candidates":ids["matrixCandidates"],"checks":mc},"aux":{"ip":a,"selectionReason":ids["auxReason"],"checks":ac},"backups":backups,"nextAction":nxt}
+    return {"mutationIssued":False,"package":package,"installAdmission":install_admission,"subnets":subnets,"wledNodes":nodes,"matrix":{"ip":m,"candidates":ids["matrixCandidates"],"checks":mc},"aux":{"ip":a,"selectionReason":ids["auxReason"],"checks":ac},"backups":backups,"nextAction":nxt}
 
 def multipart_firmware(fw):
     boundary="----HBNF"+uuid.uuid4().hex
@@ -341,8 +426,9 @@ def pending_release_result(ip,after):
 
 def ota_install(ip,fw,timeout=120):
     package=verified_package_firmware(fw)
-    require_install_admission(package)
+    require_install_admission(package,fw.parent)
     before=lc.inspect(ip)
+    admission=require_install_admission(package,fw.parent,before)
     if not lc.looks_like_wled(before): raise RuntimeError("Aux target is not a reachable WLED node.")
     if all_true(lc.check_matrix(before),MATRIX_IDENTITY_KEYS): raise RuntimeError("Target is exact Matrix R3; refusing AUX firmware install.")
     info=before.get("info") or {}
@@ -350,6 +436,13 @@ def ota_install(ip,fw,timeout=120):
     flash_mb=int(info.get("flash") or 0)
     if "esp32" not in arch: raise RuntimeError(f"Aux target architecture is {arch!r}, not ESP32.")
     if flash_mb!=4: raise RuntimeError(f"Aux target reports {flash_mb} MB flash; expected the verified SP803E 4 MB target.")
+    admission_path=pathlib.Path.home()/"Desktop"/f"HBNF_AUX_INSTALL_ADMISSION_{package['firmwareSha256'][:12]}.json"
+    if admission_path.exists():
+        raise RuntimeError(f"AUX firmware OTA blocked: a transaction record already exists for this exact candidate: {admission_path}")
+    admission["status"]="STARTED"
+    admission["attempt_limit"]=1
+    admission["attempts_used"]=1
+    write_report(admission,admission_path)
     body,ctype=multipart_firmware(fw)
     req=urllib.request.Request(f"http://{ip}/update",data=body,method="POST",headers={"Content-Type":ctype,"Content-Length":str(len(body))})
     try:
@@ -360,7 +453,8 @@ def ota_install(ip,fw,timeout=120):
         raise RuntimeError(f"OTA HTTP {e.code}: {detail[:400]}") from e
     if status!=200 or "Update successful" not in response: raise RuntimeError(f"OTA did not return success (HTTP {status}).")
     after=wait_wled(ip,timeout,True)
-    return pending_release_result(ip,after)
+    result=pending_release_result(ip,after);result["installAdmissionPath"]=str(admission_path)
+    return result
 
 def cfg_post(ip,patch):
     body=dict(patch);body["sv"]=True
@@ -707,7 +801,7 @@ def selftest():
         assert verified["firmwareBytes"]==fw.stat().st_size
         assert verified["ok"] and not verified["installAdmissible"]
         try:
-            require_install_admission(verified);raise AssertionError("review-only package passed OTA guard")
+            require_install_admission(verified,package_dir);raise AssertionError("review-only package passed OTA guard")
         except RuntimeError as e:
             assert "EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING" in str(e)
         original_inspect=lc.inspect
@@ -721,6 +815,36 @@ def selftest():
         admission["candidate_source_commit"]="b"*40
         (package_dir/op.ADMISSION_FILE).write_text(json.dumps(admission))
         assert not op.verify_package(package_dir)["ok"]
+    with tempfile.TemporaryDirectory() as td:
+        root=pathlib.Path(td);source="a"*40;run_id="123456789";candidate_sha="b"*64;candidate_bytes=1348784
+        run_url=f"https://github.com/oookkkaaayyy/local-roots/actions/runs/{run_id}"
+        (root/"FINAL_METRICS.txt").write_text(
+            f"github_sha={source}\ngithub_run_id={run_id}\ngithub_run_url={run_url}\ngithub_ref={EXPECTED_WORKFLOW_REF}\n"
+            f"workflow_path={EXPECTED_WORKFLOW_PATH}\nfirmware_sha256={candidate_sha}\nfirmware_bytes={candidate_bytes}\n"
+            "UV_OUTPUTS_VERIFIED=NO\nUV_COMPILE_GATE_DEFAULT=0\n")
+        receipt={"status":"INCOMPLETE","source":{"commit":source},"candidate":{"sha256":candidate_sha,"size":candidate_bytes},
+                 "build":{"run_id":run_id,"run_url":run_url,"workflow_ref":EXPECTED_WORKFLOW_REF,"workflow_path":EXPECTED_WORKFLOW_PATH}}
+        (root/"RELEASE_RECEIPT.json").write_text(json.dumps(receipt))
+        (root/"AUX_V6_RECOVERY_MANIFEST.json").write_text(json.dumps({"firmware_release":"hbnf-wow-aux-r3-2026-09-22-v1",
+            "engine":"aux-r3-wow-1d","build_witness":"registry28-tempo-lock-1d-v6-network-no-starve",
+            "firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95","firmware_bytes":1348272}))
+        package={"ok":True,"installAdmissible":False,"firmwareSha256":candidate_sha,"firmwareBytes":candidate_bytes,
+            "releaseAdmission":{"status":"REVIEW_ONLY","reason":"FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED","rollbackVerified":True,
+                "candidate_source_commit":source,"installed_firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95",
+                "rollbackArtifact":{"sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95","bytes":1348272}}}
+        device={"ip":"192.168.77.11","info":{"mac":INSTALLED_AUX_MAC,"arch":"esp32","flash":4,"ver":"16.0.1"},
+            "state":{"HBNFAUX":{"release":"hbnf-wow-aux-r3-2026-09-22-v1","engine":"aux-r3-wow-1d",
+                "buildWitness":"registry28-tempo-lock-1d-v6-network-no-starve"}}}
+        assert _candidate_actions_receipt(root,package)
+        assert _installed_v6_baseline(device,root,package)
+        admission=require_install_admission(package,root,device)
+        assert admission["status"]=="PASS" and admission["uv_output_enabled"] is False
+        assert admission["rollback_sha256"]==package["releaseAdmission"]["installed_firmware_sha256"]
+        device["info"]["mac"]="001122334455"
+        assert not _installed_v6_baseline(device,root,package)
+        device["info"]["mac"]=INSTALLED_AUX_MAC
+        (root/"FINAL_METRICS.txt").write_text((root/"FINAL_METRICS.txt").read_text().replace("UV_COMPILE_GATE_DEFAULT=0","UV_COMPILE_GATE_DEFAULT=1"))
+        assert not _candidate_actions_receipt(root,package)
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
     wire_prefix=body[:512]
     assert b"\r\nContent-Disposition" in wire_prefix and b"\\r\\nContent-Disposition" not in wire_prefix
