@@ -28,14 +28,17 @@ def sha256(path:pathlib.Path)->str:
     return h.hexdigest()
 
 
-def verify_artifact_archive(root:pathlib.Path,pointer:dict|None=None)->bool:
+def verify_artifact_archive(root:pathlib.Path,pointer:dict|None=None,require_external:bool=False)->bool:
     try:
         root=pathlib.Path(root).resolve()
         pointer=pointer or json.loads((root/"ARTIFACT_POINTER.json").read_text())
-        name=pointer.get("package_file")
+        name=pointer.get("package_file") or "HBNF_SP803E_AUX_R3_COMMISSIONING.zip"
         if name!="HBNF_SP803E_AUX_R3_COMMISSIONING.zip":return False
         archive=root/name
-        if not archive.is_file() or sha256(archive)!=pointer.get("package_sha256"):return False
+        has_external=bool(pointer.get("package_file") and pointer.get("package_sha256"))
+        if require_external and not has_external:return False
+        if bool(pointer.get("package_file"))!=bool(pointer.get("package_sha256")):return False
+        if not archive.is_file() or (has_external and sha256(archive)!=pointer.get("package_sha256")):return False
         with zipfile.ZipFile(archive) as z:
             if z.testzip() is not None:return False
             names=z.namelist()
@@ -50,7 +53,8 @@ def verify_artifact_archive(root:pathlib.Path,pointer:dict|None=None)->bool:
                 if not local.is_file():return False
                 if item=="ARTIFACT_POINTER.json":
                     local_pointer=json.loads(local.read_text())
-                    if local_pointer!=pointer:return False
+                    expected_local=pointer if has_external else embedded
+                    if local_pointer!=expected_local:return False
                 elif local.read_bytes()!=z.read(item):return False
         return True
     except Exception:return False

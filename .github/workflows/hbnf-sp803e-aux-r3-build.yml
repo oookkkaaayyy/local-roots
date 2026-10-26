@@ -420,21 +420,6 @@ jobs:
           cp /tmp/artifacts/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin
           cp /tmp/artifacts/FINAL_METRICS.txt hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
           python hbnf-aux-lighting/commissioning/commission_operator.py --selftest
-          python - <<'PY2'
-          import pathlib,sys
-          source=pathlib.Path('hbnf-aux-lighting/commissioning').resolve()
-          sys.path.insert(0,str(source))
-          import commission_operator as c
-          package=pathlib.Path('/tmp/artifacts').resolve()
-          r=c.verify_package(package)
-          assert r['ok'],r
-          assert r['releaseAdmission']['status']=='REVIEW_ONLY',r
-          assert r['releaseAdmission']['reason']=='FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED',r
-          assert r['releaseAdmission']['rollbackVerified'],r
-          assert not r['installAdmissible'],r
-          print('HBNF_AUX_COMMISSION_PACKAGE_VERIFY_PASS')
-          PY2
-          rm -f hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
 
       - name: Build permission-safe commissioning ZIP
         shell: bash
@@ -466,6 +451,24 @@ jobs:
               assert receipt['status']=='INCOMPLETE'
               assert receipt['source']['commit']==__import__('os').environ['GITHUB_SHA']
           print('HBNF_AUX_DISTRIBUTION_MODE_GATE_PASS')
+          PY2
+
+      - name: Verify exact commissioning package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY2'
+          import pathlib,sys
+          source=pathlib.Path('/tmp/artifacts').resolve()
+          sys.path.insert(0,str(pathlib.Path('hbnf-aux-lighting/commissioning').resolve()))
+          import commission_operator as c
+          r=c.verify_package(source)
+          assert r['ok'],r
+          assert r['releaseAdmission']['status']=='REVIEW_ONLY',r
+          assert r['releaseAdmission']['reason']=='FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED',r
+          assert r['releaseAdmission']['rollbackVerified'],r
+          assert not r['installAdmissible'],r
+          print('HBNF_AUX_COMMISSION_PACKAGE_VERIFY_PASS')
           PY2
 
       - name: Preserve exact commissioning ZIP in a private run branch

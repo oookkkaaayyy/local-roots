@@ -62,6 +62,7 @@ def _candidate_actions_receipt(root,package):
             and pointer.get("workflow_path")==metrics.get("workflow_path")==EXPECTED_WORKFLOW_PATH
             and pointer.get("firmware_sha256")==package.get("firmwareSha256")==metrics.get("firmware_sha256")
             and pointer.get("firmware_bytes")==package.get("firmwareBytes")==int(metrics.get("firmware_bytes","-1"))
+            and op.verify_artifact_archive(root,pointer,require_external=True)
             and metrics.get("github_sha")==source.get("commit")==package.get("releaseAdmission",{}).get("candidate_source_commit")
             and metrics.get("github_ref")==EXPECTED_WORKFLOW_REF
             and metrics.get("workflow_path")==EXPECTED_WORKFLOW_PATH
@@ -853,7 +854,9 @@ def selftest():
         (package_dir/op.ADMISSION_FILE).write_text(json.dumps(admission))
         assert not op.verify_package(package_dir)["ok"]
     with tempfile.TemporaryDirectory() as td:
-        root=pathlib.Path(td);source="a"*40;run_id="123456789";candidate_sha="b"*64;candidate_bytes=1348784
+        root=pathlib.Path(td);source="a"*40;run_id="123456789"
+        candidate_fw=root/"HBNF_SP803E_AUX_R3.bin";candidate_fw.write_bytes(b"candidate firmware fixture")
+        candidate_sha=op.sha256(candidate_fw);candidate_bytes=candidate_fw.stat().st_size
         run_url=f"https://github.com/oookkkaaayyy/local-roots/actions/runs/{run_id}"
         (root/"FINAL_METRICS.txt").write_text(
             f"github_sha={source}\ngithub_run_id={run_id}\ngithub_run_attempt=1\ngithub_run_url={run_url}\ngithub_ref={EXPECTED_WORKFLOW_REF}\n"
@@ -865,6 +868,13 @@ def selftest():
         (root/"ARTIFACT_POINTER.json").write_text(json.dumps({"schema":"hbnf-aux-run-artifact-pointer-v1","run_id":run_id,
             "run_attempt":1,"run_url":run_url,"source_commit":source,"workflow_ref":EXPECTED_WORKFLOW_REF,
             "workflow_path":EXPECTED_WORKFLOW_PATH,"firmware_sha256":candidate_sha,"firmware_bytes":candidate_bytes}))
+        archive_path=root/"HBNF_SP803E_AUX_R3_COMMISSIONING.zip"
+        with zipfile.ZipFile(archive_path,"w",zipfile.ZIP_DEFLATED) as z:
+            for name in ("HBNF_SP803E_AUX_R3.bin","FINAL_METRICS.txt","RELEASE_RECEIPT.json","ARTIFACT_POINTER.json"):
+                z.write(root/name,name)
+        sidecar=json.loads((root/"ARTIFACT_POINTER.json").read_text())
+        sidecar.update(package_file=archive_path.name,package_sha256=op.sha256(archive_path))
+        (root/"ARTIFACT_POINTER.json").write_text(json.dumps(sidecar))
         (root/"AUX_V6_RECOVERY_MANIFEST.json").write_text(json.dumps({"firmware_release":"hbnf-wow-aux-r3-2026-09-22-v1",
             "engine":"aux-r3-wow-1d","build_witness":"registry28-tempo-lock-1d-v6-network-no-starve",
             "firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95","firmware_bytes":1348272}))
