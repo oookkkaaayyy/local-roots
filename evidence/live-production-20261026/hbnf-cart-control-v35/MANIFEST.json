@@ -1,0 +1,19 @@
+{
+  "function": "hbnf-cart-control",
+  "version": 35,
+  "sourceHash": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+  "verifyJwt": false,
+  "files": [
+    "index.ts",
+    "guest-command.ts",
+    "runtime-vibe.ts",
+    "live.ts",
+    "skins_scoring.ts",
+    "matrix-relay.ts",
+    "matrix-relay-projection.ts",
+    "matrix-relay-auth.ts",
+    "pairing-expiry.mjs",
+    "deno.json"
+  ],
+  "purpose": "Exact source read back from active Supabase function after the pairing-expiry deployment."
+}
