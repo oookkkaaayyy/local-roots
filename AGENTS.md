@@ -150,6 +150,16 @@ For any live, deployment, diagnostic, or high-cost task:
 
 This section governs every future implementation, build, deployment, release, diagnostic, recovery, and hardware-validation prompt/process in this project.
 
+### Absolute installed-baseline and rollback invariant — all components and future releases
+
+This is a mandatory release invariant, not a recommendation. Enforce it at three independent gates:
+
+1. **Authoritative baseline record:** maintain one per-component record binding the physical/logical target, installed release and source identity, installed artifact SHA-256 (or an explicit `UNAVAILABLE` state with evidence and recovery plan), exact rollback artifact ID/location/hash, candidate source commit/hash, and install/readback receipt. Never infer installed bytes from a version label or build marker.
+2. **Build/package admission:** a package may be labeled `INSTALLABLE` only when the baseline record is current, exact rollback bytes match the recorded installed image, the rollback is durably retained and read-back verified, and candidate/source/package identities agree. Otherwise the only permitted disposition is `REVIEW_ONLY`; never call that package ready to install.
+3. **Mutation and closeout:** immediately before writes, re-read the target identity/baseline and compare with the admitted record; abort before mutation on missing or mismatched evidence. After writes, verify the installed candidate identity and durably write/read back the receipt, then atomically advance the authoritative baseline while retaining the exact prior image for the next rollback.
+
+Automated checks must reject missing, stale, mismatched, replayed, or non-durable baseline/rollback evidence at every applicable gate. Compile success, matching version/build labels, owner reports, and earlier tests are not substitutes. If firmware bytes cannot be read from a device, accept only the repository's explicitly supported source/build witness bound to the exact install transaction; if that cannot establish identity, keep installation blocked and continue independent work. This rule applies to every coordinator and worker. Never ask the owner to locate project-created artifacts.
+
 - Do not treat the project as exploratory unless the unknown is genuinely irreducible runtime/physical behavior. Source identity, dependencies, generated inputs, credentials, API/consumer contracts, mutable-pointer semantics, publication behavior, timeout budgets, rollback paths, and cloud deployment mechanics are deterministic prerequisites and must be closed before live/paid mutation.
 - Before any risky mutation, prove the **entire transaction** end to end in preview/staging/simulation or deterministic fixtures: prepare -> publish/deploy -> actual consumer reads the exact path/role/identity -> execute -> verify -> rollback/recovery -> restore exact prior cloud/device state.
 - Recovery is a prerequisite, not an incident task. The exact last-known-good artifact/version, exact consumer path, exact rollback command/path, and acceptance checks must be proven before the first risky mutation.

@@ -214,6 +214,22 @@ def validate_workflow(
             required_before = contract.get("required_before_stage_id")
             if required_before and required_before not in ids:
                 errors.append(f"{wid}: prelive required_before_stage_id is unknown: {required_before}")
+            if wid == "artifact-release" and contract.get("recovery_proven_before_build") is not True:
+                errors.append(f"{wid}: recovery_proven_before_build must be true")
+            if contract.get("recovery_proven_before_build") is True:
+                build_id = str(contract.get("build_stage_id") or "build")
+                if build_id not in ids:
+                    errors.append(f"{wid}: recovery-before-build references unknown stage {build_id}")
+                else:
+                    build_index = ids.index(build_id)
+                    for key in ("closure_stage_id", "recovery_stage_id", "capture_stage_id"):
+                        prerequisite = contract.get(key)
+                        if not isinstance(prerequisite, str) or prerequisite not in ids:
+                            errors.append(f"{wid}: recovery-before-build has unknown {key}")
+                        elif ids.index(prerequisite) >= build_index:
+                            errors.append(
+                                f"{wid}: {prerequisite} must occur before {build_id}"
+                            )
 
         for required_stage in MANDATORY_PRELIVE_STAGES:
             if required_stage not in ids:
