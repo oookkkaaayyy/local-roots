@@ -312,7 +312,12 @@ test("Opal gateway restricts origin, reads, and the bounded authenticated AUX wr
   assert.match(auth, /expiry/);
   const edge = await readFile(new URL("../staging/coordinated-backend/hbnf-cart-control/index.ts", import.meta.url), "utf8");
   const authModel = await readFile(new URL("../staging/coordinated-backend/hbnf-cart-control/guest-command.ts", import.meta.url), "utf8");
-  assert.match(edge, /if \(action === "verify_local_pairing"\)[\s\S]*?if \(!pairedDeviceAuthorized\) return response\(\{ error: "owner_pairing_required" \}, 401\);[\s\S]*?return response\(\{ paired: true \}\);/);
+  assert.match(edge, /if \(action === "verify_local_pairing"\)[\s\S]*?if \(!pairedDeviceAuthorized \|\| !pairedDeviceSessionHash\) return response\(\{ error: "owner_pairing_required" \}, 401\);[\s\S]*?readAuthoritativeDeviceExpiry\(service, pairedDeviceSessionHash\)[\s\S]*?if \(expiresAtEpoch === null\) return response\(\{ error: "authoritative_pair_expiry_unavailable" \}, 503\);[\s\S]*?return response\(\{ paired: true, expiresAtEpoch \}\);/);
+  assert.match(edge, /if \(pairedDeviceAuthorized\) pairedDeviceSessionHash = digest;/);
+  const expiryMigration = await readFile(new URL("../supabase/migrations/20261026155707_hbnf_cart_device_session_expiry.sql", import.meta.url), "utf8");
+  assert.match(expiryMigration, /s\.active is true[\s\S]*?s\.expires_at > clock_timestamp\(\)/);
+  assert.match(expiryMigration, /revoke all on function public\.hbnf_cart_device_session_expiry\(text\) from public, anon, authenticated/);
+  assert.match(expiryMigration, /grant execute on function public\.hbnf_cart_device_session_expiry\(text\) to service_role/);
   assert.match(authModel, /action === "verify_local_pairing"/);
   assert.match(edge, /if \(action === "status"\)/);
   assert.doesNotMatch(edge.match(/if \(action === "status"\)[\s\S]*?if \(action === "guest_command"\)/)?.[0] || "", /pairedDeviceAuthorized/);
