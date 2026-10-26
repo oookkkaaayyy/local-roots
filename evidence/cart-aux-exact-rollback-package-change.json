@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
   "change_id": "cart-aux-exact-rollback-package-20261025",
-  "summary": "Carry the verified installed AUX V6 image and provenance into a complete candidate package while keeping OTA blocked pending fresh identity preflight and existing safety gates.",
+  "summary": "Carry the verified installed AUX V6 image and provenance into a complete candidate package, retrieve it with origin-safe Actions authentication, and keep installation blocked pending fresh identity preflight and existing safety gates.",
   "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
   "impact": {
     "architecture": false,
@@ -26,7 +26,8 @@
         "python3 hbnf-aux-lighting/commissioning/build_commissioning_distribution.py --selftest",
         "python3 hbnf-aux-lighting/commissioning/commission_operator.py --selftest",
         "python3 hbnf-aux-lighting/commissioning/commission_guard.py --selftest",
-        "python3 hbnf-aux-lighting/commissioning/test_release_receipt.py"
+        "python3 hbnf-aux-lighting/commissioning/test_release_receipt.py",
+        "Mocked Actions artifact download: preserve bearer token only on GitHub API origin, strip it on cross-origin redirect, reject HTTP downgrade, and verify artifact and rollback SHA-256"
       ]
     }
   }
