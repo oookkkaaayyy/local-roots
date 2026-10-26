@@ -1,0 +1,39 @@
+{
+  "schema": "hbnf-opal-local-control-tls-readiness-v1",
+  "hostname": "cart-control.hbnightflyers.com",
+  "issuedAt": "2026-10-26T16:41:01Z",
+  "expiresAt": "2027-01-24T16:41:00Z",
+  "issuer": "Let's Encrypt YE2",
+  "certificateSha256Fingerprint": "B9:3F:25:8A:12:E3:99:92:54:7B:59:FB:83:7D:30:04:34:B8:31:F8:9A:DF:15:13:62:E0:65:55:B7:4F:31:4A",
+  "certificateAndPrivateKeyPublicKeySha256": "8b200bf6bb6f04b4a0e697e33cbe1e7cdd147fed9ee3ee2d3707b6f0663a06f9",
+  "issuance": {
+    "method": "Certbot manual DNS-01",
+    "cloudflareChallengeRecordRemoved": true,
+    "challengeRecordPublicDnsReadbackBeforeValidation": true,
+    "automaticRenewal": false,
+    "renewalStatePath": "/Users/andrew/Library/Application Support/HBNF/opal-gateway-tls/certbot/config",
+    "certbotVersion": "5.8.0",
+    "durableCertbotExecutable": "/Users/andrew/Library/Application Support/HBNF/opal-gateway-tls/runtime/bin/certbot",
+    "renewalCommand": "/Users/andrew/Library/Application Support/HBNF/opal-gateway-tls/runtime/bin/certbot certonly --manual --preferred-challenges dns --agree-tos --register-unsafely-without-email --config-dir '/Users/andrew/Library/Application Support/HBNF/opal-gateway-tls/certbot/config' --work-dir '/Users/andrew/Library/Application Support/HBNF/opal-gateway-tls/certbot/work' --logs-dir '/Users/andrew/Library/Application Support/HBNF/opal-gateway-tls/certbot/logs' --cert-name cart-control.hbnightflyers.com --force-renewal -d cart-control.hbnightflyers.com"
+  },
+  "localFiles": {
+    "certificateChain": "/Users/andrew/Library/Application Support/HBNF/opal-gateway-tls/tls/fullchain.pem",
+    "privateKey": "/Users/andrew/Library/Application Support/HBNF/opal-gateway-tls/tls/privkey.pem",
+    "directoryPermissions": "0700",
+    "privateKeyPermissions": "0600",
+    "privateKeyCommittedToRepository": false
+  },
+  "opalInstallTargets": {
+    "certificateChain": "/etc/hbnf-local-control/tls/fullchain.pem",
+    "privateKey": "/etc/hbnf-local-control/tls/privkey.pem",
+    "privateKeyOwnerAndMode": "root:root 0600"
+  },
+  "releaseState": {
+    "certificateIssuedAndLocallyRetained": "PASS",
+    "hostnameSanAndCertificateKeyMatch": "PASS",
+    "temporaryDnsChallengeCleanup": "PASS",
+    "installedOnOpal": "NOT CHECKED",
+    "localSplitDnsAndGatewayTlsReadback": "NOT CHECKED",
+    "ownerLocalControlRelease": "STAGED_NOT_INSTALLED"
+  }
+}
