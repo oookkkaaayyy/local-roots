@@ -270,6 +270,7 @@ jobs:
           manifest={
             'schema':'hbnf-aux-uv-firmware-review-candidate-v1',
             'disposition':'REVIEW_ONLY_NOT_INSTALLABLE',
+            'admissionBlocker':{'code':'UV_COMPILE_GATE_NOT_ADMITTED_BY_COMMISSION_GUARD','reason':'The UV-enabled workflow builds with HBNF_UV_OUTPUTS_VERIFIED=1, while the existing install admission requires UV_OUTPUTS_VERIFIED=NO and UV_COMPILE_GATE_DEFAULT=0. Live AUX identity also requires uvOutputsFailDark=true. Do not relax these checks without an explicit safety design for the enabled runtime.'},
             'sourceCommit':__import__('os').environ['GITHUB_SHA'],
             'workflowRunId':__import__('os').environ['GITHUB_RUN_ID'],
             'workflowRunAttempt':int(__import__('os').environ['GITHUB_RUN_ATTEMPT']),
@@ -285,16 +286,34 @@ jobs:
           (out/'UV_CANDIDATE_MANIFEST.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
           image=out/'HBNF_SP803E_AUX_R3_UV_ENABLED.bin'
           image.write_bytes(candidate.read_bytes())
-          files=[image,rollback,rbmanifest,out/'UV_CANDIDATE_MANIFEST.json']
-          (out/'SHA256SUMS').write_text(''.join(f'{digest(p)}  {p.name}\n' for p in files))
+          # Carry the established commissioning/recovery source with the UV
+          # review image, while keeping its installer/admission gate closed.
+          commission=pathlib.Path('hbnf-aux-lighting/commissioning')
+          commission_files=['START_HERE.txt','COMMISSION_HBNF_AUX.command','commission_guard.py','commission_operator.py','generate_aux_hardware_plan.py','generate_release_admission.py','build_commissioning_distribution.py','local_commission.py','generate_release_receipt.py','validate_release_receipt.py','test_release_receipt.py','RELEASE_RECEIPT.schema.json','RELEASE_RECEIPT.template.json','contract.json','README.md','CODEX_RUNBOOK.md','UV_FIELD_SESSION.md']
+          for name in commission_files:
+            dest=out/'commissioning'/name
+            dest.parent.mkdir(parents=True,exist_ok=True)
+            dest.write_bytes((commission/name).read_bytes())
+            dest.chmod((commission/name).stat().st_mode & 0o777)
+          workflow_inputs={'workflowPath':'.github/workflows/hbnf-sp803e-aux-r3-build.yml','sourceCommit':__import__('os').environ['GITHUB_SHA'],'workflowRunId':__import__('os').environ['GITHUB_RUN_ID'],'workflowRunAttempt':int(__import__('os').environ['GITHUB_RUN_ATTEMPT']),'compileFlag':1,'releaseAdmission':'NOT_GENERATED_GUARD_REJECTS_ENABLED_COMPILE_FLAG'}
+          (out/'UV_WORKFLOW_INPUTS.json').write_text(json.dumps(workflow_inputs,indent=2,sort_keys=True)+'\n')
+          files=[image,rollback,rbmanifest,out/'UV_CANDIDATE_MANIFEST.json',out/'UV_WORKFLOW_INPUTS.json']+[out/'commissioning'/name for name in commission_files]
+          (out/'SHA256SUMS').write_text(''.join(f'{digest(p)}  {p.relative_to(out).as_posix()}\n' for p in files))
           package=out/'HBNF_AUX_UV_ENABLED_REVIEW_ONLY.zip'
           with zipfile.ZipFile(package,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
-            for p in files+[out/'SHA256SUMS']: z.write(p,p.name)
+            for p in files+[out/'SHA256SUMS']: z.write(p,p.relative_to(out).as_posix())
           with zipfile.ZipFile(package) as z:
-            assert set(z.namelist())=={p.name for p in files+[out/'SHA256SUMS']}
-            assert json.loads(z.read('UV_CANDIDATE_MANIFEST.json'))['installable'] is False
+            assert set(z.namelist())=={p.relative_to(out).as_posix() for p in files+[out/'SHA256SUMS']}
+            packaged=json.loads(z.read('UV_CANDIDATE_MANIFEST.json'))
+            assert packaged['installable'] is False
+            assert packaged['admissionBlocker']['code']=='UV_COMPILE_GATE_NOT_ADMITTED_BY_COMMISSION_GUARD'
+            assert 'commissioning/commission_guard.py' in z.namelist()
+            assert 'HBNF_SP803E_AUX_V7_ROLLBACK.bin' in z.namelist()
+            for line in z.read('SHA256SUMS').decode().splitlines():
+              expected,name=line.split('  ',1)
+              assert hashlib.sha256(z.read(name)).hexdigest()==expected, name
           (out/'package-sha256.txt').write_text(f'{digest(package)}  {package.name}\n')
-          print(f'HBNF_AUX_UV_REVIEW_PACKAGE_READY sha256={digest(package)} firmware={digest(image)}')
+          print(f'HBNF_AUX_UV_REVIEW_PACKAGE_READY sha256={digest(package)} firmware={digest(image)} disposition=REVIEW_ONLY_NOT_INSTALLABLE blocker=UV_COMPILE_GATE_NOT_ADMITTED_BY_COMMISSION_GUARD')
           PY2
 
       - name: Preserve UV review candidate in a private run branch
