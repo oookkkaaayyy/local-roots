@@ -79,3 +79,7 @@ This section governs every future implementation, build, deployment, release, di
 
 For HBNF/Cart 2.0 specifically, a diagnostic install is forbidden unless the exact recovery artifact **and the actual updater/publication/manifest path required to consume it** have already been proven end-to-end and the exact prior cloud deployment can be restored without reconstruction.
 
+## Live release completion evidence
+
+For any live release from this repository, do not call the release complete until `docs/LIVE_RELEASE_EVIDENCE.md` is satisfied and `scripts/validate-release-receipt.mjs` passes for the exact candidate. The receipt must bind the source commit and pinned build inputs to exact candidate bytes, deploy/install receipt, rollback artifact, each acceptance criterion, and an indexed Drive recovery copy that was downloaded back and byte-compared. A passing validator does not replace provider, device, field, or owner acceptance evidence. Do not imply GitHub branch enforcement unless the protected branch demonstrably requires the passing check.
+
