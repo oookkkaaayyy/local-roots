@@ -328,6 +328,11 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   const service = await readFile(new URL("hbnf-owner-local-control.init", root), "utf8");
   assert.match(installer, /owner-network-isolation-verified/);
   assert.match(installer, /EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e/);
+  const rollbackCapture = installer.slice(installer.indexOf('cp -p "$TARGET" "$BACKUP/local-transport.js"'), installer.indexOf("rollback_now(){"));
+  assert.match(rollbackCapture, /backup_transport_sha=\$\(sha256sum "\$BACKUP\/local-transport\.js"/);
+  assert.match(rollbackCapture, /\[ "\$backup_transport_sha" = "\$EXPECTED_OLD_TRANSPORT" \]/);
+  assert.match(rollbackCapture, /backup_rollback_sha=\$\(sha256sum "\$BACKUP\/rollback\.sh"/);
+  assert.match(rollbackCapture, /\[ "\$backup_rollback_sha" = "\$package_rollback_sha" \]/);
   assert.match(installer, /TARGET=\/www\/mission-control-local\/local-transport\.js/);
   assert.match(installer, /OWNER_HTTP_TARGET=\/www\/mission-control-local\/owner-http-transport\.js/);
   assert.match(installer, /\[ ! -e "\$OWNER_HTTP_TARGET" \]/);

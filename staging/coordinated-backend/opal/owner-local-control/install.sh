@@ -47,6 +47,11 @@ mkdir -m 0700 "$BACKUP"
 cp -p "$TARGET" "$BACKUP/local-transport.js"
 cp -p "$PKG/rollback.sh" "$BACKUP/rollback.sh"
 chmod 0700 "$BACKUP/rollback.sh"
+backup_transport_sha=$(sha256sum "$BACKUP/local-transport.js" | awk '{print $1}')
+[ "$backup_transport_sha" = "$EXPECTED_OLD_TRANSPORT" ] || fail "read-back of the exact pre-install transport rollback copy failed"
+backup_rollback_sha=$(sha256sum "$BACKUP/rollback.sh" | awk '{print $1}')
+package_rollback_sha=$(sha256sum "$PKG/rollback.sh" | awk '{print $1}')
+[ "$backup_rollback_sha" = "$package_rollback_sha" ] || fail "read-back of the rollback procedure copy failed"
 
 rollback_now(){
   [ "$ROLLING_BACK" = 0 ] || return 0
