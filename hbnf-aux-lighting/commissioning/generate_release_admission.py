@@ -120,6 +120,16 @@ def selftest():
         out=generate(fw,mt)
         assert out["status"]=="REVIEW_ONLY" and out["candidate_source_commit"]==commit
         assert out["candidate_firmware_sha256"]==sha and out["rollback_artifact"] is None
+        assert out["blocker_code"]=="EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
+        # A V7 candidate/runtime label must never substitute for the exact
+        # installed V6 image until verified installed-image bytes are retained.
+        unverified_manifest=root/"unverified-v7-rollback.json"
+        unverified_manifest.write_text(json.dumps({"artifact_type":"exact installed AUX firmware recovery image"})+"\n")
+        try:
+            validate_recovery_source(fw,unverified_manifest)
+            raise AssertionError("candidate firmware was accepted as installed rollback")
+        except ValueError as e:
+            assert "does not match the recorded installed AUX firmware" in str(e)
         mt.write_text(f"github_sha={commit}\nfirmware_sha256={'0'*64}\n")
         try: generate(fw,mt);raise AssertionError("mismatched firmware accepted")
         except ValueError as e: assert "do not match" in str(e)
