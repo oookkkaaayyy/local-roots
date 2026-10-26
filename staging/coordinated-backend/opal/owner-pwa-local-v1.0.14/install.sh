@@ -13,8 +13,8 @@ STAGE="$BASE/.owner-pwa.stage-$TX"
 PREVIOUS="$BASE/.owner-pwa.previous-$TX"
 FAILED="$BASE/.owner-pwa.failed-$TX"
 BASELINE="$PKG_DIR/BASELINE.SHA256SUMS"
-BASELINE_SHA256=054155fdca281f07d377fa1e03b33a127088499c6e97c59082a579587624cf80
-BASELINE_ZIP_SHA256=a24f480aa5dd9cdfc8fe5c415b277f4605db1c506054b8c9e5918bd03ccf62b6
+BASELINE_SHA256=83bf71e7125ad24a59707e956fc42083700266193c9e002ec5665e1a8a382f0c
+BASELINE_ZIP_SHA256=60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a
 BASE_MARKER_SHA256=fbeeb20927e58ff3bea0d0a66d5e996dbaefcbb72259a80a45ff206585137835
 BASE_VERSION_SHA256=9fd28642d3aca191e5c7fc2383cfd6fabb2aac8743f029dabb8989ac584e31bc
 
@@ -25,7 +25,7 @@ BASE_VERSION_SHA256=9fd28642d3aca191e5c7fc2383cfd6fabb2aac8743f029dabb8989ac584e
 [ -f "$BASE/.hbnf-package-marker" ] && [ "$(cat "$BASE/.hbnf-package-marker")" = "hbnf-owner-pwa-empty-runtime-recovery-v2" ] || { echo "Mission Control identity is unexpected." >&2; exit 81; }
 [ -f "$BASE/.hbnf-package-version" ] && [ "$(cat "$BASE/.hbnf-package-version")" = "1.0.2" ] || { echo "Mission Control v1.0.2 is not installed." >&2; exit 82; }
 [ -f "$TARGET/.hbnf-package-marker" ] && [ "$(cat "$TARGET/.hbnf-package-marker")" = "hbnf-owner-pwa-local-v1" ] || { echo "Owner PWA identity is unexpected." >&2; exit 83; }
-[ -f "$TARGET/.hbnf-package-version" ] && [ "$(cat "$TARGET/.hbnf-package-version")" = "1.0.12" ] || { echo "Expected Owner PWA v1.0.12 is not installed." >&2; exit 84; }
+[ -f "$TARGET/.hbnf-package-version" ] && [ "$(cat "$TARGET/.hbnf-package-version")" = "1.0.13" ] || { echo "Expected Owner PWA v1.0.13 is not installed." >&2; exit 84; }
 [ ! -e "$BACKUP" ] && [ ! -e "$BASELINE_COPY" ] && [ ! -e "$STAGE" ] && [ ! -e "$PREVIOUS" ] && [ ! -e "$FAILED" ] || { echo "A transaction recovery path already exists; inspect before proceeding." >&2; exit 85; }
 command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required." >&2; exit 86; }
 
@@ -42,14 +42,13 @@ verify_file "$BASE/index.html" 0424ab290ab1d80dbbd1bff31e068009e3000cae22ec2792b
 verify_file "$BASE/styles.css" e2aceeabac8fa7e85fca1e638f50da6182d4e5b79fd5004a7a3c071915cc3522 &&
 verify_file "$BASE/app.js" d44691025b16d95fb1a210a56d901c3ee6cdd74bf932a59f7ffe08679184df2b &&
 verify_file "$BASE/local-transport.js" 51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a || { echo "Mission Control or local transport differs from the readback identity." >&2; exit 87; }
-verify_file "$BASELINE" "$BASELINE_SHA256" || { echo "Installed v1.0.12 manifest is missing or invalid." >&2; exit 88; }
-verify_file "$PKG_DIR/ROLLBACK_BASELINE.zip" "$BASELINE_ZIP_SHA256" || { echo "Exact v1.0.12 recovery companion is missing or invalid." >&2; exit 89; }
+verify_file "$BASELINE" "$BASELINE_SHA256" || { echo "Expected v1.0.13 manifest is missing or invalid." >&2; exit 88; }
+verify_file "$PKG_DIR/ROLLBACK_BASELINE.zip" "$BASELINE_ZIP_SHA256" || { echo "Exact v1.0.13 recovery companion is missing or invalid." >&2; exit 89; }
 
 set -- $(find "$TARGET" -maxdepth 1 -type f | wc -l | tr -d ' ')
-[ "$1" = 20 ] || { echo "Installed Owner PWA file count differs from the direct readback." >&2; exit 90; }
+[ "$1" = 21 ] || { echo "Installed Owner PWA file count differs from the exact v1.0.13 package." >&2; exit 90; }
 [ -z "$(find "$TARGET" -mindepth 1 -maxdepth 1 ! -type f -print)" ] || { echo "Installed Owner PWA contains a non-file entry." >&2; exit 91; }
-(cd "$TARGET" && sha256sum -c "$BASELINE" >/dev/null) || { echo "Installed Owner PWA differs from the exact direct-readback baseline." >&2; exit 92; }
-[ ! -e "$TARGET/hbnf-faded-phosphor.png" ] || { echo "Candidate logo already exists in the baseline; inspect before proceeding." >&2; exit 93; }
+(cd "$TARGET" && sha256sum -c "$BASELINE" >/dev/null) || { echo "Installed Owner PWA differs from the exact expected v1.0.13 baseline." >&2; exit 92; }
 (cd "$PKG_DIR" && sha256sum -c ROLLBACK_BASELINE.SHA256 >/dev/null && sha256sum -c PAYLOAD.SHA256SUMS >/dev/null) || { echo "Candidate or rollback package checksum failed." >&2; exit 94; }
 
 mkdir -m 0755 "$STAGE"
@@ -69,7 +68,7 @@ cp -a "$TARGET" "$BACKUP"
 cp -p "$BASELINE" "$BASELINE_COPY"
 verify_file "$BASELINE_COPY" "$BASELINE_SHA256" || { echo "Exact rollback manifest copy failed; original runtime remains in place." >&2; exit 98; }
 set -- $(find "$BACKUP" -maxdepth 1 -type f | wc -l | tr -d ' ')
-[ "$1" = 20 ] && (cd "$BACKUP" && sha256sum -c "$BASELINE_COPY" >/dev/null) || { echo "Exact v1.0.12 rollback snapshot failed verification; original runtime remains in place." >&2; exit 99; }
+[ "$1" = 21 ] && (cd "$BACKUP" && sha256sum -c "$BASELINE_COPY" >/dev/null) || { echo "Exact v1.0.13 rollback snapshot failed verification; original runtime remains in place." >&2; exit 99; }
 
 restore_on_error() {
   rc=$?
@@ -91,5 +90,5 @@ mv "$STAGE" "$TARGET"
 [ "$(cat "$TARGET/.hbnf-package-version")" = "1.0.14" ] || { echo "Installed Owner PWA version readback failed." >&2; exit 105; }
 rm -rf "$PREVIOUS"
 trap - EXIT HUP INT TERM
-echo "Updated Owner PWA to v1.0.14 at $TARGET. Exact v1.0.12 runtime retained at $BACKUP."
+echo "Updated Owner PWA to v1.0.14 at $TARGET. Exact v1.0.13 runtime retained at $BACKUP."
 echo "Mission Control, local transport, firmware, router/network settings, and scoring data were not changed."

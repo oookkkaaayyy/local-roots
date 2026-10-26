@@ -12,7 +12,7 @@ This directory commissions the Rogue Iron cart SP803E safely from stock WLED thr
 
 ## Owner PWA baseline (separate from AUX firmware)
 
-The latest direct Opal readback recorded for this work is Owner PWA **v1.0.13**, with all 17 served assets matching its saved manifest (GitHub #116 comment 6394889462). The pasted SSH transcript showing v1.0.12 is an older snapshot and is superseded; v1.0.12 is retained as the rollback package, not the current installed version. This PR changes AUX firmware/source and did not change the Owner PWA. Recheck the PWA version only after a later PWA installation or a newer direct runtime readback.
+The latest recorded direct Opal readback is Owner PWA **v1.0.13**, with all 17 served assets reported matching its saved manifest (GitHub comment 6394889462). The pasted SSH transcript showing v1.0.12 is an older snapshot. The exact v1.0.13 package is retained at `staging/coordinated-backend/opal/owner-pwa-local-v1.0.13/`; its original private Drive artifact hash is `60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a`. The UV PWA v1.0.14 candidate is being corrected to bind to that v1.0.13 rollback. Its installer requires a fresh exact preflight of all 21 expected files; historical 17/17 serving-asset evidence is not treated as a current filesystem readback.
 
 ## Preferred entry point
 

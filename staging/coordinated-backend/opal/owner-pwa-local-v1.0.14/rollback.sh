@@ -7,14 +7,14 @@ BASE="$WWW_ROOT/mission-control-local"
 BACKUP="$BACKUP_ROOT/hbnf-owner-pwa-local.rollback-OWNER-PWA-LOCAL-V114-UV-20261026-01"
 MANIFEST="$BACKUP_ROOT/hbnf-owner-pwa-OWNER-PWA-LOCAL-V114-UV-20261026-01.BASELINE.SHA256SUMS"
 FAILED="$BASE/.owner-pwa.failed-OWNER-PWA-LOCAL-V114-UV-20261026-01"
-MANIFEST_SHA256=054155fdca281f07d377fa1e03b33a127088499c6e97c59082a579587624cf80
+MANIFEST_SHA256=83bf71e7125ad24a59707e956fc42083700266193c9e002ec5665e1a8a382f0c
 
 [ "$(id -u)" = 0 ] || { echo "Run as root on the Opal." >&2; exit 77; }
-[ -d "$TARGET" ] && [ -d "$BACKUP" ] || { echo "Installed candidate or exact v1.0.12 recovery snapshot is missing." >&2; exit 78; }
+[ -d "$TARGET" ] && [ -d "$BACKUP" ] || { echo "Installed candidate or exact v1.0.13 recovery snapshot is missing." >&2; exit 78; }
 [ "$(cat "$TARGET/.hbnf-package-version" 2>/dev/null || true)" = "1.0.14" ] || { echo "Current Owner PWA is not v1.0.14; refusing rollback." >&2; exit 79; }
-[ -f "$MANIFEST" ] && [ "$(sha256sum "$MANIFEST" | awk '{print $1}')" = "$MANIFEST_SHA256" ] || { echo "Exact v1.0.12 baseline manifest identity failed." >&2; exit 80; }
-[ "$(find "$BACKUP" -maxdepth 1 -type f | wc -l | tr -d ' ')" = 20 ] || { echo "Exact pre-install Owner PWA recovery copy is incomplete." >&2; exit 81; }
-(cd "$BACKUP" && sha256sum -c "$MANIFEST" >/dev/null) || { echo "Exact pre-install v1.0.12 recovery copy failed verification." >&2; exit 82; }
+[ -f "$MANIFEST" ] && [ "$(sha256sum "$MANIFEST" | awk '{print $1}')" = "$MANIFEST_SHA256" ] || { echo "Exact v1.0.13 baseline manifest identity failed." >&2; exit 80; }
+[ "$(find "$BACKUP" -maxdepth 1 -type f | wc -l | tr -d ' ')" = 21 ] || { echo "Exact pre-install Owner PWA recovery copy is incomplete." >&2; exit 81; }
+(cd "$BACKUP" && sha256sum -c "$MANIFEST" >/dev/null) || { echo "Exact pre-install v1.0.13 recovery copy failed verification." >&2; exit 82; }
 (cd "$TARGET" && sha256sum -c .hbnf-payload.sha256 >/dev/null) || { echo "Current v1.0.14 payload changed; preserve it and inspect before rollback." >&2; exit 83; }
 [ ! -e "$FAILED" ] || { echo "Failed-candidate preservation path already exists." >&2; exit 84; }
 
@@ -23,5 +23,5 @@ if ! mv "$BACKUP" "$TARGET"; then
   mv "$FAILED" "$TARGET" || echo "Restore failed; candidate preserved at $FAILED and exact recovery copy remains at $BACKUP." >&2
   exit 85
 fi
-(cd "$TARGET" && sha256sum -c "$MANIFEST" >/dev/null) || { echo "Restored exact v1.0.12 runtime did not verify; failed candidate retained at $FAILED." >&2; exit 86; }
-echo "Restored the exact pre-install v1.0.12 Owner PWA tree. Candidate preserved at $FAILED."
+(cd "$TARGET" && sha256sum -c "$MANIFEST" >/dev/null) || { echo "Restored exact v1.0.13 runtime did not verify; failed candidate retained at $FAILED." >&2; exit 86; }
+echo "Restored the exact pre-install v1.0.13 Owner PWA tree. Candidate preserved at $FAILED."

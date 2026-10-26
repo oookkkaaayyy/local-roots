@@ -624,9 +624,9 @@ OWNER_PWA_V113_ARTIFACTS={
     "rollback_script":OWNER_PWA_V113_ROLLBACK_SHA256,
 }
 
-# Exact UV-controls PWA successor. The candidate is bound to the direct v1.0.12
-# Opal readback and its full retained rollback package; admission still requires
-# a fresh device preflight immediately before installation.
+# Exact UV-controls PWA successor. The latest recorded installed baseline is
+# v1.0.13; its original package and 17/17 served-asset readback are retained.
+# A fresh preflight still hashes all 21 expected files before installation.
 OWNER_PWA_V114_PROFILE="owner-uv-v1.0.14"
 OWNER_PWA_V114_TRANSACTION_ID="OWNER-PWA-LOCAL-V114-UV-20261026-01"
 OWNER_PWA_V114_SOURCE_COMMIT="4ea235ffbed9010e657e2d3647434c01fbb64706"
@@ -634,18 +634,18 @@ OWNER_PWA_V114_PACKAGE_SHA256="3eed5d5a9b62e410f7d3df18775b8584c917ccb68820751fe
 OWNER_PWA_V114_PACKAGE_MANIFEST_SHA256="4de166bbcc69eadc2b05aa8d9a27395dcfcb9d1c7362d332c5c1c926d92f74e5"
 OWNER_PWA_V114_PACKAGE_CHECKSUM_SHA256="8e6b0ab0e1aeb254e10d0c7161c8481eb91a36b01b45e3dfa9bcbaf9ff3829ea"
 OWNER_PWA_V114_PAYLOAD_MANIFEST_SHA256="f92f8aeba241abfe09fae3e361021f7639c20b22e684ae09e016a79cd8b861d8"
-OWNER_PWA_V114_BASELINE_MANIFEST_SHA256="054155fdca281f07d377fa1e03b33a127088499c6e97c59082a579587624cf80"
-OWNER_PWA_V114_BASELINE_READBACK_SHA256="a8d9ce270ab6c72492a2165b4ca713f657b5b7214c0f8571fc45782ad7c8f48c"
-OWNER_PWA_V114_BASELINE_PACKAGE_SHA256="a24f480aa5dd9cdfc8fe5c415b277f4605db1c506054b8c9e5918bd03ccf62b6"
+OWNER_PWA_V114_BASELINE_MANIFEST_SHA256="83bf71e7125ad24a59707e956fc42083700266193c9e002ec5665e1a8a382f0c"
+OWNER_PWA_V114_BASELINE_READBACK_SHA256="b91d5968a80afa0f22b240c93d92b845a0c25cb118a6c88183f41dbe5d5b6274"
+OWNER_PWA_V114_BASELINE_PACKAGE_SHA256="60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a"
 OWNER_PWA_V114_INSTALLER_SHA256="e159420f330e587fab7f7fa8e3c00666ae047c2b76bc74e46dfef9a92ffcdca1"
 OWNER_PWA_V114_ROLLBACK_SHA256="072afb9e057aea85ec1747e337549a699e5f78151e7ce9ebc6598dcccc2361d4"
 OWNER_PWA_V114_ROLLBACK_CHECKSUM_SHA256="a47f3effa4a89d10a4944923a23c402f880efbf8633c8c212f36e691498764db"
 OWNER_PWA_V114_PACKAGE_DIR=ROOT/"staging/coordinated-backend/opal/owner-pwa-local-v1.0.14"
-OWNER_PWA_V114_BASELINE_READBACK=ROOT/"evidence/owner-pwa-v112-tx02-direct-readback-20261024/READONLY_BASELINE.json"
-OWNER_PWA_V114_BASELINE_PACKAGE_DIR=ROOT/"staging/coordinated-backend/opal/owner-pwa-local-v1.0.12-tx02-package"
+OWNER_PWA_V114_BASELINE_READBACK=ROOT/"evidence/owner-pwa-v113-readback-20261025/READONLY_BASELINE.json"
+OWNER_PWA_V114_BASELINE_PACKAGE_DIR=ROOT/"staging/coordinated-backend/opal/owner-pwa-local-v1.0.13"
 OWNER_PWA_V114_PROFILE_CACHE=None
 OWNER_PWA_V114_TARGETS=tuple(OWNER_PWA_TARGETS)+("owner-pwa/hbnf-faded-phosphor.png",)
-OWNER_PWA_V114_NEW_PATHS=("owner-pwa/hbnf-faded-phosphor.png",)
+OWNER_PWA_V114_NEW_PATHS=()
 OWNER_PWA_V114_ARTIFACTS={
     "candidate_zip":OWNER_PWA_V114_PACKAGE_SHA256,
     "candidate_manifest":OWNER_PWA_V114_PACKAGE_MANIFEST_SHA256,
@@ -821,7 +821,7 @@ def _owner_pwa_v113_profile():
     return OWNER_PWA_V113_PROFILE_CACHE
 
 def _owner_pwa_v114_profile():
-    """Validate the exact UV-controls v1.0.14 package and v1.0.12 rollback."""
+    """Validate the exact UV-controls v1.0.14 package and v1.0.13 rollback."""
     global OWNER_PWA_V114_PROFILE_CACHE
     if OWNER_PWA_V114_PROFILE_CACHE is not None: return OWNER_PWA_V114_PROFILE_CACHE
     d=OWNER_PWA_V114_PACKAGE_DIR
@@ -836,10 +836,10 @@ def _owner_pwa_v114_profile():
         "baseline_package":OWNER_PWA_V114_BASELINE_PACKAGE_SHA256,"installer":OWNER_PWA_V114_INSTALLER_SHA256,
         "rollback_script":OWNER_PWA_V114_ROLLBACK_SHA256,"baseline_readback":OWNER_PWA_V114_BASELINE_READBACK_SHA256}
     if any(not p.is_file() or sha256_file(p)!=expected[k] for k,p in paths.items()):
-        raise ValueError("v1.0.14 package or exact v1.0.12 rollback evidence is missing or changed")
-    baseline_zip=OWNER_PWA_V114_BASELINE_PACKAGE_DIR/"hbnf-owner-pwa-local-v1.0.12.zip"
+        raise ValueError("v1.0.14 package or exact v1.0.13 rollback evidence is missing or changed")
+    baseline_zip=OWNER_PWA_V114_BASELINE_PACKAGE_DIR/"hbnf-owner-pwa-local-v1.0.13.zip"
     if not baseline_zip.is_file() or sha256_file(baseline_zip)!=OWNER_PWA_V114_BASELINE_PACKAGE_SHA256:
-        raise ValueError("exact v1.0.12 rollback ZIP is missing or changed")
+        raise ValueError("exact v1.0.13 rollback ZIP is missing or changed")
     package=load(paths["package_manifest"]); readback=load(paths["baseline_readback"])
     with zipfile.ZipFile(paths["candidate_zip"]) as zf:
         names=zf.namelist()
@@ -854,7 +854,7 @@ def _owner_pwa_v114_profile():
             if hashlib.sha256(zf.read("owner-pwa/"+asset["path"])).hexdigest()!=asset["sha256"]:
                 raise ValueError("v1.0.14 ZIP payload hash differs from its package manifest: "+asset["path"])
         if hashlib.sha256(zf.read("ROLLBACK_BASELINE.zip")).hexdigest()!=OWNER_PWA_V114_BASELINE_PACKAGE_SHA256:
-            raise ValueError("v1.0.14 nested rollback is not the exact retained v1.0.12 package")
+            raise ValueError("v1.0.14 nested rollback is not the exact retained v1.0.13 package")
     rollback=package.get("rollbackBaseline",{}); companion=rollback.get("packageArchive",{})
     if (package.get("package")!="hbnf-owner-pwa-local-v1.0.14" or package.get("sourceCommit")!=OWNER_PWA_V114_SOURCE_COMMIT
         or package.get("transactionId")!=OWNER_PWA_V114_TRANSACTION_ID
@@ -862,29 +862,49 @@ def _owner_pwa_v114_profile():
         or package.get("releaseSlice",{}).get("id")!="cart-owner-pwa-uv-v1.0.14"
         or package.get("releaseSlice",{}).get("scoringOrder1")!="OPEN_NOT_CLAIMED"
         or package.get("releaseSlice",{}).get("T4T5")!="UNCHANGED_AND_STILL_REQUIRE_ALL_EXISTING_ACCEPTANCE"
+        or rollback.get("entries")!=21
         or rollback.get("sha256")!=OWNER_PWA_V114_BASELINE_MANIFEST_SHA256
         or rollback.get("installedReadback",{}).get("sha256")!=OWNER_PWA_V114_BASELINE_READBACK_SHA256
         or companion.get("sha256")!=OWNER_PWA_V114_BASELINE_PACKAGE_SHA256
-        or companion.get("sourcePath")!="staging/coordinated-backend/opal/owner-pwa-local-v1.0.12-tx02-package/hbnf-owner-pwa-local-v1.0.12.zip"):
-        raise ValueError("v1.0.14 manifest does not bind the UV source and exact v1.0.12 rollback")
-    if (readback.get("schema")!="hbnf-owner-pwa-live-readback-v1" or readback.get("status")!="PASS"
-        or readback.get("runtime_version")!="1.0.12" or readback.get("source_commit")!="fa51d12e1f4dd96b31223e7e5a9f3221eb7a63be"
+        or companion.get("sourcePath")!="staging/coordinated-backend/opal/owner-pwa-local-v1.0.13/hbnf-owner-pwa-local-v1.0.13.zip"):
+        raise ValueError("v1.0.14 manifest does not bind the UV source and exact v1.0.13 rollback")
+    if (readback.get("schema")!="hbnf-owner-pwa-historical-readback-reference-v1"
+        or readback.get("status")!="PASS_REPORTED_17_OF_17_SERVING_ASSETS"
+        or readback.get("runtime_version")!="1.0.13" or readback.get("source_commit")!="53221bbc83fc6f8ebbbd3dd2d931284eae298dfa"
         or readback.get("baseline_manifest_sha256")!=OWNER_PWA_V114_BASELINE_MANIFEST_SHA256
         or readback.get("baseline_package_sha256")!=OWNER_PWA_V114_BASELINE_PACKAGE_SHA256
-        or readback.get("observed_expected_path_count")!=20 or readback.get("served_payload_hashes_verified") is not True
+        or readback.get("reported_served_asset_count")!=17 or readback.get("reported_served_asset_match_count")!=17
+        or readback.get("direct_live_file_hashes_supplied") is not False or readback.get("fresh_preflight_required") is not True
         or readback.get("filesystem_completeness")!="REQUIRES_FRESH_INSTALLER_PREFLIGHT"):
-        raise ValueError("v1.0.12 direct readback does not match the pinned installed baseline")
+        raise ValueError("v1.0.13 direct readback does not match the pinned installed baseline")
     baseline={}
     for line in paths["baseline_manifest"].read_text().splitlines():
         match=re.fullmatch(r"([a-f0-9]{64})  ([^/]+)",line)
-        if not match or "owner-pwa/"+match.group(2) in baseline: raise ValueError("v1.0.12 baseline manifest is malformed")
+        if not match or "owner-pwa/"+match.group(2) in baseline: raise ValueError("v1.0.13 expected baseline manifest is malformed")
         baseline["owner-pwa/"+match.group(2)]=match.group(1)
-    served=readback.get("installed_sha256_by_path",{}); statuses=readback.get("http_status_by_path",{})
-    if len(baseline)!=20 or served!=baseline or set(statuses)!=set(served) or any(x!=200 for x in statuses.values()):
-        raise ValueError("v1.0.12 direct-readback hashes or HTTP set differ from its exact baseline manifest")
+    served=readback.get("expected_asset_sha256_by_path",{}); statuses={}
+    payload_baseline={k:v for k,v in baseline.items() if k not in {
+        "owner-pwa/.hbnf-package-marker","owner-pwa/.hbnf-package-version",
+        "owner-pwa/.hbnf-payload.sha256","owner-pwa/.hbnf-rollback.sh"}}
+    if len(baseline)!=21 or served!=payload_baseline or len(served)!=17:
+        raise ValueError("v1.0.13 served-asset readback or 21-file expected baseline does not match the exact package")
+    prior_pkg=load(OWNER_PWA_V114_BASELINE_PACKAGE_DIR/"PACKAGE.json")
+    prior_payload=(OWNER_PWA_V114_BASELINE_PACKAGE_DIR/"PAYLOAD.SHA256SUMS").read_bytes()
+    prior_rollback=(OWNER_PWA_V114_BASELINE_PACKAGE_DIR/"rollback.sh").read_bytes()
+    expected_markers={
+        "owner-pwa/.hbnf-package-marker":hashlib.sha256(b"hbnf-owner-pwa-local-v1\n").hexdigest(),
+        "owner-pwa/.hbnf-package-version":hashlib.sha256(b"1.0.13\n").hexdigest(),
+        "owner-pwa/.hbnf-payload.sha256":hashlib.sha256(prior_payload.replace(b"owner-pwa/",b"")).hexdigest(),
+        "owner-pwa/.hbnf-rollback.sh":hashlib.sha256(prior_rollback).hexdigest(),
+    }
+    if any(baseline.get(k)!=v for k,v in expected_markers.items()):
+        raise ValueError("v1.0.13 expected marker hashes differ from the exact retained package")
+    prior_assets={"owner-pwa/"+item["path"]:item["sha256"] for item in prior_pkg.get("assets",[])}
+    if prior_assets!=payload_baseline or len(prior_assets)!=17:
+        raise ValueError("v1.0.13 rollback package does not match the recorded 17-asset baseline")
     mission_raw=readback.get("mission_control",{}).get("sha256_by_path",{})
     mission_names={".hbnf-package-marker",".hbnf-package-version","index.html","styles.css","app.js","local-transport.js"}
-    if set(mission_raw)!=mission_names: raise ValueError("v1.0.12 readback does not bind all six Mission Control files")
+    if set(mission_raw)!=mission_names: raise ValueError("historical Mission Control readback does not bind all six files")
     mission={"mission-control-local/"+k:v for k,v in mission_raw.items()}
     filesystem=dict(baseline); filesystem.update(mission)
     served_with_transport=dict(served); served_with_transport["mission-control-local/local-transport.js"]=mission_raw["local-transport.js"]
@@ -1502,7 +1522,7 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
                 "baseline_readback_sha256":OWNER_PWA_V114_BASELINE_READBACK_SHA256,
                 "exact_backup_path_clear":True,"same_filesystem":True,"sha256sum_available":True}
             if pre.get("rollback")!=expected_rollback:
-                errors.append("fresh v1.0.14 preflight did not verify the exact v1.0.12 baseline and rollback prerequisites")
+                errors.append("fresh v1.0.14 preflight did not verify the exact v1.0.13 baseline and rollback prerequisites")
         elif manifest.get("candidate_profile")==OWNER_PWA_V111_PROFILE:
             expected_rollback={"baseline_zip_sha256":profile["artifacts"]["served_baseline_zip"],
                 "baseline_manifest_sha256":OWNER_PWA_V111_BASELINE_MANIFEST_SHA256,
