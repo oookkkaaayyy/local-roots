@@ -1,0 +1,10 @@
+{
+  "schema": "hbnf-owner-local-control-package-retention-v1",
+  "sourceCommit": "12bec06d2cfdc4c0255a3d7a9334a0d44dfebba0",
+  "package": "hbnf-owner-local-control-v1.0.9.zip",
+  "packageSha256": "4d7e7aa3fa76e688e93aa63917ef40416147f28b4cb86dfbc3a8edfbc2e7abea",
+  "packageBytes": 103838,
+  "disposition": "SOURCE_BOUND_NOT_INSTALLED",
+  "rollbackTransportSha256": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
+  "rollbackScope": "The installer retains the exact pre-install transport snapshot and its rollback script. Current installed Opal runtime identity has not been re-read; package is not admitted for installation."
+}
