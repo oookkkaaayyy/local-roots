@@ -19,6 +19,7 @@ THEN
 RELEASE STATUS
 - The owner confirms AUX V7 is installed and no later firmware was installed. Its exact image (`HBNF_SP803E_AUX_V7_ROLLBACK.bin`, 1,348,624 bytes, SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`) and recovery manifest are retained in this source tree and the verified continuation bundle. Do not repeat V6 recovery.
 - Every candidate package now includes that V7 image and manifest as rollback. The installer still re-reads AUX identity immediately before mutation and requires candidate-specific release admission. The UV module stays unpowered until the combined field session.
+- The staged output-capable candidate is Actions run `40399701154`, attempt 1, source `4c0962628237b4c6c355d313ab9683414eba9961`; commissioning ZIP SHA-256 `9dd7fb0aeee7506ffe115e5c0f1558b7830aded86f7737152c9d35ef2e8d83e4`, firmware SHA-256 `94afbf7af2dd672952e95978841cf28ff49bb10c6d209fd852fe651c66f7ab29` (1,348,736 bytes). The ZIP, separate pointer, and exact V7 rollback are retained on private branch `hbnf-aux-r3-artifact-run-40399701154-attempt-1`. It is `REVIEW_ONLY`: do not install until fresh same-target V7 preflight passes and an unpaired Cart-Wi-Fi client is confirmed unable to reach WLED `/json/info`.
 
 THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);
