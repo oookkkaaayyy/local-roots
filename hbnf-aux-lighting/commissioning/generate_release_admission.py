@@ -3,6 +3,8 @@
 from __future__ import annotations
 import argparse, hashlib, json, pathlib, re, tempfile, zipfile
 
+HERE = pathlib.Path(__file__).resolve().parent
+
 INSTALLED_AUX_SHA256 = "c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a"
 ROLLBACK_FILE = "HBNF_SP803E_AUX_V7_ROLLBACK.bin"
 ROLLBACK_MANIFEST = "AUX_V7_RECOVERY_MANIFEST.json"
