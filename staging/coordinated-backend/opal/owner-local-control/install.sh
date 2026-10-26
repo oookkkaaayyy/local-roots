@@ -9,8 +9,8 @@ SERVER_CONF=$BASE/nginx-server.conf
 SERVICE=/etc/init.d/hbnf-owner-local-control
 TARGET=/www/mission-control-local/local-transport.js
 OWNER_HTTP_TARGET=/www/mission-control-local/owner-http-transport.js
-BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.9
-EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e
+BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.10
+EXPECTED_OLD_TRANSPORT=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a
 HOST=cart-control.hbnightflyers.com
 LOG_DIR=/var/log/hbnf-owner-local-control-nginx
 PID_FILE=/var/run/hbnf-owner-local-control-nginx.pid
@@ -35,7 +35,7 @@ fail(){ echo "INSTALL BLOCKED: $*" >&2; exit 1; }
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
 (cd "$PKG" && sha256sum -c SHA256SUMS >/dev/null) || fail "package hash verification failed"
 actual=$(sha256sum "$TARGET" | awk '{print $1}')
-[ "$actual" = "$EXPECTED_OLD_TRANSPORT" ] || fail "installed Opal transport differs from verified v1.0.1 rollback base"
+[ "$actual" = "$EXPECTED_OLD_TRANSPORT" ] || fail "installed Opal transport differs from the accepted Mission Control v1.0.2 rollback base; do not install over an unverified baseline"
 "$PKG/preflight.sh" || fail "read-only preflight failed"
 
 worker_uid=$(id -u nobody 2>/dev/null || true)

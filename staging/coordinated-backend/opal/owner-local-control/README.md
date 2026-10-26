@@ -1,6 +1,6 @@
-# Opal Owner Local Control — staged v1.0.9
+# Opal Owner Local Control — staged v1.0.10
 
-Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmware changes are made until a separately admitted installation. This release retains the existing Opal Mission Control WebSocket interface and adds a separate authenticated HTTP transport module for the production Owner PWA. The updated existing transport keeps its WebSocket class and current command mappings; rollback restores its exact v1.0.1 source.
+Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmware changes are made until a separately admitted installation. This release retains the existing Opal Mission Control WebSocket interface and adds a separate authenticated HTTP transport module for the production Owner PWA. The existing transport keeps its WebSocket class and current command mappings; rollback restores the exact accepted Mission Control v1.0.2 transport (SHA-256 `51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a`). The installer still requires a fresh live hash match before capturing its transaction rollback.
 
 ## Per-command gateway
 
@@ -41,7 +41,7 @@ The installer does not create the certificate or alter dnsmasq. Existing preflig
 
 ## Persistent sessions and rollback
 
-Session expiry/revocation files are stored under persistent `/etc/hbnf-local-control-state`; shared dictionaries are caches only. The package verifies and snapshots the exact current Opal page module SHA `a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e`. Rollback stops/disables only the dedicated service, restores that exact transport, removes `owner-http-transport.js` and the dedicated config/Lua/session/log paths, then verifies the original Opal page transport and GL.iNet 80/443 listeners remain unchanged.
+Session expiry/revocation files are stored under persistent `/etc/hbnf-local-control-state`; shared dictionaries are caches only. The package requires and snapshots the exact accepted Opal Mission Control v1.0.2 transport SHA `51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a`. Rollback stops/disables only the dedicated service, restores that exact transport, removes `owner-http-transport.js` and the dedicated config/Lua/session/log paths, then verifies the original Opal page transport and GL.iNet 80/443 listeners remain unchanged. This historical/source identity does not replace the install-time live hash check or exact rollback readback.
 
 ## Release status
 

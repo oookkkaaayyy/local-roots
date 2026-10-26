@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.9"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.10"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
 OWNER_HTTP_TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js")
@@ -21,7 +21,7 @@ FILES = (
     "enroll.lua", "hbnf-owner-local-control.init", "install.sh", "matrix_topology.sh",
     "nginx.conf.example", "preflight.sh", "revalidate.lua", "revoke.lua", "rollback.sh", "session.lua",
 )
-EXPECTED_ROLLBACK = "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e"
+EXPECTED_ROLLBACK = "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a"
 
 
 def sha(data: bytes) -> str:
@@ -59,6 +59,18 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         if committed != data:
             raise ValueError(f"working package input differs from {source_commit}:{path}")
     source_base = json.loads(payload["SOURCE_BASE.json"])
+    base_commit = source_base.get("base_commit")
+    if not isinstance(base_commit, str) or len(base_commit) != 40:
+        raise ValueError("SOURCE_BASE must identify the exact accepted Mission Control baseline commit")
+    baseline_transport = subprocess.check_output(
+        ["git", "-C", str(repo), "show", f"{base_commit}:{TRANSPORT.as_posix()}"]
+    )
+    if sha(baseline_transport) != EXPECTED_ROLLBACK:
+        raise ValueError("SOURCE_BASE commit does not contain the exact accepted Mission Control rollback transport")
+    if source_base.get("opal_rollback_transport_source_commit") != base_commit or source_base.get("opal_rollback_transport_source_path") != TRANSPORT.as_posix():
+        raise ValueError("SOURCE_BASE rollback provenance does not name the exact source commit and transport path")
+    if sha(transport) != EXPECTED_ROLLBACK:
+        raise ValueError("packaged Mission Control transport differs from the accepted rollback baseline")
     policy_spec = json.loads(payload["uv_policy_spec.json"])
     hardware_profile = json.loads(payload["uv_hardware_profile.json"])
     if policy_spec.get("schema") != "hbnf-aux-uv-policy-spec-v1" or policy_spec.get("networkBoundary", {}).get("directWledRouteAllowed") is not False:
@@ -77,6 +89,11 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     if source_base.get("opal_rollback_transport_sha256") != EXPECTED_ROLLBACK:
         raise ValueError("recorded exact Opal rollback identity changed")
     rollback = (root / "rollback.sh").read_text()
+    installer = (root / "install.sh").read_text()
+    if f"EXPECTED_OLD_TRANSPORT={EXPECTED_ROLLBACK}" not in installer:
+        raise ValueError("installer is not bound to the exact accepted Mission Control rollback transport")
+    if f"EXPECTED_ROLLBACK_TRANSPORT_SHA={EXPECTED_ROLLBACK}" not in rollback:
+        raise ValueError("rollback script is not bound to the exact accepted Mission Control transport")
     expected_candidate = f"CANDIDATE_TRANSPORT_SHA={sha(transport)}"
     if expected_candidate not in rollback:
         raise ValueError("rollback script is not bound to the packaged transport SHA")
@@ -89,6 +106,8 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         "package": PACKAGE_NAME,
         "sourceCommit": source_commit,
         "baseCommit": source_base["base_commit"],
+        "rollbackTransportSourceCommit": source_base["opal_rollback_transport_source_commit"],
+        "rollbackTransportSourcePath": source_base["opal_rollback_transport_source_path"],
         "installedTransportSha256": sha(transport),
         "ownerPwaTransportSha256": sha(owner_http_transport),
         "rollbackTransportSha256": EXPECTED_ROLLBACK,

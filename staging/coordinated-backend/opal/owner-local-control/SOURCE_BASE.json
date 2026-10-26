@@ -1,9 +1,11 @@
 {
-  "schema": "hbnf-owner-local-control-staged-v3",
+  "schema": "hbnf-owner-local-control-staged-v4",
   "repository": "oookkkaaayyy/local-roots",
   "branch": "codex/cart-uv-local-policy-scaffold-20261026",
   "base_commit": "8690ae711767ccfa644e538a169c6c2228272f64",
-  "opal_rollback_transport_sha256": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
+  "opal_rollback_transport_sha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+  "opal_rollback_transport_source_commit": "8690ae711767ccfa644e538a169c6c2228272f64",
+  "opal_rollback_transport_source_path": "staging/coordinated-backend/opal/mission-control-local/local-transport.js",
   "scope": [
     "existing Opal Nginx authenticated local proxy",
     "authenticated local UV routes with fixed segments, AUX readback, and shared default-off hardware-profile/commissioning-gate enforcement",

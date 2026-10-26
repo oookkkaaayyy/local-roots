@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+EXPECTED_ROLLBACK = "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a"
 sys.path.insert(0, str(ROOT))
 
 
@@ -33,7 +34,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
             self.assertEqual(archive_a.read_bytes(), archive_b.read_bytes())
             with zipfile.ZipFile(archive_a) as package:
                 names = package.namelist()
-                prefix = "hbnf-owner-local-control-v1.0.9/"
+                prefix = "hbnf-owner-local-control-v1.0.10/"
                 self.assertIn(prefix + "install.sh", names)
                 self.assertIn(prefix + "matrix_topology.sh", names)
                 self.assertIn(prefix + "aux_command_access.lua", names)
@@ -48,7 +49,9 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 self.assertIn(prefix + "uv_runtime.lua", names)
                 manifest = json.loads(package.read(prefix + "PACKAGE-MANIFEST.json"))
                 self.assertEqual(manifest["sourceCommit"], source)
-                self.assertEqual(manifest["rollbackTransportSha256"], "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e")
+                self.assertEqual(manifest["rollbackTransportSha256"], EXPECTED_ROLLBACK)
+                self.assertEqual(manifest["rollbackTransportSourceCommit"], manifest["baseCommit"])
+                self.assertEqual(manifest["rollbackTransportSourcePath"], "staging/coordinated-backend/opal/mission-control-local/local-transport.js")
                 transport_sha = hashlib.sha256(package.read(prefix + "local-transport.js")).hexdigest()
                 self.assertEqual(manifest["installedTransportSha256"], transport_sha)
                 owner_http_sha = hashlib.sha256(package.read(prefix + "owner-http-transport.js")).hexdigest()
@@ -65,7 +68,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 runtime_lua = package.read(prefix + "uv_runtime.lua").decode()
                 self.assertIn('key ~= "hardwareReady"', runtime_lua)
                 self.assertIn('identity.uvBuildProfile ~= "uv-follow-output-capable-v1"', runtime_lua)
-                self.assertEqual(manifest["rollbackTransportSha256"], "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e")
+                self.assertEqual(manifest["rollbackTransportSha256"], EXPECTED_ROLLBACK)
                 sums = package.read(prefix + "SHA256SUMS").decode()
                 self.assertIn(f"{transport_sha}  local-transport.js", sums)
                 self.assertIn(f"{owner_http_sha}  owner-http-transport.js", sums)

@@ -331,8 +331,12 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   const nginx = await readFile(new URL("nginx.conf.example", root), "utf8");
   const dedicated = await readFile(new URL("dedicated-nginx.conf.example", root), "utf8");
   const service = await readFile(new URL("hbnf-owner-local-control.init", root), "utf8");
+  const sourceBase = JSON.parse(await readFile(new URL("SOURCE_BASE.json", root), "utf8"));
   assert.match(installer, /owner-network-isolation-verified/);
-  assert.match(installer, /EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e/);
+  assert.match(installer, /EXPECTED_OLD_TRANSPORT=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a/);
+  assert.match(installer, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.10/);
+  assert.equal(sourceBase.opal_rollback_transport_sha256, "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a");
+  assert.equal(sourceBase.opal_rollback_transport_source_commit, sourceBase.base_commit);
   const rollbackCapture = installer.slice(installer.indexOf('cp -p "$TARGET" "$BACKUP/local-transport.js"'), installer.indexOf("rollback_now(){"));
   assert.match(rollbackCapture, /backup_transport_sha=\$\(sha256sum "\$BACKUP\/local-transport\.js"/);
   assert.match(rollbackCapture, /\[ "\$backup_transport_sha" = "\$EXPECTED_OLD_TRANSPORT" \]/);
@@ -387,7 +391,8 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.doesNotMatch(installer + rollback, /\/etc\/nginx\/nginx\.conf|\/etc\/nginx\/conf\.d|nginx -s reload(?!.*\$CONF)|uci\s+(?:set|commit)|iptables\s+-|reboot|sysupgrade|supabase.*deploy/i);
   assert.match(rollback, /\$SERVICE" stop/);
   assert.match(rollback, /\$SERVICE" disable/);
-  assert.match(rollback, /EXPECTED_ROLLBACK_TRANSPORT_SHA=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e/);
+  assert.match(rollback, /EXPECTED_ROLLBACK_TRANSPORT_SHA=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a/);
+  assert.match(rollback, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.10/);
   for (const name of ["install.sh", "rollback.sh", "preflight.sh", "matrix_topology.sh", "hbnf-owner-local-control.init"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
 });
 
