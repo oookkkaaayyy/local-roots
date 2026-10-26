@@ -12,7 +12,7 @@ This directory commissions the Rogue Iron cart SP803E safely from stock WLED thr
 
 ## Owner PWA baseline (separate from AUX firmware)
 
-The latest recorded direct Opal readback is Owner PWA **v1.0.13**, with all 17 served assets reported matching its saved manifest (GitHub comment 6394889462). The pasted SSH transcript showing v1.0.12 is an older snapshot. The exact v1.0.13 package is retained at `staging/coordinated-backend/opal/owner-pwa-local-v1.0.13/`; its original private Drive artifact hash is `60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a`. The UV PWA v1.0.14 candidate is being corrected to bind to that v1.0.13 rollback. Its installer requires a fresh exact preflight of all 21 expected files; historical 17/17 serving-asset evidence is not treated as a current filesystem readback.
+The latest recorded direct Opal readback is Owner PWA **v1.0.13**, with all 17 served assets reported matching its saved manifest (GitHub comment 6394889462). The earlier SSH transcript showing v1.0.12 predates the recorded v1.0.13 runtime. The exact v1.0.13 package is retained at `staging/coordinated-backend/opal/owner-pwa-local-v1.0.13/`; its original private Drive artifact hash is `60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a`. The UV PWA v1.0.14 package is built from source commit `70435e5df3d9cfc0d68bbf88c99308960ef09b56` and binds to that v1.0.13 rollback; it is staged, not installed. Its installer requires a fresh exact preflight of all 21 expected files; historical 17/17 serving-asset evidence is not treated as a current filesystem readback. Package SHA-256: `6c393c5dde6dc78ea16823922c0c2717ccc4ae88dd5fa9e4047efb2e71044a17`.
 
 ## Preferred entry point
 

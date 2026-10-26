@@ -270,6 +270,8 @@ def main() -> None:
         source_paths.append(root / "hbnf-final-controller/hbnf-cart-manifest.webmanifest")
         source_paths.append(root / "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h")
         source_paths.append(args.source_locator.resolve())
+        if args.release_slice == "cart-owner-pwa-uv-v1.0.14":
+            source_paths.append(root / "scripts/hbnf_owner_pwa_live_preflight_v114.py")
         if args.rollback_baseline_manifest:
             try:
                 baseline_manifest.relative_to(root)
@@ -369,6 +371,8 @@ def main() -> None:
         source_inputs.append(Path(__file__).resolve())
         source_inputs.append(root / "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h")
         source_inputs.append(args.source_locator.resolve())
+        if args.release_slice == "cart-owner-pwa-uv-v1.0.14":
+            source_inputs.append(root / "scripts/hbnf_owner_pwa_live_preflight_v114.py")
         if args.rollback_baseline_readback_receipt:
             source_inputs.append((root / args.rollback_baseline_readback_receipt).resolve())
     deploy_dir = root / f"staging/coordinated-backend/opal/owner-pwa-local-v{version}"
