@@ -110,6 +110,32 @@ export async function generateHomeScreenRouteShells(distDir = resolve(projectRoo
     scope: '/ios-icon-data-preview/',
     display: 'standalone',
   }, null, 2)}\n`);
+
+  // Isolated external Apple touch PNG test. The uniquely scoped manifest has
+  // no icon entries, leaving the initial same-origin PNG link as the only
+  // possible Home Screen artwork source.
+  const externalIconHref = '/apple-touch-icon.png?v=af4a80127dd7f9cf';
+  const externalPreviewDir = resolve(distDir, 'ios-icon-external-png-preview');
+  await mkdir(externalPreviewDir, { recursive: true });
+  await writeFile(resolve(externalPreviewDir, 'index.html'), `<!doctype html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="LR PNG Test">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/ios-icon-external-png-preview/manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" type="image/png" href="${externalIconHref}">
+  <title>Local Roots PNG Icon Test</title>
+</head><body><main><h1>Local Roots PNG icon test</h1><p>Isolated icon-path test: the only Home Screen artwork source is the approved 180×180 Local Roots PNG linked from the initial HTML.</p></main></body></html>\n`);
+  await writeFile(resolve(externalPreviewDir, 'manifest.webmanifest'), `${JSON.stringify({
+    id: '/ios-icon-external-png-preview/',
+    name: 'Local Roots PNG Icon Test',
+    short_name: 'LR PNG Test',
+    start_url: '/ios-icon-external-png-preview/',
+    scope: '/ios-icon-external-png-preview/',
+    display: 'standalone',
+  }, null, 2)}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
