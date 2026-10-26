@@ -125,7 +125,7 @@ assert.doesNotMatch(uvProxy, /vibeEnvelope|matrixBrightness/);
 assert.match(aux, /action==="uv_policy"\|\|action==="uv"\).*owner_uv_proxy_required/);
 assert.match(aux, /st\.runtimeTrusted&&uvOutputsVerified/);
 assert.match(aux, /uvOutputsVerified:R3\.uvFollow\.outputsVerified===true/);
-assert.match(read("hbnf-aux-lighting/backend/aux_uv_command.mjs"), /verified: false/);
+assert.equal(JSON.parse(read("hbnf-aux-lighting/backend/uv_hardware_profile.json")).verified, false);
 assert.match(read("hbnf-aux-lighting/backend/aux_uv_command.mjs"), /uvEnabled = false/);
 
 console.log("PASS: Cart UV rhythm-follow caps default independently, remain owner-authenticated, and stay disabled until AUX safety gates pass");
