@@ -63,8 +63,58 @@ export async function validateReleaseReceipt(receipt, root) {
     requireSha(input?.sha256, `build.inputs[${index}].sha256`);
   }
 
+  const baseline = receipt.baseline;
+  requireString(baseline?.authorityUrl, 'baseline.authorityUrl');
+  requireString(baseline?.identity, 'baseline.identity');
+  if (baseline?.sourceCommit !== 'unknown' && !/^[a-f0-9]{40}$/i.test(baseline?.sourceCommit ?? '')) {
+    throw new Error('baseline.sourceCommit must be a full 40-character commit SHA or unknown');
+  }
+  requireString(baseline?.sourceEvidence, 'baseline.sourceEvidence');
+  requireString(baseline?.acceptance, 'baseline.acceptance');
+  const baselineArtifact = baseline?.artifact;
+  if (baselineArtifact?.disposition !== 'recovered') {
+    throw new Error('baseline.artifact must be recovered before mutation');
+  }
+  requireString(baselineArtifact.driveFileId, 'baseline.artifact.driveFileId');
+  const baselineArtifactFile = await verifyFile(root, baselineArtifact, 'baseline.artifact');
+  const identityEvidenceFile = await verifyFile(root, baseline?.identityEvidence, 'baseline.identityEvidence');
+  let identityEvidence;
+  try {
+    identityEvidence = JSON.parse(await readFile(path.resolve(root, baseline.identityEvidence.path), 'utf8'));
+  } catch {
+    throw new Error('baseline.identityEvidence must be valid JSON');
+  }
+  if (identityEvidence.identity !== baseline.identity || identityEvidence.sourceCommit !== baseline.sourceCommit ||
+      identityEvidence.artifactSha256 !== baselineArtifactFile.sha256 || identityEvidence.artifactBytes !== baselineArtifactFile.bytes) {
+    throw new Error('baseline.identityEvidence must bind baseline identity/source commit to the recovered artifact hash and size');
+  }
+  const baselineRollback = baseline?.rollback;
+  requireString(baselineRollback?.driveFileId, 'baseline.rollback.driveFileId');
+  requireString(baselineRollback?.baselineIdentity, 'baseline.rollback.baselineIdentity');
+  if (baselineRollback.baselineIdentity !== baseline.identity) {
+    throw new Error('baseline.rollback.baselineIdentity must match baseline.identity');
+  }
+  requireString(baselineRollback?.restoreProcedure, 'baseline.rollback.restoreProcedure');
+  await verifyFile(root, baselineRollback, 'baseline.rollback');
+  if (baselineRollback.downloadBackVerified !== true) {
+    throw new Error('baseline.rollback.downloadBackVerified must be true');
+  }
+  const baselineRollbackCopy = await verifyFile(root, baselineRollback.downloadBack, 'baseline.rollback.downloadBack');
+  if (baselineRollbackCopy.sha256 !== baselineRollback.sha256 || baselineRollbackCopy.bytes !== baselineRollback.bytes) {
+    throw new Error('baseline.rollback.downloadBack must byte-match the baseline rollback');
+  }
   const packageFile = await verifyFile(root, receipt.package, 'package');
+  if (packageFile.sha256 === baselineRollback.sha256) {
+    throw new Error('candidate package must be distinct from the baseline rollback package');
+  }
+  if (baselineArtifactFile.sha256 !== baselineRollback.sha256 || baselineArtifactFile.bytes !== baselineRollback.bytes) {
+    throw new Error('baseline rollback must byte-match the recovered current baseline artifact');
+  }
   const rollbackFile = await verifyFile(root, receipt.rollback?.artifact, 'rollback.artifact');
+  if (rollbackFile.sha256 === packageFile.sha256) throw new Error('rollback artifact must differ from the candidate package');
+  if (rollbackFile.sha256 !== baselineRollback.sha256 || rollbackFile.bytes !== baselineRollback.bytes) {
+    throw new Error('rollback artifact must match the recovered current baseline rollback');
+  }
   requireString(receipt.rollback?.restoreProcedure, 'rollback.restoreProcedure');
   const rollbackRecovery = receipt.rollback?.recovery;
   requireString(rollbackRecovery?.driveFileId, 'rollback.recovery.driveFileId');
