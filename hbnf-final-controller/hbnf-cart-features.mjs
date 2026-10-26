@@ -868,10 +868,13 @@ function uvStateChanged() {
   const main = $("uvMainBrightness"), short = $("uvShortBrightness");
   if ($("uvMainValue") && main) $("uvMainValue").value = String(main.value);
   if ($("uvShortValue") && short) $("uvShortValue").value = String(short.value);
+  if ($("uvSharedValue") && main && short) {
+    $("uvSharedValue").value = Number(main.value) === Number(short.value) ? String(main.value) : "Mixed";
+  }
 }
 
 function setUvControlsReady(ready) {
-  ["uvApply", "uvOff"].forEach(id => { if ($(id)) $(id).disabled = !ready; });
+  ["uvApply", "uvOff", "uvMainBrightness", "uvShortBrightness", "uvSharedBrightness"].forEach(id => { if ($(id)) $(id).disabled = !ready; });
 }
 
 async function checkUvReadiness(updateStatus = true) {
@@ -894,10 +897,10 @@ async function checkUvReadiness(updateStatus = true) {
     } else {
       uvFollowActive = false;
       uvDefaultFollowAttempted = false;
-      if (updateStatus) status.textContent = "Locked: AUX firmware identity, UV output verification, and commissioning checks are not all confirmed. Sliders are caps only; no UV command was sent.";
+      if (updateStatus) status.textContent = "Locked: UV safety checks are incomplete. No command was sent.";
     }
   } catch (_) {
-    if (updateStatus) status.textContent = "Locked: UV safety status is unavailable. Pair the Owner device and reconnect to check.";
+    if (updateStatus) status.textContent = "Locked: UV status unavailable. Reconnect to check.";
   }
 }
 
@@ -959,6 +962,17 @@ async function sendUv(mode) {
     if (uvFollowActive) void sendUv("FOLLOW_MATRIX");
   });
 });
+if ($("uvSharedBrightness")) {
+  $("uvSharedBrightness").addEventListener("input", () => {
+    const value = $("uvSharedBrightness").value;
+    ["uvMainBrightness", "uvShortBrightness"].forEach(id => { if ($(id)) $(id).value = value; });
+    if ($("uvSharedValue")) $("uvSharedValue").value = value;
+    uvStateChanged();
+  });
+  $("uvSharedBrightness").addEventListener("change", () => {
+    if (uvFollowActive) void sendUv("FOLLOW_MATRIX");
+  });
+}
 if ($("uvApply")) $("uvApply").addEventListener("click", () => sendUv("MANUAL"));
 if ($("uvOff")) $("uvOff").addEventListener("click", () => sendUv("OFF"));
 uvStateChanged();

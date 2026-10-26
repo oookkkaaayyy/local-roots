@@ -13,11 +13,15 @@ const css = read("hbnf-final-controller/hbnf-cart-ui-v6.css");
 
 assert.match(html, /id="uvMainBrightness"[^>]*value="64"/);
 assert.match(html, /id="uvShortBrightness"[^>]*value="64"/);
+assert.match(html, /id="uvSharedBrightness"[^>]*value="64"[^>]*disabled/);
+assert.match(html, /id="uvSharedBrightness"[\s\S]*id="uvMainBrightness"/);
+assert.match(html, /<summary>Fine tuning<\/summary>[\s\S]*class="uv-controls uv-fine-tuning"[\s\S]*id="uvMainBrightness"/);
+assert.match(html, /Cart UV cap[\s\S]*aria-label="Cart UV brightness cap"[\s\S]*Bar UV cap[\s\S]*aria-label="Bar UV brightness cap"/);
 assert.doesNotMatch(html, /uvFollowApply|Apply rhythm limits/);
 assert.match(html, /id="uvApply"[^>]*disabled/);
 assert.match(html, /id="uvOff"[^>]*disabled/);
-assert.match(html, /<details class="sub-controls uv-manual">[\s\S]*Manual override \(detached\)/);
-assert.match(html, /Follows the Matrix\/AUX rhythm automatically when the physical and firmware safety checks pass\.[\s\S]*Missing or stale Matrix audio keeps the UV output dark\./);
+assert.match(html, /<details class="sub-controls uv-manual">[\s\S]*Detached manual controls/);
+assert.match(html, /Checking UV safety status\. Controls stay locked until the Cart confirms readiness\./);
 assert.match(html, /id="palettePanel"[^>]*hidden/);
 assert.match(html, /aria-label="Saved looks and advanced color"[^>]*hidden/);
 assert.match(html, /id="showStylePanel"/);
@@ -25,6 +29,9 @@ assert.match(features, /if \(!uvDefaultFollowAttempted\)[\s\S]*?await sendUv\("F
 assert.match(features, /addEventListener\("change", \(\) => \{\s*if \(uvFollowActive\) void sendUv\("FOLLOW_MATRIX"\)/);
 assert.match(features, /if \(uvRequestInFlight\)[\s\S]*uvFollowCapsPending/);
 assert.match(features, /result\.uvControlEnabled === true/);
+assert.match(features, /"uvApply", "uvOff", "uvMainBrightness", "uvShortBrightness", "uvSharedBrightness"/);
+assert.match(features, /uvSharedBrightness[\s\S]*uvMainBrightness[\s\S]*uvShortBrightness/);
+assert.match(features, /Number\(main\.value\) === Number\(short\.value\) \? String\(main\.value\) : "Mixed"/);
 assert.match(features, /async function checkUvReadiness\(updateStatus = true\)[\s\S]*?if \(updateStatus\) status\.textContent/);
 assert.match(features, /canonicalRead\("uv_policy"/);
 assert.match(features, /finally \{\s*uvRequestInFlight = false;\s*await checkUvReadiness\(false\);/);

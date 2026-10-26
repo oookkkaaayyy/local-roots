@@ -74,12 +74,16 @@ h3{margin:0 0 8px;font-size:.95rem;line-height:1.25;font-weight:720}
 #vibeAvailability{margin:7px 0 0;font-size:.85rem}
 .quick-brightness-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:7px}
 .uv-controls .quick-brightness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.quick-brightness .quick-brightness-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 .uv-controls .device{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin:0;padding:7px 9px;border:1px solid #5b574b;border-radius:8px;background:var(--cart-cream)}
 .uv-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:7px}
 .uv-actions button{min-width:0;min-height:48px}
 .uv-controls #uvOff{background:#50352e;border-color:#93634f;color:#ffdfd3}
 .uv-controls #uvActionStatus{min-height:2.5em}
 .uv-manual{margin-top:7px;padding:4px 8px 8px;border-top:1px solid #5b574b}
+.uv-fine-tuning{margin:8px 0;padding:8px;border:1px solid #5b574b;border-radius:8px;background:#29312b}
+.uv-fine-tuning h3{margin:0 0 4px}
+.uv-fine-tuning>.apply-note{margin:4px 0}
 .quick-brightness .device{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin:0;padding:7px 9px;border:1px solid #5b574b;border-radius:8px;background:var(--cart-cream)}
 .range-head{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--cart-root);font-size:.9rem;font-weight:700}
 input[type=range]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:44px;height:42px;min-height:44px;margin:0;padding:0;border:0;border-radius:0;background:transparent;accent-color:var(--cart-forest);touch-action:pan-y;cursor:pointer}
@@ -172,7 +176,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid var(
 @media(min-width:900px) and (min-height:680px) and (orientation:landscape){
   #ownerViewShow{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"actions actions" "lights motion" "text text";align-items:start;gap:9px}
   #ownerViewShow>.show-device-actions{grid-area:actions}
-  #ownerViewShow>#lightsPanel{grid-area:lights;grid-template-columns:minmax(0,1.15fr) minmax(220px,.85fr);align-items:start;gap:8px}
+  #ownerViewShow>#lightsPanel{grid-area:lights;grid-template-columns:minmax(0,1fr);align-items:start;gap:8px}
   #ownerViewShow>#showStylePanel{grid-area:motion}
   #ownerViewShow>#textPanel{grid-area:text}
   #ownerViewScores{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
