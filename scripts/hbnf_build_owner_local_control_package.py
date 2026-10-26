@@ -9,14 +9,14 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.6"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.7"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
 OWNER_HTTP_TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js")
 UV_POLICY_SPEC = Path("hbnf-aux-lighting/backend/aux_uv_policy_spec.json")
 FILES = (
     "README.md", "SOURCE_BASE.json", "auth.lua", "auth_origin.lua", "auth_owner.lua",
-    "auth_websocket.lua", "aux_command_access.lua", "dedicated-nginx.conf.example", "matrix_command_access.lua", "uv_policy_access.lua", "uv_status_access.lua",
+    "auth_websocket.lua", "aux_command_access.lua", "dedicated-nginx.conf.example", "matrix_command_access.lua", "uv_policy_access.lua", "uv_status_access.lua", "uv_runtime.lua",
     "enroll.lua", "hbnf-owner-local-control.init", "install.sh", "matrix_topology.sh",
     "nginx.conf.example", "preflight.sh", "revalidate.lua", "revoke.lua", "rollback.sh", "session.lua",
 )
@@ -71,7 +71,8 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         "installedTransportSha256": sha(transport),
         "ownerPwaTransportSha256": sha(owner_http_transport),
         "rollbackTransportSha256": EXPECTED_ROLLBACK,
-        "scope": ["separate Opal Nginx/Lua gateway on TCP 8443 with nobody request worker", "existing Opal Mission Control WebSocket transport upgraded with the current compatible command mappings", "separate authenticated per-command HTTPS transport for the existing Owner PWA", "authenticated fail-closed local UV status and policy routes", "shared versioned UV request contract consumed by backend JavaScript and Opal Lua validation"],
+        "scope": ["separate Opal Nginx/Lua gateway on TCP 8443 with nobody request worker", "existing Opal Mission Control WebSocket transport upgraded with the current compatible command mappings", "separate authenticated per-command HTTPS transport for the existing Owner PWA", "authenticated local UV status and policy routes for fixed segments 1 and 2 with AUX build identity and command readback", "shared versioned UV request contract consumed by backend JavaScript and Opal Lua validation"],
+        "releaseDisposition": "SOURCE_BOUND_NOT_INSTALLED",
         "notIncluded": ["TLS private key", "DNS provider credential", "router network policy marker", "firmware", "Supabase production payload"],
         "files": hashes,
     }

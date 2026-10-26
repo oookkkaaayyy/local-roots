@@ -1,89 +1,85 @@
--- Authenticated local validator for the shared UV policy contract. The route
--- remains fail-closed until trusted local readiness evidence is available.
+-- Authenticated UV command gateway. Only segments 1/2 are addressable; the
+-- Opal validates the installed AUX witness and never accepts arbitrary WLED JSON.
 local auth = dofile("/etc/hbnf-local-control/lua/auth.lua")
 if auth.owner_access(false) ~= true then return end
 
 local cjson = require "cjson.safe"
-local spec_file = io.open("/etc/hbnf-local-control/lua/uv_policy_spec.json", "r")
-if not spec_file then
-  return auth.json_response(503, { error = "local_uv_policy_spec_unavailable", mutationIssued = false })
+local runtime = dofile("/etc/hbnf-local-control/lua/uv_runtime.lua")
+local function respond(status, value)
+  ngx.status = status
+  ngx.header.content_type = "application/json"
+  ngx.header["Cache-Control"] = "no-store"
+  ngx.say(cjson.encode(value))
+  return ngx.exit(status)
 end
-local spec_body = spec_file:read(8192)
-spec_file:close()
-local spec = cjson.decode(spec_body or "")
-if type(spec) ~= "table" or spec.schema ~= "hbnf-aux-uv-policy-spec-v1"
-    or type(spec.modes) ~= "table" or type(spec.brightness) ~= "table"
-    or type(spec.brightness.requiredChannels) ~= "table"
-    or type(spec.requiredCommissioningGates) ~= "table"
-    or type(spec.requiredRuntimeGates) ~= "table"
-    or type(spec.channels) ~= "table"
-    or type(spec.networkBoundary) ~= "table"
-    or spec.networkBoundary.directWledRouteAllowed ~= false then
-  return auth.json_response(503, { error = "local_uv_policy_spec_invalid", mutationIssued = false })
-end
+
 ngx.req.read_body()
 local body = ngx.req.get_body_data()
-if not body or #body > 512 then
-  ngx.status = 413
-  ngx.header.content_type = "application/json"
-  ngx.say(cjson.encode({ error = "request_too_large", mutationIssued = false }))
-  return ngx.exit(413)
-end
-
+if not body or #body > 512 then return respond(413, { error = "request_too_large", mutationIssued = false }) end
 local input = cjson.decode(body)
-if type(input) ~= "table" then
-  ngx.status = 400
-  ngx.header.content_type = "application/json"
-  ngx.say(cjson.encode({ error = "invalid_request", mutationIssued = false }))
-  return ngx.exit(400)
-end
+if type(input) ~= "table" then return respond(400, { error = "invalid_request", mutationIssued = false }) end
 for key in pairs(input) do
   if key ~= "mode" and key ~= "brightnessBySegment" then
-    ngx.status = 400
-    ngx.header.content_type = "application/json"
-    ngx.say(cjson.encode({ error = "unsupported_field", mutationIssued = false }))
-    return ngx.exit(400)
-  end
-end
-local mode = input.mode
-if mode == nil then mode = spec.defaultMode end
-if type(mode) == "string" then mode = string.upper(mode) end
-local levels = input.brightnessBySegment
-local mode_allowed = false
-for _, allowed in ipairs(spec.modes) do
-  if mode == allowed then mode_allowed = true; break end
-end
-if not mode_allowed or type(levels) ~= "table" then
-  ngx.status = 400
-  ngx.header.content_type = "application/json"
-  ngx.say(cjson.encode({ error = "invalid_policy", mutationIssued = false }))
-  return ngx.exit(400)
-end
-local required = {}
-for _, channel in ipairs(spec.brightness.requiredChannels) do required[channel] = true end
-for key, value in pairs(levels) do
-  if not required[key] or type(value) ~= "number" or value % 1 ~= 0
-      or value < spec.brightness.minimum or value > spec.brightness.maximum then
-    ngx.status = 400
-    ngx.header.content_type = "application/json"
-    ngx.say(cjson.encode({ error = "invalid_brightness_cap", mutationIssued = false }))
-    return ngx.exit(400)
-  end
-end
-for channel in pairs(required) do
-  if levels[channel] == nil then
-    ngx.status = 400
-    ngx.header.content_type = "application/json"
-    ngx.say(cjson.encode({ error = "incomplete_brightness_caps", mutationIssued = false }))
-    return ngx.exit(400)
+    return respond(400, { error = "unsupported_field", mutationIssued = false })
   end
 end
 
--- Shared request contract validation now executes on Opal, but trusted local
--- commissioning, hardware, AUX identity/runtime and network-isolation state
--- are not available here. Never infer readiness or issue a WLED mutation.
-ngx.status = 503
-ngx.header.content_type = "application/json"
-ngx.header["Cache-Control"] = "no-store"
-ngx.say(cjson.encode({ error = "local_uv_policy_readiness_unverified", mutationIssued = false }))
-return ngx.exit(503)
+local mode = string.upper(tostring(input.mode or ""))
+if mode ~= "OFF" and mode ~= "MANUAL" and mode ~= "FOLLOW_MATRIX" then
+  return respond(400, { error = "unsupported_uv_mode", mutationIssued = false })
+end
+local levels = input.brightnessBySegment
+if type(levels) ~= "table" then return respond(400, { error = "missing_brightness_caps", mutationIssued = false }) end
+for key in pairs(levels) do
+  if key ~= "main" and key ~= "short" then return respond(400, { error = "unsupported_uv_channel", mutationIssued = false }) end
+end
+local function valid_level(value)
+  return type(value) == "number" and value % 1 == 0 and value >= 0 and value <= 255
+end
+if not valid_level(levels.main) or not valid_level(levels.short) then
+  return respond(400, { error = "invalid_brightness_cap", mutationIssued = false })
+end
+
+local current, readiness_error = runtime.read_state()
+if not current then return respond(503, { error = readiness_error, mutationIssued = false }) end
+
+local effect = mode == "FOLLOW_MATRIX" and runtime.FOLLOW_EFFECT_ID or 0
+local function make_segment(id, cap)
+  if mode == "OFF" or cap == 0 then
+    return { id = id, on = false, bri = 0, fx = 0, ix = 0 }
+  end
+  if mode == "FOLLOW_MATRIX" then
+    return { id = id, on = true, bri = 255, fx = effect, ix = cap, col = {{255, 255, 255}} }
+  end
+  return { id = id, on = true, bri = cap, fx = 0, ix = cap, col = {{255, 255, 255}} }
+end
+local expected = {
+  [1] = mode == "OFF" and { on = false, bri = 0, fx = 0, ix = 0 }
+    or mode == "FOLLOW_MATRIX" and { on = true, bri = 255, fx = effect, ix = levels.main }
+    or { on = levels.main > 0, bri = levels.main, fx = 0, ix = levels.main },
+  [2] = mode == "OFF" and { on = false, bri = 0, fx = 0, ix = 0 }
+    or mode == "FOLLOW_MATRIX" and { on = true, bri = 255, fx = effect, ix = levels.short }
+    or { on = levels.short > 0, bri = levels.short, fx = 0, ix = levels.short },
+}
+local payload = cjson.encode({ seg = { make_segment(1, levels.main), make_segment(2, levels.short) } })
+local response = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST, body = payload })
+if not response or response.status ~= 200 then
+  return respond(502, { error = "uv_device_response_unconfirmed", mutationIssued = "unknown" })
+end
+local readback, readback_error = runtime.decode_state(response.body)
+if not readback then
+  return respond(502, { error = readback_error or "uv_device_readback_unavailable", mutationIssued = "unknown" })
+end
+if not runtime.segment_matches(readback.segments[1], expected[1])
+    or not runtime.segment_matches(readback.segments[2], expected[2]) then
+  return respond(502, { error = "uv_device_readback_mismatch", mutationIssued = true })
+end
+
+return respond(200, {
+  ok = true,
+  action = "uv_policy",
+  mutationIssued = true,
+  mode = mode,
+  requested = { main = levels.main, short = levels.short },
+  acknowledgement = { transport = "local-opal-wled", acceptedByDevice = true, deviceReadback = true },
+})

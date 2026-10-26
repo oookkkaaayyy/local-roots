@@ -28,12 +28,14 @@ assert.match(ui, /if \(fineTuning\) fineTuning\.appendChild\(uvSystemControls\)/
 assert.doesNotMatch(html, /uvFollowApply|Apply rhythm limits/);
 assert.match(html, /id="uvApply"[^>]*disabled/);
 assert.match(html, /id="uvOff"[^>]*disabled/);
+assert.match(html, /id="uvFollow"[^>]*disabled/);
 assert.match(html, /<details class="sub-controls uv-manual">[\s\S]*Manual brightness control/);
 assert.match(html, /Checking whether Cart UV commands are ready\. Brightness levels remain editable\./);
 assert.match(html, /id="palettePanel"[^>]*hidden/);
 assert.match(html, /aria-label="Saved looks and advanced color"[^>]*hidden/);
 assert.match(html, /id="showStylePanel"/);
-assert.match(features, /if \(!uvDefaultFollowAttempted\)[\s\S]*?await sendUv\("FOLLOW_MATRIX"\)/);
+assert.doesNotMatch(features, /uvDefaultFollowAttempted|await sendUv\("FOLLOW_MATRIX"\)/);
+assert.match(features, /addEventListener\("click", \(\) => sendUv\("FOLLOW_MATRIX"\)\)/);
 assert.match(features, /addEventListener\("change", \(\) => \{\s*if \(uvFollowActive\) void sendUv\("FOLLOW_MATRIX"\)/);
 assert.match(features, /if \(uvRequestInFlight\)[\s\S]*uvFollowCapsPending/);
 assert.match(features, /result\.uvControlEnabled === true/);
@@ -42,7 +44,7 @@ assert.ok(uvControlEnable, "UV control readiness helper remains inspectable");
 const uvLocalState = features.match(/function uvStateChanged\(persist = true\)[\s\S]*?\n}/)?.[0];
 assert.ok(uvLocalState, "UV local state renderer remains inspectable");
 const uvElements = new Map([
-  ["uvApply", { disabled: false }], ["uvOff", { disabled: false }],
+  ["uvApply", { disabled: false }], ["uvOff", { disabled: false }], ["uvFollow", { disabled: false }],
   ["uvMainBrightness", { disabled: false, value: "121" }],
   ["uvShortBrightness", { disabled: false, value: "88" }],
   ["uvSharedBrightness", { disabled: false }],
@@ -56,6 +58,7 @@ const exerciseUvControls = new Function("$", `let uvRequestInFlight=false,uvRead
 exerciseUvControls.set(false, false);
 assert.equal(uvElements.get("uvApply").disabled, true);
 assert.equal(uvElements.get("uvOff").disabled, true);
+assert.equal(uvElements.get("uvFollow").disabled, true);
 assert.equal(uvElements.get("uvMainBrightness").disabled, false);
 assert.equal(uvElements.get("uvShortBrightness").disabled, false);
 assert.equal(uvElements.get("uvSharedBrightness").disabled, false,
@@ -68,6 +71,7 @@ exerciseUvControls.set(true, true);
 assert.equal(uvElements.get("uvMainBrightness").disabled, true, "levels lock only while a command is in flight");
 exerciseUvControls.set(true, false);
 assert.equal(uvElements.get("uvApply").disabled, false);
+assert.equal(uvElements.get("uvFollow").disabled, false);
 assert.equal(uvElements.get("uvSharedBrightness").disabled, false);
 assert.match(features, /uvSharedBrightness[\s\S]*uvMainBrightness[\s\S]*uvShortBrightness/);
 assert.match(features, /mainLevel !== shortLevel/);
@@ -102,9 +106,9 @@ assert.match(uvSend, /canonicalRead\("uv_policy",\s*\{\s*mode,\s*brightnessBySeg
 assert.deepEqual(uvPolicySpec.brightness.requiredChannels, ["main", "short"]);
 assert.match(features, /if \(\$\("uvApply"\)\) \$\("uvApply"\)\.addEventListener\("click", \(\) => sendUv\("MANUAL"\)\)/);
 assert.match(features, /if \(\$\("uvOff"\)\) \$\("uvOff"\)\.addEventListener\("click", \(\) => sendUv\("OFF"\)\)/);
-assert.match(uvSend, /result\.acknowledgement\.acceptedByBroker === true/);
+assert.match(uvSend, /ack\.acceptedByDevice === true && ack\.deviceReadback === true/);
 assert.match(uvSend, /UV result is unknown\. Check the Cart before trying again\./);
-assert.match(uvSend, /AUX broker accepted the request; device output is not confirmed\./);
+assert.match(uvSend, /Cart confirmed the UV command and readback; illumination was not observed\./);
 assert.doesNotMatch(uvSend, /sendUv\(\s*["']OFF["']\s*\)/, "missing command acknowledgment must never issue a follow-up OFF");
 assert.doesNotMatch(uvSend, /(?:output|UV)\s+(?:is|was)\s+(?:confirmed\s+)?off/i, "unknown command outcome must not be reported as off");
 assert.match(features, /canonicalRead\("uv_policy"/);

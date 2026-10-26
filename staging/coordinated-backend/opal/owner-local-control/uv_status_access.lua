@@ -1,16 +1,31 @@
--- Authenticated status endpoint. Readiness is unavailable until trusted local
--- commissioning evidence exists; this handler can never issue a mutation.
+-- Authenticated read-only readiness from the existing AUX JSON state route.
 local auth = dofile("/etc/hbnf-local-control/lua/auth.lua")
 if auth.owner_access(false) ~= true then return end
 
 local cjson = require "cjson.safe"
+local runtime = dofile("/etc/hbnf-local-control/lua/uv_runtime.lua")
+local current, reason = runtime.read_state()
+local response = {
+  available = current ~= nil,
+  uvControlEnabled = current ~= nil,
+  mutationIssued = false,
+  reason = reason,
+}
+if current then
+  response.reason = nil
+  response.release = runtime.RELEASE
+  response.engine = runtime.ENGINE
+  response.buildWitness = runtime.BUILD_WITNESS
+  response.uvFollowEffectId = runtime.FOLLOW_EFFECT_ID
+  response.uvOutputsVerified = true
+  response.channels = { main = 1, short = 2 }
+  response.outputOn = {
+    main = current.segments[1].on == true,
+    short = current.segments[2].on == true,
+  }
+end
 ngx.status = 200
 ngx.header.content_type = "application/json"
 ngx.header["Cache-Control"] = "no-store"
-ngx.say(cjson.encode({
-  available = false,
-  uvControlEnabled = false,
-  mutationIssued = false,
-  reason = "local_uv_readiness_unverified"
-}))
+ngx.say(cjson.encode(response))
 return ngx.exit(200)

@@ -1,13 +1,13 @@
 {
-  "schema": "hbnf-owner-local-control-staged-v1",
+  "schema": "hbnf-owner-local-control-staged-v2",
   "repository": "oookkkaaayyy/local-roots",
-  "branch": "codex/glow-matrix-relay-integration-20261014",
-  "base_commit": "2df82c85122eb1c40429464e5a24872d08c4dfaf",
+  "branch": "codex/cart-uv-local-policy-scaffold-20261026",
+  "base_commit": "8690ae711767ccfa644e538a169c6c2228272f64",
   "opal_rollback_transport_sha256": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
   "scope": [
     "existing Opal Nginx authenticated local proxy",
-    "authenticated fail-closed local UV status and policy routes",
+    "authenticated local UV status and policy routes with fixed UV segment IDs and AUX state acknowledgement",
     "separate per-command HTTPS transport for the existing Owner PWA",
-    "no firmware, backend deployment, scoring, or live router changes"
+    "no firmware installation, backend deployment, scoring, or live router changes"
   ]
 }
