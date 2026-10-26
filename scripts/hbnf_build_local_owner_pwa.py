@@ -650,6 +650,9 @@ def main() -> None:
     }
     (output / "PACKAGE.json").write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
 
+    if args.rollback_baseline_manifest:
+        shutil.copy2(baseline, output / "BASELINE.SHA256SUMS")
+
     if not args.review_only:
         for name in ("install.sh", "rollback.sh"):
             shutil.copy2(package_script_dir / name, output / name)
