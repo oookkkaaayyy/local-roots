@@ -1,0 +1,49 @@
+{
+  "disposition": "REVIEW_ONLY_NOT_INSTALLABLE",
+  "firmware": {
+    "bytes": 1348672,
+    "channels": {
+      "Bar": {
+        "gpio": 26,
+        "segment": 2
+      },
+      "Cart": {
+        "gpio": 25,
+        "segment": 1
+      }
+    },
+    "effectId": 248,
+    "file": "HBNF_SP803E_AUX_R3_UV_ENABLED.bin",
+    "sha256": "09ea18325a5bfe7a251be34c3f295f270064bcadc60b178774002f604ed5cc49",
+    "uvOutputsVerifiedCompileFlag": 1
+  },
+  "gates": {
+    "deviceInstall": "NOT_INSTALLED",
+    "hardwareProfileDefaultOff": true,
+    "networkIsolation": "NOT_CHECKED",
+    "physicalUvAcceptance": "NOT_CHECKED"
+  },
+  "inputs": {
+    "platformio": "6.1.17",
+    "sourceBundleSha256": "a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb",
+    "sourceDateEpoch": 1790035200,
+    "wledCommit": "29b389df1c1aaec6ff53aea742d17063b985906c"
+  },
+  "installable": false,
+  "reproducibility": {
+    "independentPlatformioCaches": true,
+    "secondBuildByteIdentical": true
+  },
+  "resumption": "Use only after a fresh AUX identity check and controlled field acceptance. Keep UV disconnected until then.",
+  "rollback": {
+    "bytes": 1348624,
+    "file": "HBNF_SP803E_AUX_V7_ROLLBACK.bin",
+    "manifestSha256": "8e3039d5cb175962e13033aa96fd46344b9d8a4b6fe4ebfbc8e3ea5d94ae9b0e",
+    "sha256": "c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a"
+  },
+  "schema": "hbnf-aux-uv-firmware-review-candidate-v1",
+  "sourceCommit": "a5f10807ea1847e1451d8509e5ce72ee72c661ee",
+  "workflowRef": "refs/heads/codex/cart-uv-local-policy-scaffold-20261026",
+  "workflowRunAttempt": 1,
+  "workflowRunId": "40377653769"
+}
