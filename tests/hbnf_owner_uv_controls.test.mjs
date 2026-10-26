@@ -92,6 +92,12 @@ assert.match(uvReadiness, /UV commands are locked until safety checks pass\. \$\
 assert.doesNotMatch(uvReadiness, /(?:output|UV)\s+(?:is|was)\s+(?:confirmed\s+)?off/i, "readiness failure must not claim output is confirmed off");
 const uvSend = features.match(/async function sendUv\(mode\)[\s\S]*?\n}\n\n\["uvMainBrightness"/)?.[0];
 assert.ok(uvSend, "UV command handler remains inspectable");
+const uvPolicySpec = JSON.parse(read("hbnf-aux-lighting/backend/aux_uv_policy_spec.json"));
+assert.match(uvSend, /canonicalRead\("uv_policy",\s*\{\s*mode,\s*brightnessBySegment:\s*\{\s*main:\s*Number\(main\.value\),\s*short:\s*Number\(short\.value\)/,
+  "Cart and Bar sliders must map to the shared main/short channel contract");
+assert.deepEqual(uvPolicySpec.brightness.requiredChannels, ["main", "short"]);
+assert.match(features, /if \(\$\("uvApply"\)\) \$\("uvApply"\)\.addEventListener\("click", \(\) => sendUv\("MANUAL"\)\)/);
+assert.match(features, /if \(\$\("uvOff"\)\) \$\("uvOff"\)\.addEventListener\("click", \(\) => sendUv\("OFF"\)\)/);
 assert.match(uvSend, /result\.acknowledgement\.acceptedByBroker === true/);
 assert.match(uvSend, /UV result is unknown\. Check the Cart before trying again\./);
 assert.match(uvSend, /AUX broker accepted the request; device output is not confirmed\./);
