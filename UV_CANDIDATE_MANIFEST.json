@@ -1,0 +1,46 @@
+{
+  "disposition": "REVIEW_ONLY_NOT_INSTALLABLE",
+  "firmware": {
+    "bytes": 1348848,
+    "channelGpio": {
+      "Bar": 26,
+      "Cart": 25
+    },
+    "effectId": 248,
+    "file": "HBNF_SP803E_AUX_R3_UV_ENABLED.bin",
+    "sha256": "a92ce4fb5b10732e60b90eadbdd249f9a18cc4d87d4aa9fd30d5bc66b87b117e",
+    "uvOutputsVerifiedCompileFlag": 1
+  },
+  "gates": {
+    "deviceInstall": "NOT_INSTALLED",
+    "networkIsolation": "NOT_CHECKED",
+    "officialActionsBuild": "NOT_CHECKED",
+    "physicalAcceptance": "NOT_CHECKED",
+    "runtimeHardwareProfile": "default-off; all UV commissioning gates false"
+  },
+  "inputs": {
+    "host": "macOS local build",
+    "platform": "tasmota/platform-espressif32 2024.06.00",
+    "platformio": "6.1.17",
+    "python": "3.12.14",
+    "sourceBundleSha256": "a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb",
+    "sourceDateEpoch": 1790035200,
+    "wledCommit": "29b389df1c1aaec6ff53aea742d17063b985906c"
+  },
+  "reproducibility": {
+    "firstBuildSha256": "a92ce4fb5b10732e60b90eadbdd249f9a18cc4d87d4aa9fd30d5bc66b87b117e",
+    "identical": true,
+    "independentBuildCaches": true,
+    "secondBuildSha256": "a92ce4fb5b10732e60b90eadbdd249f9a18cc4d87d4aa9fd30d5bc66b87b117e"
+  },
+  "resumption": "Rebuild this exact source in the repository Linux Actions toolchain; require matching source/build evidence and review the resulting manifest before any installation. Keep the module disconnected until the controlled field session.",
+  "rollback": {
+    "bytes": 1348624,
+    "file": "HBNF_SP803E_AUX_V7_ROLLBACK.bin",
+    "manifestSha256": "8e3039d5cb175962e13033aa96fd46344b9d8a4b6fe4ebfbc8e3ea5d94ae9b0e",
+    "sha256": "c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a"
+  },
+  "schema": "hbnf-aux-uv-firmware-review-candidate-v1",
+  "sourceCommit": "13214924cf62d2056ce54d0f7467c71bd85ea155",
+  "toolchainDeviation": "The pinned WLED requirements file requests requests==2.33.0, unavailable from the configured Mac package index. The local compile used requests==2.32.5. This host-side package is outside firmware sources, but this is not the official pinned Linux release build."
+}
