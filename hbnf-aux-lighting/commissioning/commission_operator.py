@@ -132,6 +132,10 @@ def verify_package(root:pathlib.Path)->dict:
     return {"ok":all(checks.values()) and not receipt_errors,"checks":checks,"firmwareSha256":got_sha,"firmwareBytes":got_bytes,
       "releaseReceiptTemplateErrors":receipt_errors,"releaseReceiptStatus":template.get("status"),"artifactPointer":pointer,
       "installAdmissible":False,"releaseAdmission":{"status":admission.get("status"),"reason":admission_reason,
+      "candidate_source_commit":admission.get("candidate_source_commit"),
+      "candidate_firmware_sha256":admission.get("candidate_firmware_sha256"),
+      "installed_firmware_sha256":admission.get("installed_firmware_sha256"),
+      "installed_baseline_evidence":admission.get("installed_baseline_evidence"),
       "resumptionCondition":admission.get("resumption_condition"),
       "rollbackVerified":bool(admission.get("rollback_artifact") and admission_valid),
       "rollbackArtifact":admission.get("rollback_artifact")}}
