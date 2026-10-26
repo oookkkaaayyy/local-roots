@@ -1,8 +1,15 @@
-# Opal Owner Local Control — staged v1.0.4
+# Opal Owner Local Control — staged v1.0.5
 
 Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmware changes are made until a separately admitted installation. This release retains the existing Opal Mission Control WebSocket interface and adds a separate authenticated HTTP transport module for the production Owner PWA. The updated existing transport keeps its WebSocket class and current command mappings; rollback restores its exact v1.0.1 source.
 
 ## Per-command gateway
+
+The staged `/api/aux/uv-policy` endpoint is authenticated and validates the
+small UV policy request shape, then returns `503` with `mutationIssued:false`.
+It intentionally has no WLED proxy. The shared UV safety policy is JavaScript
+for Deno, while the verified Opal gateway is OpenResty/Lua; this package does
+not claim that a compatible policy runtime or verified electrical profile is
+installed. Offline UV settings therefore remain saved UI intent only.
 
 The dedicated Nginx instance listens only on `192.168.77.1:8443`, uses the installed TLS/Lua-enabled Nginx binary, and drops its single request worker to `nobody:nogroup`. The Nginx master remains root only to open its root-only key and supervise the process. The global GL.iNet Nginx, its 80/443 listeners, and the Skins relay are not reloaded or modified.
 

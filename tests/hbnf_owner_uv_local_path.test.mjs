@@ -7,7 +7,9 @@ const source = async path => readFile(new URL(path, import.meta.url), "utf8");
 
 test("WAN-independent Cart control does not send UV requests through raw local WLED routes", async () => {
   const cart = await source("../hbnf-final-controller/hbnf-cart.js");
+  const localClient = await source("../hbnf-final-controller/hbnf-cart-local.mjs");
   const localAcl = await source("../staging/coordinated-backend/opal/owner-local-control/aux_command_access.lua");
+  const localUv = await source("../staging/coordinated-backend/opal/owner-local-control/uv_policy_access.lua");
   const nginx = await source("../staging/coordinated-backend/opal/owner-local-control/nginx.conf.example");
   const cartFeatures = await source("../hbnf-final-controller/hbnf-cart-features.mjs");
 
@@ -21,7 +23,13 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   const acceptedKeys = [...localAcl.matchAll(/key == "([^"]+)"/g)].map(match => match[1]);
   assert.deepEqual([...new Set(acceptedKeys)].sort(), ["bri", "on"]);
   assert.match(nginx, /location = \/api\/aux\/control[\s\S]*?aux_command_access\.lua[\s\S]*?proxy_pass http:\/\/192\.168\.77\.11\/json\/state/);
-  assert.doesNotMatch(nginx, /location\s*=\s*\/api\/aux\/uv(?:-|\/|\s|\{)/i);
+  assert.match(localClient, /async uvPolicy\(token, request = \{\}\)/);
+  assert.match(nginx, /location = \/api\/aux\/uv-policy[\s\S]*?auth_owner\.lua[\s\S]*?uv_policy_access\.lua/);
+  const uvLocation = nginx.match(/location = \/api\/aux\/uv-policy \{([\s\S]*?)\n    \}/)?.[1] || "";
+  assert.doesNotMatch(uvLocation, /proxy_pass/);
+  assert.match(localUv, /local_uv_policy_runtime_unavailable/);
+  assert.match(localUv, /mutationIssued = false/);
+  assert.match(localUv, /if auth\.owner_access\(false\) ~= true then return end/);
 });
 
 test("current UV profile fails closed and never publishes manual brightness", async () => {
@@ -42,4 +50,4 @@ test("current UV profile fails closed and never publishes manual brightness", as
   assert.equal(publishCount, 0);
 });
 
-console.log("PASS: no existing local UV route; unauthorized/direct WLED substitute is rejected by source contract and current server policy remains fail-dark");
+console.log("PASS: authenticated local UV route fails closed without a shared policy runtime; no raw WLED mutation path is introduced");

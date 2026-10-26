@@ -25,7 +25,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
             self.assertEqual(archive_a.read_bytes(), archive_b.read_bytes())
             with zipfile.ZipFile(archive_a) as package:
                 names = package.namelist()
-                prefix = "hbnf-owner-local-control-v1.0.4/"
+                prefix = "hbnf-owner-local-control-v1.0.5/"
                 self.assertIn(prefix + "install.sh", names)
                 self.assertIn(prefix + "matrix_topology.sh", names)
                 self.assertIn(prefix + "aux_command_access.lua", names)
@@ -33,6 +33,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 self.assertIn(prefix + "local-transport.js", names)
                 self.assertIn(prefix + "owner-http-transport.js", names)
                 self.assertIn(prefix + "matrix_command_access.lua", names)
+                self.assertIn(prefix + "uv_policy_access.lua", names)
                 manifest = json.loads(package.read(prefix + "PACKAGE-MANIFEST.json"))
                 self.assertEqual(manifest["sourceCommit"], source)
                 self.assertEqual(manifest["rollbackTransportSha256"], "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e")

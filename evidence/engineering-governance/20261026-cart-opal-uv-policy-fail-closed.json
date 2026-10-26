@@ -1,0 +1,32 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART_OPAL_LOCAL_UV_POLICY_FAIL_CLOSED_20261026",
+  "summary": "Add a paired-owner authenticated, strictly validated Opal UV policy endpoint and client contract that cannot issue a WLED mutation until the canonical shared policy can run on the installed Opal runtime.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing paired Owner PWA, authenticated Opal local control gateway, canonical AUX UV policy, and hardware fail-dark gates; follows existing /api/aux/control route and does not create a controller or raw WLED path.",
+      "affected_subsystem": "Cart local Owner control client and staged Opal local-control package only.",
+      "rollback_reference": "Revert this source commit. No device, production, or configuration mutation is part of this change.",
+      "evidence_sources": [
+        "hbnf-aux-lighting/backend/aux_uv_command.mjs",
+        "staging/coordinated-backend/opal/owner-local-control/nginx.conf.example",
+        "staging/coordinated-backend/opal/owner-local-control/auth_owner.lua"
+      ],
+      "tests": [
+        "node --test tests/hbnf_owner_local_uv_policy.test.mjs tests/hbnf_owner_uv_local_path.test.mjs",
+        "python3 -m unittest -v tests.hbnf_owner_local_control_package",
+        "sh -n staging/coordinated-backend/opal/owner-local-control/install.sh; sh -n staging/coordinated-backend/opal/owner-local-control/rollback.sh",
+        "git diff --check"
+      ],
+      "limitations": "The installed OpenResty/Lua runtime cannot load the existing Deno JavaScript policy module. The endpoint validates and returns 503 with mutationIssued:false; no local UV actuation or hardware acceptance is claimed. Existing UV hardware profile and physical commissioning gates remain closed."
+    }
+  }
+}
