@@ -29,7 +29,38 @@ assert.match(features, /if \(!uvDefaultFollowAttempted\)[\s\S]*?await sendUv\("F
 assert.match(features, /addEventListener\("change", \(\) => \{\s*if \(uvFollowActive\) void sendUv\("FOLLOW_MATRIX"\)/);
 assert.match(features, /if \(uvRequestInFlight\)[\s\S]*uvFollowCapsPending/);
 assert.match(features, /result\.uvControlEnabled === true/);
-assert.match(features, /"uvApply", "uvOff", "uvMainBrightness", "uvShortBrightness", "uvSharedBrightness"/);
+const uvControlEnable = features.match(/function setUvControlsReady\(ready\)[\s\S]*?\n}/)?.[0];
+assert.ok(uvControlEnable, "UV control readiness helper remains inspectable");
+const uvLocalState = features.match(/function uvStateChanged\(\)[\s\S]*?\n}/)?.[0];
+assert.ok(uvLocalState, "UV local state renderer remains inspectable");
+const uvElements = new Map([
+  ["uvApply", { disabled: false }], ["uvOff", { disabled: false }],
+  ["uvMainBrightness", { disabled: false, value: "121" }],
+  ["uvShortBrightness", { disabled: false, value: "88" }],
+  ["uvSharedBrightness", { disabled: false }],
+  ["uvMainValue", { value: "" }], ["uvShortValue", { value: "" }],
+  ["uvSharedValue", { value: "" }],
+]);
+const exerciseUvControls = new Function("$", `let uvRequestInFlight=false; ${uvControlEnable}; ${uvLocalState}; return {
+  set(ready,busy){uvRequestInFlight=busy;setUvControlsReady(ready);},
+  render(){uvStateChanged();}
+};`)(id => uvElements.get(id));
+exerciseUvControls.set(false, false);
+assert.equal(uvElements.get("uvApply").disabled, true);
+assert.equal(uvElements.get("uvOff").disabled, true);
+assert.equal(uvElements.get("uvMainBrightness").disabled, false);
+assert.equal(uvElements.get("uvShortBrightness").disabled, false);
+assert.equal(uvElements.get("uvSharedBrightness").disabled, false,
+  "manual brightness remains editable while remote status/readiness is unknown");
+exerciseUvControls.render();
+assert.equal(uvElements.get("uvMainValue").value, "121");
+assert.equal(uvElements.get("uvShortValue").value, "88");
+assert.equal(uvElements.get("uvSharedValue").value, "Mixed");
+exerciseUvControls.set(true, true);
+assert.equal(uvElements.get("uvMainBrightness").disabled, true, "levels lock only while a command is in flight");
+exerciseUvControls.set(true, false);
+assert.equal(uvElements.get("uvApply").disabled, false);
+assert.equal(uvElements.get("uvSharedBrightness").disabled, false);
 assert.match(features, /uvSharedBrightness[\s\S]*uvMainBrightness[\s\S]*uvShortBrightness/);
 assert.match(features, /Number\(main\.value\) === Number\(short\.value\) \? String\(main\.value\) : "Mixed"/);
 assert.match(features, /async function checkUvReadiness\(updateStatus = true\)[\s\S]*?if \(updateStatus\) status\.textContent/);

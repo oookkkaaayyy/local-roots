@@ -874,7 +874,11 @@ function uvStateChanged() {
 }
 
 function setUvControlsReady(ready) {
-  ["uvApply", "uvOff", "uvMainBrightness", "uvShortBrightness", "uvSharedBrightness"].forEach(id => { if ($(id)) $(id).disabled = !ready; });
+  // The safety/status gate protects commands, not local slider state. Leave the
+  // brightness controls editable when the Cart link is unknown so the selected
+  // manual levels survive a Matrix/WAN interruption; lock them only in-flight.
+  ["uvApply", "uvOff"].forEach(id => { if ($(id)) $(id).disabled = !ready || uvRequestInFlight; });
+  ["uvMainBrightness", "uvShortBrightness", "uvSharedBrightness"].forEach(id => { if ($(id)) $(id).disabled = uvRequestInFlight; });
 }
 
 async function checkUvReadiness(updateStatus = true) {
