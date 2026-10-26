@@ -10,6 +10,8 @@ const uvProxy = read("staging/coordinated-backend/hbnf-cart-control/uv-policy-pr
 const auth = read("staging/coordinated-backend/hbnf-cart-control/guest-command.ts");
 const aux = read("hbnf-aux-lighting/backend/aux_control.ts");
 const css = read("hbnf-final-controller/hbnf-cart-ui-v6.css");
+assert.match(html, /class="muted score-source-links"[\s\S]*>Skins<\/a>[\s\S]*>Glow<\/a>/);
+assert.match(css, /\.score-source-links a\{display:inline-flex;min-height:44px;align-items:center/);
 
 assert.match(html, /id="uvMainBrightness"[^>]*value="64"/);
 assert.match(html, /id="uvShortBrightness"[^>]*value="64"/);
