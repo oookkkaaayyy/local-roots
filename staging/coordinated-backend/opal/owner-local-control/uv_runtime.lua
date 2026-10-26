@@ -98,7 +98,8 @@ function M.decode_state(body)
       or identity.buildWitness ~= M.BUILD_WITNESS
       or identity.uvFollowEffectId ~= M.FOLLOW_EFFECT_ID
       or identity.uvFollowRegistered ~= true
-      or tonumber(identity.uvOutputsVerified) ~= 1 then
+      or tonumber(identity.uvOutputsVerified) ~= 1
+      or identity.uvBuildProfile ~= "uv-follow-output-capable-v1" then
     return nil, "uv_firmware_not_ready"
   end
   local segments = {}

@@ -114,13 +114,15 @@ def generate(firmware: pathlib.Path, metrics: pathlib.Path, rollback: pathlib.Pa
           "artifact_name":bundle["file"],"artifact_zip_sha256":bundle["sha256"],
           "drive_file_ids":drive_ids or {}}
     fresh_gate="FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED" if artifact else "EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
-    resume=("Immediately before any installation, re-read AUX identity and confirm the installed firmware still matches this exact rollback, then use a new candidate-specific admission. Keep UV disabled until electrical and physical acceptance passes." if artifact else
+    resume=("Before any UV output-capable installation, first record a fresh same-target unpaired-client probe showing WLED /json/info is unreachable; then re-read AUX identity and confirm it still matches this exact rollback. At install time the output-capable firmware profile remains distinct from the closed Owner/Opal/database UV activation gates; do not open activation until the named electrical and physical acceptance passes." if artifact else
       "Retain and verify the exact installed AUX firmware image, then create a source-bound package containing that image as rollback.")
     return {"schema":"hbnf-aux-release-admission-v1","status":"REVIEW_ONLY",
       "candidate_source_commit":source,"candidate_firmware_sha256":firmware_sha,
       "installed_firmware_sha256":INSTALLED_AUX_SHA256,
       "installed_baseline_evidence":"Exact V7 image, source/run identity, continuation bundle hash, and owner-confirmed current baseline are recorded; fresh target preflight remains required.",
-      "rollback_artifact":artifact,"blocker_code":fresh_gate,"resumption_condition":resume}
+      "rollback_artifact":artifact,"blocker_code":fresh_gate,"resumption_condition":resume,
+      "uv_activation":{"compile_capability":"METRICS_BOUND","owner_opal_database_gates":"CLOSED",
+        "direct_wled_network_isolation":"NOT_CHECKED","physical_uv_acceptance":"NOT_CHECKED"}}
 
 def selftest():
     validate_recovery_source(HERE/ROLLBACK_FILE,HERE/ROLLBACK_MANIFEST)

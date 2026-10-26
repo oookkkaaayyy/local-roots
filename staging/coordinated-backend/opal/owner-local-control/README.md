@@ -1,4 +1,4 @@
-# Opal Owner Local Control — staged v1.0.8
+# Opal Owner Local Control — staged v1.0.9
 
 Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmware changes are made until a separately admitted installation. This release retains the existing Opal Mission Control WebSocket interface and adds a separate authenticated HTTP transport module for the production Owner PWA. The updated existing transport keeps its WebSocket class and current command mappings; rollback restores its exact v1.0.1 source.
 

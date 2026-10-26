@@ -33,7 +33,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
             self.assertEqual(archive_a.read_bytes(), archive_b.read_bytes())
             with zipfile.ZipFile(archive_a) as package:
                 names = package.namelist()
-                prefix = "hbnf-owner-local-control-v1.0.8/"
+                prefix = "hbnf-owner-local-control-v1.0.9/"
                 self.assertIn(prefix + "install.sh", names)
                 self.assertIn(prefix + "matrix_topology.sh", names)
                 self.assertIn(prefix + "aux_command_access.lua", names)
@@ -64,6 +64,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 self.assertTrue(all(value is False for value in profile_data["commissioningGates"].values()))
                 runtime_lua = package.read(prefix + "uv_runtime.lua").decode()
                 self.assertIn('key ~= "hardwareReady"', runtime_lua)
+                self.assertIn('identity.uvBuildProfile ~= "uv-follow-output-capable-v1"', runtime_lua)
                 self.assertEqual(manifest["rollbackTransportSha256"], "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e")
                 sums = package.read(prefix + "SHA256SUMS").decode()
                 self.assertIn(f"{transport_sha}  local-transport.js", sums)

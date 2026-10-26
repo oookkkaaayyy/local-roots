@@ -279,6 +279,7 @@ s=s.replace(state_proj,state_proj+'\n      wow["projectionRole"] = "receiver";',
 # same WLED timebase as the Matrix sender.
 needle='      wow["fxLast"] = hbnfFxLast;'
 replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["lumaPolicy"] = "camera-bright-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";\n      wow["projectionQueuePolicy"] = "newest-frame-v1";\n      wow["uvFollowEffectId"] = 248;\n      wow["uvFollowRegistered"] = hbnfUvFollowRegistered;\n      wow["uvOutputsVerified"] = HBNF_UV_OUTPUTS_VERIFIED;'
+replacement += '\n      wow["uvBuildProfile"] = HBNF_UV_OUTPUTS_VERIFIED ? "uv-follow-output-capable-v1" : "uv-follow-fail-dark-v1";'
 if s.count(needle)!=1:
     raise RuntimeError("telemetry extension anchor mismatch")
 s=s.replace(needle,replacement,1)
@@ -320,7 +321,7 @@ checks={
   'wow["projection"] = "fold2-1d-v1"','wow["projectionRole"] = "receiver"','wow["projectionRxPackets"]','wow["lumaPolicy"] = "camera-bright-v1"',
   "hbnfAuxLiftLuma","HbnfProjectionReceiverV1","hbnfProjectionRx.tick()","source-coupled-v4","frame-lock-v1",
   'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10',
-  'strip.addEffect(248, &mode_HbnfUvFollow','mode_HbnfUvFollow()','uvFollowEffectId"] = 248','hbnfUvFollowRegistered = true','HBNF_UV_OUTPUTS_VERIFIED'
+  'strip.addEffect(248, &mode_HbnfUvFollow','mode_HbnfUvFollow()','uvFollowEffectId"] = 248','hbnfUvFollowRegistered = true','HBNF_UV_OUTPUTS_VERIFIED','uvBuildProfile"] = HBNF_UV_OUTPUTS_VERIFIED'
  ],
  ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort','um_data->u_size = 9','um_data->u_data[8] = &last_UDPTime','um_data->u_type[8] = UMT_UINT32']
 }

@@ -8,6 +8,7 @@ CURRENT SAFE SCOPE
 BEFORE THE LAUNCHER
 - Put the SP803E on the same current LAN as the Mac.
 - Keep the staged UV module disconnected and unpowered until its combined field session.
+- For a UV output-capable candidate, first use a SECOND, unpaired client on Cart Wi-Fi to confirm `http://<AUX-IP>/json/info` is blocked. The candidate contains effect 248, so the closed Owner/Opal controls do not stop an unpaired LAN client if WLED's direct API is reachable.
 - For underglow color calibration, connect only the correctly wired WS2811 underglow when the launcher explicitly asks for the physical test.
 
 THEN
@@ -23,6 +24,7 @@ THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);
 - positively identify the AUX and refuse Matrix targets;
 - allow one AUX firmware OTA only when the exact Actions build receipt and V7 rollback package match, a fresh read identifies the owner-confirmed V7 AUX baseline, and the pre-install snapshot is saved; a second attempt for the same candidate is blocked;
+- for UV output-capable firmware, require a same-target, candidate-hash-bound, 30-minute unpaired-client WLED isolation observation before installation; without it, preflight stops at `VERIFY_UV_DIRECT_WLED_NETWORK_GATE`;
 - report OTA runtime identity as pending until a complete durable release receipt validates;
 - use a standards-compliant WLED multipart OTA upload;
 - calibrate real underglow color order at low current;
@@ -37,4 +39,6 @@ The build-bound RELEASE_RECEIPT.json is INCOMPLETE. After any future firmware in
 Only exit 0 validates the transaction receipt. The Desktop report is not durable evidence. Never add credentials or secrets. The install-time receipt in the package must match the GitHub Actions run from which the complete ZIP was downloaded; the local package check alone does not prove where a ZIP came from.
 
 FULL AUX / UV ACCEPTANCE
-The database AUX gate remains closed until both UV channels' exact electrical paths are physically verified and tested. Underglow can be commissioned independently without pretending UV acceptance exists.
+The database AUX gate, Opal hardware profile, and commissioning gates remain closed until both UV channels' exact electrical paths are physically verified and tested. The output-capable firmware can be installed only after the separate direct-WLED network gate passes; that does not open UV controls. After the unpaired-client probe, record it with:
+  python3 commission_guard.py --phase record-uv-network-gate --aux 192.168.77.11 --package-dir .
+Then rerun preflight. If the direct WLED endpoint returns JSON to the unpaired client, do not install or activate UV; the network boundary needs an approved fix and a new field check. Underglow can be commissioned independently without pretending UV acceptance exists.

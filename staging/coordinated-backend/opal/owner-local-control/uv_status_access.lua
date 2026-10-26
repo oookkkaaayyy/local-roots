@@ -18,6 +18,7 @@ if current then
   response.release = runtime.RELEASE
   response.engine = runtime.ENGINE
   response.buildWitness = runtime.BUILD_WITNESS
+  response.uvBuildProfile = current.identity.uvBuildProfile
   response.uvFollowEffectId = runtime.FOLLOW_EFFECT_ID
   response.uvOutputsVerified = true
   response.channels = { main = 1, short = 2 }

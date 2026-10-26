@@ -28,6 +28,16 @@ The Opal package also records that unpaired clients on the shared Cart Wi-Fi can
 
 ## One combined field acceptance session
 
+### UV output-capable firmware admission
+
+The UV-enabled build uses the normal exact-source commissioning distribution and carries the exact V7 rollback, source/run receipt, and package checksums. Its compile-time output capability is distinct from activation: the backend UV profile and all commissioning gates remain default-off; Opal's local route requires the verified hardware profile plus every required runtime/commissioning gate. The firmware reports `uvBuildProfile=uv-follow-output-capable-v1`, so the operator can distinguish the output-capable candidate from the retained fail-dark V7 baseline and verify the post-install runtime mode.
+
+Because the WLED HTTP API is unauthenticated on shared Cart Wi-Fi, this candidate stays `REVIEW_ONLY` until one separate pre-install field gate passes: from a second unpaired client on that Wi-Fi, `http://<AUX-IP>/json/info` must be blocked (connection refused/timeout, no WLED JSON). Record the observation with `commission_guard.py --phase record-uv-network-gate --aux <AUX-IP> --package-dir <extracted-package>`. Evidence is bound to the target IP and exact candidate SHA, expires after 30 minutes, and is required again at install admission. If the request succeeds, stop: do not install or activate the output-capable image until an approved network boundary closes direct WLED access and a new probe passes.
+
+After the network gate passes, fresh preflight must still identify the exact owner-confirmed V7 baseline, confirm its retained rollback package, and save the pre-install snapshot. Installation does not accept hardware or physical UV readiness. Powered voltage/current/temperature, independent channels, Matrix following, combined load, restoration, and device acceptance remain for the consolidated field session; database and Opal activation gates stay closed until those existing gates pass.
+
+### Existing combined field checks
+
 After the software gate is closed and Cart/Opal are present:
 
 1. Use the retained V7 image as the rollback and record the exact install transaction; the owner-confirmed V7 baseline is not a recovery investigation.

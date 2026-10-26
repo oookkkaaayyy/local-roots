@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       uv_build:
-        description: Build UV-enabled firmware for review only (never installable from this workflow)
+        description: Build UV output-capable firmware in the full guarded commissioning package; activation remains separately gated
         type: choice
         options:
           - disabled-default
@@ -99,7 +99,6 @@ jobs:
           PY2
 
       - name: Aux host contract
-        if: github.event_name == 'push' || inputs.uv_build != 'uv-enabled-review'
         shell: bash
         run: |
           set -euo pipefail
@@ -188,6 +187,7 @@ jobs:
           grep -q 'hbnf-wow-aux-r3-2026-10-25-uv-follow-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'registry28-tempo-lock-1d-v7-network-no-starve-uv-follow' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'uvFollowEffectId.*248' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'uvBuildProfile.*uv-follow-output-capable-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'HBNF_UV_OUTPUTS_VERIFIED.*0' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'source-coupled-v4' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'frame-lock-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -198,11 +198,9 @@ jobs:
           grep -q 'camera-bright-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnfAuxLiftLuma' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'static uint8_t audioSyncEnabled = 2;' usermods/audioreactive/audio_reactive.cpp
-          if [ "$HBNF_UV_BUILD_FLAG" = 0 ]; then
-            python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/test_audio_sync_contract.py" /tmp/wled
-            g++ -std=c++17 -O2 -I"$GITHUB_WORKSPACE/.hbnf-build-aux-r3" "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/test_uv_audio_follower.cpp" -o /tmp/test_uv_audio_follower
-            /tmp/test_uv_audio_follower
-          fi
+          python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/test_audio_sync_contract.py" /tmp/wled
+          g++ -std=c++17 -O2 -I"$GITHUB_WORKSPACE/.hbnf-build-aux-r3" "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/test_uv_audio_follower.cpp" -o /tmp/test_uv_audio_follower
+          /tmp/test_uv_audio_follower
           ! grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           ! grep -q 'hbnf_flow' platformio_override.ini
           git diff --check
@@ -229,7 +227,6 @@ jobs:
           pio run -e hbnf_aux_sp803e_r3 -t size 2>&1 | tee /tmp/size-first.log
 
       - name: Audit fold2 ANIMartRIX projection
-        if: github.event_name == 'push' || inputs.uv_build != 'uv-enabled-review'
         shell: bash
         run: |
           set -euo pipefail
@@ -250,102 +247,7 @@ jobs:
           pio run -e hbnf_aux_sp803e_r3 2>&1 | tee /tmp/build-second.log
           cmp /tmp/first.bin .pio/build/hbnf_aux_sp803e_r3/firmware.bin
 
-      - name: Package UV-enabled review candidate
-        if: env.HBNF_UV_BUILD_FLAG == '1'
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd "$GITHUB_WORKSPACE"
-          python - <<'PY2'
-          import hashlib,json,pathlib,zipfile
-          out=pathlib.Path('/tmp/artifacts')
-          candidate=out/'HBNF_SP803E_AUX_R3.bin'
-          rollback=out/'HBNF_SP803E_AUX_V7_ROLLBACK.bin'
-          rbmanifest=out/'AUX_V7_RECOVERY_MANIFEST.json'
-          digest=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
-          assert candidate.is_file() and candidate.stat().st_size>0
-          assert digest(rollback)=='c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a'
-          assert json.loads(rbmanifest.read_text())['verification']['owner_confirmed_v7_current'] is True
-          assert digest(candidate)!=digest(rollback), 'UV-enabled image must not be a duplicate of the V7 rollback'
-          manifest={
-            'schema':'hbnf-aux-uv-firmware-review-candidate-v1',
-            'disposition':'REVIEW_ONLY_NOT_INSTALLABLE',
-            'admissionBlocker':{'code':'UV_COMPILE_GATE_NOT_ADMITTED_BY_COMMISSION_GUARD','reason':'The UV-enabled workflow builds with HBNF_UV_OUTPUTS_VERIFIED=1, while the existing install admission requires UV_OUTPUTS_VERIFIED=NO and UV_COMPILE_GATE_DEFAULT=0. Live AUX identity also requires uvOutputsFailDark=true. Do not relax these checks without an explicit safety design for the enabled runtime.'},
-            'sourceCommit':__import__('os').environ['GITHUB_SHA'],
-            'workflowRunId':__import__('os').environ['GITHUB_RUN_ID'],
-            'workflowRunAttempt':int(__import__('os').environ['GITHUB_RUN_ATTEMPT']),
-            'workflowRef':__import__('os').environ['GITHUB_REF'],
-            'firmware':{'file':'HBNF_SP803E_AUX_R3_UV_ENABLED.bin','bytes':candidate.stat().st_size,'sha256':digest(candidate),'uvOutputsVerifiedCompileFlag':1,'effectId':248,'channels':{'Cart':{'gpio':25,'segment':1},'Bar':{'gpio':26,'segment':2}}},
-            'rollback':{'file':'HBNF_SP803E_AUX_V7_ROLLBACK.bin','bytes':rollback.stat().st_size,'sha256':digest(rollback),'manifestSha256':digest(rbmanifest)},
-            'inputs':{'wledCommit':'29b389df1c1aaec6ff53aea742d17063b985906c','sourceBundleSha256':'a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb','platformio':'6.1.17','sourceDateEpoch':1790035200},
-            'reproducibility':{'independentPlatformioCaches':True,'secondBuildByteIdentical':True},
-            'gates':{'hardwareProfileDefaultOff':True,'physicalUvAcceptance':'NOT_CHECKED','networkIsolation':'NOT_CHECKED','deviceInstall':'NOT_INSTALLED'},
-            'installable':False,
-            'resumption':'Use only after a fresh AUX identity check and controlled field acceptance. Keep UV disconnected until then.'
-          }
-          (out/'UV_CANDIDATE_MANIFEST.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
-          image=out/'HBNF_SP803E_AUX_R3_UV_ENABLED.bin'
-          image.write_bytes(candidate.read_bytes())
-          # Carry the established commissioning/recovery source with the UV
-          # review image, while keeping its installer/admission gate closed.
-          commission=pathlib.Path('hbnf-aux-lighting/commissioning')
-          commission_files=['START_HERE.txt','COMMISSION_HBNF_AUX.command','commission_guard.py','commission_operator.py','generate_aux_hardware_plan.py','generate_release_admission.py','build_commissioning_distribution.py','local_commission.py','generate_release_receipt.py','validate_release_receipt.py','test_release_receipt.py','RELEASE_RECEIPT.schema.json','RELEASE_RECEIPT.template.json','contract.json','README.md','CODEX_RUNBOOK.md','UV_FIELD_SESSION.md']
-          for name in commission_files:
-            dest=out/'commissioning'/name
-            dest.parent.mkdir(parents=True,exist_ok=True)
-            dest.write_bytes((commission/name).read_bytes())
-            dest.chmod((commission/name).stat().st_mode & 0o777)
-          workflow_inputs={'workflowPath':'.github/workflows/hbnf-sp803e-aux-r3-build.yml','sourceCommit':__import__('os').environ['GITHUB_SHA'],'workflowRunId':__import__('os').environ['GITHUB_RUN_ID'],'workflowRunAttempt':int(__import__('os').environ['GITHUB_RUN_ATTEMPT']),'compileFlag':1,'releaseAdmission':'NOT_GENERATED_GUARD_REJECTS_ENABLED_COMPILE_FLAG'}
-          (out/'UV_WORKFLOW_INPUTS.json').write_text(json.dumps(workflow_inputs,indent=2,sort_keys=True)+'\n')
-          files=[image,rollback,rbmanifest,out/'UV_CANDIDATE_MANIFEST.json',out/'UV_WORKFLOW_INPUTS.json']+[out/'commissioning'/name for name in commission_files]
-          (out/'SHA256SUMS').write_text(''.join(f'{digest(p)}  {p.relative_to(out).as_posix()}\n' for p in files))
-          package=out/'HBNF_AUX_UV_ENABLED_REVIEW_ONLY.zip'
-          with zipfile.ZipFile(package,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
-            for p in files+[out/'SHA256SUMS']: z.write(p,p.relative_to(out).as_posix())
-          with zipfile.ZipFile(package) as z:
-            assert set(z.namelist())=={p.relative_to(out).as_posix() for p in files+[out/'SHA256SUMS']}
-            packaged=json.loads(z.read('UV_CANDIDATE_MANIFEST.json'))
-            assert packaged['installable'] is False
-            assert packaged['admissionBlocker']['code']=='UV_COMPILE_GATE_NOT_ADMITTED_BY_COMMISSION_GUARD'
-            assert 'commissioning/commission_guard.py' in z.namelist()
-            assert 'HBNF_SP803E_AUX_V7_ROLLBACK.bin' in z.namelist()
-            for line in z.read('SHA256SUMS').decode().splitlines():
-              expected,name=line.split('  ',1)
-              assert hashlib.sha256(z.read(name)).hexdigest()==expected, name
-          (out/'package-sha256.txt').write_text(f'{digest(package)}  {package.name}\n')
-          print(f'HBNF_AUX_UV_REVIEW_PACKAGE_READY sha256={digest(package)} firmware={digest(image)} disposition=REVIEW_ONLY_NOT_INSTALLABLE blocker=UV_COMPILE_GATE_NOT_ADMITTED_BY_COMMISSION_GUARD')
-          PY2
-
-      - name: Preserve UV review candidate in a private run branch
-        if: env.HBNF_UV_BUILD_FLAG == '1' && github.ref == 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          package=/tmp/artifacts/HBNF_AUX_UV_ENABLED_REVIEW_ONLY.zip
-          test -s "$package"
-          branch="hbnf-aux-uv-review-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}"
-          temp_repo="$(mktemp -d)"
-          trap 'git -C "$temp_repo" config --unset-all http.https://github.com/.extraheader 2>/dev/null || true; rm -rf "$temp_repo"' EXIT
-          cp "$package" /tmp/artifacts/UV_CANDIDATE_MANIFEST.json /tmp/artifacts/SHA256SUMS /tmp/artifacts/package-sha256.txt "$temp_repo/"
-          git -C "$temp_repo" init --initial-branch "$branch"
-          git -C "$temp_repo" config user.name "github-actions[bot]"
-          git -C "$temp_repo" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C "$temp_repo" add .
-          git -C "$temp_repo" commit -m "Preserve UV-enabled review candidate ${GITHUB_RUN_ID}"
-          git -C "$temp_repo" remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
-          auth_b64="$(python -c 'import base64,os; print(base64.b64encode(("x-access-token:"+os.environ["GH_TOKEN"]).encode()).decode())')"
-          echo "::add-mask::${auth_b64}"
-          git -C "$temp_repo" config http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_b64}"
-          unset auth_b64
-          git -C "$temp_repo" push origin "HEAD:refs/heads/${branch}"
-          git -C "$temp_repo" config --unset-all http.https://github.com/.extraheader
-          unset GH_TOKEN
-          echo "HBNF_AUX_UV_REVIEW_PACKAGE_PUBLISHED branch=${branch}"
-
-      - name: Final metrics
-        if: env.HBNF_UV_BUILD_FLAG == '0'
+      - name: Final metrics and exact release admission
         shell: bash
         run: |
           set -euo pipefail
@@ -368,6 +270,7 @@ jobs:
           UVFOLLOW=$(sha256sum .hbnf-build-aux-r3/hbnf_uv_audio_follower.h | awk '{print $1}')
           PROJECTION=$(sha256sum .hbnf-build-r3max/hbnf_projection_link_v1.h | awk '{print $1}')
           GEN4=$(sha256sum .hbnf-build-r3max/hbnf_generative_v4.h | awk '{print $1}')
+          if [ "$HBNF_UV_BUILD_FLAG" = 1 ]; then UV_OUTPUTS_VERIFIED=YES; UV_BUILD_PROFILE=uv-follow-output-capable-v1; else UV_OUTPUTS_VERIFIED=NO; UV_BUILD_PROFILE=uv-follow-fail-dark-v1; fi
           cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-aux-r3-source.patch /tmp/fold2-audit.log /tmp/aux-generative-v4.log /tmp/aux-audio-domains-v4.log /tmp/aux-projection-link-v1.log /tmp/artifacts/
           cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/test_audio_sync_contract.py .hbnf-build-aux-r3/test_uv_audio_follower.cpp .hbnf-build-aux-r3/hbnf_uv_audio_follower.h .hbnf-build-aux-r3/audit_animartrix_projection.py .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
@@ -383,6 +286,7 @@ jobs:
           chmod +x /tmp/artifacts/COMMISSION_HBNF_AUX.command
           cp hbnf-aux-lighting/commissioning/README.md /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/CODEX_RUNBOOK.md /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/UV_FIELD_SESSION.md /tmp/artifacts/
           cp hbnf-wow-bundle/config/WOW_SCENES_V2.json /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
@@ -399,8 +303,11 @@ jobs:
             echo EFFECT_ID_RANGE=220-247
             echo EFFECT_COUNT=28
             echo UV_FOLLOW_EFFECT_ID=248
-            echo UV_OUTPUTS_VERIFIED=NO
-            echo UV_COMPILE_GATE_DEFAULT=0
+            echo UV_OUTPUTS_VERIFIED=$UV_OUTPUTS_VERIFIED
+            echo UV_COMPILE_GATE_DEFAULT=$HBNF_UV_BUILD_FLAG
+            echo UV_BUILD_PROFILE=$UV_BUILD_PROFILE
+            echo UV_ACTIVATION_GATES=CLOSED
+            echo UV_DIRECT_WLED_ACCESS=NOT_CHECKED
             echo AUDIO_SYNC_DEFAULT=RECEIVE
             echo AUDIO_SYNC_PORT=11988
             echo PROJECTION=FRAME_LOCK_V1_WITH_FOLD2_FALLBACK
@@ -462,7 +369,6 @@ jobs:
             --out /tmp/artifacts/RELEASE_RECEIPT.json
 
       - name: Commission tooling selftest
-        if: env.HBNF_UV_BUILD_FLAG == '0'
         shell: bash
         run: |
           set -euo pipefail
@@ -478,7 +384,6 @@ jobs:
           python hbnf-aux-lighting/commissioning/commission_operator.py --selftest
 
       - name: Build permission-safe commissioning ZIP
-        if: env.HBNF_UV_BUILD_FLAG == '0'
         shell: bash
         run: |
           set -euo pipefail
@@ -507,11 +412,18 @@ jobs:
               receipt=__import__('json').loads(z.read('RELEASE_RECEIPT.json'))
               assert receipt['status']=='INCOMPLETE'
               assert receipt['source']['commit']==__import__('os').environ['GITHUB_SHA']
+              metrics=dict(line.split('=',1) for line in z.read('FINAL_METRICS.txt').decode().splitlines() if '=' in line)
+              if metrics.get('UV_COMPILE_GATE_DEFAULT')=='1':
+                  assert metrics['UV_OUTPUTS_VERIFIED']=='YES'
+                  assert metrics['UV_BUILD_PROFILE']=='uv-follow-output-capable-v1'
+                  assert metrics['UV_ACTIVATION_GATES']=='CLOSED'
+                  assert metrics['UV_DIRECT_WLED_ACCESS']=='NOT_CHECKED'
+                  assert admission.get('uv_activation',{}).get('owner_opal_database_gates')=='CLOSED'
+                  assert admission.get('uv_activation',{}).get('direct_wled_network_isolation')=='NOT_CHECKED'
           print('HBNF_AUX_DISTRIBUTION_MODE_GATE_PASS')
           PY2
 
       - name: Verify exact commissioning package
-        if: env.HBNF_UV_BUILD_FLAG == '0'
         shell: bash
         run: |
           set -euo pipefail
@@ -530,7 +442,7 @@ jobs:
           PY2
 
       - name: Preserve exact commissioning ZIP in a private run branch
-        if: env.HBNF_UV_BUILD_FLAG == '0' && github.ref == 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
+        if: github.ref == 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}

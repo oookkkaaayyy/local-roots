@@ -108,6 +108,9 @@ def verify_package(root:pathlib.Path)->dict:
                 and admission.get("candidate_firmware_sha256")==got_sha
                 and re.fullmatch(r"[0-9a-f]{64}",str(admission.get("installed_firmware_sha256",""))) is not None
                 and bool(str(admission.get("installed_baseline_evidence","")).strip())
+                and admission.get("uv_activation",{}).get("owner_opal_database_gates")=="CLOSED"
+                and admission.get("uv_activation",{}).get("direct_wled_network_isolation")=="NOT_CHECKED"
+                and admission.get("uv_activation",{}).get("physical_uv_acceptance")=="NOT_CHECKED"
                 and rollback_verified
                 and bool(str(admission.get("resumption_condition","")).strip()))
             admission_reason=str(admission.get("blocker_code") or "review-only")
@@ -119,6 +122,9 @@ def verify_package(root:pathlib.Path)->dict:
       "release":kv.get("release")==lc.AUX_RELEASE,
       "engine":kv.get("engine")==lc.AUX_ENGINE,
       "witness":kv.get("build_witness")==lc.AUX_WITNESS,
+      "uvOutputBuildProfile":(kv.get("UV_OUTPUTS_VERIFIED"),kv.get("UV_COMPILE_GATE_DEFAULT")) in (("NO","0"),("YES","1")),
+      "uvBuildProfileMatchesFlag":kv.get("UV_BUILD_PROFILE")==("uv-follow-output-capable-v1" if kv.get("UV_COMPILE_GATE_DEFAULT")=="1" else "uv-follow-fail-dark-v1"),
+      "uvActivationClosed":kv.get("UV_ACTIVATION_GATES")=="CLOSED" and kv.get("UV_DIRECT_WLED_ACCESS")=="NOT_CHECKED",
       "effectRange":con["aux"]["effect_ids"]==[220,247],
       "sceneCount":len(sc.get("scenes",[]))==28,
       "projection":con["aux"].get("projection")=="frame-lock-v1" and con["aux"].get("projection_fallback")=="fold2-1d-v1",
@@ -205,7 +211,7 @@ def choose_aux(matrix_ip:str,candidates:list[str],inspected:dict)->tuple[str|Non
     exact=[]
     for ip,d in inspected.items():
         c=lc.check_aux(d)
-        if all(c.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap")):
+        if all(c.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvBuildProfileValid","effectMap")):
             exact.append(ip)
     if len(exact)==1: return exact[0],"exact-custom-r3"
     if len(exact)>1: return None,"multiple-exact-aux-nodes"
@@ -216,7 +222,7 @@ def choose_aux(matrix_ip:str,candidates:list[str],inspected:dict)->tuple[str|Non
 
 def next_action(aux_ip,aux_checks,selection_reason):
     if not aux_ip: return "POWER_OR_IDENTIFY_AUX" if selection_reason=="none" else "DISAMBIGUATE_AUX"
-    exact=all(aux_checks.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap"))
+    exact=all(aux_checks.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvBuildProfileValid","effectMap"))
     if not exact: return "INSTALL_EXACT_AUX_FIRMWARE"
     if not aux_checks.get("visualSyncReceive") or not aux_checks.get("segmentOptionsIsolated") or not aux_checks.get("audioSyncReceive"):
         return "RUN_GUARDED_PREPARE_SYNC"

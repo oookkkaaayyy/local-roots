@@ -56,6 +56,8 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   assert.match(nginx, /location = \/__aux_uv_apply \{\s*internal;[\s\S]*?proxy_pass http:\/\/192\.168\.77\.11\/json\/state/);
   assert.match(localUvRuntime, /identity\.release ~= M\.RELEASE/);
   assert.match(localUvRuntime, /tonumber\(identity\.uvOutputsVerified\) ~= 1/);
+  assert.match(localUvRuntime, /identity\.uvBuildProfile ~= "uv-follow-output-capable-v1"/);
+  assert.match(localUvStatus, /response\.uvBuildProfile = current\.identity\.uvBuildProfile/);
   assert.match(localUvRuntime, /not segments\[1\] or not segments\[2\]/);
   assert.match(nginx, /location = \/api\/aux\/uv-status[\s\S]*?auth_owner\.lua[\s\S]*?uv_status_access\.lua/);
   const uvStatusLocation = nginx.match(/location = \/api\/aux\/uv-status \{([\s\S]*?)\n    \}/)?.[1] || "";
