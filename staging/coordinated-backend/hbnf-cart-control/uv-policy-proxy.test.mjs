@@ -68,4 +68,36 @@ test("AUX timeout reports unknown outcome instead of claiming no mutation", asyn
   assert.equal(result.body.mutationIssued, "unknown");
 });
 
+test("UV status link loss is read-only and reports unavailable without an OFF request", async () => {
+  const calls = [];
+  const result = await proxyUvAction("uv_status", {}, {
+    ...options, pairedDeviceAuthorized: true,
+    fetchImpl: async (_url, init) => { calls.push(init); throw new Error("Cart link lost"); },
+  });
+  assert.equal(result.status, 503);
+  assert.deepEqual(result.body, { error: "uv_status_unavailable" });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].method, "GET");
+});
+
+test("missing follow acknowledgment stays unknown and never triggers implicit UV OFF", async () => {
+  const calls = [];
+  const result = await proxyUvAction("uv_policy", {
+    mode: "FOLLOW_MATRIX", brightnessBySegment: { main: 96, short: 40 },
+  }, {
+    ...options, pairedDeviceAuthorized: true,
+    fetchImpl: async (_url, init) => {
+      calls.push({ ...init, body: JSON.parse(init.body) });
+      return new Response(JSON.stringify({ ok: true, mutationIssued: "unknown" }), { status: 200 });
+    },
+  });
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.body, { ok: true, mutationIssued: "unknown" });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].method, "POST");
+  assert.equal(calls[0].body.mode, "FOLLOW_MATRIX");
+  assert.notEqual(calls[0].body.mode, "OFF");
+  assert.equal(result.body.deviceReadback, undefined);
+});
+
 console.log("PASS: authenticated Cart-to-AUX UV proxy, sanitized controls, fail-closed mode filtering and truthful failure results");
