@@ -3,6 +3,7 @@ name: HBNF SP803E AUX R3 compile
 on:
   push:
     branches:
+      - codex/cart-order2-cumulative-20261024
       - hbnf-matrix-wow-bundle-r3-20260921
       - hbnf-aux-luminance-v1-source-coupled-20260927
       - hbnf-generative-projection-v4-20260927
@@ -220,6 +221,7 @@ jobs:
           cp hbnf-aux-lighting/commissioning/commission_operator.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/commission_guard.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/generate_release_admission.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/build_commissioning_distribution.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/generate_release_receipt.py hbnf-aux-lighting/commissioning/validate_release_receipt.py hbnf-aux-lighting/commissioning/test_release_receipt.py hbnf-aux-lighting/commissioning/RELEASE_RECEIPT.schema.json hbnf-aux-lighting/commissioning/RELEASE_RECEIPT.template.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/START_HERE.txt /tmp/artifacts/

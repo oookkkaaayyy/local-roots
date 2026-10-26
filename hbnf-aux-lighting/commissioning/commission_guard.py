@@ -683,7 +683,7 @@ def selftest():
         fw=package_dir/"HBNF_SP803E_AUX_R3.bin";fw.write_bytes(b"verified-firmware-fixture")
         shutil.copy2(HERE/"contract.json",package_dir/"contract.json")
         shutil.copy2(HERE/"local_commission.py",package_dir/"local_commission.py")
-        for name in ("RELEASE_RECEIPT.schema.json","RELEASE_RECEIPT.template.json","validate_release_receipt.py","generate_release_receipt.py"):
+        for name in ("RELEASE_RECEIPT.schema.json","RELEASE_RECEIPT.template.json","validate_release_receipt.py","generate_release_receipt.py","generate_release_admission.py"):
             shutil.copy2(HERE/name,package_dir/name)
         repo_root=HERE.parents[1]
         shutil.copy2(repo_root/"hbnf-wow-bundle/config/WOW_SCENES_V2.json",package_dir/"WOW_SCENES_V2.json")

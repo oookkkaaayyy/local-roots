@@ -8,6 +8,7 @@
 - Do not configure GPIO25/26/27 as UV outputs until per-channel load and output mapping and ratings are verified.
 - Matrix firmware must not be reflashed during AUX commissioning.
 - An AUX OTA HTTP response plus runtime identity is not release success. The installer reports `PENDING_COMPLETE_DURABLE_RECEIPT` until the complete source-bound receipt and exact rollback evidence have been durably retained, retrieved, and validated.
+- Exact installed V6 rollback is recovered from Actions run `36354143870`, source `b76903cf63be497e9ef855c641a12916eff7149f`; firmware SHA-256 `152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95`. Its embedded firmware and original ZIP were hash-checked. A 2026-10-25 read-only AUX query also matched the V6 release/build witness. Recheck identity immediately before any future installation; keep UV compile-gated off and do not energize until electrical and physical acceptance pass.
 
 ## Current commissioning order
 

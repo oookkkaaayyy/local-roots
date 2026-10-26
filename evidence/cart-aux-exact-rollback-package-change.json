@@ -1,0 +1,33 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart-aux-exact-rollback-package-20261025",
+  "summary": "Carry the verified installed AUX V6 image and provenance into a complete candidate package while keeping OTA blocked pending fresh identity preflight and existing safety gates.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing HBNF AUX fail-closed commissioning flow and artifact-release golden path; no new controller or release authority.",
+      "affected_subsystem": "AUX source-bound firmware admission metadata, commissioning ZIP, and rollback verification.",
+      "rollback_reference": "Revert this source commit; preserve the existing review-only behavior. No live device mutation is included.",
+      "evidence_sources": [
+        "Indexed private Drive recovery folder 1mZWMyzLIKnSjBTP82-EfGOqktld17X84",
+        "Actions run 36354143870, source b76903cf63be497e9ef855c641a12916eff7149f",
+        "Fresh read-only AUX /json/info and /json/state response on 2026-10-25",
+        "Current HBNF AUX commissioning and release source at 70f9af968ca857650f3340a5465629c99eba061a"
+      ],
+      "tests": [
+        "python3 hbnf-aux-lighting/commissioning/generate_release_admission.py --selftest",
+        "python3 hbnf-aux-lighting/commissioning/build_commissioning_distribution.py --selftest",
+        "python3 hbnf-aux-lighting/commissioning/commission_operator.py --selftest",
+        "python3 hbnf-aux-lighting/commissioning/commission_guard.py --selftest",
+        "python3 hbnf-aux-lighting/commissioning/test_release_receipt.py"
+      ]
+    }
+  }
+}

@@ -16,8 +16,9 @@ THEN
 3. The launcher verifies package/target identity and saves WLED configuration/state/preset data. This is NOT a firmware image or rollback.
 
 RELEASE STATUS
-- This build is REVIEW ONLY. The exact installed firmware rollback image is missing, so firmware OTA is blocked.
-- Resume only after freshly confirming the installed baseline, capturing the complete firmware image, verifying its hash, retaining it, and rehearsing restoration of those exact bytes.
+- The build workflow artifact is a source-bound review build. The exact installed AUX V6 image has since been recovered from successful Actions run 36354143870 and hash-verified against its manifest and embedded artifact bytes.
+- The completed candidate package must include that exact V6 rollback image and manifest. It remains REVIEW ONLY until a fresh pre-install AUX identity check and candidate-specific release admission pass. UV stays fail-dark and disconnected until its electrical path and physical acceptance pass.
+- The captured read-only AUX identity still matched V6 during preparation; repeat it immediately before any future installation.
 
 THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);

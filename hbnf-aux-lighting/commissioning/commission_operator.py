@@ -13,6 +13,7 @@ HERE=pathlib.Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import local_commission as lc
 import validate_release_receipt as receipt_validator
+import generate_release_admission as admission_tools
 
 BACKUP_PATHS=["/json/cfg","/json/state","/json/info","/json/eff","/json/pins","/presets.json"]
 ADMISSION_FILE="RELEASE_ADMISSION.json"
@@ -33,7 +34,7 @@ def verify_package(root:pathlib.Path)->dict:
     scenes=root/"WOW_SCENES_V2.json"
     admission_path=root/ADMISSION_FILE
     receipt_path=root/RECEIPT_FILE
-    required=[fw,metrics,contract,scenes,root/"local_commission.py",admission_path,receipt_path,root/"RELEASE_RECEIPT.schema.json",root/"RELEASE_RECEIPT.template.json",root/"validate_release_receipt.py"]
+    required=[fw,metrics,contract,scenes,root/"local_commission.py",admission_path,receipt_path,root/"RELEASE_RECEIPT.schema.json",root/"RELEASE_RECEIPT.template.json",root/"validate_release_receipt.py",root/"generate_release_admission.py"]
     missing=[p.name for p in required if not p.is_file()]
     if missing: return {"ok":False,"missing":missing}
     got_sha=sha256(fw); got_bytes=fw.stat().st_size
@@ -49,6 +50,13 @@ def verify_package(root:pathlib.Path)->dict:
         try:
             admission=json.loads(admission_path.read_text())
             source=kv.get("github_sha","")
+            rollback_artifact=admission.get("rollback_artifact")
+            if rollback_artifact is None:
+                rollback_verified=(admission.get("blocker_code")=="EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
+                    and not (root/admission_tools.ROLLBACK_FILE).exists())
+            else:
+                rollback_verified=(admission.get("blocker_code")=="FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED"
+                    and admission_tools.verify_packaged_rollback(root,rollback_artifact))
             admission_valid=(admission.get("schema")=="hbnf-aux-release-admission-v1"
                 and admission.get("status")=="REVIEW_ONLY"
                 and re.fullmatch(r"[0-9a-f]{40}",source) is not None
@@ -56,8 +64,7 @@ def verify_package(root:pathlib.Path)->dict:
                 and admission.get("candidate_firmware_sha256")==got_sha
                 and re.fullmatch(r"[0-9a-f]{64}",str(admission.get("installed_firmware_sha256",""))) is not None
                 and bool(str(admission.get("installed_baseline_evidence","")).strip())
-                and admission.get("rollback_artifact") is None
-                and admission.get("blocker_code")=="EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
+                and rollback_verified
                 and bool(str(admission.get("resumption_condition","")).strip()))
             admission_reason=str(admission.get("blocker_code") or "review-only")
         except Exception as e:
@@ -79,7 +86,9 @@ def verify_package(root:pathlib.Path)->dict:
     return {"ok":all(checks.values()) and not receipt_errors,"checks":checks,"firmwareSha256":got_sha,"firmwareBytes":got_bytes,
       "releaseReceiptTemplateErrors":receipt_errors,"releaseReceiptStatus":template.get("status"),
       "installAdmissible":False,"releaseAdmission":{"status":admission.get("status"),"reason":admission_reason,
-      "resumptionCondition":admission.get("resumption_condition")}}
+      "resumptionCondition":admission.get("resumption_condition"),
+      "rollbackVerified":bool(admission.get("rollback_artifact") and admission_valid),
+      "rollbackArtifact":admission.get("rollback_artifact")}}
 
 
 def raw_get(ip:str,path:str,timeout=4.0)->bytes:

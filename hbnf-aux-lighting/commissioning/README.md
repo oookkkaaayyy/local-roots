@@ -52,7 +52,9 @@ Exit 0 means the receipt, candidate, installed-before image, exact rollback, pos
 - Firmware SHA-256: `178c070defcd080ce2acd3ef83acb9a8b31d2aebd4fa1ec1ad37fafd44191d0d`
 - Firmware bytes: 1,348,784
 
-The current package disposition is **REVIEW ONLY** because the exact installed firmware rollback is missing. `RELEASE_ADMISSION.json` binds the disposition to the build's exact source commit and firmware hash. The ordinary WLED HTTP backup contains settings and presets, not the firmware image.
+The original build workflow emits a source-bound review package. A complete candidate package also carries the exact recovered V6 image and its recovery manifest. The original workflow artifact, manifest, and extracted firmware are retained in the private Drive recovery folder; their ZIP and firmware hashes were checked, the ZIP passed integrity validation, and the embedded firmware exactly matches the recorded installed V6 hash. The candidate package remains **REVIEW ONLY** until a fresh pre-install device identity check and candidate-specific release admission. Ordinary WLED HTTP backups contain settings and presets, not firmware.
+
+To assemble the complete candidate-and-rollback ZIP from the exact build artifact, place the candidate files, `HBNF_SP803E_AUX_V6_ROLLBACK.bin`, and the exact `AUX_V6_RECOVERY_MANIFEST.json` in one temporary directory. Run `generate_release_admission.py` with the candidate firmware/metrics, the rollback image, manifest, and original verified workflow ZIP; then run `build_commissioning_distribution.py` on that directory. The generator verifies that the original ZIP contains the exact rollback bytes and matching installed-build identity. The resulting admission remains `REVIEW_ONLY` with blocker `FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED`; the package verifier never authorizes installation by itself.
 
 ## Safety boundary
 
