@@ -14,6 +14,14 @@ sys.path.insert(0, str(ROOT))
 
 
 class OwnerLocalControlPackageTests(unittest.TestCase):
+    def test_builder_rejects_abbreviated_source_commit(self):
+        source = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
+        from scripts.hbnf_build_owner_local_control_package import build
+
+        with tempfile.TemporaryDirectory() as output:
+            with self.assertRaisesRegex(ValueError, "full 40-character"):
+                build(ROOT, Path(output), source[:7])
+
     def test_deterministic_package_binds_exact_source_and_rollback(self):
         source = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
         from scripts.hbnf_build_owner_local_control_package import build

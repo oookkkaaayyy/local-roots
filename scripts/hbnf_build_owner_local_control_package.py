@@ -29,6 +29,8 @@ def sha(data: bytes) -> str:
 
 def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     repo = repo.resolve()
+    if len(source_commit) != 40 or any(character not in "0123456789abcdef" for character in source_commit):
+        raise ValueError("source commit must be a full 40-character lowercase Git SHA-1")
     root = repo / SOURCE_DIR
     payload = {name: (root / name).read_bytes() for name in FILES}
     transport = (repo / TRANSPORT).read_bytes()
@@ -37,7 +39,11 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     payload["local-transport.js"] = transport
     payload["owner-http-transport.js"] = owner_http_transport
     payload["uv_policy_spec.json"] = uv_policy_spec
-    subprocess.check_call(["git", "-C", str(repo), "cat-file", "-e", f"{source_commit}^{{commit}}"], stdout=subprocess.DEVNULL)
+    resolved_commit = subprocess.check_output(
+        ["git", "-C", str(repo), "rev-parse", f"{source_commit}^{{commit}}"], text=True
+    ).strip()
+    if resolved_commit != source_commit:
+        raise ValueError("source commit must resolve to the exact full Git commit ID")
     for name, data in payload.items():
         path = (TRANSPORT if name == "local-transport.js" else OWNER_HTTP_TRANSPORT if name == "owner-http-transport.js" else UV_POLICY_SPEC if name == "uv_policy_spec.json" else SOURCE_DIR / name).as_posix()
         committed = subprocess.check_output(["git", "-C", str(repo), "show", f"{source_commit}:{path}"])
