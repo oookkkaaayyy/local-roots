@@ -65,16 +65,25 @@
       "commissioning_default": "disabled-network-receive-only"
     },
     "uv": {
-      "status": "per-channel-hardware-pending",
+      "status": "assembled-staged-unpowered",
       "main_nominal_voltage": 5,
       "short_nominal_voltage": 5,
       "voltage_basis": "owner-reported iNextStation 5V USB-A strips; not independently measured",
+      "physical_integration_review": "PASS_owner-confirmed_from_dedicated_coordinator",
+      "module_status": "assembled_off_cart_disconnected_unpowered",
+      "converter_model_owner_reported": "TOBSUN EA50-5V",
+      "shared_inline_fuse_rating_ma_owner_reported": 5000,
+      "unpowered_meter_checks_owner_reported": "complete_without_numeric_readings_or_receipt",
+      "intended_channel_mapping_owner_reported_unverified": {
+        "cart_rim": { "gpio": 25, "segment": 1 },
+        "bar_short": { "gpio": 26, "segment": 2 }
+      },
       "load_ratings_verified": false,
-      "current_controller": "none-verified",
+      "current_controller": "SP803E PWM2/PWM3 intended; powered switching and channel behavior not yet accepted",
       "sp803e_pwm_direct_control": false,
       "rhythm_follow_effect_id": 248,
       "outputs_verified_in_build": false,
-      "reason": "Owner reports both current UV strips are 5V USB-A iNextStation units; their current draw, external 5V supply, switching path, channel mapping, protection and physical fail-dark behavior remain unverified. The SP803E manual documents direct-PWM wiring with strip positive on controller VCC; it does not establish whether the proposed external 5V supply with shared-ground PWM returns is compatible or incompatible. Keep UV outputs and the proposed wiring disconnected/off until the exact return topology, external-rail/backfeed behavior, continuous ratings, protection and combined power budget are verified."
+      "reason": "The dedicated physical-integration coordinator review is PASS per owner confirmation; the module is staged off-Cart and unpowered. Unpowered checks are owner-reported but have no numeric receipt. Keep the existing software commissioning gates closed until the single field session confirms loaded 5V output, channel current, temperature, PWM mapping, combined-load behavior, and device readback. Do not repeat conceptual hardware review or assembly work."
     },
     "spare_pwm_gpios": [
       25,

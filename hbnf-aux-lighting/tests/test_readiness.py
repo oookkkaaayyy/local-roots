@@ -54,7 +54,11 @@ contract=json.loads((ROOT/"hbnf-aux-lighting/commissioning/contract.json").read_
 assert contract["matrix"]["release"]=="hbnf-wow-r3-max-2026-09-21-v3"
 assert contract["matrix"]["effect_ids"]==[220,247]
 assert contract["aux"]["underglow"]["gpio"]==16
-assert contract["aux"]["uv"]["status"]=="per-channel-hardware-pending"
+assert contract["aux"]["uv"]["status"]=="assembled-staged-unpowered"
+assert contract["aux"]["uv"]["physical_integration_review"]=="PASS_owner-confirmed_from_dedicated_coordinator"
+assert contract["aux"]["uv"]["module_status"]=="assembled_off_cart_disconnected_unpowered"
+assert contract["aux"]["uv"]["intended_channel_mapping_owner_reported_unverified"]["cart_rim"]=={"gpio":25,"segment":1}
+assert contract["aux"]["uv"]["intended_channel_mapping_owner_reported_unverified"]["bar_short"]=={"gpio":26,"segment":2}
 assert contract["aux"]["uv"]["main_nominal_voltage"]==5
 assert contract["aux"]["uv"]["short_nominal_voltage"]==5
 assert contract["aux"]["uv"]["load_ratings_verified"] is False
