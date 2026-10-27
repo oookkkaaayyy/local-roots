@@ -3,6 +3,9 @@ set -eu
 PKG=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT=${HBNF_OPAL_ROOT:-/}
 TEST_MODE=${HBNF_TEST_MODE:-0}
+ADMISSION_FILE=${HBNF_OPAL_ADMISSION_FILE:-}
+ADMISSION_SHA256=${HBNF_OPAL_ADMISSION_SHA256:-}
+CANDIDATE_ARCHIVE=${HBNF_OPAL_CANDIDATE_ARCHIVE:-}
 TX=OWNER-LOCAL-CONTROL-UV-STATUS-V115-20261027-01
 BASELINE_PACKAGE_SHA256=a5a877c3c9089df245c1262341ad3a3926c9fc85ba660d67197f277fad6096fa
 BASELINE_MODULE_SHA256=72e586ba9d2643967923d0f3202523b0fee025b507affc281bc284bb17a40d13
@@ -14,7 +17,6 @@ TARGET_REL=etc/hbnf-local-control/lua/uv_status_access.lua
 fail(){ echo "UPDATE BLOCKED: $*" >&2; exit 1; }
 at(){ printf '%s/%s\n' "${ROOT%/}" "$1"; }
 [ "$ROOT" = / ] || [ "$TEST_MODE" = 1 ] || fail "alternate roots are permitted only for offline rehearsal"
-[ "$ROOT" != / ] || fail "REVIEW_ONLY: fresh authenticated baseline readback and candidate-specific pre-mutation admission are required; live installation is disabled in this package"
 [ "$ROOT" = / ] && [ "$(id -u)" != 0 ] && fail "run as root on the Opal"
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum is required"
 (cd "$PKG" && sha256sum -c SHA256SUMS >/dev/null) || fail "package checksum failed"
@@ -24,6 +26,27 @@ command -v sha256sum >/dev/null 2>&1 || fail "sha256sum is required"
 [ "$(sha256sum "$PKG/BASELINE_FILES.SHA256SUMS" | awk '{print $1}')" = "$BASELINE_FILES_SHA256" ] || fail "v1.0.14 installed-file manifest identity failed"
 [ "$(sha256sum "$PKG/UPDATED_FILES.SHA256SUMS" | awk '{print $1}')" = "$UPDATED_FILES_SHA256" ] || fail "updated-file manifest identity failed"
 [ "$(wc -l < "$PKG/BASELINE_FILES.SHA256SUMS" | tr -d ' ')" = 20 ] || fail "installed-file baseline manifest is incomplete"
+
+if [ "$ROOT" = / ]; then
+  [ -n "$ADMISSION_FILE" ] && [ -f "$ADMISSION_FILE" ] && [ ! -L "$ADMISSION_FILE" ] || fail "one-time pre-mutation admission manifest is required"
+  [ -n "$ADMISSION_SHA256" ] && [ "$(sha256sum "$ADMISSION_FILE" | awk '{print $1}')" = "$ADMISSION_SHA256" ] || fail "pre-mutation admission manifest hash differs from its retained readback"
+  [ -n "$CANDIDATE_ARCHIVE" ] && [ -f "$CANDIDATE_ARCHIVE" ] && [ ! -L "$CANDIDATE_ARCHIVE" ] || fail "exact candidate ZIP is required for admission verification"
+  command -v jsonfilter >/dev/null 2>&1 || fail "jsonfilter is required to validate the admission manifest"
+  admission_value(){ jsonfilter -i "$ADMISSION_FILE" -e "$1" 2>/dev/null | sed -n '1p'; }
+  [ "$(admission_value '@.schema')" = hbnf-opal-uv-update-admission-v1 ] || fail "admission schema is not for the Opal UV status update"
+  [ "$(admission_value '@.transaction_id')" = "$TX" ] || fail "admission transaction does not match this installer"
+  [ "$(admission_value '@.outcome')" = PASS ] || fail "admission has not passed"
+  [ "$(admission_value '@.target.model')" = GL-SFT1200 ] || fail "admission target model differs"
+  [ "$(admission_value '@.target.ip')" = 192.168.77.1 ] || fail "admission target IP differs"
+  [ "$(admission_value '@.baseline.package_sha256')" = "$BASELINE_PACKAGE_SHA256" ] || fail "admission rollback package differs from the exact v1.0.14 baseline"
+  [ "$(admission_value '@.baseline.installed_files_manifest_sha256')" = "$BASELINE_FILES_SHA256" ] || fail "admission baseline manifest differs from the exact v1.0.14 file set"
+  package_source_commit=$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.sourceCommit' 2>/dev/null | sed -n '1p')
+  [ -n "$package_source_commit" ] && [ "$(admission_value '@.candidate.source_commit')" = "$package_source_commit" ] || fail "admission source commit differs from this candidate"
+  candidate_zip_sha=$(admission_value '@.candidate.package_sha256')
+  [ -n "$candidate_zip_sha" ] && [ "$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')" = "$candidate_zip_sha" ] || fail "candidate ZIP differs from the admitted package bytes"
+  [ "$(admission_value '@.durable_readback.status')" = PASS ] || fail "candidate and rollback are not durably retained and read back"
+  [ "$(admission_value '@.acceptance_plan.status')" = DECLARED ] || fail "acceptance criteria are missing from the one-time admission"
+fi
 
 if [ "$ROOT" = / ]; then
   UBUS=$(command -v ubus) || fail "ubus is required to identify the Opal model"
@@ -108,7 +131,9 @@ reload_gateway || fail "dedicated Nginx reload failed"
 kill -0 "$pid" 2>/dev/null || fail "dedicated gateway exited after reload"
 "$NETSTAT" -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])9443$/ { found=1 } END { exit !found }' || fail "gateway listener disappeared after reload"
 cp -p "$PKG/UPDATED_FILES.SHA256SUMS" "$BACKUP/POST-INSTALL-READBACK.SHA256SUMS"
-printf '%s\n' "schema=hbnf-opal-uv-status-update-readback-v1" "transaction=$TX" "baseline_module_sha256=$BASELINE_MODULE_SHA256" "candidate_module_sha256=$CANDIDATE_MODULE_SHA256" "rollback_package_sha256=$BASELINE_PACKAGE_SHA256" "installed_file_manifest=PASS" "dedicated_nginx_reload=PASS" > "$BACKUP/POST-INSTALL-READBACK.txt"
+candidate_archive_sha256=OFFLINE_REHEARSAL
+[ -z "$CANDIDATE_ARCHIVE" ] || candidate_archive_sha256=$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')
+printf '{\n  "schema": "hbnf-opal-uv-status-update-readback-v2",\n  "transaction_id": "%s",\n  "admission_manifest_sha256": "%s",\n  "candidate_archive_sha256": "%s",\n  "baseline_module_sha256": "%s",\n  "candidate_module_sha256": "%s",\n  "rollback_package_sha256": "%s",\n  "updated_file_manifest_sha256": "%s",\n  "installed_file_manifest": "PASS",\n  "dedicated_nginx_reload": "PASS"\n}\n' "$TX" "${ADMISSION_SHA256:-OFFLINE_REHEARSAL}" "$candidate_archive_sha256" "$BASELINE_MODULE_SHA256" "$CANDIDATE_MODULE_SHA256" "$BASELINE_PACKAGE_SHA256" "$(sha256sum "$BACKUP/POST-INSTALL-READBACK.SHA256SUMS" | awk '{print $1}')" > "$BACKUP/POST-INSTALL-READBACK.json"
 sync
 trap - EXIT HUP INT TERM
 echo "UPDATE_OK: only the dedicated authenticated UV status module changed; exact v1.0.14 snapshot and package rollback retained at $BACKUP."
