@@ -123,7 +123,9 @@ end
 function M.segment_matches(segment, expected)
   return type(segment) == "table"
       and segment.on == expected.on
-      and tonumber(segment.bri) == expected.bri
+      -- WLED reports a segment's remembered opacity while it is off; bri=0
+      -- turns the segment off but does not necessarily read back as bri=0.
+      and (expected.on ~= true or tonumber(segment.bri) == expected.bri)
       and tonumber(segment.fx) == expected.fx
       and tonumber(segment.ix) == expected.ix
 end

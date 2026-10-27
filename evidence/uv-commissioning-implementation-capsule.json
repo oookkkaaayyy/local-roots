@@ -1,0 +1,159 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-27T02:14:31.183674+00:00",
+  "expected_terminal_outputs": [
+    "confirmed V7 baseline and last successful Opal install",
+    "corrected AUX bus\u2192segment map or exact failed stage and rollback receipt",
+    "gateway off-state readback behavior verified",
+    "named evidence receipt retained"
+  ],
+  "external_authorities": {
+    "network_identity": "192.168.77.11"
+  },
+  "repo_identity": {
+    "branch": "codex/cart-uv-local-policy-scaffold-20261026",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "31c53f59618e03d9f734fddab83d5f3bcedfb241"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 291292,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "28dd1e0cc2ce703aff8ebc9d18153749ddfb6668ff89ffc4fa0d7f847489e6ff"
+    },
+    {
+      "bytes": 20467,
+      "path": "AGENTS.md",
+      "sha256": "8bce7df44e4c792b0a936bdd8ef0c8f156514afe1ce223d7aad0bf9a6b3aa09f"
+    }
+  ],
+  "run_id": "hbnf-aux-20261027T021431Z-3bca2c4b",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "scope",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "AUX target MAC 8c94df55c34c; current bus/segment state from read-only device readback"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "implement",
+      "kind": "work",
+      "mutation": false,
+      "outputs": [
+        "reversible WLED auto-segment bus mapping configuration; separate gateway off-state readback fix"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "test",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "python syntax compile; focused UV policy route check; exact WLED source behavior review"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "mapping contract GPIO16 0..22, GPIO25 22..23, GPIO26 23..24 with UV segments off"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "exact last-known-good revision and rollback procedure PASS"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "WLED source-derived transaction; exact config/state rollback and readback checks"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "captured AUX MAC/release, 22-pixel GPIO16 baseline, and GPIO25/26 availability"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "deploy",
+      "kind": "deployment",
+      "mutation": true,
+      "outputs": [
+        "deployment identity"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact captured /json/cfg and /json/state; verify baseline readback"
+      }
+    },
+    {
+      "id": "verify",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "target identity, exact buses/segments, UV off, underglow preserved"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal run summary and durable delta"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-aux",
+  "terminal_recovery": "On any failed device readback, restore exact /json/cfg and /json/state snapshots; verify single GPIO16 bus, segment 0 only, and spare GPIO25/26.",
+  "trace_id": "28d061890b124d3aac16cda6f7aedd68",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "software-change",
+  "workflow_source": {
+    "path": "platform/workflows/software-change.json",
+    "sha256": "a4ff8633bef2657b4eb2aab892a287c97ac9268c5a245ae29714db760c1b2c9f"
+  }
+}
