@@ -20,21 +20,39 @@ const mutationPatterns = [
   /\bgh\s+release\s+(?:create|upload)\b/i,
   /\b(?:idf\.py\s+flash|esptool(?:\.py)?\s+(?:write_flash|write-flash)|(?:pio|platformio)\s+run\b.*--target\s+upload|arduino-cli\s+upload|west\s+flash|dfu-util\s+-D|avrdude\b)/i,
 ];
+const admitPattern = /npm\s+run\s+release:admit\s+--\s+([^\r\n#]+)/gi;
+const verifyPattern = /npm\s+run\s+release:verify\s+--\s+([^\r\n#]+)/gi;
 const errors = [];
+
+function commands(source, pattern) {
+  return [...source.matchAll(pattern)].map(match => ({
+    position: match.index,
+    args: match[1].trim(),
+  }));
+}
 
 for (const file of files) {
   const source = (await readFile(path.join(workflowDir, file), 'utf8'))
     .split(/\r?\n/)
     .filter(line => !/^\s*#/u.test(line))
     .join('\n');
-  const mutations = mutationPatterns.filter(pattern => pattern.test(source));
+  const mutations = mutationPatterns.flatMap(pattern => {
+    const globalPattern = new RegExp(pattern.source, 'gi');
+    return [...source.matchAll(globalPattern)].map(match => ({ position: match.index, command: match[0] }));
+  }).sort((a, b) => a.position - b.position);
   if (mutations.length === 0) continue;
 
-  if (!source.includes('npm run release:admit')) {
-    errors.push(file + ': live mutation command detected without npm run release:admit');
-  }
-  if (!source.includes('npm run release:verify')) {
-    errors.push(file + ': live mutation command detected without npm run release:verify');
+  const admissions = commands(source, admitPattern);
+  const closeouts = commands(source, verifyPattern);
+  for (const mutation of mutations) {
+    const validPair = admissions.some(admission =>
+      admission.position < mutation.position &&
+      closeouts.some(closeout =>
+        closeout.position > mutation.position && closeout.args === admission.args));
+    if (!validPair) {
+      errors.push(file + ': ' + mutation.command +
+        ' must be between release:admit and release:verify commands using the same receipt and root arguments');
+    }
   }
 }
 
@@ -43,5 +61,5 @@ if (errors.length) {
   for (const error of errors) console.error('- ' + error);
   process.exitCode = 1;
 } else {
-  console.log('Release workflow policy: PASS (' + files.length + ' workflow files inspected; recognized deployment, publication, and firmware-write commands require both two-phase receipt commands)');
+  console.log('Release workflow policy: PASS (' + files.length + ' workflow files inspected; recognized mutations are ordered between same-receipt two-phase gate commands)');
 }

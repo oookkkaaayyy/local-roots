@@ -49,6 +49,34 @@ test('fails common package and Pages deployment commands without the gate', asyn
   }
 });
 
+test('rejects admission or closeout commands placed on the wrong side of deployment', async () => {
+  const result = await runAudit([
+    'name: deploy',
+    'jobs:',
+    '  deploy:',
+    '    steps:',
+    '      - run: supabase functions deploy app',
+    '      - run: npm run release:admit -- receipt.json receipt-root',
+    '      - run: npm run release:verify -- receipt.json receipt-root',
+  ].join('\n'));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /must be between/);
+});
+
+test('rejects mismatched admission and closeout receipt arguments', async () => {
+  const result = await runAudit([
+    'name: deploy',
+    'jobs:',
+    '  deploy:',
+    '    steps:',
+    '      - run: npm run release:admit -- receipt-a.json receipt-root',
+    '      - run: supabase functions deploy app',
+    '      - run: npm run release:verify -- receipt-b.json receipt-root',
+  ].join('\n'));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /same receipt and root/);
+});
+
 test('passes only after both admission and closeout commands are present', async () => {
   const result = await runAudit([
     'name: deploy',
