@@ -93,8 +93,8 @@ def main():
     a=p.parse_args()
     root=pathlib.Path(a.evidence_dir).resolve()
     if a.apply:
-        if not root.is_dir() or not (root/"candidate.zip").is_file() or not (root/"admission.json").is_file():
-            raise SystemExit("apply requires an existing directory with admitted candidate.zip and admission.json")
+        if not root.is_dir() or not all((root/n).is_file() for n in ("candidate.zip","baseline.zip","admission.json")):
+            raise SystemExit("apply requires admitted candidate.zip, baseline.zip, and admission.json")
     else:
         root.mkdir(parents=True,exist_ok=False)
     if a.apply and not a.module_confirmed_disconnected:
@@ -116,11 +116,14 @@ def main():
     if (adm.get("baseline",{}).get("identity")!=f"AUX {MAC} WLED {VERSION}; UV map 16/25/26; boot preset {oldboot}"
         or adm.get("package",{}).get("sha256")!=sha(root/"candidate.zip")):
         raise RuntimeError("admission manifest does not bind the fresh target and candidate")
-    write_archive(root/"live-baseline.zip",[(f"pre-{n}.json",root/f"pre-{n}.json")
-        for n in ("info","state","cfg","pins","presets")])
-    if (adm.get("baseline",{}).get("artifactSha256")!=sha(root/"live-baseline.zip")
-        or adm.get("baseline",{}).get("artifactBytes")!=(root/"live-baseline.zip").stat().st_size):
-        raise RuntimeError("fresh AUX baseline differs from admitted bytes; no change made")
+    if (adm.get("baseline",{}).get("artifactSha256")!=sha(root/"baseline.zip")
+        or adm.get("baseline",{}).get("artifactBytes")!=(root/"baseline.zip").stat().st_size):
+        raise RuntimeError("rollback snapshot differs from admitted bytes; no change made")
+    with ZipFile(root/"baseline.zip") as z:
+        old_cfg=json.loads(z.read("pre-cfg.json"))
+        old_presets=json.loads(z.read("pre-presets.json"))
+    if old_cfg!=pre["cfg"] or old_presets!=pre["presets"]:
+        raise RuntimeError("live AUX config/presets changed since admission; no change made")
     with ZipFile(root/"candidate.zip") as z:
         if z.read("candidate-plan.json")!=planfile.read_bytes():
             raise RuntimeError("admitted package does not contain the exact live candidate plan")
