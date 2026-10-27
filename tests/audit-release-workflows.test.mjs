@@ -74,10 +74,28 @@ test('rejects mismatched admission and closeout receipt arguments', async () => 
     '      - run: npm run release:verify -- receipt-b.json receipt-root',
   ].join('\n'));
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /same receipt and root/);
+  assert.match(result.stderr, /identical receipt\/root arguments/);
 });
 
-test('passes only after both admission and closeout commands are present', async () => {
+test('rejects gates split across parallel jobs', async () => {
+  const result = await runAudit([
+    'name: split',
+    'jobs:',
+    '  admission:',
+    '    steps:',
+    '      - run: npm run release:admit -- receipt.json receipt-root',
+    '  deploy:',
+    '    steps:',
+    '      - run: supabase functions deploy app',
+    '  closeout:',
+    '    steps:',
+    '      - run: npm run release:verify -- receipt.json receipt-root',
+  ].join('\n'));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /same job/);
+});
+
+test('passes only after both admission and closeout commands are present in the job', async () => {
   const result = await runAudit([
     'name: deploy',
     'jobs:',
