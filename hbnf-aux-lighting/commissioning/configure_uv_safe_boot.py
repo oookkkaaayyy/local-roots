@@ -131,8 +131,19 @@ def main():
             raise RuntimeError("admitted operator source differs from the running file")
     uptime=float(pre["info"].get("uptime",0))
     try:
-        body=dict(state); body.update({"psave":pid,"bootps":pid,"ib":True,"sb":True,"n":"HBNF AUX UV safe startup"})
-        req("/json/state","POST",body)
+        # WLED's JSON state API saves the *current* light state when psave is
+        # present. Keep state application and preset persistence as distinct
+        # requests; boot preset selection belongs to /json/cfg (def.ps), not
+        # /json/state. This matches the proven commissioning operator flow.
+        apply_ack=req("/json/state","POST",state)
+        save(root,"state-apply-ack",apply_ack)
+        if apply_ack.get("success") is False:
+            raise RuntimeError(f"WLED rejected safe state: {apply_ack}")
+        save_ack=req("/json/state","POST",{"psave":pid,"ib":True,"sb":True,
+                                             "n":"HBNF AUX UV safe startup"})
+        save(root,"preset-save-ack",save_ack)
+        if save_ack.get("success") is False:
+            raise RuntimeError(f"WLED rejected preset save: {save_ack}")
         deadline=time.monotonic()+10
         while time.monotonic()<deadline:
             pm=req("/presets.json")
@@ -140,7 +151,9 @@ def main():
             time.sleep(.25)
         else: raise RuntimeError("saved preset did not read back")
         cfg=req("/json/cfg")
-        if (cfg.get("def") or {}).get("ps")!=pid: req("/json/cfg","POST",{"def":{"ps":pid},"sv":True})
+        if (cfg.get("def") or {}).get("ps")!=pid:
+            cfg_ack=req("/json/cfg","POST",{"def":{"ps":pid},"sv":True})
+            save(root,"boot-preset-save-ack",cfg_ack)
         if (req("/json/cfg").get("def") or {}).get("ps")!=pid: raise RuntimeError("boot preset selection did not persist")
         deadline=time.monotonic()+50
         while time.monotonic()<deadline:
