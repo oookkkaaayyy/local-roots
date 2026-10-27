@@ -24,6 +24,34 @@ const admitPattern = /npm\s+run\s+release:admit\s+--\s+([^\r\n#]+)/gi;
 const verifyPattern = /npm\s+run\s+release:verify\s+--\s+([^\r\n#]+)/gi;
 const errors = [];
 
+function findMutations(source) {
+  return mutationPatterns.flatMap(pattern => {
+    const globalPattern = new RegExp(pattern.source, 'gi');
+    return [...source.matchAll(globalPattern)].map(match => ({ position: match.index, command: match[0] }));
+  }).sort((a, b) => a.position - b.position);
+}
+
+function findJobs(source) {
+  const jobsMatch = source.match(/^jobs:\s*\r?\n([\s\S]*)$/m);
+  if (!jobsMatch) return [];
+  const jobs = [];
+  let currentName = null;
+  let currentLines = [];
+  for (const line of jobsMatch[1].split(/\r?\n/)) {
+    if (/^[^\s#]/u.test(line)) break;
+    const start = line.match(/^  ([A-Za-z0-9_-]+):\s*(?:#.*)?$/u);
+    if (start) {
+      if (currentName) jobs.push({ name: currentName, source: currentLines.join('\n') });
+      currentName = start[1];
+      currentLines = [line];
+    } else if (currentName) {
+      currentLines.push(line);
+    }
+  }
+  if (currentName) jobs.push({ name: currentName, source: currentLines.join('\n') });
+  return jobs;
+}
+
 function commands(source, pattern) {
   return [...source.matchAll(pattern)].map(match => ({
     position: match.index,
@@ -36,22 +64,34 @@ for (const file of files) {
     .split(/\r?\n/)
     .filter(line => !/^\s*#/u.test(line))
     .join('\n');
-  const mutations = mutationPatterns.flatMap(pattern => {
-    const globalPattern = new RegExp(pattern.source, 'gi');
-    return [...source.matchAll(globalPattern)].map(match => ({ position: match.index, command: match[0] }));
-  }).sort((a, b) => a.position - b.position);
-  if (mutations.length === 0) continue;
+  const allMutations = findMutations(source);
+  if (allMutations.length === 0) continue;
 
-  const admissions = commands(source, admitPattern);
-  const closeouts = commands(source, verifyPattern);
-  for (const mutation of mutations) {
-    const validPair = admissions.some(admission =>
-      admission.position < mutation.position &&
-      closeouts.some(closeout =>
-        closeout.position > mutation.position && closeout.args === admission.args));
-    if (!validPair) {
-      errors.push(file + ': ' + mutation.command +
-        ' must be between release:admit and release:verify commands using the same receipt and root arguments');
+  const jobs = findJobs(source);
+  if (!jobs.length) {
+    errors.push(file + ': recognized mutation command is not inside an auditable GitHub Actions job');
+    continue;
+  }
+  const jobMutations = jobs.flatMap(job =>
+    findMutations(job.source).map(mutation => ({ ...mutation, job: job.name })));
+  if (jobMutations.length !== allMutations.length) {
+    errors.push(file + ': could not associate every recognized mutation with a GitHub Actions job');
+  }
+
+  for (const job of jobs) {
+    const mutations = findMutations(job.source);
+    if (!mutations.length) continue;
+    const admissions = commands(job.source, admitPattern);
+    const closeouts = commands(job.source, verifyPattern);
+    for (const mutation of mutations) {
+      const validPair = admissions.some(admission =>
+        admission.position < mutation.position &&
+        closeouts.some(closeout =>
+          closeout.position > mutation.position && closeout.args === admission.args));
+      if (!validPair) {
+        errors.push(file + ' job ' + job.name + ': ' + mutation.command +
+          ' must be between release:admit and release:verify in the same job, using identical receipt/root arguments');
+      }
     }
   }
 }
@@ -61,5 +101,5 @@ if (errors.length) {
   for (const error of errors) console.error('- ' + error);
   process.exitCode = 1;
 } else {
-  console.log('Release workflow policy: PASS (' + files.length + ' workflow files inspected; recognized mutations are ordered between same-receipt two-phase gate commands)');
+  console.log('Release workflow policy: PASS (' + files.length + ' workflow files inspected; recognized mutations are ordered between same-job, same-receipt two-phase gate commands)');
 }
