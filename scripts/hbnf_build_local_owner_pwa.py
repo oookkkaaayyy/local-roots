@@ -306,7 +306,7 @@ def main() -> None:
             prior_dir = (root / args.rollback_baseline_package_dir).resolve()
             source_paths.extend(prior_dir / name for name in (
                 "PACKAGE.json", "PACKAGE.SHA256", "PAYLOAD.SHA256SUMS", "install.sh", "rollback.sh",
-                "BASELINE.SHA256SUMS", "INSTALLED_V113_EXPECTED.SHA256SUMS",
+                "BASELINE.SHA256SUMS",
             ))
             if not args.rollback_baseline_package_drive_file_id:
                 source_paths.append(prior_dir / f"hbnf-owner-pwa-local-v{args.rollback_baseline_owner_pwa_version}.zip")
