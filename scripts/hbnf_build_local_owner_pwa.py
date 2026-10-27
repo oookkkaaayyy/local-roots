@@ -121,18 +121,52 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
     package_sha = package_sha_line.split()[0] if len(package_sha_line.split()) == 2 else ""
     expected_archive_name = f"hbnf-owner-pwa-local-v{expected_version}.zip"
     schema = receipt.get("schema")
+    install_transaction_readback = schema == "hbnf-cart-uv-post-install-evidence-v1"
+    if install_transaction_readback:
+        installed = receipt.get("installedSoftware", {}).get("ownerPwa", {})
+        receipt = {
+            **receipt,
+            "runtime_version": installed.get("version"),
+            "baseline_package_sha256": installed.get("packageSha256"),
+            "source_commit": installed.get("sourceCommit"),
+            "payload_readback": installed.get("payloadReadback"),
+        }
     current_readback = schema == "hbnf-owner-pwa-live-readback-v1" and "live_version_marker" in receipt
-    if (schema not in ("hbnf-owner-pwa-live-readback-v1", "hbnf-owner-pwa-historical-readback-reference-v1") or
+    if (schema not in ("hbnf-owner-pwa-live-readback-v1", "hbnf-owner-pwa-historical-readback-reference-v1", "hbnf-cart-uv-post-install-evidence-v1") or
             receipt.get("runtime_version", receipt.get("live_version_marker")) != expected_version or
-            (not current_readback and receipt.get("baseline_manifest_sha256") != digest(baseline.read_bytes())) or
+            (not current_readback and not install_transaction_readback and
+             receipt.get("baseline_manifest_sha256") != digest(baseline.read_bytes())) or
             receipt.get("baseline_package_sha256", receipt.get("package_sha256")) != digest(archive_bytes) or
             package_sha != digest(archive_bytes) or
             package_sha_line != f"{package_sha}  {expected_archive_name}" or
             receipt.get("source_commit") != package.get("sourceCommit") or
-            (not current_readback and receipt.get("transaction_id") != package.get("transactionId")) or
+            (not current_readback and not install_transaction_readback and
+             receipt.get("transaction_id") != package.get("transactionId")) or
             package.get("package") != f"hbnf-owner-pwa-local-v{expected_version}" or
-            (not current_readback and receipt.get("payload_manifest_sha256") != digest(payload_manifest.replace(b"owner-pwa/", b"")))):
+            (not current_readback and not install_transaction_readback and
+             receipt.get("payload_manifest_sha256") != digest(payload_manifest.replace(b"owner-pwa/", b"")))):
         raise SystemExit("Baseline evidence does not bind the exact retained Owner PWA package")
+
+    package_assets = {item.get("path"): item.get("sha256") for item in package.get("assets", [])}
+
+    if install_transaction_readback:
+        evidence = receipt.get("sourceEvidence", {})
+        software = receipt.get("installedSoftware", {})
+        pwa = software.get("ownerPwa", {})
+        gateway = software.get("opalGateway", {})
+        evidence_name = evidence.get("gatewayInstallerOutput")
+        evidence_path = receipt_path.parent / evidence_name if isinstance(evidence_name, str) else None
+        if (pwa.get("version") != expected_version or pwa.get("payloadReadback") != "PASS" or
+                pwa.get("rollbackVersion") != "1.0.14" or not pwa.get("rollbackPathOnOpal") or
+                gateway.get("install") != "PASS" or gateway.get("packageIntegrity") != "PASS" or
+                gateway.get("preflight") != "PASS" or not evidence_path or not evidence_path.is_file() or
+                digest(evidence_path.read_bytes()) != evidence.get("gatewayInstallerOutputSha256")):
+            raise SystemExit("Install-transaction evidence is incomplete or does not match the retained receipt")
+        installer_output = evidence_path.read_text(errors="replace")
+        expected_output = f"GATEWAY_INSTALL_COMPLETE: Opal Local Control v{gateway.get('version')} installed; Owner PWA v{expected_version} payload verified."
+        if (not all(re.search(rf"(?m)^{re.escape(name)}: OK$", installer_output)
+                    for name in package_assets) or expected_output not in installer_output):
+            raise SystemExit("Retained install output does not attest both packages and all 17 Owner PWA payload files")
 
     baseline_by_name = {}
     for line in baseline.read_text().splitlines():
@@ -146,7 +180,6 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
         if not match or match.group(2) in payload_by_name:
             raise SystemExit("Retained baseline payload manifest is malformed or duplicated")
         payload_by_name[match.group(2)] = match.group(1)
-    package_assets = {item.get("path"): item.get("sha256") for item in package.get("assets", [])}
     with zipfile.ZipFile(archive) as zf:
         if (zf.read("PACKAGE.json") != (package_dir / "PACKAGE.json").read_bytes() or
                 zf.read("BASELINE.SHA256SUMS") != package_baseline or
@@ -161,7 +194,13 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
     if (len(payload_by_name) != len(package_assets) or package_assets != payload_by_name or
             len(baseline_by_name) != len(payload_by_name) + 4):
         raise SystemExit("Baseline manifest does not match the exact package payload and marker count")
-    if schema == "hbnf-owner-pwa-live-readback-v1" and "installed_sha256_by_path" in receipt:
+    if install_transaction_readback:
+        evidence_level = "INSTALL_TRANSACTION_PACKAGE_AND_17_ASSET_READBACK_OWNER_REPORTED"
+        filesystem_count = "NOT_CHECKED"
+        filesystem_completeness = "REQUIRES_FRESH_INSTALLER_PREFLIGHT"
+        rollback_copy = "REQUIRES_FRESH_INSTALLER_PREFLIGHT"
+        served = {"owner-pwa/" + name: sha for name, sha in payload_by_name.items()}
+    elif schema == "hbnf-owner-pwa-live-readback-v1" and "installed_sha256_by_path" in receipt:
         device = receipt.get("device_identity")
         served = receipt.get("installed_sha256_by_path")
         http_status = receipt.get("http_status_by_path")
@@ -270,7 +309,7 @@ def main() -> None:
         help="exact prior installable ZIP to include as a nested recovery companion")
     parser.add_argument("--rollback-baseline-package-drive-file-id",
         help="approved private-vault identity for an exact baseline ZIP stored outside source control")
-    parser.add_argument("--release-slice", choices=("cart-owner-pwa-ui-v1.0.13", "cart-owner-pwa-uv-v1.0.14", "cart-owner-pwa-gateway-port-v1.0.15"),
+    parser.add_argument("--release-slice", choices=("cart-owner-pwa-ui-v1.0.13", "cart-owner-pwa-uv-v1.0.14", "cart-owner-pwa-gateway-port-v1.0.15", "cart-owner-pwa-uv-readiness-v1.0.16"),
         help="label an independent Owner PWA UI release slice")
     parser.add_argument("--rollback-baseline-owner-pwa-version", default="1.0.8")
     parser.add_argument("--rollback-baseline-manifest", type=Path,
@@ -483,7 +522,7 @@ def main() -> None:
         if not receipt_path.is_file():
             raise SystemExit("Owner PWA installed-baseline readback receipt is missing")
         receipt = json.loads(receipt_path.read_text())
-        if receipt.get("schema") in ("hbnf-owner-pwa-live-readback-v1", "hbnf-owner-pwa-historical-readback-reference-v1"):
+        if receipt.get("schema") in ("hbnf-owner-pwa-live-readback-v1", "hbnf-owner-pwa-historical-readback-reference-v1", "hbnf-cart-uv-post-install-evidence-v1"):
             if not args.rollback_baseline_package_dir:
                 raise SystemExit("Direct live readback requires the exact retained baseline package")
             prior_dir = (root / args.rollback_baseline_package_dir).resolve()
@@ -499,6 +538,10 @@ def main() -> None:
             if receipt.get("schema") == "hbnf-owner-pwa-live-readback-v1" and "live_version_marker" in receipt:
                 installed = {"owner-pwa/" + item.get("path", ""): item.get("served_sha256")
                              for item in receipt.get("assets", [])}
+            elif receipt.get("schema") == "hbnf-cart-uv-post-install-evidence-v1":
+                installed = {"owner-pwa/" + name: sha for name, sha in
+                             ((item.get("path"), item.get("sha256"))
+                              for item in json.loads((prior_dir / "PACKAGE.json").read_text()).get("assets", []))}
         elif receipt.get("schema") == "hbnf-owner-pwa-install-result-v1":
             if (not args.rollback_baseline_package_dir or receipt.get("status") != "PASS" or
                     receipt.get("step") != "install_owner_pwa" or receipt.get("install_exit") != 0 or
@@ -606,6 +649,7 @@ def main() -> None:
         "cart-owner-pwa-ui-v1.0.13": "1.0.13",
         "cart-owner-pwa-uv-v1.0.14": "1.0.14",
         "cart-owner-pwa-gateway-port-v1.0.15": "1.0.15",
+        "cart-owner-pwa-uv-readiness-v1.0.16": "1.0.16",
     }
     if args.release_slice and (version != expected_slice_version[args.release_slice] or args.review_only or not args.transaction_id):
         raise SystemExit("The selected Owner PWA release slice requires its installable package version and a transaction identity")
@@ -639,7 +683,9 @@ def main() -> None:
         "releaseDisposition": "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED" if args.review_only else "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
         "releaseSlice": ({
             "id": args.release_slice,
-            "scope": ("Owner PWA local gateway origin moved to Opal TCP 9443 to avoid the existing admin listener on 8443; no UI, AUX firmware, network policy, or scoring changes"
+            "scope": ("Owner PWA shared UV slider applies locally only when fresh gateway output-mode status confirms the supported mode; no AUX firmware, gateway service, network policy, or scoring changes"
+                if args.release_slice == "cart-owner-pwa-uv-readiness-v1.0.16" else
+                "Owner PWA local gateway origin moved to Opal TCP 9443 to avoid the existing admin listener on 8443; no UI, AUX firmware, network policy, or scoring changes"
                 if args.release_slice == "cart-owner-pwa-gateway-port-v1.0.15" else
                 "Owner PWA UV controls and authenticated local gateway requests; no AUX firmware, gateway service, network policy, or scoring changes"
                 if args.release_slice == "cart-owner-pwa-uv-v1.0.14" else

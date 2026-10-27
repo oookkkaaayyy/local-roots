@@ -70,7 +70,7 @@ if (baselineUnavailable) {
   assert.equal(manifest.rollbackBaseline.entries, expectedBaselineEntries, `Expected exact ${expectedBaselineEntries}-file installed Owner PWA baseline`);
   assert.match(manifest.rollbackBaseline.sha256, /^[0-9a-f]{64}$/);
 }
-if (["cart-owner-pwa-ui-v1.0.13", "cart-owner-pwa-uv-v1.0.14", "cart-owner-pwa-gateway-port-v1.0.15"].includes(manifest.releaseSlice?.id)) {
+if (["cart-owner-pwa-ui-v1.0.13", "cart-owner-pwa-uv-v1.0.14", "cart-owner-pwa-gateway-port-v1.0.15", "cart-owner-pwa-uv-readiness-v1.0.16"].includes(manifest.releaseSlice?.id)) {
   assert.ok(rollbackArchive, "Owner PWA release slice requires its exact retained baseline package");
 }
 if (rollbackArchive) {
