@@ -1,0 +1,6 @@
+{
+  "provenance": "Reconstruction of previously recorded UDisc test-event observations in GitHub #115 comment 6395037074. Original XLSX bytes were not present in the authoritative source snapshot or located in the bounded fixture search; this is not represented as an original workbook.",
+  "eventId": "hb-night-flyers-test-event-XpuRfW",
+  "observed": {"baselineBytes":15783,"firstScoreBytes":19810,"correctionBytes":19810,"afterTeamOneScoreBytes":19886,"correctedTeamTwoHole1":4,"teamOneHole1":2},
+  "rows": [["Team","Rank","Hole 1","Total"],["Team One","1",2,-1],["Team Two","2",4,1]]
+}
