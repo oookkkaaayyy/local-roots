@@ -74,8 +74,8 @@ assert.match(featureModule, /result\.uvControlEnabled === true/);
 assert.match(featureModule, /uvCommandForSharedSliderRelease\(uvReadiness, uvFollowActive\)/);
 assert.match(auxControl, /uvControlEnabled=ENV_UV_ENABLED[\s\S]*st\.runtimeTrusted&&uvOutputsVerified/);
 assert.match(auxControl, /outputsVerified:false/);
-assert.match(auxUvCommand, /uvOutputsVerified === true/);
-assert.match(auxUvCommand, /liveReady = auxEnabled === true && uvEnabled === true && uvOutputsVerified === true/);
+assert.match(auxUvCommand, /uvOutputsVerified = false/);
+assert.match(auxUvCommand, /UV_POLICY_SPEC\.requiredRuntimeGates\.every/);
 const sliders = [...html.matchAll(/<input\b[^>]*type="range"[^>]*>/g)].map(([tag]) => tag);
 assert.equal(sliders.length, 9, "all course/audio/brightness sliders, including both UV caps, are covered");
 for (const tag of sliders) {
