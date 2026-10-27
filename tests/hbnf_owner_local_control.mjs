@@ -381,6 +381,8 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(preflight, /lua_package_path.*SCRIPT_DIR\/vendor/);
   assert.match(preflight, /embedded Nginx LuaJIT SHA-256 probe/);
   assert.match(preflight, /127\.0\.0\.1:\$PROBE_PORT\/probe/);
+  assert.match(preflight, /Lua runtime probe response/);
+  assert.match(preflight, /cat "\$probe_log" >&2/);
   assert.doesNotMatch(preflight, /command -v lua/);
   assert.match(nginx, /listen 192\.168\.77\.1:8443 ssl/);
   assert.match(preflight, /GATEWAY_LAN_IP=192\.168\.77\.1/);

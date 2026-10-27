@@ -71,8 +71,14 @@ while [ "$probe_attempt" -lt 20 ]; do
   sleep 1
 done
 [ "$probe_digest" = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" ] || {
-  cat "$PROBE_DIR/stdout.log" "$PROBE_DIR/error.log" 2>/dev/null >&2 || true
-  fail "bundled Lua modules failed the embedded Nginx LuaJIT SHA-256 probe"
+  echo "Lua runtime probe response: ${probe_digest:-<no HTTP response>} on 127.0.0.1:$PROBE_PORT" >&2
+  for probe_log in "$PROBE_DIR/stdout.log" "$PROBE_DIR/error.log"; do
+    if [ -f "$probe_log" ]; then
+      echo "--- $probe_log ---" >&2
+      cat "$probe_log" >&2 || true
+    fi
+  done
+  fail "bundled Lua modules failed the embedded Nginx LuaJIT SHA-256 probe; the preceding Nginx/curl output identifies the cause"
 }
 probe_cleanup
 PROBE_PID=
