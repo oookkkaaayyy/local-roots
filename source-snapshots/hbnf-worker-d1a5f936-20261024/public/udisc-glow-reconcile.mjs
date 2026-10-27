@@ -192,12 +192,15 @@ export function renderGlowReconciliation(container, model, evidenceInput, decisi
 
 export function renderDestinationProposal(container, proposal) {
   const table = document.createElement('table');
+  table.className = 'destination-score-table';
   const head = table.createTHead().insertRow();
   for (const label of ['UDisc rank', 'Glow partner1', 'Glow partner2', 'To par', 'Strokes', 'Holes', 'Glow hole scores (18)', 'Issues']) { const th = document.createElement('th'); th.textContent = label; head.append(th); }
   const body = table.createTBody();
   for (const item of proposal.destination.week.players.map((entry, i) => ({ entry, source: proposal.sourceProvenance.rowEvidence[i] }))) {
     const tr = body.insertRow();
-    for (const value of [item.source.sourceRank, item.entry.partner1 || 'Name missing', item.entry.partner2 || (item.source.memberMappings.length === 1 ? 'Solo UDisc entry' : 'Name missing'), item.source.relativeScore ?? '—', item.source.strokeTotal ?? '—', `${item.source.holesCompleted}/18`, item.entry.scores.map((score, index) => score === '' ? `${index + 1}:—` : `${index + 1}:${score}`).join(' · '), item.source.issues.join(', ') || '—']) { const td = tr.insertCell(); td.textContent = String(value); }
+    const issues = item.source.issues.filter(issue => !issue.startsWith('identity_name_preserved_as_supplied:'));
+    if (issues.length !== item.source.issues.length) issues.unshift('Names preserved as supplied');
+    for (const value of [item.source.sourceRank, item.entry.partner1 || 'Name missing', item.entry.partner2 || (item.source.memberMappings.length === 1 ? 'Solo UDisc entry' : 'Name missing'), item.source.relativeScore ?? '—', item.source.strokeTotal ?? '—', `${item.source.holesCompleted}/18`, item.entry.scores.map((score, index) => score === '' ? `${index + 1}:—` : `${index + 1}:${score}`).join(' · '), issues.join(', ') || '—']) { const td = tr.insertCell(); td.textContent = String(value); }
   }
   container.replaceChildren(table);
 }
