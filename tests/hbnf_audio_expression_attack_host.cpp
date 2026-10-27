@@ -17,4 +17,10 @@ int main() {
               signal.midEnergy, signal.lowEnergy, signal.highEnergy);
   assert(signal.midEnergy >= 0.63f);
   assert(signal.lowEnergy == 0.0f && signal.highEnergy == 0.0f);
+
+  input.midAtt = 0.62f;
+  for (int frame = 0; frame < 50; ++frame) signal = expression.update(input, 0.02f);
+  std::printf("mid_energy_after_1000ms_release=%.6f\n", signal.midEnergy);
+  assert(signal.midEnergy > 0.12f && signal.midEnergy < 0.15f);
+  assert(signal.lowEnergy == 0.0f && signal.highEnergy == 0.0f);
 }
