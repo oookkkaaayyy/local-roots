@@ -1,0 +1,26 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART_OPAL_UV_STATUS_V115_20261027",
+  "summary": "Expose the already-observed Matrix/manual UV output mode in the authenticated Opal status response by updating only the existing UV status module.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "affected_subsystem": "Existing authenticated Opal Owner Local Control UV status endpoint.",
+      "observed_source_defect": "The exact retained and transaction-recorded v1.0.14 gateway package contains a UV status module with no outputMode field, so the current Owner PWA cannot truthfully report the already-supported Matrix/manual output mode.",
+      "implementation": "Update only uv_status_access.lua from the committed source. Keep the exact v1.0.14 package and 20-file installed baseline manifest, preserve an exact device-side snapshot, reload only the existing dedicated gateway service, and provide a deterministic rollback that restores the exact prior module.",
+      "rollback_reference": "The package carries the hash-verified exact v1.0.14 gateway ZIP and exact prior status module; device-side snapshot is retained before replacement. No firmware, AUX, Matrix, router, account, cloud, or scoring state changes are part of this slice.",
+      "tests": [
+        "Strict package builder verifies the clean exact source commit, retained v1.0.14 package, install transaction receipt and exact prior module hash.",
+        "Offline installer and rollback rehearsal against an extracted exact v1.0.14 payload verifies 20-file baseline and restored module hashes.",
+        "Python syntax, shell syntax, package integrity, and relevant release admission checks pass."
+      ]
+    }
+  }
+}
