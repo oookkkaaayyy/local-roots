@@ -126,7 +126,11 @@ def build(root: Path, out_dir: Path, source_commit: str, baseline_archive: Path)
         "package": PACKAGE_NAME,
         "transactionId": TX,
         "sourceCommit": source_commit,
-        "releaseDisposition": "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
+        "releaseDisposition": "REVIEW_ONLY",
+        "releaseBlockers": [
+            "Fresh authenticated Opal readback of the installed 20-file baseline is not available.",
+            "No candidate-specific two-phase pre-mutation admission has been issued.",
+        ],
         "scope": ["Expose outputMode from existing observed Matrix/manual/off segment state on authenticated UV status route"],
         "changedInstalledFiles": ["/etc/hbnf-local-control/lua/uv_status_access.lua"],
         "baseline": {
