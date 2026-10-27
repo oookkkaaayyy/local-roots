@@ -25,6 +25,8 @@
         "Host C++11 baseline/candidate envelope replay with identical 20 ms sample interval and mid-band step.",
         "Baseline at 100 ms: midEnergy 0.580866; candidate at 100 ms: 0.670807; low/high both 0.000000 in candidate.",
         "Candidate release after returning to baseline for 1,000 ms: midEnergy 0.133697; 620 ms release constant remains unchanged.",
+        "Host assertions verify mid-band isolation, dt clamp equivalence at 5 ms and 100 ms, and silence handling.",
+        "Synthetic Vibe replay: 13 AudioFeatures semantics, six traces, pairwise Vibe differentiation, and AUTO hysteresis; trace parser: 2 tests pass.",
         "Focused check only; no captured real-song audio trace, target compiler build, 28-kernel sweep, visual output, or physical review."
       ]
     },
