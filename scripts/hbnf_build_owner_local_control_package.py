@@ -100,8 +100,12 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         raise ValueError("installer is not bound to the exact accepted Mission Control rollback transport")
     if 'lua_package_path "/etc/hbnf-local-control/lua/?.lua;;";' not in (root / "dedicated-nginx.conf.example").read_text():
         raise ValueError("dedicated Nginx config does not load the isolated bundled Lua modules")
-    if 'vendor/resty/sha256.lua' not in installer or 'LUA_PATH="$SCRIPT_DIR/vendor/?.lua;;"' not in (root / "preflight.sh").read_text():
-        raise ValueError("installer/preflight does not use the packaged OpenResty SHA-256 modules")
+    preflight = (root / "preflight.sh").read_text()
+    if ('vendor/resty/sha256.lua' not in installer
+        or 'lua_package_path "$SCRIPT_DIR/vendor/?.lua;;"' not in preflight
+        or 'content_by_lua_block' not in preflight
+        or 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad' not in preflight):
+        raise ValueError("installer/preflight does not load and exercise the packaged OpenResty modules in Nginx LuaJIT")
     if f"EXPECTED_ROLLBACK_TRANSPORT_SHA={EXPECTED_ROLLBACK}" not in rollback:
         raise ValueError("rollback script is not bound to the exact accepted Mission Control transport")
     expected_candidate = f"CANDIDATE_TRANSPORT_SHA={sha(transport)}"

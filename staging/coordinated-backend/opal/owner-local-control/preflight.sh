@@ -16,12 +16,67 @@ command -v openssl >/dev/null 2>&1 || fail "openssl missing"
 command -v curl >/dev/null 2>&1 || fail "curl missing"
 command -v jsonfilter >/dev/null 2>&1 || fail "jsonfilter missing"
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
-command -v lua >/dev/null 2>&1 || fail "Lua runtime missing"
-lua -e 'assert(require("cjson.safe"))' >/dev/null 2>&1 || fail "Lua cjson.safe module missing"
-LUA_PATH="$SCRIPT_DIR/vendor/?.lua;;" lua -e 'local s=require("resty.sha256"); assert(s.new); local h=require("resty.string"); assert(h.to_hex)' >/dev/null 2>&1 || fail "bundled lua-resty-string SHA-256 modules cannot be loaded by the Opal Lua runtime"
 nginx_build=$("$NGINX" -V 2>&1)
 printf '%s\n' "$nginx_build" | grep -q 'lua-nginx' || fail "installed Nginx build has no Lua module"
 printf '%s\n' "$nginx_build" | grep -q 'http_ssl' || fail "installed Nginx build has no TLS module"
+# Test the bundled modules in the actual embedded Nginx LuaJIT runtime. The
+# standalone OpenWrt `lua` executable is not necessarily LuaJIT and cannot
+# validate modules that use LuaJIT FFI.
+PROBE_DIR=$(mktemp -d /tmp/hbnf-local-control-lua-probe.XXXXXX) || fail "cannot create temporary Lua runtime probe directory"
+chmod 0755 "$PROBE_DIR"
+PROBE_PORT=$((20000 + ($$ % 20000)))
+PROBE_PID=
+probe_cleanup(){
+  if [ -n "$PROBE_PID" ]; then
+    kill -TERM "$PROBE_PID" 2>/dev/null || true
+    wait "$PROBE_PID" 2>/dev/null || true
+  fi
+  rm -rf "$PROBE_DIR"
+}
+trap probe_cleanup EXIT HUP INT TERM
+cat >"$PROBE_DIR/nginx.conf" <<EOF
+worker_processes 1;
+daemon off;
+pid $PROBE_DIR/nginx.pid;
+error_log $PROBE_DIR/error.log;
+events { worker_connections 16; }
+http {
+  lua_package_path "$SCRIPT_DIR/vendor/?.lua;;";
+  server {
+    listen 127.0.0.1:$PROBE_PORT;
+    location = /probe {
+      content_by_lua_block {
+        local cjson = require "cjson.safe"
+        assert(cjson.encode({probe = true}))
+        local sha = require "resty.sha256"
+        local hex = require "resty.string"
+        local ctx = sha:new()
+        assert(ctx)
+        assert(ctx:update("abc"))
+        ngx.say(hex.to_hex(ctx:final()))
+      }
+    }
+  }
+}
+EOF
+"$NGINX" -p "$PROBE_DIR/" -c "$PROBE_DIR/nginx.conf" >"$PROBE_DIR/stdout.log" 2>&1 &
+PROBE_PID=$!
+probe_digest=
+probe_attempt=0
+while [ "$probe_attempt" -lt 20 ]; do
+  probe_digest=$(curl -fsS --max-time 1 "http://127.0.0.1:$PROBE_PORT/probe" 2>/dev/null || true)
+  [ -n "$probe_digest" ] && break
+  kill -0 "$PROBE_PID" 2>/dev/null || break
+  probe_attempt=$((probe_attempt + 1))
+  sleep 1
+done
+[ "$probe_digest" = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" ] || {
+  cat "$PROBE_DIR/stdout.log" "$PROBE_DIR/error.log" 2>/dev/null >&2 || true
+  fail "bundled Lua modules failed the embedded Nginx LuaJIT SHA-256 probe"
+}
+probe_cleanup
+PROBE_PID=
+trap - EXIT HUP INT TERM
 [ -x /sbin/procd ] && [ -f /etc/rc.common ] && [ -f /lib/functions/procd.sh ] || fail "OpenWrt procd service support is incomplete"
 [ -x /etc/init.d/nginx ] || fail "existing GL.iNet Nginx service is unavailable"
 [ "$(uci -q get network.lan.ipaddr 2>/dev/null || true)" = "$GATEWAY_LAN_IP" ] || fail "Opal LAN address is not the exact gateway bind address $GATEWAY_LAN_IP"
