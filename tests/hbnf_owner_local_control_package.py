@@ -37,7 +37,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 prefix = "hbnf-owner-local-control-v1.0.14/"
                 self.assertIn(prefix + "install.sh", names)
                 installer = package.read(prefix + "install.sh").decode()
-                self.assertIn('"$HOST:9443/api/session")', installer)
+                self.assertIn('"https://$HOST:9443/api/session")', installer)
                 self.assertIn('[ "$code" = "401" ]', installer)
                 self.assertNotIn('X-HBNF-Device:', installer)
                 self.assertIn(prefix + "matrix_topology.sh", names)
