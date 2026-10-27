@@ -1,5 +1,14 @@
 # HBNF Cart UV integration — current handoff (2026-10-27)
 
+## Live update — AUX UV outputs configured off (2026-10-27)
+
+- The owner confirmed the UV module is fully disconnected and the strips are unpowered before the AUX restart.
+- **AUX configuration PASS:** transaction `/Users/andrew/Library/Application Support/HBNF/opal-gateway-rollouts/OWNER-PWA-LOCAL-V115-GATEWAY-PORT-20261026-03/AUX-UV-PWM-OUTPUTS-20261027-07/TRANSACTION.json` completed at `2026-10-27T02:37:32Z`. Target MAC `8c94df55c34c`, WLED `16.0.1`; captured config/state/pins/info before mutation and verified post-write readback.
+- GPIO25 / segment 1 is Cart UV (PWM White, one channel, LED index 22); GPIO26 / segment 2 is Bar UV (PWM White, one channel, LED index 23). Total AUX outputs are 24. WLED per-output segmentation is enabled. Both UV segments read `on=false`; underglow remains on segment 0, range `0..22`, and global state remains on.
+- No firmware was flashed and activation/readiness gates were not changed. The module remains physically disconnected per the owner confirmation. Exact installed AUX image bytes are not exposed by WLED; runtime reports `uvOutputsVerified=1` and profile `uv-follow-output-capable-v1`.
+- **Next:** physically connect the staged module to the verified AUX channels, then complete the consolidated powered acceptance checks and record actual voltage/current, independent Cart/Bar output, Matrix-follow/fallback, combined load, thermal, and OFF behavior. Do not open activation gates from the output-map readback alone.
+
+
 ## Current status
 
 - **Owner PWA v1.0.15 and Opal Local Control v1.0.14 are installed.** PWA package SHA-256 `1c3b54584c813d966f8e8d678810edf6bd0cdd3e8ec000afc08390f51ce2824f`, source `58cdcd68c4b4f26813882b3e9bbac8a37dff17e1`; gateway package SHA-256 `a5a877c3c9089df245c1262341ad3a3926c9fc85ba660d67197f277fad6096fa`, source `0c68a472fa58e04714d58b0522132c23a49f4411`. The gateway installer preflight, package integrity, isolated Nginx configuration, and final HTTP 401 check passed; the terminal receipt confirms completion after the SSH reset during router restart. Exact terminal output and post-install readbacks are retained in the release folder `OWNER-PWA-LOCAL-V115-GATEWAY-PORT-20261026-03`; the Opal install receipt is at `/root/hbnf-release-artifacts/OWNER-PWA-LOCAL-V115-GATEWAY-PORT-20261026-03/GATEWAY-INSTALL-20261027T020811Z.log`.
