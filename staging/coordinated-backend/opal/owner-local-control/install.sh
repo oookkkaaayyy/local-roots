@@ -37,9 +37,7 @@ command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
 (cd "$PKG" && sha256sum -c SHA256SUMS >/dev/null) || fail "package hash verification failed"
 actual=$(sha256sum "$TARGET" | awk '{print $1}')
 [ "$actual" = "$EXPECTED_OLD_TRANSPORT" ] || fail "installed Opal transport differs from the accepted Mission Control v1.0.2 rollback base; do not install over an unverified baseline"
-for module in sha.lua sha256.lua string.lua; do
-  [ -s "$PKG/vendor/resty/$module" ] || fail "bundled OpenResty module $module is missing"
-done
+[ -s "$PKG/vendor/sha2.lua" ] || fail "bundled pure-Lua SHA-256 module is missing"
 "$PKG/preflight.sh" || fail "read-only preflight failed"
 
 worker_uid=$(id -u nobody 2>/dev/null || true)
@@ -92,11 +90,11 @@ cp "$PKG/uv_hardware_profile.json" "$STATE/uv_hardware_profile.json"
 chown "0:$worker_gid" "$STATE/uv_hardware_profile.json"
 chmod 0640 "$STATE/uv_hardware_profile.json"
 mkdir -m 0700 "$LOG_DIR"
-mkdir -p "$BASE/lua/resty"
-chmod 0755 "$BASE/lua" "$BASE/lua/resty"
+mkdir -p "$BASE/lua"
+chmod 0755 "$BASE/lua"
 cp "$PKG/auth.lua" "$PKG/session.lua" "$PKG/enroll.lua" "$PKG/revalidate.lua" "$PKG/revoke.lua" "$PKG/auth_owner.lua" "$PKG/auth_origin.lua" "$PKG/aux_command_access.lua" "$PKG/uv_policy_access.lua" "$PKG/uv_status_access.lua" "$PKG/uv_runtime.lua" "$PKG/uv_policy_spec.json" "$PKG/matrix_command_access.lua" "$BASE/lua/"
-cp "$PKG/vendor/resty/sha.lua" "$PKG/vendor/resty/sha256.lua" "$PKG/vendor/resty/string.lua" "$BASE/lua/resty/"
-chmod 0644 "$BASE/lua/resty/sha.lua" "$BASE/lua/resty/sha256.lua" "$BASE/lua/resty/string.lua"
+cp "$PKG/vendor/sha2.lua" "$BASE/lua/sha2.lua"
+chmod 0644 "$BASE/lua/sha2.lua"
 cp "$PKG/dedicated-nginx.conf.example" "$CONF"
 cp "$PKG/nginx.conf.example" "$SERVER_CONF"
 cp "$PKG/hbnf-owner-local-control.init" "$SERVICE"
@@ -134,11 +132,9 @@ expected=$(grep 'local-transport.js$' "$PKG/SHA256SUMS" | awk '{print $1}')
 actual=$(sha256sum "$OWNER_HTTP_TARGET" | awk '{print $1}')
 expected=$(grep 'owner-http-transport.js$' "$PKG/SHA256SUMS" | awk '{print $1}')
 [ "$actual" = "$expected" ] || fail "installed Owner PWA HTTP transport hash mismatch"
-for module in sha.lua sha256.lua string.lua; do
-  actual=$(sha256sum "$BASE/lua/resty/$module" | awk '{print $1}')
-  expected=$(grep "vendor/resty/$module$" "$PKG/SHA256SUMS" | awk '{print $1}')
-  [ -n "$expected" ] && [ "$actual" = "$expected" ] || fail "installed bundled OpenResty module $module hash mismatch"
-done
+actual=$(sha256sum "$BASE/lua/sha2.lua" | awk '{print $1}')
+expected=$(grep 'vendor/sha2.lua$' "$PKG/SHA256SUMS" | awk '{print $1}')
+[ -n "$expected" ] && [ "$actual" = "$expected" ] || fail "installed bundled pure-Lua SHA-256 module hash mismatch"
 
 trap - EXIT HUP INT TERM
 echo "INSTALL_OK: authenticated local Owner Control endpoint installed on isolated Nginx :8443; request worker is nobody. Existing GL.iNet :80/:443 Nginx and Skins relay were not reloaded. Exact rollback: $BACKUP/rollback.sh"

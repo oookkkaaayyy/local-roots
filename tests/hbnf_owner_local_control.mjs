@@ -304,9 +304,8 @@ test("Opal gateway restricts origin, reads, and the bounded authenticated AUX wr
   assert.match(revalidate, /cloudValidated = false/);
   assert.match(nginx, /proxy_set_body '\{"action":"verify_local_pairing"\}'/);
   assert.doesNotMatch(nginx, /location\s+~?\s*\/api\/[^\s{]*\s*\{[^}]*proxy_pass[^}]*json\/state/m);
-  assert.match(auth, /require "resty\.sha256"/);
-  assert.match(auth, /require "resty\.string"/);
-  assert.match(auth, /digest:update\(token\)/);
+  assert.match(auth, /require "sha2"/);
+  assert.match(auth, /pcall\(sha2\.sha256, token\)/);
   assert.match(auth, /owner_session_expired_or_revoked|session_revoked/);
   assert.match(auth, /REVOKED_DIR/);
   assert.match(auth, /expiry/);
@@ -328,6 +327,7 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   const installer = await readFile(new URL("install.sh", root), "utf8");
   const rollback = await readFile(new URL("rollback.sh", root), "utf8");
   const preflight = await readFile(new URL("preflight.sh", root), "utf8");
+  const auth = await readFile(new URL("auth.lua", root), "utf8");
   const nginx = await readFile(new URL("nginx.conf.example", root), "utf8");
   const dedicated = await readFile(new URL("dedicated-nginx.conf.example", root), "utf8");
   const service = await readFile(new URL("hbnf-owner-local-control.init", root), "utf8");
@@ -377,13 +377,15 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(rollback, /mv "\$TARGET\.rollback" "\$TARGET"/);
   assert.match(rollback, /rm -f "\$OWNER_HTTP_TARGET"/);
   assert.match(preflight, /cart-control\.hbnightflyers\.com/);
-  assert.match(preflight, /resty\.sha256/);
+  assert.match(preflight, /sha2\.sha256\("abc"\)/);
   assert.match(preflight, /lua_package_path.*PROBE_DIR\/lua/);
-  assert.match(preflight, /embedded Nginx LuaJIT SHA-256 probe/);
+  assert.match(preflight, /embedded Nginx Lua runtime/);
   assert.match(preflight, /127\.0\.0\.1:\$PROBE_PORT\/probe/);
   assert.match(preflight, /content_by_lua_file \$PROBE_DIR\/probe\.lua/);
+  assert.match(auth, /require "sha2"/);
+  assert.match(auth, /pcall\(sha2\.sha256, token\)/);
   assert.match(preflight, /Lua runtime probe HTTP status/);
-  assert.match(preflight, /cp "\$SCRIPT_DIR\/vendor\/resty\/sha\.lua"/);
+  assert.match(preflight, /cp "\$SCRIPT_DIR\/vendor\/sha2\.lua"/);
   assert.match(preflight, /cat "\$probe_log" >&2/);
   assert.doesNotMatch(preflight, /command -v lua/);
   assert.match(nginx, /listen 192\.168\.77\.1:8443 ssl/);

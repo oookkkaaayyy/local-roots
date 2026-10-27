@@ -2,8 +2,7 @@
 -- The only persistent credential material is the SHA-256 digest in the
 -- session filename; raw paired tokens are never written or logged.
 local cjson = require "cjson.safe"
-local sha256 = require "resty.sha256"
-local resty_string = require "resty.string"
+local sha2 = require "sha2"
 local M = {}
 
 local ORIGIN = "https://hbnightflyers.com"
@@ -22,12 +21,9 @@ local function response(status, code)
 end
 
 local function token_hash(token)
-  local digest = sha256:new()
-  if not digest then return nil end
-  if not digest:update(token) then return nil end
-  local raw = digest:final()
-  if type(raw) ~= "string" then return nil end
-  return resty_string.to_hex(raw)
+  local ok, digest = pcall(sha2.sha256, token)
+  if not ok or type(digest) ~= "string" or #digest ~= 64 or not digest:match("^[a-f0-9]+$") then return nil end
+  return digest
 end
 
 local function bearer_from_request()

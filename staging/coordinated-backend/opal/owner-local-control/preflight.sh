@@ -19,14 +19,14 @@ command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
 nginx_build=$("$NGINX" -V 2>&1)
 printf '%s\n' "$nginx_build" | grep -q 'lua-nginx' || fail "installed Nginx build has no Lua module"
 printf '%s\n' "$nginx_build" | grep -q 'http_ssl' || fail "installed Nginx build has no TLS module"
-# Test the bundled modules in the actual embedded Nginx LuaJIT runtime. The
-# standalone OpenWrt `lua` executable is not necessarily LuaJIT and cannot
-# validate modules that use LuaJIT FFI.
+# Exercise the same pure-Lua SHA-256 implementation used by authentication in
+# Opal's embedded Nginx Lua runtime. Keep the probe copy readable to the
+# unprivileged Nginx worker, matching the installed module permissions.
 PROBE_DIR=$(mktemp -d /tmp/hbnf-local-control-lua-probe.XXXXXX) || fail "cannot create temporary Lua runtime probe directory"
 chmod 0755 "$PROBE_DIR"
-mkdir -m 0755 "$PROBE_DIR/lua" "$PROBE_DIR/lua/resty"
-cp "$SCRIPT_DIR/vendor/resty/sha.lua" "$SCRIPT_DIR/vendor/resty/sha256.lua" "$SCRIPT_DIR/vendor/resty/string.lua" "$PROBE_DIR/lua/resty/"
-chmod 0644 "$PROBE_DIR/lua/resty/sha.lua" "$PROBE_DIR/lua/resty/sha256.lua" "$PROBE_DIR/lua/resty/string.lua"
+mkdir -m 0755 "$PROBE_DIR/lua"
+cp "$SCRIPT_DIR/vendor/sha2.lua" "$PROBE_DIR/lua/sha2.lua"
+chmod 0644 "$PROBE_DIR/lua/sha2.lua"
 PROBE_PORT=$((20000 + ($$ % 20000)))
 PROBE_PID=
 probe_cleanup(){
@@ -40,12 +40,8 @@ trap probe_cleanup EXIT HUP INT TERM
 cat >"$PROBE_DIR/probe.lua" <<'LUA'
 local cjson = require "cjson.safe"
 assert(cjson.encode({probe = true}))
-local sha = require "resty.sha256"
-local hex = require "resty.string"
-local ctx = sha:new()
-assert(ctx)
-assert(ctx:update("abc"))
-ngx.say(hex.to_hex(ctx:final()))
+local sha2 = require "sha2"
+ngx.say(sha2.sha256("abc"))
 LUA
 chmod 0644 "$PROBE_DIR/probe.lua"
 cat >"$PROBE_DIR/nginx.conf" <<EOF
@@ -84,7 +80,7 @@ done
       cat "$probe_log" >&2 || true
     fi
   done
-  fail "bundled Lua modules failed the embedded Nginx LuaJIT SHA-256 probe; the preceding Nginx/curl output identifies the cause"
+  fail "bundled pure-Lua SHA-256 failed in the embedded Nginx Lua runtime; the preceding Nginx/curl output identifies the cause"
 }
 probe_cleanup
 PROBE_PID=
