@@ -7,13 +7,15 @@ Disposition: review-only; queued after UV. No package, merge, release, or device
 - Repository: `oookkkaaayyy/local-roots`
 - Base commit: `00e6552ffe65a3dbd6768b0e017fd22226c5b86f`
 - Candidate branch: `codex/matrix-midband-response-20261026`
-- Installed baseline: NOT RECONCILED. The current Cart work order reports an R5 field receipt and an R6 source-only candidate; it does not establish which exact image is installed now.
-- Registered rollback pointer: `hbnf-cart2-phase2-r6-skins-readable-20261014.bin`, SHA-256 `de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d`; Drive file `1SZaURqkBnyZog04RtHBXmFQOsYurYDKJ`; recovery manifest `1QnFrMxy_Vx3Sqg68YF3U9xWhUNf5JENJ`.
-- The recorded rollback pointer cannot be certified as matching the currently installed image until the R5/R6 baseline conflict is reconciled. Candidate remains REVIEW_ONLY and is not install-ready.
+- Current baseline, per owner direction: `hbnf-cart2-phase2-r6-skins-readable-20261014`.
+- Matching rollback image: `hbnf-cart2-phase2-r6-skins-readable-20261014.bin`, SHA-256 `de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d`; Drive file `1SZaURqkBnyZog04RtHBXmFQOsYurYDKJ`; recovery manifest `1QnFrMxy_Vx3Sqg68YF3U9xWhUNf5JENJ`.
+- Candidate remains REVIEW_ONLY until its exact target build and source-bound admission are complete.
 
 ## Proposed behavior
 
 Reduce only the mid-band envelope attack time constant from 115 ms to 90 ms. At a fixed 20 ms update interval, the envelope reaches 63% of a step input in about 100 ms instead of about 120 ms. The change leaves bass and treble attack times, all release behavior, FFT analysis, Vibe selection, and all 28 visual kernels untouched.
+
+This is one bounded response improvement, not the ceiling of the Matrix light-show system. The existing bridge supports independent bass/mid/treble modulation, transient accents, slow-energy motion, six styles, and profile-controlled depth across the preserved kernel set. Those capabilities remain available and unchanged. Raising additional gains or changing more bands would need representative music and per-kernel review; the passive feature capture below is not enough to call a more aggressive setting safe.
 
 ## Focused offline evidence
 
@@ -56,13 +58,13 @@ mid_energy_after_1000ms_release=0.133697
 
 ## Limits and disposition
 
-These checks establish scalar and captured-feature response, not how representative real music sounds or how the physical Matrix appears. The exact target firmware build, controlled song coverage, all-28-kernel qualification, Matrix/AUX visual coherence, Opal interaction, installed-baseline reconciliation, and owner physical review remain NOT CHECKED. Keep queued after UV; do not use this branch for the current Opal flash or any release path.
+These checks establish scalar and captured-feature response, not how representative real music sounds or how the physical Matrix appears. The exact target firmware build, controlled song coverage, all-28-kernel qualification, Matrix/AUX visual coherence, Opal interaction, and owner physical review remain NOT CHECKED. Keep queued after UV; do not use this branch for the current Opal flash or any release path.
 
 ## Owner physical review guide (after UV)
 
 This is a review checklist only; no package or flash is authorized by it. Once the UV release work is complete and the owner schedules Matrix review:
 
-1. Reconcile the installed Matrix identity against the current field receipt, then confirm a complete build from the exact candidate commit and a durable rollback image whose bytes match that installed baseline. Abort if any identity or hash differs.
+1. Confirm the current R6 baseline and registered rollback SHA above, then confirm a complete build from the exact candidate commit and a durable rollback image whose bytes match that baseline. Abort if any identity or hash differs.
 2. With the Matrix in its normal supported configuration, compare baseline and candidate on the same short set of representative music at the same volume. Listen for clearer mid-band response without harshness, chatter, pumping, false transient triggers, or slower settling after a hit.
 3. Observe every one of the 28 existing visual kernels with the same music and settings. Check that palette, motion, low/high response, transitions, and overall readability remain acceptable; verify supported Matrix/AUX coherence and ordinary audio behavior.
 4. Record each item PASS, FAIL, or NOT CHECKED, with the song/segment, kernel, settings, and owner observation. Any new audible instability, unintended visual change, or missing rollback identity is FAIL for proceeding; otherwise unresolved observations remain NOT CHECKED and require follow-up.

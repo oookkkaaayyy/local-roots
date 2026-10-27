@@ -14,7 +14,7 @@
     "scoped_evidence": {
       "approved_architecture_reference": "Existing AudioExpression in firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_audio_expression.h; one existing Vibe16-derived analysis path.",
       "affected_subsystem": "Mid-band envelope attack time constant only; low/high envelopes and all release constants remain unchanged.",
-      "rollback_reference": "Source base 00e6552ffe65a3dbd6768b0e017fd22226c5b86f. Registry rollback pointer SHA-256 de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d is recorded, but current installed baseline conflicts between R5 field receipt and R6 source-only status; matching rollback is NOT VERIFIED.",
+      "rollback_reference": "Per owner direction, current baseline is hbnf-cart2-phase2-r6-skins-readable-20261014. Registered matching rollback SHA-256 de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d. Source base is 00e6552ffe65a3dbd6768b0e017fd22226c5b86f.",
       "evidence_sources": [
         "Owner feature tree https://docs.google.com/document/d/1V03lZY670ohuq49LTOUcJ0tfvoEO9G7V3qbkvCdkY-E; current priority Matrix sophistication after UV, preserve visuals/audio/scope.",
         "Cart work order https://github.com/oookkkaaayyy/local-roots/issues/116; preserve Vibe behavior and stage independent changes.",
