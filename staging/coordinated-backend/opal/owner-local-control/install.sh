@@ -9,7 +9,7 @@ SERVER_CONF=$BASE/nginx-server.conf
 SERVICE=/etc/init.d/hbnf-owner-local-control
 TARGET=/www/mission-control-local/local-transport.js
 OWNER_HTTP_TARGET=/www/mission-control-local/owner-http-transport.js
-BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.13
+BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.14
 EXPECTED_OLD_TRANSPORT=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a
 HOST=cart-control.hbnightflyers.com
 LOG_DIR=/var/log/hbnf-owner-local-control-nginx
@@ -122,7 +122,7 @@ case "$master_pid" in *[!0-9]*|'') fail "dedicated Nginx PID file is invalid" ;;
 kill -0 "$master_pid" 2>/dev/null || fail "dedicated Nginx master is not running"
 worker_count=$(ps w | awk '$2 == "nobody" && $0 ~ /nginx: worker process/ { n++ } END { print n+0 }')
 [ "$worker_count" = "1" ] || fail "dedicated Nginx request worker is not exactly one unprivileged nobody process"
-code=$(curl -sS --max-time 4 --resolve "$HOST:9443:192.168.77.1" -o /dev/null -w '%{http_code}' -H "Origin: https://hbnightflyers.com" -H "X-HBNF-Device: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" "https://$HOST:9443/api/session") || fail "dedicated TLS/session probe failed"
+code=$(curl -sS --max-time 4 --resolve "$HOST:9443:192.168.77.1" -o /dev/null -w '%{http_code}' -H "Origin: https://hbnightflyers.com" "https://$HOST:9443/api/session") || fail "dedicated TLS/session probe failed"
 [ "$code" = "401" ] || fail "expected fail-closed HTTP 401 probe; received ${code:-no status}"
 [ -x /etc/init.d/nginx ] || fail "existing GL.iNet Nginx service disappeared"
 netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])80$/ { http=1 } NR > 2 && $4 ~ /(:|\])443$/ { https=1 } END { exit !(http && https) }' || fail "existing GL.iNet 80/443 listeners were not preserved"

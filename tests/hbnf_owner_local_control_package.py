@@ -34,8 +34,12 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
             self.assertEqual(archive_a.read_bytes(), archive_b.read_bytes())
             with zipfile.ZipFile(archive_a) as package:
                 names = package.namelist()
-                prefix = "hbnf-owner-local-control-v1.0.13/"
+                prefix = "hbnf-owner-local-control-v1.0.14/"
                 self.assertIn(prefix + "install.sh", names)
+                installer = package.read(prefix + "install.sh").decode()
+                self.assertIn('"$HOST:9443/api/session")', installer)
+                self.assertIn('[ "$code" = "401" ]', installer)
+                self.assertNotIn('X-HBNF-Device:', installer)
                 self.assertIn(prefix + "matrix_topology.sh", names)
                 self.assertIn(prefix + "aux_command_access.lua", names)
                 self.assertIn(prefix + "revalidate.lua", names)

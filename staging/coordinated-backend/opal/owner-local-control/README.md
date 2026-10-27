@@ -1,4 +1,6 @@
-# Opal Owner Local Control — staged v1.0.13
+# Opal Owner Local Control — staged v1.0.14
+
+The unauthenticated session smoke check intentionally sends no device token: an unknown token is reported as not enrolled (404), while a missing token must be rejected as unauthenticated (401).
 
 Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmware changes are made until a separately admitted installation. This release retains the existing Opal Mission Control WebSocket interface and adds a separate authenticated HTTP transport module for the production Owner PWA. The existing transport keeps its WebSocket class and current command mappings; rollback restores the exact accepted Mission Control v1.0.2 transport (SHA-256 `51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a`). The installer still requires a fresh live hash match before capturing its transaction rollback.
 
