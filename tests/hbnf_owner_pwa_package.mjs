@@ -77,7 +77,7 @@ assert.match(auxControl, /outputsVerified:false/);
 assert.match(auxUvCommand, /uvOutputsVerified = false/);
 assert.match(auxUvCommand, /UV_POLICY_SPEC\.requiredRuntimeGates\.every/);
 const sliders = [...html.matchAll(/<input\b[^>]*type="range"[^>]*>/g)].map(([tag]) => tag);
-assert.equal(sliders.length, 9, "all course/audio/brightness sliders, including both UV caps, are covered");
+assert.equal(sliders.length, 10, "all course/audio/brightness sliders, including shared and per-channel UV caps, are covered");
 for (const tag of sliders) {
   const id = tag.match(/\bid="([^"]+)"/)?.[1];
   assert.ok(id, "each course slider has a stable identifier");
