@@ -168,6 +168,9 @@ def main():
             cfg_ack=req("/json/cfg","POST",{"def":{"ps":pid},"sv":True})
             save(root,"boot-preset-save-ack",cfg_ack)
         if (req("/json/cfg").get("def") or {}).get("ps")!=pid: raise RuntimeError("boot preset selection did not persist")
+        reboot_ack=req("/json/state","POST",{"rb":True})
+        save(root,"restart-ack",reboot_ack)
+        if reboot_ack.get("success") is False: raise RuntimeError(f"WLED restart request failed: {reboot_ack}")
         deadline=time.monotonic()+50
         while time.monotonic()<deadline:
             try:
