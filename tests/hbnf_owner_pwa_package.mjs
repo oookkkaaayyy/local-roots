@@ -154,4 +154,50 @@ assert.doesNotMatch(guestHtml, /data-value="(?:mellow|moderate|energetic|peak)"/
 assert.match(guestJs, /control\.hasAttribute\("data-vibe-control"\)/, "Guest status refresh must never enable an unqualified Vibe action");
 assert.match(guestJs, /vibeRuntimeReady=!!\(snapshot&&snapshot\.capabilities&&snapshot\.capabilities\.phase2VibeRuntimeV1===true\)/);
 
+const reviewManifestRoot = fs.mkdtempSync(path.join(os.tmpdir(), "hbnf-pwa-review-baseline-state-"));
+try {
+  execFileSync("git", ["init", "-q", reviewManifestRoot]);
+  execFileSync("git", ["-C", reviewManifestRoot, "config", "user.name", "Package verifier test"]);
+  execFileSync("git", ["-C", reviewManifestRoot, "config", "user.email", "package-test@example.invalid"]);
+  execFileSync("git", ["-C", reviewManifestRoot, "commit", "--allow-empty", "-qm", "fixture"]);
+  const reviewDir = path.join(reviewManifestRoot, "review");
+  fs.mkdirSync(reviewDir);
+  const reviewTools = {
+    "install.sh": "#!/bin/sh\necho 'REVIEW ONLY: installation is disabled' >&2\nexit 64\n",
+    "rollback.sh": "#!/bin/sh\necho 'REVIEW ONLY: rollback is disabled' >&2\nexit 64\n",
+    "REVIEW_ONLY.txt": "Review artifact only. No installation or rollback is enabled.\n",
+  };
+  const packageTools = Object.entries(reviewTools).map(([name, content]) => {
+    fs.writeFileSync(path.join(reviewDir, name), content);
+    return {
+      path: name,
+      sha256: crypto.createHash("sha256").update(content).digest("hex"),
+      ...(name === "install.sh" || name === "rollback.sh" ? { mode: "disabled-review-stub" } : {}),
+    };
+  });
+  const reviewManifest = {
+    sourceCommit: execFileSync("git", ["-C", reviewManifestRoot, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+    releaseDisposition: "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED",
+    transactionId: null,
+    packageTools,
+    sourceInputs: [],
+    assets: [],
+    rollbackBaseline: { entries: null, sha256: null, packageArchive: null },
+  };
+  const manifestPath = path.join(reviewDir, "PACKAGE.json");
+  fs.writeFileSync(manifestPath, JSON.stringify(reviewManifest));
+  const verifier = path.join(root, "scripts/hbnf_verify_owner_pwa_source_manifest.mjs");
+  execFileSync("node", [verifier, "--verify-source-manifest", "--cart-root", reviewManifestRoot, "--manifest", manifestPath]);
+  reviewManifest.releaseDisposition = "INSTALLABLE_REQUIRES_EXISTING_ADMISSION";
+  reviewManifest.transactionId = "TEST-TRANSACTION-0001";
+  reviewManifest.packageTools = [];
+  fs.writeFileSync(manifestPath, JSON.stringify(reviewManifest));
+  assert.throws(
+    () => execFileSync("node", [verifier, "--verify-source-manifest", "--cart-root", reviewManifestRoot, "--manifest", manifestPath], { stdio: "pipe" }),
+    "installable packages must fail closed when their exact installed baseline is unavailable",
+  );
+} finally {
+  fs.rmSync(reviewManifestRoot, { recursive: true, force: true });
+}
+
 console.log("HBNF owner PWA package closure: PASS");
