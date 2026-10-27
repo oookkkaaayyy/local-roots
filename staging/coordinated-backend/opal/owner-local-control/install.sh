@@ -9,8 +9,8 @@ SERVER_CONF=$BASE/nginx-server.conf
 SERVICE=/etc/init.d/hbnf-owner-local-control
 TARGET=/www/mission-control-local/local-transport.js
 OWNER_HTTP_TARGET=/www/mission-control-local/owner-http-transport.js
-BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.4
-EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e
+BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.14
+EXPECTED_OLD_TRANSPORT=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a
 HOST=cart-control.hbnightflyers.com
 LOG_DIR=/var/log/hbnf-owner-local-control-nginx
 PID_FILE=/var/run/hbnf-owner-local-control-nginx.pid
@@ -28,14 +28,16 @@ fail(){ echo "INSTALL BLOCKED: $*" >&2; exit 1; }
 [ -f "$TARGET" ] || fail "expected existing Mission Control transport is missing"
 [ ! -e "$OWNER_HTTP_TARGET" ] || fail "Owner PWA HTTP transport target already exists; inspect before proceeding"
 [ -d "$BASE/tls" ] || fail "install the DNS-01 certificate first; do not create or replace it here"
-# This presence check is not evidence. A real unpaired guest-client negative
-# control test remains mandatory in the release admission.
-[ -f "$BASE/owner-network-isolation-verified" ] || fail "legacy isolation prerequisite is absent; a real guest-client negative control test is mandatory and the marker alone is not proof"
+# The owner accepts that unpaired Cart-Wi-Fi clients can call the unauthenticated
+# WLED API directly. This exposure is recorded in SOURCE_BASE/PACKAGE-MANIFEST;
+# it is not represented as tested or blocked. Gateway authentication still
+# applies to requests that use this dedicated service.
 [ ! -e "$BASE/lua" ] || fail "Owner Control Lua files already exist; inspect before install"
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
 (cd "$PKG" && sha256sum -c SHA256SUMS >/dev/null) || fail "package hash verification failed"
 actual=$(sha256sum "$TARGET" | awk '{print $1}')
-[ "$actual" = "$EXPECTED_OLD_TRANSPORT" ] || fail "installed Opal transport differs from verified v1.0.1 rollback base"
+[ "$actual" = "$EXPECTED_OLD_TRANSPORT" ] || fail "installed Opal transport differs from the accepted Mission Control v1.0.2 rollback base; do not install over an unverified baseline"
+[ -s "$PKG/vendor/sha2.lua" ] || fail "bundled pure-Lua SHA-256 module is missing"
 "$PKG/preflight.sh" || fail "read-only preflight failed"
 
 worker_uid=$(id -u nobody 2>/dev/null || true)
@@ -47,6 +49,11 @@ mkdir -m 0700 "$BACKUP"
 cp -p "$TARGET" "$BACKUP/local-transport.js"
 cp -p "$PKG/rollback.sh" "$BACKUP/rollback.sh"
 chmod 0700 "$BACKUP/rollback.sh"
+backup_transport_sha=$(sha256sum "$BACKUP/local-transport.js" | awk '{print $1}')
+[ "$backup_transport_sha" = "$EXPECTED_OLD_TRANSPORT" ] || fail "read-back of the exact pre-install transport rollback copy failed"
+backup_rollback_sha=$(sha256sum "$BACKUP/rollback.sh" | awk '{print $1}')
+package_rollback_sha=$(sha256sum "$PKG/rollback.sh" | awk '{print $1}')
+[ "$backup_rollback_sha" = "$package_rollback_sha" ] || fail "read-back of the rollback procedure copy failed"
 
 rollback_now(){
   [ "$ROLLING_BACK" = 0 ] || return 0
@@ -79,26 +86,32 @@ mkdir -m 0710 "$STATE"
 chown "0:$worker_gid" "$STATE"
 mkdir -m 0700 "$STATE/sessions" "$STATE/revoked" "$STATE/tmp" "$STATE/tmp/client_body" "$STATE/tmp/proxy"
 chown "$worker_uid:$worker_gid" "$STATE/sessions" "$STATE/revoked" "$STATE/tmp" "$STATE/tmp/client_body" "$STATE/tmp/proxy"
+cp "$PKG/uv_hardware_profile.json" "$STATE/uv_hardware_profile.json"
+chown "0:$worker_gid" "$STATE/uv_hardware_profile.json"
+chmod 0640 "$STATE/uv_hardware_profile.json"
 mkdir -m 0700 "$LOG_DIR"
-mkdir -m 0755 "$BASE/lua"
-cp "$PKG/auth.lua" "$PKG/session.lua" "$PKG/enroll.lua" "$PKG/revalidate.lua" "$PKG/revoke.lua" "$PKG/auth_owner.lua" "$PKG/auth_origin.lua" "$PKG/aux_command_access.lua" "$PKG/matrix_command_access.lua" "$BASE/lua/"
+mkdir -p "$BASE/lua"
+chmod 0755 "$BASE/lua"
+cp "$PKG/auth.lua" "$PKG/session.lua" "$PKG/enroll.lua" "$PKG/revalidate.lua" "$PKG/revoke.lua" "$PKG/auth_owner.lua" "$PKG/auth_origin.lua" "$PKG/aux_command_access.lua" "$PKG/uv_policy_access.lua" "$PKG/uv_status_access.lua" "$PKG/uv_runtime.lua" "$PKG/uv_policy_spec.json" "$PKG/matrix_command_access.lua" "$BASE/lua/"
+cp "$PKG/vendor/sha2.lua" "$BASE/lua/sha2.lua"
+chmod 0644 "$BASE/lua/sha2.lua"
 cp "$PKG/dedicated-nginx.conf.example" "$CONF"
 cp "$PKG/nginx.conf.example" "$SERVER_CONF"
 cp "$PKG/hbnf-owner-local-control.init" "$SERVICE"
 cp "$PKG/local-transport.js" "$TARGET.tmp"
 cp "$PKG/owner-http-transport.js" "$OWNER_HTTP_TARGET.tmp"
-chmod 0644 "$BASE/lua/"*.lua "$CONF" "$SERVER_CONF" "$TARGET.tmp" "$OWNER_HTTP_TARGET.tmp"
+chmod 0644 "$BASE/lua/"*.lua "$BASE/lua/uv_policy_spec.json" "$CONF" "$SERVER_CONF" "$TARGET.tmp" "$OWNER_HTTP_TARGET.tmp"
 chmod 0755 "$SERVICE"
 chmod 0755 "$BASE/lua"
 mv "$TARGET.tmp" "$TARGET"
 mv "$OWNER_HTTP_TARGET.tmp" "$OWNER_HTTP_TARGET"
 
-grep -Fxq '    listen 192.168.77.1:8443 ssl;' "$SERVER_CONF" || fail "dedicated listener must bind only to the HBNF-Cart LAN address"
+grep -Fxq '    listen 192.168.77.1:9443 ssl;' "$SERVER_CONF" || fail "dedicated listener must bind only to the HBNF-Cart LAN address"
 [ "$(grep -Ec '^[[:space:]]*listen[[:space:]]' "$SERVER_CONF" || true)" = "1" ] || fail "dedicated gateway must have exactly one listener, bound only to the HBNF-Cart LAN address"
 
 # Nginx's root master opens the root:root 0600 TLS key then drops its single
 # request worker to nobody. It uses a dedicated config, PID, log, temp paths,
-# dictionaries and :8443 listener; no global Nginx reload occurs.
+# dictionaries and :9443 listener; no global Nginx reload occurs.
 /usr/sbin/nginx -t -c "$CONF" || fail "dedicated Nginx config validation failed"
 "$SERVICE" enable || fail "could not enable the isolated procd service"
 "$SERVICE" start || fail "could not start the isolated procd service"
@@ -109,7 +122,7 @@ case "$master_pid" in *[!0-9]*|'') fail "dedicated Nginx PID file is invalid" ;;
 kill -0 "$master_pid" 2>/dev/null || fail "dedicated Nginx master is not running"
 worker_count=$(ps w | awk '$2 == "nobody" && $0 ~ /nginx: worker process/ { n++ } END { print n+0 }')
 [ "$worker_count" = "1" ] || fail "dedicated Nginx request worker is not exactly one unprivileged nobody process"
-code=$(curl -sS --max-time 4 --resolve "$HOST:8443:192.168.77.1" -o /dev/null -w '%{http_code}' -H "Origin: https://hbnightflyers.com" -H "X-HBNF-Device: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" "https://$HOST:8443/api/session") || fail "dedicated TLS/session probe failed"
+code=$(curl -sS --max-time 4 --resolve "$HOST:9443:192.168.77.1" -o /dev/null -w '%{http_code}' -H "Origin: https://hbnightflyers.com" "https://$HOST:9443/api/session") || fail "dedicated TLS/session probe failed"
 [ "$code" = "401" ] || fail "expected fail-closed HTTP 401 probe; received ${code:-no status}"
 [ -x /etc/init.d/nginx ] || fail "existing GL.iNet Nginx service disappeared"
 netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])80$/ { http=1 } NR > 2 && $4 ~ /(:|\])443$/ { https=1 } END { exit !(http && https) }' || fail "existing GL.iNet 80/443 listeners were not preserved"
@@ -119,7 +132,10 @@ expected=$(grep 'local-transport.js$' "$PKG/SHA256SUMS" | awk '{print $1}')
 actual=$(sha256sum "$OWNER_HTTP_TARGET" | awk '{print $1}')
 expected=$(grep 'owner-http-transport.js$' "$PKG/SHA256SUMS" | awk '{print $1}')
 [ "$actual" = "$expected" ] || fail "installed Owner PWA HTTP transport hash mismatch"
+actual=$(sha256sum "$BASE/lua/sha2.lua" | awk '{print $1}')
+expected=$(grep 'vendor/sha2.lua$' "$PKG/SHA256SUMS" | awk '{print $1}')
+[ -n "$expected" ] && [ "$actual" = "$expected" ] || fail "installed bundled pure-Lua SHA-256 module hash mismatch"
 
 trap - EXIT HUP INT TERM
-echo "INSTALL_OK: authenticated local Owner Control endpoint installed on isolated Nginx :8443; request worker is nobody. Existing GL.iNet :80/:443 Nginx and Skins relay were not reloaded. Exact rollback: $BACKUP/rollback.sh"
-echo "This does not prove iPad trust, guest isolation, physical output, or AUX illumination; those acceptance checks remain required."
+echo "INSTALL_OK: authenticated local Owner Control endpoint installed on isolated Nginx :9443; request worker is nobody. Existing GL.iNet :80/:443 Nginx and Skins relay were not reloaded. Exact rollback: $BACKUP/rollback.sh"
+echo "This does not prove iPad trust, physical output, or AUX illumination; those acceptance checks remain required. Unpaired Cart-Wi-Fi clients retain direct unauthenticated WLED API access by owner-accepted design."

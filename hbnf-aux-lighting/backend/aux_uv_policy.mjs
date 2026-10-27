@@ -1,5 +1,9 @@
 // Native WLED segment policy only. Runtime configuration stays fail-closed
 // until physical AUX commissioning explicitly supplies verified segments.
+import UV_POLICY_SPEC from "./aux_uv_policy_spec.json" with { type: "json" };
+
+export { UV_POLICY_SPEC };
+
 export const UV_OFFLINE_CONFIG = Object.freeze({
   enabled: false,
   hardwareAvailable: false,
@@ -8,7 +12,7 @@ export const UV_OFFLINE_CONFIG = Object.freeze({
   segmentIds: Object.freeze([]),
 });
 
-export const UV_MODES = Object.freeze(["OFF", "MANUAL", "FOLLOW_MATRIX", "VIBE_REACTIVE"]);
+export const UV_MODES = Object.freeze([...UV_POLICY_SPEC.modes]);
 
 export function nextUvOutput(state = {}, config = UV_OFFLINE_CONFIG, inputs = {}) {
   const mode = String(state.mode || "OFF").toUpperCase();

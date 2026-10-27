@@ -1,0 +1,192 @@
+{
+  "schema": "hbnf-cart-fresh-readonly-preflight-v1",
+  "captured_at_utc": "2026-10-27T00:27:26Z",
+  "github_issue_116_comment_id": 6430727469,
+  "scope": "Exact Cart Matrix/AUX/Opal endpoints only; GET/read-only; no subnet scan, device mutation, restart, config change, install, flash, or admission.",
+  "matrix": {
+    "ip": "192.168.77.10",
+    "identity": "PASS",
+    "mac": "704bca5b345c",
+    "wled_version": "16.0.1",
+    "architecture": "esp32",
+    "release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+    "source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86",
+    "api_build_based_on_firmware_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "pixels": 534,
+    "matrix_geometry": "32x16",
+    "segments": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16
+      },
+      {
+        "id": 1,
+        "start": 512,
+        "stop": 534,
+        "startY": 0,
+        "stopY": 1
+      }
+    ],
+    "responses": {
+      "/json/info": {
+        "bytes": 1512,
+        "sha256": "1bc651d55077cc4e8afc1374b8e6e0164863777250381978b933f7d3204c084b"
+      },
+      "/json/state": {
+        "bytes": 2370,
+        "sha256": "c3bd8e76b87fa15c18ea6517bc02ac706932265c11316f4159b38a48c04c8af4"
+      },
+      "/hbnf/build.json": {
+        "bytes": 568,
+        "sha256": "150b4fcacb1bee2fe12c767e5ebbbf4cfbc585454d193e421e5705df53c0031d"
+      }
+    },
+    "baseline_record": "MATRIX_INSTALLED_BUILD_IDENTITY_2026-10-26.json, Drive ID 1SZaURqkBnyZog04RtHBXmFQOsYurYDKJ; recovery manifest Drive ID 1QnFrMxy_Vx3Sqg68YF3U9xWhUNf5JENJ.",
+    "rollback_artifact": {
+      "drive_file_id": "1YX2B4XG60FOy6SjI7xV_f6DC8QWidUIj",
+      "bytes": 1506032,
+      "sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "download_back_verified": true
+    },
+    "installed_image_digest": "NOT_EXPOSED_BY_DEVICE_API; exact installed bytes NOT VERIFIED. Runtime release/version and source baseline labels match."
+  },
+  "aux": {
+    "ip": "192.168.77.11",
+    "identity": "PASS",
+    "mac": "8c94df55c34c",
+    "wled_version": "16.0.1",
+    "architecture": "esp32",
+    "led_count": 22,
+    "ddp": {
+      "live": true,
+      "source_ip": "192.168.77.10",
+      "mode": "DDP"
+    },
+    "runtime_identity": {
+      "release": "hbnf-wow-aux-r3-2026-10-25-uv-follow-v1",
+      "engine": "aux-r3-wow-1d",
+      "buildWitness": "registry28-tempo-lock-1d-v7-network-no-starve-uv-follow",
+      "uvOutputsVerified": 0,
+      "uvBuildProfile": "absent; current source fallback is uv-follow-fail-dark-v1"
+    },
+    "run_404197_candidate_comparison": {
+      "workflow_run_id": "40419790326",
+      "candidate_firmware_sha256": "94afbf7af2dd672952e95978841cf28ff49bb10c6d209fd852fe651c66f7ab29",
+      "candidate_metrics": {
+        "UV_OUTPUTS_VERIFIED": "YES",
+        "UV_BUILD_PROFILE": "uv-follow-output-capable-v1"
+      },
+      "live_runtime_evidence": {
+        "uvOutputsVerified": 0,
+        "uvBuildProfile": "absent"
+      },
+      "conclusion": "The live AUX reports the fail-dark V7 runtime profile, not the output-capable run 404197 candidate. The device API does not expose the exact installed firmware image digest, so exact installed bytes remain NOT_VERIFIED. Do not treat run 404197 as installed."
+    },
+    "responses": {
+      "/json/info": {
+        "bytes": 1153,
+        "sha256": "6cf9c1558760e194eeec1dcdb1063575f09331be507fbfa5779bea5414dd5ece"
+      },
+      "/json/state": {
+        "bytes": 1912,
+        "sha256": "0ef667609bbff78550b714be9e0bdc56bb11c6e67c94ea217d466a78d91432ee"
+      }
+    },
+    "baseline_record": {
+      "release": "hbnf-wow-aux-r3-2026-10-25-uv-follow-v1",
+      "engine": "aux-r3-wow-1d",
+      "build_witness": "registry28-tempo-lock-1d-v7-network-no-starve-uv-follow",
+      "firmware_bytes": 1348624,
+      "firmware_sha256": "c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a",
+      "source_commit": "e78fc74c9470b0bafaf43ca6a2823f60f1a4b51e",
+      "workflow_run_id": "40276725561",
+      "central_rollback_drive_id": "1HY5tA1sYCIuB_3-Wz2yF7sSr573XLZ7N"
+    },
+    "disposition": "Runtime labels and fail-dark flag match retained V7 baseline. Exact installed image digest is NOT_EXPOSED_BY_DEVICE_API; exact installed bytes NOT_VERIFIED."
+  },
+  "opal": {
+    "ip": "192.168.77.1",
+    "identity": "SSH filesystem read BLOCKED: default auth and explicit existing ~/.ssh/hbnf_opal_ed25519 both returned Permission denied (publickey,password); host key verification remained strict; no password was guessed.",
+    "owner_pwa": {
+      "version_marker": "1.0.14",
+      "package": "hbnf-owner-pwa-local-v1.0.14",
+      "source_commit": "70435e5df3d9cfc0d68bbf88c99308960ef09b56",
+      "package_bytes": 2179804,
+      "package_sha256": "6c393c5dde6dc78ea16823922c0c2717ccc4ae88dd5fa9e4047efb2e71044a17",
+      "private_drive_artifact": {
+        "drive_file_id": "1WxCWUV8V8A4ruAhfpiArfFjWf9HZ_HXE",
+        "parent_folder_id": "1mZWMyzLIKnSjBTP82-EfGOqktld17X84",
+        "shared": false,
+        "readback_sha256": "6c393c5dde6dc78ea16823922c0c2717ccc4ae88dd5fa9e4047efb2e71044a17",
+        "readback_matches_local_package": true
+      },
+      "rollback": {
+        "version": "1.0.13",
+        "drive_file_id": "18rEFvjEELQXhOt1-fukXBpuFSsitzvNn",
+        "bytes": 1323693,
+        "sha256": "60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a",
+        "download_back_verified": true
+      },
+      "readback_manifest": {
+        "drive_file_id": "1piHIJVTOuuw32ya5QxPVj0dxHjHeIyea",
+        "parent_folder_id": "1mZWMyzLIKnSjBTP82-EfGOqktld17X84",
+        "shared": false,
+        "bytes": 5835,
+        "sha256": "29ccaae3da56f6c7cc6e332b7c607a59d960f085805aa773d149cfa6566d6355",
+        "readback_matches_local_manifest": true
+      },
+      "served_payload_files_match": 17,
+      "payload_manifest_identity": "all 17 published payload hashes match the staged v1.0.14 manifest after removing package-root prefix; filesystem completeness (expected 21 regular files) not independently checked via SSH.",
+      "release_transaction_receipt": "NOT_READ"
+    },
+    "mission_control_transport": {
+      "path": "/mission-control-local/local-transport.js",
+      "bytes": 8993,
+      "sha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+      "comparison": "EXACT MATCH to recorded Opal rollback/current transport baseline source 8690ae711767ccfa644e538a169c6c2228272f64."
+    },
+    "owner_gateway": {
+      "expected_host": "cart-control.hbnightflyers.com:8443",
+      "tcp_listener": "PRESENT",
+      "strict_tls_read": "FAIL: certificate validation rejected self-signed certificate; no API response trusted/read.",
+      "presented_certificate": {
+        "subject": "/C=ZZ/ST=Some-State/L=SH/O=siflower/CN=siflower.cn",
+        "issuer": "/C=ZZ/ST=Some-State/L=SH/O=siflower/CN=siflower.cn",
+        "notBefore": "2017-05-23T06:15:44Z",
+        "notAfter": "2022-05-22T06:15:44Z",
+        "sha256": "a543f9b57a0988023c3be3f33f8b5a05b5bc97125dfba490b7cb9e5ec5731b92"
+      },
+      "expected_certificate_sha256": "b93f258a12e39992547b59fb837d300434b831f89adf151362e06555b74f314a",
+      "expected_certificate_record": "TLS_CERTIFICATE_READINESS_20261026.json",
+      "disposition": "CERTIFICATE DOES NOT MATCH required Lets Encrypt certificate and is expired. Gateway release identity/routes cannot be safely verified; dedicated gateway preflight FAIL."
+    }
+  },
+  "acceptance": {
+    "Matrix_runtime_identity": "PASS",
+    "Matrix_exact_installed_image": "NOT_CHECKED_API_DOES_NOT_EXPOSE_DIGEST",
+    "AUX_runtime_identity_and_fail_dark_state": "PASS; does not match output-capable run 404197 candidate",
+    "AUX_exact_installed_image": "NOT_CHECKED_API_DOES_NOT_EXPOSE_DIGEST",
+    "Opal_v1_0_14_served_payload": "PASS_17_OF_17; exact package + readback manifest retained owner-private and downloaded back byte-for-byte",
+    "Opal_full_filesystem_inventory_and_transaction_receipt": "NOT_CHECKED_SSH_AUTH_BLOCKED",
+    "Opal_local_transport_baseline": "PASS_EXACT_HASH",
+    "Owner_gateway_TLS_identity": "FAIL_CERTIFICATE_MISMATCH_AND_EXPIRED",
+    "production_mutations": "NONE",
+    "release_admission": "NOT_RUN_READ_ONLY_ONLY"
+  },
+  "commands": [
+    "GET http://192.168.77.10/json/info",
+    "GET http://192.168.77.10/json/state",
+    "GET http://192.168.77.10/hbnf/build.json",
+    "GET http://192.168.77.11/json/info",
+    "GET http://192.168.77.11/json/state",
+    "GET http://192.168.77.1/mission-control-local/owner-pwa/.hbnf-package-version",
+    "GET http://192.168.77.1/mission-control-local/owner-pwa/.hbnf-payload.sha256",
+    "GET each of the 17 relative asset paths listed by that manifest under /mission-control-local/owner-pwa/",
+    "GET http://192.168.77.1/mission-control-local/local-transport.js",
+    "SSH root@192.168.77.1 with BatchMode=yes, StrictHostKeyChecking=yes, HostKeyAlgorithms=+ssh-rsa; then separately IdentitiesOnly=yes -i ~/.ssh/hbnf_opal_ed25519 (both auth denied).",
+    "GET https://cart-control.hbnightflyers.com:8443/api/aux/uv-status with --resolve cart-control.hbnightflyers.com:8443:192.168.77.1 and normal certificate verification (TLS rejected before API response)."
+  ]
+}

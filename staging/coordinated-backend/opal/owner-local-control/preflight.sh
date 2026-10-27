@@ -4,7 +4,7 @@ set -eu
 HOST=cart-control.hbnightflyers.com
 MATRIX=192.168.77.10
 AUX=192.168.77.11
-GATEWAY_PORT=8443
+GATEWAY_PORT=9443
 GATEWAY_LAN_IP=192.168.77.1
 EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014
 fail(){ echo "BLOCKED: $*" >&2; exit 1; }
@@ -16,12 +16,75 @@ command -v openssl >/dev/null 2>&1 || fail "openssl missing"
 command -v curl >/dev/null 2>&1 || fail "curl missing"
 command -v jsonfilter >/dev/null 2>&1 || fail "jsonfilter missing"
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
-command -v lua >/dev/null 2>&1 || fail "Lua runtime missing"
-lua -e 'assert(require("cjson.safe"))' >/dev/null 2>&1 || fail "Lua cjson.safe module missing"
-lua -e 'local s=require("resty.sha256"); assert(s.new); local h=require("resty.string"); assert(h.to_hex)' >/dev/null 2>&1 || fail "lua-resty-string SHA-256 support missing; do not install a new dependency in this transaction"
 nginx_build=$("$NGINX" -V 2>&1)
 printf '%s\n' "$nginx_build" | grep -q 'lua-nginx' || fail "installed Nginx build has no Lua module"
 printf '%s\n' "$nginx_build" | grep -q 'http_ssl' || fail "installed Nginx build has no TLS module"
+# Exercise the same pure-Lua SHA-256 implementation used by authentication in
+# Opal's embedded Nginx Lua runtime. Keep the probe copy readable to the
+# unprivileged Nginx worker, matching the installed module permissions.
+PROBE_DIR=$(mktemp -d /tmp/hbnf-local-control-lua-probe.XXXXXX) || fail "cannot create temporary Lua runtime probe directory"
+chmod 0755 "$PROBE_DIR"
+mkdir -m 0755 "$PROBE_DIR/lua"
+cp "$SCRIPT_DIR/vendor/sha2.lua" "$PROBE_DIR/lua/sha2.lua"
+chmod 0644 "$PROBE_DIR/lua/sha2.lua"
+PROBE_PORT=$((20000 + ($$ % 20000)))
+PROBE_PID=
+probe_cleanup(){
+  if [ -n "$PROBE_PID" ]; then
+    kill -TERM "$PROBE_PID" 2>/dev/null || true
+    wait "$PROBE_PID" 2>/dev/null || true
+  fi
+  rm -rf "$PROBE_DIR"
+}
+trap probe_cleanup EXIT HUP INT TERM
+cat >"$PROBE_DIR/probe.lua" <<'LUA'
+local cjson = require "cjson.safe"
+assert(cjson.encode({probe = true}))
+local sha2 = require "sha2"
+ngx.say(sha2.sha256("abc"))
+LUA
+chmod 0644 "$PROBE_DIR/probe.lua"
+cat >"$PROBE_DIR/nginx.conf" <<EOF
+worker_processes 1;
+daemon off;
+pid $PROBE_DIR/nginx.pid;
+error_log $PROBE_DIR/error.log;
+events { worker_connections 16; }
+http {
+  lua_package_path "$PROBE_DIR/lua/?.lua;;";
+  server {
+    listen 127.0.0.1:$PROBE_PORT;
+    location = /probe {
+      content_by_lua_file $PROBE_DIR/probe.lua;
+    }
+  }
+}
+EOF
+"$NGINX" -p "$PROBE_DIR/" -c "$PROBE_DIR/nginx.conf" >"$PROBE_DIR/stdout.log" 2>&1 &
+PROBE_PID=$!
+probe_digest=
+probe_attempt=0
+while [ "$probe_attempt" -lt 20 ]; do
+  probe_status=$(curl -sS --max-time 1 -o "$PROBE_DIR/response" -w '%{http_code}' "http://127.0.0.1:$PROBE_PORT/probe" 2>/dev/null || true)
+  [ "$probe_status" != "000" ] && [ -n "$probe_status" ] && break
+  kill -0 "$PROBE_PID" 2>/dev/null || break
+  probe_attempt=$((probe_attempt + 1))
+  sleep 1
+done
+[ ! -f "$PROBE_DIR/response" ] || probe_digest=$(cat "$PROBE_DIR/response")
+[ "$probe_digest" = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" ] || {
+  echo "Lua runtime probe HTTP status: ${probe_status:-000}; response: ${probe_digest:-<empty>} on 127.0.0.1:$PROBE_PORT" >&2
+  for probe_log in "$PROBE_DIR/stdout.log" "$PROBE_DIR/error.log"; do
+    if [ -f "$probe_log" ]; then
+      echo "--- $probe_log ---" >&2
+      cat "$probe_log" >&2 || true
+    fi
+  done
+  fail "bundled pure-Lua SHA-256 failed in the embedded Nginx Lua runtime; the preceding Nginx/curl output identifies the cause"
+}
+probe_cleanup
+PROBE_PID=
+trap - EXIT HUP INT TERM
 [ -x /sbin/procd ] && [ -f /etc/rc.common ] && [ -f /lib/functions/procd.sh ] || fail "OpenWrt procd service support is incomplete"
 [ -x /etc/init.d/nginx ] || fail "existing GL.iNet Nginx service is unavailable"
 [ "$(uci -q get network.lan.ipaddr 2>/dev/null || true)" = "$GATEWAY_LAN_IP" ] || fail "Opal LAN address is not the exact gateway bind address $GATEWAY_LAN_IP"
@@ -45,19 +108,19 @@ case "$worker_uid:$worker_gid" in *[!0-9:]*|:*) fail "could not resolve the dedi
 [ ! -e /var/run/hbnf-owner-local-control-nginx.pid ] || fail "dedicated Nginx PID path already exists; inspect before install"
 [ ! -e /etc/rc.d/S85hbnf-owner-local-control ] || fail "dedicated service boot link already exists; inspect before install"
 if command -v netstat >/dev/null 2>&1; then
-  netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])8443$/ { found=1 } END { exit found ? 0 : 1 }' && fail "TCP port 8443 is already bound"
+  netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])9443$/ { found=1 } END { exit found ? 0 : 1 }' && fail "TCP port 9443 is already bound"
 else
-  awk '$2 ~ /:20FB$/ && $4 == "0A" { found=1 } END { exit found ? 0 : 1 }' /proc/net/tcp /proc/net/tcp6 2>/dev/null && fail "TCP port 8443 is already bound"
+  awk '$2 ~ /:24E3$/ && $4 == "0A" { found=1 } END { exit found ? 0 : 1 }' /proc/net/tcp /proc/net/tcp6 2>/dev/null && fail "TCP port 9443 is already bound"
 fi
 # This listener is bound to the LAN address only. Also fail if an explicit
-# WAN-input accept rule for 8443 exists in either active firewall family.
+# WAN-input accept rule for 9443 exists in either active firewall family.
 if command -v iptables-save >/dev/null 2>&1; then
-  wan_accept=$(iptables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*8443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*8443' || true)
-  [ -z "$wan_accept" ] || fail "an explicit IPv4 WAN accept rule for TCP 8443 exists"
+  wan_accept=$(iptables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*9443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*9443' || true)
+  [ -z "$wan_accept" ] || fail "an explicit IPv4 WAN accept rule for TCP 9443 exists"
 fi
 if command -v ip6tables-save >/dev/null 2>&1; then
-  wan6_accept=$(ip6tables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*8443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*8443' || true)
-  [ -z "$wan6_accept" ] || fail "an explicit IPv6 WAN accept rule for TCP 8443 exists"
+  wan6_accept=$(ip6tables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*9443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*9443' || true)
+  [ -z "$wan6_accept" ] || fail "an explicit IPv6 WAN accept rule for TCP 9443 exists"
 fi
 [ -r /etc/ssl/certs/ca-certificates.crt ] || fail "system CA bundle missing"
 [ -d /etc/hbnf-local-control ] || fail "certificate directory /etc/hbnf-local-control is missing"
@@ -91,6 +154,6 @@ matrix_release=$(printf '%s' "$matrix_build" | jsonfilter -e '@.release_id' 2>/d
 [ "$matrix_leds" = "534" ] || fail "unexpected combined Matrix/companion pixel count"
 matrix_topology_valid "$matrix_leds" "$matrix_seg0_start" "$matrix_seg0_stop" "$matrix_seg0_start_y" "$matrix_seg0_stop_y" "$matrix_seg1_start" "$matrix_seg1_stop" "$aux_leds" || fail "unexpected 2D Matrix/companion topology (expected Matrix x=0..32,y=0..16 and companion 512..534; AUX 22 LEDs)"
 echo "PREFLIGHT_OK: Opal/Nginx prerequisites, restrictive WAN input policy, local DNS, certificate, exact Matrix release, device identities, 32x16 Matrix segment, and 22-pixel companion topology are present."
-echo "NGINX_ISOLATION: existing GL.iNet Nginx/global workers/listeners remain untouched; a separate 8443 instance uses a root master only to open the root-only TLS key and a single nobody/nogroup request worker."
+echo "NGINX_ISOLATION: existing GL.iNet Nginx/global workers/listeners remain untouched; a separate 9443 instance uses a root master only to open the root-only TLS key and a single nobody/nogroup request worker."
 echo "SESSION_STORAGE: persistent /etc parent will be root:nogroup 0710; session, revocation, and request-temp directories will be nobody:nogroup 0700."
-echo "NOT_CHECKED: guest/unpaired-to-WLED isolation, PWA certificate trust and physical iPad behavior. Guest isolation requires an actual negative control test from an unpaired guest client; no marker file is accepted as proof."
+echo "OWNER_ACCEPTED_NETWORK_EXPOSURE: direct unpaired-client WLED isolation was NOT_TESTED and is not an admission gate by owner decision; raw WLED API calls can bypass Owner/Guest UI constraints. PWA certificate trust and physical iPad behavior remain NOT_CHECKED."

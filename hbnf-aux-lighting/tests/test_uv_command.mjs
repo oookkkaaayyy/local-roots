@@ -37,6 +37,20 @@ test("incomplete/default hardware profile stays preview-only and never calls MQT
   assert.equal(published, false);
 });
 
+test("missing or malformed brightness caps are rejected without an implicit zero or OFF command", async () => {
+  for (const brightnessBySegment of [undefined, {}, { main: 80 }, { main: 80, short: 2.5 }, { main: -1, short: 20 }]) {
+    let published = false;
+    const result = await executeUvRequest({
+      request: { mode: "MANUAL", brightnessBySegment },
+      state: gates, auxEnabled: true, uvEnabled: true, uvOutputsVerified: true, hardware: verifiedHardware,
+      publish: async () => { published = true; },
+    });
+    assert.equal(result.status, 400);
+    assert.equal(result.body.mutationIssued, false);
+    assert.equal(published, false);
+  }
+});
+
 test("owner-reported 5V UV strip voltage is recorded without enabling an unverified path", () => {
   assert.equal(UV_HARDWARE_CONFIG.channels.main.loadVoltageV, 5);
   assert.equal(UV_HARDWARE_CONFIG.channels.short.loadVoltageV, 5);

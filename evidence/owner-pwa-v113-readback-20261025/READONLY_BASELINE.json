@@ -1,0 +1,60 @@
+{
+  "schema": "hbnf-owner-pwa-historical-readback-reference-v1",
+  "status": "PASS_REPORTED_17_OF_17_SERVING_ASSETS",
+  "captured_utc": "2026-10-25",
+  "runtime_version": "1.0.13",
+  "source_commit": "53221bbc83fc6f8ebbbd3dd2d931284eae298dfa",
+  "transaction_id": "OWNER-PWA-LOCAL-V113-UI-20261024-01",
+  "baseline_manifest_sha256": "83bf71e7125ad24a59707e956fc42083700266193c9e002ec5665e1a8a382f0c",
+  "baseline_package_sha256": "60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a",
+  "payload_manifest_sha256": "81b0a562757fc11ba3747ec83fa2b0df11bbe624b0fe33a6a1220be8355d58ef",
+  "rollback_artifact_available": true,
+  "filesystem_entry_count": "NOT_CHECKED",
+  "filesystem_completeness": "REQUIRES_FRESH_INSTALLER_PREFLIGHT",
+  "device_side_prior_rollback_copy": "NOT_CHECKED",
+  "mission_control": {
+    "marker": "hbnf-owner-pwa-empty-runtime-recovery-v2",
+    "version": "1.0.2",
+    "sha256_by_path": {
+      ".hbnf-package-marker": "fbeeb20927e58ff3bea0d0a66d5e996dbaefcbb72259a80a45ff206585137835",
+      ".hbnf-package-version": "9fd28642d3aca191e5c7fc2383cfd6fabb2aac8743f029dabb8989ac584e31bc",
+      "index.html": "0424ab290ab1d80dbbd1bff31e068009e3000cae22ec2792b92e4eef7bdcbcaf",
+      "styles.css": "e2aceeabac8fa7e85fca1e638f50da6182d4e5b79fd5004a7a3c071915cc3522",
+      "app.js": "d44691025b16d95fb1a210a56d901c3ee6cdd74bf932a59f7ffe08679184df2b",
+      "local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a"
+    },
+    "all_six_paths_http_200": true
+  },
+  "evidence": {
+    "source": "owner-authored GitHub history",
+    "url": "https://github.com/oookkkaaayyy/local-roots/pull/130#issuecomment-6394889462",
+    "statement": "Latest direct read-only Opal evidence records Owner PWA v1.0.13 serving with all 17 live assets matching its saved v1.0.13 manifest (17/17 PASS).",
+    "archive_url": "https://drive.google.com/file/d/1uvw4XJcIy6gDPG87wERBJpJGV4JxcjNM/view",
+    "archive_sha256": "60509839edb902f25546878094d0b39f7d8ce78ca54e99d23e66d84deb41155a"
+  },
+  "fresh_preflight_required": true,
+  "limitation": "Historical readback verifies the 17 served assets only. It does not assert a fresh current readback, complete filesystem listing, or the four hidden package marker files; the v1.0.14 installer hashes all 21 expected files and retains the exact live tree before swapping.",
+  "reported_served_asset_count": 17,
+  "reported_served_asset_match_count": 17,
+  "expected_asset_sha256_by_path": {
+    "owner-pwa/hbnf-cart-features.js": "b6364a3e22eb8813a78a46007ac7818af1e7c0ed658ea90f94747bceab6591b4",
+    "owner-pwa/hbnf-cart-icon-180.png": "2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e",
+    "owner-pwa/hbnf-cart-icon-192.png": "f45ae7df9d4f00ebfbb1a28ba0cfb405dff06e1a5f6ebcf7cf213f517ba226f1",
+    "owner-pwa/hbnf-cart-icon-512.png": "3088b88b82ac601cf32b3902e70de7bdc0ffb7236a7533d7a71775fcc3fb6d27",
+    "owner-pwa/hbnf-cart-live-display.js": "54021b2f28492096931294419f1a7776cf54e1ff1b6e67642e1c8af6661437e4",
+    "owner-pwa/hbnf-cart-local.js": "9a8bd30f180fc13360106fc977ea0e60adad10632fea951f652d2d61ef36ca05",
+    "owner-pwa/hbnf-cart-manifest.webmanifest": "162d84460e2a036238f4e5ab09e66d0bad2425cb2a8c76f3a1aaf6e1f3311718",
+    "owner-pwa/hbnf-cart-net.js": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-readiness.js": "1e8562eb5e7578a557333e8f9ed2b2bb581a0430deabed9624678af18d6deea1",
+    "owner-pwa/hbnf-cart-semantic.js": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "owner-pwa/hbnf-cart-skins-score.js": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+    "owner-pwa/hbnf-cart-ui-v6.css": "bd3f6fb232c04c921ec70eab96b365e40382ec8ec5dec70eaa66963e3895c0e3",
+    "owner-pwa/hbnf-cart-ui-v6.js": "07d027ef857e628110cecb97e5bfd25eb04f010bc5872f4c53d69174cf8d2382",
+    "owner-pwa/hbnf-cart.html": "d473af9133df90e3f46a8cf8eb1019e453adb556388877381658965ce437bb7a",
+    "owner-pwa/hbnf-cart.js": "9939cfeff88efae851c2bf575748c967734b8ae11f3986069323c8bd16d8e13f",
+    "owner-pwa/hbnf-faded-phosphor.png": "043f68e0b44d7c658051a996ec276906c834edbb1f3f19fae7726e93ecf7fbdf",
+    "owner-pwa/hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
+  },
+  "direct_live_file_hashes_supplied": false,
+  "source_kind": "owner-authored GitHub history"
+}

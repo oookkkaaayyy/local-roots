@@ -7,11 +7,11 @@ FILES=[
  "START_HERE.txt","COMMISSION_HBNF_AUX.command","commission_guard.py","commission_operator.py",
  "generate_aux_hardware_plan.py","generate_release_admission.py","local_commission.py",
  "HBNF_SP803E_AUX_R3.bin","FINAL_METRICS.txt","firmware-sha256.txt","contract.json",
- "WOW_SCENES_V2.json","README.md","CODEX_RUNBOOK.md","RELEASE_ADMISSION.json",
+ "WOW_SCENES_V2.json","README.md","CODEX_RUNBOOK.md","UV_FIELD_SESSION.md","RELEASE_ADMISSION.json",
  "RELEASE_RECEIPT.schema.json","RELEASE_RECEIPT.template.json","RELEASE_RECEIPT.json",
  "validate_release_receipt.py","generate_release_receipt.py","test_release_receipt.py"
 ]
-ROLLBACK_FILES=["HBNF_SP803E_AUX_V6_ROLLBACK.bin","AUX_V6_RECOVERY_MANIFEST.json"]
+ROLLBACK_FILES=["HBNF_SP803E_AUX_V7_ROLLBACK.bin","AUX_V7_RECOVERY_MANIFEST.json"]
 STAMP=(2026,9,22,0,0,0)
 
 def sha256(p): return hashlib.sha256(p.read_bytes()).hexdigest()
@@ -32,7 +32,12 @@ def build(src,out):
         and re.fullmatch(r"[0-9a-f]{40}",source_sha)
         and admission.get("candidate_source_commit")==source_sha
         and admission.get("candidate_firmware_sha256")==firmware_sha==metrics.get("firmware_sha256")
-        and bool(str(admission.get("resumption_condition","")).strip()))
+        and bool(str(admission.get("resumption_condition","")).strip())
+        and admission.get("network_exposure",{}).get("owner_accepted") is True
+        and admission.get("network_exposure",{}).get("decision")=="OWNER_ACCEPTED_EXPOSURE"
+        and admission.get("network_exposure",{}).get("observation_status")=="NOT_TESTED"
+        and admission.get("network_exposure",{}).get("isolation_test_required_for_admission") is False
+        and admission.get("uv_activation",{}).get("direct_wled_network_isolation")=="OWNER_ACCEPTED_NOT_REQUIRED")
     if not base_valid: raise ValueError("distribution admission is not bound to this exact source and firmware")
     rollback_artifact=admission.get("rollback_artifact")
     names=list(FILES)
@@ -88,17 +93,19 @@ def selftest():
         sys.path.insert(0,str(here))
         from generate_release_receipt import generate
         generate(fw,src/"FINAL_METRICS.txt",src/"RELEASE_RECEIPT.template.json",src/"RELEASE_RECEIPT.json")
-        admission={"schema":"hbnf-aux-release-admission-v1","status":"REVIEW_ONLY","candidate_source_commit":"a"*40,"candidate_firmware_sha256":fw_sha,"installed_firmware_sha256":"1"*64,"rollback_artifact":None,"blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING","resumption_condition":"fixture"}
+        admission={"schema":"hbnf-aux-release-admission-v1","status":"REVIEW_ONLY","candidate_source_commit":"a"*40,"candidate_firmware_sha256":fw_sha,"installed_firmware_sha256":"1"*64,"rollback_artifact":None,"blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING","resumption_condition":"fixture",
+            "network_exposure":{"owner_accepted":True,"decision":"OWNER_ACCEPTED_EXPOSURE","observation_status":"NOT_TESTED","isolation_test_required_for_admission":False}}
+        admission["uv_activation"]={"direct_wled_network_isolation":"OWNER_ACCEPTED_NOT_REQUIRED"}
         (src/"RELEASE_ADMISSION.json").write_text(json.dumps(admission))
         m=build(src,root/"x.zip");assert m["files"]==len(FILES)+1 and m["launcherMode"]=="0755" and not m["rollbackIncluded"]
-        # A rollback-bearing bundle is accepted only when exact image and manifest agree.
+        # A rollback-bearing bundle is accepted only when exact V7 image and manifest agree.
         import generate_release_admission as ga
         old=ga.INSTALLED_AUX_SHA256
         try:
-            rb=src/ga.ROLLBACK_FILE;rb.write_bytes(b"exact rollback fixture");rbsha=ga.sha256(rb);ga.INSTALLED_AUX_SHA256=rbsha
-            rm={"firmware_sha256":rbsha,"firmware_bytes":rb.stat().st_size,"provenance":{"source_commit":"b"*40,"workflow_run_id":9,"github_artifact_zip_sha256":"c"*64}}
-            (src/ga.ROLLBACK_MANIFEST).write_text(json.dumps(rm))
-            artifact={"file":ga.ROLLBACK_FILE,"bytes":rb.stat().st_size,"sha256":rbsha,"manifest_file":ga.ROLLBACK_MANIFEST,"manifest_sha256":ga.sha256(src/ga.ROLLBACK_MANIFEST),"source_commit":"b"*40,"workflow_run_id":"9","artifact_zip_sha256":"c"*64}
+            shutil.copy2(pathlib.Path(__file__).resolve().parent/ga.ROLLBACK_FILE,src/ga.ROLLBACK_FILE)
+            shutil.copy2(pathlib.Path(__file__).resolve().parent/ga.ROLLBACK_MANIFEST,src/ga.ROLLBACK_MANIFEST)
+            rm=json.loads((src/ga.ROLLBACK_MANIFEST).read_text());rb=src/ga.ROLLBACK_FILE;rbsha=ga.sha256(rb)
+            artifact={"file":ga.ROLLBACK_FILE,"bytes":rb.stat().st_size,"sha256":rbsha,"manifest_file":ga.ROLLBACK_MANIFEST,"manifest_sha256":ga.sha256(src/ga.ROLLBACK_MANIFEST),"source_commit":rm["provenance"]["source_commit"],"workflow_run_id":str(rm["provenance"]["workflow_run_id"]),"artifact_zip_sha256":rm["recovery_bundle"]["sha256"]}
             admission.update({"installed_firmware_sha256":rbsha,"rollback_artifact":artifact,"blocker_code":"FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED"})
             (src/"RELEASE_ADMISSION.json").write_text(json.dumps(admission))
             m=build(src,root/"with-rollback.zip");assert m["rollbackIncluded"] and m["files"]==len(FILES)+len(ROLLBACK_FILES)+1

@@ -3,12 +3,12 @@
 ## Non-negotiable hardware facts
 
 - Underglow is 12V WS2811 and uses SP803E DATA / GPIO16.
-- Owner reports both current UV loads are iNextStation 5V USB-A strips (RIM/Main 6–6.6 ft; SHORT 12–13 in). This supersedes older 12V YGS-Tech notes for the current build. Both remain standalone on power banks; current draw and channel mapping are unmeasured.
-- Do not assume the SP803E 12V PWM/VCC path is safe from voltage match alone. Verify each load, driver, supply, fuse, wiring, and fail-dark behavior first.
-- Do not configure GPIO25/26/27 as UV outputs until per-channel load and output mapping and ratings are verified.
+- Owner reports the removable UV module is assembled off-Cart using the existing 5V converter, fused shared positive feed, and separate RIM/Cart GPIO25 and SHORT/Bar GPIO26 returns. The module remains disconnected and unpowered. The physical integration review is accepted; do not repeat design/assembly review.
+- The owner confirms AUX V7 is current, with no later install. Exact rollback bytes are retained as `HBNF_SP803E_AUX_V7_ROLLBACK.bin` and `AUX_V7_RECOVERY_MANIFEST.json`; SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`.
+- Keep UV outputs disabled until the combined field acceptance records loaded voltage/current, thermal behavior, PWM response, channel mapping, combined load, physical OFF behavior, and matching device readback.
 - Matrix firmware must not be reflashed during AUX commissioning.
 - An AUX OTA HTTP response plus runtime identity is not release success. The installer reports `PENDING_COMPLETE_DURABLE_RECEIPT` until the complete source-bound receipt and exact rollback evidence have been durably retained, retrieved, and validated.
-- Exact installed V6 rollback is recovered from Actions run `36354143870`, source `b76903cf63be497e9ef855c641a12916eff7149f`; firmware SHA-256 `152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95`. Its embedded firmware and original ZIP were hash-checked. A 2026-10-25 read-only AUX query also matched the V6 release/build witness. Recheck identity immediately before any future installation; keep UV compile-gated off and do not energize until electrical and physical acceptance pass.
+- Re-read AUX identity immediately before any future installation and require the retained V7 bytes as exact rollback. Keep UV disabled until the combined field acceptance and durable install receipt pass.
 
 ## Current commissioning order
 

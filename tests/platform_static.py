@@ -51,7 +51,26 @@ assert workflow_ids == {
     "artifact-release",
     "live-device-diagnostic",
     "phase2-live-qualification",
+    "phase2-provisional-release",
 }
+
+# Artifact release must prove contract, exact recovery, and captured baseline
+# before spending time building a package. Reordered workflows fail closed.
+artifact_release = module.load_json(ROOT / "platform/workflows/artifact-release.json")
+artifact_ids = [stage["id"] for stage in artifact_release["stages"]]
+assert max(artifact_ids.index(x) for x in (
+    artifact_release["prelive_contract"]["closure_stage_id"],
+    artifact_release["prelive_contract"]["recovery_stage_id"],
+    artifact_release["prelive_contract"]["capture_stage_id"],
+)) < artifact_ids.index("build"), artifact_ids
+bad_artifact_order = json.loads(json.dumps(artifact_release))
+bad_stages = bad_artifact_order["stages"]
+build = next(s for s in bad_stages if s["id"] == "build")
+bad_stages.remove(build)
+bad_stages.insert(1, build)
+bad_artifact_errors = []
+module.validate_workflow(bad_artifact_order, bad_artifact_errors, [])
+assert any("must occur before build" in e for e in bad_artifact_errors), bad_artifact_errors
 
 # Timeout-budget regression: the class of defect that stopped Packet20 must fail.
 bad = {

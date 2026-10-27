@@ -31,7 +31,6 @@ let hbnfEndpointProbeLastStartedAt = 0;
 let courseInternetState = "not_checked";
 let courseCloudState = "not_checked";
 let paletteOptionsReady = false;
-let uvDefaultFollowAttempted = false;
 let uvFollowActive = false;
 let uvRequestInFlight = false;
 let uvFollowCapsPending = false;
@@ -939,7 +938,7 @@ function setUvControlsReady(ready) {
   // The safety/status gate protects commands, not local slider state. Leave the
   // brightness controls editable when the Cart link is unknown so the selected
   // manual levels survive a Matrix/WAN interruption; lock them only in-flight.
-  ["uvApply", "uvOff"].forEach(id => { if ($(id)) $(id).disabled = !ready || uvRequestInFlight; });
+  ["uvApply", "uvFollow", "uvOff"].forEach(id => { if ($(id)) $(id).disabled = !ready || uvRequestInFlight; });
   ["uvMainBrightness", "uvShortBrightness", "uvSharedBrightness"].forEach(id => { if ($(id)) $(id).disabled = uvRequestInFlight; });
 }
 
@@ -952,19 +951,15 @@ async function checkUvReadiness(updateStatus = true) {
     if (result && result.uvControlEnabled === true) {
       uvReadiness = "ready";
       setUvControlsReady(true);
-      if (!uvDefaultFollowAttempted) {
-        uvDefaultFollowAttempted = true;
-        status.textContent = "Starting automatic Matrix/AUX rhythm following…";
-        await sendUv("FOLLOW_MATRIX");
-        return;
-      }
+      const outputOn = result.outputOn;
       if (updateStatus) status.textContent = uvFollowActive
-        ? "Automatic follow is configured. Fresh Matrix audio is required for light; the device has not confirmed output. The two caps are independent."
-        : "UV safety checks passed. Automatic follow could not be confirmed; check the Cart before retrying.";
+        ? "Matrix follow is active. Fresh audio scales each selected cap; stale audio falls back to that cap."
+        : outputOn && typeof outputOn.main === "boolean" && typeof outputOn.short === "boolean"
+          ? `Cart reports UV output ${outputOn.main ? "on" : "off"}; Bar reports ${outputOn.short ? "on" : "off"}. No new command was sent.`
+          : "UV controls are ready. Current output state is unavailable; no output command was sent. Choose Apply manual override, Follow Matrix, or UV off.";
     } else {
       uvReadiness = "unsafe";
       uvFollowActive = false;
-      uvDefaultFollowAttempted = false;
       if (updateStatus) status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
     }
   } catch (_) {
@@ -978,7 +973,7 @@ async function sendUv(mode) {
   const main = $("uvMainBrightness"), short = $("uvShortBrightness");
   if (!status || !main || !short) return;
   if (uvRequestInFlight) {
-    if (mode === "FOLLOW_MATRIX" && (uvFollowActive || uvDefaultFollowAttempted)) uvFollowCapsPending = true;
+    if (mode === "FOLLOW_MATRIX" && uvFollowActive) uvFollowCapsPending = true;
     return false;
   }
   uvRequestInFlight = true;
@@ -994,12 +989,15 @@ async function sendUv(mode) {
       mode,
       brightnessBySegment: { main: Number(main.value), short: Number(short.value) },
     });
-    if (result && result.ok === true && result.acknowledgement && result.acknowledgement.acceptedByBroker === true) {
+    const ack = result && result.acknowledgement;
+    const confirmed = result && result.ok === true && ack && (ack.acceptedByBroker === true || ack.acceptedByDevice === true);
+    if (confirmed) {
       accepted = true;
       if (mode === "FOLLOW_MATRIX") uvFollowActive = true;
-      status.textContent = mode === "FOLLOW_MATRIX"
-        ? "AUX accepted automatic follow. Stale or missing Matrix audio keeps output dark; physical output is not confirmed."
-        : "AUX broker accepted the request; device output is not confirmed.";
+      const localReadback = ack.acceptedByDevice === true && ack.deviceReadback === true;
+      status.textContent = localReadback
+        ? (mode === "FOLLOW_MATRIX" ? "Cart confirmed Matrix follow and readback. Stale audio falls back to the selected caps; illumination was not observed." : "Cart confirmed the UV command and readback; illumination was not observed.")
+        : (mode === "FOLLOW_MATRIX" ? "AUX accepted Matrix follow. Stale audio falls back to the selected caps; device output is not confirmed." : "AUX broker accepted the request; device output is not confirmed.");
     } else {
       if (mode === "FOLLOW_MATRIX") uvFollowActive = false;
       status.textContent = "UV request was not confirmed. Check the Cart connection before retrying.";
@@ -1044,6 +1042,7 @@ if ($("uvSharedBrightness")) {
 }
 restoreUvCaps();
 if ($("uvApply")) $("uvApply").addEventListener("click", () => sendUv("MANUAL"));
+if ($("uvFollow")) $("uvFollow").addEventListener("click", () => sendUv("FOLLOW_MATRIX"));
 if ($("uvOff")) $("uvOff").addEventListener("click", () => sendUv("OFF"));
 uvStateChanged(false);
 checkUvReadiness();

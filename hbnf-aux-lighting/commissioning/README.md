@@ -1,18 +1,19 @@
-# HBNF Aux Commissioning — guarded underglow-first path
+# HBNF AUX Commissioning — current UV release path
 
 This directory commissions the Rogue Iron cart SP803E safely from stock WLED through the proven HBNF AUX firmware and the real 12V WS2811 underglow.
 
-## Current hardware truth
+## Current hardware and baseline
 
 - SP803E: ESP32, 5–24V controller.
 - Underglow: 12V WS2811, DATA on GPIO16.
-- Owner's 2026-10-25 hardware report identifies both current UV loads as iNextStation 5V USB-A strips: RIM/Main about 6–6.6 ft and SHORT about 12–13 in (a shortened strip). They remain standalone on power banks and are not connected to the SP803E or the off-Cart switching module. Voltage/model are owner-reported; current draw and channel mapping are unmeasured.
-- Do not infer that the SP803E PWM outputs are a safe driver for either UV load. Verify each load's actual rating and switching path, including boot/restart OFF behavior, before use.
-- GPIO25/26/27 remain unused until the exact channel mapping and electrical path are verified.
+- The owner-confirmed physical integration review is PASS. The removable UV module is assembled and staged off-Cart, but disconnected and unpowered. The owner reports the unpowered meter checks complete. Loaded voltage/current, temperature, PWM response, combined-load behavior, and device readback remain for one combined field session. Do not repeat conceptual design review or assembly work.
+- The owner confirms AUX V7 is installed and no later firmware was installed. Its exact recovery image is retained here as `HBNF_SP803E_AUX_V7_ROLLBACK.bin` (1,348,624 bytes; SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`) with `AUX_V7_RECOVERY_MANIFEST.json`, and in the verified continuation bundle. V6 is historical, not the current rollback.
+- **Owner-accepted network exposure:** unpaired clients on shared Cart Wi-Fi may access Matrix/AUX WLED JSON APIs without authentication. Raw API requests bypass Owner/Guest PWA visibility and command limits and may directly set supported WLED states/effects, including firmware-supported UV outputs. The Owner gateway authenticates only traffic sent through its HTTPS endpoints; it does not protect direct WLED access. This exposure has not been probed or blocked, and an isolation test is not a release-admission requirement by owner decision. No router/network changes are included.
+- RIM/Cart and SHORT/Bar are intended for GPIO25 and GPIO26 respectively. Keep outputs and commissioning gates closed until the combined field session records actual operating limits and readbacks.
 
 ## Owner PWA baseline (separate from AUX firmware)
 
-The latest direct Opal readback recorded for this work is Owner PWA **v1.0.13**, with all 17 served assets matching its saved manifest (GitHub #116 comment 6394889462). The pasted SSH transcript showing v1.0.12 is an older snapshot and is superseded; v1.0.12 is retained as the rollback package, not the current installed version. This PR changes AUX firmware/source and did not change the Owner PWA. Recheck the PWA version only after a later PWA installation or a newer direct runtime readback.
+The latest recorded direct Opal readback is Owner PWA **v1.0.13**, with all 17 served assets reported matching its saved manifest (GitHub comment 6394889462). The exact v1.0.13 rollback is retained beside Owner PWA v1.0.14. The v1.0.14 ZIP SHA-256 is `6c393c5dde6dc78ea16823922c0c2717ccc4ae88dd5fa9e4047efb2e71044a17`; source inputs and package contents are independently checked in `UV_FIELD_SESSION.md`. It is staged, not installed. Its installer requires a fresh exact preflight of all 21 expected files and a durable transaction rollback readback; historical 17/17 served-file evidence is not a substitute for that current device check.
 
 ## Preferred entry point
 
@@ -22,7 +23,7 @@ The launcher:
 1. verifies the frozen package and target identity;
 2. talks to local WLED devices without system/environment HTTP proxies;
 3. saves a WLED configuration/state/preset snapshot before any permitted change (this is not a firmware image or rollback);
-4. allows one AUX-only firmware attempt after the packaged run receipt matches the candidate, the exact V6 rollback is present, and a fresh device read matches the installed V6 identity;
+4. allows one AUX-only firmware attempt after the packaged run receipt matches the candidate, the exact V7 rollback is present, and a fresh device read matches the owner-confirmed current V7 release/build witness; the shared-Wi-Fi direct WLED exposure is source-recorded as owner-accepted, not tested or blocked;
 5. allows AUX-only hardware phases when Matrix is offline; firmware OTA requires a separately admitted exact rollback;
 6. calibrates the real WS2811 color order at low current;
 7. applies a one-bus GPIO16 underglow plan with rollback and fail-dark boot;
@@ -43,19 +44,15 @@ python3 commission_guard.py --phase validate-release-receipt --release-receipt R
 
 Exit 0 means the receipt, candidate, installed-before image, exact rollback, post-install image/readback, and durable readbacks match. The Desktop commission report is diagnostic output only; an HTTP OTA response or WLED identity check alone is not release success. `physical_uv: NOT_CHECKED` remains explicitly not accepted.
 
-## Proven firmware
+## Current baseline and staged output-capable candidate
 
-- Release: `hbnf-wow-aux-r3-2026-10-25-uv-follow-v1`
-- Engine/witness: `aux-r3-wow-1d` / `registry28-tempo-lock-1d-v7-network-no-starve-uv-follow`
-- Projection: `fold2-1d-v1`
-- Effects: fixed IDs 220–247
-- Firmware SHA-256: `178c070defcd080ce2acd3ef83acb9a8b31d2aebd4fa1ec1ad37fafd44191d0d`
-- Firmware bytes: 1,348,784
+- **Installed baseline (owner-confirmed):** AUX V7 image `HBNF_SP803E_AUX_V7_ROLLBACK.bin`, 1,348,624 bytes, SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`. This exact image is the firmware rollback; the owner reports that no later firmware has been installed.
+- **Candidate (not installed):** the latest source-bound Actions package is identified by its exact run, source, package, and firmware hashes in `UV_FIELD_SESSION.md`. The prior run 40399701154 remains historical and is not the current package candidate.
 
-The build workflow emits a source-bound review package and publishes the exact ZIP plus a separate hash pointer on a private branch named `hbnf-aux-r3-artifact-run-<run ID>-attempt-<attempt>`. Download both files from the same branch, extract the ZIP, replace the extracted `ARTIFACT_POINTER.json` with the separate branch copy, and keep the ZIP beside the extracted files. The installer verifies the sidecar hash, ZIP integrity, and every extracted file against the ZIP. A complete candidate package also carries the exact recovered V6 image and its recovery manifest. The original rollback artifact, manifest, and extracted firmware are retained in the private Drive recovery folder; their ZIP and firmware hashes were checked, the ZIP passed integrity validation, and the embedded firmware exactly matches the recorded installed V6 hash. The candidate remains **REVIEW ONLY** until the package and sidecar are retrieved from the named run branch and pre-install checks pass. The embedded receipt alone cannot prove where the ZIP came from. The installer saves one local pre-install settings/state snapshot with owner-only file permissions; it is not a firmware rollback.
+The current exact-source compile, clean rebuild, commissioning checks, package verification, and independent ZIP/readback results are recorded in `UV_FIELD_SESSION.md`. Release disposition remains **REVIEW_ONLY** until fresh same-target V7 identity/baseline checks and release admission pass. Direct WLED exposure is explicitly owner-accepted; no isolation observation is claimed or required. The exact V7 firmware rollback, install transaction, and durable receipt remain mandatory. Opal/database activation and physical UV acceptance stay closed until powered channel checks pass. Follow `UV_FIELD_SESSION.md` for the current candidate identity and controlled install/receipt steps.
 
-To assemble the complete candidate-and-rollback ZIP from the exact build artifact, place the candidate files, `HBNF_SP803E_AUX_V6_ROLLBACK.bin`, and the exact `AUX_V6_RECOVERY_MANIFEST.json` in one temporary directory. Run `generate_release_admission.py` with the candidate firmware/metrics, the rollback image, manifest, and original verified workflow ZIP; then run `build_commissioning_distribution.py` on that directory. The generator verifies that the original ZIP contains the exact rollback bytes and matching installed-build identity. The generated admission stays `REVIEW_ONLY`; only the commissioning guard can allow the single OTA attempt, after the package has been obtained from the named Actions run and the live V6 device checks pass. Do not use `--no-backup` for a firmware install.
+The build workflow adds the retained V7 rollback image and manifest from the exact source commit, verifies both against the recorded V7 identity and hash, and binds them into the candidate package. No expired V6 Actions artifact is needed. Admission is `REVIEW_ONLY` pending the fresh target preflight and install transaction; the owner-accepted direct WLED exposure is encoded in the source-bound admission. Do not use `--no-backup` for a firmware install.
 
 ## Safety boundary
 
-UV readiness remains closed until each load's voltage/current, switching path, channel mapping, protection, and physical OFF behavior are verified. It also requires the existing UV-specific Main, Short, full-load, thermal, and mixed-load commissioning checks; passing only the underglow setup no longer opens UV control. Both reported 5V strip ratings are recorded in source, but their currents and supply limits remain unmeasured. The SP803E manual documents direct wiring with the strip positive on VCC and says input voltage should match the strip. It does not establish whether the exact board's PWM FETs can safely sink an externally powered 5V strip while the controller runs at 12V. No public board schematic/topology confirmation was found; compatibility remains UNKNOWN. Amazon's current listing for proposed buck ASIN B0F1F71F2B identifies the 5V/5A (25W) option; the 10A option has a different ASIN, and the installed unit's continuous rating is not independently confirmed. Keep the proposed path disconnected until the exact return/common-ground behavior, ratings, backfeed behavior, and power budget are verified.
+The physical integration review for the staged module is accepted; do not repeat the conceptual compatibility review or assembly checks. A UV output-capable firmware image can be installed only after the direct-WLED network boundary passes its separate field check. Its Owner/Opal/database activation gates remain closed until one field session verifies loaded voltage/current, thermal behavior, PWM response, both channels and their mapping, combined load, and physical OFF behavior, then records device readback and release receipt. The module remains disconnected and unpowered until that session. These are commissioning acceptance gates, not a reason to reopen the accepted design review.

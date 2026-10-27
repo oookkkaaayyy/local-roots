@@ -1,10 +1,10 @@
 /* Secure local transport adapter for the existing Owner PWA. */
 import { fetchWithDeadline, HBNF_API_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261015-local-owner-v3";
 
-// The owner-only gateway is a separate Opal Nginx instance. Its nonstandard
-// HTTPS port keeps GL.iNet's existing 443 service and root-worker policy
-// untouched while the new instance drops request workers to nobody.
-export const LOCAL_CONTROL_ORIGIN = "https://cart-control.hbnightflyers.com:8443";
+// The owner-only gateway is a separate Opal Nginx instance on 9443 because
+// GL.iNet already owns 8443 for its admin page. The new instance keeps the
+// global 80/443 services untouched and drops request workers to nobody.
+export const LOCAL_CONTROL_ORIGIN = "https://cart-control.hbnightflyers.com:9443";
 export const LOCAL_MATRIX_IP = "192.168.77.10";
 export const LOCAL_AUX_IP = "192.168.77.11";
 export const LOCAL_MATRIX_MAC = "704bca5b345c";
@@ -67,6 +67,31 @@ export class LocalOwnerControl {
       throw error;
     }
     return data;
+  }
+
+  // This path deliberately does not require a live Matrix transport. The
+  // Opal owns authorization and reads the shared policy contract. It remains
+  // fail-closed until trusted local commissioning/runtime evidence is present.
+  async uvPolicy(token, request = {}) {
+    if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV policy.");
+    const mode = String(request.mode || "").toUpperCase();
+    const levels = request.brightnessBySegment;
+    const validLevel = value => Number.isInteger(value) && value >= 0 && value <= 255;
+    if (!mode || !levels ||
+        !validLevel(levels.main) || !validLevel(levels.short)) {
+      throw new Error("Invalid local UV policy request; no command was sent.");
+    }
+    await this.ensureSession(token);
+    return this.request(token, "/api/aux/uv-policy", "POST", {
+      mode,
+      brightnessBySegment: { main: levels.main, short: levels.short },
+    });
+  }
+
+  async uvStatus(token) {
+    if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV status.");
+    await this.ensureSession(token);
+    return this.request(token, "/api/aux/uv-status");
   }
 
   async ensureSession(token, expiresAtEpoch) {

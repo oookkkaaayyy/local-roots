@@ -3,9 +3,29 @@
 from __future__ import annotations
 import argparse, hashlib, json, pathlib, re, tempfile, zipfile
 
-INSTALLED_AUX_SHA256 = "152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95"
-ROLLBACK_FILE = "HBNF_SP803E_AUX_V6_ROLLBACK.bin"
-ROLLBACK_MANIFEST = "AUX_V6_RECOVERY_MANIFEST.json"
+HERE = pathlib.Path(__file__).resolve().parent
+
+INSTALLED_AUX_SHA256 = "c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a"
+ROLLBACK_FILE = "HBNF_SP803E_AUX_V7_ROLLBACK.bin"
+ROLLBACK_MANIFEST = "AUX_V7_RECOVERY_MANIFEST.json"
+BASELINE_RELEASE = "hbnf-wow-aux-r3-2026-10-25-uv-follow-v1"
+BASELINE_ENGINE = "aux-r3-wow-1d"
+BASELINE_WITNESS = "registry28-tempo-lock-1d-v7-network-no-starve-uv-follow"
+BASELINE_SOURCE = "e78fc74c9470b0bafaf43ca6a2823f60f1a4b51e"
+BASELINE_RUN_ID = "40276725561"
+BASELINE_ARCHIVE_SHA256 = "1dad4eba787a55eba0febd076477ae85cbc9dd339d94e43231182dbae011c86d"
+OWNER_ACCEPTED_NETWORK_EXPOSURE = {
+    "owner_accepted": True,
+    "decision": "OWNER_ACCEPTED_EXPOSURE",
+    "observation_status": "NOT_TESTED",
+    "isolation_test_required_for_admission": False,
+    "scope": "Unpaired clients on the shared Cart Wi-Fi may access Matrix/AUX WLED JSON HTTP APIs without authentication.",
+    "consequences": [
+        "Raw WLED API requests bypass Owner/Guest PWA visibility and command constraints.",
+        "Clients may directly set supported device state and effects, including firmware-supported UV outputs, subject to device firmware behavior.",
+        "Owner gateway authentication applies only to its HTTPS endpoints and does not protect direct WLED requests."
+    ]
+}
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -33,38 +53,37 @@ def validate_recovery_source(rollback: pathlib.Path, manifest_path: pathlib.Path
         raise ValueError("rollback image does not match the recorded installed AUX firmware")
     if int(manifest.get("firmware_bytes",-1))!=size:
         raise ValueError("rollback byte count does not match its manifest")
-    if not HEX40.fullmatch(str(prov.get("source_commit",""))):
-        raise ValueError("recovery manifest source commit is invalid")
-    if not str(prov.get("workflow_run_id","" )).isdigit() or prov.get("run_result")!="success":
-        raise ValueError("recovery manifest does not identify a successful workflow run")
-    if not str(prov.get("run_url","")).startswith("https://") or not HEX64.fullmatch(str(prov.get("github_artifact_zip_sha256",""))):
-        raise ValueError("recovery workflow or artifact identity is invalid")
-    if manifest.get("firmware_file")!="HBNF_SP803E_AUX_V6_INSTALLED.bin":
-        raise ValueError("recovery manifest firmware filename mismatch")
+    if (prov.get("source_commit")!=BASELINE_SOURCE
+        or str(prov.get("workflow_run_id"))!=BASELINE_RUN_ID
+        or prov.get("run_url")!=f"https://github.com/oookkkaaayyy/local-roots/actions/runs/{BASELINE_RUN_ID}"):
+        raise ValueError("recovery manifest does not identify the owner-confirmed V7 source and run")
+    if (manifest.get("firmware_file")!=ROLLBACK_FILE
+        or manifest.get("firmware_release")!=BASELINE_RELEASE
+        or manifest.get("engine")!=BASELINE_ENGINE
+        or manifest.get("build_witness")!=BASELINE_WITNESS):
+        raise ValueError("recovery manifest does not identify the owner-confirmed current V7 baseline")
+    bundle=manifest.get("recovery_bundle") or {}
+    if (bundle.get("sha256")!=BASELINE_ARCHIVE_SHA256
+        or bundle.get("member")!="aux-v7-rollback.bin"
+        or bundle.get("drive_file_id")!="1-W1pAyyc4aSdOmcDx2dj0siRRc9rHVBD"):
+        raise ValueError("recovery manifest is not bound to the retained V7 continuation bundle")
     if any(ver.get(k) is not True for k in (
-        "downloaded_github_artifact_sha256_matches_github_digest", "zip_integrity_passed",
-        "embedded_firmware_hash_matches_recorded_installed_hash",
-        "embedded_source_commit_matches_workflow_run_head",
-        "embedded_build_witness_matches_recorded_installed_witness")):
-        raise ValueError("recovery provenance verification is incomplete")
-    if prov.get("artifact_embedded_metrics_match_installed_identity") is not True:
-        raise ValueError("recovery artifact metrics do not establish installed-image identity")
+        "bundle_manifest_matches_v7_image", "rollback_image_hash_matches_bundle_manifest",
+        "durable_bundle_readback_matches", "owner_confirmed_v7_current")):
+        raise ValueError("V7 rollback evidence is incomplete")
     if archive is not None:
-        if sha256(archive)!=prov["github_artifact_zip_sha256"]:
-            raise ValueError("original recovery workflow ZIP hash mismatch")
+        if sha256(archive)!=bundle["sha256"]:
+            raise ValueError("retained V7 recovery bundle hash mismatch")
         with zipfile.ZipFile(archive) as z:
-            if z.testzip() is not None: raise ValueError("original recovery workflow ZIP is corrupt")
-            image=z.read("HBNF_SP803E_AUX_R3.bin")
-            metrics={}
-            for line in z.read("FINAL_METRICS.txt").decode("utf-8").splitlines():
-                if "=" in line:
-                    k,v=line.split("=",1);metrics[k.strip()]=v.strip()
+            if z.testzip() is not None: raise ValueError("retained V7 recovery bundle is corrupt")
+            image=z.read(bundle["member"])
+            continuation=json.loads(z.read("CONTINUATION_MANIFEST.json"))
+        baseline=continuation.get("current_installed_baseline") or {}
         if hashlib.sha256(image).hexdigest()!=digest or len(image)!=size:
-            raise ValueError("original recovery workflow ZIP does not contain the exact rollback bytes")
-        if metrics.get("github_sha")!=prov["source_commit"] or metrics.get("github_run_id")!=str(prov["workflow_run_id"]):
-            raise ValueError("embedded workflow provenance differs from recovery manifest")
-        if metrics.get("firmware_sha256")!=digest or metrics.get("build_witness")!=manifest.get("build_witness"):
-            raise ValueError("embedded firmware identity differs from recovery manifest")
+            raise ValueError("retained V7 recovery bundle does not contain the exact rollback bytes")
+        if (baseline.get("sha256")!=digest or baseline.get("source_commit")!=BASELINE_SOURCE
+            or str(baseline.get("actions_run"))!=BASELINE_RUN_ID or baseline.get("release")!="V7"):
+            raise ValueError("retained continuation manifest does not establish the same V7 baseline")
     return manifest
 
 def verify_packaged_rollback(root: pathlib.Path, artifact: dict) -> bool:
@@ -74,13 +93,17 @@ def verify_packaged_rollback(root: pathlib.Path, artifact: dict) -> bool:
     if not image.is_file() or not manifest_path.is_file(): return False
     try:
         manifest=json.loads(manifest_path.read_text());prov=manifest.get("provenance") or {}
+        bundle=manifest.get("recovery_bundle") or {}
         return (sha256(image)==artifact.get("sha256")==INSTALLED_AUX_SHA256
             and image.stat().st_size==artifact.get("bytes")==manifest.get("firmware_bytes")
             and sha256(manifest_path)==artifact.get("manifest_sha256")
             and manifest.get("firmware_sha256")==artifact.get("sha256")
+            and manifest.get("firmware_release")==BASELINE_RELEASE
+            and manifest.get("engine")==BASELINE_ENGINE
+            and manifest.get("build_witness")==BASELINE_WITNESS
             and prov.get("source_commit")==artifact.get("source_commit")
             and str(prov.get("workflow_run_id"))==str(artifact.get("workflow_run_id"))
-            and prov.get("github_artifact_zip_sha256")==artifact.get("artifact_zip_sha256"))
+            and bundle.get("sha256")==artifact.get("artifact_zip_sha256"))
     except Exception: return False
 
 def generate(firmware: pathlib.Path, metrics: pathlib.Path, rollback: pathlib.Path|None=None,
@@ -91,28 +114,31 @@ def generate(firmware: pathlib.Path, metrics: pathlib.Path, rollback: pathlib.Pa
     firmware_sha=sha256(firmware)
     if values.get("firmware_sha256")!=firmware_sha: raise ValueError("firmware bytes do not match the exact build metrics")
     if (rollback is None)!=(rollback_manifest is None): raise ValueError("rollback image and recovery manifest must be supplied together")
-    if rollback is not None and rollback_archive is None: raise ValueError("the original successful workflow artifact ZIP is required to verify rollback provenance")
     artifact=None
     if rollback is not None:
         manifest=validate_recovery_source(rollback,rollback_manifest,rollback_archive)
         prov=manifest["provenance"]
+        bundle=manifest["recovery_bundle"]
         artifact={"file":ROLLBACK_FILE,"bytes":rollback.stat().st_size,"sha256":sha256(rollback),
           "manifest_file":ROLLBACK_MANIFEST,"manifest_sha256":sha256(rollback_manifest),
           "source_commit":prov["source_commit"],"workflow_run_id":str(prov["workflow_run_id"]),
-          "run_url":prov["run_url"],"artifact_id":str(prov["artifact_id"]),
-          "artifact_name":prov["artifact_name"],"artifact_zip_sha256":prov["github_artifact_zip_sha256"],
+          "run_url":prov["run_url"],"artifact_id":"drive:"+bundle["drive_file_id"],
+          "artifact_name":bundle["file"],"artifact_zip_sha256":bundle["sha256"],
           "drive_file_ids":drive_ids or {}}
     fresh_gate="FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED" if artifact else "EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
-    resume=("Immediately before any installation, re-read AUX identity and confirm the installed firmware still matches this exact rollback, then use a new candidate-specific admission. Keep UV disabled until electrical and physical acceptance passes." if artifact else
+    resume=("Before any UV output-capable installation, perform a fresh same-target AUX identity/readback and confirm the exact owner-confirmed V7 rollback still matches. The owner has accepted the shared-Wi-Fi direct WLED API exposure; no unpaired-client isolation probe is required or claimed. Preserve the one-attempt install limit, exact rollback and durable receipt. Keep Owner/Opal/database UV activation closed until powered electrical and physical acceptance passes." if artifact else
       "Retain and verify the exact installed AUX firmware image, then create a source-bound package containing that image as rollback.")
     return {"schema":"hbnf-aux-release-admission-v1","status":"REVIEW_ONLY",
       "candidate_source_commit":source,"candidate_firmware_sha256":firmware_sha,
       "installed_firmware_sha256":INSTALLED_AUX_SHA256,
-      "installed_baseline_evidence":"Recovered exact image is provenance-bound to the installed V6 readback; a fresh device preflight is still required.",
-      "rollback_artifact":artifact,"blocker_code":fresh_gate,"resumption_condition":resume}
+      "installed_baseline_evidence":"Exact V7 image, source/run identity, continuation bundle hash, and owner-confirmed current baseline are recorded; fresh target preflight remains required.",
+      "rollback_artifact":artifact,"blocker_code":fresh_gate,"resumption_condition":resume,
+      "network_exposure":OWNER_ACCEPTED_NETWORK_EXPOSURE,
+      "uv_activation":{"compile_capability":"METRICS_BOUND","owner_opal_database_gates":"CLOSED",
+        "direct_wled_network_isolation":"OWNER_ACCEPTED_NOT_REQUIRED","physical_uv_acceptance":"NOT_CHECKED"}}
 
 def selftest():
-    global INSTALLED_AUX_SHA256
+    validate_recovery_source(HERE/ROLLBACK_FILE,HERE/ROLLBACK_MANIFEST)
     with tempfile.TemporaryDirectory() as td:
         root=pathlib.Path(td);fw=root/"candidate.bin";fw.write_bytes(b"candidate")
         sha=hashlib.sha256(fw.read_bytes()).hexdigest();commit="a"*40
@@ -120,33 +146,32 @@ def selftest():
         out=generate(fw,mt)
         assert out["status"]=="REVIEW_ONLY" and out["candidate_source_commit"]==commit
         assert out["candidate_firmware_sha256"]==sha and out["rollback_artifact"] is None
+        assert out["blocker_code"]=="EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING"
+        # A candidate image cannot substitute for the exact current V7 image.
+        unverified_manifest=root/"unverified-v7-rollback.json"
+        unverified_manifest.write_text(json.dumps({"artifact_type":"exact installed AUX firmware recovery image"})+"\n")
+        try:
+            validate_recovery_source(fw,unverified_manifest)
+            raise AssertionError("candidate firmware was accepted as installed rollback")
+        except ValueError as e:
+            assert "does not match the recorded installed AUX firmware" in str(e)
         mt.write_text(f"github_sha={commit}\nfirmware_sha256={'0'*64}\n")
         try: generate(fw,mt);raise AssertionError("mismatched firmware accepted")
         except ValueError as e: assert "do not match" in str(e)
-        import sys
-        old=INSTALLED_AUX_SHA256
-        try:
-            rb=root/"rollback.bin";rb.write_bytes(b"rollback fixture");rbsha=sha256(rb)
-            INSTALLED_AUX_SHA256=rbsha
-            run=root/"artifact.zip";manifest=root/"recovery.json"
-            prov={"source_commit":"b"*40,"workflow_run_id":36354143870,"run_url":"https://github.com/example/repo/actions/runs/36354143870","run_result":"success","artifact_id":123,"artifact_name":"HBNF-SP803E-AUX-R3","github_artifact_zip_sha256":"0"*64,"artifact_embedded_metrics_match_installed_identity":True}
-            body={"artifact_type":"exact installed AUX firmware recovery image","firmware_file":"HBNF_SP803E_AUX_V6_INSTALLED.bin","firmware_bytes":len(rb.read_bytes()),"firmware_sha256":rbsha,"build_witness":"witness-v6","provenance":prov,"verification":{"downloaded_github_artifact_sha256_matches_github_digest":True,"zip_integrity_passed":True,"embedded_firmware_hash_matches_recorded_installed_hash":True,"embedded_source_commit_matches_workflow_run_head":True,"embedded_build_witness_matches_recorded_installed_witness":True}}
-            import io
-            bio=io.BytesIO()
-            with zipfile.ZipFile(bio,"w") as z:
-                z.writestr("HBNF_SP803E_AUX_R3.bin",rb.read_bytes())
-                z.writestr("FINAL_METRICS.txt",f"github_sha={'b'*40}\ngithub_run_id=36354143870\nfirmware_sha256={rbsha}\nbuild_witness=witness-v6\n")
-            run.write_bytes(bio.getvalue());body["provenance"]["github_artifact_zip_sha256"]=sha256(run)
-            manifest.write_text(json.dumps(body,sort_keys=True)+"\n")
-            candidate_metrics=root/"candidate-metrics.txt";candidate_metrics.write_text(f"github_sha={commit}\nfirmware_sha256={sha}\n")
-            result=generate(fw,candidate_metrics,rb,manifest,run,{"image":"id-image","archive":"id-zip","manifest":"id-manifest"})
-            assert result["blocker_code"]=="FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED" and result["rollback_artifact"]["sha256"]==rbsha
-            (root/ROLLBACK_FILE).write_bytes(rb.read_bytes())
-            (root/ROLLBACK_MANIFEST).write_bytes(manifest.read_bytes())
-            assert verify_packaged_rollback(root,result["rollback_artifact"]) is True
-            (root/ROLLBACK_FILE).write_bytes(b"tampered")
-            assert verify_packaged_rollback(root,result["rollback_artifact"]) is False
-        finally: INSTALLED_AUX_SHA256=old
+        candidate_metrics=root/"candidate-metrics.txt"
+        candidate_metrics.write_text(f"github_sha={commit}\nfirmware_sha256={sha}\n")
+        result=generate(fw,candidate_metrics,HERE/ROLLBACK_FILE,HERE/ROLLBACK_MANIFEST)
+        assert result["blocker_code"]=="FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED"
+        assert result["network_exposure"]["owner_accepted"] is True
+        assert result["network_exposure"]["observation_status"]=="NOT_TESTED"
+        assert result["network_exposure"]["isolation_test_required_for_admission"] is False
+        assert result["uv_activation"]["direct_wled_network_isolation"]=="OWNER_ACCEPTED_NOT_REQUIRED"
+        assert result["rollback_artifact"]["sha256"]==INSTALLED_AUX_SHA256
+        (root/ROLLBACK_FILE).write_bytes((HERE/ROLLBACK_FILE).read_bytes())
+        (root/ROLLBACK_MANIFEST).write_bytes((HERE/ROLLBACK_MANIFEST).read_bytes())
+        assert verify_packaged_rollback(root,result["rollback_artifact"]) is True
+        (root/ROLLBACK_FILE).write_bytes(b"tampered")
+        assert verify_packaged_rollback(root,result["rollback_artifact"]) is False
     print("AUX_RELEASE_ADMISSION_SELFTEST_PASS")
 
 def main():

@@ -1,0 +1,13 @@
+{
+  "schema": "hbnf-owner-local-control-package-retention-v1",
+  "sourceCommit": "a6e80996be6f124577151468445f10aa2a577fe0",
+  "package": "hbnf-owner-local-control-v1.0.10.zip",
+  "packageSha256": "a5b74d0120b247e1e0c1f609fedb68b523eaf5ee00ac1d0d5aaf05a3958fb13e",
+  "packageBytes": 104706,
+  "disposition": "SOURCE_BOUND_NOT_INSTALLED",
+  "rollbackTransportSha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+  "rollbackTransportSourceCommit": "8690ae711767ccfa644e538a169c6c2228272f64",
+  "rollbackTransportSourcePath": "staging/coordinated-backend/opal/mission-control-local/local-transport.js",
+  "rollbackScope": "Installer requires a fresh live read matching the accepted Mission Control transport hash, then retains and reads back the exact transaction snapshot before mutation. The existing rollback restores that exact snapshot. Historical readback is provenance only, not install admission.",
+  "installedBaseline": "NOT_CHECKED; requires fresh target preflight"
+}

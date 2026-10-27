@@ -139,6 +139,10 @@ def check_aux(d):
         "modeCount":aux.get("modeCount")==249,
         "uvFollowEffectId":aux.get("uvFollowEffectId")==248,
         "uvFollowRegistered":aux.get("uvFollowRegistered") is True,
+        "uvBuildProfileValid":(
+            (aux.get("uvOutputsVerified") in (False, 0) and aux.get("uvBuildProfile", "uv-follow-fail-dark-v1")=="uv-follow-fail-dark-v1")
+            or (aux.get("uvOutputsVerified") in (True, 1) and aux.get("uvBuildProfile")=="uv-follow-output-capable-v1")
+        ),
         "uvOutputsFailDark":aux.get("uvOutputsVerified") in (False, 0),
         "fxFirst":aux.get("fxFirst")==220,
         "fxLast":aux.get("fxLast")==247,
@@ -181,7 +185,7 @@ def prepare_sync(matrix_ip,aux_ip):
     m=inspect(matrix_ip); a=inspect(aux_ip)
     mc=check_matrix(m); ac=check_aux(a)
     matrix_identity=all(mc[k] for k in ("reachable","pixels","release","engine","buildWitness","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap"))
-    aux_identity=all(ac[k] for k in ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap"))
+    aux_identity=all(ac[k] for k in ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvBuildProfileValid","effectMap"))
     if not matrix_identity: raise RuntimeError("Matrix R3 identity failed; refusing sync mutation: "+json.dumps(mc,sort_keys=True))
     if not aux_identity: raise RuntimeError("Aux custom R3 identity failed; refusing sync mutation: "+json.dumps(ac,sort_keys=True))
     _post_cfg(matrix_ip,MATRIX_CFG_PATCH)
@@ -207,7 +211,7 @@ def selftest():
     assert _effect_map_ok(["x"]*220+["Z💡"+name for name in EFFECTS])
     assert not _effect_map_ok(["x"]*220+["wrong" for _ in EFFECTS])
     aux={
-      "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":249,"fxFirst":220,"fxLast":247,"uvFollowEffectId":248,"uvFollowRegistered":True,"uvOutputsVerified":0},
+      "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":249,"fxFirst":220,"fxLast":247,"uvFollowEffectId":248,"uvFollowRegistered":True,"uvOutputsVerified":0,"uvBuildProfile":"uv-follow-fail-dark-v1"},
                "mainseg":0,"seg":[{"id":0,"sel":True},{"id":1,"sel":False},{"id":2,"sel":False}]},
       "info":{"ver":"0.16.1","arch":"esp32","leds":{"count":100,"maxpwr":900}},"effects":fx,"pins":{},
       "cfg":{"if":{"sync":{"recv":{"bri":False,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},"send":{"en":False}},
@@ -215,8 +219,14 @@ def selftest():
              "um":{"AudioReactive":{"sync":{"mode":2,"port":11988}}}}
     }
     c=check_aux(aux)
-    required=("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap","visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
+    required=("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvBuildProfileValid","uvOutputsFailDark","effectMap","visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
     assert all(c[k] for k in required),c
+    uv=__import__("copy").deepcopy(aux)
+    uv["state"]["HBNFAUX"]["uvOutputsVerified"]=1
+    uv["state"]["HBNFAUX"]["uvBuildProfile"]="uv-follow-output-capable-v1"
+    assert check_aux(uv)["uvBuildProfileValid"] is True
+    uv["state"]["HBNFAUX"]["uvBuildProfile"]="uv-follow-fail-dark-v1"
+    assert check_aux(uv)["uvBuildProfileValid"] is False
     assert c["mqttConfigured"] is False
     assert MATRIX_CFG_PATCH["um"]["AudioReactive"]["sync"]["mode"]==1
     assert AUX_CFG_PATCH["um"]["AudioReactive"]["sync"]["mode"]==2

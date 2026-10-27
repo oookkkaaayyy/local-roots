@@ -1,0 +1,18 @@
+{
+  "function": "hbnf-cart-control",
+  "version": 34,
+  "sourceHash": "bcfa667ea8b15f3247743a9c3792a55d41347f8f1799c830ead601071ad47e9e",
+  "verifyJwt": false,
+  "files": [
+    "index.ts",
+    "guest-command.ts",
+    "runtime-vibe.ts",
+    "live.ts",
+    "skins_scoring.ts",
+    "matrix-relay.ts",
+    "matrix-relay-projection.ts",
+    "matrix-relay-auth.ts",
+    "deno.json"
+  ],
+  "purpose": "Exact pre-deployment rollback source; captured from active Supabase function before pairing-expiry deployment."
+}

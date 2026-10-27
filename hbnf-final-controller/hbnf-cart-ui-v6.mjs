@@ -98,7 +98,13 @@ if (main && header && !document.getElementById("ownerNavigation")) {
     commandPanel.remove();
   }
   move(".quick-tuning", "system");
-  move("#uvSystemControls", "system");
+  const fineTuning = main.querySelector('details[aria-label="Fine tuning"]');
+  const uvSystemControls = main.querySelector("#uvSystemControls");
+  if (fineTuning) views.system.appendChild(fineTuning);
+  if (uvSystemControls) {
+    if (fineTuning) fineTuning.appendChild(uvSystemControls);
+    else views.system.appendChild(uvSystemControls);
+  }
   if (status) {
     const statusDetails = document.createElement("details");
     statusDetails.className = "panel status-details-panel";

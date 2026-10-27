@@ -10,7 +10,7 @@ separate evidence gate after real electrical/visual/thermal testing.
 """
 from __future__ import annotations
 
-import argparse, getpass, hashlib, ipaddress, json, os, pathlib, re, socket, subprocess, sys, time
+import argparse, datetime, getpass, hashlib, ipaddress, json, os, pathlib, re, socket, subprocess, sys, time
 import urllib.error, urllib.request, uuid, zipfile
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -26,11 +26,11 @@ SAFE_BOOT_MIN = 180
 SAFE_BOOT_MAX = 199
 CLOUD_BASE = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1"
 MATRIX_IDENTITY_KEYS = ("reachable","pixels","release","engine","buildWitness","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap")
-AUX_IDENTITY_KEYS = ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvOutputsFailDark","effectMap")
+AUX_IDENTITY_KEYS = ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","uvFollowEffectId","uvFollowRegistered","uvBuildProfileValid","effectMap")
 AUX_SYNC_KEYS = ("visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
 INSTALLED_AUX_MAC = "8c94df55c34c"
 EXPECTED_WORKFLOW_PATH = ".github/workflows/hbnf-sp803e-aux-r3-build.yml"
-EXPECTED_WORKFLOW_REF = "refs/heads/codex/cart-order2-cumulative-20261024"
+EXPECTED_WORKFLOW_REF = "refs/heads/codex/cart-uv-local-policy-scaffold-20261026"
 
 def _metrics(path):
     values={}
@@ -70,8 +70,10 @@ def _candidate_actions_receipt(root,package):
             and build.get("run_id")==run_id
             and build.get("workflow_ref")==EXPECTED_WORKFLOW_REF
             and build.get("workflow_path")==EXPECTED_WORKFLOW_PATH
-            and metrics.get("UV_OUTPUTS_VERIFIED")=="NO"
-            and metrics.get("UV_COMPILE_GATE_DEFAULT")=="0"
+            and (metrics.get("UV_OUTPUTS_VERIFIED"),metrics.get("UV_COMPILE_GATE_DEFAULT")) in (("NO","0"),("YES","1"))
+            and metrics.get("UV_BUILD_PROFILE")==("uv-follow-output-capable-v1" if metrics.get("UV_COMPILE_GATE_DEFAULT")=="1" else "uv-follow-fail-dark-v1")
+            and metrics.get("UV_ACTIVATION_GATES") == "CLOSED"
+            and metrics.get("UV_DIRECT_WLED_ACCESS") == "NOT_CHECKED"
             and candidate.get("sha256")==package.get("firmwareSha256")==metrics.get("firmware_sha256")
             and candidate.get("size")==package.get("firmwareBytes")==int(metrics.get("firmware_bytes","-1"))
             and receipt.get("status")=="INCOMPLETE"
@@ -83,29 +85,45 @@ def _candidate_actions_receipt(root,package):
     except Exception:
         return False
 
-def _installed_v6_baseline(d,package_dir,package):
-    """Match the one pre-authorized AUX target to the exact recovered V6 image identity."""
+def _installed_current_baseline(d,package_dir,package):
+    """Match the live AUX target to the exact owner-confirmed V7 rollback identity."""
     try:
         root=pathlib.Path(package_dir).resolve()
         admission=package["releaseAdmission"];artifact=admission["rollbackArtifact"]
-        manifest=json.loads((root/"AUX_V6_RECOVERY_MANIFEST.json").read_text())
+        manifest=json.loads((root/artifact["manifest_file"]).read_text())
         i=d.get("info") or {};state=d.get("state") or {};aux=state.get("HBNFAUX") or {}
         return bool(
             d.get("ip")=="192.168.77.11"
             and str(i.get("mac") or "").replace(":","").lower()==INSTALLED_AUX_MAC
             and str(i.get("arch") or "").lower()=="esp32"
             and int(i.get("flash") or 0)==4
-            and str(i.get("ver") or "")=="16.0.1"
+            and aux.get("uvOutputsVerified") in (False, 0)
             and aux.get("release")==manifest.get("firmware_release")
             and aux.get("engine")==manifest.get("engine")
             and aux.get("buildWitness")==manifest.get("build_witness")
             and manifest.get("firmware_sha256")==admission.get("installed_firmware_sha256")==artifact.get("sha256")
             and manifest.get("firmware_bytes")==artifact.get("bytes")
+            and manifest.get("provenance",{}).get("source_commit")==artifact.get("source_commit")
+            and str(manifest.get("provenance",{}).get("workflow_run_id"))==str(artifact.get("workflow_run_id"))
         )
     except Exception:
         return False
 
 def all_true(d, keys): return bool(d) and all(d.get(k) is True for k in keys)
+
+def candidate_uv_outputs_enabled(package_dir):
+    metrics=_metrics(pathlib.Path(package_dir).resolve()/"FINAL_METRICS.txt")
+    return metrics.get("UV_OUTPUTS_VERIFIED")=="YES" and metrics.get("UV_COMPILE_GATE_DEFAULT")=="1"
+
+def owner_network_exposure_accepted(package):
+    admission=(package or {}).get("releaseAdmission") or {}
+    exposure=admission.get("network_exposure") or {}
+    return bool(exposure.get("owner_accepted") is True
+        and exposure.get("decision")=="OWNER_ACCEPTED_EXPOSURE"
+        and exposure.get("observation_status")=="NOT_TESTED"
+        and exposure.get("isolation_test_required_for_admission") is False
+        and admission.get("uv_activation",{}).get("direct_wled_network_isolation")=="OWNER_ACCEPTED_NOT_REQUIRED"
+        and len(exposure.get("consequences",[]))>=2)
 
 def sha256(path):
     h=hashlib.sha256()
@@ -127,11 +145,13 @@ def require_install_admission(package,package_dir,device=None):
         reason=admission.get("reason") or "exact installed-firmware rollback is not verified"
         resume=admission.get("resumptionCondition") or ""
         raise RuntimeError(f"AUX firmware OTA blocked: package build receipt does not match the expected run ({reason}). {resume}".strip())
+    if not owner_network_exposure_accepted(package):
+        raise RuntimeError("AUX firmware OTA blocked: package does not carry the source-bound owner-accepted direct WLED exposure record.")
     if device is None:
         return None
-    if not _installed_v6_baseline(device,package_dir,package):
+    if not _installed_current_baseline(device,package_dir,package):
         admission=package.get("releaseAdmission") or {}
-        raise RuntimeError(f"AUX firmware OTA blocked: fresh device readback does not match the exact installed V6 rollback ({admission.get('reason') or 'baseline mismatch'}). {admission.get('resumptionCondition') or ''}".strip())
+        raise RuntimeError(f"AUX firmware OTA blocked: fresh device readback does not match the owner-confirmed current V7 rollback ({admission.get('reason') or 'baseline mismatch'}). {admission.get('resumptionCondition') or ''}".strip())
     metrics=_metrics(pathlib.Path(package_dir).resolve()/"FINAL_METRICS.txt")
     info=device.get("info") or {};aux=((device.get("state") or {}).get("HBNFAUX") or {})
     return {"schema":"hbnf-aux-install-admission-v1","status":"PASS",
@@ -142,7 +162,10 @@ def require_install_admission(package,package_dir,device=None):
         "installed_release":aux.get("release"),"installed_engine":aux.get("engine"),
         "installed_build_witness":aux.get("buildWitness"),
         "rollback_sha256":package.get("releaseAdmission",{}).get("rollbackArtifact",{}).get("sha256"),
-        "uv_output_enabled":False,"owner_install_authorization":"SESSION_EXPLICIT"}
+        "uv_output_enabled":candidate_uv_outputs_enabled(package_dir),
+        "uv_activation_gates":"CLOSED","direct_wled_access":"OWNER_ACCEPTED_EXPOSURE",
+        "direct_wled_access_observation":"NOT_TESTED_NOT_REQUIRED_FOR_ADMISSION",
+        "owner_install_authorization":"SESSION_EXPLICIT"}
 
 def local_ipv4s():
     out=[]
@@ -408,17 +431,21 @@ def preflight(args):
     install_admission={"status":"BLOCKED","reason":"PACKAGE_OR_TARGET_NOT_MATCHED"}
     if a:
         current=ids["inspected"].get(a) or {}
-        if _candidate_actions_receipt(pathlib.Path(args.package_dir).resolve(),package) and _installed_v6_baseline(current,pathlib.Path(args.package_dir).resolve(),package):
+        if _candidate_actions_receipt(pathlib.Path(args.package_dir).resolve(),package) and _installed_current_baseline(current,pathlib.Path(args.package_dir).resolve(),package):
             run_id=str(_metrics(pathlib.Path(args.package_dir).resolve()/"FINAL_METRICS.txt").get("github_run_id"))
-            install_admission={"status":"PASS","reason":"FRESH_EXACT_V6_BASELINE_AND_ACTIONS_PACKAGE_VERIFIED","candidate_source_commit":package.get("releaseAdmission",{}).get("candidate_source_commit"),"candidate_firmware_sha256":package.get("firmwareSha256"),"actions_run_id":run_id,"target_mac":INSTALLED_AUX_MAC,"rollback_sha256":package.get("releaseAdmission",{}).get("rollbackArtifact",{}).get("sha256")}
+            install_admission={"status":"PASS","reason":"FRESH_OWNER_CONFIRMED_V7_BASELINE_AND_ACTIONS_PACKAGE_VERIFIED","candidate_source_commit":package.get("releaseAdmission",{}).get("candidate_source_commit"),"candidate_firmware_sha256":package.get("firmwareSha256"),"actions_run_id":run_id,"target_mac":INSTALLED_AUX_MAC,"rollback_sha256":package.get("releaseAdmission",{}).get("rollbackArtifact",{}).get("sha256")}
+    direct_wled_gate={"status":"OWNER_ACCEPTED_EXPOSURE","isolationObservation":"NOT_TESTED",
+        "isolationTestRequiredForAdmission":False,
+        "consequences":(package.get("releaseAdmission",{}).get("network_exposure",{}).get("consequences") or [])}
     if not package.get("ok"): nxt="PACKAGE_INVALID"
     elif not a: nxt="POWER_OR_IDENTIFY_AUX" if ids["auxReason"]=="none" else "DISAMBIGUATE_AUX"
+    elif install_admission.get("status")=="PASS" and candidate_uv_outputs_enabled(pathlib.Path(args.package_dir).resolve()): nxt="INSTALL_EXACT_AUX_FIRMWARE"
     elif not all_true(ac,AUX_IDENTITY_KEYS): nxt="INSTALL_EXACT_AUX_FIRMWARE" if package.get("installAdmissible") or install_admission.get("status")=="PASS" else "RELEASE_REVIEW_ONLY"
     elif not hardware_ok(ids["inspected"][a]) or not safe_boot_runtime_ok(a,ids["inspected"][a]): nxt="APPLY_HARDWARE_PLAN"
     elif not m: nxt="POWER_OR_IDENTIFY_MATRIX"
     elif not all_true(ac,AUX_SYNC_KEYS): nxt="RUN_GUARDED_PREPARE_SYNC"
     else: nxt="BEGIN_UNDERGLOW_ACCEPTANCE"
-    return {"mutationIssued":False,"package":package,"installAdmission":install_admission,"subnets":subnets,"wledNodes":nodes,"matrix":{"ip":m,"candidates":ids["matrixCandidates"],"checks":mc},"aux":{"ip":a,"selectionReason":ids["auxReason"],"checks":ac},"backups":backups,"nextAction":nxt}
+    return {"mutationIssued":False,"package":package,"installAdmission":install_admission,"uvDirectWledAccess":direct_wled_gate,"subnets":subnets,"wledNodes":nodes,"matrix":{"ip":m,"candidates":ids["matrixCandidates"],"checks":mc},"aux":{"ip":a,"selectionReason":ids["auxReason"],"checks":ac},"backups":backups,"nextAction":nxt}
 
 def multipart_firmware(fw):
     boundary="----HBNF"+uuid.uuid4().hex
@@ -453,6 +480,8 @@ def ota_install(ip,fw,timeout=120,preflight_result=None):
     require_install_admission(package,fw.parent)
     snapshot_errors=op.install_snapshot_errors(preflight_result or {},ip)
     if snapshot_errors: raise RuntimeError("AUX firmware OTA blocked: "+ " ".join(snapshot_errors))
+    if not owner_network_exposure_accepted(package):
+        raise RuntimeError("AUX firmware OTA blocked: package lacks the explicit owner-accepted direct WLED exposure decision.")
     before=lc.inspect(ip)
     admission=require_install_admission(package,fw.parent,before)
     if not lc.looks_like_wled(before): raise RuntimeError("Aux target is not a reachable WLED node.")
@@ -466,6 +495,10 @@ def ota_install(ip,fw,timeout=120,preflight_result=None):
     admission["status"]="STARTED"
     admission["attempt_limit"]=1
     admission["attempts_used"]=1
+    if candidate_uv_outputs_enabled(fw.parent):
+        admission["uv_activation_gates"]="CLOSED"
+        admission["direct_wled_access"]="OWNER_ACCEPTED_EXPOSURE"
+        admission["direct_wled_access_observation"]="NOT_TESTED_NOT_REQUIRED_FOR_ADMISSION"
     write_install_admission_once(admission,admission_path)
     body,ctype=multipart_firmware(fw)
     req=urllib.request.Request(f"http://{ip}/update",data=body,method="POST",headers={"Content-Type":ctype,"Content-Length":str(len(body))})
@@ -477,6 +510,10 @@ def ota_install(ip,fw,timeout=120,preflight_result=None):
         raise RuntimeError(f"OTA HTTP {e.code}: {detail[:400]}") from e
     if status!=200 or "Update successful" not in response: raise RuntimeError(f"OTA did not return success (HTTP {status}).")
     after=wait_wled(ip,timeout,True)
+    aux_identity=((after.get("state") or {}).get("HBNFAUX") or {})
+    expected_profile="uv-follow-output-capable-v1" if candidate_uv_outputs_enabled(fw.parent) else "uv-follow-fail-dark-v1"
+    if aux_identity.get("uvBuildProfile")!=expected_profile or (aux_identity.get("uvOutputsVerified") in (True,1))!=candidate_uv_outputs_enabled(fw.parent):
+        raise RuntimeError("AUX post-install runtime did not identify the compile profile expected by this exact package.")
     result=pending_release_result(ip,after);result["installAdmissionPath"]=str(admission_path)
     return result
 
@@ -812,6 +849,7 @@ def selftest():
                  f"github_run_attempt=1\n"
                  f"toolchain_python=3.12\ntoolchain_platformio=6.1.17\ntoolchain_node=20\ntoolchain_pip=pip-24\n"
                  f"input_wled_commit={'b'*40}\ninput_source_bundle_sha256={'c'*64}\ninput_wled_requirements_sha256={'d'*64}\ninput_aux_patch_sha256={'e'*64}\n"
+                 "UV_OUTPUTS_VERIFIED=NO\nUV_COMPILE_GATE_DEFAULT=0\nUV_BUILD_PROFILE=uv-follow-fail-dark-v1\nUV_ACTIVATION_GATES=CLOSED\nUV_DIRECT_WLED_ACCESS=NOT_CHECKED\n"
                  f"firmware_sha256={op.sha256(fw)}\nfirmware_bytes={fw.stat().st_size}\n")
         (package_dir/"FINAL_METRICS.txt").write_text(metrics)
         (package_dir/"ARTIFACT_POINTER.json").write_text(json.dumps({"schema":"hbnf-aux-run-artifact-pointer-v1","run_id":"123",
@@ -823,10 +861,12 @@ def selftest():
         (package_dir/op.ADMISSION_FILE).write_text(json.dumps({"schema":"hbnf-aux-release-admission-v1",
             "status":"REVIEW_ONLY","candidate_source_commit":"a"*40,
             "candidate_firmware_sha256":op.sha256(fw),
-            "installed_firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95",
+            "installed_firmware_sha256":"c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a",
             "installed_baseline_evidence":"fixture","rollback_artifact":None,
             "blocker_code":"EXACT_INSTALLED_FIRMWARE_ROLLBACK_MISSING",
-            "resumption_condition":"Provide exact matching rollback bytes."}))
+            "resumption_condition":"Provide exact matching rollback bytes.",
+            "network_exposure":{"owner_accepted":True,"decision":"OWNER_ACCEPTED_EXPOSURE","observation_status":"NOT_TESTED","isolation_test_required_for_admission":False,"consequences":["Raw WLED API calls bypass Owner/Guest PWA constraints.","Direct API calls may set supported device state."]},
+            "uv_activation":{"owner_opal_database_gates":"CLOSED","direct_wled_network_isolation":"OWNER_ACCEPTED_NOT_REQUIRED","physical_uv_acceptance":"NOT_CHECKED"}}))
         archive_path=package_dir/"HBNF_SP803E_AUX_R3_COMMISSIONING.zip"
         with zipfile.ZipFile(archive_path,"w",zipfile.ZIP_DEFLATED) as z:
             for item in package_dir.iterdir():
@@ -861,7 +901,8 @@ def selftest():
         (root/"FINAL_METRICS.txt").write_text(
             f"github_sha={source}\ngithub_run_id={run_id}\ngithub_run_attempt=1\ngithub_run_url={run_url}\ngithub_ref={EXPECTED_WORKFLOW_REF}\n"
             f"workflow_path={EXPECTED_WORKFLOW_PATH}\nfirmware_sha256={candidate_sha}\nfirmware_bytes={candidate_bytes}\n"
-            "UV_OUTPUTS_VERIFIED=NO\nUV_COMPILE_GATE_DEFAULT=0\n")
+            "UV_OUTPUTS_VERIFIED=NO\nUV_COMPILE_GATE_DEFAULT=0\nUV_BUILD_PROFILE=uv-follow-fail-dark-v1\n"
+            "UV_ACTIVATION_GATES=CLOSED\nUV_DIRECT_WLED_ACCESS=NOT_CHECKED\n")
         receipt={"status":"INCOMPLETE","source":{"commit":source},"candidate":{"sha256":candidate_sha,"size":candidate_bytes},
                  "build":{"run_id":run_id,"run_url":run_url,"workflow_ref":EXPECTED_WORKFLOW_REF,"workflow_path":EXPECTED_WORKFLOW_PATH}}
         (root/"RELEASE_RECEIPT.json").write_text(json.dumps(receipt))
@@ -875,26 +916,57 @@ def selftest():
         sidecar=json.loads((root/"ARTIFACT_POINTER.json").read_text())
         sidecar.update(package_file=archive_path.name,package_sha256=op.sha256(archive_path))
         (root/"ARTIFACT_POINTER.json").write_text(json.dumps(sidecar))
-        (root/"AUX_V6_RECOVERY_MANIFEST.json").write_text(json.dumps({"firmware_release":"hbnf-wow-aux-r3-2026-09-22-v1",
-            "engine":"aux-r3-wow-1d","build_witness":"registry28-tempo-lock-1d-v6-network-no-starve",
-            "firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95","firmware_bytes":1348272}))
+        baseline_manifest=json.loads((HERE/"AUX_V7_RECOVERY_MANIFEST.json").read_text())
+        shutil.copy2(HERE/"AUX_V7_RECOVERY_MANIFEST.json",root/"AUX_V7_RECOVERY_MANIFEST.json")
+        shutil.copy2(HERE/"HBNF_SP803E_AUX_V7_ROLLBACK.bin",root/"HBNF_SP803E_AUX_V7_ROLLBACK.bin")
+        v7sha=baseline_manifest["firmware_sha256"];v7bytes=baseline_manifest["firmware_bytes"]
+        v7prov=baseline_manifest["provenance"]
+        rollback_artifact={"file":"HBNF_SP803E_AUX_V7_ROLLBACK.bin","manifest_file":"AUX_V7_RECOVERY_MANIFEST.json",
+            "sha256":v7sha,"bytes":v7bytes,"manifest_sha256":op.sha256(root/"AUX_V7_RECOVERY_MANIFEST.json"),
+            "source_commit":v7prov["source_commit"],"workflow_run_id":v7prov["workflow_run_id"],
+            "artifact_zip_sha256":baseline_manifest["recovery_bundle"]["sha256"]}
         package={"ok":True,"installAdmissible":False,"firmwareSha256":candidate_sha,"firmwareBytes":candidate_bytes,
             "releaseAdmission":{"status":"REVIEW_ONLY","reason":"FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED","rollbackVerified":True,
-                "candidate_source_commit":source,"installed_firmware_sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95",
-                "rollbackArtifact":{"sha256":"152a795c6dcc5ea396687aee29d15a3e569dd15becfa6537b347e51a09e54e95","bytes":1348272}}}
-        device={"ip":"192.168.77.11","info":{"mac":INSTALLED_AUX_MAC,"arch":"esp32","flash":4,"ver":"16.0.1"},
-            "state":{"HBNFAUX":{"release":"hbnf-wow-aux-r3-2026-09-22-v1","engine":"aux-r3-wow-1d",
-                "buildWitness":"registry28-tempo-lock-1d-v6-network-no-starve"}}}
+                "candidate_source_commit":source,"installed_firmware_sha256":v7sha,"rollbackArtifact":rollback_artifact,
+                "network_exposure":{"owner_accepted":True,"decision":"OWNER_ACCEPTED_EXPOSURE","observation_status":"NOT_TESTED",
+                    "isolation_test_required_for_admission":False,"consequences":["Raw WLED API calls bypass Owner/Guest PWA constraints.","Direct API calls may set supported device state."]},
+                "uv_activation":{"direct_wled_network_isolation":"OWNER_ACCEPTED_NOT_REQUIRED"}}}
+        device={"ip":"192.168.77.11","info":{"mac":INSTALLED_AUX_MAC,"arch":"esp32","flash":4},
+            "state":{"HBNFAUX":{"release":baseline_manifest["firmware_release"],"engine":baseline_manifest["engine"],
+                "buildWitness":baseline_manifest["build_witness"],"uvOutputsVerified":0}}}
         assert _candidate_actions_receipt(root,package)
-        assert _installed_v6_baseline(device,root,package)
+        assert _installed_current_baseline(device,root,package)
+        device["state"]["HBNFAUX"]["uvOutputsVerified"]=1
+        device["state"]["HBNFAUX"]["uvBuildProfile"]="uv-follow-output-capable-v1"
+        assert not _installed_current_baseline(device,root,package), "UV-capable candidate must never be mistaken for retained V7"
+        device["state"]["HBNFAUX"]["uvOutputsVerified"]=0
+        device["state"]["HBNFAUX"].pop("uvBuildProfile",None)
         admission=require_install_admission(package,root,device)
         assert admission["status"]=="PASS" and admission["uv_output_enabled"] is False
         assert admission["rollback_sha256"]==package["releaseAdmission"]["installed_firmware_sha256"]
         device["info"]["mac"]="001122334455"
-        assert not _installed_v6_baseline(device,root,package)
+        assert not _installed_current_baseline(device,root,package)
         device["info"]["mac"]=INSTALLED_AUX_MAC
-        (root/"FINAL_METRICS.txt").write_text((root/"FINAL_METRICS.txt").read_text().replace("UV_COMPILE_GATE_DEFAULT=0","UV_COMPILE_GATE_DEFAULT=1"))
-        assert not _candidate_actions_receipt(root,package)
+        metrics_path=root/"FINAL_METRICS.txt"
+        metrics_path.write_text(metrics_path.read_text().replace("UV_OUTPUTS_VERIFIED=NO","UV_OUTPUTS_VERIFIED=YES").replace("UV_COMPILE_GATE_DEFAULT=0","UV_COMPILE_GATE_DEFAULT=1").replace("UV_BUILD_PROFILE=uv-follow-fail-dark-v1","UV_BUILD_PROFILE=uv-follow-output-capable-v1"))
+        with zipfile.ZipFile(archive_path,"w",zipfile.ZIP_DEFLATED) as z:
+            for name in ("HBNF_SP803E_AUX_R3.bin","FINAL_METRICS.txt","RELEASE_RECEIPT.json"):
+                z.write(root/name,name)
+            embedded=json.loads((root/"ARTIFACT_POINTER.json").read_text())
+            embedded.pop("package_file",None);embedded.pop("package_sha256",None)
+            z.writestr("ARTIFACT_POINTER.json",json.dumps(embedded))
+        pointer=json.loads((root/"ARTIFACT_POINTER.json").read_text())
+        pointer["package_sha256"]=op.sha256(archive_path)
+        (root/"ARTIFACT_POINTER.json").write_text(json.dumps(pointer))
+        assert _candidate_actions_receipt(root,package)
+        assert candidate_uv_outputs_enabled(root)
+        exposure={"owner_accepted":True,"decision":"OWNER_ACCEPTED_EXPOSURE","observation_status":"NOT_TESTED",
+            "isolation_test_required_for_admission":False,"consequences":["Raw WLED API calls bypass Owner/Guest PWA constraints.","Direct API calls may set supported device state."]}
+        synthetic_package={"firmwareSha256":candidate_sha,"releaseAdmission":{"network_exposure":exposure,
+            "uv_activation":{"direct_wled_network_isolation":"OWNER_ACCEPTED_NOT_REQUIRED"}}}
+        assert owner_network_exposure_accepted(synthetic_package)
+        synthetic_package["releaseAdmission"]["network_exposure"]["owner_accepted"]=False
+        assert not owner_network_exposure_accepted(synthetic_package)
     with tempfile.TemporaryDirectory() as td:
         lock=pathlib.Path(td)/"install.json"
         payload={"status":"STARTED","attempts_used":1}
