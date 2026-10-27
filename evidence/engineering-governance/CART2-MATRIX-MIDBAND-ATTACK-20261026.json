@@ -1,0 +1,37 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2-MATRIX-MIDBAND-ATTACK-20261026",
+  "summary": "Review-only 25 ms reduction to Matrix mid-band audio envelope attack, with no FFT, kernel, UV, or release-path changes.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing AudioExpression in firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_audio_expression.h; one existing Vibe16-derived analysis path.",
+      "affected_subsystem": "Mid-band envelope attack time constant only; low/high envelopes and all release constants remain unchanged.",
+      "rollback_reference": "Base commit 00e6552ffe65a3dbd6768b0e017fd22226c5b86f; installed rollback image SHA-256 de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d.",
+      "evidence_sources": [
+        "Owner feature tree https://docs.google.com/document/d/1V03lZY670ohuq49LTOUcJ0tfvoEO9G7V3qbkvCdkY-E; current priority Matrix sophistication after UV, preserve visuals/audio/scope.",
+        "Cart work order https://github.com/oookkkaaayyy/local-roots/issues/116; preserve Vibe behavior and stage independent changes.",
+        "WLED Audio Reactive documentation https://github.com/wled/WLED-Docs/blob/main/docs/advanced/audio-reactive.md; per-frame audio response and noise-floor control.",
+        "Current WLED audio_reactive.cpp https://github.com/wled/WLED/blob/main/usermods/audioreactive/audio_reactive.cpp; upstream default attack-time reference."
+      ],
+      "tests": [
+        "Host C++11 baseline/candidate envelope replay with identical 20 ms sample interval and mid-band step.",
+        "Baseline at 100 ms: midEnergy 0.580866; candidate at 100 ms: 0.670807; low/high both 0.000000 in candidate.",
+        "Focused check only; no captured real-song audio trace, target compiler build, 28-kernel sweep, visual output, or physical review."
+      ]
+    },
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "selected_option": "90 ms mid-band envelope attack",
+      "approval_reference": "User approval in this task: approve the 90 ms improvement provided it does not interfere with Opal firmware flash or other active work.",
+      "approved_by_owner": true
+    }
+  }
+}

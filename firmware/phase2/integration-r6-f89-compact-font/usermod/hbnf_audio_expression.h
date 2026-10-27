@@ -25,7 +25,7 @@ class AudioExpression {
                        source.silent?0.0f:clamp((source.midAtt-0.62f)/0.78f,0.0f,1.0f),
                        source.silent?0.0f:clamp((source.trebleAtt-0.62f)/0.78f,0.0f,1.0f)};
     float* env[3]={&low_,&mid_,&high_};
-    const float attack[3]={0.075f,0.115f,0.045f};
+    const float attack[3]={0.075f,0.090f,0.045f};
     const float release[3]={0.48f,0.62f,0.30f};
     if(!initialized_) { low_=in[0];mid_=in[1];high_=in[2];initialized_=true; }
     const float old[3]={low_,mid_,high_};
