@@ -34,7 +34,7 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
             self.assertEqual(archive_a.read_bytes(), archive_b.read_bytes())
             with zipfile.ZipFile(archive_a) as package:
                 names = package.namelist()
-                prefix = "hbnf-owner-local-control-v1.0.12/"
+                prefix = "hbnf-owner-local-control-v1.0.13/"
                 self.assertIn(prefix + "install.sh", names)
                 self.assertIn(prefix + "matrix_topology.sh", names)
                 self.assertIn(prefix + "aux_command_access.lua", names)
@@ -47,9 +47,13 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
                 self.assertIn(prefix + "uv_policy_spec.json", names)
                 self.assertIn(prefix + "uv_hardware_profile.json", names)
                 self.assertIn(prefix + "uv_runtime.lua", names)
+                for path in ("vendor/resty/sha.lua", "vendor/resty/sha256.lua", "vendor/resty/string.lua", "vendor/resty/LICENSE.txt"):
+                    self.assertIn(prefix + path, names)
                 manifest = json.loads(package.read(prefix + "PACKAGE-MANIFEST.json"))
                 self.assertEqual(manifest["sourceCommit"], source)
                 self.assertEqual(manifest["rollbackTransportSha256"], EXPECTED_ROLLBACK)
+                self.assertEqual(manifest["bundledLuaSha256"]["commit"], "ac0967a020e7d05475ae53808ebf685232fe1c1d")
+                self.assertEqual(manifest["bundledLuaSha256"]["version"], "0.17")
                 self.assertEqual(manifest["rollbackTransportSourceCommit"], manifest["baseCommit"])
                 self.assertEqual(manifest["rollbackTransportSourcePath"], "staging/coordinated-backend/opal/mission-control-local/local-transport.js")
                 self.assertTrue(manifest["ownerAcceptedNetworkExposure"]["owner_accepted"])

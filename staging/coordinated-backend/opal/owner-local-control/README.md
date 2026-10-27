@@ -1,6 +1,8 @@
-# Opal Owner Local Control — staged v1.0.12
+# Opal Owner Local Control — staged v1.0.13
 
 Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmware changes are made until a separately admitted installation. This release retains the existing Opal Mission Control WebSocket interface and adds a separate authenticated HTTP transport module for the production Owner PWA. The existing transport keeps its WebSocket class and current command mappings; rollback restores the exact accepted Mission Control v1.0.2 transport (SHA-256 `51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a`). The installer still requires a fresh live hash match before capturing its transaction rollback.
+
+The package carries the three OpenResty `lua-resty-string` v0.17 modules required for SHA-256, including their BSD license notice, and loads them from its isolated Lua directory. This avoids relying on an uninstalled Opal system package. The bundled upstream revision is `ac0967a020e7d05475ae53808ebf685232fe1c1d`.
 
 ## Per-command gateway
 

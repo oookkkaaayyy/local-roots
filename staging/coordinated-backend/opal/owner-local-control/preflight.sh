@@ -18,7 +18,7 @@ command -v jsonfilter >/dev/null 2>&1 || fail "jsonfilter missing"
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
 command -v lua >/dev/null 2>&1 || fail "Lua runtime missing"
 lua -e 'assert(require("cjson.safe"))' >/dev/null 2>&1 || fail "Lua cjson.safe module missing"
-lua -e 'local s=require("resty.sha256"); assert(s.new); local h=require("resty.string"); assert(h.to_hex)' >/dev/null 2>&1 || fail "lua-resty-string SHA-256 support missing; do not install a new dependency in this transaction"
+LUA_PATH="$SCRIPT_DIR/vendor/?.lua;;" lua -e 'local s=require("resty.sha256"); assert(s.new); local h=require("resty.string"); assert(h.to_hex)' >/dev/null 2>&1 || fail "bundled lua-resty-string SHA-256 modules cannot be loaded by the Opal Lua runtime"
 nginx_build=$("$NGINX" -V 2>&1)
 printf '%s\n' "$nginx_build" | grep -q 'lua-nginx' || fail "installed Nginx build has no Lua module"
 printf '%s\n' "$nginx_build" | grep -q 'http_ssl' || fail "installed Nginx build has no TLS module"

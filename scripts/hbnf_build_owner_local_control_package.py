@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.12"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.13"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
 OWNER_HTTP_TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js")
@@ -20,6 +20,7 @@ FILES = (
     "auth_websocket.lua", "aux_command_access.lua", "dedicated-nginx.conf.example", "matrix_command_access.lua", "uv_policy_access.lua", "uv_status_access.lua", "uv_runtime.lua",
     "enroll.lua", "hbnf-owner-local-control.init", "install.sh", "matrix_topology.sh",
     "nginx.conf.example", "preflight.sh", "revalidate.lua", "revoke.lua", "rollback.sh", "session.lua",
+    "vendor/resty/LICENSE.txt", "vendor/resty/sha.lua", "vendor/resty/sha256.lua", "vendor/resty/string.lua",
 )
 EXPECTED_ROLLBACK = "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a"
 
@@ -97,6 +98,10 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     installer = (root / "install.sh").read_text()
     if f"EXPECTED_OLD_TRANSPORT={EXPECTED_ROLLBACK}" not in installer:
         raise ValueError("installer is not bound to the exact accepted Mission Control rollback transport")
+    if 'lua_package_path "/etc/hbnf-local-control/lua/?.lua;;";' not in (root / "dedicated-nginx.conf.example").read_text():
+        raise ValueError("dedicated Nginx config does not load the isolated bundled Lua modules")
+    if 'vendor/resty/sha256.lua' not in installer or 'LUA_PATH="$SCRIPT_DIR/vendor/?.lua;;"' not in (root / "preflight.sh").read_text():
+        raise ValueError("installer/preflight does not use the packaged OpenResty SHA-256 modules")
     if f"EXPECTED_ROLLBACK_TRANSPORT_SHA={EXPECTED_ROLLBACK}" not in rollback:
         raise ValueError("rollback script is not bound to the exact accepted Mission Control transport")
     expected_candidate = f"CANDIDATE_TRANSPORT_SHA={sha(transport)}"
@@ -114,6 +119,7 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         "rollbackTransportSourceCommit": source_base["opal_rollback_transport_source_commit"],
         "rollbackTransportSourcePath": source_base["opal_rollback_transport_source_path"],
         "ownerAcceptedNetworkExposure": exposure,
+        "bundledLuaSha256": {"repository": "openresty/lua-resty-string", "version": "0.17", "commit": "ac0967a020e7d05475ae53808ebf685232fe1c1d", "license": "BSD", "isolatedLuaPath": "/etc/hbnf-local-control/lua"},
         "installedTransportSha256": sha(transport),
         "ownerPwaTransportSha256": sha(owner_http_transport),
         "rollbackTransportSha256": EXPECTED_ROLLBACK,
