@@ -5,7 +5,7 @@ This narrow operation preserves the current mapped buses and underglow state.
 It does not alter firmware, GPIO mappings, segment bounds, or UV activation gates.
 """
 from __future__ import annotations
-import argparse, hashlib, json, pathlib, time, urllib.request
+import argparse, hashlib, json, pathlib, time, urllib.request, uuid
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
 IP, MAC, VERSION = "192.168.77.11", "8c94df55c34c", "16.0.1"
@@ -21,6 +21,18 @@ def req(path, method="GET", body=None, timeout=5):
     with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(r,timeout=timeout) as x:
         raw=x.read()
     return json.loads(raw) if raw else {}
+
+def upload_presets(presets):
+    """Replace presets.json through WLED's supported filesystem upload route."""
+    boundary="----hbnf-uv-"+uuid.uuid4().hex
+    payload=json.dumps(presets,separators=(",",":"),ensure_ascii=False).encode()
+    body=(f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"presets.json\"\r\n"
+          "Content-Type: application/json\r\n\r\n").encode()+payload+f"\r\n--{boundary}--\r\n".encode()
+    r=urllib.request.Request(f"http://{IP}/upload",data=body,headers={
+        "Content-Type":f"multipart/form-data; boundary={boundary}","Accept":"text/plain"},method="POST")
+    with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(r,timeout=10) as x:
+        return {"httpStatus":x.status,"body":x.read().decode("utf-8","replace"),
+                "payloadSha256":hashlib.sha256(payload).hexdigest(),"payloadBytes":len(payload)}
 
 def save(root,name,obj):
     p=root/f"{name}.json"; p.write_text(json.dumps(obj,indent=2,sort_keys=True)+"\n"); return p
@@ -131,25 +143,26 @@ def main():
             raise RuntimeError("admitted operator source differs from the running file")
     uptime=float(pre["info"].get("uptime",0))
     try:
-        # WLED's JSON state API saves the *current* light state when psave is
-        # present. Keep state application and preset persistence as distinct
-        # requests; boot preset selection belongs to /json/cfg (def.ps), not
-        # /json/state. This matches the proven commissioning operator flow.
+        # First put the safe state in RAM. Under active Matrix DDP, WLED 16.0.1
+        # acknowledged psave but did not persist presets.json. Use WLED's own
+        # /upload handler for deterministic file persistence without pausing DDP.
         apply_ack=req("/json/state","POST",state)
         save(root,"state-apply-ack",apply_ack)
         if apply_ack.get("success") is False:
             raise RuntimeError(f"WLED rejected safe state: {apply_ack}")
-        save_ack=req("/json/state","POST",{"psave":pid,"ib":True,"sb":True,
-                                             "n":"HBNF AUX UV safe startup"})
-        save(root,"preset-save-ack",save_ack)
-        if save_ack.get("success") is False:
-            raise RuntimeError(f"WLED rejected preset save: {save_ack}")
+        updated=dict(pre["presets"])
+        preset=dict(state);preset["n"]="HBNF AUX UV safe startup"
+        updated[str(pid)]=preset
+        save_ack=upload_presets(updated);save(root,"preset-save-ack",save_ack)
+        if save_ack["httpStatus"]!=200 or "File Uploaded!" not in save_ack["body"]:
+            raise RuntimeError(f"WLED filesystem upload rejected: {save_ack}")
         deadline=time.monotonic()+10
         while time.monotonic()<deadline:
             pm=req("/presets.json")
-            if str(pid) in pm: check_preset(pm[str(pid)]); break
+            if pm==updated:
+                check_preset(pm[str(pid)]);break
             time.sleep(.25)
-        else: raise RuntimeError("saved preset did not read back")
+        else: raise RuntimeError("uploaded presets.json did not read back byte-equivalent data")
         cfg=req("/json/cfg")
         if (cfg.get("def") or {}).get("ps")!=pid:
             cfg_ack=req("/json/cfg","POST",{"def":{"ps":pid},"sv":True})
@@ -174,11 +187,13 @@ def main():
     except Exception as e:
         errors=[]
         try:
-            req("/json/state","POST",{"pdel":pid})
+            rollback_ack=upload_presets(pre["presets"]);save(root,"rollback-presets-upload-ack",rollback_ack)
+            if rollback_ack["httpStatus"]!=200: raise RuntimeError(f"preset-file rollback HTTP {rollback_ack['httpStatus']}")
             req("/json/cfg","POST",{"def":{"ps":oldboot},"sv":True})
             req("/json/state","POST",{"on":pre["state"].get("on",True),"bri":pre["state"].get("bri",255),
                 "mainseg":pre["state"].get("mainseg",0),"seg":pre["state"].get("seg",[])})
             if req("/json/cfg").get("def",{}).get("ps")!=oldboot: raise RuntimeError("old boot selection mismatch")
+            if req("/presets.json")!=pre["presets"]: raise RuntimeError("original presets did not restore exactly")
         except Exception as re: errors.append(str(re))
         raise RuntimeError(f"safe-start update failed: {e}; rollback errors={errors}") from e
 
