@@ -101,10 +101,12 @@ def build(root: Path, out_dir: Path, source_commit: str, baseline_archive: Path)
     updated_by_path = {}
     found_status = False
     for line in baseline_manifest.decode().splitlines():
-        match = re.fullmatch(r"([0-9a-f]{64})  ([^/]+)", line)
+        match = re.fullmatch(r"([0-9a-f]{64})  ([A-Za-z0-9._/-]+)", line)
         if not match:
             raise ValueError("gateway baseline file manifest is malformed")
         old_sha, path = match.groups()
+        if path.startswith("/") or ".." in path.split("/") or path in updated_by_path:
+            raise ValueError("gateway baseline contains an unsafe or duplicate path")
         if path == "etc/hbnf-local-control/lua/uv_status_access.lua":
             if old_sha != BASELINE_MODULE_SHA256:
                 raise ValueError("gateway baseline manifest does not bind the exact old status module")
