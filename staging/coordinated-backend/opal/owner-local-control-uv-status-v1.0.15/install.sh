@@ -14,8 +14,8 @@ TARGET_REL=etc/hbnf-local-control/lua/uv_status_access.lua
 fail(){ echo "UPDATE BLOCKED: $*" >&2; exit 1; }
 at(){ printf '%s/%s\n' "${ROOT%/}" "$1"; }
 [ "$ROOT" = / ] || [ "$TEST_MODE" = 1 ] || fail "alternate roots are permitted only for offline rehearsal"
-[ "$ROOT" = / ] && [ "$(id -u)" != 0 ] && fail "run as root on the Opal"
 [ "$ROOT" != / ] || fail "REVIEW_ONLY: fresh authenticated baseline readback and candidate-specific pre-mutation admission are required; live installation is disabled in this package"
+[ "$ROOT" = / ] && [ "$(id -u)" != 0 ] && fail "run as root on the Opal"
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum is required"
 (cd "$PKG" && sha256sum -c SHA256SUMS >/dev/null) || fail "package checksum failed"
 [ "$(sha256sum "$PKG/ROLLBACK_BASELINE.zip" | awk '{print $1}')" = "$BASELINE_PACKAGE_SHA256" ] || fail "exact v1.0.14 rollback package is missing or changed"
