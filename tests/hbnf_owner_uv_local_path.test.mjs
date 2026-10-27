@@ -35,7 +35,7 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   assert.match(cartFeatures, /canonicalRead\("uv_status"\)/);
   assert.match(cartFeatures, /canonicalRead\("uv_policy"/);
   assert.doesNotMatch(cartFeatures, /Starting automatic Matrix\/AUX rhythm following/);
-  assert.match(cartFeatures, /Current output state is unavailable; no output command was sent\. Choose Apply manual override, Follow Matrix, or UV off/);
+  assert.match(cartFeatures, /Current output state is unavailable; no output command was sent\. Choose Apply levels, Follow Matrix, or UV off/);
   assert.match(cartFeatures, /ack\.acceptedByDevice === true/);
 
   const acceptedKeys = [...localAcl.matchAll(/key == "([^"]+)"/g)].map(match => match[1]);

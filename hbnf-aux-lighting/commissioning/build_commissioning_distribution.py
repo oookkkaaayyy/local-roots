@@ -5,7 +5,7 @@ import argparse, hashlib, pathlib, zipfile
 
 FILES=[
  "START_HERE.txt","COMMISSION_HBNF_AUX.command","commission_guard.py","commission_operator.py",
- "generate_aux_hardware_plan.py","generate_release_admission.py","local_commission.py",
+ "generate_aux_hardware_plan.py","generate_release_admission.py","local_commission.py","configure_uv_pwm_outputs.py",
  "HBNF_SP803E_AUX_R3.bin","FINAL_METRICS.txt","firmware-sha256.txt","contract.json",
  "WOW_SCENES_V2.json","README.md","CODEX_RUNBOOK.md","UV_FIELD_SESSION.md","RELEASE_ADMISSION.json",
  "RELEASE_RECEIPT.schema.json","RELEASE_RECEIPT.template.json","RELEASE_RECEIPT.json",

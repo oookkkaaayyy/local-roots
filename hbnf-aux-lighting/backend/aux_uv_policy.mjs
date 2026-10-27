@@ -28,10 +28,18 @@ export function nextUvOutput(state = {}, config = UV_OFFLINE_CONFIG, inputs = {}
     target = clamp(state.manualBrightness, 0, maximum);
   } else if (mode === "FOLLOW_MATRIX") {
     const level = clamp(state.responseBrightness ?? maximum, 0, maximum);
-    target = Math.round(clamp(inputs.matrixBrightness, 0, 255) * level / 255);
+    // Missing/stale Matrix telemetry is a link failure, not a zero-brightness
+    // command. Keep the selected cap until a fresh Matrix value is available.
+    const fresh = inputs.matrixFresh === true && Number.isFinite(Number(inputs.matrixBrightness));
+    target = fresh
+      ? Math.round(clamp(inputs.matrixBrightness, 0, 255) * level / 255)
+      : level;
   } else {
     const level = clamp(state.responseBrightness ?? maximum, 0, maximum);
-    target = Math.round(clamp(inputs.vibeEnvelope, 0, 255) * level / 255);
+    const fresh = inputs.vibeFresh === true && Number.isFinite(Number(inputs.vibeEnvelope));
+    target = fresh
+      ? Math.round(clamp(inputs.vibeEnvelope, 0, 255) * level / 255)
+      : level;
   }
 
   const step = Math.max(1, clamp(config.rampPerTick, 1, 255));

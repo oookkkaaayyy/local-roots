@@ -31,6 +31,8 @@ THE LAUNCHER WILL
 - calibrate real underglow color order at low current;
 - configure ONLY the GPIO16 WS2811 underglow bus, with fail-dark boot and <=900 mA commissioning limit;
 - keep the reported Cart/RIM GPIO25 and Bar/SHORT GPIO26 mapping gated off until powered channel and combined-load acceptance is recorded;
+- when the later UV-output configuration step is explicitly run, save a new WLED startup preset in an unused slot, preserve the underglow state, keep both UV segments off, and verify the preset survives a second restart; failure removes only that new preset and restores the previous boot-preset selection;
+- provide a read-only `--phase uv-field-preflight` check that verifies current runtime identity, exact GPIO/segment mapping, both UV outputs off, and the persisted safe startup preset; it never issues output commands or opens activation gates;
 - later require exact Matrix identity before changing Matrix/AUX sync;
 - preserve physical observations in HBNF_AUX_ACCEPTANCE_EVIDENCE.json.
 

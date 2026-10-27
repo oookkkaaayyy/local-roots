@@ -15,6 +15,11 @@ export function readinessStatus(checks) {
   return "READY";
 }
 
+export function uvCommandForSharedSliderRelease(readiness, followActive) {
+  if (readiness !== "ready" || typeof followActive !== "boolean") return null;
+  return followActive ? "FOLLOW_MATRIX" : "MANUAL";
+}
+
 export function deviceReadinessChecks(snapshot, nowMs = Date.now(), maxAgeMs = 90000) {
   const desiredRevision = Number(snapshot && snapshot.desired && snapshot.desired.revision);
   const observed = Array.isArray(snapshot && snapshot.observed) ? snapshot.observed : [];

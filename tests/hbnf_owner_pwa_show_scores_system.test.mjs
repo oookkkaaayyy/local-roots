@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { uvCommandForSharedSliderRelease } from "../hbnf-final-controller/hbnf-cart-readiness.mjs";
 const html=fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html",import.meta.url),"utf8");
 const shell=fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-ui-v6.mjs",import.meta.url),"utf8");
 const controller=fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js",import.meta.url),"utf8");
@@ -31,4 +32,17 @@ test("redesigned view preserves existing command, score-read and owner-only path
   assert.match(features,/bind\("featureOtaInstall"/);
   assert.match(shell,/aria-current/);
   assert.match(shell,/scrollTo\(0, 0\)/);
+});
+test("Show shared UV slider sends only when readiness is confirmed",()=>{
+  assert.equal(uvCommandForSharedSliderRelease("ready",false),"MANUAL");
+  assert.equal(uvCommandForSharedSliderRelease("ready",true),"FOLLOW_MATRIX");
+  for(const readiness of ["checking","unsafe","unavailable","unknown"]){
+    assert.equal(uvCommandForSharedSliderRelease(readiness,false),null);
+    assert.equal(uvCommandForSharedSliderRelease(readiness,true),null);
+  }
+  assert.equal(uvCommandForSharedSliderRelease("ready",null),null);
+  assert.match(features,/uvCommandForSharedSliderRelease\(uvReadiness, uvFollowActive\)/);
+  assert.match(features,/Release the Show slider to send both manual levels/);
+  assert.match(features,/Cart output mode is unconfirmed; slider changes stay local/);
+  assert.match(features,/result\.outputMode === "FOLLOW_MATRIX"/);
 });

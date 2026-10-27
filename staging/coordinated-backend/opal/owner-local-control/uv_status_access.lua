@@ -26,6 +26,27 @@ if current then
     main = current.segments[1].on == true,
     short = current.segments[2].on == true,
   }
+  local function observed_mode(segment)
+    if segment.on ~= true then return "OFF" end
+    if tonumber(segment.fx) == runtime.FOLLOW_EFFECT_ID then return "FOLLOW_MATRIX" end
+    if tonumber(segment.fx) == 0 then return "MANUAL" end
+    return "OTHER"
+  end
+  local main_mode = observed_mode(current.segments[1])
+  local short_mode = observed_mode(current.segments[2])
+  if main_mode == "FOLLOW_MATRIX" or short_mode == "FOLLOW_MATRIX" then
+    if (main_mode == "FOLLOW_MATRIX" or main_mode == "OFF")
+        and (short_mode == "FOLLOW_MATRIX" or short_mode == "OFF") then
+      response.outputMode = "FOLLOW_MATRIX"
+    else
+      response.outputMode = "UNKNOWN"
+    end
+  elseif (main_mode == "MANUAL" or main_mode == "OFF")
+      and (short_mode == "MANUAL" or short_mode == "OFF") then
+    response.outputMode = (main_mode == "MANUAL" or short_mode == "MANUAL") and "MANUAL" or "OFF"
+  else
+    response.outputMode = "UNKNOWN"
+  end
 end
 ngx.status = 200
 ngx.header.content_type = "application/json"

@@ -65,6 +65,8 @@ def validate_prestate(info, state, cfg, pins):
         raise RuntimeError("AUX runtime is neither the recorded V7 fail-dark baseline nor the accepted output-capable candidate")
     led = ((cfg.get("hw") or {}).get("led") or {})
     light = cfg.get("light") or {}
+    if not isinstance(cfg.get("def"), dict) or not isinstance(cfg["def"].get("ps"), int):
+        raise RuntimeError("AUX boot-preset setting is unavailable; refusing a change without an exact rollback value")
     buses = led.get("ins") or []
     if len(buses) != 1:
         raise RuntimeError("refusing an unknown AUX LED-bus layout")
@@ -106,6 +108,65 @@ def expected_state(state):
            "fx": 0, "ix": 0, "sel": False}
     return {"on": state.get("on", True), "mainseg": 0,
             "seg": [underglow, cart, bar]}
+
+
+def choose_unused_preset_id(presets):
+    if not isinstance(presets, dict):
+        raise RuntimeError("AUX preset list is not an object; refusing to overwrite an unknown preset")
+    for preset_id in range(250, 0, -1):
+        if str(preset_id) not in presets:
+            return preset_id
+    raise RuntimeError("No unused WLED preset slot is available; existing presets were not changed")
+
+
+def safe_boot_preset_body(state, preset_id):
+    """Capture current underglow state while forcing both UV outputs OFF."""
+    planned = expected_state(state)
+    body = {key: state[key] for key in ("on", "bri") if key in state}
+    body.update({"mainseg": 0, "seg": planned["seg"], "ib": True, "sb": True,
+                 "psave": preset_id, "bootps": preset_id, "n": "HBNF AUX UV safe startup"})
+    return body
+
+
+def check_safe_boot_preset(presets, preset_id, baseline_state=None):
+    preset = presets.get(str(preset_id)) if isinstance(presets, dict) else None
+    if not isinstance(preset, dict):
+        raise RuntimeError("new safe-startup preset was not present in WLED readback")
+    segments = {int(s.get("id", n)): s for n, s in enumerate(preset.get("seg") or []) if isinstance(s, dict)}
+    if preset.get("on") is not True or not all((segments.get(i) or {}).get("on") is False for i in (1, 2)):
+        raise RuntimeError("safe-startup preset did not preserve global ON while keeping both UV segments OFF")
+    if int(preset.get("mainseg", -1)) != 0:
+        raise RuntimeError("safe-startup preset did not retain the underglow main segment")
+    if baseline_state is not None:
+        expected = {int(s.get("id", n)): s for n, s in enumerate(expected_state(baseline_state)["seg"])}
+        for sid in (0, 1, 2):
+            actual = segments.get(sid) or {}
+            for key in ("start", "stop", "on", "bri", "fx", "sx", "ix", "pal", "col"):
+                if key in expected[sid] and actual.get(key) != expected[sid].get(key):
+                    raise RuntimeError(f"safe-startup preset changed segment {sid} field {key}")
+
+
+def wait_for_safe_boot_preset(preset_id, baseline_state, timeout=8.0):
+    deadline = time.monotonic() + timeout
+    last = None
+    while time.monotonic() < deadline:
+        last = request(TARGET_IP, "/presets.json", timeout=4.0)
+        if str(preset_id) in (last if isinstance(last, dict) else {}):
+            check_safe_boot_preset(last, preset_id, baseline_state)
+            return last
+        time.sleep(0.25)
+    raise RuntimeError("new safe-startup preset did not persist before the bounded readback deadline")
+
+
+def wait_for_preset_map(expected, timeout=8.0):
+    deadline = time.monotonic() + timeout
+    last = None
+    while time.monotonic() < deadline:
+        last = request(TARGET_IP, "/presets.json", timeout=4.0)
+        if last == expected:
+            return last
+        time.sleep(0.25)
+    raise RuntimeError("WLED preset map did not return to the exact pre-transaction contents")
 
 
 def reboot_and_wait(previous_uptime):
@@ -181,8 +242,9 @@ def main():
     state = request(TARGET_IP, "/json/state")
     cfg = request(TARGET_IP, "/json/cfg")
     pins = request(TARGET_IP, "/json/pins")
+    presets = request(TARGET_IP, "/presets.json")
     led, _ = validate_prestate(info, state, cfg, pins)
-    snapshots = {"info": info, "state": state, "cfg": cfg, "pins": pins}
+    snapshots = {"info": info, "state": state, "cfg": cfg, "pins": pins, "presets": presets}
     for name, value in snapshots.items():
         (evidence / f"pre-{name}.json").write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
     manifest = {
@@ -209,6 +271,9 @@ def main():
     if not args.module_confirmed_disconnected:
         raise RuntimeError("live apply requires confirmation that the UV module is physically disconnected")
 
+    safe_preset_id = choose_unused_preset_id(presets)
+    previous_boot_preset = cfg["def"]["ps"]
+
     original_cfg = cfg
     original_state = state
     rollback_led = ((original_cfg.get("hw") or {}).get("led") or {})
@@ -229,22 +294,47 @@ def main():
             {"id": 1, "on": False, "bri": 0, "fx": 0, "ix": 0, "sel": False},
             {"id": 2, "on": False, "bri": 0, "fx": 0, "ix": 0, "sel": False},
         ], "mainseg": 0}, timeout=8.0)
+        safe_state = request(TARGET_IP, "/json/state", timeout=8.0)
+        request(TARGET_IP, "/json/state", "POST", safe_boot_preset_body(safe_state, safe_preset_id), timeout=8.0)
+        preset_readback = wait_for_safe_boot_preset(safe_preset_id, safe_state)
+        cfg_after_preset = request(TARGET_IP, "/json/cfg", timeout=8.0)
+        if int((cfg_after_preset.get("def") or {}).get("ps", -1)) != safe_preset_id:
+            raise RuntimeError("WLED boot preset selection did not read back")
+        reboot_and_wait(request(TARGET_IP, "/json/info", timeout=8.0).get("uptime"))
         post_info = request(TARGET_IP, "/json/info", timeout=8.0)
         post_state = request(TARGET_IP, "/json/state", timeout=8.0)
         post_cfg = request(TARGET_IP, "/json/cfg", timeout=8.0)
-        for name, value in (("post-info", post_info), ("post-state", post_state), ("post-cfg", post_cfg)):
+        preset_readback = request(TARGET_IP, "/presets.json", timeout=8.0)
+        check_safe_boot_preset(preset_readback, safe_preset_id, safe_state)
+        for name, value in (("post-info", post_info), ("post-state", post_state), ("post-cfg", post_cfg), ("post-presets", preset_readback)):
             (evidence / f"{name}.json").write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
         check_poststate(post_info, post_state, post_cfg)
+        if int((post_cfg.get("def") or {}).get("ps", -1)) != safe_preset_id:
+            raise RuntimeError("boot preset selection did not survive the cold-start verification")
     except Exception as error:
         rollback_errors = []
+        try:
+            if "safe_preset_id" in locals():
+                request(TARGET_IP, "/json/state", "POST", {"pdel": safe_preset_id}, timeout=8.0)
+                expected_presets = dict(presets)
+                expected_presets.pop(str(safe_preset_id), None)
+                wait_for_preset_map(expected_presets)
+        except Exception as rollback_error:
+            rollback_errors.append(f"preset: {rollback_error}")
         try:
             rollback_uptime = request(TARGET_IP, "/json/info", timeout=4.0).get("uptime")
             request(TARGET_IP, "/json/cfg", "POST", {
                 "hw": {"led": rollback_led},
                 "light": {"aseg": rollback_light.get("aseg", False)},
+                "def": {"ps": previous_boot_preset},
             }, timeout=8.0)
             reboot_and_wait(rollback_uptime)
             request(TARGET_IP, "/json/state", "POST", {"rSeg": True}, timeout=8.0)
+            rollback_cfg = request(TARGET_IP, "/json/cfg", timeout=8.0)
+            if ((rollback_cfg.get("hw") or {}).get("led") != rollback_led
+                    or (rollback_cfg.get("light") or {}).get("aseg", False) != rollback_light.get("aseg", False)
+                    or (rollback_cfg.get("def") or {}).get("ps") != previous_boot_preset):
+                raise RuntimeError("configuration or prior boot preset did not read back exactly after rollback")
         except Exception as rollback_error:
             rollback_errors.append(f"cfg: {rollback_error}")
         try:
@@ -270,8 +360,11 @@ def main():
         raise RuntimeError(f"UV PWM configuration failed; exact cfg/state rollback attempted: {error}; {rollback_errors}") from error
 
     manifest.update({"applied": True, "disposition": "PASS_UV_OUTPUTS_OFF",
+                     "safeBootPresetId": safe_preset_id,
+                     "previousBootPresetId": previous_boot_preset,
+                     "bootPresetReadback": {"path": "post-presets.json", "sha256": sha256(evidence / "post-presets.json")},
                      "postState": {name: {"path": f"{name}.json", "sha256": sha256(evidence / f"{name}.json")}
-                                   for name in ("post-info", "post-state", "post-cfg")},
+                                   for name in ("post-info", "post-state", "post-cfg", "post-presets")},
                      "runtimeActivationGatesChanged": False,
                      "runtimeFirmwareUpgradePerformed": False})
     (evidence / "TRANSACTION.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")

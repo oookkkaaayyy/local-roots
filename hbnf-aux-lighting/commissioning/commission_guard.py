@@ -662,7 +662,55 @@ def ensure_field_wifi_profile(matrix_ip,aux_ip,explicit_ssid=None):
     return {"changed":True,"prepared":True,"ssid":candidate,"matrixSsids":matrix_ssids,"auxSsids":after_ssids}
 
 def _local_uv(ip,mode):
-    raise RuntimeError("UV control is intentionally unavailable: per-channel UV load ratings, switching paths, and commissioning evidence are incomplete.")
+    # Deliberately read-only. Electrical limits and switching paths have not
+    # been accepted, so this commissioning slice must never energize UV.
+    if mode != "PREFLIGHT":
+        raise RuntimeError("UV commissioning is read-only until electrical limits and switching paths are accepted.")
+    if ip != "192.168.77.11":
+        raise RuntimeError("UV commissioning preflight requires the installed AUX address 192.168.77.11.")
+    d=lc.inspect(ip)
+    presets=lc.request_json(ip,"/presets.json",timeout=5.0)
+    return uv_field_preflight(d,presets)
+
+def uv_field_preflight(d,presets=None):
+    """Validate exact AUX identity, UV output topology and OFF state, read-only."""
+    info=d.get("info") or {}; state=d.get("state") or {}; aux=state.get("HBNFAUX") or {}
+    cfg=d.get("cfg") or {}; buses=((cfg.get("hw") or {}).get("led") or {}).get("ins") or []
+    segs={int(s.get("id",n)):s for n,s in enumerate(state.get("seg") or []) if isinstance(s,dict)}
+    expected_buses=[
+        {"pin":[16],"type":22,"start":0,"len":22},
+        {"pin":[25],"type":41,"start":22,"len":1},
+        {"pin":[26],"type":41,"start":23,"len":1},
+    ]
+    got_buses=[{k:b.get(k) for k in ("pin","type","start","len")} for b in buses]
+    seg_ok=all(
+        (segs.get(i) or {}).get("start") == start
+        and (segs.get(i) or {}).get("stop") == stop
+        and (segs.get(i) or {}).get("on") is False
+        for i,start,stop in ((1,22,23),(2,23,24))
+    )
+    boot_id=((cfg.get("def") or {}).get("ps"))
+    boot_preset=(presets or {}).get(str(boot_id)) if isinstance(presets,dict) else None
+    boot_segments={int(s.get("id",n)):s for n,s in enumerate((boot_preset or {}).get("seg") or []) if isinstance(s,dict)}
+    checks={
+        "target":d.get("ip")=="192.168.77.11",
+        "mac":str(info.get("mac") or "").replace(":","").lower()==INSTALLED_AUX_MAC,
+        "wled":lc.looks_like_wled(d),
+        "release":aux.get("release")==lc.AUX_RELEASE,
+        "engine":aux.get("engine")==lc.AUX_ENGINE,
+        "buildWitness":aux.get("buildWitness")==lc.AUX_WITNESS,
+        "outputCapable":aux.get("uvOutputsVerified")==1 and aux.get("uvBuildProfile")=="uv-follow-output-capable-v1",
+        "buses":got_buses==expected_buses,
+        "autoSegments":((cfg.get("light") or {}).get("aseg") is True),
+        "underglowSegment":(segs.get(0) or {}).get("start")==0 and (segs.get(0) or {}).get("stop")==22,
+        "segments":seg_ok,
+        "mainSegmentPreserved":state.get("mainseg")==0,
+        "globalPowerOn":state.get("on") is True,
+        "safeBootPresetSelected":isinstance(boot_id,int) and boot_id>0 and boot_preset is not None,
+        "safeBootPresetUvOff":(boot_preset or {}).get("on") is True and all((boot_segments.get(i) or {}).get("on") is False for i in (1,2)),
+        "safeBootPresetUnderglowSelected":(boot_preset or {}).get("mainseg")==0,
+    }
+    return {"ok":all(checks.values()),"checks":checks,"ip":d.get("ip"),"mac":info.get("mac"),"wledVersion":info.get("ver"),"bootPresetId":boot_id,"segments":{str(i):segs.get(i) for i in (0,1,2)},"mutationIssued":False,"uvActivationGates":"UNCHANGED_CLOSED"}
 
 def _uv_off(ip):
     return None
@@ -828,6 +876,32 @@ def interactive(args):
 
 def selftest():
     import tempfile, shutil
+    uv_fixture={
+        "ip":"192.168.77.11",
+        "info":{"mac":"8c:94:df:55:c3:4c","ver":"16.0.1"},
+        "state":{"on":True,"mainseg":0,"HBNFAUX":{"release":lc.AUX_RELEASE,"engine":lc.AUX_ENGINE,"buildWitness":lc.AUX_WITNESS,"uvOutputsVerified":1,"uvBuildProfile":"uv-follow-output-capable-v1"},
+                 "seg":[{"id":0,"start":0,"stop":22,"on":True},{"id":1,"start":22,"stop":23,"on":False},{"id":2,"start":23,"stop":24,"on":False}]},
+        "cfg":{"def":{"ps":7},"hw":{"led":{"ins":[{"pin":[16],"type":22,"start":0,"len":22},{"pin":[25],"type":41,"start":22,"len":1},{"pin":[26],"type":41,"start":23,"len":1}]}},"light":{"aseg":True}},
+    }
+    uv_presets={"7":{"on":True,"mainseg":0,"seg":[{"id":0,"on":True},{"id":1,"on":False},{"id":2,"on":False}]}}
+    uv_ok=uv_field_preflight(uv_fixture,uv_presets)
+    assert uv_ok["ok"] and uv_ok["mutationIssued"] is False and uv_ok["uvActivationGates"]=="UNCHANGED_CLOSED"
+    for key in ("target","mac","release","outputCapable","buses","segments","globalPowerOn"):
+        bad=__import__("copy").deepcopy(uv_fixture)
+        if key=="target": bad["ip"]="192.168.77.12"
+        elif key=="mac": bad["info"]["mac"]="00:00:00:00:00:00"
+        elif key=="release": bad["state"]["HBNFAUX"]["release"]="unknown"
+        elif key=="outputCapable": bad["state"]["HBNFAUX"]["uvOutputsVerified"]=0
+        elif key=="buses": bad["cfg"]["hw"]["led"]["ins"][1]["pin"]=[27]
+        elif key=="segments": bad["state"]["seg"][1]["on"]=True
+        elif key=="globalPowerOn": bad["state"]["on"]=False
+        assert not uv_field_preflight(bad,uv_presets)["ok"],key
+    assert not uv_field_preflight(uv_fixture,{"7":{"on":True,"mainseg":0,"seg":[{"id":0,"on":True},{"id":1,"on":True},{"id":2,"on":False}]}})["ok"]
+    try:
+        _local_uv("192.168.77.11","CART_TEST")
+        raise AssertionError("UV output mode did not fail closed")
+    except RuntimeError as e:
+        assert "read-only" in str(e)
     with tempfile.TemporaryDirectory() as td:
         root=pathlib.Path(td);probe=root/"probe.bin";probe.write_bytes(b"HBNF")
         body,ctype=multipart_firmware(probe)
@@ -1008,7 +1082,7 @@ def selftest():
 
 def main():
     p=argparse.ArgumentParser(description="Guarded HBNF AUX commissioning state machine")
-    p.add_argument("--phase",choices=["preflight","install-firmware","apply-hardware","prepare-sync","verify","interactive","validate-release-receipt"],default="preflight")
+    p.add_argument("--phase",choices=["preflight","install-firmware","apply-hardware","prepare-sync","verify","interactive","validate-release-receipt","uv-field-preflight"],default="preflight")
     p.add_argument("--matrix-hint",default="192.168.68.89");p.add_argument("--aux",default="auto");p.add_argument("--subnet")
     p.add_argument("--package-dir",default=str(HERE));p.add_argument("--backup",action="store_true",default=True);p.add_argument("--no-backup",dest="backup",action="store_false")
     p.add_argument("--backup-root",default="~/Desktop");p.add_argument("--report");p.add_argument("--evidence");p.add_argument("--release-receipt");p.add_argument("--field-ssid")
@@ -1024,6 +1098,12 @@ def main():
         result={"valid":not errors,"status":"COMPLETE" if not errors else "INCOMPLETE_OR_INVALID","errors":errors}
         print(json.dumps(result,indent=2,sort_keys=True))
         return 0 if not errors else 3
+    if a.phase=="uv-field-preflight":
+        if a.aux != "192.168.77.11":
+            raise SystemExit("UV field preflight is read-only and requires --aux 192.168.77.11.")
+        result=_local_uv(a.aux,"PREFLIGHT")
+        print(json.dumps(result,indent=2,sort_keys=True))
+        return 0 if result.get("ok") else 3
     rp=report_path(a.report)
     if a.phase=="interactive":
         result=interactive(a);write_report(result,rp);print(f"\nReport: {rp}");return 3 if result.get("releaseAccepted") is False else 0

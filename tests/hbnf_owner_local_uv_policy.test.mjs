@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { LocalOwnerControl } from "../hbnf-final-controller/hbnf-cart-local.mjs";
 import { UV_FOLLOW_EFFECT_ID, uvCommissioningReady, uvRuntimeReady } from "../hbnf-aux-lighting/backend/aux_uv_command.mjs";
-import { UV_MODES, UV_POLICY_SPEC } from "../hbnf-aux-lighting/backend/aux_uv_policy.mjs";
+import { UV_MODES, UV_POLICY_SPEC, nextUvOutput } from "../hbnf-aux-lighting/backend/aux_uv_policy.mjs";
 
 const token = "a".repeat(64);
 
@@ -46,8 +46,24 @@ test("invalid local UV request is rejected before any network operation", async 
   assert.equal(requestCount, 0);
 });
 
+test("Matrix/audio loss falls back to each nonzero cap; fresh zero signal remains a valid dim command", () => {
+  const config = { enabled: true, hardwareAvailable: true, maxBrightness: 255, rampPerTick: 255 };
+  for (const mode of ["FOLLOW_MATRIX", "VIBE_REACTIVE"]) {
+    const cap = 72;
+    assert.equal(nextUvOutput({ mode, responseBrightness: cap }, config, {}), cap);
+    assert.equal(nextUvOutput({ mode, responseBrightness: cap }, config,
+      mode === "FOLLOW_MATRIX" ? { matrixFresh: false, matrixBrightness: 0 } : { vibeFresh: false, vibeEnvelope: 0 }), cap);
+  }
+  assert.equal(nextUvOutput({ mode: "FOLLOW_MATRIX", responseBrightness: 72 }, config,
+    { matrixFresh: true, matrixBrightness: 0 }), 0);
+  assert.equal(nextUvOutput({ mode: "VIBE_REACTIVE", responseBrightness: 72 }, config,
+    { vibeFresh: true, vibeEnvelope: 0 }), 0);
+});
+
 test("Opal and shared backend point at the same declarative UV policy contract", async () => {
   const opal = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/uv_policy_access.lua", import.meta.url), "utf8");
+  const uvRuntime = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/uv_runtime.lua", import.meta.url), "utf8");
+  const uvStatus = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/uv_status_access.lua", import.meta.url), "utf8");
   const nginx = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/nginx.conf.example", import.meta.url), "utf8");
   const policyJson = await readFile(new URL("../hbnf-aux-lighting/backend/aux_uv_policy_spec.json", import.meta.url), "utf8");
   const opalSpec = JSON.parse(policyJson);
@@ -58,11 +74,13 @@ test("Opal and shared backend point at the same declarative UV policy contract",
   assert.equal(uvRuntimeReady({ auxEnabled: true, uvEnabled: true, uvOutputsVerified: true }), false);
   assert.deepEqual(opalSpec.brightness.requiredChannels, ["main", "short"]);
   assert.equal(opalSpec.networkBoundary.directWledRouteAllowed, false);
-  assert.match(opal, /uv_policy_spec\.json/);
-  assert.match(opal, /spec\.modes/);
-  assert.match(opal, /spec\.brightness\.requiredChannels/);
-  assert.match(opal, /spec\.requiredCommissioningGates/);
-  assert.match(opal, /local_uv_policy_readiness_unverified/);
+  assert.match(uvRuntime, /uv_policy_spec\.json/);
+  assert.match(uvRuntime, /policy\.requiredRuntimeGates/);
+  assert.match(uvRuntime, /policy\.requiredCommissioningGates/);
+  assert.match(uvRuntime, /policy\.brightness/);
+  assert.match(opal, /runtime\.profile_ready\(\)/);
+  assert.match(uvStatus, /response\.outputMode = "FOLLOW_MATRIX"/);
+  assert.match(uvStatus, /response\.outputMode = "UNKNOWN"/);
   const localRoute = nginx.match(/location = \/api\/aux\/uv-policy \{([\s\S]*?)\n    \}/)?.[1] || "";
   assert.match(localRoute, /auth_owner\.lua/);
   assert.match(localRoute, /uv_policy_access\.lua/);

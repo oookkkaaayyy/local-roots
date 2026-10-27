@@ -1,7 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
 import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
-import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs?v=20261024-cart-control-home-r4";
+import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText, uvCommandForSharedSliderRelease } from "./hbnf-cart-readiness.mjs?v=20261024-cart-control-home-r4";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
@@ -31,7 +31,7 @@ let hbnfEndpointProbeLastStartedAt = 0;
 let courseInternetState = "not_checked";
 let courseCloudState = "not_checked";
 let paletteOptionsReady = false;
-let uvFollowActive = false;
+let uvFollowActive = null;
 let uvRequestInFlight = false;
 let uvFollowCapsPending = false;
 let uvReadiness = "checking";
@@ -918,7 +918,11 @@ function uvStateChanged(persist = true) {
   }
   const status = $("uvActionStatus");
   if (status && !uvRequestInFlight) {
-    if (uvReadiness === "ready") status.textContent = `${uvLevelSavedMessage()} Use Apply to send manual levels.`;
+    if (uvReadiness === "ready") status.textContent = uvFollowActive === true
+      ? `${uvLevelSavedMessage()} Release the Show slider to update both Matrix-follow caps.`
+      : uvFollowActive === false
+        ? `${uvLevelSavedMessage()} Release the Show slider to send both manual levels; Fine tuning keeps its separate Apply button.`
+        : `${uvLevelSavedMessage()} Cart output mode is unconfirmed; slider changes stay local. Use Apply levels or Follow Matrix to choose a mode.`;
     else if (uvReadiness === "unavailable") status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} No command was sent.`;
     else if (uvReadiness === "unsafe") status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
   }
@@ -950,13 +954,18 @@ async function checkUvReadiness(updateStatus = true) {
     const result = await canonicalRead("uv_status");
     if (result && result.uvControlEnabled === true) {
       uvReadiness = "ready";
+      uvFollowActive = result.outputMode === "FOLLOW_MATRIX" ? true
+        : result.outputMode === "MANUAL" || result.outputMode === "OFF" ? false
+          : null;
       setUvControlsReady(true);
       const outputOn = result.outputOn;
-      if (updateStatus) status.textContent = uvFollowActive
+      if (updateStatus) status.textContent = uvFollowActive === true
         ? "Matrix follow is active. Fresh audio scales each selected cap; stale audio falls back to that cap."
+        : uvFollowActive === null
+          ? "Cart output mode is unconfirmed. No command was sent; use Apply levels or Follow Matrix to choose a mode."
         : outputOn && typeof outputOn.main === "boolean" && typeof outputOn.short === "boolean"
           ? `Cart reports UV output ${outputOn.main ? "on" : "off"}; Bar reports ${outputOn.short ? "on" : "off"}. No new command was sent.`
-          : "UV controls are ready. Current output state is unavailable; no output command was sent. Choose Apply manual override, Follow Matrix, or UV off.";
+          : "UV controls are ready. Current output state is unavailable; no output command was sent. Choose Apply levels, Follow Matrix, or UV off.";
     } else {
       uvReadiness = "unsafe";
       uvFollowActive = false;
@@ -1037,7 +1046,8 @@ if ($("uvSharedBrightness")) {
     uvStateChanged();
   });
   $("uvSharedBrightness").addEventListener("change", () => {
-    if (uvFollowActive) void sendUv("FOLLOW_MATRIX");
+    const mode = uvCommandForSharedSliderRelease(uvReadiness, uvFollowActive);
+    if (mode) void sendUv(mode);
   });
 }
 restoreUvCaps();
