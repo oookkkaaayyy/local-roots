@@ -29,6 +29,9 @@ jobs:
       - name: Audit deployment workflows for mandatory two-phase admission
         run: npm run release:audit-workflows
 
+      - name: Test release workflow audit failures
+        run: node --test tests/audit-release-workflows.test.mjs
+
       - name: Run fail-closed validator regression tests
         run: node --test tests/release-receipt.test.mjs
 
