@@ -7,10 +7,9 @@ Disposition: review-only; queued after UV. No package, merge, release, or device
 - Repository: `oookkkaaayyy/local-roots`
 - Base commit: `00e6552ffe65a3dbd6768b0e017fd22226c5b86f`
 - Candidate branch: `codex/matrix-midband-response-20261026`
-- Current installed release: `hbnf-cart2-phase2-r6-skins-readable-20261014`
-- Matching rollback artifact: `hbnf-cart2-phase2-r6-skins-readable-20261014.bin`
-- Rollback SHA-256: `de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d`
-- Rollback identity and download-back verification: Drive file `1SZaURqkBnyZog04RtHBXmFQOsYurYDKJ`; recovery manifest `1QnFrMxy_Vx3Sqg68YF3U9xWhUNf5JENJ`.
+- Installed baseline: NOT RECONCILED. The current Cart work order reports an R5 field receipt and an R6 source-only candidate; it does not establish which exact image is installed now.
+- Registered rollback pointer: `hbnf-cart2-phase2-r6-skins-readable-20261014.bin`, SHA-256 `de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d`; Drive file `1SZaURqkBnyZog04RtHBXmFQOsYurYDKJ`; recovery manifest `1QnFrMxy_Vx3Sqg68YF3U9xWhUNf5JENJ`.
+- The recorded rollback pointer cannot be certified as matching the currently installed image until the R5/R6 baseline conflict is reconciled. Candidate remains REVIEW_ONLY and is not install-ready.
 
 ## Proposed behavior
 
@@ -22,6 +21,16 @@ The host test replays a deterministic mid-band step and release through the prod
 
 The same host check also verifies mid-band isolation from bass/treble, the existing 5–100 ms `dt` clamp at both boundaries, and silence handling. It uses synthetic `VibeMetrics`; these checks do not establish perceived sound quality.
 
+A second host replay drives the production `Vibe16` analyzer and candidate `AudioExpression` from the repository's passive Matrix UDP feature capture. The input is source-bound to firmware `338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c` and capture SHA-256 `712dd275bd260ebec2c60c17ed9413bf8d6cd0c58b2121c913916b0944f7e951`. Using the capture's uniform 31.164 ms replay interval and a 115 ms baseline model, all 3,852 samples replayed; mean signed candidate-minus-baseline mid-energy was 0.004655, p95 absolute delta 0.041983, and maximum absolute delta 0.089658. Across the 26 mid-dominant samples, candidate mean was 0.878739 vs baseline 0.850851.
+
+Reproduce the real-feature replay from the complete repository checkout:
+
+```sh
+python3 tests/hbnf_audio_expression_real_trace_replay.py
+```
+
+The capture is unlabelled ambient microphone feature data, not PCM; it contains only 26 mid-dominant samples and no controlled high-dominant music. The replay establishes implementation response on that captured input only, not a representative music set or perceptual acceptance.
+
 Reproduce from the repository root:
 
 ```sh
@@ -29,6 +38,14 @@ g++ -std=c++11 -Wall -Wextra -Werror tests/hbnf_audio_expression_attack_host.cpp
 /tmp/hbnf-audio-attack-check
 python3 scripts/hbnf_control.py check-change --change evidence/engineering-governance/CART2-MATRIX-MIDBAND-ATTACK-20261026.json
 ```
+
+Before any future install, build and retain the complete candidate from the exact reviewed source commit, verify its binary hash and the currently installed baseline/rollback bytes, then produce the repository's hash-bound release-admission manifest and run:
+
+```sh
+python3 scripts/hbnf_control.py check-admission --stage OFFLINE_COMPILED --admission /path/to/exact-candidate-admission.json
+```
+
+This offline stage is only one release gate; it does not authorize hardware access. The existing validator has negative host tests for missing evidence, hash mismatches, and generic proof reuse.
 
 Expected host output (the remaining deterministic assertions are silent on success):
 
@@ -39,13 +56,13 @@ mid_energy_after_1000ms_release=0.133697
 
 ## Limits and disposition
 
-These checks establish the parameter's scalar response, not how real music sounds or how the physical Matrix appears. The exact target firmware build, real-song trace replay, all-28-kernel qualification, Matrix/AUX visual coherence, Opal interaction, and owner physical review remain NOT CHECKED. Keep queued after UV; do not use this branch for the current Opal flash or any release path.
+These checks establish scalar and captured-feature response, not how representative real music sounds or how the physical Matrix appears. The exact target firmware build, controlled song coverage, all-28-kernel qualification, Matrix/AUX visual coherence, Opal interaction, installed-baseline reconciliation, and owner physical review remain NOT CHECKED. Keep queued after UV; do not use this branch for the current Opal flash or any release path.
 
 ## Owner physical review guide (after UV)
 
 This is a review checklist only; no package or flash is authorized by it. Once the UV release work is complete and the owner schedules Matrix review:
 
-1. Confirm the review build is produced from the exact candidate commit and that the installed baseline and matching rollback image still match the identities above. Abort if target identity or rollback evidence differs.
+1. Reconcile the installed Matrix identity against the current field receipt, then confirm a complete build from the exact candidate commit and a durable rollback image whose bytes match that installed baseline. Abort if any identity or hash differs.
 2. With the Matrix in its normal supported configuration, compare baseline and candidate on the same short set of representative music at the same volume. Listen for clearer mid-band response without harshness, chatter, pumping, false transient triggers, or slower settling after a hit.
 3. Observe every one of the 28 existing visual kernels with the same music and settings. Check that palette, motion, low/high response, transitions, and overall readability remain acceptable; verify supported Matrix/AUX coherence and ordinary audio behavior.
 4. Record each item PASS, FAIL, or NOT CHECKED, with the song/segment, kernel, settings, and owner observation. Any new audible instability, unintended visual change, or missing rollback identity is FAIL for proceeding; otherwise unresolved observations remain NOT CHECKED and require follow-up.
