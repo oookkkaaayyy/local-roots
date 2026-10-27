@@ -27,7 +27,7 @@ const errors = [];
 
 function findMutations(source) {
   return mutationPatterns.flatMap(pattern => {
-    const globalPattern = new RegExp(pattern.source, 'gi');
+    const globalPattern = new RegExp(pattern.source, 'gim');
     return [...source.matchAll(globalPattern)].map(match => ({ position: match.index, command: match[0] }));
   }).sort((a, b) => a.position - b.position);
 }
