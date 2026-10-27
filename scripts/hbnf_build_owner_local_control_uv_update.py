@@ -86,7 +86,8 @@ def build(root: Path, out_dir: Path, source_commit: str, baseline_archive: Path)
     source_path = root / SOURCE
     candidate = source_path.read_bytes()
     committed_candidate = subprocess.check_output(["git", "-C", str(root), "show", f"{source_commit}:{SOURCE.as_posix()}"])
-    if candidate != committed_candidate or b'outputMode = "FOLLOW_MATRIX"' not in candidate or b'outputMode = "MANUAL"' not in candidate:
+    if (candidate != committed_candidate or b'response.outputMode = "FOLLOW_MATRIX"' not in candidate or
+            b'response.outputMode = "MANUAL"' not in candidate):
         raise ValueError("candidate UV status module is not committed or does not expose observed output modes")
 
     package_source = root / PACKAGE_DIR
