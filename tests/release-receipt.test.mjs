@@ -122,7 +122,14 @@ test('rejects an unverified baseline rollback copy', async () => {
 test('blocks an unrecovered current baseline even if a rollback file is supplied', async () => {
   const f = await fixture();
   try {
-    f.receipt.baseline.artifact = { disposition: 'unrecovered', installReceipt: 'receipt.json', recoveryGap: 'binary missing' };
+    f.receipt.baseline.artifact = {
+      ...f.receipt.baseline.artifact,
+      disposition: 'unrecovered',
+      recovered: true,
+      status: 'recovered',
+      installReceipt: 'receipt.json',
+      recoveryGap: 'binary missing',
+    };
     await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /baseline\.artifact must be recovered before mutation/);
   } finally { await f.cleanup(); }
 });
@@ -159,4 +166,54 @@ test('rejects identity evidence that does not bind the current artifact bytes', 
     f.receipt.baseline.identityEvidence.sha256 = hash(bytes);
     await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /must bind baseline identity\/source commit/);
   } finally { await f.cleanup(); }
+});
+
+test('rejects a rollback that is not byte-identical to the recovered current baseline', async () => {
+  const f = await fixture();
+  try {
+    const rollbackPath = path.join(f.root, f.receipt.rollback.artifact.path);
+    const bytes = Buffer.from('different but internally consistent rollback');
+    await writeFile(rollbackPath, bytes);
+    f.receipt.rollback.artifact.bytes = bytes.length;
+    f.receipt.rollback.artifact.sha256 = hash(bytes);
+    const recoveryPath = path.join(f.root, f.receipt.rollback.recovery.downloadBack.path);
+    await writeFile(recoveryPath, bytes);
+    f.receipt.rollback.recovery.downloadBack.bytes = bytes.length;
+    f.receipt.rollback.recovery.downloadBack.sha256 = hash(bytes);
+
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /rollback artifact must match the recovered current baseline rollback/);
+  } finally { await f.cleanup(); }
+});
+
+test('rejects baseline identity evidence with a mismatched identity, source commit, or byte count', async () => {
+  for (const [field, value] of [
+    ['identity', 'different installed version'],
+    ['sourceCommit', 'f'.repeat(40)],
+    ['artifactBytes', 1],
+  ]) {
+    const f = await fixture();
+    try {
+      const evidencePath = path.join(f.root, f.receipt.baseline.identityEvidence.path);
+      const evidence = JSON.parse(await readFile(evidencePath, 'utf8'));
+      evidence[field] = value;
+      const bytes = Buffer.from(JSON.stringify(evidence));
+      await writeFile(evidencePath, bytes);
+      f.receipt.baseline.identityEvidence.bytes = bytes.length;
+      f.receipt.baseline.identityEvidence.sha256 = hash(bytes);
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /must bind baseline identity\/source commit to the recovered artifact hash and size/);
+    } finally { await f.cleanup(); }
+  }
+});
+
+test('rejects baseline artifact size or hash metadata that differs from its bytes', async () => {
+  for (const [field, value, expected] of [
+    ['bytes', 1, /baseline\.artifact\.bytes does not match the file/],
+    ['sha256', 'e'.repeat(64), /baseline\.artifact\.sha256 does not match the file/],
+  ]) {
+    const f = await fixture();
+    try {
+      f.receipt.baseline.artifact[field] = value;
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root), expected);
+    } finally { await f.cleanup(); }
+  }
 });
