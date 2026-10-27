@@ -1,0 +1,13 @@
+{
+  "firmware_bytes": 1348672,
+  "firmware_sha256": "bcccb147654f4cb02b15600f8704e6167cec697afa7346471223094d1136b255",
+  "package_file": "HBNF_SP803E_AUX_R3_COMMISSIONING.zip",
+  "package_sha256": "4ac1e533a712fcb0a6747ed2bcfd0981ab98a53d8c7892588b480b1fd2a8ecc2",
+  "run_attempt": 1,
+  "run_id": "40439068504",
+  "run_url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/40439068504",
+  "schema": "hbnf-aux-run-artifact-pointer-v1",
+  "source_commit": "9a2e579158c2c58df135b6240722454206dbbf98",
+  "workflow_path": ".github/workflows/hbnf-sp803e-aux-r3-build.yml",
+  "workflow_ref": "refs/heads/codex/cart-uv-local-policy-scaffold-20261026"
+}
