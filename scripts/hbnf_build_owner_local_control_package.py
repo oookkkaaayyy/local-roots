@@ -102,7 +102,8 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         raise ValueError("dedicated Nginx config does not load the isolated bundled Lua modules")
     preflight = (root / "preflight.sh").read_text()
     if ('vendor/resty/sha256.lua' not in installer
-        or 'lua_package_path "$SCRIPT_DIR/vendor/?.lua;;"' not in preflight
+        or 'lua_package_path "$PROBE_DIR/lua/?.lua;;"' not in preflight
+        or 'cp "$SCRIPT_DIR/vendor/resty/sha.lua"' not in preflight
         or 'content_by_lua_file $PROBE_DIR/probe.lua' not in preflight
         or 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad' not in preflight):
         raise ValueError("installer/preflight does not load and exercise the packaged OpenResty modules in Nginx LuaJIT")

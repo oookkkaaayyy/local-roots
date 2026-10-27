@@ -378,11 +378,12 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(rollback, /rm -f "\$OWNER_HTTP_TARGET"/);
   assert.match(preflight, /cart-control\.hbnightflyers\.com/);
   assert.match(preflight, /resty\.sha256/);
-  assert.match(preflight, /lua_package_path.*SCRIPT_DIR\/vendor/);
+  assert.match(preflight, /lua_package_path.*PROBE_DIR\/lua/);
   assert.match(preflight, /embedded Nginx LuaJIT SHA-256 probe/);
   assert.match(preflight, /127\.0\.0\.1:\$PROBE_PORT\/probe/);
   assert.match(preflight, /content_by_lua_file \$PROBE_DIR\/probe\.lua/);
-  assert.match(preflight, /Lua runtime probe response/);
+  assert.match(preflight, /Lua runtime probe HTTP status/);
+  assert.match(preflight, /cp "\$SCRIPT_DIR\/vendor\/resty\/sha\.lua"/);
   assert.match(preflight, /cat "\$probe_log" >&2/);
   assert.doesNotMatch(preflight, /command -v lua/);
   assert.match(nginx, /listen 192\.168\.77\.1:8443 ssl/);

@@ -24,6 +24,9 @@ printf '%s\n' "$nginx_build" | grep -q 'http_ssl' || fail "installed Nginx build
 # validate modules that use LuaJIT FFI.
 PROBE_DIR=$(mktemp -d /tmp/hbnf-local-control-lua-probe.XXXXXX) || fail "cannot create temporary Lua runtime probe directory"
 chmod 0755 "$PROBE_DIR"
+mkdir -m 0755 "$PROBE_DIR/lua" "$PROBE_DIR/lua/resty"
+cp "$SCRIPT_DIR/vendor/resty/sha.lua" "$SCRIPT_DIR/vendor/resty/sha256.lua" "$SCRIPT_DIR/vendor/resty/string.lua" "$PROBE_DIR/lua/resty/"
+chmod 0644 "$PROBE_DIR/lua/resty/sha.lua" "$PROBE_DIR/lua/resty/sha256.lua" "$PROBE_DIR/lua/resty/string.lua"
 PROBE_PORT=$((20000 + ($$ % 20000)))
 PROBE_PID=
 probe_cleanup(){
@@ -52,7 +55,7 @@ pid $PROBE_DIR/nginx.pid;
 error_log $PROBE_DIR/error.log;
 events { worker_connections 16; }
 http {
-  lua_package_path "$SCRIPT_DIR/vendor/?.lua;;";
+  lua_package_path "$PROBE_DIR/lua/?.lua;;";
   server {
     listen 127.0.0.1:$PROBE_PORT;
     location = /probe {
@@ -66,14 +69,15 @@ PROBE_PID=$!
 probe_digest=
 probe_attempt=0
 while [ "$probe_attempt" -lt 20 ]; do
-  probe_digest=$(curl -fsS --max-time 1 "http://127.0.0.1:$PROBE_PORT/probe" 2>/dev/null || true)
-  [ -n "$probe_digest" ] && break
+  probe_status=$(curl -sS --max-time 1 -o "$PROBE_DIR/response" -w '%{http_code}' "http://127.0.0.1:$PROBE_PORT/probe" 2>/dev/null || true)
+  [ "$probe_status" != "000" ] && [ -n "$probe_status" ] && break
   kill -0 "$PROBE_PID" 2>/dev/null || break
   probe_attempt=$((probe_attempt + 1))
   sleep 1
 done
+[ ! -f "$PROBE_DIR/response" ] || probe_digest=$(cat "$PROBE_DIR/response")
 [ "$probe_digest" = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" ] || {
-  echo "Lua runtime probe response: ${probe_digest:-<no HTTP response>} on 127.0.0.1:$PROBE_PORT" >&2
+  echo "Lua runtime probe HTTP status: ${probe_status:-000}; response: ${probe_digest:-<empty>} on 127.0.0.1:$PROBE_PORT" >&2
   for probe_log in "$PROBE_DIR/stdout.log" "$PROBE_DIR/error.log"; do
     if [ -f "$probe_log" ]; then
       echo "--- $probe_log ---" >&2
