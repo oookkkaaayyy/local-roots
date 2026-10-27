@@ -9,7 +9,7 @@ export function validateIdentityEvidence(evidence) {
   for (const [alias, canonical] of Object.entries(evidence.aliases)) {
     if (text(alias) && text(canonical)) aliases[text(alias)] = text(canonical);
   }
-  const historicalNames = [...new Set((Array.isArray(evidence.historicalNames) ? evidence.historicalNames : []).map(text).filter(Boolean))];
+  const historicalNames = [...new Set((Array.isArray(evidence.historicalNames) ? evidence.historicalNames : []).map(text).filter(name => name && !/^fixture\b/i.test(name)))];
   const tagEvidence = (Array.isArray(evidence.tagEvidence) ? evidence.tagEvidence : []).filter(row => text(row?.playerName)).map(row => ({
     playerName: text(row.playerName), eventType: text(row.eventType),
     // player_key is deliberately discarded: it is name-derived tag data, not a person identity.
@@ -93,14 +93,15 @@ export function buildGlowProposal(model, evidenceInput, decisions = {}) {
   const proposalPlayers = snapshot.rows.map((row, index) => {
     const memberMappings = row.members.map((name, memberIndex) => {
       const key = memberKey({ name, username: row.memberAlignment ? row.usernames?.[memberIndex] : '' });
-      if (!row.memberAlignment) return { key, status: 'conflict', canonicalName: null, suggestedCanonicalNames: [], evidenceKinds: ['member_username_count_mismatch'], username: '', sourceNames: [name] };
-      return byKey.get(key) || { key, status: 'unmatched', canonicalName: null, suggestedCanonicalNames: [], evidenceKinds: [], username: text(row.usernames?.[memberIndex]), sourceNames: [name] };
+      const mapping = row.memberAlignment ? byKey.get(key) : null;
+      const status = mapping?.status || (row.memberAlignment ? 'unmatched' : 'conflict');
+      return { ...(mapping || { key, status, canonicalName: null, suggestedCanonicalNames: [], evidenceKinds: row.memberAlignment ? [] : ['member_username_count_mismatch'], username: text(row.usernames?.[memberIndex]), sourceNames: [name] }), destinationName: mapping?.canonicalName || text(name), destinationNameSource: mapping?.canonicalName ? 'reviewed_glow_name' : 'preserved_udisc_name' };
     });
-    const partner1 = memberMappings[0]?.canonicalName || '';
-    const partner2 = memberMappings[1]?.canonicalName || '';
-    const unresolved = memberMappings.filter(item => item.status !== 'reviewed');
+    const partner1 = memberMappings[0]?.destinationName || '';
+    const partner2 = memberMappings[1]?.destinationName || '';
+    const preservedNames = memberMappings.filter(item => item.destinationNameSource === 'preserved_udisc_name');
     const holesComplete = Boolean(row.holesComplete);
-    const issues = unresolved.map(item => `identity_${item.status}:${item.username || item.sourceNames?.[0] || 'unknown'}`);
+    const issues = preservedNames.map(item => 'identity_name_preserved_as_supplied:' + (item.sourceNames?.[0] || item.username || 'unknown'));
     if (!row.memberAlignment) issues.push('source_name_username_member_count_mismatch');
     if (!holesComplete) issues.push(`incomplete_holes:${row.holesCompleted}/18`);
     if (duplicateCanonicalRows.has(index)) issues.push('canonical_name_reused_across_event_teams');
@@ -119,9 +120,9 @@ export function buildGlowProposal(model, evidenceInput, decisions = {}) {
       source: Object.freeze({ sourceRow: row.sourceRow, sourceTeam: row.sourceTeam, sourceRank: row.sourceRank, sourceRankRaw: row.sourceRankRaw, division: row.division, relativeScore: row.relativeScore, strokeTotal: row.strokeTotal, holeStrokesTotal: row.holeStrokesTotal, holeScores: Object.freeze([...row.scores]), holesCompleted: row.holesCompleted, holesComplete, memberMappings: Object.freeze(memberMappings), issues: Object.freeze(issues) })
     });
   });
-  const identityIssues = crosswalk.filter(item => item.status !== 'reviewed').map(item => ({ sourceNames: item.sourceNames, username: item.username, status: item.status, suggestedCanonicalNames: item.suggestedCanonicalNames, evidenceKinds: item.evidenceKinds }));
+  const identityIssues = crosswalk.filter(item => item.status !== 'reviewed').map(item => ({ sourceNames: item.sourceNames, username: item.username, status: item.status, suggestedCanonicalNames: item.suggestedCanonicalNames, evidenceKinds: item.evidenceKinds, disposition: 'preserved_source_name_for_later_review' }));
   const incompleteRows = proposalPlayers.filter(item => !item.source.holesComplete).length;
-  const unresolvedEntryCount = proposalPlayers.filter(item => item.source.memberMappings.some(member => member.status !== 'reviewed') || item.source.issues.includes('canonical_name_reused_across_event_teams')).length;
+  const unresolvedEntryCount = proposalPlayers.filter(item => item.source.memberMappings.some(member => !member.destinationName) || item.source.issues.includes('canonical_name_reused_across_event_teams')).length;
   const proposedPlayers = proposalPlayers.map(item => item.destinationEntry);
   const snapshotHistory = (model.snapshots || []).map((item, historyIndex) => Object.freeze({
     localImportNumber: item.localImportNumber || historyIndex + 1,
@@ -159,9 +160,9 @@ export function buildGlowProposal(model, evidenceInput, decisions = {}) {
     event: Object.freeze({ eventId: snapshot.eventId, weekDate: snapshot.eventId, observedAtLocal: snapshot.observedAtLocal, sourceUpdatedAt: snapshot.sourceUpdatedAt, sourceFreshness: snapshot.freshness || 'upstream_freshness_unknown', localImportNumber: snapshot.localImportNumber, contentSignature: snapshot.contentSignature }),
     destination: Object.freeze({ contract: 'Glow week: cards[].players[] and players[] entries with id,name,partner1,partner2,cardId,scores[18],removed', week }),
     sourceProvenance: Object.freeze({ source: 'local UDisc XLSX/CSV snapshot', rowOrderPreserved: true, snapshotHistory: Object.freeze(snapshotHistory), correctionDiffs: Object.freeze(correctionDiffs), udiscRanksPreserved: proposalPlayers.map(item => ({ sourceRow: item.source.sourceRow, rank: item.source.sourceRank, rawRank: item.source.sourceRankRaw, division: item.source.division })), relativeVsStrokeScores: proposalPlayers.map(item => ({ sourceRow: item.source.sourceRow, relativeScore: item.source.relativeScore, strokeTotal: item.source.strokeTotal, holeStrokesTotal: item.source.holeStrokesTotal })), rowEvidence: Object.freeze(proposalPlayers.map(item => item.source)) }),
-    identityReview: Object.freeze({ required: identityIssues.length > 0, reviewedCrosswalk: crosswalk, unresolved: Object.freeze(identityIssues) }),
-    issues: Object.freeze({ unresolvedIdentityCount: identityIssues.length, rowsWithUnresolvedIdentity: unresolvedEntryCount, incompleteRoundRows: incompleteRows, duplicateCanonicalTeamRows: proposalPlayers.filter(item => item.source.issues.includes('canonical_name_reused_across_event_teams')).length }),
-    readyForSeparateHumanIntegrationReview: identityIssues.length === 0 && incompleteRows === 0 && unresolvedEntryCount === 0
+    identityReview: Object.freeze({ required: false, decisionDeferred: true, reviewedCrosswalk: crosswalk, unresolved: Object.freeze(identityIssues) }),
+    issues: Object.freeze({ unresolvedIdentityCount: identityIssues.length, preservedSourceNameCount: proposalPlayers.reduce((n, item) => n + item.source.memberMappings.filter(member => member.destinationNameSource === 'preserved_udisc_name').length, 0), rowsWithUnresolvedIdentity: unresolvedEntryCount, incompleteRoundRows: incompleteRows, duplicateCanonicalTeamRows: proposalPlayers.filter(item => item.source.issues.includes('canonical_name_reused_across_event_teams')).length }),
+    readyForSeparateHumanIntegrationReview: incompleteRows === 0 && unresolvedEntryCount === 0
   });
 }
 
@@ -179,7 +180,7 @@ export function renderGlowReconciliation(container, model, evidenceInput, decisi
     const username = tr.insertCell(); username.textContent = member.username || '—';
     const choice = tr.insertCell();
     const select = document.createElement('select'); select.setAttribute('aria-label', `Review Glow name for ${member.username || member.sourceNames.join(', ')}`);
-    const blank = document.createElement('option'); blank.value = ''; blank.textContent = member.canonicalName || `Review needed: ${member.suggestedCanonicalNames.join(' / ') || 'unmatched'}`; select.append(blank);
+    const blank = document.createElement('option'); blank.value = ''; blank.textContent = member.canonicalName || 'Keep UDisc name as-is: ' + member.sourceNames.join(' / ') + (member.suggestedCanonicalNames.length ? ' (optional Glow name: ' + member.suggestedCanonicalNames.join(' / ') + ')' : ''); select.append(blank);
     for (const candidate of evidence.candidates) { const option = document.createElement('option'); option.value = candidate; option.textContent = candidate; select.append(option); }
     select.value = decisions[member.key]?.canonicalName || '';
     select.addEventListener('change', () => onResolve(member, select.value)); choice.append(select);
@@ -196,7 +197,7 @@ export function renderDestinationProposal(container, proposal) {
   const body = table.createTBody();
   for (const item of proposal.destination.week.players.map((entry, i) => ({ entry, source: proposal.sourceProvenance.rowEvidence[i] }))) {
     const tr = body.insertRow();
-    for (const value of [item.source.sourceRank, item.entry.partner1 || 'Review required', item.entry.partner2 || 'Review required', item.source.relativeScore ?? '—', item.source.strokeTotal ?? '—', `${item.source.holesCompleted}/18`, item.entry.scores.map((score, index) => score === '' ? `${index + 1}:—` : `${index + 1}:${score}`).join(' · '), item.source.issues.join(', ') || '—']) { const td = tr.insertCell(); td.textContent = String(value); }
+    for (const value of [item.source.sourceRank, item.entry.partner1 || 'Name missing', item.entry.partner2 || (item.source.memberMappings.length === 1 ? 'Solo UDisc entry' : 'Name missing'), item.source.relativeScore ?? '—', item.source.strokeTotal ?? '—', `${item.source.holesCompleted}/18`, item.entry.scores.map((score, index) => score === '' ? `${index + 1}:—` : `${index + 1}:${score}`).join(' · '), item.source.issues.join(', ') || '—']) { const td = tr.insertCell(); td.textContent = String(value); }
   }
   container.replaceChildren(table);
 }
