@@ -6,7 +6,7 @@ It does not alter firmware, GPIO mappings, segment bounds, or UV activation gate
 """
 from __future__ import annotations
 import argparse, hashlib, json, pathlib, time, urllib.request
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
 IP, MAC, VERSION = "192.168.77.11", "8c94df55c34c", "16.0.1"
 WITNESS = ("hbnf-wow-aux-r3-2026-10-25-uv-follow-v1", "aux-r3-wow-1d",
@@ -26,6 +26,12 @@ def save(root,name,obj):
     p=root/f"{name}.json"; p.write_text(json.dumps(obj,indent=2,sort_keys=True)+"\n"); return p
 
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+
+def write_archive(path,files):
+    with ZipFile(path,"w",ZIP_DEFLATED,compresslevel=9) as z:
+        for name,source in sorted(files):
+            info=ZipInfo(name,(2026,1,1,0,0,0)); info.compress_type=ZIP_DEFLATED
+            z.writestr(info,source.read_bytes())
 
 def snapshot(root,prefix="pre"):
     out={}
@@ -85,7 +91,12 @@ def main():
     p.add_argument("--module-confirmed-disconnected",action="store_true")
     p.add_argument("--admission-manifest")
     a=p.parse_args()
-    root=pathlib.Path(a.evidence_dir).resolve(); root.mkdir(parents=True,exist_ok=False)
+    root=pathlib.Path(a.evidence_dir).resolve()
+    if a.apply:
+        if not root.is_dir() or not (root/"candidate.zip").is_file() or not (root/"admission.json").is_file():
+            raise SystemExit("apply requires an existing directory with admitted candidate.zip and admission.json")
+    else:
+        root.mkdir(parents=True,exist_ok=False)
     if a.apply and not a.module_confirmed_disconnected:
         raise SystemExit("--apply requires --module-confirmed-disconnected")
     pre=snapshot(root); seg=validate(pre); oldboot=pre["cfg"]["def"]["ps"]
@@ -105,9 +116,16 @@ def main():
     if (adm.get("baseline",{}).get("identity")!=f"AUX {MAC} WLED {VERSION}; UV map 16/25/26; boot preset {oldboot}"
         or adm.get("package",{}).get("sha256")!=sha(root/"candidate.zip")):
         raise RuntimeError("admission manifest does not bind the fresh target and candidate")
+    write_archive(root/"live-baseline.zip",[(f"pre-{n}.json",root/f"pre-{n}.json")
+        for n in ("info","state","cfg","pins","presets")])
+    if (adm.get("baseline",{}).get("artifactSha256")!=sha(root/"live-baseline.zip")
+        or adm.get("baseline",{}).get("artifactBytes")!=(root/"live-baseline.zip").stat().st_size):
+        raise RuntimeError("fresh AUX baseline differs from admitted bytes; no change made")
     with ZipFile(root/"candidate.zip") as z:
         if z.read("candidate-plan.json")!=planfile.read_bytes():
             raise RuntimeError("admitted package does not contain the exact live candidate plan")
+        if z.read("configure_uv_safe_boot.py")!=pathlib.Path(__file__).read_bytes():
+            raise RuntimeError("admitted operator source differs from the running file")
     uptime=float(pre["info"].get("uptime",0))
     try:
         body=dict(state); body.update({"psave":pid,"bootps":pid,"ib":True,"sb":True,"n":"HBNF AUX UV safe startup"})
