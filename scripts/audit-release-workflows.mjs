@@ -5,6 +5,7 @@ import path from 'node:path';
 const workflowDir = path.resolve(process.env.RELEASE_WORKFLOW_DIR || '.github/workflows');
 const files = (await readdir(workflowDir)).filter(name => /\.ya?ml$/i.test(name)).sort();
 const mutationPatterns = [
+  /^\\s*uses:\\s*[^\\r\\n#]*(?:\\bdeploy\\b|pages-action|wrangler-action|github-pages-deploy-action|actions-gh-pages|vercel-action|netlify-action|workers-action)[^\\r\\n#]*/im,
   /\bwrangler\s+(?:deploy|versions\s+deploy)\b/i,
   /\bsupabase\s+(?:functions\s+deploy|db\s+push)\b/i,
   /\bfirebase\s+(?:deploy|hosting:channel:deploy)\b/i,
