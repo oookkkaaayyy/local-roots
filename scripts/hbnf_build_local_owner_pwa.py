@@ -496,6 +496,9 @@ def main() -> None:
                 raise SystemExit("Historical installed-baseline evidence was upgraded or misclassified")
             baseline_readback["path"] = receipt_path.relative_to(root).as_posix()
             installed = receipt.get("installed_sha256_by_path", receipt.get("expected_asset_sha256_by_path", {}))
+            if receipt.get("schema") == "hbnf-owner-pwa-live-readback-v1" and "live_version_marker" in receipt:
+                installed = {"owner-pwa/" + item.get("path", ""): item.get("served_sha256")
+                             for item in receipt.get("assets", [])}
         elif receipt.get("schema") == "hbnf-owner-pwa-install-result-v1":
             if (not args.rollback_baseline_package_dir or receipt.get("status") != "PASS" or
                     receipt.get("step") != "install_owner_pwa" or receipt.get("install_exit") != 0 or
