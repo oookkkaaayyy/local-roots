@@ -1,150 +1,202 @@
-/** Source-agnostic, in-memory UDisc identity reconciliation and proposal builder. */
+/** Offline UDisc-to-Glow name review and destination-shaped proposal builder. */
 const text = value => String(value ?? '').trim();
-const key = value => text(value).normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+const norm = value => text(value).normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 
-function checkedRoster(roster) {
-  if (!Array.isArray(roster)) throw Error('Load a roster JSON array before reconciling.');
-  const ids = new Set();
-  const normalized = roster.map((person, index) => {
-    const id = text(person?.playerId);
-    const displayName = text(person?.displayName);
-    if (!id || !displayName) throw Error(`Roster entry ${index + 1} needs playerId and displayName.`);
-    if (ids.has(id)) throw Error(`Roster contains duplicate playerId ${id}.`);
-    ids.add(id);
-    const udiscUsernames = (Array.isArray(person.udiscUsernames) ? person.udiscUsernames : [])
-      .map(text).filter(Boolean);
+export function validateIdentityEvidence(evidence) {
+  if (!evidence || typeof evidence !== 'object' || Array.isArray(evidence)) throw Error('Load a private identity-evidence JSON object.');
+  if (!evidence.aliases || typeof evidence.aliases !== 'object' || Array.isArray(evidence.aliases)) throw Error('Identity evidence needs an aliases object from Glow state.');
+  const aliases = {};
+  for (const [alias, canonical] of Object.entries(evidence.aliases)) {
+    if (text(alias) && text(canonical)) aliases[text(alias)] = text(canonical);
+  }
+  const historicalNames = [...new Set((Array.isArray(evidence.historicalNames) ? evidence.historicalNames : []).map(text).filter(Boolean))];
+  const tagEvidence = (Array.isArray(evidence.tagEvidence) ? evidence.tagEvidence : []).filter(row => text(row?.playerName)).map(row => ({
+    playerName: text(row.playerName), eventType: text(row.eventType),
+    // player_key is deliberately discarded: it is name-derived tag data, not a person identity.
+  }));
+  const candidates = [...new Set([...Object.values(aliases), ...historicalNames])].sort((a, b) => a.localeCompare(b));
+  return Object.freeze({ aliases: Object.freeze(aliases), historicalNames: Object.freeze(historicalNames), tagEvidence: Object.freeze(tagEvidence), candidates: Object.freeze(candidates), provenance: evidence.provenance || {} });
+}
+
+export function memberKey(member) {
+  const username = norm(member?.username);
+  return username ? `udisc:${username}` : `name:${norm(member?.name)}`;
+}
+
+function aliasCandidatesFor(name, evidence) {
+  const sourceKey = norm(name);
+  return [...new Set(Object.entries(evidence.aliases).filter(([alias]) => norm(alias) === sourceKey).map(([, canonical]) => canonical))];
+}
+
+function historyCandidatesFor(name, evidence) {
+  const sourceKey = norm(name);
+  return [...new Set(evidence.historicalNames.filter(candidate => norm(candidate) === sourceKey))];
+}
+
+/** Build one crosswalk row per UDisc handle; display names never auto-confirm identity. */
+export function buildReviewedCrosswalk(model, evidenceInput, decisions = {}) {
+  const evidence = evidenceInput?.candidates ? evidenceInput : validateIdentityEvidence(evidenceInput);
+  const observations = new Map();
+  for (const snapshot of model?.snapshots || []) for (const row of snapshot.rows || []) {
+    row.members.forEach((name, index) => {
+      const member = { name: text(name), username: row.memberAlignment ? text(row.usernames?.[index]) : '' };
+      const key = memberKey(member);
+      if (!observations.has(key)) observations.set(key, { key, username: member.username, names: new Set(), observations: [] });
+      const item = observations.get(key);
+      if (member.name) item.names.add(member.name);
+      item.observations.push({ sourceRow: row.sourceRow, sourceTeam: row.sourceTeam, sourceRank: row.sourceRank, eventId: snapshot.eventId });
+    });
+  }
+  const crosswalk = [...observations.values()].map(item => {
+    const names = [...item.names];
+    const aliasCandidates = [...new Set(names.flatMap(name => aliasCandidatesFor(name, evidence)))];
+    const historyCandidates = [...new Set(names.flatMap(name => historyCandidatesFor(name, evidence)))];
+    const tagNameEvidence = evidence.tagEvidence.filter(tag => names.some(name => norm(tag.playerName) === norm(name)));
+    const evidenceCandidates = [...new Set([...aliasCandidates, ...historyCandidates])];
+    const firstNameOnly = names.some(name => name.split(/[\s_]+/).filter(Boolean).length === 1);
+    const conflict = evidenceCandidates.length > 1;
+    const decision = decisions[item.key];
+    let status, suggestedCanonicalNames = evidenceCandidates, canonicalName = null, matchMethod = null;
+    if (decision?.canonicalName) {
+      const chosen = evidence.candidates.find(candidate => norm(candidate) === norm(decision.canonicalName));
+      if (!chosen) throw Error(`Review decision for ${item.username || names[0]} selects a name outside the supplied Glow evidence.`);
+      status = 'reviewed'; canonicalName = chosen; matchMethod = 'explicit_owner_review';
+    } else if (conflict) status = 'conflict';
+    else if (evidenceCandidates.length) status = firstNameOnly ? 'first_name_review' : 'suggested_review';
+    else if (tagNameEvidence.length) status = 'tag_only_review';
+    else status = 'unmatched';
+    const evidenceKinds = [];
+    if (aliasCandidates.length) evidenceKinds.push('exact_playerAliases_key');
+    if (historyCandidates.length) evidenceKinds.push('exact_historical_Glow_partner_name');
+    if (tagNameEvidence.length) evidenceKinds.push('exact_historical_tag_display_name_only');
+    if (firstNameOnly) evidenceKinds.push('first_name_only_never_auto_confirmed');
+    return Object.freeze({ key: item.key, username: item.username, sourceNames: Object.freeze(names), status, canonicalName, suggestedCanonicalNames: Object.freeze(suggestedCanonicalNames), aliasCandidates: Object.freeze(aliasCandidates), historyCandidates: Object.freeze(historyCandidates), tagNameEvidence: Object.freeze(tagNameEvidence.map(t => ({ playerName: t.playerName, eventType: t.eventType }))), evidenceKinds: Object.freeze(evidenceKinds), observations: Object.freeze(item.observations) });
+  });
+  return Object.freeze(crosswalk);
+}
+
+export function buildGlowProposal(model, evidenceInput, decisions = {}) {
+  const snapshot = model?.snapshots?.at(-1);
+  if (!snapshot) throw Error('Load a UDisc snapshot before proposing a Glow week.');
+  const evidence = evidenceInput?.candidates ? evidenceInput : validateIdentityEvidence(evidenceInput);
+  const crosswalk = buildReviewedCrosswalk(model, evidence, decisions);
+  const byKey = new Map(crosswalk.map(item => [item.key, item]));
+  const canonicalRowUse = new Map();
+  snapshot.rows.forEach((row, rowIndex) => row.members.forEach((name, memberIndex) => {
+    const key = memberKey({ name, username: row.memberAlignment ? row.usernames?.[memberIndex] : '' });
+    const canonical = byKey.get(key)?.canonicalName;
+    if (!canonical) return;
+    if (!canonicalRowUse.has(norm(canonical))) canonicalRowUse.set(norm(canonical), new Set());
+    canonicalRowUse.get(norm(canonical)).add(rowIndex);
+  }));
+  const duplicateCanonicalRows = new Set([...canonicalRowUse.values()].filter(rows => rows.size > 1).flatMap(rows => [...rows]));
+  const proposalPlayers = snapshot.rows.map((row, index) => {
+    const memberMappings = row.members.map((name, memberIndex) => {
+      const key = memberKey({ name, username: row.memberAlignment ? row.usernames?.[memberIndex] : '' });
+      if (!row.memberAlignment) return { key, status: 'conflict', canonicalName: null, suggestedCanonicalNames: [], evidenceKinds: ['member_username_count_mismatch'], username: '', sourceNames: [name] };
+      return byKey.get(key) || { key, status: 'unmatched', canonicalName: null, suggestedCanonicalNames: [], evidenceKinds: [], username: text(row.usernames?.[memberIndex]), sourceNames: [name] };
+    });
+    const partner1 = memberMappings[0]?.canonicalName || '';
+    const partner2 = memberMappings[1]?.canonicalName || '';
+    const unresolved = memberMappings.filter(item => item.status !== 'reviewed');
+    const holesComplete = Boolean(row.holesComplete);
+    const issues = unresolved.map(item => `identity_${item.status}:${item.username || item.sourceNames?.[0] || 'unknown'}`);
+    if (!row.memberAlignment) issues.push('source_name_username_member_count_mismatch');
+    if (!holesComplete) issues.push(`incomplete_holes:${row.holesCompleted}/18`);
+    if (duplicateCanonicalRows.has(index)) issues.push('canonical_name_reused_across_event_teams');
+    const proposalId = `PROPOSED_${String(index + 1).padStart(2, '0')}`;
+    const entry = Object.freeze({
+      id: proposalId,
+      name: partner1 && partner2 ? `${partner1} / ${partner2}` : partner1 || partner2,
+      partner1,
+      partner2,
+      cardId: 'C1',
+      scores: Object.freeze(row.scores.map(score => score == null ? '' : String(score))),
+      removed: false
+    });
     return Object.freeze({
-      playerId: id,
-      displayName,
-      udiscUsernames: Object.freeze(udiscUsernames),
-      aliases: Object.freeze((Array.isArray(person.aliases) ? person.aliases : []).map(text).filter(Boolean))
+      destinationEntry: entry,
+      source: Object.freeze({ sourceRow: row.sourceRow, sourceTeam: row.sourceTeam, sourceRank: row.sourceRank, sourceRankRaw: row.sourceRankRaw, division: row.division, relativeScore: row.relativeScore, strokeTotal: row.strokeTotal, holeStrokesTotal: row.holeStrokesTotal, holeScores: Object.freeze([...row.scores]), holesCompleted: row.holesCompleted, holesComplete, memberMappings: Object.freeze(memberMappings), issues: Object.freeze(issues) })
     });
   });
-  return Object.freeze(normalized);
-}
-
-const sourceKey = member => key(member.username) ? `username:${key(member.username)}` : `name:${key(member.name)}`;
-
-function reconcileMember(member, roster, decisions = {}) {
-  const nameKey = key(member.name);
-  const usernameKey = key(member.username);
-  const usernameMatches = usernameKey ? roster.filter(person => person.udiscUsernames.some(value => key(value) === usernameKey)) : [];
-  const nameMatches = nameKey ? roster.filter(person => key(person.displayName) === nameKey || person.aliases.some(alias => key(alias) === nameKey)) : [];
-  const distinct = list => [...new Map(list.map(person => [person.playerId, person])).values()];
-  const userHits = distinct(usernameMatches);
-  const nameHits = distinct(nameMatches);
-  const candidateIds = distinct([...userHits, ...nameHits]).map(person => person.playerId);
-  const decision = decisions[sourceKey(member)];
-
-  if (decision) {
-    const chosen = roster.find(person => person.playerId === decision.playerId);
-    if (!chosen) throw Error(`Manual resolution for ${member.name || member.username} refers to an unknown playerId.`);
-    return {
-      ...member, status: 'confirmed', playerId: chosen.playerId, displayName: chosen.displayName,
-      method: 'explicit_review', candidateIds, evidence: { usernameMatches: userHits.map(p => p.playerId), nameMatches: nameHits.map(p => p.playerId) },
-      issue: (userHits.length && !userHits.some(p => p.playerId === chosen.playerId)) || (nameHits.length && !nameHits.some(p => p.playerId === chosen.playerId)) ? 'manual_resolution_overrode_conflicting_identifiers' : null
-    };
-  }
-
-  if (userHits.length > 1 || (userHits.length === 1 && nameHits.length > 0 && !nameHits.some(p => p.playerId === userHits[0].playerId))) {
-    return { ...member, status: 'conflict', playerId: null, displayName: null, method: null, candidateIds, issue: 'identifier_evidence_disagrees' };
-  }
-  if (userHits.length === 1) {
-    return { ...member, status: 'confirmed', playerId: userHits[0].playerId, displayName: userHits[0].displayName, method: 'exact_udisc_username', candidateIds, issue: null };
-  }
-  if (candidateIds.length) {
-    return { ...member, status: 'ambiguous', playerId: null, displayName: null, method: null, candidateIds, issue: 'name_match_requires_explicit_review' };
-  }
-  return { ...member, status: 'unmatched', playerId: null, displayName: null, method: null, candidateIds: [], issue: 'no_roster_match' };
-}
-
-export function reconcileSnapshot(model, rosterInput, decisions = {}) {
-  const roster = checkedRoster(rosterInput);
-  const snapshot = model?.snapshots?.at(-1);
-  if (!snapshot) throw Error('Load a UDisc snapshot before reconciling.');
-  const teams = snapshot.rows.map(row => {
-    if (!row.memberAlignment) {
-      const members = row.members.map((name, index) => ({ name, username: '', sourceIndex: index }));
-      const reconciled = members.map(member => ({ ...reconcileMember(member, roster, decisions), status: 'conflict', playerId: null, issue: 'member_username_count_mismatch' }));
-      return { sourceRow: row.sourceRow, division: row.division, sourceRank: row.sourceRank, sourceRankRaw: row.sourceRankRaw, sourceTeam: row.sourceTeam, members: reconciled, teamId: null, relativeScore: row.relativeScore, strokeTotal: row.strokeTotal, scores: [...row.scores], holesCompleted: row.holesCompleted, holesComplete: row.holesComplete, issues: ['member_username_count_mismatch'] };
-    }
-    const members = row.members.map((name, index) => reconcileMember({ name, username: row.usernames[index] || '', sourceIndex: index }, roster, decisions));
-    const ids = members.every(person => person.playerId) ? members.map(person => person.playerId) : null;
-    const teamId = ids ? `hbnf-team:${[...ids].sort().map(encodeURIComponent).join('+')}` : null;
-    const issues = members.filter(person => person.issue).map(person => person.issue);
-    if (!row.holesComplete) issues.push('incomplete_round');
-    return { sourceRow: row.sourceRow, division: row.division, sourceRank: row.sourceRank, sourceRankRaw: row.sourceRankRaw, sourceTeam: row.sourceTeam, members, teamId, relativeScore: row.relativeScore, strokeTotal: row.strokeTotal, scores: [...row.scores], holesCompleted: row.holesCompleted, holesComplete: row.holesComplete, issues: [...new Set(issues)] };
-  });
-  const assignments = new Map();
-  teams.forEach((team, teamIndex) => team.members.forEach((member, memberIndex) => {
-    if (!member.playerId) return;
-    const refs = assignments.get(member.playerId) || [];
-    refs.push({ teamIndex, memberIndex }); assignments.set(member.playerId, refs);
+  const identityIssues = crosswalk.filter(item => item.status !== 'reviewed').map(item => ({ sourceNames: item.sourceNames, username: item.username, status: item.status, suggestedCanonicalNames: item.suggestedCanonicalNames, evidenceKinds: item.evidenceKinds }));
+  const incompleteRows = proposalPlayers.filter(item => !item.source.holesComplete).length;
+  const unresolvedEntryCount = proposalPlayers.filter(item => item.source.memberMappings.some(member => member.status !== 'reviewed') || item.source.issues.includes('canonical_name_reused_across_event_teams')).length;
+  const proposedPlayers = proposalPlayers.map(item => item.destinationEntry);
+  const snapshotHistory = (model.snapshots || []).map((item, historyIndex) => Object.freeze({
+    localImportNumber: item.localImportNumber || historyIndex + 1,
+    eventId: item.eventId,
+    observedAtLocal: item.observedAtLocal,
+    sourceUpdatedAt: item.sourceUpdatedAt,
+    freshness: item.freshness || 'upstream_freshness_unknown',
+    contentSignature: item.contentSignature,
+    rowCount: item.rows.length,
+    rows: Object.freeze(item.rows.map(row => Object.freeze({ sourceRow: row.sourceRow, sourceTeam: row.sourceTeam, sourceRank: row.sourceRank, sourceRankRaw: row.sourceRankRaw, usernames: Object.freeze([...row.usernames]), relativeScore: row.relativeScore, strokeTotal: row.strokeTotal, holeScores: Object.freeze([...row.scores]), holesCompleted: row.holesCompleted, holesComplete: row.holesComplete })))
   }));
-  for (const refs of assignments.values()) {
-    if (refs.length < 2) continue;
-    for (const { teamIndex, memberIndex } of refs) {
-      const team = teams[teamIndex], member = team.members[memberIndex];
-      team.members[memberIndex] = { ...member, status: 'conflict', playerId: null, displayName: null, method: null, issue: 'canonical_identity_collision' };
-      team.teamId = null; team.issues = [...new Set([...team.issues, 'canonical_identity_collision'])];
+  const correctionDiffs = [];
+  for (let i = 1; i < snapshotHistory.length; i++) {
+    const before = snapshotHistory[i - 1], after = snapshotHistory[i];
+    const rowCount = Math.max(before.rows.length, after.rows.length);
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      const oldRow = before.rows[rowIndex], newRow = after.rows[rowIndex];
+      if (!oldRow || !newRow) { correctionDiffs.push(Object.freeze({ fromImport: before.localImportNumber, toImport: after.localImportNumber, sourceRow: newRow?.sourceRow ?? oldRow?.sourceRow ?? rowIndex + 2, changedFields: Object.freeze({ row: [oldRow ? 'present' : 'absent', newRow ? 'present' : 'absent'] }) })); continue; }
+      const changedFields = {};
+      for (const field of ['sourceTeam', 'sourceRank', 'sourceRankRaw', 'usernames', 'relativeScore', 'strokeTotal', 'holeScores', 'holesCompleted', 'holesComplete']) if (JSON.stringify(oldRow[field]) !== JSON.stringify(newRow[field])) changedFields[field] = [oldRow[field], newRow[field]];
+      if (Object.keys(changedFields).length) correctionDiffs.push(Object.freeze({ fromImport: before.localImportNumber, toImport: after.localImportNumber, sourceRow: newRow.sourceRow, changedFields: Object.freeze(changedFields) }));
     }
   }
-  return Object.freeze({ eventId: snapshot.eventId, snapshot, teams: Object.freeze(teams) });
-}
-
-export function buildProposedPayload(reconciliation) {
-  const { eventId, snapshot, teams } = reconciliation;
-  const unresolvedIssues = teams.flatMap(team => team.issues.map(code => ({ sourceRow: team.sourceRow, code })));
+  const week = Object.freeze({
+    date: snapshot.eventId,
+    activeWeek: snapshot.eventId,
+    cards: Object.freeze([Object.freeze({ id: 'C1', finalized: false, players: Object.freeze(proposedPlayers) })]),
+    players: Object.freeze(proposedPlayers),
+    scoresLocked: false
+  });
   return Object.freeze({
-    schema: 'hbnf.glow.score-delivery-proposal.v1',
+    schema: 'hbnf.glow.proposed-week.v1',
     disposition: 'PROPOSED_ONLY_NOT_DELIVERED',
-    event: { eventId, source: 'UDisc local export', observedAtLocal: snapshot.observedAtLocal, sourceUpdatedAt: snapshot.sourceUpdatedAt, sourceFreshness: snapshot.freshness || 'upstream_freshness_unknown', localImportNumber: snapshot.localImportNumber, contentSignature: snapshot.contentSignature },
-    teams: teams.map(team => ({
-      sourceRow: team.sourceRow, division: team.division, teamId: team.teamId,
-      sourceTeam: team.sourceTeam, sourceRank: team.sourceRank, sourceRankRaw: team.sourceRankRaw,
-      players: team.members.map(member => ({ sourceName: member.name, sourceUsername: member.username, playerId: member.playerId, displayName: member.displayName, matchStatus: member.status, matchMethod: member.method, candidateIds: member.candidateIds, issue: member.issue })),
-      relativeScore: team.relativeScore, strokeTotal: team.strokeTotal, holeScores: team.scores,
-      holesCompleted: team.holesCompleted, holesComplete: team.holesComplete, issues: team.issues
-    })),
-    unresolvedIssues,
-    readyForHumanReview: unresolvedIssues.length === 0,
-    writeTarget: null
+    writeTarget: null,
+    event: Object.freeze({ eventId: snapshot.eventId, weekDate: snapshot.eventId, observedAtLocal: snapshot.observedAtLocal, sourceUpdatedAt: snapshot.sourceUpdatedAt, sourceFreshness: snapshot.freshness || 'upstream_freshness_unknown', localImportNumber: snapshot.localImportNumber, contentSignature: snapshot.contentSignature }),
+    destination: Object.freeze({ contract: 'Glow week: cards[].players[] and players[] entries with id,name,partner1,partner2,cardId,scores[18],removed', week }),
+    sourceProvenance: Object.freeze({ source: 'local UDisc XLSX/CSV snapshot', rowOrderPreserved: true, snapshotHistory: Object.freeze(snapshotHistory), correctionDiffs: Object.freeze(correctionDiffs), udiscRanksPreserved: proposalPlayers.map(item => ({ sourceRow: item.source.sourceRow, rank: item.source.sourceRank, rawRank: item.source.sourceRankRaw, division: item.source.division })), relativeVsStrokeScores: proposalPlayers.map(item => ({ sourceRow: item.source.sourceRow, relativeScore: item.source.relativeScore, strokeTotal: item.source.strokeTotal, holeStrokesTotal: item.source.holeStrokesTotal })), rowEvidence: Object.freeze(proposalPlayers.map(item => item.source)) }),
+    identityReview: Object.freeze({ required: identityIssues.length > 0, reviewedCrosswalk: crosswalk, unresolved: Object.freeze(identityIssues) }),
+    issues: Object.freeze({ unresolvedIdentityCount: identityIssues.length, rowsWithUnresolvedIdentity: unresolvedEntryCount, incompleteRoundRows: incompleteRows, duplicateCanonicalTeamRows: proposalPlayers.filter(item => item.source.issues.includes('canonical_name_reused_across_event_teams')).length }),
+    readyForSeparateHumanIntegrationReview: identityIssues.length === 0 && incompleteRows === 0 && unresolvedEntryCount === 0
   });
 }
 
-export function memberSourceKey(name, username = '') {
-  return sourceKey({ name, username });
-}
-
-export function renderReconciliation(container, reconciliation, rosterInput, decisions, onResolve) {
-  const roster = checkedRoster(rosterInput);
+export function renderGlowReconciliation(container, model, evidenceInput, decisions, onResolve) {
+  const evidence = evidenceInput?.candidates ? evidenceInput : validateIdentityEvidence(evidenceInput);
+  const crosswalk = buildReviewedCrosswalk(model, evidence, decisions);
   const table = document.createElement('table');
   const head = table.createTHead().insertRow();
-  for (const label of ['UDisc rank', 'UDisc team', 'Source player / username', 'HBNF identity decision', 'To par', 'Strokes', 'Holes']) {
-    const th = document.createElement('th'); th.textContent = label; head.append(th);
-  }
+  for (const label of ['Decision', 'UDisc name(s)', 'UDisc username', 'Glow name suggestion(s)', 'Evidence']) { const th = document.createElement('th'); th.textContent = label; head.append(th); }
   const body = table.createTBody();
-  for (const team of reconciliation.teams) for (const member of team.members) {
+  for (const member of crosswalk) {
     const tr = body.insertRow();
-    for (const value of [team.sourceRank, team.sourceTeam, `${member.name}${member.username ? ` / @${member.username}` : ''}`]) {
-      const td = tr.insertCell(); td.textContent = value;
-    }
-    const decisionCell = tr.insertCell();
-    const select = document.createElement('select');
-    select.setAttribute('aria-label', `Resolve ${member.name || member.username}`);
-    const initial = document.createElement('option');
-    initial.value = ''; initial.textContent = `${member.status}${member.candidateIds.length ? ` · ${member.candidateIds.join(', ')}` : ''}`;
-    select.append(initial);
-    for (const person of roster) {
-      const option = document.createElement('option'); option.value = person.playerId; option.textContent = `${person.displayName} [${person.playerId}]`;
-    }
-    const chosen = decisions[memberSourceKey(member.name, member.username)]?.playerId;
-    select.value = chosen || '';
-    select.addEventListener('change', () => onResolve(member, select.value));
-    decisionCell.append(select);
-    const statusCell = tr.insertCell(); statusCell.textContent = team.relativeScore ?? '—';
-    const strokesCell = tr.insertCell(); strokesCell.textContent = team.strokeTotal ?? '—';
-    const holesCell = tr.insertCell(); holesCell.textContent = `${team.holesCompleted}/18`;
+    const status = tr.insertCell(); status.textContent = member.status; status.className = member.status;
+    const names = tr.insertCell(); names.textContent = member.sourceNames.join(' · ');
+    const username = tr.insertCell(); username.textContent = member.username || '—';
+    const choice = tr.insertCell();
+    const select = document.createElement('select'); select.setAttribute('aria-label', `Review Glow name for ${member.username || member.sourceNames.join(', ')}`);
+    const blank = document.createElement('option'); blank.value = ''; blank.textContent = member.canonicalName || `Review needed: ${member.suggestedCanonicalNames.join(' / ') || 'unmatched'}`; select.append(blank);
+    for (const candidate of evidence.candidates) { const option = document.createElement('option'); option.value = candidate; option.textContent = candidate; select.append(option); }
+    select.value = decisions[member.key]?.canonicalName || '';
+    select.addEventListener('change', () => onResolve(member, select.value)); choice.append(select);
+    const proof = tr.insertCell(); proof.textContent = member.evidenceKinds.join(', ') || 'No exact first-party evidence';
+  }
+  container.replaceChildren(table);
+  return crosswalk;
+}
+
+export function renderDestinationProposal(container, proposal) {
+  const table = document.createElement('table');
+  const head = table.createTHead().insertRow();
+  for (const label of ['UDisc rank', 'Glow partner1', 'Glow partner2', 'To par', 'Strokes', 'Holes', 'Glow hole scores (18)', 'Issues']) { const th = document.createElement('th'); th.textContent = label; head.append(th); }
+  const body = table.createTBody();
+  for (const item of proposal.destination.week.players.map((entry, i) => ({ entry, source: proposal.sourceProvenance.rowEvidence[i] }))) {
+    const tr = body.insertRow();
+    for (const value of [item.source.sourceRank, item.entry.partner1 || 'Review required', item.entry.partner2 || 'Review required', item.source.relativeScore ?? '—', item.source.strokeTotal ?? '—', `${item.source.holesCompleted}/18`, item.entry.scores.map((score, index) => score === '' ? `${index + 1}:—` : `${index + 1}:${score}`).join(' · '), item.source.issues.join(', ') || '—']) { const td = tr.insertCell(); td.textContent = String(value); }
   }
   container.replaceChildren(table);
 }
