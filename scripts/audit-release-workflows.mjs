@@ -25,17 +25,17 @@ for (const file of files) {
   if (mutations.length === 0) continue;
 
   if (!source.includes('npm run release:admit')) {
-    errors.push(\`${file}: live mutation command detected without npm run release:admit\`);
+    errors.push(file + ': live mutation command detected without npm run release:admit');
   }
   if (!source.includes('npm run release:verify')) {
-    errors.push(\`${file}: live mutation command detected without npm run release:verify\`);
+    errors.push(file + ': live mutation command detected without npm run release:verify');
   }
 }
 
 if (errors.length) {
   console.error('Release workflow policy: FAIL');
-  for (const error of errors) console.error(\`- ${error}\`);
+  for (const error of errors) console.error('- ' + error);
   process.exitCode = 1;
 } else {
-  console.log(\`Release workflow policy: PASS (${files.length} workflow files inspected; any recognized live mutation must include both two-phase receipt commands)\`);
+  console.log('Release workflow policy: PASS (' + files.length + ' workflow files inspected; any recognized live mutation must include both two-phase receipt commands)');
 }
