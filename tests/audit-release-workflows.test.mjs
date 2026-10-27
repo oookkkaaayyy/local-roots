@@ -74,7 +74,7 @@ test('rejects mismatched admission and closeout receipt arguments', async () => 
     '      - run: npm run release:verify -- receipt-b.json receipt-root',
   ].join('\n'));
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /same receipt and root/);
+  assert.match(result.stderr, /identical receipt\/root arguments/);
 });
 
 test('rejects gates split across parallel jobs', async () => {
