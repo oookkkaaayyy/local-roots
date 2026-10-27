@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -18,6 +19,12 @@ async function fixture() {
     rollback: Buffer.from('baseline-current-package-bytes'),
     rollbackRecovery: Buffer.from('baseline-current-package-bytes'),
     deployment: Buffer.from('provider install receipt'),
+    deploymentReceiptRecovery: Buffer.from('provider install receipt'),
+    readback: Buffer.from(JSON.stringify({
+      provider: 'example', target: 'production', versionId: 'immutable-version-1',
+      sourceCommit: 'a'.repeat(40), packageSha256: hash(Buffer.from('candidate-package-bytes')),
+      baselineIdentity: 'provider version baseline-v1',
+    })),
     recovery: Buffer.from('candidate-package-bytes'),
   };
   for (const [name, bytes] of Object.entries(files)) await writeFile(path.join(root, 'evidence', `${name}.bin`), bytes);
@@ -34,15 +41,33 @@ async function fixture() {
     releaseId: 'example-2026-10-25',
     source: { repository: 'owner/repo', ref: 'main', commit: 'a'.repeat(40) },
     build: { command: 'npm run build', toolchain: 'node 22.0.0', lockfileSha256: 'b'.repeat(64), inputs: [{ name: 'base-image', version: 'sha256:' + 'c'.repeat(64), sha256: 'c'.repeat(64) }] },
-    baseline: { authorityUrl: 'https://drive.google.com/file/d/index/view', identity: 'provider version baseline-v1', sourceCommit: 'd'.repeat(40), sourceEvidence: 'evidence/baseline-source.txt', identityEvidence: identityEvidenceEntry, acceptance: 'PASS', artifact: { disposition: 'recovered', driveFileId: 'baseline-artifact-id', ...entry('baseline') }, rollback: { ...entry('baselineRollback'), driveFileId: 'baseline-rollback-id', baselineIdentity: 'provider version baseline-v1', downloadBackVerified: true, downloadBack: entry('baseline'), restoreProcedure: 'Restore exact baseline version.' } },
+    baseline: { authorityUrl: 'https://drive.google.com/file/d/index/view', provider: 'example', target: 'production', identity: 'provider version baseline-v1', sourceCommit: 'd'.repeat(40), sourceEvidence: 'evidence/baseline-source.txt', identityEvidence: identityEvidenceEntry, acceptance: 'PASS', artifact: { disposition: 'recovered', driveFileId: 'baseline-artifact-id', ...entry('baseline') }, rollback: { ...entry('baselineRollback'), driveFileId: 'baseline-rollback-id', baselineIdentity: 'provider version baseline-v1', downloadBackVerified: true, downloadBack: entry('baseline'), restoreProcedure: 'Restore exact baseline version.' } },
     package: entry('package'),
-    deployment: { provider: 'example', target: 'production', versionId: 'immutable-version-1', installedAt: '2026-10-25T00:00:00Z', receipt: entry('deployment') },
+    deployment: { provider: 'example', target: 'production', plannedRoute: 'Deploy immutable candidate version through provider CLI.', restoreProcedure: 'Restore the exact previous version using the provider version ID.', versionId: 'immutable-version-1', installedAt: '2026-10-25T00:00:00Z', receipt: { ...entry('deployment'), driveFileId: 'deployment-receipt-id', driveUrl: 'https://drive.google.com/file/d/deployment-receipt-id/view', downloadBackVerified: true, downloadBack: entry('deploymentReceiptRecovery') }, readback: entry('readback') },
     rollback: { artifact: entry('rollback'), restoreProcedure: 'Restore the exact previous version using the provider version ID.', recovery: { driveFileId: 'rollback-drive-file-id', driveUrl: 'https://drive.google.com/file/d/rollback-drive-file-id/view', downloadBackVerified: true, downloadBack: entry('rollbackRecovery') } },
-    acceptance: { criteria: [{ id: 'runtime-check', status: 'PASS', evidence: ['evidence/runtime-check.txt'] }] },
+    acceptance: { scope: 'Verify the live production UI after deployment.', criteria: [{ id: 'runtime-check', description: 'The released page loads for a user.', method: 'Read the deployed target and verify HTTP 200 plus expected content.', expectedOutcome: 'The deployed page returns HTTP 200 and renders the expected content.', status: 'PASS', evidence: ['evidence/runtime-check.txt'] }] },
     recovery: { driveFileId: 'drive-file-id', driveUrl: 'https://drive.google.com/file/d/drive-file-id/view', downloadBackVerified: true, downloadBack: entry('recovery') },
   };
   await writeFile(path.join(root, 'evidence/runtime-check.txt'), 'observed runtime acceptance');
   await writeFile(path.join(root, 'evidence/baseline-source.txt'), 'indexed deployed identity evidence');
+  const preflight = structuredClone(receipt);
+  delete preflight.deployment.versionId;
+  delete preflight.deployment.installedAt;
+  delete preflight.deployment.receipt;
+  delete preflight.deployment.readback;
+  preflight.acceptance.criteria[0].status = 'PENDING';
+  delete preflight.acceptance.criteria[0].evidence;
+  const admitted = await validateReleaseReceipt(preflight, root, { phase: 'admission' });
+  const manifestBytes = Buffer.from(JSON.stringify(admitted.admissionManifest, null, 2) + '\n');
+  const admissionPath = `${receipt.releaseId}.admission.json`;
+  await writeFile(path.join(root, admissionPath), manifestBytes);
+  await writeFile(path.join(root, 'evidence/admission-download.json'), manifestBytes);
+  receipt.admission = {
+    path: admissionPath, bytes: manifestBytes.length, sha256: hash(manifestBytes),
+    driveFileId: 'admission-manifest-id', driveUrl: 'https://drive.google.com/file/d/admission-manifest-id/view',
+    downloadBackVerified: true,
+    downloadBack: { path: 'evidence/admission-download.json', bytes: manifestBytes.length, sha256: hash(manifestBytes) },
+  };
   return { root, receipt, cleanup: () => rm(root, { recursive: true, force: true }) };
 }
 
@@ -52,6 +77,75 @@ test('accepts a complete receipt when package and recovery copy match', async ()
     const result = await validateReleaseReceipt(f.receipt, f.root);
     assert.equal(result.releaseId, f.receipt.releaseId);
     assert.equal(result.packageSha256, f.receipt.package.sha256);
+  } finally { await f.cleanup(); }
+});
+
+test('admits a candidate only with a recovered exact baseline and rollback before mutation', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.deployment = {
+      provider: 'example', target: 'production',
+      plannedRoute: 'Deploy immutable candidate version through provider CLI.',
+      restoreProcedure: f.receipt.rollback.restoreProcedure,
+    };
+    f.receipt.acceptance.criteria = [{ id: 'runtime-check', description: 'The released page loads.', status: 'PENDING', method: 'Read the deployed target and verify HTTP 200 plus expected content.', expectedOutcome: 'HTTP 200 and expected content.' }];
+    delete f.receipt.admission;
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(result.phase, 'admission');
+    assert.equal(result.packageSha256, f.receipt.package.sha256);
+  } finally { await f.cleanup(); }
+});
+
+test('admission CLI writes one immutable manifest and refuses overwrite', async () => {
+  const f = await fixture();
+  try {
+    delete f.receipt.admission;
+    f.receipt.acceptance.criteria[0].status = 'PENDING';
+    delete f.receipt.acceptance.criteria[0].evidence;
+    const receiptPath = path.join(f.root, 'receipt.json');
+    await writeFile(receiptPath, JSON.stringify(f.receipt));
+    const script = path.resolve('scripts/validate-release-receipt.mjs');
+    const run = () => spawnSync(process.execPath, [script, receiptPath, f.root], {
+      encoding: 'utf8', env: { ...process.env, npm_lifecycle_event: 'release:admit' },
+    });
+    const first = run();
+    assert.equal(first.status, 2, first.stderr);
+    assert.match(first.stdout, /PENDING durable admission copy .*manifestSha256=[a-f0-9]{64}/);
+    const manifestPath = path.join(f.root, 'example-2026-10-25.admission.json');
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    assert.equal(manifest.package.sha256, f.receipt.package.sha256);
+    assert.equal(manifest.baseline.rollbackSha256, f.receipt.rollback.artifact.sha256);
+    const manifestBytes = await readFile(manifestPath);
+    await writeFile(path.join(f.root, 'evidence/admission-download.json'), manifestBytes);
+    f.receipt.admission = {
+      path: 'example-2026-10-25.admission.json', bytes: manifestBytes.length, sha256: hash(manifestBytes),
+      driveFileId: 'admission-manifest-id', driveUrl: 'https://drive.google.com/file/d/admission-manifest-id/view',
+      downloadBackVerified: true,
+      downloadBack: { path: 'evidence/admission-download.json', bytes: manifestBytes.length, sha256: hash(manifestBytes) },
+    };
+    await writeFile(receiptPath, JSON.stringify(f.receipt));
+    const second = run();
+    assert.equal(second.status, 0, second.stderr);
+    assert.match(second.stdout, /PASS admission/);
+    assert.deepEqual(await readFile(manifestPath), manifestBytes);
+  } finally { await f.cleanup(); }
+});
+
+test('refuses admission when acceptance criteria were not declared pending', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.deployment = { provider: 'example', target: 'production', plannedRoute: 'deploy exact candidate', restoreProcedure: f.receipt.rollback.restoreProcedure };
+    f.receipt.acceptance.criteria[0] = { id: 'runtime-check', description: 'check', status: 'PASS', method: 'check', expectedOutcome: 'pass' };
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /must be PENDING before mutation/);
+  } finally { await f.cleanup(); }
+});
+
+test('refuses admission without a predeclared restore procedure', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.deployment = { provider: 'example', target: 'production', plannedRoute: 'deploy exact candidate' };
+    f.receipt.acceptance.criteria = [{ id: 'runtime-check', description: 'check', status: 'PENDING', method: 'check', expectedOutcome: 'pass' }];
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /deployment\.restoreProcedure is required/);
   } finally { await f.cleanup(); }
 });
 
@@ -69,6 +163,30 @@ test('rejects incomplete acceptance', async () => {
     f.receipt.acceptance.criteria[0].status = 'NOT_CHECKED';
     await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /is not PASS/);
   } finally { await f.cleanup(); }
+});
+
+test('rejects closeout when the acceptance plan changed after admission', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.acceptance.criteria[0].expectedOutcome = 'A different outcome';
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /does not match the pre-mutation admission manifest/);
+  } finally { await f.cleanup(); }
+});
+
+test('rejects closeout readback for a different target or candidate', async () => {
+  for (const [field, value] of [['target', 'staging'], ['packageSha256', 'f'.repeat(64)]]) {
+    const f = await fixture();
+    try {
+      const readbackPath = path.join(f.root, f.receipt.deployment.readback.path);
+      const readback = JSON.parse(await readFile(readbackPath, 'utf8'));
+      readback[field] = value;
+      const bytes = Buffer.from(JSON.stringify(readback));
+      await writeFile(readbackPath, bytes);
+      f.receipt.deployment.readback.bytes = bytes.length;
+      f.receipt.deployment.readback.sha256 = hash(bytes);
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /deployment\.readback must bind/);
+    } finally { await f.cleanup(); }
+  }
 });
 
 test('rejects a recovery copy that differs from the candidate package', async () => {
@@ -106,7 +224,7 @@ test('rejects a missing current-build baseline', async () => {
   const f = await fixture();
   try {
     f.receipt.baseline = undefined;
-    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /baseline\.authorityUrl is required/);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /baseline\.provider is required/);
   } finally { await f.cleanup(); }
 });
 

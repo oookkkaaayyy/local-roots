@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
-import { readFile, realpath, stat } from 'node:fs/promises';
+import { readFile, realpath, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -12,6 +12,97 @@ function requireString(value, label) {
 
 function requireSha(value, label) {
   if (typeof value !== 'string' || !SHA256.test(value)) throw new Error(`${label} must be a 64-character SHA-256`);
+}
+
+function admissionProjection(receipt, hashes = {}) {
+  return {
+    schemaVersion: 1,
+    releaseId: receipt.releaseId,
+    source: receipt.source,
+    build: receipt.build,
+    baseline: {
+      provider: receipt.baseline.provider,
+      target: receipt.baseline.target,
+      identity: receipt.baseline.identity,
+      sourceCommit: receipt.baseline.sourceCommit,
+      sourceEvidence: receipt.baseline.sourceEvidence,
+      artifactDriveFileId: receipt.baseline.artifact.driveFileId,
+      artifactSha256: hashes.baselineSha256 ?? receipt.baseline.artifact.sha256,
+      artifactBytes: hashes.baselineBytes ?? receipt.baseline.artifact.bytes,
+      identityEvidenceSha256: receipt.baseline.identityEvidence.sha256,
+      rollbackSha256: hashes.rollbackSha256 ?? receipt.rollback.artifact.sha256,
+      rollbackBytes: hashes.rollbackBytes ?? receipt.rollback.artifact.bytes,
+      rollbackDriveFileId: receipt.rollback.recovery.driveFileId,
+      rollbackDriveUrl: receipt.rollback.recovery.driveUrl,
+      rollbackDownloadBackSha256: receipt.rollback.recovery.downloadBack.sha256,
+      rollbackDownloadBackBytes: receipt.rollback.recovery.downloadBack.bytes,
+      restoreProcedure: receipt.rollback.restoreProcedure,
+    },
+    package: {
+      sha256: hashes.packageSha256 ?? receipt.package.sha256,
+      bytes: hashes.packageBytes ?? receipt.package.bytes,
+    },
+    recovery: {
+      driveFileId: receipt.recovery.driveFileId,
+      driveUrl: receipt.recovery.driveUrl,
+      downloadBackSha256: receipt.recovery.downloadBack.sha256,
+      downloadBackBytes: receipt.recovery.downloadBack.bytes,
+    },
+    deployment: {
+      provider: receipt.deployment.provider,
+      target: receipt.deployment.target,
+      plannedRoute: receipt.deployment.plannedRoute,
+      restoreProcedure: receipt.deployment.restoreProcedure,
+    },
+    acceptance: {
+      scope: receipt.acceptance.scope,
+      criteria: receipt.acceptance.criteria.map(({ id, description, method, expectedOutcome }) =>
+        ({ id, description, method, expectedOutcome })),
+    },
+  };
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonicalJson(value[key])]));
+  }
+  return value;
+}
+
+function sameCanonical(a, b) {
+  return JSON.stringify(canonicalJson(a)) === JSON.stringify(canonicalJson(b));
+}
+
+async function verifyAdmissionEvidence(root, receipt, expectedManifest, { required }) {
+  if (!receipt.admission) {
+    if (required) throw new Error('admission manifest reference and durable recovery are required');
+    return null;
+  }
+  const expectedPath = `${receipt.releaseId}.admission.json`;
+  if (receipt.admission.path !== expectedPath) {
+    throw new Error(`admission.path must be ${expectedPath}`);
+  }
+  const admission = await verifyFile(root, receipt.admission, 'admission');
+  let admitted;
+  try {
+    admitted = JSON.parse(await readFile(path.resolve(root, receipt.admission.path), 'utf8'));
+  } catch {
+    throw new Error('admission manifest must be valid JSON');
+  }
+  if (!sameCanonical(admitted, expectedManifest)) {
+    throw new Error('receipt does not match the pre-mutation admission manifest');
+  }
+  requireString(receipt.admission.driveFileId, 'admission.driveFileId');
+  requireString(receipt.admission.driveUrl, 'admission.driveUrl');
+  if (receipt.admission.downloadBackVerified !== true) {
+    throw new Error('admission.downloadBackVerified must be true');
+  }
+  const recovered = await verifyFile(root, receipt.admission.downloadBack, 'admission.downloadBack');
+  if (recovered.sha256 !== admission.sha256 || recovered.bytes !== admission.bytes) {
+    throw new Error('admission.downloadBack must byte-match the admission manifest');
+  }
+  return admission;
 }
 
 async function checkedFile(root, relativePath, label) {
@@ -39,7 +130,8 @@ async function verifyFile(root, entry, label) {
   return actual;
 }
 
-export async function validateReleaseReceipt(receipt, root) {
+export async function validateReleaseReceipt(receipt, root, { phase = 'closeout' } = {}) {
+  if (!['admission', 'closeout'].includes(phase)) throw new Error('phase must be admission or closeout');
   if (!receipt || typeof receipt !== 'object' || receipt.schemaVersion !== 1) {
     throw new Error('schemaVersion must be 1');
   }
@@ -64,6 +156,8 @@ export async function validateReleaseReceipt(receipt, root) {
   }
 
   const baseline = receipt.baseline;
+  requireString(baseline?.provider, 'baseline.provider');
+  requireString(baseline?.target, 'baseline.target');
   requireString(baseline?.authorityUrl, 'baseline.authorityUrl');
   requireString(baseline?.identity, 'baseline.identity');
   if (baseline?.sourceCommit !== 'unknown' && !/^[a-f0-9]{40}$/i.test(baseline?.sourceCommit ?? '')) {
@@ -128,19 +222,59 @@ export async function validateReleaseReceipt(receipt, root) {
   const deployment = receipt.deployment;
   requireString(deployment?.provider, 'deployment.provider');
   requireString(deployment?.target, 'deployment.target');
-  requireString(deployment?.versionId, 'deployment.versionId');
-  requireString(deployment?.installedAt, 'deployment.installedAt');
-  await verifyFile(root, deployment?.receipt, 'deployment.receipt');
+  if (deployment.provider !== baseline.provider || deployment.target !== baseline.target) {
+    throw new Error('deployment provider/target must match the current baseline provider/target');
+  }
+  if (phase === 'admission') {
+    requireString(deployment?.plannedRoute, 'deployment.plannedRoute');
+    requireString(deployment?.restoreProcedure, 'deployment.restoreProcedure');
+    if (deployment.restoreProcedure !== receipt.rollback.restoreProcedure) {
+      throw new Error('deployment.restoreProcedure must exactly match rollback.restoreProcedure');
+    }
+  } else {
+    requireString(deployment?.versionId, 'deployment.versionId');
+    requireString(deployment?.installedAt, 'deployment.installedAt');
+    const deploymentReceipt = await verifyFile(root, deployment?.receipt, 'deployment.receipt');
+    requireString(deployment.receipt.driveFileId, 'deployment.receipt.driveFileId');
+    requireString(deployment.receipt.driveUrl, 'deployment.receipt.driveUrl');
+    if (deployment.receipt.downloadBackVerified !== true) {
+      throw new Error('deployment.receipt.downloadBackVerified must be true');
+    }
+    const deploymentReceiptCopy = await verifyFile(root, deployment.receipt.downloadBack, 'deployment.receipt.downloadBack');
+    if (deploymentReceiptCopy.sha256 !== deploymentReceipt.sha256 || deploymentReceiptCopy.bytes !== deploymentReceipt.bytes) {
+      throw new Error('deployment.receipt.downloadBack must byte-match the deployment receipt');
+    }
+    await verifyFile(root, deployment?.readback, 'deployment.readback');
+    let readback;
+    try {
+      readback = JSON.parse(await readFile(path.resolve(root, deployment.readback.path), 'utf8'));
+    } catch {
+      throw new Error('deployment.readback must be valid JSON');
+    }
+    if (readback.provider !== deployment.provider || readback.target !== deployment.target ||
+        readback.versionId !== deployment.versionId || readback.sourceCommit !== receipt.source.commit ||
+        readback.packageSha256 !== packageFile.sha256 || readback.baselineIdentity !== baseline.identity) {
+      throw new Error('deployment.readback must bind provider/target/version, source commit, candidate hash, and prior baseline');
+    }
+  }
 
   const acceptance = receipt.acceptance;
+  requireString(acceptance?.scope, 'acceptance.scope');
   if (!Array.isArray(acceptance?.criteria) || acceptance.criteria.length === 0) {
     throw new Error('acceptance.criteria must contain separately tracked criteria');
   }
   for (const [index, criterion] of acceptance.criteria.entries()) {
     requireString(criterion?.id, `acceptance.criteria[${index}].id`);
-    if (criterion.status !== 'PASS') throw new Error(`acceptance.criteria[${index}] is not PASS`);
-    if (!Array.isArray(criterion.evidence) || criterion.evidence.length === 0 || criterion.evidence.some(v => typeof v !== 'string' || !v.trim())) {
-      throw new Error(`acceptance.criteria[${index}].evidence must include evidence references`);
+    if (phase === 'admission') {
+      if (criterion.status !== 'PENDING') throw new Error(`acceptance.criteria[${index}] must be PENDING before mutation`);
+      requireString(criterion.description, `acceptance.criteria[${index}].description`);
+      requireString(criterion.method, `acceptance.criteria[${index}].method`);
+      requireString(criterion.expectedOutcome, `acceptance.criteria[${index}].expectedOutcome`);
+    } else {
+      if (criterion.status !== 'PASS') throw new Error(`acceptance.criteria[${index}] is not PASS`);
+      if (!Array.isArray(criterion.evidence) || criterion.evidence.length === 0 || criterion.evidence.some(v => typeof v !== 'string' || !v.trim())) {
+        throw new Error(`acceptance.criteria[${index}].evidence must include evidence references`);
+      }
     }
   }
 
@@ -154,20 +288,62 @@ export async function validateReleaseReceipt(receipt, root) {
   }
   if (rollbackFile.bytes <= 0) throw new Error('rollback artifact is empty');
 
-  return { releaseId: receipt.releaseId, packageSha256: packageFile.sha256, rollbackSha256: rollbackFile.sha256 };
+  const admissionManifest = admissionProjection(receipt, {
+    baselineSha256: baselineArtifactFile.sha256,
+    baselineBytes: baselineArtifactFile.bytes,
+    packageSha256: packageFile.sha256,
+    packageBytes: packageFile.bytes,
+    rollbackSha256: rollbackFile.sha256,
+    rollbackBytes: rollbackFile.bytes,
+  });
+  const admission = await verifyAdmissionEvidence(root, receipt, admissionManifest, { required: phase === 'closeout' });
+  if (phase === 'closeout') {
+    if (deployment.restoreProcedure !== receipt.rollback.restoreProcedure ||
+        deployment.plannedRoute !== admissionManifest.deployment.plannedRoute) {
+      throw new Error('closeout deployment plan differs from the admitted route or restore procedure');
+    }
+    return { phase, releaseId: receipt.releaseId, packageSha256: packageFile.sha256, rollbackSha256: rollbackFile.sha256, admissionSha256: admission.sha256 };
+  }
+  return { phase, releaseId: receipt.releaseId, packageSha256: packageFile.sha256, rollbackSha256: rollbackFile.sha256, admissionManifest };
 }
 
 async function main() {
-  const [receiptPath, rootArg = '.'] = process.argv.slice(2);
-  if (receiptPath === '--help' || receiptPath === '-h') {
-    process.stdout.write('usage: npm run release:verify -- <receipt.json> [receipt-root]\n');
+  const args = process.argv.slice(2);
+  let phase = 'closeout';
+  if (args[0] === '--help' || args[0] === '-h') {
+    process.stdout.write('usage: npm run release:admit -- <receipt.json> <receipt-root>\n       npm run release:verify -- <receipt.json> <receipt-root>\n');
     return;
   }
-  if (!receiptPath) throw new Error('usage: node scripts/validate-release-receipt.mjs <receipt.json> [receipt-root]');
+  if (args[0] === '--phase') throw new Error('use npm run release:admit or release:verify; --phase is not accepted');
+  if (args.length !== 2 || args.some(arg => arg.startsWith('-'))) {
+    throw new Error('usage: npm run release:admit -- <receipt.json> <receipt-root>\n       npm run release:verify -- <receipt.json> <receipt-root>');
+  }
+  if (process.env.npm_lifecycle_event === 'release:admit') phase = 'admission';
+  const [receiptPath, rootArg = '.'] = args;
   const root = path.resolve(rootArg);
   const receipt = JSON.parse(await readFile(path.resolve(receiptPath), 'utf8'));
-  const result = await validateReleaseReceipt(receipt, root);
-  process.stdout.write(`PASS ${result.releaseId} package=${result.packageSha256} rollback=${result.rollbackSha256}\n`);
+  const result = await validateReleaseReceipt(receipt, root, { phase });
+  if (phase === 'admission') {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(result.releaseId)) throw new Error('releaseId must use only letters, numbers, dot, underscore, or hyphen');
+    const manifestPath = path.join(root, `${result.releaseId}.admission.json`);
+    const bytes = Buffer.from(`${JSON.stringify(result.admissionManifest, null, 2)}\n`);
+    try {
+      await writeFile(manifestPath, bytes, { flag: 'wx' });
+    } catch (error) {
+      if (error?.code !== 'EEXIST') throw error;
+      const existing = await readFile(manifestPath);
+      if (!existing.equals(bytes)) throw new Error('existing admission manifest differs; do not overwrite it');
+    }
+    const manifestSha256 = createHash('sha256').update(bytes).digest('hex');
+    if (!receipt.admission) {
+      process.stdout.write(`PENDING durable admission copy ${result.releaseId} manifest=${manifestPath} manifestBytes=${bytes.length} manifestSha256=${manifestSha256}; upload it, download it back, add receipt.admission metadata, then rerun before mutation\n`);
+      process.exitCode = 2;
+      return;
+    }
+    process.stdout.write(`PASS admission ${result.releaseId} package=${result.packageSha256} rollback=${result.rollbackSha256} manifest=${manifestPath} manifestBytes=${bytes.length} manifestSha256=${manifestSha256}\n`);
+  } else {
+    process.stdout.write(`PASS closeout ${result.releaseId} package=${result.packageSha256} rollback=${result.rollbackSha256} admissionSha256=${result.admissionSha256}\n`);
+  }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
