@@ -42,6 +42,18 @@ test('fails firmware flashing without the two-phase gate', async () => {
   assert.match(result.stderr, /release:verify/);
 });
 
+test('fails a recognized third-party deployment action without the gate', async () => {
+  const result = await runAudit([
+    'name: deploy',
+    'jobs:',
+    '  deploy:',
+    '    steps:',
+    '      - uses: cloudflare/pages-action@v1',
+  ].join('\n'));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /same job/);
+});
+
 test('fails common package and Pages deployment commands without the gate', async () => {
   for (const command of ['npm run deploy:production', 'wrangler pages deploy dist']) {
     const result = await runAudit('name: deploy\njobs:\n  deploy:\n    steps:\n      - run: ' + command + '\n');
