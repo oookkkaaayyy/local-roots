@@ -29,7 +29,7 @@ jobs:
       - name: Audit deployment workflows for mandatory two-phase admission
         run: npm run release:audit-workflows
 
-      # Regression tests prove release gates are ordered, same-job, and same-receipt.
+      # Regression tests cover command and third-party deploy-action detection, gate order, job scope, and receipt identity.
       - name: Test release workflow audit failures
         run: node --test tests/audit-release-workflows.test.mjs
 
