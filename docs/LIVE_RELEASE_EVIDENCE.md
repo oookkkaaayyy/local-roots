@@ -1,6 +1,6 @@
 # Live release evidence gate
 
-This repository uses `scripts/validate-release-receipt.mjs` as a fail-closed pre-completion check for live releases. A release is not complete until one receipt records its exact current baseline identity and recovery, source commit, individually versioned and hashed build inputs, package bytes and SHA-256, deployment/install version and receipt, exact rollback artifact, separate passing acceptance criteria, and indexed Drive recovery copies for both candidate and rollback downloaded back and byte-compared with their source artifacts.
+This repository uses a two-phase, fail-closed receipt gate. Run `npm run release:admit -- <receipt.json> <receipt-root>` before mutation. It verifies candidate and rollback bytes, current baseline identity/recovery, downloaded-back copies, planned mutation and restoration routes, and acceptance criteria declared as PENDING. The first run writes a one-time `<releaseId>.admission.json` and returns `PENDING`, not PASS. Upload that file to the approved Drive recovery location, download it back, and add its path, byte count, SHA-256, Drive ID/URL, and downloaded-back path/size/hash to `receipt.admission`. Rerun admission; it prints PASS only after verifying this durable copy. After mutation, update the same receipt with provider/device readback and criterion evidence, then run `npm run release:verify -- <receipt.json> <receipt-root>` to validate closeout against the exact admission snapshot and its downloaded-back copy.
 
 ## Run the gate
 
@@ -8,21 +8,30 @@ Keep the receipt and its evidence files in one private working directory. Use re
 
 ```sh
 npm run release:verify -- /absolute/path/to/release-receipt.json /absolute/path/to/receipt-root
+
+# Before mutation, use admission instead:
+npm run release:admit -- /absolute/path/to/release-receipt.json /absolute/path/to/receipt-root
 ```
 
-The command prints `PASS` with candidate and rollback hashes only when every required file and evidence field is present and the candidate matches the downloaded-back recovery copy. Missing fields, non-PASS acceptance criteria, path escapes, size mismatches, or hash mismatches fail the command.
+Admission prints `PASS admission` only when the candidate, exact rollback, and the one-time admission manifest match independently stored, downloaded-back copies and all pre-mutation evidence is present. Closeout prints `PASS closeout` only when the receipt matches that snapshot and deployment/install readback binds provider, target, version, source commit, candidate hash, and prior baseline; each acceptance criterion must have evidence and pass. Missing fields, changed plans, path escapes, size mismatches, or hash mismatches fail the command. The snapshot hash detects accidental or uncoordinated changes; it is not a digital signature against an actor able to rewrite the whole capsule.
 
 ## Receipt contract
 
 Use schema version `1` with these fields:
 
 - `releaseId`
+- `admission`: path, byte count, and SHA-256 for the admission snapshot emitted before mutation; closeout rejects any changed candidate, baseline, deployment plan, or acceptance plan
+- `admission` also contains Drive file ID/URL, `downloadBackVerified: true`, and a local downloaded-back path/size/SHA-256 matching the manifest; admission itself cannot PASS until this evidence is present
 - `source`: repository, ref, full commit SHA
 - `build`: command, toolchain, lockfile SHA-256, and nonempty `inputs[]`, each with a name, exact version, and SHA-256
 - `package`: relative `path`, exact `bytes`, and `sha256`
-- `deployment`: provider, target, immutable `versionId`, `installedAt`, and a path/size/hash for the deploy or install receipt
+- `baseline.provider` and `baseline.target`: exact current provider and target identifiers; admission requires the deployment plan to match these
+- Before mutation, `deployment` includes provider, target, `plannedRoute`, and `restoreProcedure`; the candidate cannot be admitted without these.
+- At closeout, `deployment` includes provider, target, immutable `versionId`, `installedAt`, and a path/size/hash for the deploy or install receipt, plus its Drive file ID/URL and a downloaded-back copy verified byte-for-byte.
+- At closeout, `deployment.readback` is a hashed JSON record containing provider, target, versionId, sourceCommit, packageSha256, and baselineIdentity; all fields must match the admitted release.
 - `rollback`: exact artifact path/size/hash and a restore procedure; `recovery` includes Drive file ID/URL and a downloaded-back path/size/hash that byte-matches the rollback artifact
-- `acceptance.criteria[]`: one entry per required behavior, each `PASS` with evidence references
+- Before mutation, `acceptance.scope` names the scope under test and each `acceptance.criteria[]` item lists a description, verification `method`, expected outcome, and `PENDING` status. The coordinator remains responsible for listing all applicable criteria for that release.
+- At closeout, each criterion must be `PASS` with evidence references.
 - `recovery`: Drive file ID and URL, `downloadBackVerified: true`, and downloaded-back candidate path/size/hash
 
 The validator checks file identities and evidence presence. It does not itself prove that a provider deployment, field test, device acceptance, rollback drill, or Drive permission is valid; the linked receipt and acceptance evidence must support those claims. Keep source, build inputs, deployment state, backup artifacts, and acceptance scope tied to the same release ID and commit.
@@ -31,7 +40,7 @@ The validator checks file identities and evidence presence. It does not itself p
 
 GitHub Actions runs the non-mutating release evidence regression tests and repository test/build checks automatically on pull requests to `main` and pushes to `main`. The check name for the focused release validator is `Release evidence validator`. The connected GitHub API does not expose repository ruleset configuration, and this private repository's currently effective rules could not be read in the signed-out browser. Therefore, automatic runs are active, but merge blocking is **not verified or claimed**. Configure a required check for `Release evidence validator` only after confirming that private-repository branch protection is available in the current account plan. Never purchase or upgrade a plan without the owner's explicit authorization.
 
-Generic CI cannot validate a candidate-specific install receipt: the candidate package, exact rollback, target identity, and downloaded-back Drive copies are created for the individual release. Before any install, deployment, publication, or device mutation, run the candidate-bound `npm run release:verify` command locally against the exact receipt and package capsule. Treat CI as a regression gate on the gate implementation, not as proof that a particular candidate passed its recovery gate. The current-receipt validator fails closed and requires a recovered baseline, hashed identity evidence, exact rollback equality, downloaded-back equality, and post-change acceptance/deployment evidence.
+Generic CI cannot validate a candidate-specific install receipt: the candidate package, exact rollback, target identity, and downloaded-back Drive copies are created for the individual release. Before any install, deployment, publication, or device mutation, run candidate-bound `npm run release:admit` locally against the exact receipt and package capsule. After mutation, run `npm run release:verify` for closeout. Treat CI as a regression gate on the gate implementation, not as proof that a particular candidate passed its recovery gate.
 
 The automatic CI also runs `npm test` and builds the web app. On the first automatic PR run after re-enabling Actions, the focused release validator passed, but the existing domain test job failed on five known public UI assertions (122/127 passed); the web build was skipped because the test command failed. Keep that failing job visible so it cannot be mistaken for a fully passing suite. Repair those unrelated UI assertions in a separate bounded task before making the entire workflow a merge requirement.
 
