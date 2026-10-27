@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050706">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HBNF Matrix">
+<meta name="robots" content="noindex,nofollow">
+<link rel="apple-touch-icon" href="/matrix-apple-touch-icon.png?v=9.23.26-controller-v4">
+<link rel="manifest" href="/matrix-manifest.webmanifest?v=9.23.26-controller-v4">
+<title>HBNF Matrix</title>
+<!-- hbnf-build-9.23.26-controller-v4 -->
+<style>
+:root{--bg:#050706;--panel:#101411;--panel2:#171c18;--line:#2b342d;--txt:#f7faf7;--mut:#98a49b;--accent:#b9f377;--accent2:#d5ff9e;--red:#ff8f9b;--amber:#ffd66c;--shadow:0 14px 40px rgba(0,0,0,.28)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}body{min-height:100vh;padding:calc(env(safe-area-inset-top) + 8px) 14px calc(88px + env(safe-area-inset-bottom))}.app{max-width:620px;margin:auto}
+button,input{font:inherit}button{appearance:none;border:1px solid var(--line);background:var(--panel2);color:var(--txt);border-radius:15px;min-height:52px;padding:10px;font-weight:850;font-size:13px}button:active{transform:scale(.985)}button:disabled{opacity:.42}.danger{color:#ffc1c7;border-color:#62363c}.primary{background:var(--accent)!important;color:#14200e!important;border-color:var(--accent)!important}.locked{background:#2b2413!important;color:#ffe08b!important;border-color:#79632e!important}
+.top{display:flex;align-items:center;justify-content:space-between;padding:8px 2px 12px}.device{display:flex;gap:9px;align-items:center}.dot{width:10px;height:10px;border-radius:50%;background:#6b726d;box-shadow:0 0 0 4px rgba(255,255,255,.04)}.dot.online{background:var(--accent);box-shadow:0 0 0 4px rgba(185,243,119,.12)}.name{font-weight:900;font-size:18px}.mini{font-size:12px;color:var(--mut);margin-top:2px}.power{min-height:44px;padding:8px 13px}
+.hero{background:linear-gradient(150deg,#131a15,#0d110e);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:var(--shadow)}.eyebrow{font-size:11px;font-weight:850;letter-spacing:.12em;color:var(--mut)}.heroRow{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-top:6px}.scene{font-size:25px;font-weight:950;line-height:1.02;letter-spacing:-.035em}.badge{font-size:11px;font-weight:900;padding:7px 10px;border-radius:999px;border:1px solid #466037;background:#182219;color:var(--accent);white-space:nowrap}.badge.lock{border-color:#735c28;background:#241e10;color:var(--amber)}.facts{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}.fact{font-size:11px;color:var(--mut);background:#090c0a;border:1px solid #232a24;padding:7px 9px;border-radius:999px}.transport{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:9px;margin-top:14px}.transport button{min-height:60px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:15px;margin-top:12px}.label{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--mut);margin-bottom:11px}.brightHead{display:flex;justify-content:space-between;align-items:center}.brightVal{font-size:13px;font-weight:900;color:var(--accent)}input[type=range]{width:100%;accent-color:var(--accent);height:34px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.event button{min-height:58px}.modeToggle button.active{background:#202b21;border-color:#52683e;color:var(--accent2)}
+.textrow{display:grid;grid-template-columns:1fr 88px;gap:8px}input[type=text]{width:100%;min-height:50px;background:#090c0a;color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:0 12px;font-size:16px}.note{font-size:12px;color:var(--mut);line-height:1.45;margin-top:10px}.note strong{color:var(--txt)}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:min(590px,calc(100% - 24px));display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:rgba(15,19,16,.94);backdrop-filter:blur(18px);border:1px solid var(--line);padding:5px;border-radius:18px;box-shadow:var(--shadow);z-index:20}.tabs button{min-height:46px;border:0;background:transparent;color:var(--mut)}.tabs button.sel{background:#202720;color:var(--txt)}.page{display:none}.page.sel{display:block}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(12px);bottom:calc(80px + env(safe-area-inset-bottom));max-width:min(560px,calc(100% - 30px));background:#202720;border:1px solid #384139;border-radius:14px;padding:11px 14px;font-size:13px;color:var(--txt);opacity:0;pointer-events:none;transition:.2s;box-shadow:var(--shadow);z-index:30}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.bad{border-color:#6d3a40;color:#ffd5d9}
+details{margin-top:12px;border:1px solid var(--line);border-radius:18px;background:var(--panel);overflow:hidden}summary{cursor:pointer;list-style:none;padding:15px;font-weight:850;color:var(--mut)}summary::-webkit-details-marker{display:none}summary::after{content:"＋";float:right;color:var(--accent)}details[open] summary::after{content:"−"}.inside{padding:0 15px 15px}.statusGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.statusBox{background:#090c0a;border:1px solid #232a24;border-radius:13px;padding:10px}.statusBox span{display:block;color:var(--mut);font-size:11px}.statusBox b{display:block;margin-top:3px;font-size:13px}.rangeRow{display:grid;grid-template-columns:1fr 52px;gap:9px;align-items:center}.rangeValue{text-align:right;color:var(--accent);font-weight:900;font-size:13px}
+@media(max-width:380px){.scene{font-size:22px}.transport{grid-template-columns:1fr 1fr}.transport .primary{grid-column:1/-1}.grid3{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="device"><span id="dot" class="dot"></span><div><div class="name">HBNF Matrix</div><div id="connection" class="mini">Checking controller…</div></div></div><button class="power danger" id="blackoutTop">OFF</button></header>
+
+<section id="control" class="page sel">
+  <div class="hero">
+    <div class="eyebrow">NOW PLAYING</div>
+    <div class="heroRow"><div><div id="scene" class="scene">Course Auto</div><div id="sceneSub" class="mini">28 looks · shuffled · 12 sec each</div></div><div id="modeBadge" class="badge">AUTO</div></div>
+    <div class="facts"><span id="engine" class="fact">WOW MAX</span><span class="fact">MIC · MATRIX</span><span id="preset" class="fact">PRESET —</span></div>
+    <div class="transport"><button id="autoBtn" class="primary">AUTO</button><button id="lockBtn">LOCK THIS</button><button id="nextBtn">NEXT</button></div>
+  </div>
+
+  <div class="card">
+    <div class="brightHead"><div class="label" style="margin:0">BRIGHTNESS</div><div id="brightVal" class="brightVal">—</div></div>
+    <input id="bright" type="range" min="1" max="72" step="1" value="8" aria-label="Matrix brightness">
+  </div>
+
+  <div class="card">
+    <div class="label">ROUND MODE</div>
+    <div class="grid2 modeToggle"><button id="liveBtn">LIVE DATA</button><button id="pureBtn">VISUALS ONLY</button></div>
+    <div class="note"><strong>Auto stays on by default.</strong> Live Data only adds round overlays; it does not stop the visual rotation.</div>
+  </div>
+
+  <div class="card">
+    <div class="label">QUICK ACCESS</div>
+    <div class="grid2"><button id="scoreBtn">SCOREBOARD</button><button id="potBtn">ACE POT</button></div>
+  </div>
+</section>
+
+<section id="events" class="page">
+  <div class="card">
+    <div class="label">ROUND EVENTS</div>
+    <div class="grid3 event"><button data-event="ace">ACE</button><button data-event="ctp">CTP</button><button data-event="nice_shot">NICE SHOT</button><button data-event="nice_putt">NICE PUTT</button><button data-event="skins">SKINS</button><button data-event="glow">GLOW</button></div>
+    <div class="note">Events take over the Matrix on a clean black background, then return to the current Auto or locked look.</div>
+  </div>
+  <div class="card">
+    <div class="label">MESSAGE</div>
+    <div class="textrow"><input id="text" type="text" maxlength="63" autocomplete="off" placeholder="Type message"><button id="sendText">SEND</button></div>
+    <div class="note">Messages are isolated from the active effect so the animation does not show through them.</div>
+  </div>
+</section>
+
+<section id="more" class="page">
+  <div class="card">
+    <div class="label">AUDIO</div>
+    <div class="note" style="margin-top:0">The <strong>Matrix controller is the only audio master</strong>. AUX receives the Matrix audio stream; its local mic is not used for normal operation.</div>
+    <div class="rangeRow"><input id="audioLevel" type="range" min="64" max="255" step="1" value="255" aria-label="Audio sensitivity"><div id="audioLevelVal" class="rangeValue">255</div></div>
+    <button id="applyAudio" style="width:100%;margin-top:7px">APPLY SENSITIVITY</button>
+  </div>
+
+  <details>
+    <summary>STATUS & DIAGNOSTICS</summary>
+    <div class="inside"><div class="statusGrid"><div class="statusBox"><span>Engine</span><b id="diagEngine">—</b></div><div class="statusBox"><span>Preset</span><b id="diagPreset">—</b></div><div class="statusBox"><span>Playlist</span><b id="diagPlaylist">—</b></div><div class="statusBox"><span>Audio energy</span><b id="diagAudio">—</b></div></div></div>
+  </details>
+
+  <div class="card">
+    <div class="label">SYSTEM</div>
+    <div class="grid2"><button id="refreshBtn">REFRESH</button><button id="blackoutBtn" class="danger">BLACKOUT</button></div>
+    <div class="note">Normal use should stay on the Control tab. These are recovery controls, not everyday scene controls.</div>
+  </div>
+</section>
+</div>
+<nav class="tabs"><button class="sel" data-tab="control">CONTROL</button><button data-tab="events">EVENTS</button><button data-tab="more">MORE</button></nav>
+<div id="toast" class="toast">Ready.</div>
+<script src="/matrix-control.js?v=9.23.26-controller-v4"></script>
+</body>
+</html>

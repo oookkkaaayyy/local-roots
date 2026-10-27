@@ -1,0 +1,9 @@
+{
+  "$schema": "../tools/node_modules/wrangler/config-schema.json",
+  "name": "hbnf",
+  "compatibility_date": "2026-07-28",
+  "workers_dev": false,
+  "assets": {
+    "directory": "./public"
+  }
+}
