@@ -21,7 +21,7 @@
   "scope": [
     "existing Opal Nginx authenticated local proxy",
     "authenticated local UV routes with fixed segments, AUX readback, and shared default-off hardware-profile/commissioning-gate enforcement",
-    "separate per-command HTTPS transport for the existing Owner PWA",
+    "separate per-command HTTPS transport for the existing Owner PWA on Opal LAN TCP 9443 (the existing admin service owns TCP 8443)",
     "no firmware installation, backend deployment, scoring, or live router changes"
   ]
 }

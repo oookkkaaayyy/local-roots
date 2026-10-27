@@ -21,7 +21,7 @@ requests to this gateway and does not fall back to Supabase when local control
 fails. Opening the PWA does not send an output command; the owner must choose
 Apply manual override, Follow Matrix, or UV off.
 
-The dedicated Nginx instance listens only on `192.168.77.1:8443`, uses the installed TLS/Lua-enabled Nginx binary, and drops its single request worker to `nobody:nogroup`. The Nginx master remains root only to open its root-only key and supervise the process. The global GL.iNet Nginx, its 80/443 listeners, and the Skins relay are not reloaded or modified.
+The dedicated Nginx instance listens only on `192.168.77.1:9443`, uses the installed TLS/Lua-enabled Nginx binary, and drops its single request worker to `nobody:nogroup`. The Nginx master remains root only to open its root-only key and supervise the process. The global GL.iNet Nginx, its 80/443 listeners, and the Skins relay are not reloaded or modified.
 
 The Owner PWA imports `owner-http-transport.js`. Its Matrix writes use bounded `POST /api/matrix/control` requests; each request validates the paired token, origin, expiry/revocation, body size, command keys, and value ranges before constructing a canonical WLED `/json/state` body. The gateway no longer exposes a write-capable WebSocket route. The PWA then obtains fresh Matrix state and checks the requested values; AUX control has a separate authenticated request and independent readback. HTTP acceptance alone is not reported as device-state confirmation, and DDP state is not represented as proof of physical illumination. The test-installed Opal page continues using its existing WebSocket class.
 

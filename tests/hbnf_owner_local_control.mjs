@@ -268,7 +268,7 @@ test("Opal gateway restricts origin, reads, and the bounded authenticated AUX wr
   const auth = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/auth.lua", import.meta.url), "utf8");
   assert.match(nginx, /server_name cart-control\.hbnightflyers\.com/);
   assert.match(nginx, /if \(\$http_origin != "https:\/\/hbnightflyers\.com"\)/);
-  assert.match(nginx, /listen 192\.168\.77\.1:8443 ssl/);
+  assert.match(nginx, /listen 192\.168\.77\.1:9443 ssl/);
   assert.equal((nginx.match(/^\s*listen\s+/gm) || []).length, 1, "dedicated gateway may bind only one listener");
   assert.match(nginx, /location = \/api\/matrix\/control[\s\S]*?matrix_command_access\.lua[\s\S]*?proxy_pass http:\/\/192\.168\.77\.10\/json\/state/);
   assert.match(nginx, /location = \/mission-control-local\/owner-http-transport\.js/);
@@ -322,7 +322,7 @@ test("Opal gateway restricts origin, reads, and the bounded authenticated AUX wr
   assert.doesNotMatch(edge.match(/if \(action === "status"\)[\s\S]*?if \(action === "guest_command"\)/)?.[0] || "", /pairedDeviceAuthorized/);
 });
 
-test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root request workers", async () => {
+test("guarded Opal installer uses an isolated :9443 Nginx instance with non-root request workers", async () => {
   const root = new URL("../staging/coordinated-backend/opal/owner-local-control/", import.meta.url);
   const installer = await readFile(new URL("install.sh", root), "utf8");
   const rollback = await readFile(new URL("rollback.sh", root), "utf8");
@@ -369,7 +369,7 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(installer, /STATE=\/etc\/hbnf-local-control-state/);
   assert.match(rollback, /STATE=\/etc\/hbnf-local-control-state/);
   assert.match(installer, /\/usr\/sbin\/nginx -t -c "\$CONF/);
-  assert.match(installer, /https:\/\/\$HOST:8443\/api\/session/);
+  assert.match(installer, /https:\/\/\$HOST:9443\/api\/session/);
   assert.match(installer, /revalidate\.lua/);
   assert.match(rollback, /CANDIDATE_TRANSPORT_SHA=/);
   assert.match(rollback, /TARGET=\/www\/mission-control-local\/local-transport\.js/);
@@ -388,10 +388,10 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(preflight, /cp "\$SCRIPT_DIR\/vendor\/sha2\.lua"/);
   assert.match(preflight, /cat "\$probe_log" >&2/);
   assert.doesNotMatch(preflight, /command -v lua/);
-  assert.match(nginx, /listen 192\.168\.77\.1:8443 ssl/);
+  assert.match(nginx, /listen 192\.168\.77\.1:9443 ssl/);
   assert.match(preflight, /GATEWAY_LAN_IP=192\.168\.77\.1/);
   assert.match(preflight, /WAN input policy must be DROP or REJECT/);
-  assert.match(preflight, /explicit IPv[46] WAN accept rule for TCP 8443 exists/);
+  assert.match(preflight, /explicit IPv[46] WAN accept rule for TCP 9443 exists/);
   assert.match(dedicated, /user nobody nogroup;/);
   assert.match(dedicated, /worker_processes 1;/);
   assert.match(dedicated, /pid \/var\/run\/hbnf-owner-local-control-nginx\.pid;/);
@@ -413,7 +413,7 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
 
 test("Owner PWA keeps the isolated HTTPS gateway and adds the accepted Opal-local transport", async () => {
   const local = await readFile(new URL("../hbnf-final-controller/hbnf-cart-local.mjs", import.meta.url), "utf8");
-  assert.match(local, /LOCAL_CONTROL_ORIGIN = "https:\/\/cart-control\.hbnightflyers\.com:8443"/);
+  assert.match(local, /LOCAL_CONTROL_ORIGIN = "https:\/\/cart-control\.hbnightflyers\.com:9443"/);
   assert.match(local, /"\/api\/matrix\/control"/);
   assert.match(local, /"\/api\/matrix\/json\/state"/);
   assert.match(local, /owner-http-transport\.js/);

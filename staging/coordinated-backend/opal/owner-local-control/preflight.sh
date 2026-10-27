@@ -4,7 +4,7 @@ set -eu
 HOST=cart-control.hbnightflyers.com
 MATRIX=192.168.77.10
 AUX=192.168.77.11
-GATEWAY_PORT=8443
+GATEWAY_PORT=9443
 GATEWAY_LAN_IP=192.168.77.1
 EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014
 fail(){ echo "BLOCKED: $*" >&2; exit 1; }
@@ -108,19 +108,19 @@ case "$worker_uid:$worker_gid" in *[!0-9:]*|:*) fail "could not resolve the dedi
 [ ! -e /var/run/hbnf-owner-local-control-nginx.pid ] || fail "dedicated Nginx PID path already exists; inspect before install"
 [ ! -e /etc/rc.d/S85hbnf-owner-local-control ] || fail "dedicated service boot link already exists; inspect before install"
 if command -v netstat >/dev/null 2>&1; then
-  netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])8443$/ { found=1 } END { exit found ? 0 : 1 }' && fail "TCP port 8443 is already bound"
+  netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])9443$/ { found=1 } END { exit found ? 0 : 1 }' && fail "TCP port 9443 is already bound"
 else
-  awk '$2 ~ /:20FB$/ && $4 == "0A" { found=1 } END { exit found ? 0 : 1 }' /proc/net/tcp /proc/net/tcp6 2>/dev/null && fail "TCP port 8443 is already bound"
+  awk '$2 ~ /:24E3$/ && $4 == "0A" { found=1 } END { exit found ? 0 : 1 }' /proc/net/tcp /proc/net/tcp6 2>/dev/null && fail "TCP port 9443 is already bound"
 fi
 # This listener is bound to the LAN address only. Also fail if an explicit
-# WAN-input accept rule for 8443 exists in either active firewall family.
+# WAN-input accept rule for 9443 exists in either active firewall family.
 if command -v iptables-save >/dev/null 2>&1; then
-  wan_accept=$(iptables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*8443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*8443' || true)
-  [ -z "$wan_accept" ] || fail "an explicit IPv4 WAN accept rule for TCP 8443 exists"
+  wan_accept=$(iptables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*9443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*9443' || true)
+  [ -z "$wan_accept" ] || fail "an explicit IPv4 WAN accept rule for TCP 9443 exists"
 fi
 if command -v ip6tables-save >/dev/null 2>&1; then
-  wan6_accept=$(ip6tables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*8443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*8443' || true)
-  [ -z "$wan6_accept" ] || fail "an explicit IPv6 WAN accept rule for TCP 8443 exists"
+  wan6_accept=$(ip6tables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*9443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*9443' || true)
+  [ -z "$wan6_accept" ] || fail "an explicit IPv6 WAN accept rule for TCP 9443 exists"
 fi
 [ -r /etc/ssl/certs/ca-certificates.crt ] || fail "system CA bundle missing"
 [ -d /etc/hbnf-local-control ] || fail "certificate directory /etc/hbnf-local-control is missing"
@@ -154,6 +154,6 @@ matrix_release=$(printf '%s' "$matrix_build" | jsonfilter -e '@.release_id' 2>/d
 [ "$matrix_leds" = "534" ] || fail "unexpected combined Matrix/companion pixel count"
 matrix_topology_valid "$matrix_leds" "$matrix_seg0_start" "$matrix_seg0_stop" "$matrix_seg0_start_y" "$matrix_seg0_stop_y" "$matrix_seg1_start" "$matrix_seg1_stop" "$aux_leds" || fail "unexpected 2D Matrix/companion topology (expected Matrix x=0..32,y=0..16 and companion 512..534; AUX 22 LEDs)"
 echo "PREFLIGHT_OK: Opal/Nginx prerequisites, restrictive WAN input policy, local DNS, certificate, exact Matrix release, device identities, 32x16 Matrix segment, and 22-pixel companion topology are present."
-echo "NGINX_ISOLATION: existing GL.iNet Nginx/global workers/listeners remain untouched; a separate 8443 instance uses a root master only to open the root-only TLS key and a single nobody/nogroup request worker."
+echo "NGINX_ISOLATION: existing GL.iNet Nginx/global workers/listeners remain untouched; a separate 9443 instance uses a root master only to open the root-only TLS key and a single nobody/nogroup request worker."
 echo "SESSION_STORAGE: persistent /etc parent will be root:nogroup 0710; session, revocation, and request-temp directories will be nobody:nogroup 0700."
 echo "OWNER_ACCEPTED_NETWORK_EXPOSURE: direct unpaired-client WLED isolation was NOT_TESTED and is not an admission gate by owner decision; raw WLED API calls can bypass Owner/Guest UI constraints. PWA certificate trust and physical iPad behavior remain NOT_CHECKED."

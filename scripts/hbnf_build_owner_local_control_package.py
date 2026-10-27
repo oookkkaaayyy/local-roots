@@ -131,7 +131,7 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         "installedTransportSha256": sha(transport),
         "ownerPwaTransportSha256": sha(owner_http_transport),
         "rollbackTransportSha256": EXPECTED_ROLLBACK,
-        "scope": ["separate Opal Nginx/Lua gateway on TCP 8443 with nobody request worker", "existing Opal Mission Control WebSocket transport upgraded with the current compatible command mappings", "separate authenticated per-command HTTPS transport for the existing Owner PWA", "authenticated local UV status and policy routes for fixed segments 1 and 2 with AUX build identity, shared default-off hardware profile and commissioning-gate checks, and command readback", "shared versioned UV request contract and hardware profile consumed by backend JavaScript and Opal Lua validation"],
+        "scope": ["separate Opal Nginx/Lua gateway on TCP 9443 with nobody request worker (8443 is occupied by the Opal admin page)", "existing Opal Mission Control WebSocket transport upgraded with the current compatible command mappings", "separate authenticated per-command HTTPS transport for the existing Owner PWA", "authenticated local UV status and policy routes for fixed segments 1 and 2 with AUX build identity, shared default-off hardware profile and commissioning-gate checks, and command readback", "shared versioned UV request contract and hardware profile consumed by backend JavaScript and Opal Lua validation"],
         "releaseDisposition": "SOURCE_BOUND_NOT_INSTALLED",
         "notIncluded": ["TLS private key", "DNS provider credential", "router network policy marker", "firmware", "Supabase production payload"],
         "files": hashes,

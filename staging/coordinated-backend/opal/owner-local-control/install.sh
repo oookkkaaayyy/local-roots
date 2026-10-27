@@ -106,12 +106,12 @@ chmod 0755 "$BASE/lua"
 mv "$TARGET.tmp" "$TARGET"
 mv "$OWNER_HTTP_TARGET.tmp" "$OWNER_HTTP_TARGET"
 
-grep -Fxq '    listen 192.168.77.1:8443 ssl;' "$SERVER_CONF" || fail "dedicated listener must bind only to the HBNF-Cart LAN address"
+grep -Fxq '    listen 192.168.77.1:9443 ssl;' "$SERVER_CONF" || fail "dedicated listener must bind only to the HBNF-Cart LAN address"
 [ "$(grep -Ec '^[[:space:]]*listen[[:space:]]' "$SERVER_CONF" || true)" = "1" ] || fail "dedicated gateway must have exactly one listener, bound only to the HBNF-Cart LAN address"
 
 # Nginx's root master opens the root:root 0600 TLS key then drops its single
 # request worker to nobody. It uses a dedicated config, PID, log, temp paths,
-# dictionaries and :8443 listener; no global Nginx reload occurs.
+# dictionaries and :9443 listener; no global Nginx reload occurs.
 /usr/sbin/nginx -t -c "$CONF" || fail "dedicated Nginx config validation failed"
 "$SERVICE" enable || fail "could not enable the isolated procd service"
 "$SERVICE" start || fail "could not start the isolated procd service"
@@ -122,7 +122,7 @@ case "$master_pid" in *[!0-9]*|'') fail "dedicated Nginx PID file is invalid" ;;
 kill -0 "$master_pid" 2>/dev/null || fail "dedicated Nginx master is not running"
 worker_count=$(ps w | awk '$2 == "nobody" && $0 ~ /nginx: worker process/ { n++ } END { print n+0 }')
 [ "$worker_count" = "1" ] || fail "dedicated Nginx request worker is not exactly one unprivileged nobody process"
-code=$(curl -sS --max-time 4 --resolve "$HOST:8443:192.168.77.1" -o /dev/null -w '%{http_code}' -H "Origin: https://hbnightflyers.com" -H "X-HBNF-Device: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" "https://$HOST:8443/api/session") || fail "dedicated TLS/session probe failed"
+code=$(curl -sS --max-time 4 --resolve "$HOST:9443:192.168.77.1" -o /dev/null -w '%{http_code}' -H "Origin: https://hbnightflyers.com" -H "X-HBNF-Device: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" "https://$HOST:9443/api/session") || fail "dedicated TLS/session probe failed"
 [ "$code" = "401" ] || fail "expected fail-closed HTTP 401 probe; received ${code:-no status}"
 [ -x /etc/init.d/nginx ] || fail "existing GL.iNet Nginx service disappeared"
 netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])80$/ { http=1 } NR > 2 && $4 ~ /(:|\])443$/ { https=1 } END { exit !(http && https) }' || fail "existing GL.iNet 80/443 listeners were not preserved"
@@ -137,5 +137,5 @@ expected=$(grep 'vendor/sha2.lua$' "$PKG/SHA256SUMS" | awk '{print $1}')
 [ -n "$expected" ] && [ "$actual" = "$expected" ] || fail "installed bundled pure-Lua SHA-256 module hash mismatch"
 
 trap - EXIT HUP INT TERM
-echo "INSTALL_OK: authenticated local Owner Control endpoint installed on isolated Nginx :8443; request worker is nobody. Existing GL.iNet :80/:443 Nginx and Skins relay were not reloaded. Exact rollback: $BACKUP/rollback.sh"
+echo "INSTALL_OK: authenticated local Owner Control endpoint installed on isolated Nginx :9443; request worker is nobody. Existing GL.iNet :80/:443 Nginx and Skins relay were not reloaded. Exact rollback: $BACKUP/rollback.sh"
 echo "This does not prove iPad trust, physical output, or AUX illumination; those acceptance checks remain required. Unpaired Cart-Wi-Fi clients retain direct unauthenticated WLED API access by owner-accepted design."

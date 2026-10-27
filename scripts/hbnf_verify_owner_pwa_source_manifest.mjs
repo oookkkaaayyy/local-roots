@@ -60,11 +60,11 @@ for (const asset of manifest.assets) {
   const file = path.resolve(path.dirname(manifestPath), "owner-pwa", asset.path);
   assert.equal(sha256(file), asset.sha256, `Packaged asset hash mismatch: ${asset.path}`);
 }
-const expectedBaselineEntries = manifest.releaseSlice?.id === "cart-owner-pwa-uv-v1.0.14" ? 21 : 20;
+const expectedBaselineEntries = manifest.assets.length + 4;
 assert.equal(manifest.rollbackBaseline.entries, expectedBaselineEntries, `Expected exact ${expectedBaselineEntries}-file installed Owner PWA baseline`);
 assert.match(manifest.rollbackBaseline.sha256, /^[0-9a-f]{64}$/);
 const rollbackArchive = manifest.rollbackBaseline.packageArchive;
-if (["cart-owner-pwa-ui-v1.0.13", "cart-owner-pwa-uv-v1.0.14"].includes(manifest.releaseSlice?.id)) {
+if (["cart-owner-pwa-ui-v1.0.13", "cart-owner-pwa-uv-v1.0.14", "cart-owner-pwa-gateway-port-v1.0.15"].includes(manifest.releaseSlice?.id)) {
   assert.ok(rollbackArchive, "Owner PWA release slice requires its exact retained baseline package");
 }
 if (rollbackArchive) {

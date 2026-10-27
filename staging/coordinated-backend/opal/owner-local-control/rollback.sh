@@ -27,7 +27,7 @@ actual=$(sha256sum "$BACKUP/local-transport.js" | awk '{print $1}')
 [ -x "$SERVICE" ] || fail "dedicated service file is missing; preserve files and inspect manually"
 [ -s "$CONF" ] && [ -s "$SERVER_CONF" ] || fail "dedicated config is incomplete; preserve files and inspect manually"
 
-# Stop/disable only the isolated :8443 instance. The GL.iNet Nginx service and
+# Stop/disable only the isolated :9443 instance. The GL.iNet Nginx service and
 # its global config/listeners are never reloaded or rewritten.
 "$SERVICE" stop || fail "could not stop the dedicated service"
 "$SERVICE" disable || fail "could not disable the dedicated service"
