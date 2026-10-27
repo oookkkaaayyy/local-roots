@@ -26,6 +26,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Audit deployment workflows for mandatory two-phase admission
+        run: node scripts/audit-release-workflows.mjs
+
       - name: Run fail-closed validator regression tests
         run: node --test tests/release-receipt.test.mjs
 
