@@ -69,7 +69,7 @@ assert.doesNotMatch(featureModule, /\?\.value\s*\?\?/);
 assert.match(html, /id="uvMainBrightness"/);
 assert.match(html, /id="uvShortBrightness"/);
 assert.doesNotMatch(html, /uvFollowApply|Apply rhythm limits/);
-assert.match(html, /Missing or stale Matrix audio keeps the UV output dark/);
+assert.match(featureModule, /stale audio falls back to that cap/);
 assert.match(featureModule, /result\.uvControlEnabled === true/);
 assert.match(featureModule, /await sendUv\("FOLLOW_MATRIX"\)/);
 assert.match(auxControl, /uvControlEnabled=ENV_UV_ENABLED[\s\S]*st\.runtimeTrusted&&uvOutputsVerified/);
