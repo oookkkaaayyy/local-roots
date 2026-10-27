@@ -34,6 +34,17 @@ probe_cleanup(){
   rm -rf "$PROBE_DIR"
 }
 trap probe_cleanup EXIT HUP INT TERM
+cat >"$PROBE_DIR/probe.lua" <<'LUA'
+local cjson = require "cjson.safe"
+assert(cjson.encode({probe = true}))
+local sha = require "resty.sha256"
+local hex = require "resty.string"
+local ctx = sha:new()
+assert(ctx)
+assert(ctx:update("abc"))
+ngx.say(hex.to_hex(ctx:final()))
+LUA
+chmod 0644 "$PROBE_DIR/probe.lua"
 cat >"$PROBE_DIR/nginx.conf" <<EOF
 worker_processes 1;
 daemon off;
@@ -45,16 +56,7 @@ http {
   server {
     listen 127.0.0.1:$PROBE_PORT;
     location = /probe {
-      content_by_lua_block {
-        local cjson = require "cjson.safe"
-        assert(cjson.encode({probe = true}))
-        local sha = require "resty.sha256"
-        local hex = require "resty.string"
-        local ctx = sha:new()
-        assert(ctx)
-        assert(ctx:update("abc"))
-        ngx.say(hex.to_hex(ctx:final()))
-      }
+      content_by_lua_file $PROBE_DIR/probe.lua;
     }
   }
 }

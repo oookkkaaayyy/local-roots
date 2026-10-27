@@ -103,7 +103,7 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     preflight = (root / "preflight.sh").read_text()
     if ('vendor/resty/sha256.lua' not in installer
         or 'lua_package_path "$SCRIPT_DIR/vendor/?.lua;;"' not in preflight
-        or 'content_by_lua_block' not in preflight
+        or 'content_by_lua_file $PROBE_DIR/probe.lua' not in preflight
         or 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad' not in preflight):
         raise ValueError("installer/preflight does not load and exercise the packaged OpenResty modules in Nginx LuaJIT")
     if f"EXPECTED_ROLLBACK_TRANSPORT_SHA={EXPECTED_ROLLBACK}" not in rollback:
