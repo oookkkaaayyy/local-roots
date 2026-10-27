@@ -49,7 +49,7 @@ test('fails common package and Pages deployment commands without the gate', asyn
   }
 });
 
-test('passes only after both admission and closeout commands are present', async () => {
+test('rejects admission or closeout commands placed on the wrong side of deployment', async () => {\n  const result = await runAudit([\n    'name: deploy',\n    'jobs:',\n    '  deploy:',\n    '    steps:',\n    '      - run: supabase functions deploy app',\n    '      - run: npm run release:admit -- receipt.json receipt-root',\n    '      - run: npm run release:verify -- receipt.json receipt-root',\n  ].join('\\n'));\n  assert.equal(result.status, 1);\n  assert.match(result.stderr, /must be between/);\n});\n\ntest('rejects mismatched admission and closeout receipt arguments', async () => {\n  const result = await runAudit([\n    'name: deploy',\n    'jobs:',\n    '  deploy:',\n    '    steps:',\n    '      - run: npm run release:admit -- receipt-a.json receipt-root',\n    '      - run: supabase functions deploy app',\n    '      - run: npm run release:verify -- receipt-b.json receipt-root',\n  ].join('\\n'));\n  assert.equal(result.status, 1);\n  assert.match(result.stderr, /same receipt and root/);\n});\n\ntest('passes only after both admission and closeout commands are present', async () => {
   const result = await runAudit([
     'name: deploy',
     'jobs:',
