@@ -13,7 +13,10 @@ fail(){ echo "UV ROLLBACK BLOCKED: $*" >&2; exit 1; }
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum unavailable"
 [ -d "$BACKUP" ] && [ -f "$BACKUP/BASELINE_FILES.SHA256SUMS" ] && [ -f "$BACKUP/UPDATED_FILES.SHA256SUMS" ] || fail "exact transaction recovery is missing"
 (cd "$ROOT" && sha256sum -c "$BACKUP/UPDATED_FILES.SHA256SUMS" >/dev/null) || fail "installed files differ from the admitted candidate"
-(cd "$BACKUP" && sha256sum -c BASELINE_FILES.SHA256SUMS >/dev/null) || fail "saved baseline module copies failed"
+for rel in $TARGETS; do
+  expected=$(awk -v p="$rel" '$2==p {print $1}' "$BACKUP/BASELINE_FILES.SHA256SUMS")
+  [ -n "$expected" ] && [ "$(sha256sum "$BACKUP/$rel" | awk '{print $1}')" = "$expected" ] || fail "saved baseline module copy failed: $rel"
+done
 if [ "$ROOT" != / ] && [ "$TEST_MODE" = 1 ]; then RELOAD=${HBNF_TEST_RELOAD:-}; [ -x "$RELOAD" ] || fail "test reload stub missing"; reload(){ "$RELOAD" reload; }; else reload(){ "$SERVICE" reload; }; fi
 for rel in $TARGETS; do
   source="$BACKUP/$rel"; target="$ROOT/$rel"

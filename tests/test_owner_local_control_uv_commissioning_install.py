@@ -54,6 +54,7 @@ def main() -> None:
         root = Path(temporary) / "root"
         pkg = Path(temporary) / "package"
         root.mkdir()
+        (root / "root").mkdir()
         pkg.mkdir()
         baseline_zip_path = Path(temporary) / "baseline-inner.zip"
         baseline_zip_path.write_bytes(package["ROLLBACK_BASELINE.zip"])
@@ -62,7 +63,11 @@ def main() -> None:
             old_files = {Path(n).name: old_archive.read(n) for n in old_archive.namelist()
                          if n.startswith(old_top) and not n.endswith("/")}
         for relative, expected in baseline.items():
-            name = Path(relative).name
+            name = {
+                "etc/hbnf-local-control/nginx.conf": "dedicated-nginx.conf.example",
+                "etc/hbnf-local-control/nginx-server.conf": "nginx.conf.example",
+                "etc/init.d/hbnf-owner-local-control": "hbnf-owner-local-control.init",
+            }.get(relative, Path(relative).name)
             content = old_files.get(name)
             if content is None or sha(content) != expected:
                 raise SystemExit("rollback ZIP does not reconstruct the exact baseline file: " + relative)
