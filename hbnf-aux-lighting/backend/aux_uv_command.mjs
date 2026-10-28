@@ -22,6 +22,12 @@ export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
   const supplyMainMa = Number(config?.supplyByChannel?.main?.currentLimitMa) || 0;
   const supplyShortMa = Number(config?.supplyByChannel?.short?.currentLimitMa) || 0;
   const loadsMa = (Number(main?.loadCurrentMa) || 0) + (Number(short?.loadCurrentMa) || 0);
+  // The installed cartridge uses one converter and one upstream fuse for
+  // both branches. Per-channel limits alone can therefore approve an unsafe
+  // combined load; require the shared rail and every branch wire to be rated
+  // for the common fuse.
+  const sharedFuseMa = Number(config?.sharedSupply?.fuseRatingMa) || 0;
+  const sharedSupplyLimitMa = Number(config?.sharedSupply?.currentLimitMa) || 0;
   const channelSafe = (channel, supply, supplyMa) => Number.isFinite(channel?.loadVoltageV)
     && channel.loadVoltageV > 0
     && supply?.outputVoltageV === channel.loadVoltageV
@@ -34,6 +40,10 @@ export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
     && typeof config.evidence === "string" && config.evidence.trim().length > 0
     && channelSafe(main, config.supplyByChannel?.main, supplyMainMa)
     && channelSafe(short, config.supplyByChannel?.short, supplyShortMa)
+    && config.sharedSupply?.verified === true
+    && sharedFuseMa > 0 && sharedSupplyLimitMa >= sharedFuseMa && loadsMa <= sharedFuseMa
+    && Number(main?.wireCurrentRatingMa) >= sharedFuseMa
+    && Number(short?.wireCurrentRatingMa) >= sharedFuseMa
     && config.switching?.verified === true && config.switching?.isolated === true
     && Number(config.switching?.maxLoadVoltageV) >= Math.max(main?.loadVoltageV || Infinity, short?.loadVoltageV || Infinity)
     && config.switching?.controlInputMinVoltage <= UV_POLICY_SPEC.switching.controlVoltage

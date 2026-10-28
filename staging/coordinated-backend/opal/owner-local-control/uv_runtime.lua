@@ -45,6 +45,7 @@ function M.profile_ready(profile, policy)
   local short = hw.channels and hw.channels.short
   local supplies = hw.supplyByChannel
   local switching = hw.switching
+  local shared_supply = hw.sharedSupply
   local policyChannels = policy.channels
   local switchingSpec = policy.switching
   if type(main) ~= "table" or type(short) ~= "table" or type(supplies) ~= "table"
@@ -68,6 +69,8 @@ function M.profile_ready(profile, policy)
   end
   local max_load_voltage = math.max(tonumber(main.loadVoltageV) or 0, tonumber(short.loadVoltageV) or 0)
   local total_load = (tonumber(main.loadCurrentMa) or 0) + (tonumber(short.loadCurrentMa) or 0)
+  local shared_fuse = type(shared_supply) == "table" and (tonumber(shared_supply.fuseRatingMa) or 0) or 0
+  local shared_limit = type(shared_supply) == "table" and (tonumber(shared_supply.currentLimitMa) or 0) or 0
   local control_voltage = tonumber(switchingSpec.controlVoltage) or 3.3
   local max_channel = tonumber(switching.maxChannelCurrentMa) or 0
   local max_total = tonumber(switching.maxTotalCurrentMa) or 0
@@ -80,6 +83,10 @@ function M.profile_ready(profile, policy)
       or (tonumber(switching.controlInputMaxVoltage) or 0) < control_voltage
       or tonumber(switching.channels) ~= tonumber(switchingSpec.channels)
       or max_channel <= 0 or max_total < total_load
+      or type(shared_supply) ~= "table" or shared_supply.verified ~= true
+      or shared_fuse <= 0 or shared_limit < shared_fuse or total_load > shared_fuse
+      or (tonumber(main.wireCurrentRatingMa) or 0) < shared_fuse
+      or (tonumber(short.wireCurrentRatingMa) or 0) < shared_fuse
       or max_brightness <= 0 or max_brightness > (tonumber(policy.brightness and policy.brightness.maximum) or 255)
       or (tonumber(main.loadCurrentMa) or 0) > max_channel
       or (tonumber(short.loadCurrentMa) or 0) > max_channel then

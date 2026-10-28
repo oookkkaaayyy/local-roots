@@ -15,11 +15,12 @@ const verifiedHardware = Object.freeze({
     main: { outputVoltageV: 5, currentLimitMa: 300 },
     short: { outputVoltageV: 5, currentLimitMa: 200 },
   },
+  sharedSupply: { topology: "one_converter_one_inline_fuse_shared_by_both_uv_strips", fuseRatingMa: 300, currentLimitMa: 300, verified: true },
   switching: { verified: true, isolated: true, maxLoadVoltageV: 5, controlInputMinVoltage: 3.0, controlInputMaxVoltage: 3.6, channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300 },
   maxBrightness: 180,
   channels: {
-    main: { gpio: 25, segmentId: 1, loadVoltageV: 5, loadCurrentMa: 100, fuseRatingMa: 150, wireCurrentRatingMa: 150 },
-    short: { gpio: 26, segmentId: 2, loadVoltageV: 5, loadCurrentMa: 150, fuseRatingMa: 150, wireCurrentRatingMa: 150 },
+    main: { gpio: 25, segmentId: 1, loadVoltageV: 5, loadCurrentMa: 100, fuseRatingMa: 150, wireCurrentRatingMa: 300 },
+    short: { gpio: 26, segmentId: 2, loadVoltageV: 5, loadCurrentMa: 150, fuseRatingMa: 150, wireCurrentRatingMa: 300 },
   },
 });
 
@@ -158,4 +159,7 @@ test("hardware mapping requires reviewed facts and exact proposed GPIO/segment p
   assert.equal(uvHardwareReady({ ...verifiedHardware, supplyByChannel: { ...verifiedHardware.supplyByChannel, short: { ...verifiedHardware.supplyByChannel.short, outputVoltageV: 12 } } }), false);
   assert.equal(uvHardwareReady({ ...verifiedHardware, channels: { ...verifiedHardware.channels, short: { ...verifiedHardware.channels.short, loadVoltageV: null } } }), false);
   assert.equal(uvHardwareReady({ ...verifiedHardware, switching: { ...verifiedHardware.switching, maxLoadVoltageV: 4.9 } }), false);
+  assert.equal(uvHardwareReady({ ...verifiedHardware, sharedSupply: { ...verifiedHardware.sharedSupply, fuseRatingMa: 200 } }), false, "combined load must fit under the one shared fuse");
+  assert.equal(uvHardwareReady({ ...verifiedHardware, channels: { ...verifiedHardware.channels, main: { ...verifiedHardware.channels.main, wireCurrentRatingMa: 299 } } }), false, "each branch wire must be protected by the shared fuse");
+  assert.equal(uvHardwareReady({ ...verifiedHardware, sharedSupply: { ...verifiedHardware.sharedSupply, currentLimitMa: 299 } }), false, "shared supply rating must cover the shared fuse");
 });

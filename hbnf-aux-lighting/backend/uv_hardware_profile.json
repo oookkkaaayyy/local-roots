@@ -30,6 +30,13 @@
     "main": { "outputVoltageV": null, "currentLimitMa": 0 },
     "short": { "outputVoltageV": null, "currentLimitMa": 0 }
   },
+  "sharedSupply": {
+    "topology": "one_converter_one_inline_fuse_shared_by_both_uv_strips",
+    "converter": "TOBSUN EA50-5V",
+    "fuseRatingMa": 5000,
+    "currentLimitMa": 0,
+    "verified": false
+  },
   "switching": {
     "verified": false,
     "isolated": false,
