@@ -924,7 +924,7 @@ function uvStateChanged(persist = true) {
       : uvFollowActive === false
         ? `${uvLevelSavedMessage()} Release the Show slider to send both manual levels; Fine tuning keeps its separate Apply button.`
         : `${uvLevelSavedMessage()} Cart output mode is unconfirmed; slider changes stay local. Use Apply levels or Follow Matrix to choose a mode.`;
-    else if (uvReadiness === "unavailable") status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} No command was sent.`;
+    else if (uvReadiness === "unavailable") status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} Use Test Cart or Test Bar for a bounded check.`;
     else if (uvReadiness === "unsafe") status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
   }
   setUvCommissioningTestReady(uvCommissioningTestAvailable);
@@ -987,7 +987,12 @@ async function checkUvReadiness(updateStatus = true) {
     }
   } catch (_) {
     uvReadiness = "unavailable";
-    if (updateStatus) status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} No command was sent.`;
+    // The commissioning endpoint independently verifies AUX identity, limits
+    // each request to one three-second pulse, and confirms both outputs OFF.
+    // Keep that bounded diagnostic reachable when only the status read fails;
+    // ordinary Apply/Follow controls remain locked.
+    setUvCommissioningTestReady(true);
+    if (updateStatus) status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} A bounded Cart/Bar test is available below.`;
   }
 }
 
@@ -1010,9 +1015,11 @@ async function sendUvCommissioningTest(channel) {
       : "Test result was not confirmed. Check the Cart before trying again.";
   } catch (error) {
     const detail = error && error.data && error.data.error;
+    const reason = error && error.status ? `HTTP ${error.status}${detail ? `: ${String(detail).slice(0, 100)}` : ""}`
+      : error && error.message ? String(error.message).slice(0, 100) : "";
     status.textContent = error && error.status === 502
       ? `Test output state is uncertain (${String(detail || "readback failed")}). Check UV state before another test.`
-      : "Test could not run. No success was reported.";
+      : `Test could not run${reason ? ` (${reason})` : ""}. No success was reported.`;
   } finally {
     uvRequestInFlight = false;
     await checkUvReadiness(false);
