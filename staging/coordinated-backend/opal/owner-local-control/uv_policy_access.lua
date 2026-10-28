@@ -64,7 +64,9 @@ if mode == "COMMISSIONING_TEST" then
     local result = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST,
       body = cjson.encode({ seg = segments }) })
     if not result or result.status ~= 200 then return nil end
-    return runtime.decode_state(result.body)
+    -- WLED's POST reply is an acknowledgement, not the full /json/state
+    -- document. Confirm the write with the separate internal GET route.
+    return runtime.read_state()
   end
   local pulse = {
     segment(1, selected == 1, selected == 1 and brightness or 0),

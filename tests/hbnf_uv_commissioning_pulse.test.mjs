@@ -23,6 +23,10 @@ test("first-output tests are owner-local, limited to verified segments, and turn
   assert.match(policy, /if mode == "COMMISSIONING_TEST" then/);
   assert.match(policy, /channel ~= "main" and channel ~= "short"/);
   assert.match(policy, /runtime\.read_state\(\)/);
+  assert.match(policy, /local function apply_and_read\(segments\)[\s\S]*?if not result or result\.status ~= 200 then return nil end[\s\S]*?return runtime\.read_state\(\)/,
+    "a successful WLED write acknowledgement must be followed by a separate full-state GET readback");
+  assert.doesNotMatch(policy, /local function apply_and_read\(segments\)[\s\S]*?runtime\.decode_state\(result\.body\)/,
+    "do not mistake the WLED POST acknowledgement for the GET state document");
   assert.match(policy, /ngx\.sleep\(3\)/);
   assert.match(policy, /uv_policy_lock/);
   assert.match(policy, /pcall\(apply_and_read, \{ segment\(1, false, 0\), segment\(2, false, 0\) \}\)/);
