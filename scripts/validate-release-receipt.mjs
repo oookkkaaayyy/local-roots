@@ -5,6 +5,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SHA256 = /^[a-f0-9]{64}$/i;
+const HBNF_TARGET = 'hbnf-public-website';
+const HBNF_REQUIRED_SCENARIOS = [
+  'front9-scoring-and-pushes', 'back9-teams-and-payouts', 'undo-score-edit',
+  'ace-pot-and-tag-behavior', 'week-selection-and-standings', 'server-ack-and-readback',
+  'two-consecutive-saves', 'cold-reopen-retains-scores', 'cross-device-sync',
+  'offline-failure-and-retry', 'concurrent-write-does-not-overwrite',
+];
 
 function requireString(value, label) {
   if (typeof value !== 'string' || value.trim() === '') throw new Error(`${label} is required`);
