@@ -390,7 +390,12 @@ test('HBNF QA evidence passes only when isolated suite report and download-back 
   const f = await fixture();
   try {
     const qa = await addHbnfQa(f);
-    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    const preflight = structuredClone(f.receipt);
+    for (const criterion of preflight.acceptance.criteria) {
+      criterion.status = 'PENDING';
+      delete criterion.evidence;
+    }
+    const result = await validateReleaseReceipt(preflight, f.root, { phase: 'admission' });
     assert.equal(result.phase, 'admission');
     assert.equal(result.admissionManifest.qa.candidateSha256, f.receipt.package.sha256);
     assert.equal(result.admissionManifest.qa.sourceCommit, f.receipt.source.commit);
