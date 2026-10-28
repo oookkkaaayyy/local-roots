@@ -97,12 +97,12 @@ if mode == "COMMISSIONING_TEST" then
   if not on_confirmed then
     return respond(502, { error = "uv_commissioning_test_on_unconfirmed",
       mutationIssued = "unknown", outputOffConfirmed = off_confirmed,
-      diagnosis = { on = on_error or (on_ok and "wled_state_unconfirmed" or "wled_apply_exception"),
-        off = off_error or (off_ok and "wled_state_unconfirmed" or "wled_apply_exception") } })
+      diagnosis = { on = on_error or (on_ok and "wled_state_unconfirmed" or ("wled_apply_exception: " .. tostring(applied))),
+        off = off_error or (off_ok and "wled_state_unconfirmed" or ("wled_apply_exception: " .. tostring(off))) } })
   end
   if not off_confirmed then
     return respond(502, { error = "uv_commissioning_test_off_unconfirmed", mutationIssued = true,
-      diagnosis = { off = off_error or (off_ok and "wled_state_unconfirmed" or "wled_apply_exception") } })
+      diagnosis = { off = off_error or (off_ok and "wled_state_unconfirmed" or ("wled_apply_exception: " .. tostring(off))) } })
   end
   return respond(200, { ok = true, action = "uv_commissioning_test", channel = channel,
     requestedBrightness = brightness, pulseSeconds = 3, mutationIssued = true,
