@@ -10,6 +10,7 @@ import {
   isCanceledGlowWeek,
   isConfirmedGlowScheduleProvenance,
   isSyntheticGlowFixtureWeek,
+  isUnobservedGlowPlaceholderWeek,
   shouldEmitConfirmedScheduleRecord,
   shouldSkipCanceledEvent,
   shouldUseConfirmedSchedule,
@@ -189,4 +190,19 @@ test("synthetic HBNF Glow fixture is quarantined without hiding genuine incomple
   assert.match(adapter, /quarantinedFixtureExternalIds\.add/);
   assert.match(adapter, /published: false/);
   assert.match(adapter, /quarantinedFixtureExternalIds\]\)/);
+});
+
+test("empty nonconfirmed Glow week is quarantined while real play, cancellations, and accepted results remain protected", () => {
+  const emptyWeek = { players: [], cards: [{ finalized: false }], finalized: false };
+  assert.equal(isUnobservedGlowPlaceholderWeek(emptyWeek), true);
+  assert.equal(isUnobservedGlowPlaceholderWeek({ ...emptyWeek, cards: [{ finalized: true }] }), false);
+  assert.equal(isUnobservedGlowPlaceholderWeek({ ...emptyWeek, players: [{ name: "Actual Player" }] }), false);
+  assert.equal(isUnobservedGlowPlaceholderWeek({ ...emptyWeek, canceled: true }), false);
+  assert.equal(isUnobservedGlowPlaceholderWeek({ ...emptyWeek, status: "cancelled" }), false);
+  assert.match(adapter, /!confirmedGlowDates\\.has\\(date\\) && isUnobservedGlowPlaceholderWeek\\(week\\)/);
+  assert.match(adapter, /quarantinedEmptyGlowExternalIds\\.add/);
+  assert.match(adapter, /quarantinedEmptyGlowExternalIds\\]\\)/);
+  assert.match(adapter, /from\\("lr_results"\\)/);
+  assert.match(adapter, /resultCount\\.count > 0/);
+  assert.match(adapter, /empty Glow quarantine failed/);
 });
