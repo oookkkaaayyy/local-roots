@@ -8,7 +8,8 @@ SOURCES = {
  'uv_status_access.lua': Path('staging/coordinated-backend/opal/owner-local-control/uv_status_access.lua'),
  'uv_policy_access.lua': Path('staging/coordinated-backend/opal/owner-local-control/uv_policy_access.lua'),
 }
-TX='OWNER-LOCAL-UV-LOCAL-ACCESS-V123-20261028-01'
+TX='OWNER-LOCAL-UV-LOCAL-ACCESS-V123-20261028-02'
+RELEASE_ID='HBNF-OPAL-UV-LOCK-V123-20261028-02'
 NAME='hbnf-owner-local-uv-local-access-v1.0.23'
 ROLLBACK_ID='1JOZQg1lSQGEo0cG5Ul0nwnOqMNgxosRc'
 def sha(b): return hashlib.sha256(b).hexdigest()
@@ -46,10 +47,10 @@ def build(repo, commit, out):
   'README.md':(d/'README.md').read_bytes(), **candidate,
  }
  meta={
-  'schema':'hbnf-opal-local-uv-lock-zone-update-v1','package':NAME,'transactionId':TX,
+  'schema':'hbnf-opal-local-uv-lock-zone-update-v1','package':NAME,'transactionId':TX,'releaseId':RELEASE_ID,
   'sourceCommit':commit,'releaseDisposition':'INSTALLABLE_REQUIRES_ONE_TIME_ADMISSION_AND_FRESH_TARGET_READBACK',
-  'target':{'model':'GL-SFT1200','ip':'192.168.77.1'},
-  'baseline':{'managedFiles':20,'packageSha256':sha(rb),'installedFilesManifestSha256':sha(bm),'driveFileId':ROLLBACK_ID},
+  'target':{'model':'GL-SFT1200','ip':'192.168.77.1','provider':'GL.iNet Opal local device','identity':'GL-SFT1200 at 192.168.77.1 on HBNF-Cart LAN'},
+  'baseline':{'managedFiles':20,'identity':json.loads((d/'LIVE-BASELINE-READBACK.json').read_text())['identity'],'packageSha256':sha(rb),'installedFilesManifestSha256':sha(bm),'driveFileId':ROLLBACK_ID},
   'recovery':{'archivePath':'ROLLBACK_BASELINE.zip','sha256':sha(rb),'size':len(rb),'driveFileId':ROLLBACK_ID,'driveUrl':f'https://drive.google.com/file/d/{ROLLBACK_ID}/view'},
   'changedInstalledFiles':['/etc/hbnf-local-control/lua/auth_owner.lua','/etc/hbnf-local-control/lua/uv_status_access.lua','/etc/hbnf-local-control/lua/uv_policy_access.lua','/etc/hbnf-local-control/nginx-server.conf'],
   'scope':['Move only UV command serialization into its own 8 KiB Nginx shared dictionary','Keep Owner authentication rate limiting separate and unchanged','Preserve current UV hardware readiness gate and three-second single-channel commissioning test','Preserve public Owner pairing and unknown-origin denial'],

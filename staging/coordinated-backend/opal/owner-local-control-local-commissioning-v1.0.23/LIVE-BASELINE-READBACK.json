@@ -1,40 +1,14 @@
 {
-  "capturedAt": "2026-10-28T20:51:00Z",
-  "files": {
-    "etc/hbnf-local-control-state/uv_hardware_profile.json": "8ca630fec1a58f145c9ba1c6aaabbf4f4945163a08497e967cb1ef31f80533e5",
-    "etc/hbnf-local-control/lua/auth.lua": "536996db18b6a0972c96ff308885641870bc5207cee22946b12e69f4ad613c98",
-    "etc/hbnf-local-control/lua/auth_origin.lua": "8ffa1687f9cf615e439cde9d17557ca574c7793f25c26d510c756db2ff154792",
-    "etc/hbnf-local-control/lua/auth_owner.lua": "1847c2b31c11880568390c2ca54b5aa0bc775be7b1f5a3cf96dffd5a9224146e",
-    "etc/hbnf-local-control/lua/aux_command_access.lua": "4ab66fe7ad5d559b418ee32ca2fd3cf6aace039f1ae2fdaba9a31107ae2ba069",
-    "etc/hbnf-local-control/lua/enroll.lua": "276564f5648f56e973d8872169407ee777ce2f76f0b309a1cdb9169303f6a5ef",
-    "etc/hbnf-local-control/lua/matrix_command_access.lua": "d87c59ce461536320cc29497382875312a8396b1d6ce2433090fd76f9a8f852d",
-    "etc/hbnf-local-control/lua/revalidate.lua": "e2e6a13a55fb4a140028df54c48b879d588018536802202ff0baf8f4865956fa",
-    "etc/hbnf-local-control/lua/revoke.lua": "3f1f366202df465c15638d0b6988ba7a9dd251d9620c1644cfb5a0763feb1294",
-    "etc/hbnf-local-control/lua/session.lua": "972bb5a15fe30357f9134ef90a7e814e0417fb9383ba8904b835c7c64ff8015b",
-    "etc/hbnf-local-control/lua/sha2.lua": "54f39b72f46fc8d1eceff89c39d563304e731a4e9d550a2e770b3b6d1598876b",
-    "etc/hbnf-local-control/lua/uv_policy_access.lua": "a43d65b7aac3cb43c02a4a28e344cb0834fec87a39c0331abe07b26b40c8d446",
-    "etc/hbnf-local-control/lua/uv_policy_spec.json": "35efa4c29558bf661bd5850de56d2b3bc80121e6ce5501acde93414d23b38ee5",
-    "etc/hbnf-local-control/lua/uv_runtime.lua": "bf4800e385d4528b44683225e03377e50436b94d621ab3634eb30dacb99a14bf",
-    "etc/hbnf-local-control/lua/uv_status_access.lua": "53b29146e3ed88be39a54f7df5a5323d6eb489dcd57e819bf4c8a63669b86b9e",
-    "etc/hbnf-local-control/nginx-server.conf": "45c6c5579ffc0fdb50e67dfafb03f2754d071f8a2876ddbbe30d6e96ed0d310d",
-    "etc/hbnf-local-control/nginx.conf": "0e9a207983c30bd3f7fd5363a98d9cc7f7f1dd8a57d70f8376e30c506ec0ba56",
-    "etc/init.d/hbnf-owner-local-control": "7aa5b517b61aa12fac7eca0c5c17216ff2a3b333a9f0a08ee90d5cc605fd4aec",
-    "www/mission-control-local/local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
-    "www/mission-control-local/owner-http-transport.js": "eb293856f93bcd4450d7a4baeec22941932f3fc5a24b33aee6fcdf7cbf265d75"
-  },
-  "installedRelease": "owner-local-uv-local-access-v1.0.22",
-  "installedSourceCommit": "30159603982ef131551c634e75f62f162ea8f13f",
-  "managedFiles": 20,
-  "manifestSha256": "8c00c1fff29ccb017633fda9402be59488838daeac552c6346bec2af18d5e325",
-  "readbackMethod": "SSH read-only SHA-256 verification against installed v1.0.22 POST-INSTALL-READBACK.SHA256SUMS, followed by direct readback of all 20 files",
-  "rollbackArchive": {
-    "bytes": 224877,
-    "name": "ROLLBACK_BASELINE.zip",
-    "sha256": "750e929ee6d86f88b99c714aea56c41e6e577e73d24d7119cc2ed7ebdb5d31be"
-  },
-  "schema": "hbnf-opal-local-uv-baseline-readback-v1",
-  "target": {
-    "lanIp": "192.168.77.1",
-    "model": "GL-SFT1200"
+  "schema": "hbnf-opal-live-baseline-identity-v1",
+  "identity": "GL-SFT1200 at 192.168.77.1; Opal local control runtime matching v1.0.22 transaction receipt, with three UV gateway files verified against that transaction's exact post-install manifest; exact 20-file live snapshot captured 2026-10-28; UV outputs OFF; hardware profile unaccepted.",
+  "sourceCommit": "30159603982ef131551c634e75f62f162ea8f13f",
+  "artifactSha256": "750e929ee6d86f88b99c714aea56c41e6e577e73d24d7119cc2ed7ebdb5d31be",
+  "artifactBytes": 224877,
+  "liveFilesManifestSha256": "8c00c1fff29ccb017633fda9402be59488838daeac552c6346bec2af18d5e325",
+  "liveFiles": 20,
+  "captureMethod": "SSH readback of exact 20 paths listed in v1.0.22 installed receipt; live content matched v1.0.22 POST-INSTALL-READBACK.SHA256SUMS in all files.",
+  "outputState": {
+    "main": false,
+    "short": false
   }
 }

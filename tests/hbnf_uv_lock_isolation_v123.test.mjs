@@ -26,6 +26,11 @@ test('v1.0.23 transaction snapshots, validates, and restores the config change',
   assert.match(install, /nginx -t -c \/etc\/hbnf-local-control\/nginx.conf/);
   assert.match(install, /kill -HUP/);
   assert.match(install, /commissioningTestAvailable/);
+  assert.match(install, /@\.schemaVersion/);
+  assert.match(install, /@\.releaseId/);
+  assert.match(install, /@\.package\.sha256/);
+  assert.match(install, /@\.baseline\.rollbackSha256/);
+  assert.match(install, /HBNF-OPAL-UV-LOCK-V123-20261028-02/);
   assert.match(install, /unsupported_uv_mode/);
   assert.match(builder, /exact v1\.0\.22 baseline/);
   assert.match(builder, /hbnf_uv_policy_lock 8k/);

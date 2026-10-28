@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 PKG=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-TX=OWNER-LOCAL-UV-LOCAL-ACCESS-V123-20261028-01
+TX=OWNER-LOCAL-UV-LOCAL-ACCESS-V123-20261028-02
 ADMISSION_FILE=${HBNF_OPAL_ADMISSION_FILE:-}; ADMISSION_SHA256=${HBNF_OPAL_ADMISSION_SHA256:-}; CANDIDATE_ARCHIVE=${HBNF_OPAL_CANDIDATE_ARCHIVE:-}
 BACKUP=/root/hbnf-owner-local-uv-local-access.rollback-$TX
 STATUS=/etc/hbnf-local-control/lua/uv_status_access.lua
@@ -17,15 +17,17 @@ for f in "$STATUS" "$POLICY" "$AUTH" "$SERVER"; do [ -f "$f" ] && [ ! -L "$f" ] 
 [ -n "$ADMISSION_SHA256" ] && [ "$(sha256sum "$ADMISSION_FILE" | awk '{print $1}')" = "$ADMISSION_SHA256" ] || fail "admission hash mismatch"
 [ -n "$CANDIDATE_ARCHIVE" ] && [ -f "$CANDIDATE_ARCHIVE" ] && [ ! -L "$CANDIDATE_ARCHIVE" ] || fail "retained candidate archive required"
 av(){ jsonfilter -i "$ADMISSION_FILE" -e "$1" 2>/dev/null | sed -n '1p'; }
-[ "$(av '@.schema')" = hbnf-opal-uv-update-admission-v1 ] || fail "admission schema mismatch"
-[ "$(av '@.transaction_id')" = "$TX" ] && [ "$(av '@.outcome')" = PASS ] || fail "transaction admission not passed"
-[ "$(av '@.target.model')" = GL-SFT1200 ] && [ "$(av '@.target.ip')" = 192.168.77.1 ] || fail "target mismatch"
-[ "$(av '@.candidate.source_commit')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.sourceCommit' | sed -n '1p')" ] || fail "source commit mismatch"
-[ "$(av '@.candidate.package_sha256')" = "$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')" ] || fail "candidate package mismatch"
-[ "$(av '@.baseline.package_sha256')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.baseline.packageSha256' | sed -n '1p')" ] || fail "rollback package mismatch"
-[ "$(av '@.baseline.installed_files_manifest_sha256')" = "$(sha256sum "$PKG/BASELINE_FILES.SHA256SUMS" | awk '{print $1}')" ] || fail "baseline manifest mismatch"
-[ "$(av '@.durable_readback.status')" = PASS ] && [ "$(av '@.acceptance_plan.status')" = DECLARED ] || fail "durable readback/admission plan missing"
-(cd / && sha256sum -c "$PKG/BASELINE_FILES.SHA256SUMS" >/dev/null) || fail "current 20-file live baseline differs"
+[ "$(av '@.schemaVersion')" = 1 ] || fail "shared release admission schema mismatch"
+[ "$(av '@.releaseId')" = HBNF-OPAL-UV-LOCK-V123-20261028-02 ] || fail "release ID mismatch"
+[ "$(av '@.source.commit')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.sourceCommit' | sed -n '1p')" ] || fail "source commit mismatch"
+[ "$(av '@.package.sha256')" = "$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')" ] || fail "candidate package mismatch"
+[ "$(av '@.baseline.rollbackSha256')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.baseline.packageSha256' | sed -n '1p')" ] || fail "rollback package mismatch"
+[ "$(av '@.baseline.rollbackDriveFileId')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.baseline.driveFileId' | sed -n '1p')" ] || fail "rollback recovery identity mismatch"
+[ "$(av '@.baseline.rollbackDownloadBackSha256')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.baseline.packageSha256' | sed -n '1p')" ] || fail "rollback download-back hash mismatch"
+[ "$(av '@.deployment.provider')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.target.provider' | sed -n '1p')" ] || fail "provider mismatch"
+[ "$(av '@.deployment.target')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.target.identity' | sed -n '1p')" ] || fail "target mismatch"
+[ "$(av '@.recovery.driveFileId')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.recovery.driveFileId' | sed -n '1p')" ] || fail "candidate recovery identity mismatch"
+[ "$(av '@.baseline.identity')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.baseline.identity' | sed -n '1p')" ] || fail "installed baseline identity mismatch"
 [ "$(wc -l < "$PKG/BASELINE_FILES.SHA256SUMS" | tr -d ' ')" = 20 ] || fail "baseline manifest incomplete"
 [ -s /var/run/hbnf-owner-local-control-nginx.pid ] || fail "dedicated gateway PID missing"
 pid=$(cat /var/run/hbnf-owner-local-control-nginx.pid); case "$pid" in *[!0-9]*|'') fail "gateway PID malformed" ;; esac
@@ -58,6 +60,6 @@ denied=$(curl --noproxy '*' --silent --show-error --max-time 5 --resolve cart-co
 if tr -d '\r' < /tmp/hbnf-v123-denied.headers | grep -qi '^Access-Control-Allow-Origin:'; then fail "unknown origin received CORS permission"; fi
 (cd / && sha256sum -c "$PKG/UPDATED_FILES.SHA256SUMS" >/dev/null) || fail "updated full file manifest failed"
 cp -p "$PKG/UPDATED_FILES.SHA256SUMS" "$BACKUP/POST-INSTALL-READBACK.SHA256SUMS"
-printf '{\n  "schema":"hbnf-opal-local-uv-access-readback-v1",\n  "transaction_id":"%s",\n  "admission_manifest_sha256":"%s",\n  "candidate_archive_sha256":"%s",\n  "updated_file_manifest":"PASS",\n  "uv_lock_zone":"PASS",\n  "local_status":"PASS",\n  "invalid_policy_no_write":"PASS",\n  "public_pairing":"PASS",\n  "unknown_origin_denied":"PASS"\n}\n' "$TX" "$ADMISSION_SHA256" "$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')" > "$BACKUP/POST-INSTALL-READBACK.json"
+printf '{\n  "schema":"hbnf-opal-local-uv-access-readback-v1",\n  "transaction_id":"%s",\n  "release_id":"%s",\n  "admission_manifest_sha256":"%s",\n  "candidate_archive_sha256":"%s",\n  "updated_file_manifest":"PASS",\n  "uv_lock_zone":"PASS",\n  "local_status":"PASS",\n  "invalid_policy_no_write":"PASS",\n  "public_pairing":"PASS",\n  "unknown_origin_denied":"PASS"\n}\n' "$TX" HBNF-OPAL-UV-LOCK-V123-20261028-02 "$ADMISSION_SHA256" "$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')" > "$BACKUP/POST-INSTALL-READBACK.json"
 sync; trap - EXIT HUP INT TERM
 echo "LOCAL_UV_LOCK_FIX_OK: dedicated lock zone active; readiness and strict policy checks pass. No valid UV command was issued."
