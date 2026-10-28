@@ -1,11 +1,49 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { LocalOwnerControl } from "../hbnf-final-controller/hbnf-cart-local.mjs";
+import { LocalOwnerControl, LOCAL_CONTROL_ORIGIN } from "../hbnf-final-controller/hbnf-cart-local.mjs";
 import { UV_FOLLOW_EFFECT_ID, uvCommissioningReady, uvRuntimeReady } from "../hbnf-aux-lighting/backend/aux_uv_command.mjs";
 import { UV_MODES, UV_POLICY_SPEC, nextUvOutput } from "../hbnf-aux-lighting/backend/aux_uv_policy.mjs";
 
 const token = "a".repeat(64);
+
+test("Cart-local UV status and bounded commands do not require an Owner pairing token", async () => {
+  const requests = [];
+  const client = new LocalOwnerControl({
+    pageOrigin: "http://192.168.77.1",
+    origin: LOCAL_CONTROL_ORIGIN,
+    fetchFn: async (url, options) => {
+      requests.push({ url, options });
+      if (url.endsWith("/api/aux/uv-status")) {
+        return new Response(JSON.stringify({ available: true, commissioningTestAvailable: true, mutationIssued: false }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ok: true, outputOffConfirmed: true, deviceReadback: true }), { status: 200 });
+    },
+  });
+
+  const status = await client.uvStatus("");
+  const pulse = await client.uvPolicy("", { mode: "COMMISSIONING_TEST", channel: "main", brightness: 255 });
+  assert.equal(status.available, true);
+  assert.equal(pulse.outputOffConfirmed, true);
+  assert.deepEqual(requests.map(({ url }) => url), [
+    `${LOCAL_CONTROL_ORIGIN}/api/aux/uv-status`,
+    `${LOCAL_CONTROL_ORIGIN}/api/aux/uv-policy`,
+  ]);
+  assert.equal(requests[0].options.headers["X-HBNF-Device"], undefined);
+  assert.equal(requests[1].options.headers["X-HBNF-Device"], undefined);
+});
+
+test("unpaired UV access is not enabled outside the exact Cart-local page", async () => {
+  let requestCount = 0;
+  const client = new LocalOwnerControl({
+    pageOrigin: "https://hbnightflyers.com",
+    origin: LOCAL_CONTROL_ORIGIN,
+    fetchFn: async () => { requestCount += 1; },
+  });
+  await assert.rejects(client.uvStatus(""), /valid paired Owner session/);
+  await assert.rejects(client.uvPolicy("", { mode: "COMMISSIONING_TEST", channel: "main", brightness: 255 }), /valid paired Owner session/);
+  assert.equal(requestCount, 0);
+});
 
 test("UV local policy uses existing paired session without requiring Matrix transport and surfaces fail-closed Opal response", async () => {
   const requests = [];

@@ -22,6 +22,7 @@ function jsonHeaders(token) {
 export class LocalOwnerControl {
   constructor(options = {}) {
     this.origin = String(options.origin || LOCAL_CONTROL_ORIGIN).replace(/\/$/, "");
+    this.pageOrigin = String(options.pageOrigin || globalThis.location?.origin || "");
     this.opalDirect = options.opalDirect === true;
     this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js"));
     this.directStorage = options.storage || (typeof localStorage !== "undefined" ? localStorage : null);
@@ -69,11 +70,38 @@ export class LocalOwnerControl {
     return data;
   }
 
+  isCartLocalUvPage() {
+    return this.pageOrigin === "http://192.168.77.1" && this.origin === LOCAL_CONTROL_ORIGIN;
+  }
+
+  async requestCartLocalUv(path, method = "GET", body = null, timeoutMs = HBNF_API_TIMEOUT_MS) {
+    const allowed = (method === "GET" && path === "/api/aux/uv-status") ||
+      (method === "POST" && path === "/api/aux/uv-policy");
+    if (!this.isCartLocalUvPage() || !allowed) {
+      throw new Error("Unpaired UV access is limited to the Cart-local page and UV routes.");
+    }
+    const options = {
+      method,
+      headers: body === null ? {} : { "Content-Type": "application/json" },
+      cache: "no-store",
+      credentials: "omit",
+    };
+    if (body !== null) options.body = JSON.stringify(body);
+    const response = await fetchWithDeadline(this.fetchFn, this.origin + path, options, timeoutMs, "Cart-local UV control");
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const error = new Error(data.error || `Local UV control HTTP ${response.status}`);
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+    return data;
+  }
+
   // This path deliberately does not require a live Matrix transport. The
   // Opal owns authorization and reads the shared policy contract. It remains
   // fail-closed until trusted local commissioning/runtime evidence is present.
   async uvPolicy(token, request = {}) {
-    if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV policy.");
     const mode = String(request.mode || "").toUpperCase();
     if (mode === "COMMISSIONING_TEST") {
       const channel = String(request.channel || "");
@@ -81,6 +109,10 @@ export class LocalOwnerControl {
       if ((channel !== "main" && channel !== "short") || !Number.isInteger(brightness) || brightness < 1 || brightness > 255) {
         throw new Error("Invalid local UV commissioning test; no command was sent.");
       }
+      if (this.isCartLocalUvPage()) {
+        return this.requestCartLocalUv("/api/aux/uv-policy", "POST", { mode, channel, brightness }, 20000);
+      }
+      if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV policy.");
       await this.ensureSession(token);
       return this.request(token, "/api/aux/uv-policy", "POST", { mode, channel, brightness }, 20000);
     }
@@ -90,6 +122,13 @@ export class LocalOwnerControl {
         !validLevel(levels.main) || !validLevel(levels.short)) {
       throw new Error("Invalid local UV policy request; no command was sent.");
     }
+    if (this.isCartLocalUvPage()) {
+      return this.requestCartLocalUv("/api/aux/uv-policy", "POST", {
+        mode,
+        brightnessBySegment: { main: levels.main, short: levels.short },
+      });
+    }
+    if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV policy.");
     await this.ensureSession(token);
     return this.request(token, "/api/aux/uv-policy", "POST", {
       mode,
@@ -98,6 +137,7 @@ export class LocalOwnerControl {
   }
 
   async uvStatus(token) {
+    if (this.isCartLocalUvPage()) return this.requestCartLocalUv("/api/aux/uv-status");
     if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV status.");
     await this.ensureSession(token);
     return this.request(token, "/api/aux/uv-status");
