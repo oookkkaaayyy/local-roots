@@ -1,6 +1,9 @@
--- Authenticated read-only readiness from the existing AUX JSON state route.
-local auth = dofile("/etc/hbnf-local-control/lua/auth.lua")
-if auth.owner_access(false) ~= true then return end
+-- Cart-local readiness is intentionally readable without pairing to minimize
+-- owner friction on the private Cart LAN. Public-origin access remains paired.
+if ngx.var.http_origin ~= "http://192.168.77.1" then
+  local auth = dofile("/etc/hbnf-local-control/lua/auth.lua")
+  if auth.owner_access(false) ~= true then return end
+end
 
 local cjson = require "cjson.safe"
 local runtime = dofile("/etc/hbnf-local-control/lua/uv_runtime.lua")

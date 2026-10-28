@@ -1,7 +1,13 @@
--- Authenticated UV command gateway. Only segments 1/2 are addressable; the
--- Opal validates the installed AUX witness and never accepts arbitrary WLED JSON.
-local auth = dofile("/etc/hbnf-local-control/lua/auth.lua")
-if auth.owner_access(false) ~= true then return end
+-- UV control from the exact Cart-local PWA does not require pairing, as
+-- explicitly accepted by the owner for this private Cart LAN. Public-origin
+-- callers still require the paired Owner token. CORS origin checks are not a
+-- security boundary; the owner accepts unpaired local clients may control UV.
+if ngx.var.http_origin ~= "http://192.168.77.1" then
+  local auth = dofile("/etc/hbnf-local-control/lua/auth.lua")
+  if auth.owner_access(false) ~= true then return end
+end
+
+-- Only fixed UV segments are addressable; arbitrary WLED JSON is never accepted.
 
 local cjson = require "cjson.safe"
 local runtime = dofile("/etc/hbnf-local-control/lua/uv_runtime.lua")

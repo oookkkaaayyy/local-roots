@@ -1,0 +1,15 @@
+{
+  "installedFilesManifestSha256": "63b3ea3a4dad3cc210a6f46f3a16c5c7d543be567fcc921fd5cb38e12e56a4d7",
+  "localArchiveBytesComparedToManifest": "PASS",
+  "managedFileCount": 20,
+  "note": "Fresh full 20-file snapshot after local-origin auth v1.0.19 installation.",
+  "readAt": "2026-10-28T08:15:00Z",
+  "remoteReadback": "PASS",
+  "rollbackArchiveSha256": "005155b0ca46d39aefe7314450e580165335e889a93c1847b9515a7fee97c10a",
+  "schema": "hbnf-opal-live-baseline-readback-v1",
+  "target": {
+    "ip": "192.168.77.1",
+    "kernel": "4.14.90",
+    "model": "GL-SFT1200"
+  }
+}
