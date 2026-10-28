@@ -30,10 +30,11 @@ test("first-output tests are owner-local, limited to verified segments, and turn
   assert.match(policy, /ngx\.sleep\(3\)/);
   assert.match(policy, /pcall\(runtime\.segment_matches/);
   assert.match(policy, /diagnosis = \{ on = on_error/);
-  assert.match(policy, /wled_apply_exception: " \..*tostring\(applied\)/);
-  assert.match(policy, /wled_apply_exception: " \..*tostring\(off\)/);
+  assert.match(policy, /attempt to yield across metamethod\/C-call boundary/);
+  assert.match(policy, /local applied, on_error = apply_and_read\(pulse\)/);
+  assert.match(policy, /local off, off_error = apply_and_read\(/);
+  assert.doesNotMatch(policy, /pcall\(apply_and_read/);
   assert.match(policy, /uv_policy_lock/);
-  assert.match(policy, /pcall\(apply_and_read, \{ segment\(1, false, 0\), segment\(2, false, 0\) \}\)/);
   assert.match(policy, /if mode ~= "OFF" then[\s\S]*runtime\.profile_ready\(\)/);
   assert.match(status, /commissioningTestAvailable = current ~= nil/);
   assert.match(runtime, /segments\[1\]\.start\) ~= 22[\s\S]*segments\[2\]\.stop\) ~= 24/);

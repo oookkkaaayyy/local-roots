@@ -75,9 +75,12 @@ if mode == "COMMISSIONING_TEST" then
     segment(1, selected == 1, selected == 1 and brightness or 0),
     segment(2, selected == 2, selected == 2 and brightness or 0),
   }
-  local on_ok, applied, on_error = pcall(apply_and_read, pulse)
+  -- ngx.location.capture can yield while the internal WLED request runs;
+  -- wrapping it in pcall fails on this OpenWrt LuaJIT runtime with
+  -- "attempt to yield across metamethod/C-call boundary".
+  local applied, on_error = apply_and_read(pulse)
   local on_confirmed = false
-  if on_ok and applied then
+  if applied then
     local match_ok, selected_matches = pcall(runtime.segment_matches, applied.segments[selected], {
       on = true, bri = brightness, fx = 0, ix = brightness, col = {0, 0, 0, 255} })
     local other = applied.segments[selected == 1 and 2 or 1]
@@ -90,19 +93,19 @@ if mode == "COMMISSIONING_TEST" then
   if on_confirmed then ngx.sleep(3) end
   -- Always issue a best-effort OFF after any attempted pulse, including an
   -- ambiguous ON acknowledgement. Never leave the lock held on Lua errors.
-  local off_ok, off, off_error = pcall(apply_and_read, { segment(1, false, 0), segment(2, false, 0) })
+  local off, off_error = apply_and_read({ segment(1, false, 0), segment(2, false, 0) })
   unlock()
-  local off_confirmed = off_ok and off ~= nil and off.segments[1] ~= nil and off.segments[2] ~= nil
+  local off_confirmed = off ~= nil and off.segments[1] ~= nil and off.segments[2] ~= nil
     and off.segments[1].on ~= true and off.segments[2].on ~= true
   if not on_confirmed then
     return respond(502, { error = "uv_commissioning_test_on_unconfirmed",
       mutationIssued = "unknown", outputOffConfirmed = off_confirmed,
-      diagnosis = { on = on_error or (on_ok and "wled_state_unconfirmed" or ("wled_apply_exception: " .. tostring(applied))),
-        off = off_error or (off_ok and "wled_state_unconfirmed" or ("wled_apply_exception: " .. tostring(off))) } })
+      diagnosis = { on = on_error or "wled_state_unconfirmed",
+        off = off_error or "wled_state_unconfirmed" } })
   end
   if not off_confirmed then
     return respond(502, { error = "uv_commissioning_test_off_unconfirmed", mutationIssued = true,
-      diagnosis = { off = off_error or (off_ok and "wled_state_unconfirmed" or ("wled_apply_exception: " .. tostring(off))) } })
+      diagnosis = { off = off_error or "wled_state_unconfirmed" } })
   end
   return respond(200, { ok = true, action = "uv_commissioning_test", channel = channel,
     requestedBrightness = brightness, pulseSeconds = 3, mutationIssued = true,

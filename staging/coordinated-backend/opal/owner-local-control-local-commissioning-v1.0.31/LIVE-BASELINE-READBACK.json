@@ -1,0 +1,8 @@
+{
+  "schema": "hbnf-opal-installed-baseline-v1",
+  "observedAtUtc": "2026-10-28T22:16:00Z",
+  "identity": "GL-SFT1200 at 192.168.77.1 on HBNF-Cart; v1.0.30 installed; all 20 managed files freshly re-read and matched v1.0.30 post-install manifest; UV segments 1 and 2 OFF.",
+  "installedManifestSha256": "8e272b6f7e179fd859806d74e800127dc95f0a6f104530f8981eca6052e0306c",
+  "managedFiles": 20,
+  "status": "PASS"
+}
