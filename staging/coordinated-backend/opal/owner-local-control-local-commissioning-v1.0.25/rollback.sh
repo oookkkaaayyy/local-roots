@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-TX=OWNER-LOCAL-UV-LOCAL-ACCESS-V125-20261028-01
+TX=OWNER-LOCAL-UV-LOCAL-ACCESS-V125-20261028-02
 BACKUP=/root/hbnf-owner-local-uv-local-access.rollback-$TX
 STATUS=/etc/hbnf-local-control/lua/uv_status_access.lua
 POLICY=/etc/hbnf-local-control/lua/uv_policy_access.lua

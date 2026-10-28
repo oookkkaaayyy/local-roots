@@ -60,6 +60,6 @@ test('v1.0.25 returns commissioning responses without aborting internal requests
   const builder = read('scripts/hbnf_build_owner_local_uv_lock_v125.py');
   assert.match(policy, /ngx\.status = status[\s\S]*return ngx\.exit\(ngx\.OK\)/);
   assert.doesNotMatch(policy, /return ngx\.exit\(status\)/);
-  assert.match(install, /HBNF-OPAL-UV-LOCK-V125-20261028-01/);
+  assert.match(install, /HBNF-OPAL-UV-LOCK-V125-20261028-02/);
   assert.match(builder, /exact v1\.0\.24 baseline/);
 });
