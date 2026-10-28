@@ -29,7 +29,7 @@ def build(repo, commit, out):
   candidate[target]=body
  if b'ngx.shared.hbnf_uv_policy_lock' not in candidate['uv_policy_access.lua'] or b'ngx.shared.hbnf_owner_rate' in candidate['uv_policy_access.lua']:
   raise ValueError('UV policy lock is not isolated from Owner rate-limit storage')
- if __import__('re').search(rb'ngx\s*\.\s*exit\s*\(', candidate['uv_policy_access.lua']):
+ if __import__('re').search(rb'ngx\s*\.\s*exit\s*\(', __import__('re').sub(rb'--[^\n]*', b'', candidate['uv_policy_access.lua'])):
   raise ValueError('UV response handler must return normally; ngx.exit can abort pending subrequests')
  config_path='etc/hbnf-local-control/nginx-server.conf'; config=old[config_path]
  needle=b'lua_shared_dict hbnf_owner_rate 8k;\n'

@@ -17,7 +17,7 @@ local function respond(status, value)
   ngx.header["Cache-Control"] = "no-store"
   ngx.say(cjson.encode(value))
   -- Return from this helper and let content_by_lua finish naturally. ngx.exit,
-  -- including ngx.exit(ngx.OK), can abort with pending internal subrequests.
+  -- can abort with pending internal subrequests.
   return true
 end
 
