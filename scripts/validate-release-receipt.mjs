@@ -199,7 +199,8 @@ async function verifyHbnfQa(receipt, root, packageFile) {
   try { report = JSON.parse(await readFile(path.resolve(root, qa.report.path), 'utf8')); }
   catch { throw new Error('qa.report must be valid JSON'); }
   if (report.target !== HBNF_TARGET || report.runId !== qa.runId || report.suiteVersion !== qa.suiteVersion ||
-      report.environment !== qa.environment || report.backend !== qa.backend || report.browserRunner !== qa.browserRunner ||
+      report.suiteCommit !== qa.suiteCommit || report.suiteSha256 !== qa.suiteSha256 ||
+      report.runnerInputName !== qa.runnerInputName || report.environment !== qa.environment || report.backend !== qa.backend || report.browserRunner !== qa.browserRunner ||
       report.status !== qa.status || report.sourceCommit !== receipt.source.commit ||
       report.candidateSha256 !== packageFile.sha256 || report.baselineIdentity !== receipt.baseline.identity ||
       !sameCanonical(report.scenarios, qa.scenarios)) {
