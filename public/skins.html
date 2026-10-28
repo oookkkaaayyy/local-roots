@@ -1266,6 +1266,7 @@ function hbnfMergeBranchState(remoteBranch,localBranch,normalizeFn){
  return normalizeFn?normalizeFn(out):out;
 }
 function hbnfSyncHash(value){try{return JSON.stringify(value||{})}catch(e){return ''}}
+function hbnfSemanticHash(value){const sorted=v=>Array.isArray(v)?v.map(sorted):(v&&typeof v==='object')?Object.keys(v).sort().reduce((o,k)=>(o[k]=sorted(v[k]),o),{}):v;return hbnfSyncHash(sorted(value))}
 function hbnfSetSyncStatus(text){const el=document.querySelector('#syncStatus');if(el)el.textContent=text}
 function makeSyncHelpers(ctx){return{
  queuePush(delay=140){clearTimeout(ctx.pushDebounceTimer);ctx.pushDebounceTimer=setTimeout(()=>{ctx.pushDebounceTimer=null;ctx.pushRoot()},delay)},
@@ -1301,7 +1302,8 @@ function makeSyncHelpers(ctx){return{
    ctx.rootState=incoming||{};
    ctx.lastRemoteRootHash=incomingRootHash;
    ctx.lastRemoteBranchHash=incomingBranchHash;
-   const authoritative=ctx.normalize?ctx.normalize(remoteBranch):hbnfSyncClone(remoteBranch);
+   // Normalize a COPY: normalization rewrites week objects, which must not change the cloud revision fingerprint.
+   const authoritative=ctx.normalize?ctx.normalize(hbnfSyncClone(remoteBranch)):hbnfSyncClone(remoteBranch);
    const afterBranchHash=hbnfSyncHash(authoritative);
    if(afterBranchHash===beforeBranchHash)return;
    ctx.state=authoritative;
@@ -1326,7 +1328,8 @@ function makeSyncHelpers(ctx){return{
    if(!res.data||!res.data.updated_at)throw new Error('Cloud baseline unavailable; local copy retained.');
    const incoming=(res.data&&res.data.state_json)||{};
    const remoteBranch=incoming&&incoming[ctx.branch];
-   const authoritative=ctx.normalize?ctx.normalize(remoteBranch):hbnfSyncClone(remoteBranch);
+   // Normalize a COPY: normalization rewrites week objects, which must not change the cloud revision fingerprint.
+   const authoritative=ctx.normalize?ctx.normalize(hbnfSyncClone(remoteBranch)):hbnfSyncClone(remoteBranch);
    const cached=ctx.state?hbnfSyncClone(ctx.state):null;
    const editedWhileBaselinePending=!!ctx.localEditedBeforeBaseline&&!!ctx.localDirty;
    const pendingLocalBranch=editedWhileBaselinePending?cached:null;
@@ -1389,10 +1392,17 @@ function makeSyncHelpers(ctx){return{
     ctx.lastRemoteRootHash=currentRootHash;ctx.localDirty=false;ctx.lastRemoteBranchHash=currentBranchHash;hbnfSetSyncStatus('Saved to cloud');return
    }
    ctx.inFlightBranchHash=saveSnapshotHash;
-   const res=await ctx.supabaseClient.from('league_state').update({state_json:ctx.rootState,updated_at:new Date().toISOString()}).eq('id',1).eq('updated_at',cur.data.updated_at).select('id');
+   const res=await ctx.supabaseClient.from('league_state').update({state_json:ctx.rootState,updated_at:new Date().toISOString()}).eq('id',1).eq('updated_at',cur.data.updated_at).select('id,state_json,updated_at');
    if(res.error)throw res.error;
    if(!Array.isArray(res.data)||res.data.length!==1){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — cloud changed during save; your edits are kept on this device.');return}
-   ctx.lastRemoteRootHash=targetRootHash;ctx.lastRemoteBranchHash=saveSnapshotHash;ctx.syncBaselineReady=true;ctx.remoteConflictPending=false;
+   // Use the server-returned JSONB representation for the next CAS comparison. Postgres
+   // can reorder object keys, so a locally serialized snapshot is not a cloud revision.
+   const confirmedRoot=res.data[0]&&res.data[0].state_json;
+   if(!confirmedRoot||!res.data[0].updated_at||hbnfSemanticHash(ctx.normalize(hbnfSyncClone(confirmedRoot[ctx.branch])))!==hbnfSemanticHash(saveSnapshot))throw new Error('Cloud save acknowledgment did not match the submitted scorecard.');
+   ctx.rootState=confirmedRoot;
+   ctx.lastRemoteRootHash=hbnfSyncHash(confirmedRoot);
+   ctx.lastRemoteBranchHash=hbnfSyncHash(confirmedRoot[ctx.branch]);
+   ctx.syncBaselineReady=true;ctx.remoteConflictPending=false;
    if(hbnfSyncHash(ctx.state)===saveSnapshotHash){ctx.localDirty=false;ctx.localSyncNeedsConfirmation=false;hbnfSetSyncStatus('Saved to cloud')}
    else{ctx.localDirty=true;hbnfSetSyncStatus('Pending — newer edits are waiting to save.');ctx.pendingPush=true}
   }catch(err){console.error('Cloud save failed',err);hbnfSetSyncStatus(ctx.localDraftStored===false?'Cloud save failed and device draft could not be stored — keep this page open and retry':'Save failed — changes kept on this device')}
