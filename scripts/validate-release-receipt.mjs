@@ -52,6 +52,9 @@ function admissionProjection(receipt, hashes = {}) {
     qa: receipt.qa ? {
       runId: receipt.qa.runId,
       suiteVersion: receipt.qa.suiteVersion,
+      suiteCommit: receipt.qa.suiteCommit,
+      suiteSha256: receipt.qa.suiteSha256,
+      runnerInputName: receipt.qa.runnerInputName,
       environment: receipt.qa.environment,
       backend: receipt.qa.backend,
       browserRunner: receipt.qa.browserRunner,
@@ -60,6 +63,7 @@ function admissionProjection(receipt, hashes = {}) {
       candidateSha256: hashes.packageSha256 ?? receipt.qa.candidateSha256,
       baselineIdentity: receipt.qa.baselineIdentity,
       reportDriveFileId: receipt.qa.report.driveFileId,
+      reportDriveUrl: receipt.qa.report.driveUrl,
       reportSha256: receipt.qa.report.sha256,
       reportBytes: receipt.qa.report.bytes,
       reportDownloadBackSha256: receipt.qa.report.downloadBack.sha256,
@@ -165,6 +169,11 @@ async function verifyHbnfQa(receipt, root, packageFile) {
   if (qa.browserRunner !== 'Playwright') throw new Error('qa.browserRunner must be Playwright');
   if (qa.status !== 'PASS') throw new Error('qa.status must be PASS before admission');
   if (qa.sourceCommit !== receipt.source.commit) throw new Error('qa.sourceCommit must match source.commit');
+  if (qa.suiteCommit !== receipt.source.commit) throw new Error('qa.suiteCommit must match source.commit');
+  requireSha(qa.suiteSha256, 'qa.suiteSha256');
+  requireString(qa.runnerInputName, 'qa.runnerInputName');
+  const runnerInput = receipt.build.inputs.find(input => input.name === qa.runnerInputName);
+  if (!runnerInput || runnerInput.sha256 !== qa.suiteSha256) throw new Error('qa suite hash must match its pinned build input');
   if (qa.candidateSha256 !== packageFile.sha256) throw new Error('qa.candidateSha256 must match the candidate package');
   if (qa.baselineIdentity !== receipt.baseline.identity) throw new Error('qa.baselineIdentity must match the current installed baseline');
   if (!Array.isArray(qa.scenarios)) throw new Error('qa.scenarios must list every required HBNF simulation');
