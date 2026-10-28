@@ -18,13 +18,74 @@ local body = ngx.req.get_body_data()
 if not body or #body > 512 then return respond(413, { error = "request_too_large", mutationIssued = false }) end
 local input = cjson.decode(body)
 if type(input) ~= "table" then return respond(400, { error = "invalid_request", mutationIssued = false }) end
+local mode = string.upper(tostring(input.mode or ""))
+
+-- A paired Owner can verify one output before the full commissioning profile
+-- is accepted. The pulse is auto-cleared after three seconds; normal UV writes
+-- below continue to require every profile and acceptance gate.
+if mode == "COMMISSIONING_TEST" then
+  for key in pairs(input) do
+    if key ~= "mode" and key ~= "channel" and key ~= "brightness" then
+      return respond(400, { error = "unsupported_field", mutationIssued = false })
+    end
+  end
+  local channel, brightness = input.channel, input.brightness
+  if (channel ~= "main" and channel ~= "short") or type(brightness) ~= "number"
+      or brightness % 1 ~= 0 or brightness < 1 or brightness > 255 then
+    return respond(400, { error = "invalid_commissioning_test", mutationIssued = false })
+  end
+  local current, readiness_error = runtime.read_state()
+  if not current then return respond(503, { error = readiness_error, mutationIssued = false }) end
+  local rate = ngx.shared.hbnf_owner_rate
+  if not rate or not rate:add("uv_policy_lock", 1, 15) then
+    return respond(429, { error = "uv_commissioning_test_in_progress", mutationIssued = false })
+  end
+  local function unlock() rate:delete("uv_policy_lock") end
+  local selected = channel == "main" and 1 or 2
+  local function segment(id, on, bri)
+    if not on then return { id = id, on = false, bri = 0, fx = 0, ix = 0 } end
+    return { id = id, on = true, bri = bri, fx = 0, ix = bri, col = {{0, 0, 0, 255}} }
+  end
+  local function apply_and_read(segments)
+    local result = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST,
+      body = cjson.encode({ seg = segments }) })
+    if not result or result.status ~= 200 then return nil end
+    return runtime.decode_state(result.body)
+  end
+  local pulse = {
+    segment(1, selected == 1, selected == 1 and brightness or 0),
+    segment(2, selected == 2, selected == 2 and brightness or 0),
+  }
+  local on_ok, applied = pcall(apply_and_read, pulse)
+  local on_confirmed = on_ok and applied ~= nil
+    and runtime.segment_matches(applied.segments[selected], {
+      on = true, bri = brightness, fx = 0, ix = brightness, col = {0, 0, 0, 255} })
+    and applied.segments[selected == 1 and 2 or 1].on ~= true
+  if on_confirmed then ngx.sleep(3) end
+  -- Always issue a best-effort OFF after any attempted pulse, including an
+  -- ambiguous ON acknowledgement. Never leave the lock held on Lua errors.
+  local off_ok, off = pcall(apply_and_read, { segment(1, false, 0), segment(2, false, 0) })
+  unlock()
+  local off_confirmed = off_ok and off ~= nil
+    and off.segments[1].on ~= true and off.segments[2].on ~= true
+  if not on_confirmed then
+    return respond(502, { error = "uv_commissioning_test_on_unconfirmed",
+      mutationIssued = "unknown", outputOffConfirmed = off_confirmed })
+  end
+  if not off_confirmed then
+    return respond(502, { error = "uv_commissioning_test_off_unconfirmed", mutationIssued = true })
+  end
+  return respond(200, { ok = true, action = "uv_commissioning_test", channel = channel,
+    requestedBrightness = brightness, pulseSeconds = 3, mutationIssued = true,
+    outputOffConfirmed = true, deviceReadback = true })
+end
+
 for key in pairs(input) do
   if key ~= "mode" and key ~= "brightnessBySegment" then
     return respond(400, { error = "unsupported_field", mutationIssued = false })
   end
 end
 
-local mode = string.upper(tostring(input.mode or ""))
 if mode ~= "OFF" and mode ~= "MANUAL" and mode ~= "FOLLOW_MATRIX" then
   return respond(400, { error = "unsupported_uv_mode", mutationIssued = false })
 end
@@ -42,9 +103,11 @@ end
 
 local current, readiness_error = runtime.read_state()
 if not current then return respond(503, { error = readiness_error, mutationIssued = false }) end
-local profile_ready, profile_error = runtime.profile_ready()
-if profile_ready ~= true then
-  return respond(503, { error = profile_error or "uv_commissioning_gates_incomplete", mutationIssued = false })
+if mode ~= "OFF" then
+  local profile_ready, profile_error = runtime.profile_ready()
+  if profile_ready ~= true then
+    return respond(503, { error = profile_error or "uv_commissioning_gates_incomplete", mutationIssued = false })
+  end
 end
 
 local effect = mode == "FOLLOW_MATRIX" and runtime.FOLLOW_EFFECT_ID or 0
@@ -67,19 +130,29 @@ local expected = {
     or mode == "FOLLOW_MATRIX" and { on = true, bri = 255, fx = effect, ix = levels.short, col = {0, 0, 0, 255} }
     or { on = levels.short > 0, bri = levels.short, fx = 0, ix = levels.short, col = {0, 0, 0, 255} },
 }
+local rate = ngx.shared.hbnf_owner_rate
+if not rate or not rate:add("uv_policy_lock", 1, 15) then
+  return respond(429, { error = "uv_policy_request_in_progress", mutationIssued = false })
+end
 local payload = cjson.encode({ seg = { make_segment(1, levels.main), make_segment(2, levels.short) } })
-local response = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST, body = payload })
+local capture_ok, response = pcall(ngx.location.capture, "/__aux_uv_apply", { method = ngx.HTTP_POST, body = payload })
+if not capture_ok then rate:delete("uv_policy_lock") end
+if not capture_ok then return respond(502, { error = "uv_device_response_unconfirmed", mutationIssued = "unknown" }) end
 if not response or response.status ~= 200 then
+  rate:delete("uv_policy_lock")
   return respond(502, { error = "uv_device_response_unconfirmed", mutationIssued = "unknown" })
 end
 local readback, readback_error = runtime.decode_state(response.body)
 if not readback then
+  rate:delete("uv_policy_lock")
   return respond(502, { error = readback_error or "uv_device_readback_unavailable", mutationIssued = "unknown" })
 end
 if not runtime.segment_matches(readback.segments[1], expected[1])
     or not runtime.segment_matches(readback.segments[2], expected[2]) then
+  rate:delete("uv_policy_lock")
   return respond(502, { error = "uv_device_readback_mismatch", mutationIssued = true })
 end
+rate:delete("uv_policy_lock")
 
 return respond(200, {
   ok = true,

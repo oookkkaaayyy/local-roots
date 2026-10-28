@@ -109,6 +109,10 @@ function M.decode_state(body)
     end
   end
   if not segments[1] or not segments[2] then return nil, "uv_segments_not_ready" end
+  if tonumber(segments[1].start) ~= 22 or tonumber(segments[1].stop) ~= 23
+      or tonumber(segments[2].start) ~= 23 or tonumber(segments[2].stop) ~= 24 then
+    return nil, "uv_segment_map_mismatch"
+  end
   return { root = state, identity = identity, segments = segments }
 end
 

@@ -41,25 +41,31 @@ assert.match(features, /addEventListener\("click", \(\) => sendUv\("FOLLOW_MATRI
 assert.match(features, /addEventListener\("change", \(\) => \{\s*const mode = uvCommandForSharedSliderRelease\(uvReadiness, uvFollowActive\);\s*if \(mode\) void sendUv\(mode\);/);
 assert.match(features, /if \(uvRequestInFlight\)[\s\S]*uvFollowCapsPending/);
 assert.match(features, /result\.uvControlEnabled === true/);
-const uvControlEnable = features.match(/function setUvControlsReady\(ready\)[\s\S]*?\n}/)?.[0];
+const uvControlEnable = features.match(/function setUvControlsReady\(ready, safeOffAvailable = false\)[\s\S]*?\n}/)?.[0];
 assert.ok(uvControlEnable, "UV control readiness helper remains inspectable");
 const uvLocalState = features.match(/function uvStateChanged\(persist = true\)[\s\S]*?\n}/)?.[0];
 assert.ok(uvLocalState, "UV local state renderer remains inspectable");
+const uvTestReady = features.match(/function setUvCommissioningTestReady\(ready\)[\s\S]*?\n}/)?.[0];
+assert.ok(uvTestReady, "UV commissioning readiness helper remains inspectable");
 const uvElements = new Map([
   ["uvApply", { disabled: false }], ["uvOff", { disabled: false }], ["uvFollow", { disabled: false }],
+  ["uvTestMain", { disabled: true }], ["uvTestShort", { disabled: true }],
   ["uvMainBrightness", { disabled: false, value: "121" }],
   ["uvShortBrightness", { disabled: false, value: "88" }],
   ["uvSharedBrightness", { disabled: false }],
   ["uvMainValue", { value: "" }], ["uvShortValue", { value: "" }],
   ["uvSharedValue", { value: "" }],
 ]);
-const exerciseUvControls = new Function("$", `let uvRequestInFlight=false,uvReadiness="unavailable",uvCapsStorageAvailable=true; const uvLevelSavedMessage=()=>"Brightness levels are saved on this iPad."; const writeUvCaps=()=>true; const window={localStorage:{}}; ${uvControlEnable}; ${uvLocalState}; return {
-  set(ready,busy){uvRequestInFlight=busy;setUvControlsReady(ready);},
+const exerciseUvControls = new Function("$", `let uvRequestInFlight=false,uvReadiness="unavailable",uvCommissioningTestAvailable=false,uvCapsStorageAvailable=true; const uvLevelSavedMessage=()=>"Brightness levels are saved on this iPad."; const writeUvCaps=()=>true; const window={localStorage:{}}; ${uvControlEnable}; ${uvTestReady}; ${uvLocalState}; return {
+  set(ready,busy,safeOff=false){uvRequestInFlight=busy;setUvControlsReady(ready,safeOff);},
   render(){uvStateChanged(false);}
 };`)(id => uvElements.get(id));
 exerciseUvControls.set(false, false);
 assert.equal(uvElements.get("uvApply").disabled, true);
 assert.equal(uvElements.get("uvOff").disabled, true);
+exerciseUvControls.set(false, false, true);
+assert.equal(uvElements.get("uvOff").disabled, false, "explicit UV off stays available with a verified output path");
+exerciseUvControls.set(false, false);
 assert.equal(uvElements.get("uvFollow").disabled, true);
 assert.equal(uvElements.get("uvMainBrightness").disabled, false);
 assert.equal(uvElements.get("uvShortBrightness").disabled, false);

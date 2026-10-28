@@ -35,6 +35,7 @@ let uvFollowActive = null;
 let uvRequestInFlight = false;
 let uvFollowCapsPending = false;
 let uvReadiness = "checking";
+let uvCommissioningTestAvailable = false;
 let uvCapsStorageAvailable = true;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -926,6 +927,7 @@ function uvStateChanged(persist = true) {
     else if (uvReadiness === "unavailable") status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} No command was sent.`;
     else if (uvReadiness === "unsafe") status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
   }
+  setUvCommissioningTestReady(uvCommissioningTestAvailable);
 }
 
 function restoreUvCaps() {
@@ -938,26 +940,38 @@ function restoreUvCaps() {
   uvCapsStorageAvailable = caps.storageAvailable;
 }
 
-function setUvControlsReady(ready) {
+function setUvControlsReady(ready, safeOffAvailable = false) {
   // The safety/status gate protects commands, not local slider state. Leave the
   // brightness controls editable when the Cart link is unknown so the selected
   // manual levels survive a Matrix/WAN interruption; lock them only in-flight.
-  ["uvApply", "uvFollow", "uvOff"].forEach(id => { if ($(id)) $(id).disabled = !ready || uvRequestInFlight; });
+  ["uvApply", "uvFollow"].forEach(id => { if ($(id)) $(id).disabled = !ready || uvRequestInFlight; });
+  if ($("uvOff")) $("uvOff").disabled = (!ready && !safeOffAvailable) || uvRequestInFlight;
   ["uvMainBrightness", "uvShortBrightness", "uvSharedBrightness"].forEach(id => { if ($(id)) $(id).disabled = uvRequestInFlight; });
+}
+
+function setUvCommissioningTestReady(ready) {
+  uvCommissioningTestAvailable = ready === true;
+  [["uvTestMain", "uvMainBrightness"], ["uvTestShort", "uvShortBrightness"]].forEach(([buttonId, sliderId]) => {
+    const value = Number($(sliderId)?.value);
+    if ($(buttonId)) $(buttonId).disabled = !uvCommissioningTestAvailable || !Number.isInteger(value) || value < 1 || value > 255 || uvRequestInFlight;
+  });
 }
 
 async function checkUvReadiness(updateStatus = true) {
   const status = $("uvActionStatus");
   if (!status) return;
   setUvControlsReady(false);
+  setUvCommissioningTestReady(false);
   try {
     const result = await canonicalRead("uv_status");
+    const safeOutputAccess = result && result.available === true && result.uvOutputsVerified === true;
+    setUvCommissioningTestReady(result && result.commissioningTestAvailable === true && result.uvOutputsVerified === true);
+    setUvControlsReady(result && result.uvControlEnabled === true, safeOutputAccess);
     if (result && result.uvControlEnabled === true) {
       uvReadiness = "ready";
       uvFollowActive = result.outputMode === "FOLLOW_MATRIX" ? true
         : result.outputMode === "MANUAL" || result.outputMode === "OFF" ? false
           : null;
-      setUvControlsReady(true);
       const outputOn = result.outputOn;
       if (updateStatus) status.textContent = uvFollowActive === true
         ? "Matrix follow is active. Fresh audio scales each selected cap; stale audio falls back to that cap."
@@ -975,6 +989,35 @@ async function checkUvReadiness(updateStatus = true) {
     uvReadiness = "unavailable";
     if (updateStatus) status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} No command was sent.`;
   }
+}
+
+async function sendUvCommissioningTest(channel) {
+  const status = $("uvActionStatus");
+  const input = channel === "main" ? $("uvMainBrightness") : $("uvShortBrightness");
+  if (!status || !input || !["main", "short"].includes(channel) || uvRequestInFlight) return false;
+  uvRequestInFlight = true;
+  setUvControlsReady(false);
+  setUvCommissioningTestReady(false);
+  status.textContent = `Testing ${channel === "main" ? "Cart" : "Bar"} UV for 3 seconds…`;
+  let confirmed = false;
+  try {
+    const result = await canonicalRead("uv_policy", {
+      mode: "COMMISSIONING_TEST", channel, brightness: Number(input.value),
+    });
+    confirmed = result && result.ok === true && result.outputOffConfirmed === true && result.deviceReadback === true;
+    status.textContent = confirmed
+      ? `${channel === "main" ? "Cart" : "Bar"} test finished; both UV outputs read back off. Check whether the strip lit.`
+      : "Test result was not confirmed. Check the Cart before trying again.";
+  } catch (error) {
+    const detail = error && error.data && error.data.error;
+    status.textContent = error && error.status === 502
+      ? `Test output state is uncertain (${String(detail || "readback failed")}). Check UV state before another test.`
+      : "Test could not run. No success was reported.";
+  } finally {
+    uvRequestInFlight = false;
+    await checkUvReadiness(false);
+  }
+  return confirmed;
 }
 
 async function sendUv(mode) {
@@ -1054,6 +1097,8 @@ restoreUvCaps();
 if ($("uvApply")) $("uvApply").addEventListener("click", () => sendUv("MANUAL"));
 if ($("uvFollow")) $("uvFollow").addEventListener("click", () => sendUv("FOLLOW_MATRIX"));
 if ($("uvOff")) $("uvOff").addEventListener("click", () => sendUv("OFF"));
+if ($("uvTestMain")) $("uvTestMain").addEventListener("click", () => sendUvCommissioningTest("main"));
+if ($("uvTestShort")) $("uvTestShort").addEventListener("click", () => sendUvCommissioningTest("short"));
 uvStateChanged(false);
 checkUvReadiness();
 

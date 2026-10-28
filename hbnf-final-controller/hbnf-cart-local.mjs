@@ -49,7 +49,7 @@ export class LocalOwnerControl {
     this.localSyncStatus = "not-tracked";
   }
 
-  async request(token, path, method = "GET", body = null) {
+  async request(token, path, method = "GET", body = null, timeoutMs = HBNF_API_TIMEOUT_MS) {
     if (!validToken(token)) throw new Error("A valid paired Owner session is required.");
     const options = {
       method,
@@ -58,7 +58,7 @@ export class LocalOwnerControl {
       credentials: "omit",
     };
     if (body !== null) options.body = JSON.stringify(body);
-    const response = await fetchWithDeadline(this.fetchFn, this.origin + path, options, HBNF_API_TIMEOUT_MS, "Local Cart control");
+    const response = await fetchWithDeadline(this.fetchFn, this.origin + path, options, timeoutMs, "Local Cart control");
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       const error = new Error(data.error || `Local control HTTP ${response.status}`);
@@ -75,6 +75,15 @@ export class LocalOwnerControl {
   async uvPolicy(token, request = {}) {
     if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV policy.");
     const mode = String(request.mode || "").toUpperCase();
+    if (mode === "COMMISSIONING_TEST") {
+      const channel = String(request.channel || "");
+      const brightness = request.brightness;
+      if ((channel !== "main" && channel !== "short") || !Number.isInteger(brightness) || brightness < 1 || brightness > 255) {
+        throw new Error("Invalid local UV commissioning test; no command was sent.");
+      }
+      await this.ensureSession(token);
+      return this.request(token, "/api/aux/uv-policy", "POST", { mode, channel, brightness }, 20000);
+    }
     const levels = request.brightnessBySegment;
     const validLevel = value => Number.isInteger(value) && value >= 0 && value <= 255;
     if (!mode || !levels ||

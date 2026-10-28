@@ -86,6 +86,12 @@ test("Opal and shared backend point at the same declarative UV policy contract",
   assert.match(uvRuntime, /tonumber\(color\[4\]\) ~= expected\.col\[4\]/);
   assert.match(uvStatus, /response\.outputMode = "FOLLOW_MATRIX"/);
   assert.match(uvStatus, /response\.outputMode = "UNKNOWN"/);
+  assert.match(uvStatus, /commissioningTestAvailable = current ~= nil/);
+  assert.match(opal, /mode == "COMMISSIONING_TEST"/);
+  assert.match(opal, /ngx\.sleep\(3\)/);
+  assert.match(opal, /outputOffConfirmed = off_confirmed/);
+  assert.match(opal, /if mode ~= "OFF" then[\s\S]*runtime\.profile_ready\(\)/);
+  assert.match(uvRuntime, /segments\[1\]\.start\) ~= 22/);
   const localRoute = nginx.match(/location = \/api\/aux\/uv-policy \{([\s\S]*?)\n    \}/)?.[1] || "";
   assert.match(localRoute, /auth_owner\.lua/);
   assert.match(localRoute, /uv_policy_access\.lua/);
