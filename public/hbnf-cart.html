@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#141916">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="HBNF Cart">
+  <meta name="hbnf-access" content="guest-zero-pair">
+  <meta name="hbnf-build" content="hbnf-cart2-owner-control-home-r6-20261024">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261024-cart-night-earth-r2">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261024-cart-control-home-r4">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261025-cart-uv-r3">
+  <title>HBNF Cart Control</title>
+</head>
+<body><main>
+  <header class="hero-v6">
+    <div class="cart-brand">
+      <img class="cart-mark" src="./hbnf-faded-phosphor.png?v=20261024-hbnf-faded-phosphor-r1" alt="HBNF Night Flyers" width="48" height="48">
+      <h1>Cart controls</h1>
+    </div>
+    <div id="truthBadge" class="truth-badge warn" role="status" aria-live="polite" aria-atomic="true">Checking…</div>
+  </header>
+
+  <details class="panel course-status-panel" aria-label="Cart status">
+    <summary>Connection details</summary>
+    <div class="course-status-grid" aria-live="polite">
+      <div class="course-status-cell"><span>Cart</span><strong id="cartLanTruth">Not checked</strong></div>
+      <div class="course-status-cell"><span>Internet</span><strong id="internetTruth">Not checked</strong></div>
+      <div class="course-status-cell"><span>Matrix</span><strong id="matrixOutputTruth">Unconfirmed</strong></div>
+    </div>
+  </details>
+  <nav class="primary-actions" aria-label="Quick controls">
+    <a href="#lightsPanel">Lights &amp; looks</a>
+    <a href="#featureText">Text</a>
+    <button id="featureRefreshLive" type="button">Refresh scores</button>
+    <button id="featureScoreboard" type="button">Show scores</button>
+  </nav>
+  <section class="panel guest-quick-panel" aria-label="Guest controls">
+    <div class="guest-quick-head">
+      <div><h2>Guest access</h2><p id="guestModeStatus" class="apply-note" role="status" aria-live="polite">Checking…</p></div>
+      <div class="row guest-mode-actions">
+        <button id="guestModeOpen" type="button" hidden>Open guest controls</button>
+        <button id="guestModeClose" type="button" hidden>Close guest controls</button>
+      </div>
+    </div>
+    <div class="guest-invite" aria-label="Guest access QR">
+      <img src="./hbnf-guest-qr.png?v=20261016-course-ready-ux-v1" width="192" height="192" alt="Guest controls QR code">
+      <div><a href="https://hbnightflyers.com/guest/hbnf-cart/">Guest controls</a></div>
+    </div>
+  </section>
+  <p id="status" class="status" aria-live="off">Connecting…</p>
+
+  <details class="panel truth-panel" aria-label="Troubleshooting and device details">
+    <summary>Troubleshooting</summary>
+    <div class="truth-grid" aria-live="polite">
+      <div class="truth-cell"><span id="controlPathLabel">Cart controls</span><strong id="backendTruth" aria-live="polite">Checking…</strong></div>
+      <div class="truth-cell"><span>Live scores</span><strong id="scoreCloudTruth" aria-live="polite">Not checked</strong></div>
+      <div class="truth-cell"><span>Score update time</span><strong id="scoreFreshnessTruth" aria-live="polite">Not confirmed</strong></div>
+      <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth" aria-live="polite">—</strong></div>
+      <div class="truth-cell"><span>Underglow</span><strong id="auxTruth" aria-live="polite">—</strong></div>
+    </div>
+    <button id="refresh" type="button">Check Cart status</button>
+  </details>
+
+  <section id="lightsPanel" class="panel lights-panel" aria-label="Show controls">
+    <div class="light-group quick-vibe" aria-label="Vibe">
+      <h3>Vibe</h3>
+      <div id="vibeOptions" class="vibe-options" role="group" aria-label="Vibe controls">
+        <button type="button" class="vibe-option" data-vibe="chill" aria-pressed="false" disabled><strong>Chill</strong></button>
+        <button type="button" class="vibe-option" data-vibe="groove" aria-pressed="false" disabled><strong>Groove</strong></button>
+        <button type="button" class="vibe-option" data-vibe="heavy" aria-pressed="false" disabled><strong>Heavy</strong></button>
+        <button type="button" class="vibe-option" data-vibe="psychedelic" aria-pressed="false" disabled><strong>Psychedelic</strong></button>
+        <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>Cosmic</strong></button>
+        <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled hidden>Auto vibe</button>
+      </div>
+      <p id="vibeAvailability" class="apply-note" role="status" hidden>Vibes aren’t available right now.</p>
+    </div>
+    <div class="light-group quick-brightness" aria-label="Brightness">
+      <h3>Brightness</h3>
+      <div class="quick-brightness-grid">
+        <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
+        <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
+        <label class="device"><span class="range-head"><strong>UV brightness</strong><output id="uvSharedValue">64</output></span><input aria-label="Shared UV brightness cap" id="uvSharedBrightness" type="range" min="0" max="255" value="64" disabled></label>
+      </div>
+    </div>
+    <div id="palettePanel" class="light-group palette-controls" aria-label="Cart color palette" hidden>
+      <h2>Color palette</h2>
+      <div class="row">
+        <label class="wide">Palette
+          <select id="featurePalette" aria-describedby="paletteActionStatus"><option value="">Keep current</option></select>
+        </label>
+        <label>Solid / text color
+          <input id="featureColor" type="color" value="#ffffff" aria-label="Solid palette and text color">
+        </label>
+        <button id="featureApplyPalette" type="button" disabled>Apply</button>
+      </div>
+      <p id="paletteActionStatus" class="apply-note" role="status" aria-live="polite">Loading color choices…</p>
+    </div>
+  </section>
+
+  <section id="showStylePanel" class="panel show-style-panel" aria-label="Motion controls">
+    <h2>Motion</h2>
+    <div id="showStyleOptions" role="group" aria-label="Motion options"></div>
+    <div id="showStylePause"></div>
+  </section>
+
+  <details class="panel cart-commands" aria-label="Power and show sequence">
+    <summary>Power &amp; sequence</summary>
+    <div class="row">
+      <button class="danger" data-command="OFF">Turn off</button>
+      <button data-command="ON">Turn on</button>
+      <button data-command="NEXT">Next look</button>
+      <button data-command="AUTO">Auto</button>
+    </div>
+    <details class="sub-controls"><summary>Controls</summary>
+    <button data-command="LOCK">Pause animation</button>
+    <div class="control-grid">
+      <div id="sceneButtons" class="scene-buttons" role="group" aria-label="Motion options"></div>
+      <label class="scene-native-wrap">Scene
+        <select id="scene">
+          <option value="course-flow">Course flow</option>
+          <option value="field-mix">Field mix</option>
+          <option value="hbnf-signature">HBNF signature</option>
+          <option value="quiet-cosmos">Quiet cosmos</option>
+        </select>
+      </label>
+    </div>
+    </details>
+  </details>
+
+  <section id="textPanel" class="panel" aria-label="Matrix message">
+    <h2>Text</h2>
+    <div class="row">
+      <input id="featureText" type="text" maxlength="63" placeholder="Type a message">
+      <label for="featureFontIndex" hidden>Text style</label>
+      <select id="featureFontIndex" aria-label="Text style" disabled hidden>
+        <option value="4" selected>Standard</option>
+        <option value="0">Compact</option>
+        <option value="2">Console</option>
+        <option value="3">Classic</option>
+      </select>
+      <button id="featureSendText" type="button">Send to display</button>
+    </div>
+    <p id="textActionStatus" class="apply-note" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="panel quick-tuning" aria-label="Motion and audio response">
+    <h2>Audio response</h2>
+    <div class="tune-grid">
+      <label>
+        <span class="range-head"><span>Audio response</span><output id="audioResponseValue">75</output></span>
+        <input id="audioResponse" type="range" min="0" max="100" step="1" value="75">
+      </label>
+      <label>
+        <span class="range-head"><span>Motion</span><output id="motionValue">60</output></span>
+        <input id="motion" type="range" min="0" max="100" step="1" value="60">
+      </label>
+    </div>
+  </section>
+
+  <nav class="quick-links" aria-label="Everyday tools">
+    <a href="#scoresPanel">Scores</a>
+  </nav>
+
+  <section id="pairAcceptPanel" class="panel" hidden aria-label="Pair this device">
+    <h2>Pair this device</h2>
+    <p class="muted">Private link · valid for about six months.</p>
+    <button id="acceptPair">Pair this device</button>
+    <div id="pairAcceptStatus" class="muted" role="status" aria-live="polite"></div>
+  </section>
+
+  <section id="authPanel" class="panel" hidden aria-label="Device authorization">
+    <h2>This device is not paired</h2>
+    <p class="muted">Pair from an authorized Cart device.</p>
+  </section>
+
+  <section id="managePairPanel" class="panel" hidden aria-label="Pair another device">
+    <h2>Pair another device</h2>
+    <p class="muted">Pairing link · valid for about 180 days.</p>
+    <div class="row"><button id="createPair">Create pairing link</button><button id="sharePair" hidden>Share link</button><button id="copyPair" hidden>Copy link</button></div>
+    <textarea id="pairLink" class="pair-link" hidden readonly aria-label="Pairing link"></textarea>
+    <div id="pairCreateStatus" class="muted" role="status" aria-live="polite"></div>
+  </section>
+
+
+  <details class="panel sub-controls">
+    <summary>Fine tuning</summary>
+    <section class="uv-controls uv-fine-tuning" aria-label="UV channel fine tuning">
+      <h3>UV channels</h3>
+      <p class="apply-note">Shared brightness sets both channel caps. Adjust channels separately here.</p>
+      <div class="quick-brightness-grid">
+        <label class="device"><span class="range-head"><strong>Cart UV cap</strong><output id="uvMainValue">64</output></span><input aria-label="Cart UV brightness cap" id="uvMainBrightness" type="range" min="0" max="255" value="64" disabled></label>
+        <label class="device"><span class="range-head"><strong>Bar UV cap</strong><output id="uvShortValue">64</output></span><input aria-label="Bar UV brightness cap" id="uvShortBrightness" type="range" min="0" max="255" value="64" disabled></label>
+      </div>
+      <p id="uvActionStatus" class="apply-note" role="status" aria-live="polite">Checking UV safety status. Controls stay locked until the Cart confirms readiness.</p>
+      <details class="sub-controls uv-manual">
+        <summary>Detached manual controls</summary>
+        <p class="apply-note">Available only after the in-place hardware and safety checks pass.</p>
+        <div class="row uv-actions">
+          <button id="uvApply" type="button" disabled>Apply manual levels</button>
+          <button id="uvOff" type="button" disabled>UV off</button>
+        </div>
+      </details>
+    </section>
+    <div class="tune-grid">
+      <label>
+        <span class="range-head"><span>Energy</span><output id="energyValue">65</output></span>
+        <input id="energy" type="range" min="0" max="100" step="1" value="65">
+      </label>
+      <label>
+        <span class="range-head"><span>Variation</span><output id="variationValue">85</output></span>
+        <input id="variation" type="range" min="0" max="100" step="1" value="85">
+      </label>
+    </div>
+  </details>
+
+  <details class="panel sub-controls" aria-label="Saved looks and advanced color" hidden>
+    <summary>Saved looks and advanced color</summary>
+    <div class="fine-grid">
+      <label class="wide">Show
+        <select id="featureLook"></select>
+      </label>
+      <label>Name saved look
+        <input id="featureLookName" type="text" maxlength="24" placeholder="e.g. Green course">
+      </label>
+      <label>Saved looks
+        <select id="featureSavedLooks"><option value="">None saved</option></select>
+      </label>
+      <div class="row">
+        <button id="featureApplyLook" type="button">Apply look</button>
+        <button id="featureSaveLook" type="button">Save</button>
+        <button id="featureApplySaved" type="button">Apply saved</button>
+        <button id="featureDeleteSaved" type="button">Delete saved</button>
+      </div>
+    </div>
+    <div id="featureStatus" class="status">Ready.</div>
+  </details>
+
+  <section id="scoresPanel" class="panel" aria-label="Skins and Glow live data">
+    <h2>Live scores</h2>
+    <p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins</a> · <a href="https://hbnightflyers.com/glow.html">Glow</a></p>
+    <div id="featureLive" class="status">Live scores haven’t loaded yet.</div>
+    <p id="scorePathStatus" class="apply-note">Score updates have not been checked yet.</p>
+    <p id="scoreActionStatus" class="apply-note" role="status" aria-live="polite"></p>
+    <div class="row">
+      <button id="featureAcePot" type="button">Show ace pot</button>
+    </div>
+    <details id="manualOfflineScorePanel" class="score-entry" hidden aria-label="Manual offline scoreboard">
+      <summary>Manual Show Scores · works offline</summary>
+    <p class="muted">Display only · not saved · up to 12 lines, 63 characters each.</p>
+      <div class="score-grid">
+        <label>Display label<select id="manualScoreboardLabel" disabled><option value="F9">Front 9</option><option value="B9">Back 9</option><option value="GLOW">Glow</option><option value="SCORES">Scores</option></select></label>
+        <label class="wide">Player/team rows<textarea id="manualScoreboardEntries" rows="5" maxlength="767" placeholder="AND 3&#10;JAM 2" disabled></textarea></label>
+      </div>
+      <div class="row"><button id="featureManualScoreboard" type="button" disabled>Display manual scores</button></div>
+      <div id="manualScoreboardStatus" class="status" role="status" aria-live="polite">No scores have been entered.</div>
+    </details>
+    <details class="score-entry">
+      <summary>Record Skins score</summary>
+      <p class="muted">Scores save to the current Skins card. A tied hole carries the skin. Tiebreakers and ace results follow the scorecard.</p>
+      <div class="score-grid">
+        <label>Section<select id="skinsSection"><option value="front">Front 9 · Singles</option><option value="back">Back 9 · Doubles</option></select></label>
+        <label>Card<select id="skinsCard"></select></label>
+        <label>Hole<select id="skinsHole"></select></label>
+        <label>Winner<select id="skinsWinner"></select></label>
+      </div>
+      <div class="row"><button id="skinsRefresh" type="button">Refresh scorecard</button><button id="skinsSave" type="button">Save hole</button></div>
+      <div class="score-grid">
+        <label class="wide">Ace winner<select id="skinsAceWinner"><option value="">No ace</option></select></label>
+      </div>
+      <div class="row"><button id="skinsAceSave" type="button">Save ace</button><span id="skinsAceSummary" class="muted">Ace pot not loaded.</span></div>
+      <div id="skinsScoreStatus" class="status" role="status" aria-live="polite">Scorecard not loaded.</div>
+    </details>
+  </section>
+
+  <details class="panel sub-controls" aria-label="Firmware and diagnostics">
+    <summary>Firmware and diagnostics</summary>
+    <div id="featureOtaStatus" class="status">Signed update not checked yet.</div>
+    <div class="row">
+      <button id="featureOtaCheck" type="button">Check signed update</button>
+      <button id="featureOtaInstall" type="button" hidden>Open trusted installer</button>
+      <button id="featureOtaResult" type="button">Refresh install result</button>
+      <button id="featurePreflight" type="button">Run rollout preflight</button>
+    </div>
+    <div id="featurePreflightResult" class="status">Preflight not run.</div>
+  </details>
+
+  <details class="panel">
+    <summary>Advanced audio</summary>
+    <div class="fine-grid advanced-body">
+      <label class="wide">
+        <span class="range-head"><span>Mic sensitivity</span><output id="micSensitivityValue">255</output></span>
+        <input id="micSensitivity" type="range" min="64" max="255" step="1" value="255">
+      </label>
+      <label>Audio emphasis
+        <select id="audioProfile">
+          <option value="scene">Scene default</option>
+          <option value="bass">Bass</option>
+          <option value="mid">Mid</option>
+          <option value="balanced">Balanced</option>
+          <option value="treble">Treble</option>
+          <option value="full">Full</option>
+          <option value="impact">Impact</option>
+        </select>
+      </label>
+      <label>Reaction style
+        <select id="audioStyle">
+          <option value="scene">Scene default</option>
+          <option value="clean">Clean</option>
+          <option value="punch">Punch</option>
+          <option value="ring">Ring</option>
+          <option value="spark">Spark</option>
+          <option value="chroma">Chroma</option>
+          <option value="hybrid">Hybrid</option>
+        </select>
+      </label>
+    </div>
+  </details>
+
+</main><script type="module" src="./hbnf-cart.js?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261025-cart-uv-r2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261024-cart-control-home-r5"></script></body></html>
