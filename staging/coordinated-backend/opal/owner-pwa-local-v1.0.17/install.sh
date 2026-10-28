@@ -108,7 +108,7 @@ mv "$STAGE" "$TARGET"
 (cd "$TARGET" && sha256sum -c .hbnf-payload.sha256 >/dev/null) || { echo "Installed candidate payload verification failed." >&2; exit 104; }
 [ "$(cat "$TARGET/.hbnf-package-version")" = "1.0.17" ] || { echo "Installed Owner PWA version readback failed." >&2; exit 105; }
 candidate_archive_sha=$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')
-printf '{\n  "schema":"hbnf-owner-pwa-install-readback-v1",\n  "transaction_id":"%s",\n  "admission_manifest_sha256":"%s",\n  "candidate_archive_sha256":"%s",\n  "installed_payload_manifest":"PASS",\n  "version_readback":"PASS",\n  "rollback_copy":"PASS"\n}\n' "$TX" "$ADMISSION_SHA256" "$candidate_archive_sha" > "$BACKUP/POST-INSTALL-READBACK.json"
+printf '{\n  "schema":"hbnf-owner-pwa-install-readback-v1",\n  "transaction_id":"%s",\n  "admission_manifest_sha256":"%s",\n  "candidate_archive_sha256":"%s",\n  "installed_payload_manifest":"PASS",\n  "version_readback":"PASS",\n  "rollback_copy":"PASS"\n}\n' "$TX" "$ADMISSION_SHA256" "$candidate_archive_sha" > "$BACKUP_ROOT/hbnf-owner-pwa-$TX.POST-INSTALL-READBACK.json"
 sync
 rm -rf "$PREVIOUS"
 trap - EXIT HUP INT TERM
