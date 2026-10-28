@@ -1,0 +1,14 @@
+{
+  "schema": "hbnf-opal-live-baseline-identity-v1",
+  "identity": "GL-SFT1200 192.168.77.1; Opal UV lock isolation v1.0.23 installed from release HBNF-OPAL-UV-LOCK-V123-20261028-02; exact 20-file readback captured 2026-10-28; UV outputs OFF; profile remains unaccepted; commissioning test still returns HTTP 429 after a dedicated service restart.",
+  "sourceCommit": "4da18c83afd9936ef1934856dc25a36ca51f34a1",
+  "artifactSha256": "4c28d5afc696df4191a0d7d4ab5acc3da9f1dc14fd015047da63cfd26e3cb7c1",
+  "artifactBytes": 225081,
+  "liveFilesManifestSha256": "2bc729d1634c46e8fce547083fdf50c8e96a744a13c6d762c956ef0d8922ddc3",
+  "liveFiles": 20,
+  "captureMethod": "SSH readback of all 20 managed paths; verified against v1.0.23 POST-INSTALL-READBACK.SHA256SUMS on target; read-only UV status confirmed outputs off.",
+  "outputState": {
+    "main": false,
+    "short": false
+  }
+}

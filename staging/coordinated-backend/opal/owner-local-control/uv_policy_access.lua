@@ -44,7 +44,14 @@ if mode == "COMMISSIONING_TEST" then
   if not current then return respond(503, { error = readiness_error, mutationIssued = false }) end
   -- Keep output serialization separate from short-lived Owner auth rate keys.
   local rate = ngx.shared.hbnf_uv_policy_lock
-  if not rate or not rate:add("uv_policy_lock", 1, 15) then
+  if not rate then
+    return respond(503, { error = "uv_policy_lock_storage_unavailable", mutationIssued = false })
+  end
+  local acquired, lock_error = rate:add("uv_policy_lock", 1, 15)
+  if not acquired then
+    if lock_error ~= "exists" then
+      return respond(503, { error = "uv_policy_lock_storage_failed", mutationIssued = false })
+    end
     return respond(429, { error = "uv_commissioning_test_in_progress", mutationIssued = false })
   end
   local function unlock() rate:delete("uv_policy_lock") end
@@ -139,7 +146,14 @@ local expected = {
 }
 -- Keep output serialization separate from short-lived Owner auth rate keys.
 local rate = ngx.shared.hbnf_uv_policy_lock
-if not rate or not rate:add("uv_policy_lock", 1, 15) then
+if not rate then
+  return respond(503, { error = "uv_policy_lock_storage_unavailable", mutationIssued = false })
+end
+local acquired, lock_error = rate:add("uv_policy_lock", 1, 15)
+if not acquired then
+  if lock_error ~= "exists" then
+    return respond(503, { error = "uv_policy_lock_storage_failed", mutationIssued = false })
+  end
   return respond(429, { error = "uv_policy_request_in_progress", mutationIssued = false })
 end
 local payload = cjson.encode({ seg = { make_segment(1, levels.main), make_segment(2, levels.short) } })
