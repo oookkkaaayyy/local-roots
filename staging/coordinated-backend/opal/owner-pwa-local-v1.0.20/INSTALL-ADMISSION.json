@@ -1,0 +1,58 @@
+{
+  "acceptance_plan": {
+    "criteria": [
+      {
+        "description": "Install exact packaged assets and retain exact v1.0.18 files",
+        "expected": "PASS",
+        "scope": "PWA deployment",
+        "verification": "Installer and device file hashes"
+      },
+      {
+        "description": "Local PWA origin uses new cache-busted module and reads UV status without pairing",
+        "expected": "Available status; no mutation",
+        "scope": "Cart local UV request",
+        "verification": "Origin CORS plus status JSON and browser refresh"
+      },
+      {
+        "description": "Cart/Bar one-at-a-time 3-second commission test then readback both OFF",
+        "expected": "Requested strip lights; both off after test",
+        "scope": "UV output pulse",
+        "verification": "Owner visual observation and API/device readback"
+      }
+    ],
+    "status": "DECLARED"
+  },
+  "baseline": {
+    "drive_file_id": "1UJw1KvDLIfHUoRpb0g0KE9B9dCEzwA-H",
+    "installed_files_manifest_sha256": "b0bbb642edf8218b8dab0e5d81f490e61be72f1c1672e42fb934d30d53702c9a",
+    "installed_version": "1.0.18",
+    "package_bytes": 850855,
+    "package_sha256": "5c1947aae7b50e49b5e3cf672086c9260dd5f71adae4b49f91a448978255006e"
+  },
+  "candidate": {
+    "drive_file_id": "1Hf7XtaIPj2Uj0VRLGNkmuHeLLsLPb1J7",
+    "package_bytes": 1708142,
+    "package_sha256": "4bf5c7f16877ff7a92928e6d1e5374b91b94c230ea5c85b1462ef173e4530fc4",
+    "source_commit": "30159603982ef131551c634e75f62f162ea8f13f",
+    "version": "1.0.19"
+  },
+  "durable_readback": {
+    "candidate_drive_byte_equal": true,
+    "candidate_sha256": "4bf5c7f16877ff7a92928e6d1e5374b91b94c230ea5c85b1462ef173e4530fc4",
+    "rollback_drive_byte_equal": true,
+    "rollback_sha256": "5c1947aae7b50e49b5e3cf672086c9260dd5f71adae4b49f91a448978255006e",
+    "status": "PASS"
+  },
+  "mutation": {
+    "restore_route": "package rollback.sh restores retained v1.0.18 files",
+    "route": "install exact candidate over SSH after immediate target and baseline verification"
+  },
+  "outcome": "PASS",
+  "schema": "hbnf-opal-uv-update-admission-v1",
+  "target": {
+    "ip": "192.168.77.1",
+    "model": "GL-SFT1200",
+    "service": "Owner PWA at /www/mission-control-local/owner-pwa"
+  },
+  "transaction_id": "OWNER-PWA-LOCAL-V119-UV-LOCAL-REQUEST-20261028-01"
+}

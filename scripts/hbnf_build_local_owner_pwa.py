@@ -103,7 +103,8 @@ def verify_javascript(payload: Path) -> None:
 
 
 def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_dir: Path, expected_version: str,
-                                 archive_override: Path | None = None) -> dict:
+                                 archive_override: Path | None = None,
+                                 admission_path: Path | None = None) -> dict:
     """Bind historical or direct serving evidence to its exact retained package."""
     try:
         receipt = json.loads(receipt_path.read_text())
@@ -122,6 +123,31 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
     expected_archive_name = f"hbnf-owner-pwa-local-v{expected_version}.zip"
     schema = receipt.get("schema")
     install_transaction_readback = schema == "hbnf-cart-uv-post-install-evidence-v1"
+    owner_pwa_install_readback = schema == "hbnf-owner-pwa-install-readback-v1"
+    if owner_pwa_install_readback:
+        if not admission_path or not admission_path.is_file():
+            raise SystemExit("Exact admission record is required to validate the Owner PWA install readback")
+        admission = json.loads(admission_path.read_text())
+        candidate_sha = digest(archive_bytes)
+        if (admission.get("schema") != "hbnf-opal-uv-update-admission-v1" or
+                admission.get("outcome") != "PASS" or
+                admission.get("transaction_id") != receipt.get("transaction_id") or
+                admission.get("candidate", {}).get("version") != expected_version or
+                admission.get("candidate", {}).get("source_commit") != package.get("sourceCommit") or
+                admission.get("candidate", {}).get("package_sha256") != candidate_sha or
+                admission.get("durable_readback", {}).get("status") != "PASS" or
+                receipt.get("admission_manifest_sha256") != digest(admission_path.read_bytes()) or
+                receipt.get("candidate_archive_sha256") != candidate_sha or
+                receipt.get("installed_payload_manifest") != "PASS" or
+                receipt.get("version_readback") != "PASS" or
+                receipt.get("rollback_copy") != "PASS"):
+            raise SystemExit("Owner PWA install receipt does not match the exact retained admission and package")
+        receipt = {
+            **receipt,
+            "runtime_version": expected_version,
+            "baseline_package_sha256": receipt.get("candidate_archive_sha256"),
+            "source_commit": package.get("sourceCommit"),
+        }
     if install_transaction_readback:
         installed = receipt.get("installedSoftware", {}).get("ownerPwa", {})
         receipt = {
@@ -132,18 +158,18 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
             "payload_readback": installed.get("payloadReadback"),
         }
     current_readback = schema == "hbnf-owner-pwa-live-readback-v1" and "live_version_marker" in receipt
-    if (schema not in ("hbnf-owner-pwa-live-readback-v1", "hbnf-owner-pwa-historical-readback-reference-v1", "hbnf-cart-uv-post-install-evidence-v1") or
+    if (schema not in ("hbnf-owner-pwa-live-readback-v1", "hbnf-owner-pwa-historical-readback-reference-v1", "hbnf-cart-uv-post-install-evidence-v1", "hbnf-owner-pwa-install-readback-v1") or
             receipt.get("runtime_version", receipt.get("live_version_marker")) != expected_version or
-            (not current_readback and not install_transaction_readback and
+            (not current_readback and not install_transaction_readback and not owner_pwa_install_readback and
              receipt.get("baseline_manifest_sha256") != digest(baseline.read_bytes())) or
             receipt.get("baseline_package_sha256", receipt.get("package_sha256")) != digest(archive_bytes) or
             package_sha != digest(archive_bytes) or
             package_sha_line != f"{package_sha}  {expected_archive_name}" or
             receipt.get("source_commit") != package.get("sourceCommit") or
-            (not current_readback and not install_transaction_readback and
+            (not current_readback and not install_transaction_readback and not owner_pwa_install_readback and
              receipt.get("transaction_id") != package.get("transactionId")) or
             package.get("package") != f"hbnf-owner-pwa-local-v{expected_version}" or
-            (not current_readback and not install_transaction_readback and
+            (not current_readback and not install_transaction_readback and not owner_pwa_install_readback and
              receipt.get("payload_manifest_sha256") != digest(payload_manifest.replace(b"owner-pwa/", b"")))):
         raise SystemExit("Baseline evidence does not bind the exact retained Owner PWA package")
 
@@ -199,6 +225,12 @@ def verify_live_readback_baseline(receipt_path: Path, baseline: Path, package_di
         filesystem_count = "NOT_CHECKED"
         filesystem_completeness = "REQUIRES_FRESH_INSTALLER_PREFLIGHT"
         rollback_copy = "REQUIRES_FRESH_INSTALLER_PREFLIGHT"
+        served = {"owner-pwa/" + name: sha for name, sha in payload_by_name.items()}
+    elif owner_pwa_install_readback:
+        evidence_level = "INSTALL_TRANSACTION_PACKAGE_HASH_AND_OWNER_PWA_PAYLOAD_READBACK"
+        filesystem_count = len(baseline_by_name)
+        filesystem_completeness = "INSTALLED_MANIFEST_MATCHES_EXACT_PACKAGE_AND_MARKERS"
+        rollback_copy = "PASS_REPORTED_BY_INSTALL_RECEIPT; FRESH_PREFLIGHT_MUST_RECHECK"
         served = {"owner-pwa/" + name: sha for name, sha in payload_by_name.items()}
     elif schema == "hbnf-owner-pwa-live-readback-v1" and "installed_sha256_by_path" in receipt:
         device = receipt.get("device_identity")
@@ -303,6 +335,8 @@ def main() -> None:
     parser.add_argument("--rollback-baseline-source-commit")
     parser.add_argument("--rollback-baseline-owner-source-archive", type=Path)
     parser.add_argument("--rollback-baseline-readback-receipt", type=Path)
+    parser.add_argument("--rollback-baseline-admission", type=Path,
+        help="exact admission manifest bound by an Owner PWA install readback")
     parser.add_argument("--rollback-baseline-package-dir", type=Path,
         help="prior exact package whose successful install result supplies the installed Owner PWA payload hashes")
     parser.add_argument("--rollback-baseline-package", type=Path,
@@ -341,6 +375,8 @@ def main() -> None:
             source_paths.append(baseline_manifest)
         if args.rollback_baseline_readback_receipt:
             source_paths.append((root / args.rollback_baseline_readback_receipt).resolve())
+        if args.rollback_baseline_admission:
+            source_paths.append((root / args.rollback_baseline_admission).resolve())
         if args.rollback_baseline_package_dir:
             prior_dir = (root / args.rollback_baseline_package_dir).resolve()
             source_paths.extend(prior_dir / name for name in (
@@ -436,6 +472,8 @@ def main() -> None:
             source_inputs.append(root / "scripts/hbnf_owner_pwa_live_preflight_v114.py")
         if args.rollback_baseline_readback_receipt:
             source_inputs.append((root / args.rollback_baseline_readback_receipt).resolve())
+        if args.rollback_baseline_admission:
+            source_inputs.append((root / args.rollback_baseline_admission).resolve())
     deploy_dir = root / f"staging/coordinated-backend/opal/owner-pwa-local-v{version}"
     baseline = baseline_manifest
     baseline_provenance_args = (
@@ -522,13 +560,16 @@ def main() -> None:
         if not receipt_path.is_file():
             raise SystemExit("Owner PWA installed-baseline readback receipt is missing")
         receipt = json.loads(receipt_path.read_text())
-        if receipt.get("schema") in ("hbnf-owner-pwa-live-readback-v1", "hbnf-owner-pwa-historical-readback-reference-v1", "hbnf-cart-uv-post-install-evidence-v1"):
+        if receipt.get("schema") == "hbnf-owner-pwa-install-readback-v1" and not args.rollback_baseline_admission:
+            raise SystemExit("Owner PWA install readback requires its exact admission manifest")
+        if receipt.get("schema") in ("hbnf-owner-pwa-live-readback-v1", "hbnf-owner-pwa-historical-readback-reference-v1", "hbnf-cart-uv-post-install-evidence-v1", "hbnf-owner-pwa-install-readback-v1"):
             if not args.rollback_baseline_package_dir:
                 raise SystemExit("Direct live readback requires the exact retained baseline package")
             prior_dir = (root / args.rollback_baseline_package_dir).resolve()
             baseline_readback = verify_live_readback_baseline(
                 receipt_path, baseline, prior_dir, args.rollback_baseline_owner_pwa_version,
-                baseline_package_path if args.rollback_baseline_package_drive_file_id else None
+                baseline_package_path if args.rollback_baseline_package_drive_file_id else None,
+                (root / args.rollback_baseline_admission).resolve() if args.rollback_baseline_admission else None,
             )
             if (receipt.get("schema") == "hbnf-owner-pwa-historical-readback-reference-v1" and
                     baseline_readback.get("evidenceLevel") != "OWNER_REPORTED_HISTORICAL_SERVING_ASSET_READBACK"):
@@ -539,6 +580,10 @@ def main() -> None:
                 installed = {"owner-pwa/" + item.get("path", ""): item.get("served_sha256")
                              for item in receipt.get("assets", [])}
             elif receipt.get("schema") == "hbnf-cart-uv-post-install-evidence-v1":
+                installed = {"owner-pwa/" + name: sha for name, sha in
+                             ((item.get("path"), item.get("sha256"))
+                              for item in json.loads((prior_dir / "PACKAGE.json").read_text()).get("assets", []))}
+            elif receipt.get("schema") == "hbnf-owner-pwa-install-readback-v1":
                 installed = {"owner-pwa/" + name: sha for name, sha in
                              ((item.get("path"), item.get("sha256"))
                               for item in json.loads((prior_dir / "PACKAGE.json").read_text()).get("assets", []))}
