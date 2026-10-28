@@ -192,15 +192,30 @@ export function renderGlowReconciliation(container, model, evidenceInput, decisi
 
 export function renderDestinationProposal(container, proposal) {
   const table = document.createElement('table');
-  table.className = 'destination-score-table';
+  table.className = 'scorecard-table destination-score-table';
   const head = table.createTHead().insertRow();
-  for (const label of ['UDisc rank', 'Glow partner1', 'Glow partner2', 'To par', 'Strokes', 'Holes', 'Glow hole scores (18)', 'Issues']) { const th = document.createElement('th'); th.textContent = label; head.append(th); }
+  head.className = 'scorecard-head';
+  for (const label of ['UDisc rank', 'Team', ...Array.from({length: 18}, (_, i) => String(i + 1)), 'Total', 'To par']) {
+    const th = document.createElement('th'); th.textContent = label;
+    if (label === 'UDisc rank') th.className = 'rank-cell';
+    if (label === 'Team') th.className = 'sticky-col';
+    if (/^\d+$/.test(label)) th.className = 'sheet-hole';
+    head.append(th);
+  }
   const body = table.createTBody();
   for (const item of proposal.destination.week.players.map((entry, i) => ({ entry, source: proposal.sourceProvenance.rowEvidence[i] }))) {
     const tr = body.insertRow();
-    const issues = item.source.issues.filter(issue => !issue.startsWith('identity_name_preserved_as_supplied:'));
-    if (issues.length !== item.source.issues.length) issues.unshift('Names preserved as supplied');
-    for (const value of [item.source.sourceRank, item.entry.partner1 || 'Name missing', item.entry.partner2 || (item.source.memberMappings.length === 1 ? 'Solo UDisc entry' : 'Name missing'), item.source.relativeScore ?? '—', item.source.strokeTotal ?? '—', `${item.source.holesCompleted}/18`, item.entry.scores.map((score, index) => score === '' ? `${index + 1}:—` : `${index + 1}:${score}`).join(' · '), issues.join(', ') || '—']) { const td = tr.insertCell(); td.textContent = String(value); }
+    tr.className = 'scorecard-row';
+    const team = [item.entry.partner1, item.entry.partner2].filter(Boolean).join(' / ') || item.source.sourceTeam || 'Team name unavailable';
+    const relative = item.source.relativeScore == null ? '—' : (item.source.relativeScore > 0 ? `+${item.source.relativeScore}` : String(item.source.relativeScore));
+    const values = [item.source.sourceRank, team, ...item.entry.scores, item.source.strokeTotal ?? '—', relative];
+    values.forEach((value, index) => {
+      const td = tr.insertCell(); td.textContent = String(value);
+      if (index === 0) td.className = 'rank-cell';
+      if (index === 1) td.className = 'sticky-col player-name-cell';
+      if (index >= 2 && index < 20) td.className = 'score-entry-cell';
+      if (index >= 20) td.className = 'total-cell';
+    });
   }
-  container.replaceChildren(table);
+  const wrap = document.createElement('div'); wrap.className = 'scorecard-wrap'; wrap.setAttribute('role', 'region'); wrap.setAttribute('aria-label', 'Proposed Glow round scorecard'); wrap.tabIndex = 0; wrap.append(table); container.replaceChildren(wrap);
 }

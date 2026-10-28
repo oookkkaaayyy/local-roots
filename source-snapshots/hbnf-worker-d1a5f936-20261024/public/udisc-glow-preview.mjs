@@ -111,8 +111,9 @@ export function standingsForPreview(model,playerAliases={}) {
 
 export function renderStandings(container,model,playerAliases={}) {
   const rows=standingsForPreview(model,playerAliases);if(!rows.length){container.textContent='No snapshot loaded.';return;}
-  const table=document.createElement('table'),head=table.createTHead().insertRow();
-  for(const label of ['UDisc rank','Team','To par','Strokes','Holes','Hole scores']){const th=document.createElement('th');th.textContent=label;head.append(th);}
-  const body=table.createTBody();for(const row of rows){const tr=body.insertRow();const values=[row.rank,row.team,row.relativeScore??'—',row.strokeTotal??'—',`${row.holesCompleted}/18`,row.scores.map((n,i)=>n==null?'':`${i+1}:${n}`).filter(Boolean).join(' · ')];for(const value of values){const td=tr.insertCell();td.textContent=String(value);}}
-  container.replaceChildren(table);
+  const table=document.createElement('table');table.className='scorecard-table';
+  const head=table.createTHead().insertRow();head.className='scorecard-head';
+  for(const label of ['UDisc rank','Team',...Array.from({length:18},(_,i)=>String(i+1)),'Total','To par']){const th=document.createElement('th');th.textContent=label;if(/^\d+$/.test(label))th.className='sheet-hole';if(label==='Team')th.className='sticky-col';if(label==='UDisc rank')th.className='rank-cell';head.append(th);}
+  const body=table.createTBody();for(const row of rows){const tr=body.insertRow();tr.className='scorecard-row';const cells=[row.rank,row.team,...row.scores.map(value=>value==null?'':String(value)),row.strokeTotal??'—',row.relativeScore==null?'—':(row.relativeScore>0?`+${row.relativeScore}`:String(row.relativeScore))];cells.forEach((value,i)=>{const td=tr.insertCell();td.textContent=String(value);if(i===0)td.className='rank-cell';if(i===1)td.className='sticky-col player-name-cell';if(i>=2&&i<20)td.className='score-entry-cell';if(i>=20)td.className='total-cell';});}
+  const wrap=document.createElement('div');wrap.className='scorecard-wrap';wrap.setAttribute('role','region');wrap.setAttribute('aria-label','UDisc round scorecard');wrap.tabIndex=0;wrap.append(table);container.replaceChildren(wrap);
 }
