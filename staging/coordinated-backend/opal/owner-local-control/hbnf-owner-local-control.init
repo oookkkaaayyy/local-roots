@@ -6,10 +6,15 @@ USE_PROCD=1
 
 CONF=/etc/hbnf-local-control/nginx.conf
 NGINX=/usr/sbin/nginx
+LOG_DIR=/var/log/hbnf-owner-local-control-nginx
 
 start_service() {
 	[ -x "$NGINX" ] || return 1
 	[ -s "$CONF" ] || return 1
+	# /var is volatile on OpenWrt; recreate the private Nginx log directory after boot.
+	if [ ! -d "$LOG_DIR" ]; then
+		mkdir -m 0700 "$LOG_DIR" || return 1
+	fi
 	"$NGINX" -t -c "$CONF" || return 1
 	procd_open_instance
 	procd_set_param command "$NGINX" -c "$CONF" -g 'daemon off;'
