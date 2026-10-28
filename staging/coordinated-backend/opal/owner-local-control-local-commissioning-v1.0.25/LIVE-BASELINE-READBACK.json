@@ -1,0 +1,14 @@
+{
+  "schema": "hbnf-opal-live-baseline-identity-v1",
+  "identity": "GL-SFT1200 192.168.77.1; Opal UV lock storage v1.0.24 installed from HBNF-OPAL-UV-LOCK-V124-20261028-01; exact 20-file readback captured 2026-10-28; outputs OFF. Full-brightness Cart commissioning request caused Lua exit-with-pending-subrequests error; output readback after request OFF.",
+  "sourceCommit": "4daa68fd6b0f151570755a6e6e1f7e4a2486af61",
+  "artifactSha256": "cde18865356670affa8668f7ac1e12e55eedd81e911145ca8d672169d9daa9f5",
+  "artifactBytes": 225646,
+  "liveFilesManifestSha256": "6e8da58dca653fd890b07c03110c15a4aaa71e0df87a37db7a3d334ff287740e",
+  "liveFiles": 20,
+  "captureMethod": "SSH readback of all 20 managed paths verified against V1.0.24 POST-INSTALL-READBACK.SHA256SUMS; status readback after commissioning request confirmed both outputs OFF.",
+  "outputState": {
+    "main": false,
+    "short": false
+  }
+}

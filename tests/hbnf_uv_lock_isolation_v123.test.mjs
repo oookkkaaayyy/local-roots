@@ -52,3 +52,14 @@ test('v1.0.24 distinguishes a real busy lock from lock storage failure', () => {
   assert.match(install, /HBNF-OPAL-UV-LOCK-V124-20261028-01/);
   assert.match(install, /@\.package\.sha256/);
 });
+
+
+test('v1.0.25 returns commissioning responses without aborting internal requests', () => {
+  const policy = read('staging/coordinated-backend/opal/owner-local-control/uv_policy_access.lua');
+  const install = read('staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.25/install.sh');
+  const builder = read('scripts/hbnf_build_owner_local_uv_lock_v125.py');
+  assert.match(policy, /ngx\.status = status[\s\S]*return ngx\.exit\(ngx\.OK\)/);
+  assert.doesNotMatch(policy, /return ngx\.exit\(status\)/);
+  assert.match(install, /HBNF-OPAL-UV-LOCK-V125-20261028-01/);
+  assert.match(builder, /exact v1\.0\.24 baseline/);
+});

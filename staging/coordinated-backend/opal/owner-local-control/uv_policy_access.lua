@@ -16,7 +16,9 @@ local function respond(status, value)
   ngx.header.content_type = "application/json"
   ngx.header["Cache-Control"] = "no-store"
   ngx.say(cjson.encode(value))
-  return ngx.exit(status)
+  -- Preserve a successful/denial response without aborting the Lua request
+  -- while an internal AUX subrequest may still be pending.
+  return ngx.exit(ngx.OK)
 end
 
 ngx.req.read_body()
