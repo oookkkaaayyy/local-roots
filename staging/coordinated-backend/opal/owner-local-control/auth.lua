@@ -6,6 +6,7 @@ local sha2 = require "sha2"
 local M = {}
 
 local ORIGIN = "https://hbnightflyers.com"
+local LOCAL_ORIGIN = "http://192.168.77.1"
 local SESSION_DIR = "/etc/hbnf-local-control-state/sessions/"
 local REVOKED_DIR = "/etc/hbnf-local-control-state/revoked/"
 local MAX_SESSION_SECONDS = 180 * 24 * 60 * 60
@@ -74,7 +75,7 @@ end
 
 function M.origin_required()
   local headers = ngx.req.get_headers(16)
-  if headers.origin ~= ORIGIN then return response(403, "owner_origin_required") end
+  if headers.origin ~= ORIGIN and headers.origin ~= LOCAL_ORIGIN then return response(403, "owner_origin_required") end
   return true
 end
 
