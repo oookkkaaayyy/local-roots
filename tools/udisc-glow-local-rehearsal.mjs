@@ -10,7 +10,7 @@ const host = '127.0.0.1';
 const port = Number(process.env.HBNF_UDISC_REHEARSAL_PORT || 8767);
 const maxBytes = 12 * 1024 * 1024;
 const eventPattern = /^hb-night-flyers-[a-z0-9-]+-[A-Za-z0-9]{4,12}$/;
-const mime = {'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.woff2':'font/woff2'};
+const mime = {'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.woff2':'font/woff2'};
 const reply = (res, status, body, headers = {}) => { res.writeHead(status, {'Cache-Control':'no-store',...headers}); res.end(body); };
 
 async function readBounded(response) {
