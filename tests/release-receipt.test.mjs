@@ -391,6 +391,7 @@ test('HBNF QA evidence passes only when isolated suite report and download-back 
   try {
     const qa = await addHbnfQa(f);
     const preflight = structuredClone(f.receipt);
+    delete preflight.admission;
     for (const criterion of preflight.acceptance.criteria) {
       criterion.status = 'PENDING';
       delete criterion.evidence;
