@@ -199,10 +199,10 @@ test("empty nonconfirmed Glow week is quarantined while real play, cancellations
   assert.equal(isUnobservedGlowPlaceholderWeek({ ...emptyWeek, players: [{ name: "Actual Player" }] }), false);
   assert.equal(isUnobservedGlowPlaceholderWeek({ ...emptyWeek, canceled: true }), false);
   assert.equal(isUnobservedGlowPlaceholderWeek({ ...emptyWeek, status: "cancelled" }), false);
-  assert.match(adapter, /!confirmedGlowDates\\.has\\(date\\) && isUnobservedGlowPlaceholderWeek\\(week\\)/);
-  assert.match(adapter, /quarantinedEmptyGlowExternalIds\\.add/);
-  assert.match(adapter, /quarantinedEmptyGlowExternalIds\\]\\)/);
-  assert.match(adapter, /from\\("lr_results"\\)/);
-  assert.match(adapter, /resultCount\\.count > 0/);
+  assert.match(adapter, /!confirmedGlowDates\.has\(date\) && isUnobservedGlowPlaceholderWeek\(week\)/);
+  assert.match(adapter, /quarantinedEmptyGlowExternalIds\.add/);
+  assert.match(adapter, /quarantinedEmptyGlowExternalIds\]\)/);
+  assert.match(adapter, /from\("lr_results"\)/);
+  assert.match(adapter, /resultCount\.count > 0/);
   assert.match(adapter, /empty Glow quarantine failed/);
 });
