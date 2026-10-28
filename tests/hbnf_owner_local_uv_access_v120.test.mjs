@@ -24,15 +24,17 @@ test("only the exact Cart-local UV routes bypass pairing; public UV requests ret
 });
 
 test("local unpaired install package checks without sending a UV write",async()=>{
- const install=await read("staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.21/install.sh");
- const rollback=await read("staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.21/rollback.sh");
+ const install=await read("staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.22/install.sh");
+ const rollback=await read("staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.22/rollback.sh");
  assert.match(install,/sha256sum -c "\$PKG\/BASELINE_FILES\.SHA256SUMS"/);
  assert.match(install,/paired_owner_required/);
  assert.match(install,/unsupported_uv_mode/);
  assert.match(install,/Access-Control-Allow-Origin: http:\/\/192\.168\.77\.1/);
  assert.doesNotMatch(install,/--data .*COMMISSIONING_TEST|WLED.*POST|\/__aux_uv_apply/);
  assert.match(install,/auth_owner\.lua/);
+ assert.match(install,/kill -HUP "\$pid"/);
+ assert.match(install,/tries=0/);
  assert.match(rollback,/auth_owner\.lua/);
- for(const p of ["staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.21/install.sh","staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.21/rollback.sh"])
+ for(const p of ["staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.22/install.sh","staging/coordinated-backend/opal/owner-local-control-local-commissioning-v1.0.22/rollback.sh"])
   execFileSync("sh",["-n",fileURLToPath(new URL("../"+p,import.meta.url))]);
 });
