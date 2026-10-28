@@ -16,9 +16,7 @@ local function respond(status, value)
   ngx.header.content_type = "application/json"
   ngx.header["Cache-Control"] = "no-store"
   ngx.say(cjson.encode(value))
-  -- Return from this helper and let content_by_lua finish naturally. ngx.exit,
-  -- can abort with pending internal subrequests.
-  return true
+  -- Return no value so content_by_lua finishes naturally after ngx.say.
 end
 
 ngx.req.read_body()

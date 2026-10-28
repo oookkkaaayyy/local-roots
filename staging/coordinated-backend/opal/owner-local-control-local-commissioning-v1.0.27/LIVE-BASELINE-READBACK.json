@@ -1,0 +1,8 @@
+{
+  "identity": "GL-SFT1200 192.168.77.1; Opal UV response v1.0.26 installed from HBNF-OPAL-UV-LOCK-V126-20261028-03; all 20 managed-file hashes passed fresh live SSH readback on 2026-10-28; both UV segments read OFF after the Cart test; v1.0.26 test response failed with Lua attempt-to-call-a-boolean error.",
+  "sourceCommit": "6f18b7040f861e0efd9815d4f96cbaf8ad91907f",
+  "artifactSha256": "5d9e3ac3fd7d17c4b52806968aa07162df733b0153ff6945bf3385a7dcf81d6c",
+  "artifactBytes": 225764,
+  "liveManifestSha256": "4761547edc1eff73a501c8018d30321694ee391a9ad9e0c34090a89ab246c274",
+  "readbackEvidence": "Fresh Opal SSH sha256sum of all 20 managed paths passes the v1.0.26 post-install readback manifest. Exact reconstructed complete v1.0.26 image from v1.0.25 baseline plus v1.0.26 changed files matches every hash. Latest PWA Cart test produced outputOffConfirmed false/unknown; independent WLED state readback immediately afterward showed both UV segments OFF."
+}
