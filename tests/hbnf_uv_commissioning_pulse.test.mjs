@@ -10,6 +10,8 @@ const local = read("hbnf-final-controller/hbnf-cart-local.mjs");
 const policy = read("staging/coordinated-backend/opal/owner-local-control/uv_policy_access.lua");
 const status = read("staging/coordinated-backend/opal/owner-local-control/uv_status_access.lua");
 const runtime = read("staging/coordinated-backend/opal/owner-local-control/uv_runtime.lua");
+const pwaInstall = read("staging/coordinated-backend/opal/owner-pwa-local-v1.0.16/install.sh");
+const pwaRollback = read("staging/coordinated-backend/opal/owner-pwa-local-v1.0.16/rollback.sh");
 
 test("first-output tests are owner-local, limited to verified segments, and turn both UV outputs off", async () => {
   assert.match(html, /id="uvTestMain"[^>]*disabled>Test Cart/);
@@ -27,6 +29,10 @@ test("first-output tests are owner-local, limited to verified segments, and turn
   assert.match(policy, /if mode ~= "OFF" then[\s\S]*runtime\.profile_ready\(\)/);
   assert.match(status, /commissioningTestAvailable = current ~= nil/);
   assert.match(runtime, /segments\[1\]\.start\) ~= 22[\s\S]*segments\[2\]\.stop\) ~= 24/);
+  assert.match(pwaInstall, /One-time pre-mutation admission manifest is required/);
+  assert.match(pwaInstall, /candidate\.package_sha256/);
+  assert.match(pwaInstall, /admission_manifest_sha256/);
+  assert.match(pwaRollback, /original one-time admission manifest is required/);
 
   let fetches = 0;
   const cloud = await proxyUvAction("uv_policy", {

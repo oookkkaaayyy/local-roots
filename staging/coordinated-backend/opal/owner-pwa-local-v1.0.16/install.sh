@@ -2,6 +2,9 @@
 set -eu
 
 PKG_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+ADMISSION_FILE=${HBNF_PWA_ADMISSION_FILE:-}
+ADMISSION_SHA256=${HBNF_PWA_ADMISSION_SHA256:-}
+CANDIDATE_ARCHIVE=${HBNF_PWA_CANDIDATE_ARCHIVE:-}
 WWW_ROOT=${HBNF_WWW_ROOT:-/www}
 BACKUP_ROOT=${HBNF_BACKUP_ROOT:-/root}
 BASE="$WWW_ROOT/mission-control-local"
@@ -50,6 +53,22 @@ set -- $(find "$TARGET" -maxdepth 1 -type f | wc -l | tr -d ' ')
 [ -z "$(find "$TARGET" -mindepth 1 -maxdepth 1 ! -type f -print)" ] || { echo "Installed Owner PWA contains a non-file entry." >&2; exit 91; }
 (cd "$TARGET" && sha256sum -c "$BASELINE" >/dev/null) || { echo "Installed Owner PWA differs from the exact expected v1.0.15 baseline." >&2; exit 92; }
 (cd "$PKG_DIR" && sha256sum -c ROLLBACK_BASELINE.SHA256 >/dev/null && sha256sum -c PAYLOAD.SHA256SUMS >/dev/null) || { echo "Candidate or rollback package checksum failed." >&2; exit 94; }
+[ -n "$ADMISSION_FILE" ] && [ -f "$ADMISSION_FILE" ] && [ ! -L "$ADMISSION_FILE" ] || { echo "One-time pre-mutation admission manifest is required." >&2; exit 110; }
+[ -n "$ADMISSION_SHA256" ] && [ "$(sha256sum "$ADMISSION_FILE" | awk '{print $1}')" = "$ADMISSION_SHA256" ] || { echo "Admission manifest readback hash differs." >&2; exit 111; }
+[ -n "$CANDIDATE_ARCHIVE" ] && [ -f "$CANDIDATE_ARCHIVE" ] && [ ! -L "$CANDIDATE_ARCHIVE" ] || { echo "Exact retained candidate archive is required." >&2; exit 112; }
+command -v jsonfilter >/dev/null 2>&1 || { echo "jsonfilter is required for admission validation." >&2; exit 113; }
+admission_value(){ jsonfilter -i "$ADMISSION_FILE" -e "$1" 2>/dev/null | sed -n '1p'; }
+[ "$(admission_value '@.schema')" = hbnf-opal-uv-update-admission-v1 ] || { echo "Admission schema mismatch." >&2; exit 114; }
+[ "$(admission_value '@.transaction_id')" = "$TX" ] || { echo "Admission transaction mismatch." >&2; exit 115; }
+[ "$(admission_value '@.outcome')" = PASS ] || { echo "Admission has not passed." >&2; exit 116; }
+[ "$(admission_value '@.target.model')" = GL-SFT1200 ] && [ "$(admission_value '@.target.ip')" = 192.168.77.1 ] || { echo "Admission target mismatch." >&2; exit 117; }
+source_commit=$(jsonfilter -i "$PKG_DIR/PACKAGE.json" -e '@.sourceCommit' 2>/dev/null | sed -n '1p')
+[ -n "$source_commit" ] && [ "$(admission_value '@.candidate.source_commit')" = "$source_commit" ] || { echo "Admission source commit mismatch." >&2; exit 118; }
+[ "$(admission_value '@.candidate.package_sha256')" = "$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')" ] || { echo "Candidate archive differs from admitted bytes." >&2; exit 119; }
+[ "$(admission_value '@.baseline.package_sha256')" = "$BASELINE_ZIP_SHA256" ] || { echo "Admission rollback package differs." >&2; exit 120; }
+[ "$(admission_value '@.baseline.installed_files_manifest_sha256')" = "$BASELINE_SHA256" ] || { echo "Admission installed-file baseline differs." >&2; exit 121; }
+[ "$(admission_value '@.durable_readback.status')" = PASS ] || { echo "Candidate and rollback lack durable readback." >&2; exit 122; }
+[ "$(admission_value '@.acceptance_plan.status')" = DECLARED ] || { echo "Acceptance plan is missing." >&2; exit 123; }
 
 mkdir -m 0755 "$STAGE"
 cp -pR "$PKG_DIR/owner-pwa/." "$STAGE/"
@@ -88,6 +107,9 @@ mv "$TARGET" "$PREVIOUS"
 mv "$STAGE" "$TARGET"
 (cd "$TARGET" && sha256sum -c .hbnf-payload.sha256 >/dev/null) || { echo "Installed candidate payload verification failed." >&2; exit 104; }
 [ "$(cat "$TARGET/.hbnf-package-version")" = "1.0.16" ] || { echo "Installed Owner PWA version readback failed." >&2; exit 105; }
+candidate_archive_sha=$(sha256sum "$CANDIDATE_ARCHIVE" | awk '{print $1}')
+printf '{\n  "schema":"hbnf-owner-pwa-install-readback-v1",\n  "transaction_id":"%s",\n  "admission_manifest_sha256":"%s",\n  "candidate_archive_sha256":"%s",\n  "installed_payload_manifest":"PASS",\n  "version_readback":"PASS",\n  "rollback_copy":"PASS"\n}\n' "$TX" "$ADMISSION_SHA256" "$candidate_archive_sha" > "$BACKUP/POST-INSTALL-READBACK.json"
+sync
 rm -rf "$PREVIOUS"
 trap - EXIT HUP INT TERM
 echo "Updated Owner PWA to v1.0.16 at $TARGET. Exact v1.0.15 runtime retained at $BACKUP."
