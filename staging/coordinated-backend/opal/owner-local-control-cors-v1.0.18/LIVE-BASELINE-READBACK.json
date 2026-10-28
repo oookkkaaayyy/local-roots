@@ -1,0 +1,19 @@
+{
+  "concurrentStateRetained": {
+    "note": "Captured current live hardening change in the baseline snapshot; package v1.0.18 does not modify this file.",
+    "path": "etc/init.d/hbnf-owner-local-control",
+    "sha256": "7aa5b517b61aa12fac7eca0c5c17216ff2a3b333a9f0a08ee90d5cc605fd4aec"
+  },
+  "installedFilesManifestSha256": "bf824839c354f4d024cd33c6080ad4f70769f83b5b1037e9e58a2b02866a3e82",
+  "localArchiveBytesComparedToManifest": "PASS",
+  "managedFileCount": 20,
+  "readAt": "2026-10-28T07:46:00Z",
+  "remoteReadback": "PASS",
+  "rollbackArchiveSha256": "7bcdc514fc9c0864758af7458c97ecc9512027b1ef1c22150f219ce5202dac93",
+  "schema": "hbnf-opal-live-baseline-readback-v1",
+  "target": {
+    "ip": "192.168.77.1",
+    "kernel": "4.14.90",
+    "model": "GL-SFT1200"
+  }
+}

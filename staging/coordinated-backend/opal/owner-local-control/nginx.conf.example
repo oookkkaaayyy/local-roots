@@ -3,6 +3,14 @@
 # Owner accepts direct unauthenticated WLED API access from unpaired Cart-Wi-Fi
 # clients; this gateway does not isolate that traffic.
 # This file does not replace existing GL.iNet server blocks.
+# The local PWA is served by the Opal over HTTP at its fixed LAN address.
+# Allow that exact Origin alongside the public HTTPS origin so authenticated
+# local session and control requests can pass browser CORS checks.
+map $http_origin $hbnf_owner_cors_origin {
+    default "";
+    "https://hbnightflyers.com" "https://hbnightflyers.com";
+    "http://192.168.77.1" "http://192.168.77.1";
+}
 lua_shared_dict hbnf_owner_sessions 32k;
 lua_shared_dict hbnf_owner_rate 8k;
 
@@ -30,7 +38,7 @@ server {
     location = /mission-control-local/local-transport.js {
         root /www;
         default_type application/javascript;
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-cache" always;
         try_files $uri =404;
@@ -38,16 +46,16 @@ server {
     location = /mission-control-local/owner-http-transport.js {
         root /www;
         default_type application/javascript;
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-cache" always;
         try_files $uri =404;
     }
 
     location = /api/session {
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($hbnf_owner_cors_origin = "") { return 403; }
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
             add_header Access-Control-Allow-Headers "x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -55,7 +63,7 @@ server {
             return 204;
         }
         if ($request_method != GET) { return 405; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Access-Control-Allow-Credentials "true" always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
@@ -64,9 +72,9 @@ server {
     }
 
     location = /api/session/enroll {
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($hbnf_owner_cors_origin = "") { return 403; }
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -74,7 +82,7 @@ server {
             return 204;
         }
         if ($request_method != POST) { return 405; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Access-Control-Allow-Credentials "true" always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
@@ -83,9 +91,9 @@ server {
     }
 
     location = /api/session/revalidate {
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($hbnf_owner_cors_origin = "") { return 403; }
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -93,7 +101,7 @@ server {
             return 204;
         }
         if ($request_method != POST) { return 405; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Access-Control-Allow-Credentials "true" always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
@@ -102,9 +110,9 @@ server {
     }
 
     location = /api/session/revoke {
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($hbnf_owner_cors_origin = "") { return 403; }
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -112,7 +120,7 @@ server {
             return 204;
         }
         if ($request_method != POST) { return 405; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Access-Control-Allow-Credentials "true" always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
@@ -122,7 +130,7 @@ server {
 
     location = /api/matrix/json/info {
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -130,8 +138,8 @@ server {
             return 204;
         }
         if ($request_method != GET) { return 405; }
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        if ($hbnf_owner_cors_origin = "") { return 403; }
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
         access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
@@ -144,7 +152,7 @@ server {
     }
     location = /api/matrix/json/state {
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -152,8 +160,8 @@ server {
             return 204;
         }
         if ($request_method != GET) { return 405; }
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        if ($hbnf_owner_cors_origin = "") { return 403; }
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
         access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
@@ -167,9 +175,9 @@ server {
     # Each Matrix write is authenticated independently and restricted to the
     # documented HBNF state fields. No long-lived write-capable WLED socket.
     location = /api/matrix/control {
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($hbnf_owner_cors_origin = "") { return 403; }
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -177,7 +185,7 @@ server {
             return 204;
         }
         if ($request_method != POST) { return 405; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
         access_by_lua_file /etc/hbnf-local-control/lua/matrix_command_access.lua;
@@ -194,7 +202,7 @@ server {
     }
     location = /api/aux/json/info {
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -202,8 +210,8 @@ server {
             return 204;
         }
         if ($request_method != GET) { return 405; }
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        if ($hbnf_owner_cors_origin = "") { return 403; }
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
         access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
@@ -216,7 +224,7 @@ server {
     }
     location = /api/aux/json/state {
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -224,8 +232,8 @@ server {
             return 204;
         }
         if ($request_method != GET) { return 405; }
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        if ($hbnf_owner_cors_origin = "") { return 403; }
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
         access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
@@ -239,9 +247,9 @@ server {
 
     # Only allow authenticated, bounded power/brightness changes on AUX.
     location = /api/aux/control {
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($hbnf_owner_cors_origin = "") { return 403; }
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -249,7 +257,7 @@ server {
             return 204;
         }
         if ($request_method != POST) { return 405; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
         access_by_lua_file /etc/hbnf-local-control/lua/aux_command_access.lua;
@@ -267,9 +275,9 @@ server {
     # Local UV policy is authenticated and sanitized by Opal before it can
     # reach only the two fixed UV segments on AUX. Matrix/underglow is untouched.
     location = /api/aux/uv-policy {
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($hbnf_owner_cors_origin = "") { return 403; }
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -277,7 +285,7 @@ server {
             return 204;
         }
         if ($request_method != POST) { return 405; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
         access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
@@ -287,9 +295,9 @@ server {
     # Read-only UV readiness is explicitly unavailable until trusted local
     # commissioning evidence exists. This endpoint never addresses WLED.
     location = /api/aux/uv-status {
-        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($hbnf_owner_cors_origin = "") { return 403; }
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
             add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
             add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
             add_header Access-Control-Max-Age 300 always;
@@ -297,7 +305,7 @@ server {
             return 204;
         }
         if ($request_method != GET) { return 405; }
-        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Origin $hbnf_owner_cors_origin always;
         add_header Vary Origin always;
         add_header Cache-Control "no-store" always;
         access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;

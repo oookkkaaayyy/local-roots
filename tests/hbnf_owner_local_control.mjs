@@ -263,11 +263,14 @@ test("local revocation clears the local polling transport and sends no cloud req
   assert.ok(f.calls.every(call => call.url.startsWith(LOCAL_CONTROL_ORIGIN)));
 });
 
-test("Opal gateway restricts origin, reads, and the bounded authenticated AUX write", async () => {
+test("Opal gateway allows only the public and exact Cart-local origins, while retaining authenticated controls", async () => {
   const nginx = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/nginx.conf.example", import.meta.url), "utf8");
   const auth = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/auth.lua", import.meta.url), "utf8");
   assert.match(nginx, /server_name cart-control\.hbnightflyers\.com/);
-  assert.match(nginx, /if \(\$http_origin != "https:\/\/hbnightflyers\.com"\)/);
+  assert.match(nginx, /map \$http_origin \$hbnf_owner_cors_origin[\s\S]*?"https:\/\/hbnightflyers\.com" "https:\/\/hbnightflyers\.com";[\s\S]*?"http:\/\/192\.168\.77\.1" "http:\/\/192\.168\.77\.1";/);
+  assert.match(nginx, /if \(\$hbnf_owner_cors_origin = ""\) \{ return 403; \}/);
+  assert.doesNotMatch(nginx, /if \(\$http_origin !=/);
+  assert.match(nginx, /add_header Access-Control-Allow-Origin \$hbnf_owner_cors_origin always;/);
   assert.match(nginx, /listen 192\.168\.77\.1:9443 ssl/);
   assert.equal((nginx.match(/^\s*listen\s+/gm) || []).length, 1, "dedicated gateway may bind only one listener");
   assert.match(nginx, /location = \/api\/matrix\/control[\s\S]*?matrix_command_access\.lua[\s\S]*?proxy_pass http:\/\/192\.168\.77\.10\/json\/state/);
@@ -333,7 +336,7 @@ test("guarded Opal installer uses an isolated :9443 Nginx instance with non-root
   const service = await readFile(new URL("hbnf-owner-local-control.init", root), "utf8");
   const sourceBase = JSON.parse(await readFile(new URL("SOURCE_BASE.json", root), "utf8"));
   assert.match(installer, /EXPECTED_OLD_TRANSPORT=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a/);
-  assert.match(installer, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.13/);
+  assert.match(installer, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.14/);
   assert.equal(sourceBase.opal_rollback_transport_sha256, "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a");
   assert.equal(sourceBase.opal_rollback_transport_source_commit, sourceBase.base_commit);
   assert.equal(sourceBase.owner_accepted_network_exposure.owner_accepted, true);
@@ -407,7 +410,7 @@ test("guarded Opal installer uses an isolated :9443 Nginx instance with non-root
   assert.match(rollback, /\$SERVICE" stop/);
   assert.match(rollback, /\$SERVICE" disable/);
   assert.match(rollback, /EXPECTED_ROLLBACK_TRANSPORT_SHA=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a/);
-  assert.match(rollback, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.13/);
+  assert.match(rollback, /BACKUP=\/root\/hbnf-owner-local-control\.rollback-v1\.0\.14/);
   for (const name of ["install.sh", "rollback.sh", "preflight.sh", "matrix_topology.sh", "hbnf-owner-local-control.init"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
 });
 
