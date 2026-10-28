@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {parseUdiscAoA,publishSnapshot,standingsForPreview} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-preview.mjs';
+import {eventDateFromUdiscFile,parseUdiscAoA,publishSnapshot,standingsForPreview} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-preview.mjs';
 
 const dates=['2026-03-03','2026-04-18','2026-05-23','2026-06-20'];
 const load=async date=>JSON.parse(await readFile(new URL(`./fixtures/authentic-udisc/${date}.json`,import.meta.url),'utf8'));
@@ -32,4 +32,11 @@ test('rejects missing columns, malformed ranks, holes and inconsistent totals wi
 
 test('allows a genuinely incomplete snapshot but labels hole completeness; rejects malformed workbook identity',()=>{
  const aoa=[['name','position','event_relative_score','event_total_score',...Array.from({length:18},(_,i)=>`hole_${i+1}`)],['A','1',0,54,...Array(17).fill(3),'']];const partial=aoa.map((r,i)=>i?[...r.slice(0,21),'']:r);const row=snapshot(partial).rows[0];assert.equal(row.holesComplete,false);assert.equal(row.holesCompleted,17);assert.equal(row.holeStrokesTotal,null);assert.throws(()=>snapshot(aoa,''),/Choose the event identity/);assert.throws(()=>snapshot([['name','position'],['A','1']]),/missing required hole columns/);
+});
+
+test('derives event date from dated UDisc filename or export start-time column without a separate date field',()=>{
+ assert.equal(eventDateFromUdiscFile('hb-night-flyers-glow-2026-10-24.xlsx',[]),'2026-10-24');
+ assert.equal(eventDateFromUdiscFile('leaderboard-export.xlsx',[['name','start_time'],['Team A & Team B','Oct 24, 2026, 6:17 PM']]),'2026-10-24');
+ assert.equal(eventDateFromUdiscFile('leaderboard-export.xlsx',[['name','start_time'],['Team A & Team B',46323]]),'2026-10-28');
+ assert.equal(eventDateFromUdiscFile('leaderboard-export.xlsx',[['name'],['Team A & Team B']]),null);
 });

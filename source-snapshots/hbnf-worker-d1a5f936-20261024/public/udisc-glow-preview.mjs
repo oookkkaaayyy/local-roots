@@ -81,6 +81,24 @@ export function publishSnapshot(model,snapshot) {
   return{disposition:'published',model:Object.freeze({eventId:snapshot.eventId,snapshots:Object.freeze([...history,next])})};
 }
 
+export function eventDateFromUdiscFile(filename,aoa) {
+  const validDate=value=>{const d=new Date(`${value}T00:00:00Z`);return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value?value:null;};
+  const fromName=String(filename??'').match(/\b((?:19|20)\d{2}-\d{2}-\d{2})\b/);
+  if(fromName){const date=validDate(fromName[1]);if(date)return date;}
+  if(!Array.isArray(aoa)||!Array.isArray(aoa[0]))return null;
+  const headers=aoa[0].map(value=>key(value).replace(/\s+/g,'_'));
+  const column=headers.findIndex(value=>['start_time','start_time_per_round','event_date','round_date','date'].includes(value));
+  if(column<0)return null;
+  for(const row of aoa.slice(1)){
+    const value=row?.[column];if(value==null||String(value).trim()==='')continue;
+    if(typeof value==='number'&&value>20000&&value<80000)return new Date(Date.UTC(1899,11,30)+value*86400000).toISOString().slice(0,10);
+    const source=String(value).trim(),iso=source.match(/\b((?:19|20)\d{2}-\d{2}-\d{2})\b/);
+    if(iso){const date=validDate(iso[1]);if(date)return date;}
+    const parsed=new Date(source);if(Number.isFinite(parsed.getTime()))return `${parsed.getFullYear()}-${String(parsed.getMonth()+1).padStart(2,'0')}-${String(parsed.getDate()).padStart(2,'0')}`;
+  }
+  return null;
+}
+
 export function standingsForPreview(model,playerAliases={}) {
   const snap=model?.snapshots?.at(-1);if(!snap)return[];
   const map=new Map(Object.entries(playerAliases).map(([a,b])=>[key(a),clean(b)]));

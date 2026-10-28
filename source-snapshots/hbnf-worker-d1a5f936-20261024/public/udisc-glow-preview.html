@@ -25,20 +25,16 @@
   </header>
   <main>
     <h1>Glow scores</h1>
-    <p class="intro">Choose tonight’s round and add its UDisc results. HBNF will check the scores and show you exactly what would be added.</p>
-    <p class="notice"><strong>This preview uses a UDisc results file.</strong> It does not yet connect to live scoring, so it cannot update during the round. Your scores stay in UDisc while you play.</p>
+    <p class="intro">UDisc remains the scorekeeper. The live version will read the active Glow event directly and keep this view current while you play.</p>
+    <p class="notice"><strong>Preview only:</strong> this local review uses a saved UDisc results file to demonstrate the score view. The file upload and date selection are not part of the planned regular workflow.</p>
     <section class="panel" aria-labelledby="import-title">
-      <h2 id="import-title">Add round results</h2>
-      <div class="field">
-        <label for="eventId">Round date</label>
-        <input class="file-input" id="eventId" type="date" aria-describedby="round-status">
-      </div>
+      <h2 id="import-title">Preview a UDisc round</h2>
       <label class="upload" for="file">
-        <strong>Add the UDisc results file</strong>
-        <span>Choose the event XLSX or CSV export. Player names are kept as UDisc reports them.</span>
-        <input class="file-input" id="file" type="file" accept=".xlsx,.csv" disabled>
+        <strong>Choose a saved UDisc result</strong>
+        <span>The round date is read from the file name or start time. Player names stay as UDisc reports them.</span>
+        <input class="file-input" id="file" type="file" accept=".xlsx,.csv">
       </label>
-      <p class="status" id="round-status" role="status" aria-live="polite">Choose a round date to continue.</p>
+      <p class="status" id="round-status" role="status" aria-live="polite">No round loaded.</p>
       <details>
         <summary>How this preview works</summary>
         <p class="step-hint">The file is read in this browser. No scores are sent or saved. The preview keeps UDisc’s team order, rank and ties, round score, stroke total, and scores for each hole. It does not change Glow, tags, or any other HBNF data.</p>
@@ -46,7 +42,7 @@
     </section>
     <section class="panel" aria-labelledby="standings-title" aria-live="polite">
       <h2 id="standings-title">Score check</h2>
-      <div class="table-wrap" id="standings"><p class="empty" id="empty-state">Choose a round date to see the next step.</p></div>
+      <div class="table-wrap" id="standings"><p class="empty" id="empty-state">Choose a saved UDisc result to preview its scores.</p></div>
       <details id="technical-details" hidden>
         <summary>Import details</summary>
         <pre id="state">No file added.</pre>
@@ -54,20 +50,14 @@
     </section>
   </main>
   <script type="module">
-    import{parseUdiscAoA,publishSnapshot,renderStandings}from'./udisc-glow-preview.mjs';
+    import{eventDateFromUdiscFile,parseUdiscAoA,publishSnapshot,renderStandings}from'./udisc-glow-preview.mjs';
     import{parseCsvText,readUdiscXlsx}from'./udisc-xlsx-reader.mjs';
-    const status=document.querySelector('#round-status'),view=document.querySelector('#standings'),state=document.querySelector('#state'),eventSelect=document.querySelector('#eventId'),fileInput=document.querySelector('#file'),details=document.querySelector('#technical-details'),models=new Map();let activeModel=null;
-    const now=new Date();eventSelect.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;fileInput.disabled=false;status.textContent='Today’s round is selected. Add its UDisc results file when available.';view.replaceChildren(Object.assign(document.createElement('p'),{className:'empty',textContent:'Add today’s UDisc results file to check the scores.'}));
+    const status=document.querySelector('#round-status'),view=document.querySelector('#standings'),state=document.querySelector('#state'),fileInput=document.querySelector('#file'),details=document.querySelector('#technical-details'),models=new Map();let activeModel=null;
     function redraw(){renderStandings(view,activeModel);}
-    eventSelect.addEventListener('change',()=>{
-      const eventId=eventSelect.value;activeModel=models.get(eventId)||null;fileInput.disabled=!eventId;details.hidden=!activeModel;
-      if(activeModel){redraw();status.textContent=`Round selected. ${activeModel.snapshots.at(-1).rows.length} teams loaded; add the latest UDisc file to check for changes.`;state.textContent=JSON.stringify({roundDate:eventId,localImports:activeModel.snapshots.length,freshness:'UDisc does not provide a source timestamp in this file'},null,2);}
-      else{view.replaceChildren(Object.assign(document.createElement('p'),{className:'empty',textContent:eventId?'Add this round’s UDisc results file to check the scores.':'Choose a round date to continue.'}));status.textContent=eventId?'Round selected. Add its UDisc results file when available.':'Choose a round date to continue.';state.textContent='No file added.';}
-    });
     fileInput.addEventListener('change',async()=>{
-      const file=fileInput.files?.[0],eventId=eventSelect.value;if(!file)return;if(!eventId){status.textContent='Choose a round date first.';return;}
-      status.textContent='Checking the UDisc results…';
-      try{const parsed=/\.csv$/i.test(file.name)?{sheetName:'CSV',aoa:parseCsvText(await file.text())}:await readUdiscXlsx(await file.arrayBuffer());const snapshot=parseUdiscAoA(parsed.aoa,{eventId,observedAtLocal:new Date().toISOString()});const result=publishSnapshot(models.get(eventId)||null,snapshot);models.set(eventId,result.model);activeModel=result.model;redraw();details.hidden=false;const latest=activeModel.snapshots.at(-1);state.textContent=JSON.stringify({roundDate:eventId,worksheet:parsed.sheetName,localImportNumber:latest.localImportNumber,observedAtLocal:latest.observedAtLocal,freshness:'unknown; UDisc source timestamp not included',teamCount:latest.rows.length},null,2);status.textContent=`${result.disposition==='duplicate'?'No score changes found.':`Ready to review ${snapshot.rows.length} teams.`} No HBNF data has been changed.`;}
+      const file=fileInput.files?.[0];if(!file)return;
+      status.textContent='Reading the UDisc result…';
+      try{const parsed=/\.csv$/i.test(file.name)?{sheetName:'CSV',aoa:parseCsvText(await file.text())}:await readUdiscXlsx(await file.arrayBuffer());const eventId=eventDateFromUdiscFile(file.name,parsed.aoa);if(!eventId)throw new Error('The round date was not found in this file. Use the UDisc event export with its start time.');const snapshot=parseUdiscAoA(parsed.aoa,{eventId,observedAtLocal:new Date().toISOString()});const result=publishSnapshot(models.get(eventId)||null,snapshot);models.set(eventId,result.model);activeModel=result.model;redraw();details.hidden=false;const latest=activeModel.snapshots.at(-1);state.textContent=JSON.stringify({roundDate:eventId,worksheet:parsed.sheetName,localImportNumber:latest.localImportNumber,observedAtLocal:latest.observedAtLocal,freshness:'unknown; UDisc source timestamp not included',teamCount:latest.rows.length},null,2);status.textContent=`${result.disposition==='duplicate'?'No score changes found.':`Ready to review ${snapshot.rows.length} teams from ${eventId}.`} No HBNF data has been changed.`;}
       catch(error){status.textContent=`Couldn’t read this file: ${error.message}`;}
     });
   </script>
