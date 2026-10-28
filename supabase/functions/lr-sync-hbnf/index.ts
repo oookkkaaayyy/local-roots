@@ -6,6 +6,7 @@ import {
   HBNF_SCHEDULE_CONFIRMATION_REF,
   isCanceledGlowWeek,
   isSyntheticGlowFixtureWeek,
+  isUnobservedGlowPlaceholderWeek,
   shouldEmitConfirmedScheduleRecord,
   shouldSkipCanceledEvent,
   shouldUseConfirmedSchedule,
@@ -181,6 +182,7 @@ Deno.serve(async (req) => {
     const skinsWeeks: Json = state?.skins?.weeks && typeof state.skins.weeks === "object" ? state.skins.weeks : {};
     const glowWeeks: Json = state?.glow?.weeks && typeof state.glow.weeks === "object" ? state.glow.weeks : {};
     const quarantinedFixtureExternalIds = new Set<string>();
+    const quarantinedEmptyGlowExternalIds = new Set<string>();
     const confirmedGlowSchedule = buildConfirmedGlowSchedule(today);
     const confirmedGlowDates = new Set(confirmedGlowSchedule.map((scheduled) => scheduled.date));
     const records: {
@@ -227,6 +229,11 @@ Deno.serve(async (req) => {
       if (!dateKey(date) || !week || typeof week !== "object") continue;
       if (isSyntheticGlowFixtureWeek(week)) {
         quarantinedFixtureExternalIds.add(`hbnf:glow:${date}`);
+        continue;
+      }
+      // Owner-confirmed schedule dates are handled separately below.
+      if (!confirmedGlowDates.has(date) && isUnobservedGlowPlaceholderWeek(week)) {
+        quarantinedEmptyGlowExternalIds.add(`hbnf:glow:${date}`);
         continue;
       }
       if (shouldUseConfirmedSchedule(date, week, confirmedGlowDates)) continue;
@@ -312,8 +319,8 @@ Deno.serve(async (req) => {
       .filter((event: any) => event.status === "canceled")
       .map((event: any) => event.id));
     const existingByExternalId = new Map((existing.data ?? []).map((row: any) => [row.external_id, row]));
-    // A quarantined synthetic fixture is deliberately omitted, not missing upstream.
-    const seen = new Set([...records.map((record) => record.externalId), ...quarantinedFixtureExternalIds]);
+    // Deliberately quarantined weeks are not upstream disappearances.
+    const seen = new Set([...records.map((record) => record.externalId), ...quarantinedFixtureExternalIds, ...quarantinedEmptyGlowExternalIds]);
     for (const externalId of quarantinedFixtureExternalIds) {
       const existingFixture: any = existingByExternalId.get(externalId);
       if (!existingFixture?.event_id) continue;
@@ -322,6 +329,24 @@ Deno.serve(async (req) => {
         .eq("id", existingFixture.event_id)
         .eq("published", true);
       if (unpublished.error) throw new Error(`fixture quarantine failed: ${unpublished.error.message}`);
+    }
+    // Never hide a previously accepted, result-bearing event solely because
+    // the current upstream week has become empty. No results are deleted.
+    for (const externalId of quarantinedEmptyGlowExternalIds) {
+      const existingEmpty: any = existingByExternalId.get(externalId);
+      if (!existingEmpty?.event_id) continue;
+      const resultCount = await service.from("lr_results")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", existingEmpty.event_id);
+      if (resultCount.error || typeof resultCount.count !== "number") {
+        throw new Error(`empty Glow results guard failed: ${resultCount.error?.message ?? "count unavailable"}`);
+      }
+      if (resultCount.count > 0) continue;
+      const unpublished = await service.from("lr_events")
+        .update({ published: false })
+        .eq("id", existingEmpty.event_id)
+        .eq("published", true);
+      if (unpublished.error) throw new Error(`empty Glow quarantine failed: ${unpublished.error.message}`);
     }
     const missing = findMissingSourceRecords(existing.data ?? [], seen, !stateFetchError);
 
