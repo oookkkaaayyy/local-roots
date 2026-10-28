@@ -346,9 +346,14 @@ const hbnfScenarios = [
 async function addHbnfQa(f) {
   f.receipt.baseline.target = 'hbnf-public-website';
   f.receipt.deployment.target = 'hbnf-public-website';
+  const suiteSha256 = 'd'.repeat(64);
+  f.receipt.build.inputs.push({ name: 'hbnf-e2e-suite', version: 'test-suite-v1', sha256: suiteSha256 });
   const qa = {
     runId: 'hbnf-e2e-20261027T190000Z',
     suiteVersion: 'hbnf-scoring-e2e@1.0.0',
+    suiteCommit: f.receipt.source.commit,
+    suiteSha256,
+    runnerInputName: 'hbnf-e2e-suite',
     environment: 'isolated',
     backend: 'supabase-local',
     browserRunner: 'Playwright',
@@ -420,6 +425,9 @@ test('HBNF QA gate rejects missing scenarios and production test environments', 
         target: 'hbnf-public-website',
         runId: qa.runId,
         suiteVersion: qa.suiteVersion,
+        suiteCommit: qa.suiteCommit,
+        suiteSha256: qa.suiteSha256,
+        runnerInputName: qa.runnerInputName,
         environment: qa.environment,
         backend: qa.backend,
         browserRunner: qa.browserRunner,
