@@ -335,3 +335,117 @@ test('rejects baseline artifact size or hash metadata that differs from its byte
     } finally { await f.cleanup(); }
   }
 });
+
+const hbnfScenarios = [
+  'front9-scoring-and-pushes', 'back9-teams-and-payouts', 'undo-score-edit',
+  'ace-pot-and-tag-behavior', 'week-selection-and-standings', 'server-ack-and-readback',
+  'two-consecutive-saves', 'cold-reopen-retains-scores', 'cross-device-sync',
+  'offline-failure-and-retry', 'concurrent-write-does-not-overwrite',
+];
+
+async function addHbnfQa(f) {
+  f.receipt.baseline.target = 'hbnf-public-website';
+  f.receipt.deployment.target = 'hbnf-public-website';
+  const qa = {
+    runId: 'hbnf-e2e-20261027T190000Z',
+    suiteVersion: 'hbnf-scoring-e2e@1.0.0',
+    environment: 'isolated',
+    backend: 'supabase-local',
+    browserRunner: 'Playwright',
+    status: 'PASS',
+    sourceCommit: f.receipt.source.commit,
+    candidateSha256: f.receipt.package.sha256,
+    baselineIdentity: f.receipt.baseline.identity,
+    scenarios: hbnfScenarios.map(id => ({ id, status: 'PASS' })),
+  };
+  const report = {
+    target: 'hbnf-public-website',
+    ...qa,
+  };
+  const reportBytes = Buffer.from(JSON.stringify(report, null, 2) + '\\n');
+  const downloadBackPath = 'evidence/hbnf-qa-report-downloadback.json';
+  const reportPath = 'evidence/hbnf-qa-report.json';
+  await writeFile(path.join(f.root, reportPath), reportBytes);
+  await writeFile(path.join(f.root, downloadBackPath), reportBytes);
+  qa.report = {
+    path: reportPath,
+    bytes: reportBytes.length,
+    sha256: hash(reportBytes),
+    driveFileId: 'hbnf-qa-report-id',
+    driveUrl: 'https://drive.google.com/file/d/hbnf-qa-report-id/view',
+    downloadBackVerified: true,
+    downloadBack: {
+      path: downloadBackPath,
+      bytes: reportBytes.length,
+      sha256: hash(reportBytes),
+    },
+  };
+  f.receipt.qa = qa;
+  return qa;
+}
+
+test('HBNF admission requires durable QA evidence bound to candidate, source, baseline, and all scoring scenarios', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.baseline.target = 'hbnf-public-website';
+    f.receipt.deployment.target = 'hbnf-public-website';
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /HBNF release requires a bound pre-deployment QA report/);
+  } finally { await f.cleanup(); }
+});
+
+test('HBNF QA evidence passes only when isolated suite report and download-back match the admitted release', async () => {
+  const f = await fixture();
+  try {
+    const qa = await addHbnfQa(f);
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(result.phase, 'admission');
+    assert.equal(result.admissionManifest.qa.candidateSha256, f.receipt.package.sha256);
+    assert.equal(result.admissionManifest.qa.sourceCommit, f.receipt.source.commit);
+    assert.equal(result.admissionManifest.qa.baselineIdentity, f.receipt.baseline.identity);
+    assert.deepEqual(result.admissionManifest.qa.scenarios.map(x => x.id), hbnfScenarios);
+    assert.equal(result.admissionManifest.qa.reportSha256, qa.report.sha256);
+  } finally { await f.cleanup(); }
+});
+
+test('HBNF QA gate rejects a missing required scenario or a non-isolated environment', async () => {
+  for (const mutation of [
+    qa => { qa.scenarios = qa.scenarios.filter(x => x.id !== 'cross-device-sync'); },
+    qa => { qa.environment = 'production'; },
+  ]) {
+    const f = await fixture();
+    try {
+      const qa = await addHbnfQa(f);
+      mutation(qa);
+      const report = {
+        target: 'hbnf-public-website',
+        runId: qa.runId,
+        suiteVersion: qa.suiteVersion,
+        environment: qa.environment,
+        backend: qa.backend,
+        browserRunner: qa.browserRunner,
+        status: qa.status,
+        sourceCommit: qa.sourceCommit,
+        candidateSha256: qa.candidateSha256,
+        baselineIdentity: qa.baselineIdentity,
+        scenarios: qa.scenarios,
+      };
+      const bytes = Buffer.from(JSON.stringify(report, null, 2) + '\\n');
+      await writeFile(path.join(f.root, qa.report.path), bytes);
+      await writeFile(path.join(f.root, qa.report.downloadBack.path), bytes);
+      qa.report.bytes = bytes.length;
+      qa.report.sha256 = hash(bytes);
+      qa.report.downloadBack.bytes = bytes.length;
+      qa.report.downloadBack.sha256 = hash(bytes);
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root), mutation.name === 'x' ? /x/ : (qa.environment === 'production' ? /qa.environment must be isolated/ : /missing required case cross-device-sync/));
+    } finally { await f.cleanup(); }
+  }
+});
+
+test('HBNF QA gate rejects report download-back mismatch', async () => {
+  const f = await fixture();
+  try {
+    const qa = await addHbnfQa(f);
+    await writeFile(path.join(f.root, qa.report.downloadBack.path), 'different report bytes');
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /qa.report.downloadBack must byte-match the QA report/);
+  } finally { await f.cleanup(); }
+});
