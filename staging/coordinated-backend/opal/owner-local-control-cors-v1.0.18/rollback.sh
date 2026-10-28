@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-TX=OWNER-LOCAL-CONTROL-CORS-V118-20261028-01
+TX=OWNER-LOCAL-CONTROL-CORS-V118-20261028-02
 BACKUP=/root/hbnf-owner-local-control-cors.rollback-$TX
 TARGET=/etc/hbnf-local-control/nginx-server.conf
 NGINX=/usr/sbin/nginx

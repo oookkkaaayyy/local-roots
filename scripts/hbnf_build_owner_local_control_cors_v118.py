@@ -11,7 +11,7 @@ from pathlib import Path
 
 PKG = Path("staging/coordinated-backend/opal/owner-local-control-cors-v1.0.18")
 SOURCE = Path("staging/coordinated-backend/opal/owner-local-control/nginx.conf.example")
-TX = "OWNER-LOCAL-CONTROL-CORS-V118-20261028-01"
+TX = "OWNER-LOCAL-CONTROL-CORS-V118-20261028-02"
 PACKAGE = "hbnf-owner-local-control-cors-v1.0.18"
 TARGET = "etc/hbnf-local-control/nginx-server.conf"
 ROLLBACK_DRIVE_ID = "1JLYWaYi_jyFAUUlmL-gyfJtR8h5qW7Co"
@@ -48,11 +48,11 @@ def build(repo: Path, commit: str, out: Path) -> tuple[Path, str]:
     committed = subprocess.check_output(["git", "-C", str(repo), "show", f"{commit}:{SOURCE.as_posix()}"])
     if candidate != committed:
         raise ValueError("candidate server config differs from exact source commit")
-    if b'map $http_origin $hbnf_owner_cors_origin {' not in candidate:
-        raise ValueError("exact-origin CORS map missing")
-    if b'\"http://192.168.77.1\" \"http://192.168.77.1\";' not in candidate:
+    if b'if ($http_origin !~ \"^(https://hbnightflyers[.]com|http://192[.]168[.]77[.]1)?$\") { return 403; }' not in candidate:
+        raise ValueError("exact-origin CORS guard missing")
+    if b'http://192[.]168[.]77[.]1' not in candidate:
         raise ValueError("Cart-local PWA origin missing")
-    if b'if ($http_origin !=' in candidate or b'Access-Control-Allow-Origin \"https://hbnightflyers.com\"' in candidate:
+    if b'map $http_origin' in candidate or b'if ($http_origin !=' in candidate or b'Access-Control-Allow-Origin \"https://hbnightflyers.com\"' in candidate:
         raise ValueError("stale fixed-origin CORS policy remains")
 
     updated = dict(baseline)

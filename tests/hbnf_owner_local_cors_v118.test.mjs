@@ -7,10 +7,10 @@ const read = path => readFile(new URL(path, root), "utf8");
 
 test("Opal local CORS release allows only the exact public and Cart-local origins", async () => {
   const nginx = await read("staging/coordinated-backend/opal/owner-local-control/nginx.conf.example");
-  assert.match(nginx, /map \$http_origin \$hbnf_owner_cors_origin \{[\s\S]*?default "";[\s\S]*?"https:\/\/hbnightflyers\.com" "https:\/\/hbnightflyers\.com";[\s\S]*?"http:\/\/192\.168\.77\.1" "http:\/\/192\.168\.77\.1";[\s\S]*?\}/);
+  assert.match(nginx, /if \(\$http_origin !~ "\^\(https:\/\/hbnightflyers\[\.\]com\|http:\/\/192\[\.\]168\[\.\]77\[\.\]1\)\?\$"\) \{ return 403; \}/);
   assert.doesNotMatch(nginx, /if \(\$http_origin !=/);
-  assert.match(nginx, /if \(\$hbnf_owner_cors_origin = ""\) \{ return 403; \}/);
-  assert.match(nginx, /add_header Access-Control-Allow-Origin \$hbnf_owner_cors_origin always;/);
+  assert.match(nginx, /if \(\$http_origin !~ "\^\(https:\/\/hbnightflyers\[\.\]com\|http:\/\/192\[\.\]168\[\.\]77\[\.\]1\)\$"\) \{ return 403; \}/);
+  assert.match(nginx, /add_header Access-Control-Allow-Origin \$http_origin always;/);
   assert.match(nginx, /location = \/api\/aux\/uv-status[\s\S]*?auth_owner\.lua[\s\S]*?uv_status_access\.lua/);
   assert.match(nginx, /location = \/api\/aux\/uv-policy[\s\S]*?auth_owner\.lua[\s\S]*?uv_policy_access\.lua/);
 });

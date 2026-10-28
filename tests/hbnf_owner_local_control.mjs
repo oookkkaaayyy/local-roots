@@ -267,10 +267,10 @@ test("Opal gateway allows only the public and exact Cart-local origins, while re
   const nginx = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/nginx.conf.example", import.meta.url), "utf8");
   const auth = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/auth.lua", import.meta.url), "utf8");
   assert.match(nginx, /server_name cart-control\.hbnightflyers\.com/);
-  assert.match(nginx, /map \$http_origin \$hbnf_owner_cors_origin[\s\S]*?"https:\/\/hbnightflyers\.com" "https:\/\/hbnightflyers\.com";[\s\S]*?"http:\/\/192\.168\.77\.1" "http:\/\/192\.168\.77\.1";/);
-  assert.match(nginx, /if \(\$hbnf_owner_cors_origin = ""\) \{ return 403; \}/);
+  assert.match(nginx, /server_name cart-control\.hbnightflyers\.com;[\s\S]*?if \(\$http_origin !~ "\^\(https:\/\/hbnightflyers\[\.\]com\|http:\/\/192\[\.\]168\[\.\]77\[\.\]1\)\?\$"\) \{ return 403; \}/);
+  assert.match(nginx, /if \(\$http_origin !~ "\^\(https:\/\/hbnightflyers\[\.\]com\|http:\/\/192\[\.\]168\[\.\]77\[\.\]1\)\$"\) \{ return 403; \}/);
   assert.doesNotMatch(nginx, /if \(\$http_origin !=/);
-  assert.match(nginx, /add_header Access-Control-Allow-Origin \$hbnf_owner_cors_origin always;/);
+  assert.match(nginx, /add_header Access-Control-Allow-Origin \$http_origin always;/);
   assert.match(nginx, /listen 192\.168\.77\.1:9443 ssl/);
   assert.equal((nginx.match(/^\s*listen\s+/gm) || []).length, 1, "dedicated gateway may bind only one listener");
   assert.match(nginx, /location = \/api\/matrix\/control[\s\S]*?matrix_command_access\.lua[\s\S]*?proxy_pass http:\/\/192\.168\.77\.10\/json\/state/);
