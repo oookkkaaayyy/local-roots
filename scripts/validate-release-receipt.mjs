@@ -5,6 +5,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SHA256 = /^[a-f0-9]{64}$/i;
+const HBNF_TARGET = 'hbnf-public-website';
+const HBNF_REQUIRED_SCENARIOS = [
+  'front9-scoring-and-pushes', 'back9-teams-and-payouts', 'undo-score-edit',
+  'ace-pot-and-tag-behavior', 'week-selection-and-standings', 'server-ack-and-readback',
+  'two-consecutive-saves', 'cold-reopen-retains-scores', 'cross-device-sync',
+  'offline-failure-and-retry', 'concurrent-write-does-not-overwrite',
+];
 
 function requireString(value, label) {
   if (typeof value !== 'string' || value.trim() === '') throw new Error(`${label} is required`);
@@ -42,6 +49,27 @@ function admissionProjection(receipt, hashes = {}) {
       sha256: hashes.packageSha256 ?? receipt.package.sha256,
       bytes: hashes.packageBytes ?? receipt.package.bytes,
     },
+    qa: receipt.qa ? {
+      runId: receipt.qa.runId,
+      suiteVersion: receipt.qa.suiteVersion,
+      suiteCommit: receipt.qa.suiteCommit,
+      suiteSha256: receipt.qa.suiteSha256,
+      runnerInputName: receipt.qa.runnerInputName,
+      environment: receipt.qa.environment,
+      backend: receipt.qa.backend,
+      browserRunner: receipt.qa.browserRunner,
+      status: receipt.qa.status,
+      sourceCommit: receipt.qa.sourceCommit,
+      candidateSha256: hashes.packageSha256 ?? receipt.qa.candidateSha256,
+      baselineIdentity: receipt.qa.baselineIdentity,
+      reportDriveFileId: receipt.qa.report.driveFileId,
+      reportDriveUrl: receipt.qa.report.driveUrl,
+      reportSha256: receipt.qa.report.sha256,
+      reportBytes: receipt.qa.report.bytes,
+      reportDownloadBackSha256: receipt.qa.report.downloadBack.sha256,
+      reportDownloadBackBytes: receipt.qa.report.downloadBack.bytes,
+      scenarios: receipt.qa.scenarios.map(({ id, status }) => ({ id, status })),
+    } : null,
     recovery: {
       driveFileId: receipt.recovery.driveFileId,
       driveUrl: receipt.recovery.driveUrl,
@@ -130,6 +158,57 @@ async function verifyFile(root, entry, label) {
   return actual;
 }
 
+async function verifyHbnfQa(receipt, root, packageFile) {
+  if (receipt.baseline.target !== HBNF_TARGET && receipt.deployment.target !== HBNF_TARGET) return null;
+  const qa = receipt.qa;
+  if (!qa || typeof qa !== 'object') throw new Error('HBNF release requires a bound pre-deployment QA report');
+  requireString(qa.runId, 'qa.runId');
+  requireString(qa.suiteVersion, 'qa.suiteVersion');
+  if (qa.environment !== 'isolated') throw new Error('qa.environment must be isolated; production test writes are forbidden');
+  if (!['supabase-local', 'supabase-isolated-staging'].includes(qa.backend)) throw new Error('qa.backend must be an isolated Supabase backend');
+  if (qa.browserRunner !== 'Playwright') throw new Error('qa.browserRunner must be Playwright');
+  if (qa.status !== 'PASS') throw new Error('qa.status must be PASS before admission');
+  if (qa.sourceCommit !== receipt.source.commit) throw new Error('qa.sourceCommit must match source.commit');
+  if (qa.suiteCommit !== receipt.source.commit) throw new Error('qa.suiteCommit must match source.commit');
+  requireSha(qa.suiteSha256, 'qa.suiteSha256');
+  requireString(qa.runnerInputName, 'qa.runnerInputName');
+  const runnerInput = receipt.build.inputs.find(input => input.name === qa.runnerInputName);
+  if (!runnerInput || runnerInput.sha256 !== qa.suiteSha256) throw new Error('qa suite hash must match its pinned build input');
+  if (qa.candidateSha256 !== packageFile.sha256) throw new Error('qa.candidateSha256 must match the candidate package');
+  if (qa.baselineIdentity !== receipt.baseline.identity) throw new Error('qa.baselineIdentity must match the current installed baseline');
+  if (!Array.isArray(qa.scenarios)) throw new Error('qa.scenarios must list every required HBNF simulation');
+  const scenarioMap = new Map();
+  for (const [index, scenario] of qa.scenarios.entries()) {
+    requireString(scenario?.id, `qa.scenarios[${index}].id`);
+    if (scenarioMap.has(scenario.id)) throw new Error(`qa.scenarios contains duplicate id ${scenario.id}`);
+    if (scenario.status !== 'PASS') throw new Error(`qa.scenarios[${index}] is not PASS`);
+    scenarioMap.set(scenario.id, scenario);
+  }
+  for (const id of HBNF_REQUIRED_SCENARIOS) {
+    if (!scenarioMap.has(id)) throw new Error(`qa.scenarios is missing required case ${id}`);
+  }
+  const reportFile = await verifyFile(root, qa.report, 'qa.report');
+  requireString(qa.report.driveFileId, 'qa.report.driveFileId');
+  requireString(qa.report.driveUrl, 'qa.report.driveUrl');
+  if (qa.report.downloadBackVerified !== true) throw new Error('qa.report.downloadBackVerified must be true');
+  const reportCopy = await verifyFile(root, qa.report.downloadBack, 'qa.report.downloadBack');
+  if (reportCopy.sha256 !== reportFile.sha256 || reportCopy.bytes !== reportFile.bytes) {
+    throw new Error('qa.report.downloadBack must byte-match the QA report');
+  }
+  let report;
+  try { report = JSON.parse(await readFile(path.resolve(root, qa.report.path), 'utf8')); }
+  catch { throw new Error('qa.report must be valid JSON'); }
+  if (report.target !== HBNF_TARGET || report.runId !== qa.runId || report.suiteVersion !== qa.suiteVersion ||
+      report.suiteCommit !== qa.suiteCommit || report.suiteSha256 !== qa.suiteSha256 ||
+      report.runnerInputName !== qa.runnerInputName || report.environment !== qa.environment || report.backend !== qa.backend || report.browserRunner !== qa.browserRunner ||
+      report.status !== qa.status || report.sourceCommit !== receipt.source.commit ||
+      report.candidateSha256 !== packageFile.sha256 || report.baselineIdentity !== receipt.baseline.identity ||
+      !sameCanonical(report.scenarios, qa.scenarios)) {
+    throw new Error('qa.report must bind run, source, candidate, baseline, isolated environment, and every scenario result');
+  }
+  return reportFile;
+}
+
 export async function validateReleaseReceipt(receipt, root, { phase = 'closeout' } = {}) {
   if (!['admission', 'closeout'].includes(phase)) throw new Error('phase must be admission or closeout');
   if (!receipt || typeof receipt !== 'object' || receipt.schemaVersion !== 1) {
@@ -198,6 +277,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     throw new Error('baseline.rollback.downloadBack must byte-match the baseline rollback');
   }
   const packageFile = await verifyFile(root, receipt.package, 'package');
+  await verifyHbnfQa(receipt, root, packageFile);
   if (packageFile.sha256 === baselineRollback.sha256) {
     throw new Error('candidate package must be distinct from the baseline rollback package');
   }
