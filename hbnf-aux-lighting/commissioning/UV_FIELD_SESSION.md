@@ -1,5 +1,12 @@
 # HBNF Cart UV integration — current handoff (2026-10-27)
 
+## Current code correction — RGBW payload left the one-channel outputs dark
+
+- Live AUX readback confirms the output map is already correct: GPIO25 / segment 1 at LED 22, GPIO26 / segment 2 at LED 23; both UV segments remain off, underglow segment 0 is unchanged. AUX reports WLED 16.0.1 and the output-capable UV firmware witness.
+- Root cause in the authenticated Opal command path: the PWM buses use WLED one-channel white mode with `rgbwm:0` (manual white only), but both MANUAL and FOLLOW_MATRIX commands sent RGB-only white (`[255,255,255]`). That leaves the PWM white component at zero. The source fix sends explicit W-only `[0,0,0,255]` and verifies that exact readback. It is committed on the existing PR #130 branch as `341fbda0be029f56dcfbef85c9bc90acc10842f9`; focused route and command checks passed 13/13. **Source only: this correction is not installed or packaged yet.**
+- Fresh network check during this source pass: AUX JSON read-only endpoints returned HTTP 200 with the expected 3-bus map and both UV segments off. Opal SSH/admin ports 22/8443 accepted TCP, while the gateway on 9443 refused connections. Treat that as the separate current Opal-service availability issue; it does not invalidate the AUX map or firmware witness.
+- Current gateway v1.0.14 profile still fails closed by design: its hardware profile is default-off, and `uv_policy_access.lua` rejects all write requests until physical commissioning gates pass. This means the installed app cannot yet exercise the corrected W-only payload. Do not call the corrected path field-verified, and do not repeat the earlier physical no-light test against the old installed gateway. The next viable field attempt needs both the source correction packaged/installed and an authorized, bounded way to perform the first channel acceptance before marking the full commissioning gates complete.
+
 ## Live update — AUX UV outputs configured off (2026-10-27)
 
 - The owner confirmed the UV module is fully disconnected and the strips are unpowered before the AUX restart.
