@@ -16,9 +16,9 @@ local function respond(status, value)
   ngx.header.content_type = "application/json"
   ngx.header["Cache-Control"] = "no-store"
   ngx.say(cjson.encode(value))
-  -- Preserve a successful/denial response without aborting the Lua request
-  -- while an internal AUX subrequest may still be pending.
-  return ngx.exit(ngx.OK)
+  -- Return from this helper and let content_by_lua finish naturally. ngx.exit,
+  -- including ngx.exit(ngx.OK), can abort with pending internal subrequests.
+  return true
 end
 
 ngx.req.read_body()
