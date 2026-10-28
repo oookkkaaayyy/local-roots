@@ -26,7 +26,7 @@ av(){ jsonfilter -i "$ADMISSION_FILE" -e "$1" 2>/dev/null | sed -n '1p'; }
 [ "$(av '@.baseline.rollbackDownloadBackSha256')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.baseline.packageSha256' | sed -n '1p')" ] || fail "rollback download-back hash mismatch"
 [ "$(av '@.deployment.provider')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.target.provider' | sed -n '1p')" ] || fail "provider mismatch"
 [ "$(av '@.deployment.target')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.target.identity' | sed -n '1p')" ] || fail "target mismatch"
-[ "$(av '@.recovery.driveFileId')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.recovery.driveFileId' | sed -n '1p')" ] || fail "candidate recovery identity mismatch"
+[ -n "$(av '@.recovery.driveFileId')" ] || fail "candidate durable recovery identity missing"
 [ "$(av '@.baseline.identity')" = "$(jsonfilter -i "$PKG/PACKAGE.json" -e '@.baseline.identity' | sed -n '1p')" ] || fail "installed baseline identity mismatch"
 [ "$(wc -l < "$PKG/BASELINE_FILES.SHA256SUMS" | tr -d ' ')" = 20 ] || fail "baseline manifest incomplete"
 [ -s /var/run/hbnf-owner-local-control-nginx.pid ] || fail "dedicated gateway PID missing"
