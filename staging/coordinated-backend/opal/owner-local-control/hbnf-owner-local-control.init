@@ -11,10 +11,11 @@ LOG_DIR=/var/log/hbnf-owner-local-control-nginx
 start_service() {
 	[ -x "$NGINX" ] || return 1
 	[ -s "$CONF" ] || return 1
-	# /var is volatile on OpenWrt; recreate the private Nginx log directory after boot.
-	if [ ! -d "$LOG_DIR" ]; then
-		mkdir -m 0700 "$LOG_DIR" || return 1
-	fi
+	# /var is volatile on OpenWrt. Recreate it after boot and repair its mode
+	# if it survived with permissions that expose private gateway logs.
+	[ ! -L "$LOG_DIR" ] || return 1
+	mkdir -p "$LOG_DIR" || return 1
+	chmod 0700 "$LOG_DIR" || return 1
 	"$NGINX" -t -c "$CONF" || return 1
 	procd_open_instance
 	procd_set_param command "$NGINX" -c "$CONF" -g 'daemon off;'

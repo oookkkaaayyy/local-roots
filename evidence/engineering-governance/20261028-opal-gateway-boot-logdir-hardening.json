@@ -1,0 +1,27 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OPAL_GATEWAY_BOOT_LOGDIR_HARDENING_20261028",
+  "summary": "Make the dedicated Owner gateway's procd startup recreate its volatile /var log directory and restore private mode 0700 before Nginx validation; reject package builds that omit the boot guard and run a host regression test in CI.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "primary_source": "OpenWrt documents /var as a symlink into volatile /tmp storage and documents procd init scripts as the service startup mechanism: https://openwrt.org/docs/techref/filesystems and https://openwrt.org/docs/guide-developer/procd-init-scripts.",
+    "implementation": "staging/coordinated-backend/opal/owner-local-control/hbnf-owner-local-control.init; scripts/hbnf_build_owner_local_control_package.py; tests/opal_owner_local_control_boot_test.py; .github/workflows/ci.yml; owner-local-control README.",
+    "validation": [
+      "python3 tests/opal_owner_local_control_boot_test.py: PASS (7 cases: recreate after volatile-directory loss, repair mode, reject symlink, stop on mkdir/chmod/Nginx failure, and verify package guard).",
+      "sh -n staging/coordinated-backend/opal/owner-local-control/hbnf-owner-local-control.init: PASS.",
+      "python3 scripts/hbnf_control.py check-change --change evidence/engineering-governance/20261028-opal-gateway-boot-logdir-hardening.json: PASS.",
+      "All nine repository-mandated HBNF lifecycle/release regression commands: PASS; the live-sweep runner suite used its own mocked device calls and did not contact hardware.",
+      "git diff --check: PASS.",
+      "No router restart, live service mutation, firmware change, or UV output change is part of this source-only change."
+    ],
+    "rollback": "Revert the source commit; no live device state was changed.",
+    "deployment_status": "NOT_INSTALLED_NO_LIVE_MUTATION"
+  }
+}

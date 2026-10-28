@@ -96,6 +96,13 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         raise ValueError("SOURCE_BASE must explicitly record owner-accepted direct WLED network exposure without claiming a test")
     rollback = (root / "rollback.sh").read_text()
     installer = (root / "install.sh").read_text()
+    init = (root / "hbnf-owner-local-control.init").read_text()
+    if ('[ ! -L "$LOG_DIR" ] || return 1' not in init
+        or 'mkdir -p "$LOG_DIR" || return 1' not in init
+        or 'chmod 0700 "$LOG_DIR" || return 1' not in init
+        or not init.index('[ ! -L "$LOG_DIR" ] || return 1') < init.index('mkdir -p "$LOG_DIR" || return 1')
+        or init.index('mkdir -p "$LOG_DIR" || return 1') > init.index('"$NGINX" -t -c "$CONF"')):
+        raise ValueError("gateway boot service must recreate and secure its volatile log directory before validating or starting Nginx")
     if f"EXPECTED_OLD_TRANSPORT={EXPECTED_ROLLBACK}" not in installer:
         raise ValueError("installer is not bound to the exact accepted Mission Control rollback transport")
     if 'lua_package_path "/etc/hbnf-local-control/lua/?.lua;;";' not in (root / "dedicated-nginx.conf.example").read_text():

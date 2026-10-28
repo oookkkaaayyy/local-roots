@@ -29,6 +29,9 @@ jobs:
       - name: Run domain tests
         run: npm test
 
+      - name: Check Opal gateway boot recovery
+        run: python3 tests/opal_owner_local_control_boot_test.py
+
       - name: Install web dependencies
         working-directory: app
         run: npm install --no-audit --no-fund
