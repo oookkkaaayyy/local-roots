@@ -19,7 +19,7 @@ BASELINE="$PKG_DIR/BASELINE.SHA256SUMS"
 BASELINE_SHA256=4eb60a526a7f19a95fbecf0476d7f7f86aacd13b3126b31ad99f69d406f3dffc
 BASELINE_ZIP_SHA256=65491d94716f231430b4f0aec380ef99ab2d70a7d61712dd6a4244ec3f236dbb
 BASE_MARKER_SHA256=fbeeb20927e58ff3bea0d0a66d5e996dbaefcbb72259a80a45ff206585137835
-BASE_VERSION_SHA256=c8e58b248cbb9c46ea49177cd5fa61281ec33ec875325858d2cf7bf6da73288a
+BASE_VERSION_SHA256=9fd28642d3aca191e5c7fc2383cfd6fabb2aac8743f029dabb8989ac584e31bc
 
 [ "$(id -u)" = 0 ] || { echo "Run as root on the Opal." >&2; exit 77; }
 [ -d "$BASE" ] && [ -w "$BASE" ] || { echo "Existing Mission Control root is unavailable." >&2; exit 78; }
