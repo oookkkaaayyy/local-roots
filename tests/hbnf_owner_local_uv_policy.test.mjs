@@ -79,6 +79,11 @@ test("Opal and shared backend point at the same declarative UV policy contract",
   assert.match(uvRuntime, /policy\.requiredCommissioningGates/);
   assert.match(uvRuntime, /policy\.brightness/);
   assert.match(opal, /runtime\.profile_ready\(\)/);
+  assert.match(opal, /one-channel PWM with per-bus white mode MANUAL_ONLY/);
+  assert.match(opal, /col = \{\{0, 0, 0, 255\}\}/);
+  assert.match(opal, /col = \{0, 0, 0, 255\}/);
+  assert.match(uvRuntime, /One-channel PWM state is the RGBW white value/);
+  assert.match(uvRuntime, /tonumber\(color\[4\]\) ~= expected\.col\[4\]/);
   assert.match(uvStatus, /response\.outputMode = "FOLLOW_MATRIX"/);
   assert.match(uvStatus, /response\.outputMode = "UNKNOWN"/);
   const localRoute = nginx.match(/location = \/api\/aux\/uv-policy \{([\s\S]*?)\n    \}/)?.[1] || "";

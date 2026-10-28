@@ -121,13 +121,24 @@ function M.read_state()
 end
 
 function M.segment_matches(segment, expected)
-  return type(segment) == "table"
-      and segment.on == expected.on
-      -- WLED reports a segment's remembered opacity while it is off; bri=0
-      -- turns the segment off but does not necessarily read back as bri=0.
-      and (expected.on ~= true or tonumber(segment.bri) == expected.bri)
-      and tonumber(segment.fx) == expected.fx
-      and tonumber(segment.ix) == expected.ix
+  if type(segment) ~= "table" or segment.on ~= expected.on
+      or (expected.on == true and tonumber(segment.bri) ~= expected.bri)
+      or tonumber(segment.fx) ~= expected.fx or tonumber(segment.ix) ~= expected.ix then
+    return false
+  end
+  -- One-channel PWM state is the RGBW white value. Require the W readback too;
+  -- on=true and a nonzero brightness can still leave this output electrically dark.
+  if expected.col then
+    local color = type(segment.col) == "table" and segment.col[1] or nil
+    if type(color) ~= "table" or #color < 4
+        or tonumber(color[1]) ~= expected.col[1]
+        or tonumber(color[2]) ~= expected.col[2]
+        or tonumber(color[3]) ~= expected.col[3]
+        or tonumber(color[4]) ~= expected.col[4] then
+      return false
+    end
+  end
+  return true
 end
 
 return M

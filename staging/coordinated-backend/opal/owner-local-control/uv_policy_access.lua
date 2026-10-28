@@ -53,17 +53,19 @@ local function make_segment(id, cap)
     return { id = id, on = false, bri = 0, fx = 0, ix = 0 }
   end
   if mode == "FOLLOW_MATRIX" then
-    return { id = id, on = true, bri = 255, fx = effect, ix = cap, col = {{255, 255, 255}} }
+    return { id = id, on = true, bri = 255, fx = effect, ix = cap, col = {{0, 0, 0, 255}} }
   end
-  return { id = id, on = true, bri = cap, fx = 0, ix = cap, col = {{255, 255, 255}} }
+  -- AUX UV buses are one-channel PWM with per-bus white mode MANUAL_ONLY (0).
+  -- RGB-only white therefore produces zero PWM; set the W component explicitly.
+  return { id = id, on = true, bri = cap, fx = 0, ix = cap, col = {{0, 0, 0, 255}} }
 end
 local expected = {
   [1] = mode == "OFF" and { on = false, bri = 0, fx = 0, ix = 0 }
-    or mode == "FOLLOW_MATRIX" and { on = true, bri = 255, fx = effect, ix = levels.main }
-    or { on = levels.main > 0, bri = levels.main, fx = 0, ix = levels.main },
+    or mode == "FOLLOW_MATRIX" and { on = true, bri = 255, fx = effect, ix = levels.main, col = {0, 0, 0, 255} }
+    or { on = levels.main > 0, bri = levels.main, fx = 0, ix = levels.main, col = {0, 0, 0, 255} },
   [2] = mode == "OFF" and { on = false, bri = 0, fx = 0, ix = 0 }
-    or mode == "FOLLOW_MATRIX" and { on = true, bri = 255, fx = effect, ix = levels.short }
-    or { on = levels.short > 0, bri = levels.short, fx = 0, ix = levels.short },
+    or mode == "FOLLOW_MATRIX" and { on = true, bri = 255, fx = effect, ix = levels.short, col = {0, 0, 0, 255} }
+    or { on = levels.short > 0, bri = levels.short, fx = 0, ix = levels.short, col = {0, 0, 0, 255} },
 }
 local payload = cjson.encode({ seg = { make_segment(1, levels.main), make_segment(2, levels.short) } })
 local response = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST, body = payload })
