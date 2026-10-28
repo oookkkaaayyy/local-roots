@@ -69,8 +69,9 @@ test("verified two-channel request maps independent sliders and reports only bro
   assert.equal(result.status, 200);
   assert.equal(result.body.mutationIssued, true);
   assert.deepEqual(result.body.caps, { main: 180, short: 80 });
-  assert.deepEqual(sent.payload.seg.slice(1).map(({ id, on, bri, fx, ix }) => ({ id, on, bri, fx, ix })), [
-    { id: 1, on: true, bri: 180, fx: 0, ix: 180 }, { id: 2, on: true, bri: 80, fx: 0, ix: 80 },
+  assert.deepEqual(sent.payload.seg.slice(1).map(({ id, on, bri, fx, ix, col }) => ({ id, on, bri, fx, ix, col })), [
+    { id: 1, on: true, bri: 180, fx: 0, ix: 180, col: [[0, 0, 0, 255]] },
+    { id: 2, on: true, bri: 80, fx: 0, ix: 80, col: [[0, 0, 0, 255]] },
   ]);
   assert.equal(sent.allowed, true);
   assert.deepEqual(result.body.acknowledgement, {
@@ -125,9 +126,9 @@ test("follow modes send persistent independent caps for AUX-local audio followin
   });
   assert.equal(matrix.body.localAudioFollow, true);
   assert.deepEqual(matrix.body.caps, { main: 128, short: 64 });
-  assert.deepEqual(matrixPayload.seg.slice(1).map(({ id, bri, fx, ix }) => ({ id, bri, fx, ix })), [
-    { id: 1, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: 128 },
-    { id: 2, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: 64 },
+  assert.deepEqual(matrixPayload.seg.slice(1).map(({ id, bri, fx, ix, col }) => ({ id, bri, fx, ix, col })), [
+    { id: 1, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: 128, col: [[0, 0, 0, 255]] },
+    { id: 2, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: 64, col: [[0, 0, 0, 255]] },
   ]);
   const vibe = await executeUvRequest({
     request: { mode: "VIBE_REACTIVE", brightnessBySegment: { main: 128, short: 64 }, vibeEnvelope: 0 },

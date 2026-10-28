@@ -91,8 +91,10 @@ export async function executeUvRequest({ request = {}, state = {}, auxEnabled = 
   const followsAudio = UV_POLICY_SPEC.followModes.includes(mode);
   const segment = (id, cap) => {
     if (mode === "OFF" || cap === 0) return { id, on: false, bri: 0, fx: 0, ix: 0, sel: false };
-    if (followsAudio) return { id, on: true, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: cap, sel: false, col: [[255,255,255]] };
-    return { id, on: true, bri: cap, fx: 0, ix: cap, sel: false, col: [[255,255,255]] };
+    if (followsAudio) return { id, on: true, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: cap, sel: false, col: [[0,0,0,255]] };
+    // These one-channel PWM buses use WLED auto-white mode 0 (manual only),
+    // so RGB-only white leaves the physical PWM value at zero. Drive W explicitly.
+    return { id, on: true, bri: cap, fx: 0, ix: cap, sel: false, col: [[0,0,0,255]] };
   };
   const payload = { on: true, mainseg: 0, seg: [
     { id: 0, sel: true },
