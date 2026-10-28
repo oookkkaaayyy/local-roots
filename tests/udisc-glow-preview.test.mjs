@@ -34,6 +34,12 @@ test('allows a genuinely incomplete snapshot but labels hole completeness; rejec
  const aoa=[['name','position','event_relative_score','event_total_score',...Array.from({length:18},(_,i)=>`hole_${i+1}`)],['A','1',0,54,...Array(17).fill(3),'']];const partial=aoa.map((r,i)=>i?[...r.slice(0,21),'']:r);const row=snapshot(partial).rows[0];assert.equal(row.holesComplete,false);assert.equal(row.holesCompleted,17);assert.equal(row.holeStrokesTotal,null);assert.throws(()=>snapshot(aoa,''),/Choose the event identity/);assert.throws(()=>snapshot([['name','position'],['A','1']]),/missing required hole columns/);
 });
 
+test('preserves UDisc in-progress DNF status and accepts it as a live rank label',()=>{
+ const headers=['name','position','event_relative_score','event_total_score',...Array.from({length:18},(_,i)=>`hole_${i+1}`)];
+ const live=snapshot([headers,['A','DNF',-1,2,2,...Array(17).fill('')]]);
+ assert.equal(live.rows[0].sourceRank,'DNF'); assert.equal(live.rows[0].rankStatus,'DNF'); assert.equal(live.rows[0].holesCompleted,1);
+});
+
 test('derives event date from dated UDisc filename or export start-time column without a separate date field',()=>{
  assert.equal(eventDateFromUdiscFile('hb-night-flyers-glow-2026-10-24.xlsx',[]),'2026-10-24');
  assert.equal(eventDateFromUdiscFile('leaderboard-export.xlsx',[['name','start_time'],['Team A & Team B','Oct 24, 2026, 6:17 PM']]),'2026-10-24');

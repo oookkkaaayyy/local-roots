@@ -195,11 +195,11 @@ export function renderDestinationProposal(container, proposal) {
   table.className = 'scorecard-table destination-score-table';
   const head = table.createTHead().insertRow();
   head.className = 'scorecard-head';
-  for (const label of ['UDisc rank', 'Team', ...Array.from({length: 18}, (_, i) => String(i + 1)), 'Total', 'To par']) {
+  for (const label of ['UDisc rank', 'Team', ...Array.from({length: 9}, (_, i) => String(i + 1)), 'Out', 'Out total', ...Array.from({length: 9}, (_, i) => String(i + 10)), 'In', 'In total', 'Total', 'To par']) {
     const th = document.createElement('th'); th.textContent = label;
     if (label === 'UDisc rank') th.className = 'rank-cell';
     if (label === 'Team') th.className = 'sticky-col';
-    if (/^\d+$/.test(label)) th.className = 'sheet-hole';
+      if (/^\d+$/.test(label)) th.className = 'sheet-hole';
     head.append(th);
   }
   const body = table.createTBody();
@@ -208,13 +208,15 @@ export function renderDestinationProposal(container, proposal) {
     tr.className = 'scorecard-row';
     const team = [item.entry.partner1, item.entry.partner2].filter(Boolean).join(' / ') || item.source.sourceTeam || 'Team name unavailable';
     const relative = item.source.relativeScore == null ? '—' : (item.source.relativeScore > 0 ? `+${item.source.relativeScore}` : String(item.source.relativeScore));
-    const values = [item.source.sourceRank, team, ...item.entry.scores, item.source.strokeTotal ?? '—', relative];
+    const outScores = item.entry.scores.slice(0,9), inScores = item.entry.scores.slice(9);
+    const sum = scores => { const present=scores.filter(value=>value!==''); return present.length ? present.reduce((total,value)=>total+Number(value),0) : ''; };
+    const values = [item.source.sourceRank, team, ...outScores, sum(outScores), ...inScores, sum(inScores), item.source.strokeTotal ?? '—', relative];
     values.forEach((value, index) => {
       const td = tr.insertCell(); td.textContent = String(value);
       if (index === 0) td.className = 'rank-cell';
       if (index === 1) td.className = 'sticky-col player-name-cell';
-      if (index >= 2 && index < 20) td.className = 'score-entry-cell';
-      if (index >= 20) td.className = 'total-cell';
+      if ((index >= 2 && index < 11) || (index >= 12 && index < 21)) td.className = 'score-entry-cell';
+      if ([11,21,22,23].includes(index)) td.className = 'total-cell';
     });
   }
   const wrap = document.createElement('div'); wrap.className = 'scorecard-wrap'; wrap.setAttribute('role', 'region'); wrap.setAttribute('aria-label', 'Proposed Glow round scorecard'); wrap.tabIndex = 0; wrap.append(table); container.replaceChildren(wrap);

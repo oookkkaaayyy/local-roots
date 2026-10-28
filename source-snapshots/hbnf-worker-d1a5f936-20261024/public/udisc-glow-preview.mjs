@@ -36,7 +36,7 @@ export function parseUdiscAoA(aoa,{eventId,observedAtLocal=new Date().toISOStrin
   const strokesCol=getCol('eventStrokes')>=0?getCol('eventStrokes'):getCol('roundStrokes');
   const rows=aoa.slice(1).map((r,index)=>({r,index})).filter(({r})=>Array.isArray(r)&&r.some(v=>clean(v)!=='' )).map(({r,index})=>{
     const sourceTeam=clean(r[nameCol]), sourceRank=clean(r[rankCol]);
-    if(!/^(?:T?\d+|T?\d+\s*[-–]\s*T?\d+)$/i.test(sourceRank))throw Error(`Row ${index+2} has an invalid UDisc position.`);
+    const rankIsNumeric=/^(?:T?\d+|T?\d+\s*[-–]\s*T?\d+)$/i.test(sourceRank);const rankIsUnfinished=/^(?:DNS|DNF|DQ|WD|NS)$/i.test(sourceRank);if(!rankIsNumeric&&!rankIsUnfinished)throw Error(`Row ${index+2} has an invalid UDisc position.`);
     if(!sourceTeam)throw Error(`Row ${index+2} has scores/data but no team name.`);
     if(!sourceRank)throw Error(`Row ${index+2} has no UDisc position.`);
     const scores=holeCols.map((c,i)=>{
@@ -52,7 +52,7 @@ export function parseUdiscAoA(aoa,{eventId,observedAtLocal=new Date().toISOStrin
     const members=splitNames(sourceTeam), usernames=userCol<0?[]:splitUsernames(r[userCol]);
     return Object.freeze({
       sourceRow:index+2,division:getCol('division')<0?'':clean(r[getCol('division')]),
-      sourceRank,sourceRankRaw:rawRankCol<0?'':clean(r[rawRankCol]),sourceTeam,
+      sourceRank,sourceRankRaw:rawRankCol<0?'':clean(r[rawRankCol]),rankStatus:rankIsUnfinished?sourceRank.toUpperCase():null,sourceTeam,
       members:Object.freeze(members),usernames:Object.freeze(usernames),
       memberAlignment:members.length===usernames.length,
       relativeScore:eventRelative,strokeTotal,holeStrokesTotal:complete?scores.reduce((a,n)=>a+n,0):null,
@@ -105,7 +105,7 @@ export function standingsForPreview(model,playerAliases={}) {
   return snap.rows.map(row=>{
     const members=row.members.length?row.members:row.usernames;
     const display=members.map((member,index)=>map.get(key(member))||map.get(key(row.usernames[index]))||member);
-    return{rank:row.sourceRank,team:display.join(' / ')||row.sourceTeam,relativeScore:row.relativeScore,strokeTotal:row.strokeTotal,scores:row.scores,holesComplete:row.holesComplete,holesCompleted:row.holesCompleted,memberAlignment:row.memberAlignment};
+    return{rank:row.sourceRank,team:display.join(' / ')||row.sourceTeam,relativeScore:row.relativeScore,strokeTotal:row.strokeTotal,rankStatus:row.rankStatus,scores:row.scores,holesComplete:row.holesComplete,holesCompleted:row.holesCompleted,memberAlignment:row.memberAlignment};
   });
 }
 
