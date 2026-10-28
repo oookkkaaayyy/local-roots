@@ -35,9 +35,13 @@ const server = createServer(async (req,res) => {
       if (!eventPattern.test(eventId)) return reply(res,400,'Invalid HB Night Flyers event.\n');
       const upstreamUrl=`https://udisc.com/events/${eventId}/leaderboard/export`;
       const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),15000);
-      let upstream, bytes;
+      let upstream, bytes, lastNetworkError;
       try {
-        upstream=await fetch(upstreamUrl,{headers:{Accept:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},redirect:'manual',signal:controller.signal});
+        for(let attempt=0;attempt<2;attempt++){
+          try{upstream=await fetch(upstreamUrl,{headers:{Accept:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},redirect:'manual',signal:controller.signal});lastNetworkError=null;break;}
+          catch(error){lastNetworkError=error;if(attempt===0&&!controller.signal.aborted)await new Promise(resolve=>setTimeout(resolve,350));}
+        }
+        if(lastNetworkError)return reply(res,502,'UDisc is temporarily unavailable. Please try again.\n');
         if (upstream.status>=300&&upstream.status<400) return reply(res,502,'UDisc redirected the export; request stopped.\n');
         if (!upstream.ok) return reply(res,502,`UDisc export unavailable (${upstream.status}).\n`);
         if (!(upstream.headers.get('content-type')||'').includes('spreadsheetml.sheet')) return reply(res,502,'UDisc did not return an XLSX export.\n');
@@ -56,7 +60,7 @@ const server = createServer(async (req,res) => {
     res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','Content-Length':String(info.size),'Cache-Control':'no-store'});res.end(body);
   } catch (error) {
     reply(res,500,'Local rehearsal request failed.\n');
-    console.error('UDisc rehearsal proxy failure:',error instanceof Error?error.message:'unknown');
+    console.error('UDisc rehearsal proxy failure:',error instanceof Error?error.name:'unknown');
   }
 });
 
