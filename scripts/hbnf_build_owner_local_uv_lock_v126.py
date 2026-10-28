@@ -8,8 +8,8 @@ SOURCES = {
  'uv_status_access.lua': Path('staging/coordinated-backend/opal/owner-local-control/uv_status_access.lua'),
  'uv_policy_access.lua': Path('staging/coordinated-backend/opal/owner-local-control/uv_policy_access.lua'),
 }
-TX='OWNER-LOCAL-UV-LOCAL-ACCESS-V126-20261028-02'
-RELEASE_ID='HBNF-OPAL-UV-LOCK-V126-20261028-02'
+TX='OWNER-LOCAL-UV-LOCAL-ACCESS-V126-20261028-03'
+RELEASE_ID='HBNF-OPAL-UV-LOCK-V126-20261028-03'
 NAME='hbnf-owner-local-uv-local-access-v1.0.26'
 ROLLBACK_ID='1M8tumDa_fUDD8buSxXBnCBYmi8Z2pNSy'
 def sha(b): return hashlib.sha256(b).hexdigest()
