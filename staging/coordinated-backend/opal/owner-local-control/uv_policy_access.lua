@@ -42,7 +42,8 @@ if mode == "COMMISSIONING_TEST" then
   end
   local current, readiness_error = runtime.read_state()
   if not current then return respond(503, { error = readiness_error, mutationIssued = false }) end
-  local rate = ngx.shared.hbnf_owner_rate
+  -- Keep output serialization separate from short-lived Owner auth rate keys.
+  local rate = ngx.shared.hbnf_uv_policy_lock
   if not rate or not rate:add("uv_policy_lock", 1, 15) then
     return respond(429, { error = "uv_commissioning_test_in_progress", mutationIssued = false })
   end
@@ -136,7 +137,8 @@ local expected = {
     or mode == "FOLLOW_MATRIX" and { on = true, bri = 255, fx = effect, ix = levels.short, col = {0, 0, 0, 255} }
     or { on = levels.short > 0, bri = levels.short, fx = 0, ix = levels.short, col = {0, 0, 0, 255} },
 }
-local rate = ngx.shared.hbnf_owner_rate
+-- Keep output serialization separate from short-lived Owner auth rate keys.
+local rate = ngx.shared.hbnf_uv_policy_lock
 if not rate or not rate:add("uv_policy_lock", 1, 15) then
   return respond(429, { error = "uv_policy_request_in_progress", mutationIssued = false })
 end

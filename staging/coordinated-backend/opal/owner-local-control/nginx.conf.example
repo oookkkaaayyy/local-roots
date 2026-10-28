@@ -8,6 +8,7 @@
 # firmware's Nginx lacks ngx_http_map_module, so use its supported regex guard.
 lua_shared_dict hbnf_owner_sessions 32k;
 lua_shared_dict hbnf_owner_rate 8k;
+lua_shared_dict hbnf_uv_policy_lock 8k;
 
 server {
     # Dedicated gateway listener. Keep GL.iNet's existing 80/443 instance
