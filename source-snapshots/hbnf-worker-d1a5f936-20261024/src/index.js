@@ -151,52 +151,8 @@ export async function handleUdiscExport(request, fetchImpl = fetch) {
 
 /** Authenticated, cron-only live sync. This endpoint is never exposed publicly. */
 export async function runGlowSync(env, deps = {}) {
-  const now = deps.now?.() || new Date();
-  const localDate = new Intl.DateTimeFormat('en-CA', {timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
-  const fetchImpl = deps.fetch || fetch;
-  const source = deps.source || await import('./udisc-glow-sync-runner.mjs');
-  const scheduleResponse = await fetchImpl(SCHEDULE_URL, {headers:{Accept:'text/html'},redirect:'manual'});
-  if (!scheduleResponse.ok || scheduleResponse.status >= 300 && scheduleResponse.status < 400) throw Error('UDisc schedule unavailable.');
-  if (!(scheduleResponse.headers.get('content-type') || '').toLowerCase().includes('text/html')) throw Error('UDisc schedule response was not HTML.');
-  const scheduleBytes = await readBounded(scheduleResponse, MAX_SCHEDULE_BYTES);
-  const scheduleHtml = new TextDecoder('utf-8',{fatal:true}).decode(scheduleBytes);
-  const todays = source.parseUdiscGlowEvents(scheduleHtml).filter(event => event.date === localDate);
-  if (todays.length !== 1) return {disposition:todays.length ? 'multiple_events' : 'no_event',eventCount:todays.length};
-  const event = todays[0];
-  const exportResponse = await fetchImpl(`https://udisc.com/events/${event.eventId}/leaderboard/export`, {headers:{Accept:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},redirect:'manual'});
-  if (!exportResponse.ok || exportResponse.status >= 300 && exportResponse.status < 400 || !(exportResponse.headers.get('content-type') || '').toLowerCase().includes('spreadsheetml.sheet')) throw Error('UDisc score export unavailable.');
-  const boundedWorkbook = await readBounded(exportResponse, MAX_EXPORT_BYTES);
-  if (boundedWorkbook.byteLength < 22) throw Error('UDisc score export size is invalid.');
-  const workbookBytes = boundedWorkbook.buffer.slice(boundedWorkbook.byteOffset,boundedWorkbook.byteOffset+boundedWorkbook.byteLength);
-  const snapshot = await source.parseUdiscWorkbook(workbookBytes, {eventId:event.eventId,weekDate:event.date,observedAt:new Date().toISOString()});
-  const supabaseUrl = String(env.SUPABASE_URL || '').replace(/\/$/,'');
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceKey) throw Error('Server sync credentials are not configured.');
-  const headers = {apikey:serviceKey,Authorization:`Bearer ${serviceKey}`,'Content-Type':'application/json',Accept:'application/json'};
-  const read = await fetchImpl(`${supabaseUrl}/rest/v1/league_state?id=eq.1&select=state_json`, {headers,cache:'no-store'});
-  if (!read.ok) throw Error(`Glow state read failed (${read.status}).`);
-  const rows = await read.json();
-  if (!Array.isArray(rows) || rows.length !== 1 || !rows[0]?.state_json?.glow) throw Error('Glow state is missing or ambiguous.');
-  const root = rows[0].state_json;
-  const glow = root.glow;
-  // Never let a late, missing, or misdated UDisc export change which Glow
-  // week the site displays. Sync only the week already selected in Glow.
-  if (glow.activeWeek !== event.date) return {disposition:'active_week_mismatch',date:event.date};
-  const existingWeek = glow.weeks?.[event.date] || null;
-  if (!existingWeek) return {disposition:'week_not_initialized',date:event.date};
-  const history = Object.values(glow.weeks || {}).flatMap(week => (week.players || []).flatMap(player => [player.partner1,player.partner2])).filter(Boolean);
-  const evidence = source.validateIdentityEvidence({aliases:glow.playerAliases || {},historicalNames:history,tagEvidence:[]});
-  const model = {eventId:event.eventId,snapshots:[snapshot]};
-  const decisions = source.exactAliasDecisions(model,evidence);
-  const proposal = source.buildGlowProposal(model,evidence,decisions,{weekDate:event.date});
-  if (proposal.issues?.unresolvedIdentityCount || proposal.issues?.duplicateCanonicalTeamRows) throw Error('Player names need a one-time review before scores can be applied.');
-  const prepared = await source.prepareGlowWeekSync(existingWeek,proposal,{aliases:evidence.aliases});
-  if (!prepared.changed) return {disposition:'unchanged',date:event.date,signature:prepared.signature};
-  const rpc = await fetchImpl(`${supabaseUrl}/rest/v1/rpc/hbnf_apply_udisc_glow_week`, {method:'POST',headers,body:JSON.stringify({p_week_date:event.date,p_expected_week:existingWeek,p_replacement_week:prepared.week,p_expected_active_week:glow.activeWeek ?? null})});
-  if (!rpc.ok) throw Error(`Glow score save failed (${rpc.status}).`);
-  const result = await rpc.json();
-  if (result !== true && result?.applied !== true) throw Error('Glow score save conflicted; retry on the next scheduled refresh.');
-  return {disposition:'updated',date:event.date,signature:prepared.signature,teamCount:prepared.week.players.length};
+  const {runApprovedGlowSync} = await import('./udisc-glow-auto-sync.mjs');
+  return runApprovedGlowSync(env, deps);
 }
 
 export default {

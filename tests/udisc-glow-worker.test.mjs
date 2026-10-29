@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import worker,{handleUdiscExport,handleUdiscGlowEvents,parseUdiscGlowEvents} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
+import worker,{handleUdiscExport,handleUdiscGlowEvents,parseUdiscGlowEvents,runGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
+import {readFile} from 'node:fs/promises';
 
 const event = 'hb-night-flyers-test-event-XpuRfW';
 const xlsx = new Uint8Array([0x50, 0x4b, 3, 4, ...new Array(20).fill(0)]);
@@ -138,4 +139,13 @@ test('production fetch keeps export, schedule, and sync endpoints private', asyn
     assert.equal(response.status,404);
   }
   assert.equal(assetCalls,0);
+});
+
+test('production configuration has no unconditional schedule polling and unapproved runner makes no request',async()=>{
+  const config=JSON.parse(await readFile(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/wrangler.jsonc',import.meta.url),'utf8'));
+  assert.equal(config.triggers,undefined);
+  let calls=0;
+  const result=await runGlowSync({}, {fetch:async()=>{calls++;throw Error('must not fetch')}});
+  assert.equal(result.disposition,'source_access_disabled');
+  assert.equal(calls,0);
 });

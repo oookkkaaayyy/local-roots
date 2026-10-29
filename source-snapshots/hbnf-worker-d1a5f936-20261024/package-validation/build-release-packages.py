@@ -13,9 +13,28 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def asset_files(root: Path) -> list[Path]:
-    files = sorted((root / "public").rglob("*"))
-    return [path for path in files if path.is_file()]
+def asset_files(source: Path, manifest: Path, include_save_module: bool) -> list[Path]:
+    """Package the exact installed asset path set plus the reviewed save module.
+
+    The public directory also contains offline rehearsal pages and tooling. A
+    recursive copy would silently turn those into production routes, so asset
+    membership is pinned to the current rollback manifest.
+    """
+    paths = []
+    for line in manifest.read_text().splitlines():
+        if not line.strip():
+            continue
+        _, name = line.split(maxsplit=1)
+        paths.append(name.strip().lstrip("*"))
+    if len(paths) != 44 or len(set(paths)) != 44:
+        raise SystemExit(f"expected 44 unique installed asset paths in {manifest}")
+    if include_save_module:
+        paths.append("public/glow-save-sync.mjs")
+    files = [source / name for name in paths]
+    missing = [path.relative_to(source).as_posix() for path in files if not path.is_file()]
+    if missing:
+        raise SystemExit(f"release assets missing: {', '.join(missing)}")
+    return files
 
 
 def production_config(source: Path) -> bytes:
@@ -32,7 +51,8 @@ def production_config(source: Path) -> bytes:
 
 def build(args, label: str, source: Path, source_commit: str, output: Path) -> tuple[Path, str]:
     files: dict[str, bytes] = {}
-    for path in asset_files(source):
+    path_manifest = args.candidate_root / "package-validation" / "LOCAL_ASSET_SHA256SUMS"
+    for path in asset_files(source, path_manifest, label == "candidate"):
         files[path.relative_to(source).as_posix()] = path.read_bytes()
     for directory in ("src", "database"):
         directory_path = source / directory
@@ -41,11 +61,9 @@ def build(args, label: str, source: Path, source_commit: str, output: Path) -> t
                 if path.is_file():
                     files[path.relative_to(source).as_posix()] = path.read_bytes()
     asset_count = len([name for name in files if name.startswith("public/")])
-    # Current production has 44 static assets. The two additional JS modules
-    # are Worker-imported score parser/proposal code and are included in the
-    # static directory because Wrangler bundles modules from the configured root.
-    if asset_count not in (44, 45, 46):
-        raise SystemExit(f"{label}: expected 44 baseline assets plus at most two Worker modules; found {asset_count}")
+    expected_assets = 45 if label == "candidate" else 44
+    if asset_count != expected_assets:
+        raise SystemExit(f"{label}: expected {expected_assets} approved assets; found {asset_count}")
     files["wrangler.jsonc"] = production_config(source)
     if (source / "package.json").exists() and (source / "package-lock.json").exists():
         files["package.json"] = (source / "package.json").read_bytes()
@@ -78,7 +96,7 @@ def build(args, label: str, source: Path, source_commit: str, output: Path) -> t
         "sourceCommit": source_commit,
         "activeProductionVersionObservedAtPreparation": args.active_version,
         "cloudflareRollbackVersionIdToReverifyBeforeUse": args.active_version,
-        "sourceToVersionLineage": "NOT_ESTABLISHED; the rollback source is response-matched at public routes, not exported from the provider Version",
+        "sourceToVersionLineage": "NOT_ESTABLISHED; current deployed Worker executable bytes were not exported",
         "toolchain": {"wrangler": "4.152.0", "lockfile": "package-lock.json"},
         "assetCount": asset_count,
         "files": [{"path": name, "bytes": len(data), "sha256": sha256(data)} for name, data in sorted(files.items())],
@@ -103,20 +121,25 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--candidate-root", type=Path, required=True)
     parser.add_argument("--candidate-commit", required=True)
-    parser.add_argument("--rollback-root", type=Path, required=True)
-    parser.add_argument("--rollback-commit", required=True)
+    parser.add_argument("--rollback-archive", type=Path, required=True)
+    parser.add_argument("--rollback-sha256", required=True)
+    parser.add_argument("--rollback-bytes", type=int, required=True)
     parser.add_argument("--toolchain-root", type=Path, required=True)
     parser.add_argument("--active-version", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
-    for key in ("candidate_root", "rollback_root", "toolchain_root"):
+    for key in ("candidate_root", "rollback_archive", "toolchain_root"):
         setattr(args, key, getattr(args, key).resolve())
-    items = [
-        build(args, "candidate", args.candidate_root, args.candidate_commit,
-              args.output_dir / "HBNF-scoring-candidate.zip"),
-        build(args, "rollback", args.rollback_root, args.rollback_commit,
-              args.output_dir / "HBNF-scoring-rollback.zip"),
-    ]
+    items = [build(args, "candidate", args.candidate_root, args.candidate_commit,
+                   args.output_dir / "HBNF-scoring-candidate.zip")]
+    rollback = args.output_dir / "HBNF-scoring-rollback.zip"
+    rollback.parent.mkdir(parents=True, exist_ok=True)
+    rollback.write_bytes(args.rollback_archive.read_bytes())
+    rollback_hash = sha256(rollback.read_bytes())
+    if rollback_hash != args.rollback_sha256 or rollback.stat().st_size != args.rollback_bytes:
+        raise SystemExit("rollback archive does not match the declared current-baseline bytes")
+    rollback.with_suffix(rollback.suffix + ".sha256").write_text(f"{rollback_hash}  {rollback.name}\n")
+    items.append((rollback, rollback_hash))
     print(json.dumps({"result": "PASS", "packages": [
         {"path": str(path), "sha256": digest, "bytes": path.stat().st_size}
         for path, digest in items

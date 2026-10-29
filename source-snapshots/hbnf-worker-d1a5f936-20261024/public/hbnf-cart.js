@@ -2,6 +2,7 @@
 import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
+import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261024-cart-control-home-r4";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -11,6 +12,7 @@ const OPAL_LOCAL_PWA = location.hostname === "192.168.77.1" && location.pathname
 const DEVICE_STORAGE_KEY = "hbnf_cart_device_v1";
 const DEVICE_EXPIRY_KEY = "hbnf_cart_device_expiry_v1";
 const DEVICE_EXPIRY_TOKEN_KEY = "hbnf_cart_device_expiry_token_v1";
+const GUEST_DEFAULT_MIGRATION_KEY = "hbnf_guest_default_enabled_v110";
 const DEVICE_COOKIE = "hbnf_cart_device";
 const DEVICE_COOKIE_MAX_AGE = 180 * 24 * 60 * 60;
 const OPAL_LOCAL_COMMANDS = new Set(["OFF", "ON", "SCENE", "VIBE", "VIBE_AUTO", "PALETTE", "OVERLAY_START", "OVERLAY_CLEAR"]);
@@ -23,16 +25,20 @@ let currentPairLink = "";
 let tuneDirty = false;
 let tuneDirtyFields = new Set();
 let tuneInFlight = false;
+let tuneDispatchPromise = null;
 let tuneTimer = null;
 let hydrating = false;
 let canonicalCapabilities = {};
 const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
 let localControlActive = false;
+let localPathStatus = OPAL_LOCAL_PWA ? "checking" : "not_checked";
 let lastLocalEnrollAt = 0;
 let lastCloudPairValidationAt = 0;
+let guestDefaultMigrationInFlight = false;
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
+const truthBadge = $("#truthBadge");
 const authPanel = $("#authPanel");
 const pairAcceptPanel = $("#pairAcceptPanel");
 const managePairPanel = $("#managePairPanel");
@@ -44,11 +50,44 @@ const copyPair = $("#copyPair");
 const matrixHealth = $("#matrixTruth");
 const auxHealth = $("#auxTruth");
 const backendHealth = $("#backendTruth");
-const guestModeToggle = $("#guestMode");
-const guestModeStatus = $("#guestModeStatus");
+const cartLanHealth = $("#cartLanTruth");
+const controlPathLabel = $("#controlPathLabel");
+if (controlPathLabel) controlPathLabel.textContent = OPAL_LOCAL_PWA ? "iPad → Cart controls" : "Cloud control API";
 let pendingRevision = null;
+const activeCommandKeys = new Set();
 const syncHealth = null;
 const rendererHealth = null;
+
+function updateCompactStatus() {
+  if (!statusNode || !truthBadge) return;
+  const detail = String(statusNode.textContent || "").trim().toLowerCase();
+  let label = "Status details", tone = "warn";
+  if (/^connecting|^checking/.test(detail)) label = "Checking";
+  else if (/sending cart command|change sent\. checking/.test(detail)) label = "Sending", tone = "warn";
+  else if (/change sent\. waiting|waiting for the cart/.test(detail)) label = "Waiting", tone = "warn";
+  else if (/matrix and underglow confirmed the change/.test(detail)) label = "Update confirmed", tone = "good";
+  else if (/could not connect|you are offline|controls are unavailable|cart is not ready|no change was sent/.test(detail)) label = "Connection issue", tone = "warn";
+  else if (/could not apply|could not complete|not confirmed|has not confirmed/.test(detail)) label = "Needs attention", tone = "warn";
+  else if (/pair this device/.test(detail)) label = "Pair needed", tone = "warn";
+  else if (/cart is reachable, but/.test(detail)) label = "Check devices", tone = "warn";
+  else if (/cart is reachable/.test(detail)) label = "Cart responding", tone = "good";
+  truthBadge.textContent = label;
+  truthBadge.className = "truth-badge " + tone;
+}
+
+if (statusNode && truthBadge && typeof MutationObserver === "function") {
+  const compactStatusObserver = new MutationObserver(updateCompactStatus);
+  compactStatusObserver.observe(statusNode, { childList: true, characterData: true, subtree: true });
+  updateCompactStatus();
+}
+
+function renderLocalLinkStatus(snapshot) {
+  if (!cartLanHealth) return;
+  cartLanHealth.textContent = localLinkStatusText(snapshot, localPathStatus);
+  cartLanHealth.className = (snapshot && snapshot.local === true) || localPathStatus === "reachable"
+    ? "ok"
+    : "degraded";
+}
 
 function valueOr(value, fallback) {
   return (value === undefined || value === null) ? fallback : value;
@@ -163,7 +202,6 @@ function setAuthorizedUi() {
   if (authPanel) authPanel.hidden = true;
   if (managePairPanel) managePairPanel.hidden = !validDeviceToken(deviceToken());
   if (pairAcceptPanel && !pendingPairToken) pairAcceptPanel.hidden = true;
-  if (guestModeToggle) guestModeToggle.disabled = !validDeviceToken(deviceToken()) || localControlActive;
 }
 
 async function authHeaders() {
@@ -188,7 +226,7 @@ async function callCloud(body) {
       headers,
       body: JSON.stringify(body),
       cache: "no-store",
-    }, HBNF_API_TIMEOUT_MS, "Cart control");
+    }, body.action === "uv_policy" ? 12000 : HBNF_API_TIMEOUT_MS, "Cart control");
     if (backendHealth) backendHealth.textContent = "Reachable";
   } catch (error) {
     if (backendHealth) backendHealth.textContent = "Unavailable";
@@ -225,13 +263,16 @@ function hydrateLocalControls(state) {
 
 async function call(body) {
   if (OPAL_LOCAL_PWA && body.action === "status") {
+    localPathStatus = "checking";
     try {
       const local = await localOwnerControl.connect("", 0);
       localControlActive = true;
+      localPathStatus = local && local.local === true ? "reachable" : "not_checked";
       if (backendHealth) backendHealth.textContent = "Connected";
       return local;
     } catch (error) {
       localControlActive = false;
+      localPathStatus = "unavailable";
       if (backendHealth) backendHealth.textContent = "Unavailable";
       throw error;
     }
@@ -250,16 +291,19 @@ async function call(body) {
   delete cloudBody.changedFields;
   const token = deviceToken();
   if (validDeviceToken(token) && (body.action === "status" || body.action === "command")) {
+    if (body.action === "status") localPathStatus = "checking";
     try {
       if (body.action === "status") {
         const local = await localOwnerControl.connect(token, devicePairExpiryEpoch(token));
         localControlActive = true;
+        localPathStatus = local && local.local === true ? "reachable" : "not_checked";
         return local;
       }
       if (localControlActive && localOwnerControl.supports(body.type, body.payload)) {
         return localOwnerControl.command(token, body.type, body.payload);
       }
     } catch (localError) {
+      if (body.action === "status") localPathStatus = "unavailable";
       if (body.action === "command" && localControlActive && localOwnerControl.supports(body.type, body.payload)) {
         throw localError;
       }
@@ -332,8 +376,9 @@ function observedAgeLabel(value) {
 
 function renderVisualHealth(snapshot, canonicalSnapshot) {
   const badge = $("#truthBadge");
+  renderLocalLinkStatus(canonicalSnapshot);
   if (!snapshot) {
-    if (badge) { badge.textContent = "Cart unavailable"; badge.className = "truth-badge warn"; }
+    if (badge) { badge.textContent = "Connection issue"; badge.className = "truth-badge warn"; }
     return;
   }
   const matrix = snapshot.devices ? snapshot.devices.matrix : null;
@@ -342,32 +387,25 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   const desiredRevision = Number(canonicalSnapshot && canonicalSnapshot.desired && canonicalSnapshot.desired.revision);
   const reportFor = id => observed.find(x => x.device_id === id) || {};
   const matrixReport = reportFor("matrix"), auxReport = reportFor("aux");
-  const matrixOk = !!(matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision);
-  const auxOk = !!(aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision);
-  const labelFor = (report, isConfirmed) => {
-    if (isConfirmed) return "Responding";
-    const failure = shortDeviceFailure(report);
-    if (failure) return "Needs attention";
-    const reportedRevision = report && report.reported ? report.reported.cartRevision : null;
-    const seen = Number(reportedRevision !== null && reportedRevision !== undefined
-      ? reportedRevision
-      : (report ? report.desired_revision : undefined));
-    if ((report && report.status === "off") || (report && report.online === false)) return "Offline";
-    if (Number.isFinite(desiredRevision) && Number.isFinite(seen)) return "Waiting for update";
-    return "No recent update";
-  };
+  const readiness = deviceReadinessChecks(canonicalSnapshot);
+  const matrixCheck = readiness.find(value => value.indexOf("Matrix device ") === 0) || "Matrix device UNCONFIRMED";
+  const auxCheck = readiness.find(value => value.indexOf("AUX device ") === 0) || "AUX device UNCONFIRMED";
+  const matrixOk = !!(matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision && matrixCheck.indexOf("PASS") >= 0);
+  const auxOk = !!(aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision && auxCheck.indexOf("PASS") >= 0);
   if (matrixHealth) {
-    matrixHealth.textContent = labelFor(matrixReport, matrixOk);
+    matrixHealth.textContent = deviceEvidenceLabel(canonicalSnapshot, "matrix");
     matrixHealth.className = matrixOk ? "ok" : (shortDeviceFailure(matrixReport) ? "bad" : "degraded");
   }
   if (auxHealth) {
-    auxHealth.textContent = labelFor(auxReport, auxOk);
+    auxHealth.textContent = deviceEvidenceLabel(canonicalSnapshot, "aux");
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
-    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
-    if (matrixOk && auxOk) { badge.textContent = "Cart connected"; badge.className = "truth-badge good"; }
-    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
+    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check AUX"; badge.className = "truth-badge warn"; return; }
+    if (matrixOk && auxOk) { badge.textContent = "Devices responding"; badge.className = "truth-badge good"; }
+    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Needs attention"; badge.className = "truth-badge bad"; }
+    else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Status is old"; badge.className = "truth-badge warn"; }
+    else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Not confirmed"; badge.className = "truth-badge warn"; }
     else { badge.textContent = "Checking devices"; badge.className = "truth-badge warn"; }
   }
 }
@@ -400,11 +438,8 @@ function setRange(id, outputId, value, formatter = v => String(v)) {
 function hydrateControls(state) {
   hydrating = true;
   try {
+    renderGuestMode(state);
     if (state.sceneId) $("#scene").value = state.sceneId;
-    if (guestModeToggle) guestModeToggle.checked = state.guestMode === true;
-    if (guestModeStatus) guestModeStatus.textContent = state.guestMode === true
-      ? "Guest Mode is on. Your controls still take priority."
-      : "Guest Mode is off. Turn it on when you’re ready to invite guests.";
 
     const tuning = valueOr(state.tuning, {});
     updateVibeSelection(state);
@@ -427,17 +462,77 @@ function hydrateControls(state) {
   }
 }
 
+function guestMigrationApplied() {
+  try { return localStorage.getItem(GUEST_DEFAULT_MIGRATION_KEY) === "done"; }
+  catch (_) { return false; }
+}
+
+function guestMigrationMark(value) {
+  try {
+    if (value) localStorage.setItem(GUEST_DEFAULT_MIGRATION_KEY, value);
+    else localStorage.removeItem(GUEST_DEFAULT_MIGRATION_KEY);
+  } catch (_) {}
+}
+
+function renderGuestMode(state) {
+  const enabled = !!(state && state.guestMode === true);
+  const status = $("guestModeStatus");
+  const open = $("guestModeOpen");
+  const close = $("guestModeClose");
+  if (status) status.textContent = enabled
+    ? "Guest controls are open. The guest page is ready to share."
+    : "Guest controls are opening by default when this iPad is paired.";
+  if (open) { open.hidden = enabled; open.disabled = !validDeviceToken(deviceToken()); }
+  if (close) { close.hidden = !enabled; close.disabled = !validDeviceToken(deviceToken()); }
+  if (!enabled && guestDefaultEnableNeeded(state, guestMigrationApplied()) && validDeviceToken(deviceToken()) && !guestDefaultMigrationInFlight) {
+    guestDefaultMigrationInFlight = true;
+    guestMigrationMark("pending");
+    if (status) status.textContent = "Opening guest controls…";
+    setTimeout(function() {
+      command("GUEST_MODE", { enabled: true }).then(function() {
+        guestMigrationMark("done");
+      }).catch(function() {
+        guestMigrationMark("");
+        if (status) status.textContent = "Guest controls could not open. Tap Open guest controls to retry.";
+        if (open) open.hidden = false;
+      }).finally(function() { guestDefaultMigrationInFlight = false; });
+    }, 0);
+  } else if (!enabled && guestMigrationApplied() && status) {
+    status.textContent = "Guest controls are closed. Open them when you want to share the guest page.";
+  } else if (!enabled && !validDeviceToken(deviceToken()) && status) {
+    status.textContent = "Pair this iPad to open guest controls. The guest page link is always available.";
+  }
+}
+
+async function setGuestMode(enabled) {
+  guestDefaultMigrationInFlight = true;
+  guestMigrationMark("done");
+  const status = $("guestModeStatus");
+  if (status) status.textContent = enabled ? "Opening guest controls…" : "Closing guest controls…";
+  try {
+    await command("GUEST_MODE", { enabled: enabled });
+    guestMigrationMark("done");
+  } catch (_) {
+    if (status) status.textContent = "Guest access change was not confirmed. Check Cart status and try again.";
+  } finally {
+    guestDefaultMigrationInFlight = false;
+  }
+}
+
 async function refresh({ hydrate = true } = {}) {
   let out;
   try {
     out = await call({ action: "status" });
   } catch (error) {
     if (backendHealth) backendHealth.textContent = "Unavailable";
+    renderLocalLinkStatus(null);
     if (matrixHealth) matrixHealth.textContent = "Not confirmed";
     if (auxHealth) auxHealth.textContent = "Not confirmed";
+    const guestStatus = $("guestModeStatus");
+    if (guestStatus) guestStatus.textContent = "Guest access status is unavailable. Reconnect to the Cart to check it.";
     const badge = $("#truthBadge");
     if (badge) {
-      badge.textContent = "Cart unavailable";
+      badge.textContent = "Connection issue";
       badge.className = "truth-badge warn";
     }
     throw error;
@@ -453,9 +548,10 @@ async function refresh({ hydrate = true } = {}) {
     }
     setAuthorizedUi();
     renderVisualHealth(out, out);
-    statusNode.textContent = out.devices && out.devices.aux && out.devices.aux.ddp === true
-      ? "Cart is connected. Matrix and underglow are responding."
-      : "Cart is connected. Check underglow status.";
+    const localChecks = deviceReadinessChecks(out);
+    statusNode.textContent = localChecks.every(value => value.indexOf("PASS") >= 0)
+      ? "Cart is reachable. Matrix and underglow responded; check the display to confirm what’s showing."
+      : "Cart is reachable, but Matrix or underglow has not confirmed its status.";
     return out;
   }
 
@@ -475,14 +571,14 @@ async function refresh({ hydrate = true } = {}) {
     const submitted = observed.some(x => Number(x.desired_revision) === Number(revision) && x.status === "submitted");
     if (fullyApplied || failed) pendingRevision = null;
     statusNode.textContent = fullyApplied
-      ? "Settings updated. Matrix and underglow are responding."
+      ? "Matrix and underglow confirmed the change. Check the display to verify the result."
       : failed
-        ? "The Cart could not apply that change. Check connection details."
+        ? "The Cart could not apply that change. Check Cart status before retrying."
         : submitted
           ? "Change sent. Waiting for the Cart…"
         : pendingRevision === revision
           ? "Change sent. Waiting for the Cart…"
-        : "The Cart hasn’t updated yet. Check connection details.";
+        : "Waiting for the Cart to confirm. Check Cart status if it takes too long.";
   } else {
     statusNode.textContent = "The Cart is not ready. No change was sent.";
   }
@@ -527,14 +623,17 @@ function queueTune(delay = 0, field = "") {
   }, delay);
 }
 
-async function flushTune() {
+async function flushTune(options = {}) {
   clearTimeout(tuneTimer);
   tuneTimer = null;
-  if (tuneInFlight) return;
+  if (tuneInFlight) {
+    if (tuneDispatchPromise) await tuneDispatchPromise;
+    if (options.waitForApplied === false || tuneInFlight) return;
+  }
   if (!tuneDirty) return;
 
   tuneInFlight = true;
-  try {
+  const dispatch = (async () => {
     while (tuneDirty) {
       tuneDirty = false;
       const payload = readTunePayload();
@@ -565,10 +664,16 @@ async function flushTune() {
         }
       }
     }
+  })();
+  tuneDispatchPromise = dispatch;
+  try {
+    await dispatch;
   } finally {
     tuneInFlight = false;
+    tuneDispatchPromise = null;
   }
 
+  if (options.waitForApplied === false) return;
   for (let i = 0; i < 12; i++) {
     const snap = await refresh({ hydrate: false });
     const observed = Array.isArray(snap.observed) ? snap.observed : [];
@@ -585,39 +690,82 @@ async function flushTune() {
 }
 
 async function command(type, payload = {}) {
-  await flushTune();
+  const startedAt = performance.now();
+  const sourceButton = payload && payload._sourceButton;
+  const safePayload = Object.assign({}, payload);
+  delete safePayload._sourceButton;
+  const originalDisabled = sourceButton ? sourceButton.disabled : false;
+  const duplicatePayload = Object.assign({}, safePayload);
+  if (type === "OVERLAY_START") delete duplicatePayload.overlayId;
+  const commandKey = JSON.stringify([type, duplicatePayload]);
+  if (activeCommandKeys.has(commandKey)) return { accepted: false, duplicate: true };
+  activeCommandKeys.add(commandKey);
+  if (sourceButton) {
+    sourceButton.disabled = true;
+    sourceButton.setAttribute("aria-busy", "true");
+  }
+  statusNode.textContent = "Sending Cart command…";
+  let tuneFlushMs = 0;
+  let submitMs = 0;
+  let deviceAckWaitMs = 0;
+  try {
+  const tuneStartedAt = performance.now();
+  await flushTune({ waitForApplied: false });
+  tuneFlushMs = performance.now() - tuneStartedAt;
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
+      const submitStartedAt = performance.now();
       const result = await call({
         action: "command",
         commandId: newCommandId(),
         type,
-        payload: payload,
+        payload: Object.assign({}, safePayload, payload && payload.overlayId ? { overlayId: payload.overlayId } : {}),
         expectedRevision: revision,
       });
+      submitMs += performance.now() - submitStartedAt;
+      if (result && result.accepted === false) throw new Error(result.error || "Cart did not accept the command.");
       revision = result.revision;
       pendingRevision = revision;
       statusNode.textContent = "Change sent. Checking the Cart…";
       const deadline = Date.now() + 6000;
+      const ackStartedAt = performance.now();
       let latest = null;
+      let acknowledged = false;
       do {
         latest = await refresh({ hydrate: false });
         const observed = Array.isArray(latest.observed) ? latest.observed : [];
         const reports = observed.filter(x => Number(x.desired_revision) === Number(revision));
         const failed = reports.some(x => x.status === "failed" || (x.reported && x.reported.confirmed === false && x.reported.error));
-        const confirmed = reports.length >= 2 && reports.every(x => ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
-        if (failed || confirmed) break;
+        acknowledged = reports.length >= 2 && reports.every(x => ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
+        if (failed) throw new Error("Cart accepted the command, but a device reported failure.");
+        if (acknowledged) break;
         if (Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 750));
       } while (Date.now() < deadline);
-      await refresh({ hydrate: false });
-      return;
+      deviceAckWaitMs = performance.now() - ackStartedAt;
+      const outcome = { accepted: true, acknowledged };
+      window.HBNFCanonicalLastCommandTiming = {
+        source: OPAL_LOCAL_PWA ? "opal-local" : (localControlActive ? "paired-local" : "cloud"),
+        tuneFlushMs: tuneFlushMs,
+        submitMs: submitMs,
+        deviceAckWaitMs: deviceAckWaitMs,
+        totalMs: performance.now() - startedAt,
+        acknowledged: acknowledged,
+      };
+      return outcome;
     } catch (error) {
       if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
         await refresh({ hydrate: false });
         continue;
       }
       throw error;
+    }
+  }
+  } finally {
+    activeCommandKeys.delete(commandKey);
+    if (sourceButton) {
+      sourceButton.disabled = originalDisabled;
+      sourceButton.removeAttribute("aria-busy");
     }
   }
 }
@@ -627,6 +775,7 @@ window.HBNFCanonical = {
   refresh: refresh,
   flushTune: flushTune,
   getRevision: function(){ return revision; },
+  getLastCommandTiming: function(){ return window.HBNFCanonicalLastCommandTiming || null; },
   getCapabilities: function(){ return canonicalCapabilities; },
   read: function(action, payload) {
     return call(Object.assign({action:action}, payload || {}));
@@ -709,44 +858,37 @@ sharePair.addEventListener("click", async () => {
 
 copyPair.addEventListener("click", async () => {
   if (!currentPairLink) return;
-  await copyTextLegacy(currentPairLink);
-  pairCreateStatus.textContent = "Pairing link copied.";
+  try {
+    await copyTextLegacy(currentPairLink);
+    pairCreateStatus.textContent = "Pairing link copied.";
+  } catch (_) {
+    pairCreateStatus.textContent = "Couldn’t copy the link. Select it and copy it manually.";
+  }
 });
 
 document.querySelectorAll("[data-command]").forEach(button => {
-  button.addEventListener("click", () => command(button.dataset.command).catch(showError));
+  button.addEventListener("click", () => {
+    statusNode.textContent = "Sending Cart command…";
+    command(button.dataset.command, { _sourceButton: button }).catch(showError);
+  });
 });
 
-if (guestModeToggle) {
-  guestModeToggle.addEventListener("change", async () => {
-    const enabled = guestModeToggle.checked;
-    guestModeToggle.disabled = true;
-    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Turning Guest Mode on…" : "Turning Guest Mode off…";
-    try {
-      await command("GUEST_MODE", { enabled });
-    } catch (error) {
-      guestModeToggle.checked = !enabled;
-      if (guestModeStatus) guestModeStatus.textContent = "Couldn’t change Guest Mode. Try again.";
-      showError(error);
-    } finally {
-      guestModeToggle.disabled = !validDeviceToken(deviceToken());
-    }
-  });
-}
+if ($("guestModeOpen")) $("guestModeOpen").addEventListener("click", () => setGuestMode(true));
+if ($("guestModeClose")) $("guestModeClose").addEventListener("click", () => setGuestMode(false));
 
 document.querySelectorAll(".vibe-option").forEach(button => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
-    command("VIBE", { vibe: button.dataset.vibe }).catch(showError);
+    command("VIBE", { vibe: button.dataset.vibe, _sourceButton: button }).catch(showError);
   });
 });
 $("#vibeAuto").addEventListener("click", () => {
-  if (!$("#vibeAuto").disabled) command("VIBE_AUTO").catch(showError);
+  if (!$("#vibeAuto").disabled) command("VIBE_AUTO", { _sourceButton: $("vibeAuto") }).catch(showError);
 });
 
 for (const id of ["scene", "audioProfile", "audioStyle"]) {
   $(id).addEventListener("change", () => {
-    if (OPAL_LOCAL_PWA && id === "scene") command("SCENE", { sceneId: $(id).value }).catch(showError);
+    if (OPAL_LOCAL_PWA && id === "scene") command("SCENE", { sceneId: $(id).value, _sourceButton: $(id) }).catch(showError);
     else queueTune(0, id);
   });
 }

@@ -4,7 +4,6 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {parseUdiscAoA, publishSnapshot} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-preview.mjs';
 import {buildGlowProposal} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-reconcile.mjs';
-import {addUdiscGlowReviewHook} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-review-hook.mjs';
 
 const dates = ['2026-03-03', '2026-04-18', '2026-05-23', '2026-06-20'];
 const sourcePath = process.env.HBNF_GLOW_HTML;
@@ -14,20 +13,12 @@ test('proposal teams pass through the current Glow player builder without confir
   for (const name of ['canonicalGlowName', 'buildPlayersFromCards', 'previewQuickUdiscImport', 'confirmQuickUdiscImport']) {
     assert.ok(html.includes(name), `current Glow source is missing ${name}`);
   }
-  const integratedHtml = addUdiscGlowReviewHook(html);
-  assert.equal((integratedHtml.match(/data-udisc-proposal-review="1"/g) || []).length, 1);
-  assert.match(integratedHtml, /Review Proposal \(No Score Changes\)/);
-  assert.match(integratedHtml, /udisc-glow-reconcile\.html\?from=glow/);
-  assert.match(integratedHtml, /hbnfUdiscProposalHandoff/);
-  assert.throws(() => addUdiscGlowReviewHook(integratedHtml), /already contains/);
-  assert.match(integratedHtml, /function confirmQuickUdiscImport\(\)/);
-  assert.match(integratedHtml, /w\.players=players/);
-
-  const reviewPage = await readFile(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-reconcile.html', import.meta.url), 'utf8');
-  assert.match(reviewPage, /identityEvidenceProvided=false/);
-  assert.match(reviewPage, /sessionStorage\.getItem\('hbnfUdiscProposalHandoff'/);
-  assert.match(reviewPage, /This page is a proposal only; scores and tags are unchanged/);
-
+  assert.match(html, /id="glowSaveStatus" role="status" aria-live="polite"/);
+  assert.match(html, /id="udiscFreshness" role="status" aria-live="polite"/);
+  assert.match(html, /glow-save-sync\.mjs/);
+  assert.match(html, /\.eq\('updated_at',expectedUpdatedAt\)\.select\('id,state_json,updated_at'\)/);
+  assert.doesNotMatch(html, /\.upsert\(\{id:1,state_json/);
+  assert.match(html, /function confirmQuickUdiscImport\(\)/);
   const helpersStart = html.indexOf('const teamParts=');
   const helpersEnd = html.indexOf('const GLOW_ENTRY_FEE', helpersStart);
   const builderStart = html.indexOf('function buildPlayersFromCards(w){');

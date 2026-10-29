@@ -22,3 +22,13 @@ test('database save is executable only by service_role and contains no table DDL
   assert.match(migration,/grant execute on function[\s\S]*to service_role/i);
   assert.doesNotMatch(migration,/\b(create|alter|drop)\s+table\b/i);
 });
+
+test('sync failure status is scoped to the active initialized editable week and preserves the last success time',()=>{
+  assert.match(migration,/hbnf_record_udisc_glow_sync_status/);
+  assert.match(migration,/v_glow->>'activeWeek' is distinct from p_expected_active_week/i);
+  assert.match(migration,/week_not_initialized/);
+  assert.match(migration,/week_locked/);
+  assert.match(migration,/lastSuccessAt/);
+  assert.match(migration,/jsonb_set\(v_week, '\{udiscSync,status\}'/i);
+  assert.match(migration,/errorCode/);
+});

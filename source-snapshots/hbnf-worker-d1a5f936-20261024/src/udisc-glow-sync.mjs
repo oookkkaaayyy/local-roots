@@ -97,6 +97,8 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
 
   const entries = new Map();
   const existingPlayers = new Map(base.players.map(player => [text(player.id), player]));
+  const priorImportedRows = new Map((Array.isArray(prior?.latest?.rows) ? prior.latest.rows : [])
+    .map(row => [text(row.glowTeamId), row]));
   for (const card of base.cards) {
     for (const entry of card.players || []) {
       const id = text(entry?.id);
@@ -146,12 +148,36 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
   }
 
   const updates = new Map();
+  const manualOverrides = [];
+  const acceptedScoresById = new Map();
   for (const record of incomingRecords) {
     const item = entries.get(record.id);
     if (!item || item.card.finalized) throw Error('A source row maps to a finalized or missing Glow team.');
     item.entry.partner1 = record.names[0];
     item.entry.partner2 = record.names[1];
     const priorPlayer = existingPlayers.get(record.id) || {};
+    const priorImported = priorImportedRows.get(record.id);
+    const priorImportedScores = Array.isArray(priorImported?.acceptedHoleScores)
+      ? priorImported.acceptedHoleScores
+      : (Array.isArray(priorImported?.holeScores) ? priorImported.holeScores : null);
+    const acceptedScores = [];
+    const scores = Array.from({length:18}, (_, hole) => {
+      const current = text(priorPlayer.scores?.[hole]);
+      const incomingScore = text(record.player.scores[hole]);
+      const previousSource = priorImportedScores ? text(priorImportedScores[hole]) : '';
+      // Partial XLSX snapshots are additive: a blank source cell never erases
+      // a score already present in Glow.
+      if (!incomingScore) { acceptedScores.push(previousSource); return current; }
+      if (!current || current === incomingScore) { acceptedScores.push(incomingScore); return incomingScore; }
+      // Only an exact match to the last imported source value is eligible for
+      // an automated correction. Existing/legacy values without that evidence
+      // are treated as manual and kept until the owner resolves the conflict.
+      if (priorImportedScores && current === previousSource) { acceptedScores.push(incomingScore); return incomingScore; }
+      manualOverrides.push({glowTeamId:record.id,hole:hole+1,keptScore:current,sourceScore:incomingScore});
+      acceptedScores.push(previousSource);
+      return current;
+    });
+    acceptedScoresById.set(record.id, acceptedScores);
     updates.set(record.id, {
       ...priorPlayer,
       id:record.id,
@@ -159,7 +185,7 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
       partner1:record.names[0],
       partner2:record.names[1],
       cardId:item.card.id,
-      scores:record.player.scores.map(score => String(score ?? '')),
+      scores,
       removed:false,
     });
   }
@@ -196,8 +222,10 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
       strokeTotal:record.evidence.strokeTotal,
       holeStrokesTotal:record.evidence.holeStrokesTotal,
       holeScores:[...record.player.scores],
+      acceptedHoleScores:acceptedScoresById.get(record.id) || [...record.player.scores],
       glowTeamId:record.id,
     })),
+    manualOverrides,
   };
   const priorHistory = Array.isArray(prior?.history) ? prior.history : [];
   const history = prior?.latest ? [...priorHistory, prior.latest].slice(-20) : priorHistory.slice(-20);

@@ -3,110 +3,137 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#071018">
+  <meta name="theme-color" content="#141916">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="HBNF Cart">
   <meta name="hbnf-access" content="guest-zero-pair">
-  <meta name="hbnf-build" content="hbnf-cart2-owner-control-guest-qr-v1-20261016">
-  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261016-course-ready-ux-v1">
-  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261016-course-ready-ux-v1">
-  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261016-course-ready-ux-v1">
+  <meta name="hbnf-build" content="hbnf-cart2-owner-control-home-r6-20261024">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261024-cart-night-earth-r2">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261024-cart-control-home-r4">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261025-cart-uv-r3">
   <title>HBNF Cart Control</title>
-  <style>
-    :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;padding:20px;max-width:680px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:18px}.panel{border:1px solid #24414c;border-radius:14px;padding:16px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select,input,textarea{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:3em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.pair-link{width:100%;min-height:78px;word-break:break-all}.good{color:#8ce3ad}.warn{color:#f2ca75}
-    .control-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
-    .control-grid label,.tune-grid label{display:grid;gap:6px;align-items:stretch}
-    .tune-grid{display:grid;gap:14px}
-    .range-head{display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:700}
-    .toggle-line{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important}
-    .toggle-line input{width:20px;height:20px;padding:0}
-    .apply-note{margin:.6rem 0 0;font-size:.88rem;color:#a4bec6}
-    .fine-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .fine-grid .wide{grid-column:1/-1}
-    @media(max-width:540px){.control-grid,.fine-grid{grid-template-columns:1fr}.fine-grid .wide{grid-column:auto}}
-    summary{cursor:pointer;font-weight:800;font-size:1.05rem}
-    .advanced-body{margin-top:14px}
-    .health-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
-    .health-grid div{border:1px solid #24414c;border-radius:10px;padding:10px;background:#09171e}
-    .health-grid span{display:block;color:#a4bec6;font-size:.75rem;text-transform:uppercase;letter-spacing:.07em}
-    .health-grid strong{display:block;margin-top:3px;font-size:.9rem}
-    .ok{color:#8ce3ad}.degraded{color:#f2ca75}.bad{color:#ff9b9b}
-    .guest-invite{display:flex;align-items:center;gap:16px;margin-top:12px;padding:12px;border:1px solid #24414c;border-radius:12px;background:#09171e}
-    .guest-invite img{width:192px;max-width:38vw;min-width:132px;height:auto;image-rendering:pixelated;background:#fff;border-radius:8px}
-    .guest-invite p{margin:.45rem 0}.guest-invite a{color:#8ce3ad;font-weight:700}
-    @media(max-width:440px){.guest-invite{align-items:flex-start;gap:10px;padding:8px}.guest-invite img{width:132px}}
-  </style>
 </head>
 <body><main>
   <header class="hero-v6">
-    <div><p class="eyebrow">HBNF CART</p><h1>Mission Control</h1></div>
-    <div id="truthBadge" class="truth-badge warn">Checking Cart</div>
+    <div class="cart-brand">
+      <img class="cart-mark" src="./hbnf-faded-phosphor.png?v=20261024-hbnf-faded-phosphor-r1" alt="HBNF Night Flyers" width="48" height="48">
+      <h1>Cart controls</h1>
+    </div>
+    <div id="truthBadge" class="truth-badge warn" role="status" aria-live="polite" aria-atomic="true">Checking…</div>
   </header>
 
-  <nav class="quick-links local-control-entry" aria-label="Cart controls">
-    <a class="local-control-link" href="http://192.168.77.1/mission-control-local/index.html">Open Cart controls</a>
-  </nav>
-  <details class="panel truth-panel" aria-label="Connection details">
+  <details class="panel course-status-panel" aria-label="Cart status">
     <summary>Connection details</summary>
-    <div class="truth-grid">
-      <div class="truth-cell"><span>Controls</span><strong id="backendTruth">Checking…</strong></div>
-      <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth">—</strong></div>
-      <div class="truth-cell"><span>Underglow</span><strong id="auxTruth">—</strong></div>
+    <div class="course-status-grid" aria-live="polite">
+      <div class="course-status-cell"><span>Cart</span><strong id="cartLanTruth">Not checked</strong></div>
+      <div class="course-status-cell"><span>Internet</span><strong id="internetTruth">Not checked</strong></div>
+      <div class="course-status-cell"><span>Matrix</span><strong id="matrixOutputTruth">Unconfirmed</strong></div>
     </div>
-    <p class="hardware-note">Shows the latest device check; it can’t confirm the lights are on.</p>
+  </details>
+  <nav class="primary-actions" aria-label="Quick controls">
+    <a href="#lightsPanel">Lights &amp; looks</a>
+    <a href="#featureText">Text</a>
+    <button id="featureRefreshLive" type="button">Refresh scores</button>
+    <button id="featureScoreboard" type="button">Show scores</button>
+  </nav>
+  <section class="panel guest-quick-panel" aria-label="Guest controls">
+    <div class="guest-quick-head">
+      <div><h2>Guest access</h2><p id="guestModeStatus" class="apply-note" role="status" aria-live="polite">Checking…</p></div>
+      <div class="row guest-mode-actions">
+        <button id="guestModeOpen" type="button" hidden>Open guest controls</button>
+        <button id="guestModeClose" type="button" hidden>Close guest controls</button>
+      </div>
+    </div>
+    <div class="guest-invite" aria-label="Guest access QR">
+      <img src="./hbnf-guest-qr.png?v=20261016-course-ready-ux-v1" width="192" height="192" alt="Guest controls QR code">
+      <div><a href="https://hbnightflyers.com/guest/hbnf-cart/">Guest controls</a></div>
+    </div>
+  </section>
+  <p id="status" class="status" aria-live="off">Connecting…</p>
+
+  <details class="panel truth-panel" aria-label="Troubleshooting and device details">
+    <summary>Troubleshooting</summary>
+    <div class="truth-grid" aria-live="polite">
+      <div class="truth-cell"><span id="controlPathLabel">Cart controls</span><strong id="backendTruth" aria-live="polite">Checking…</strong></div>
+      <div class="truth-cell"><span>Live scores</span><strong id="scoreCloudTruth" aria-live="polite">Not checked</strong></div>
+      <div class="truth-cell"><span>Score update time</span><strong id="scoreFreshnessTruth" aria-live="polite">Not confirmed</strong></div>
+      <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth" aria-live="polite">—</strong></div>
+      <div class="truth-cell"><span>Underglow</span><strong id="auxTruth" aria-live="polite">—</strong></div>
+    </div>
+    <button id="refresh" type="button">Check Cart status</button>
   </details>
 
-  <section class="panel quick-vibe" aria-label="Vibe">
-    <div class="section-heading"><div><p class="eyebrow">SET THE FEEL</p><h2>Vibe</h2></div></div>
-    <div id="vibeOptions" class="vibe-options" role="group" aria-label="Choose a Vibe">
-      <button type="button" class="vibe-option" data-vibe="chill" aria-pressed="false" disabled><strong>CHILL</strong></button>
-      <button type="button" class="vibe-option" data-vibe="groove" aria-pressed="false" disabled><strong>GROOVE</strong></button>
-      <button type="button" class="vibe-option" data-vibe="heavy" aria-pressed="false" disabled><strong>HEAVY</strong></button>
-      <button type="button" class="vibe-option" data-vibe="psychedelic" aria-pressed="false" disabled><strong>PSYCHEDELIC</strong></button>
-      <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>COSMIC</strong></button>
-      <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled hidden>AUTO VIBE</button>
+  <section id="lightsPanel" class="panel lights-panel" aria-label="Show controls">
+    <div class="light-group quick-vibe" aria-label="Vibe">
+      <h3>Vibe</h3>
+      <div id="vibeOptions" class="vibe-options" role="group" aria-label="Vibe controls">
+        <button type="button" class="vibe-option" data-vibe="chill" aria-pressed="false" disabled><strong>Chill</strong></button>
+        <button type="button" class="vibe-option" data-vibe="groove" aria-pressed="false" disabled><strong>Groove</strong></button>
+        <button type="button" class="vibe-option" data-vibe="heavy" aria-pressed="false" disabled><strong>Heavy</strong></button>
+        <button type="button" class="vibe-option" data-vibe="psychedelic" aria-pressed="false" disabled><strong>Psychedelic</strong></button>
+        <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>Cosmic</strong></button>
+        <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled hidden>Auto vibe</button>
+      </div>
+      <p id="vibeAvailability" class="apply-note" role="status" hidden>Vibes aren’t available right now.</p>
     </div>
-    <p id="vibeAvailability" class="apply-note" role="status" hidden>Vibes aren’t available right now.</p>
+    <div class="light-group quick-brightness" aria-label="Brightness">
+      <h3>Brightness</h3>
+      <div class="quick-brightness-grid">
+        <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
+        <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
+        <label class="device"><span class="range-head"><strong>UV brightness</strong><output id="uvSharedValue">64</output></span><input aria-label="Shared UV brightness cap" id="uvSharedBrightness" type="range" min="0" max="255" value="64" disabled></label>
+      </div>
+    </div>
+    <div id="palettePanel" class="light-group palette-controls" aria-label="Cart color palette" hidden>
+      <h2>Color palette</h2>
+      <div class="row">
+        <label class="wide">Palette
+          <select id="featurePalette" aria-describedby="paletteActionStatus"><option value="">Keep current</option></select>
+        </label>
+        <label>Solid / text color
+          <input id="featureColor" type="color" value="#ffffff" aria-label="Solid palette and text color">
+        </label>
+        <button id="featureApplyPalette" type="button" disabled>Apply</button>
+      </div>
+      <p id="paletteActionStatus" class="apply-note" role="status" aria-live="polite">Loading color choices…</p>
+    </div>
   </section>
 
-  <section class="panel quick-brightness" aria-label="Brightness">
-    <h2>Brightness</h2>
-    <div class="quick-brightness-grid">
-      <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
-      <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
-    </div>
+  <section id="showStylePanel" class="panel show-style-panel" aria-label="Motion controls">
+    <h2>Motion</h2>
+    <div id="showStyleOptions" role="group" aria-label="Motion options"></div>
+    <div id="showStylePause"></div>
   </section>
 
-  <section class="panel cart-commands" aria-label="Power and show sequence">
-    <h2>Power &amp; sequence</h2>
+  <details class="panel cart-commands" aria-label="Power and show sequence">
+    <summary>Power &amp; sequence</summary>
     <div class="row">
-      <button class="danger" data-command="OFF">OFF</button>
-      <button data-command="ON">ON</button>
-      <button data-command="NEXT">NEXT</button>
-      <button data-command="AUTO">SHOW AUTO</button>
+      <button class="danger" data-command="OFF">Turn off</button>
+      <button data-command="ON">Turn on</button>
+      <button data-command="NEXT">Next look</button>
+      <button data-command="AUTO">Auto</button>
     </div>
-    <details class="sub-controls"><summary>Animation Mix</summary>
-    <button data-command="LOCK">LOCK</button>
+    <details class="sub-controls"><summary>Controls</summary>
+    <button data-command="LOCK">Pause animation</button>
     <div class="control-grid">
-      <div id="sceneButtons" class="scene-buttons" aria-label="Scene"></div>
+      <div id="sceneButtons" class="scene-buttons" role="group" aria-label="Motion options"></div>
       <label class="scene-native-wrap">Scene
         <select id="scene">
-          <option value="course-flow">Balanced (Course Flow)</option>
-          <option value="field-mix">Upbeat (Field Mix)</option>
-          <option value="hbnf-signature">Signature (HBNF Signature)</option>
-          <option value="quiet-cosmos">Ambient (Quiet Cosmos)</option>
+          <option value="course-flow">Course flow</option>
+          <option value="field-mix">Field mix</option>
+          <option value="hbnf-signature">HBNF signature</option>
+          <option value="quiet-cosmos">Quiet cosmos</option>
         </select>
       </label>
     </div>
-    <p class="apply-note">Next moves to the next look. Show Auto picks a look for you.</p>
     </details>
-  </section>
+  </details>
 
   <section id="textPanel" class="panel" aria-label="Matrix message">
     <h2>Text</h2>
     <div class="row">
-      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
+      <input id="featureText" type="text" maxlength="63" placeholder="Type a message">
       <label for="featureFontIndex" hidden>Text style</label>
       <select id="featureFontIndex" aria-label="Text style" disabled hidden>
         <option value="4" selected>Standard</option>
@@ -114,12 +141,13 @@
         <option value="2">Console</option>
         <option value="3">Classic</option>
       </select>
-      <button id="featureSendText" type="button">Send</button>
+      <button id="featureSendText" type="button">Send to display</button>
     </div>
+    <p id="textActionStatus" class="apply-note" role="status" aria-live="polite"></p>
   </section>
 
   <section class="panel quick-tuning" aria-label="Motion and audio response">
-    <h2>Motion &amp; audio response</h2>
+    <h2>Audio response</h2>
     <div class="tune-grid">
       <label>
         <span class="range-head"><span>Audio response</span><output id="audioResponseValue">75</output></span>
@@ -138,40 +166,44 @@
 
   <section id="pairAcceptPanel" class="panel" hidden aria-label="Pair this device">
     <h2>Pair this device</h2>
-    <p class="muted">This private link pairs your device for about six months. Keep it private.</p>
+    <p class="muted">Private link · valid for about six months.</p>
     <button id="acceptPair">Pair this device</button>
     <div id="pairAcceptStatus" class="muted" role="status" aria-live="polite"></div>
   </section>
 
   <section id="authPanel" class="panel" hidden aria-label="Device authorization">
     <h2>This device is not paired</h2>
-    <p class="muted">Use an authorized Cart device to choose <strong>Pair another device</strong>.</p>
+    <p class="muted">Pair from an authorized Cart device.</p>
   </section>
 
   <section id="managePairPanel" class="panel" hidden aria-label="Pair another device">
     <h2>Pair another device</h2>
-    <p class="muted">Create a private pairing link, then AirDrop, text, or copy it to the new phone/iPad. Pairing lasts about 180 days.</p>
+    <p class="muted">Pairing link · valid for about 180 days.</p>
     <div class="row"><button id="createPair">Create pairing link</button><button id="sharePair" hidden>Share link</button><button id="copyPair" hidden>Copy link</button></div>
     <textarea id="pairLink" class="pair-link" hidden readonly aria-label="Pairing link"></textarea>
     <div id="pairCreateStatus" class="muted" role="status" aria-live="polite"></div>
   </section>
 
 
-  <section class="panel" aria-label="Guest access">
-    <h2>Guest Mode</h2>
-    <label class="toggle-line">
-      <input id="guestMode" type="checkbox" disabled>
-      <span>Allow trusted guests to choose a Vibe or advance the Cart look</span>
-    </label>
-    <p id="guestModeStatus" class="apply-note" role="status" aria-live="polite">Guests can use the QR link while Guest Mode is on. You can turn it off anytime.</p>
-    <div class="guest-invite" aria-label="Guest access QR">
-      <img src="./hbnf-guest-qr.png?v=20261016-course-ready-ux-v1" width="192" height="192" alt="Guest controls QR code">
-      <div><strong>Invite a guest</strong><p class="muted">Scan with a phone on cellular. Guest Mode must be on and the Cart online.</p><a href="https://hbnightflyers.com/guest/hbnf-cart/">Open Guest Controls</a><p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a></p></div>
-    </div>
-  </section>
-
   <details class="panel sub-controls">
-    <summary>More visual tuning</summary>
+    <summary>Fine tuning</summary>
+    <section class="uv-controls uv-fine-tuning" aria-label="UV channel fine tuning">
+      <h3>UV channels</h3>
+      <p class="apply-note">Shared brightness sets both channel caps. Adjust channels separately here.</p>
+      <div class="quick-brightness-grid">
+        <label class="device"><span class="range-head"><strong>Cart UV cap</strong><output id="uvMainValue">64</output></span><input aria-label="Cart UV brightness cap" id="uvMainBrightness" type="range" min="0" max="255" value="64" disabled></label>
+        <label class="device"><span class="range-head"><strong>Bar UV cap</strong><output id="uvShortValue">64</output></span><input aria-label="Bar UV brightness cap" id="uvShortBrightness" type="range" min="0" max="255" value="64" disabled></label>
+      </div>
+      <p id="uvActionStatus" class="apply-note" role="status" aria-live="polite">Checking UV safety status. Controls stay locked until the Cart confirms readiness.</p>
+      <details class="sub-controls uv-manual">
+        <summary>Detached manual controls</summary>
+        <p class="apply-note">Available only after the in-place hardware and safety checks pass.</p>
+        <div class="row uv-actions">
+          <button id="uvApply" type="button" disabled>Apply manual levels</button>
+          <button id="uvOff" type="button" disabled>UV off</button>
+        </div>
+      </details>
+    </section>
     <div class="tune-grid">
       <label>
         <span class="range-head"><span>Energy</span><output id="energyValue">65</output></span>
@@ -184,17 +216,11 @@
     </div>
   </details>
 
-  <details class="panel sub-controls" aria-label="Saved looks and advanced color">
+  <details class="panel sub-controls" aria-label="Saved looks and advanced color" hidden>
     <summary>Saved looks and advanced color</summary>
     <div class="fine-grid">
       <label class="wide">Show
         <select id="featureLook"></select>
-      </label>
-      <label>Color
-        <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
-      </label>
-      <label>Palette · optional
-        <select id="featurePalette"><option value="">Current palette</option></select>
       </label>
       <label>Name saved look
         <input id="featureLookName" type="text" maxlength="24" placeholder="e.g. Green course">
@@ -213,17 +239,17 @@
   </details>
 
   <section id="scoresPanel" class="panel" aria-label="Skins and Glow live data">
-    <h2>Skins + Glow</h2>
-    <p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a> · Live scores need internet.</p>
+    <h2>Live scores</h2>
+    <p class="muted"><a href="https://hbnightflyers.com/skins.html">Skins</a> · <a href="https://hbnightflyers.com/glow.html">Glow</a></p>
     <div id="featureLive" class="status">Live scores haven’t loaded yet.</div>
+    <p id="scorePathStatus" class="apply-note">Score updates have not been checked yet.</p>
+    <p id="scoreActionStatus" class="apply-note" role="status" aria-live="polite"></p>
     <div class="row">
-      <button id="featureRefreshLive" type="button">Refresh live</button>
-      <button id="featureScoreboard" type="button">Show live standings</button>
       <button id="featureAcePot" type="button">Show ace pot</button>
     </div>
     <details id="manualOfflineScorePanel" class="score-entry" hidden aria-label="Manual offline scoreboard">
       <summary>Manual Show Scores · works offline</summary>
-      <p class="muted">Display only. Nothing is saved or submitted. Enter up to 12 lines, 63 characters each.</p>
+    <p class="muted">Display only · not saved · up to 12 lines, 63 characters each.</p>
       <div class="score-grid">
         <label>Display label<select id="manualScoreboardLabel" disabled><option value="F9">Front 9</option><option value="B9">Back 9</option><option value="GLOW">Glow</option><option value="SCORES">Scores</option></select></label>
         <label class="wide">Player/team rows<textarea id="manualScoreboardEntries" rows="5" maxlength="767" placeholder="AND 3&#10;JAM 2" disabled></textarea></label>
@@ -232,7 +258,7 @@
       <div id="manualScoreboardStatus" class="status" role="status" aria-live="polite">No scores have been entered.</div>
     </details>
     <details class="score-entry">
-      <summary>Record Skins scoring</summary>
+      <summary>Record Skins score</summary>
       <p class="muted">Scores save to the current Skins card. A tied hole carries the skin. Tiebreakers and ace results follow the scorecard.</p>
       <div class="score-grid">
         <label>Section<select id="skinsSection"><option value="front">Front 9 · Singles</option><option value="back">Back 9 · Doubles</option></select></label>
@@ -293,9 +319,4 @@
     </div>
   </details>
 
-  <section class="panel">
-    <h2>Cart status</h2>
-    <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
-    <button id="refresh">Refresh</button>
-  </section>
-</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261016-course-ready-ux-v1",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261016-course-ready-ux-v1"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261016-course-ready-ux-v1"></script></body></html>
+</main><script type="module" src="./hbnf-cart.js?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261024-cart-control-home-r5"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261025-cart-uv-r2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261024-cart-control-home-r5"></script></body></html>

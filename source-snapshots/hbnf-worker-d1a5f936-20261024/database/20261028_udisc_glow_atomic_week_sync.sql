@@ -74,3 +74,79 @@ $$;
 
 revoke all on function public.hbnf_apply_udisc_glow_week(text, jsonb, jsonb, jsonb) from public, anon, authenticated;
 grant execute on function public.hbnf_apply_udisc_glow_week(text, jsonb, jsonb, jsonb) to service_role;
+
+-- Record a source failure without replacing scores or the rest of the week.
+create or replace function public.hbnf_record_udisc_glow_sync_status(
+  p_week_date text,
+  p_expected_active_week text,
+  p_attempted_at timestamptz,
+  p_error_code text
+) returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_state jsonb;
+  v_glow jsonb;
+  v_week jsonb;
+  v_status jsonb;
+  v_error text;
+begin
+  if p_week_date is null or p_week_date !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}$'
+     or p_expected_active_week is distinct from p_week_date
+     or p_attempted_at is null then
+    return jsonb_build_object('recorded', false, 'reason', 'invalid_target');
+  end if;
+
+  v_error := case when p_error_code in (
+    'SOURCE_UNAVAILABLE', 'SOURCE_PARSE_FAILED', 'IDENTITY_REVIEW_REQUIRED',
+    'SAVE_CONFLICT', 'SYNC_FAILED'
+  ) then p_error_code else 'SYNC_FAILED' end;
+
+  select state_json into v_state
+  from public.league_state
+  where id = 1
+  for update;
+
+  if v_state is null or jsonb_typeof(v_state->'glow') is distinct from 'object' then
+    return jsonb_build_object('recorded', false, 'reason', 'state_unavailable');
+  end if;
+  v_glow := v_state->'glow';
+  if v_glow->>'activeWeek' is distinct from p_expected_active_week then
+    return jsonb_build_object('recorded', false, 'reason', 'active_week_changed');
+  end if;
+  v_week := v_glow->'weeks'->p_week_date;
+  if v_week is null then
+    return jsonb_build_object('recorded', false, 'reason', 'week_not_initialized');
+  end if;
+  if v_week->>'scoresLocked' = 'true' or exists (
+    select 1
+    from jsonb_array_elements(case when jsonb_typeof(v_week->'cards') = 'array'
+      then v_week->'cards' else '[]'::jsonb end) card
+    where card->>'finalized' = 'true'
+  ) then
+    return jsonb_build_object('recorded', false, 'reason', 'week_locked');
+  end if;
+
+  v_status := jsonb_build_object(
+    'state', 'failed',
+    'lastAttemptAt', p_attempted_at,
+    'lastSuccessAt', coalesce(
+      v_week->'udiscSync'->'status'->'lastSuccessAt',
+      v_week->'udiscSync'->'latest'->'observedAt',
+      'null'::jsonb
+    ),
+    'errorCode', v_error
+  );
+  v_week := jsonb_set(v_week, '{udiscSync}', coalesce(v_week->'udiscSync', '{}'::jsonb), true);
+  v_week := jsonb_set(v_week, '{udiscSync,status}', v_status, true);
+  v_glow := jsonb_set(v_glow, array['weeks', p_week_date], v_week, true);
+  v_state := jsonb_set(v_state, '{glow}', v_glow, true);
+  update public.league_state set state_json = v_state, updated_at = now() where id = 1;
+  return jsonb_build_object('recorded', true, 'weekDate', p_week_date);
+end;
+$$;
+
+revoke all on function public.hbnf_record_udisc_glow_sync_status(text, text, timestamptz, text) from public, anon, authenticated;
+grant execute on function public.hbnf_record_udisc_glow_sync_status(text, text, timestamptz, text) to service_role;
