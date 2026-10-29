@@ -149,3 +149,29 @@ test('production configuration has no unconditional schedule polling and unappro
   assert.equal(result.disposition,'source_access_disabled');
   assert.equal(calls,0);
 });
+
+test('switching from static-only Worker to fetch handler preserves every existing public asset route',async()=>{
+  const text=await readFile(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/package-validation/LOCAL_ASSET_SHA256SUMS',import.meta.url),'utf8');
+  const paths=text.trim().split(/\r?\n/).map(line=>{
+    const match=line.match(/^[a-f0-9]{64}\s+public\/(.+)$/);
+    assert.ok(match,'unexpected static asset manifest line: '+line);
+    return match[1];
+  });
+  assert.equal(paths.length,44);
+  assert.equal(new Set(paths).size,44);
+  for(const file of paths){
+    let calls=0;
+    const url='https://hbnf.example/'+file;
+    const status=file==='glow.html'?206:200;
+    const env={ASSETS:{fetch(request){
+      calls++;
+      assert.equal(request.url,url);
+      return new Response('asset:'+file,{status,headers:{'x-served-by':'ASSETS','content-type':'text/plain'}});
+    }}};
+    const result=await worker.fetch(new Request(url),env);
+    assert.equal(calls,1,'ASSETS route not delegated for '+file);
+    assert.equal(result.status,status,'asset status changed for '+file);
+    assert.equal(result.headers.get('x-served-by'),'ASSETS','response headers changed for '+file);
+    assert.equal(await result.text(),'asset:'+file,'asset body changed for '+file);
+  }
+});
