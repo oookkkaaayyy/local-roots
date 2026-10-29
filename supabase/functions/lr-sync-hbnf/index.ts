@@ -5,6 +5,7 @@ import {
   FIRST_CONFIRMED_TUESDAY_GLOW,
   HBNF_SCHEDULE_CONFIRMATION_REF,
   isCanceledGlowWeek,
+  isConfirmedGlowScheduleProvenance,
   isSyntheticGlowFixtureWeek,
   isUnobservedGlowPlaceholderWeek,
   shouldEmitConfirmedScheduleRecord,
@@ -335,6 +336,9 @@ Deno.serve(async (req) => {
     for (const externalId of quarantinedEmptyGlowExternalIds) {
       const existingEmpty: any = existingByExternalId.get(externalId);
       if (!existingEmpty?.event_id) continue;
+      // Preserve the original owner-confirmed schedule after it leaves the
+      // rolling future horizon, even if an empty upstream week later appears.
+      if (isConfirmedGlowScheduleProvenance(existingEmpty.source_payload)) continue;
       const resultCount = await service.from("lr_results")
         .select("id", { count: "exact", head: true })
         .eq("event_id", existingEmpty.event_id);
