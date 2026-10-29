@@ -8,7 +8,7 @@
 - The local rehearsal route and the tested Worker handler return byte-identical exports for that event. No player names from the workbook are recorded here.
 - The Worker handler accepts only a single HBNF-shaped event slug, rejects non-GET methods, foreign origins, redirects, non-XLSX responses, corrupt workbooks, and bodies over 12 MiB; it does not forward browser cookies and does not cache exports.
 - The HBNF preview page at `https://446f1496-hbnf.azworker.workers.dev/udisc-glow-preview` currently serves the rehearsal page, but its `/api/udisc-glow/export` endpoint returns 404. Thus the visible page is not currently live-connected in the hosted preview.
-- The rehearsal renders an HBNF-style **read-only proposal**. It does not save UDisc scores into the actual Glow week, recalculate tags or payouts, or update established standings. The import confirmation function was not invoked.
+- The local rehearsal rendered an HBNF-style **read-only proposal** through the earlier local proxy. After refactoring the local route to the Worker handler, that route returned the identical XLSX hash, but the browser click-through was not repeated against the refactored server. The page does not save scores into Glow, recalculate tags or payouts, or update established standings. The import confirmation function was not invoked.
 - Four authentic-XLSX-derived event fixtures pass the existing contract checks for team order, ranks/ties, 18 hole values, changed partners, corrections, incomplete cards, and duplicates. The proposal tests also verify that identity suggestions are not automatic first-name matches.
 
 ## Changes in this review-only source slice
