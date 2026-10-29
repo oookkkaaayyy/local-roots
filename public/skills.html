@@ -522,7 +522,7 @@ function makeSyncHelpers(ctx){return{
    ctx.initialSyncComplete=true;ctx.syncBaseline=prepared.baseline;ctx.rootState=prepared.root;
    if(!prepared.legacyConflict)ctx.state=ctx.normalize(ctx.rootState[ctx.branch]||null);
    if(prepared.legacyConflict){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(statusEl,'legacy');}
-   else if(prepared.pending){ctx.pendingCloudDraft=true;saveLocal();HBNFLeagueStateSync.status(statusEl,'pending');}
+   else if(prepared.pending){ctx.pendingCloudDraft=true;ctx.saveLocal();HBNFLeagueStateSync.status(statusEl,'pending');}
    else{ctx.pendingCloudDraft=false;HBNFLeagueStateSync.status(statusEl,'loaded');}
    ctx.renderAll();return true;
   }catch(error){ctx.syncBaseline=ctx.syncBaseline||HBNFLeagueStateSync.loadBaseline(localStorage,ctx.localKey+':cloud-baseline-v2');HBNFLeagueStateSync.status(statusEl,'unavailable',error.message||'Cloud read failed; local edits are retained.');return false;}
@@ -534,7 +534,7 @@ function makeSyncHelpers(ctx){return{
   try{
    const merged=await HBNFLeagueStateSync.reconcile(ctx.syncBaseline,draft,remoteRoot);
    ctx.syncBaseline=await HBNFLeagueStateSync.snapshot(remoteRoot,revision);ctx.rootState=merged.root;ctx.state=ctx.normalize(ctx.rootState[ctx.branch]||null);
-   if(merged.hasLocalChanges){ctx.pendingCloudDraft=true;saveLocal();HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),'pending');setTimeout(()=>ctx.pushRoot(),80);}
+   if(merged.hasLocalChanges){ctx.pendingCloudDraft=true;ctx.saveLocal();HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),'pending');setTimeout(()=>ctx.pushRoot(),80);}
    else{ctx.pendingCloudDraft=false;HBNFLeagueStateSync.cacheBaseline(localStorage,ctx.localKey+':cloud-baseline-v2',ctx.syncBaseline);HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),'loaded');}
    if(!ctx.activeInput)ctx.renderAll();
   }catch(error){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),error.name==='HbnfSyncConflictError'?'conflict':'unavailable',error.message);}
@@ -675,6 +675,7 @@ function normalize(input){
 ctx.normalize=normalize;
 function loadLocal(){ try{return normalize(JSON.parse(localStorage.getItem(ctx.localKey)||'null'));}catch{return normalize(null);} }
 function saveLocal(){ localStorage.setItem(ctx.localKey, JSON.stringify(ctx.state)); }
+ctx.saveLocal=saveLocal;
 function getWeek(){ return ctx.state.weeks[ctx.state.activeWeek]; }
 function ensureWeek(d){ if(!ctx.state.weeks[d]) ctx.state.weeks[d]=blankWeek(); ctx.state.activeWeek=d; }
 function flattenCardPlayers(cards){ return cards.flatMap(c=>c.players.map(p=>(p||'').trim()).filter(Boolean)); }
