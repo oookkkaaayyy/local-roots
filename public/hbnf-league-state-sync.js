@@ -44,6 +44,28 @@
     } catch (_) { return null; }
   }
 
+  function retainPendingDraft(storage, key, root, baseline, forceKeys) {
+    try {
+      const value = { schemaVersion: 1, root: clone(root), revision: String(baseline.revision), forceKeys: Array.from(forceKeys || []) };
+      const serialized = JSON.stringify(value);
+      storage.setItem(key, serialized);
+      return storage.getItem(key) === serialized;
+    } catch (_) { return false; }
+  }
+
+  function loadPendingDraft(storage, key) {
+    try {
+      const value = JSON.parse(storage.getItem(key) || 'null');
+      if (!value || value.schemaVersion !== 1 || !isObject(value.root) || !value.revision || !Number.isFinite(Date.parse(value.revision))) return null;
+      return { root: clone(value.root), revision: String(value.revision), forceKeys: Array.isArray(value.forceKeys) ? value.forceKeys.slice() : [] };
+    } catch (_) { return null; }
+  }
+
+  function clearPendingDraft(storage, key) {
+    try { storage.removeItem(key); return storage.getItem(key) === null; }
+    catch (_) { return false; }
+  }
+
   async function prepare(client, storage, storageKey, localRoot, localBranch, hasLocalBranch, verifiedRemote) {
     const remote = verifiedRemote || await read(client);
     const cached = loadBaseline(storage, storageKey);
@@ -101,7 +123,27 @@
       const current = await read(client);
       if (Date.parse(current.revision) < Date.parse(baseline.revision)) throw new Error('Cloud returned a stale revision; local edits were retained and no write was attempted.');
       const result = await reconcile(baseline, draftRoot, current.root, options && options.forceKeys);
-      if (!result.hasLocalChanges) return current;
+      if (!result.hasLocalChanges) {
+        if (options && typeof options.clearPending === 'function') {
+          let cleared = false;
+          try { cleared = await options.clearPending(current); } catch (_) {}
+          if (!cleared) {
+            const error = new Error('Cloud already contains the intended state, but the local recovery marker could not be cleared; changes remain pending until cleanup succeeds.');
+            error.name = 'HbnfSyncStorageError';
+            throw error;
+          }
+        }
+        return current;
+      }
+      if (options && typeof options.retainDraft === 'function') {
+        let retained = false;
+        try { retained = await options.retainDraft(clone(result.root), current); } catch (_) {}
+        if (!retained) {
+          const error = new Error('Local recovery draft could not be stored; cloud write was not attempted.');
+          error.name = 'HbnfSyncStorageError';
+          throw error;
+        }
+      }
       const currentMs = Date.parse(current.revision), nowMs = Date.now();
       const sentAt = new Date(Math.max(nowMs, currentMs + 1)).toISOString();
       const response = await client.from('league_state')
@@ -116,7 +158,44 @@
       if (Number(ack.id) !== 1 || ack.updated_at !== sentAt || !equal(ack.state_json, result.root)) {
         throw new Error('Cloud acknowledgment did not match the submitted state; local edits were retained.');
       }
-      return await snapshot(ack.state_json, ack.updated_at);
+      // The UPDATE response is an acknowledgment, not the independent readback
+      // that callers require before clearing their recoverable local draft.
+      const verified = await read(client);
+      if (Date.parse(verified.revision) < Date.parse(ack.updated_at)) {
+        throw new Error('Cloud readback returned an older revision; the save remains unverified and the local draft was retained.');
+      }
+      const allKeys = new Set([
+        ...Object.keys(baseline.keyHashes), ...Object.keys(draftRoot),
+        ...Object.keys(current.root), ...new Set(options && options.forceKeys || []),
+      ]);
+      const intendedKeys = [];
+      for (const key of allKeys) {
+        const oldHash = baseline.keyHashes[key] || await keyHash({}, key);
+        const draftHash = await keyHash(draftRoot, key);
+        if (draftHash !== oldHash || (options && options.forceKeys || []).includes(key)) {
+          intendedKeys.push(key);
+        }
+      }
+      for (const key of intendedKeys) {
+        if (!equal(await keyHash(verified.root, key), await keyHash(result.root, key))) {
+          const error = conflictError([key]);
+          error.message = 'Cloud changed the saved field before independent readback (' + key + '); local edits remain pending for review.';
+          throw error;
+        }
+      }
+      if (!equal(verified.root, ack.state_json) && Date.parse(verified.revision) === Date.parse(ack.updated_at)) {
+        throw new Error('Cloud readback diverged from the acknowledged state at the same revision; local edits were retained.');
+      }
+      if (options && typeof options.clearPending === 'function') {
+        let cleared = false;
+        try { cleared = await options.clearPending(verified); } catch (_) {}
+        if (!cleared) {
+          const error = new Error('Cloud readback matched, but the local recovery marker could not be cleared; changes remain pending until cleanup succeeds.');
+          error.name = 'HbnfSyncStorageError';
+          throw error;
+        }
+      }
+      return verified;
     }
     throw conflictError(['updated_at']);
   }
@@ -137,5 +216,5 @@
     element.textContent = detail || messages[kind] || String(kind || '');
   }
 
-  global.HBNFLeagueStateSync = Object.freeze({ clone, equal, hash, read, reconcile, prepare, save, snapshot, cacheBaseline, loadBaseline, status });
+  global.HBNFLeagueStateSync = Object.freeze({ clone, equal, hash, read, reconcile, prepare, save, snapshot, cacheBaseline, loadBaseline, retainPendingDraft, loadPendingDraft, clearPendingDraft, status });
 })(window);

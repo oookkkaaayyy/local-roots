@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Random Doubles Putting League</title><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="apple-touch-icon.png"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="hbnf-league-state-sync.js?v=20261029-cas1"></script><script>(function(){var fb={SUPABASE_URL:"https://phcpbvuqibyarpfrftgx.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC"};function ok(c){return !!(c&&c.SUPABASE_URL&&c.SUPABASE_ANON_KEY&&!String(c.SUPABASE_URL).includes('PASTE_')&&!String(c.SUPABASE_ANON_KEY).includes('PASTE_'));}window.HBNF_SUPABASE_FALLBACK=fb;if(!ok(window.APP_CONFIG))window.APP_CONFIG=fb;if(!window.SUPABASE_URL)window.SUPABASE_URL=fb.SUPABASE_URL;if(!window.SUPABASE_ANON_KEY)window.SUPABASE_ANON_KEY=fb.SUPABASE_ANON_KEY;})();</script><style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@700;800&family=Unbounded:wght@500;700&display=swap');
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Random Doubles Putting League</title><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="apple-touch-icon.png"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="hbnf-league-state-sync.js?v=20261029-cas2"></script><script>(function(){var fb={SUPABASE_URL:"https://phcpbvuqibyarpfrftgx.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC"};function ok(c){return !!(c&&c.SUPABASE_URL&&c.SUPABASE_ANON_KEY&&!String(c.SUPABASE_URL).includes('PASTE_')&&!String(c.SUPABASE_ANON_KEY).includes('PASTE_'));}window.HBNF_SUPABASE_FALLBACK=fb;if(!ok(window.APP_CONFIG))window.APP_CONFIG=fb;if(!window.SUPABASE_URL)window.SUPABASE_URL=fb.SUPABASE_URL;if(!window.SUPABASE_ANON_KEY)window.SUPABASE_ANON_KEY=fb.SUPABASE_ANON_KEY;})();</script><style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@700;800&family=Unbounded:wght@500;700&display=swap');
 :root{--bg:#031006;--card:#0b1710;--card2:#102216;--line:#255d31;--text:#ecffea;--muted:#a8dca8;--bright:#d8ff88;--warn:#ffce56;--danger:#ff6f7d;--shadow:0 0 18px rgba(57,255,20,.18),0 0 42px rgba(57,255,20,.08)}
 *{box-sizing:border-box} html,body{margin:0;padding:0;color:var(--text);font-family:'Outfit',system-ui,Arial,sans-serif;background:radial-gradient(circle at 15% 0%, rgba(57,255,20,.18), transparent 24%),radial-gradient(circle at 85% 0%, rgba(216,255,136,.08), transparent 18%),linear-gradient(180deg,#031006 0%, #020804 100%)} body{min-height:100vh}
 .aurora{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 20% 10%, rgba(57,255,20,.16), transparent 18%),radial-gradient(circle at 80% 16%, rgba(216,255,136,.08), transparent 16%);filter:blur(16px)}
@@ -487,16 +487,16 @@ function makeSyncHelpers(ctx){return{
  async pullRoot(){
   const statusEl=document.querySelector('#syncStatus');
   try{
-   const wasStored=ctx.initialSyncComplete?localStorage.getItem(ctx.localKey)!==null:ctx.localStatePresentAtStartup, localState=ctx.state;
+   const pending=HBNFLeagueStateSync.loadPendingDraft(localStorage,ctx.localKey+':pending-v1'),wasStored=(ctx.initialSyncComplete?localStorage.getItem(ctx.localKey)!==null:ctx.localStatePresentAtStartup)||!!pending, localState=pending?ctx.normalize(pending.root[ctx.branch]||null):ctx.state;
    const remote=await HBNFLeagueStateSync.read(ctx.supabaseClient);
-   let draft=HBNFLeagueStateSync.clone(remote.root);
+   let draft=pending?HBNFLeagueStateSync.clone(pending.root):HBNFLeagueStateSync.clone(remote.root);
    const localDiffers=wasStored&&!HBNFLeagueStateSync.equal(ctx.normalize(remote.root[ctx.branch]||null),localState);
    if(localDiffers)draft[ctx.branch]=localState;
    const prepared=await HBNFLeagueStateSync.prepare(ctx.supabaseClient,localStorage,ctx.localKey+':cloud-baseline-v2',draft,ctx.branch,localDiffers,remote);
-   ctx.initialSyncComplete=true;ctx.syncBaseline=prepared.baseline;ctx.rootState=prepared.root;
+   const pendingCleanupOk=!pending||prepared.pending||HBNFLeagueStateSync.clearPendingDraft(localStorage,ctx.localKey+':pending-v1');ctx.initialSyncComplete=true;ctx.syncBaseline=prepared.baseline;ctx.rootState=prepared.root;
    if(!prepared.legacyConflict)ctx.state=ctx.normalize(ctx.rootState[ctx.branch]||null);
    if(prepared.legacyConflict){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(statusEl,'legacy');}
-   else if(prepared.pending){ctx.pendingCloudDraft=true;ctx.saveLocal();HBNFLeagueStateSync.status(statusEl,'pending');}
+   else if(prepared.pending||!pendingCleanupOk){ctx.pendingCloudDraft=true;ctx.saveLocal();HBNFLeagueStateSync.status(statusEl,'pending');}
    else{ctx.pendingCloudDraft=false;HBNFLeagueStateSync.status(statusEl,'loaded');}
    ctx.renderAll();return true;
   }catch(error){ctx.syncBaseline=ctx.syncBaseline||HBNFLeagueStateSync.loadBaseline(localStorage,ctx.localKey+':cloud-baseline-v2');HBNFLeagueStateSync.status(statusEl,'unavailable',error.message||'Cloud read failed; local edits are retained.');return false;}
@@ -518,7 +518,7 @@ function makeSyncHelpers(ctx){return{
   const statusEl=document.querySelector('#syncStatus');
   try{
    const draft=HBNFLeagueStateSync.clone(ctx.rootState||{});draft[ctx.branch]=ctx.state;
-   const ack=await HBNFLeagueStateSync.save(ctx.supabaseClient,ctx.syncBaseline,draft);
+   const ack=await HBNFLeagueStateSync.save(ctx.supabaseClient,ctx.syncBaseline,draft,{retainDraft:(root,base)=>HBNFLeagueStateSync.retainPendingDraft(localStorage,ctx.localKey+':pending-v1',root,base),clearPending:()=>HBNFLeagueStateSync.clearPendingDraft(localStorage,ctx.localKey+':pending-v1')});
    ctx.syncBaseline=ack;ctx.rootState=ack.root;ctx.pendingCloudDraft=false;
    const cached=HBNFLeagueStateSync.cacheBaseline(localStorage,ctx.localKey+':cloud-baseline-v2',ack);
    HBNFLeagueStateSync.status(statusEl,'saved',cached?'Cloud save confirmed.':'Cloud save confirmed; this device could not cache its sync baseline.');

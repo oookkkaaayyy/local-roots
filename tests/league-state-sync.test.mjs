@@ -17,7 +17,7 @@ function fakeClient(initial, hooks = {}) {
   let reads = 0, writes = 0;
   const client = { from(table) {
     assert.equal(table, 'league_state');
-    return { select() { return { eq() { return { single: async () => { reads++; return hooks.readError ? { data: null, error: { message: 'offline' } } : { data: clone(row), error: null }; } }; } }; },
+    return { select() { return { eq() { return { single: async () => { reads++; if (hooks.beforeRead) await hooks.beforeRead({ reads, get: () => clone(row), set: value => { row = clone(value); } }); return (hooks.readError || hooks.readErrorAt === reads) ? { data: null, error: { message: hooks.readErrorMessage || 'offline' } } : { data: clone(row), error: null }; } }; } }; },
       update(payload) { let id, revision; const query = { eq(column, value) { if (column === 'id') id = value; if (column === 'updated_at') revision = value; return query; }, async select() {
         writes++;
         if (hooks.beforeWrite) await hooks.beforeWrite({ get: () => clone(row), set: value => { row = clone(value); } });
@@ -122,4 +122,62 @@ test('Admin restore can restore unchanged cloud state and rejects a restore that
   const newer = server.get(); newer.state_json.skins.weeks['2099-01-06'].front.winners[2] = 'Tony'; newer.updated_at = '2026-10-29T08:00:03.000Z';
   newer.updated_at = new Date(Date.now() + 10000).toISOString(); server.set(newer);
   await assert.rejects(sync.save(server.client, nextBaseline, restoreDraft, { forceKeys: Object.keys(nextBaseline.keyHashes) }), { name: 'HbnfSyncConflictError' });
+});
+
+test('save requires an independent GET after a verified conditional UPDATE ACK', async () => {
+  const sync = makeSync(), storage = new Map();
+  const localStorage = { setItem:(k,v)=>storage.set(k,v), getItem:k=>storage.get(k)||null, removeItem:k=>storage.delete(k) };
+  const server = fakeClient(initialRoot()), baseline = await sync.read(server.client), draft = clone(baseline.root);
+  draft.glow.weeks['2099-01-06'] = { cards: [{ id:'new' }] };
+  const callbacks = { retainDraft:(root,base)=>sync.retainPendingDraft(localStorage,'pending',root,base), clearPending:()=>sync.clearPendingDraft(localStorage,'pending') };
+  const saved = await sync.save(server.client, baseline, draft, callbacks);
+  assert.equal(server.counts().reads, 3, 'baseline, pre-write CAS read, then separate confirmation GET');
+  assert.equal(saved.root.glow.weeks['2099-01-06'].cards[0].id, 'new');
+  assert.equal(localStorage.getItem('pending'), null);
+});
+
+test('successful ACK followed by HTTP 522 retains draft; retry recognizes accepted state without duplicate UPDATE', async () => {
+  const sync = makeSync(), storage = new Map();
+  const localStorage = { setItem:(k,v)=>storage.set(k,v), getItem:k=>storage.get(k)||null, removeItem:k=>storage.delete(k) };
+  const server = fakeClient(initialRoot(), { readErrorAt:3, readErrorMessage:'HTTP 522 timeout' });
+  const baseline = await sync.read(server.client), draft = clone(baseline.root); draft.random.weeks['2099-01-06'] = { roster:'offline recovery' };
+  const opts = { retainDraft:(root,base)=>sync.retainPendingDraft(localStorage,'pending',root,base), clearPending:()=>sync.clearPendingDraft(localStorage,'pending') };
+  await assert.rejects(sync.save(server.client,baseline,draft,opts), /HTTP 522/);
+  assert.ok(sync.loadPendingDraft(localStorage,'pending'));
+  assert.equal(server.counts().writes,1);
+  const pending=sync.loadPendingDraft(localStorage,'pending');
+  const retried=await sync.save(server.client,baseline,pending.root,opts);
+  assert.equal(server.counts().writes,1,'latest read recognizes accepted write; no duplicate UPDATE');
+  assert.equal(retried.root.random.weeks['2099-01-06'].roster,'offline recovery');
+  assert.equal(localStorage.getItem('pending'),null);
+});
+
+test('divergent confirmation conflicts on same field and preserves concurrent disjoint edits', async () => {
+  const sync=makeSync(); let injected=false;
+  const server=fakeClient(initialRoot(),{beforeRead:async ({reads,get,set})=>{
+    if(reads!==3||injected)return;injected=true;
+    const row=get();row.state_json.skins.weeks['2099-01-06'].front.winners[8]='Andrew';row.updated_at=new Date(Date.parse(row.updated_at)+1).toISOString();set(row);
+  }});
+  const baseline=await sync.read(server.client),draft=clone(baseline.root);draft.random.weeks['2099-01-06']={roster:'saved'};
+  const ack=await sync.save(server.client,baseline,draft);
+  assert.equal(ack.root.random.weeks['2099-01-06'].roster,'saved');
+  assert.equal(ack.root.skins.weeks['2099-01-06'].front.winners[8],'Andrew');
+
+  let sameKeyInjected=false;
+  const conflictServer=fakeClient(initialRoot(),{beforeRead:async ({reads,get,set})=>{
+    if(reads!==3||sameKeyInjected)return;sameKeyInjected=true;
+    const row=get();row.state_json.random={remote:'other device'};row.updated_at=new Date(Date.parse(row.updated_at)+1).toISOString();set(row);
+  }});
+  const base2=await sync.read(conflictServer.client),draft2=clone(base2.root);draft2.random={local:'intended'};
+  await assert.rejects(sync.save(conflictServer.client,base2,draft2),{name:'HbnfSyncConflictError'});
+  assert.equal(conflictServer.get().state_json.random.remote,'other device');
+});
+
+test('pending marker storage failure blocks write; marker cleanup failure remains unconfirmed', async () => {
+  const sync=makeSync(),server=fakeClient(initialRoot()),baseline=await sync.read(server.client),draft=clone(baseline.root);draft.skills.score=42;
+  await assert.rejects(sync.save(server.client,baseline,draft,{retainDraft:()=>false}),{name:'HbnfSyncStorageError'});
+  assert.equal(server.counts().writes,0);
+  const server2=fakeClient(initialRoot()),base2=await sync.read(server2.client),draft2=clone(base2.root);draft2.skills.score=43;
+  await assert.rejects(sync.save(server2.client,base2,draft2,{retainDraft:()=>true,clearPending:()=>false}),{name:'HbnfSyncStorageError'});
+  assert.equal(server2.counts().writes,1,'cloud accepted the edit, but caller must remain pending until recovery marker cleanup');
 });
