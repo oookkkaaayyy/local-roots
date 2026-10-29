@@ -1,8 +1,12 @@
 {
-  "schema":"hbnf-opal-installed-baseline-v1",
-  "observedAtUtc":"2026-10-28T22:14:00Z",
-  "identity":"GL-SFT1200 at 192.168.77.1 on HBNF-Cart; v1.0.29 installed; all 20 managed files freshly re-read and matched v1.0.29 post-install manifest; UV segments 1 and 2 OFF.",
+  "schema":"hbnf-opal-live-baseline-readback-v2",
+  "status":"INVALID_SYNTHETIC_NOT_DEVICE_CAPTURE",
+  "note":"This historical placeholder is not evidence of a live readback and must never be used for admission or installation.",
+  "target":null,
+  "installedVersion":null,
+  "observedAtUtc":null,
   "installedManifestSha256":"07b654798e533a3cd6385caa5b9a3674701080a24ec1ebb59d4457038a446111",
-  "managedFiles":20,
-  "status":"PASS"
+  "managedFiles":0,
+  "uvState":null,
+  "capture":null
 }
