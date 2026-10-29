@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {saveLeagueBranchCAS,saveLeagueRootCAS,recoverLeagueDraft,mergeLeagueValue} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/league-state-cas.mjs';
@@ -41,4 +42,37 @@ test('Admin overlapping backup edits conflict without losing local recovery draf
   assert.deepEqual(result.conflicts,['__backups:x']);
   assert.equal(db.root.__backups[0].content,'remote');
   assert.equal(recoverLeagueDraft(storage,'admin').rootState.__backups[0].content,'local');
+});
+
+test('Admin history displays authoritative cloud entry when a cached local ID collides',()=>{
+  const html=readFileSync(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/public/admin.html',import.meta.url),'utf8');
+  const source=html.match(/^function readHistory\(\)\{[^\n]+$/m)?.[0];
+  assert.ok(source,'Admin history function must be found in installed-source snapshot');
+  const local=[{id:'x',createdAt:'2026-10-29T20:00:00Z',label:'older local'},
+    {id:'local-only',createdAt:'2026-10-29T19:00:00Z',label:'offline backup'}];
+  const cloud=[{id:'x',createdAt:'2026-10-29T20:00:00Z',label:'current server'},
+    {id:'cloud-only',createdAt:'2026-10-29T18:00:00Z',label:'server backup'}];
+  const readHistory=runInNewContext(source+'; readHistory',{readJSON:()=>local,HISTORY_KEY:'history',rootState:{__backups:cloud}});
+  const result=readHistory();
+  assert.equal(result.find(x=>x.id==='x').label,'current server');
+  assert.deepEqual([...result].map(x=>x.id).sort(),['cloud-only','local-only','x']);
+});
+
+test('Admin root save rejects backup readback mismatch instead of falsely saying saved',async()=>{
+  const real={root:{glow:{score:1},__backups:[{id:'x',createdAt:'2026-10-29',label:'one'}]},revision:'server-1'};
+  let interfered=false;
+  const db=new Proxy(real,{get(target,key){
+    if(key==='root'&&target.revision==='server-2'&&!interfered){
+      interfered=true;
+      target.root.__backups=[{id:'x',createdAt:'2026-10-29',label:'server changed after write'}];
+    }
+    return target[key];
+  }});
+  const storage=new MemoryStorage();
+  const baseline=copy(real.root), next=copy(real.root);
+  next.glow.score=2;
+  const result=await saveLeagueRootCAS({client:clientFor(db),rootState:next,baselineRoot:baseline,storage,storageKey:'admin'});
+  assert.equal(result.status,'failed');
+  assert.equal(recoverLeagueDraft(storage,'admin').rootState.glow.score,2);
+  assert.equal(real.root.__backups[0].label,'server changed after write');
 });
