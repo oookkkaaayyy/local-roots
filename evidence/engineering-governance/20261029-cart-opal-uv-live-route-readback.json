@@ -1,0 +1,63 @@
+{
+  "schema": "hbnf-cart-opal-uv-live-route-readback-v1",
+  "observedAt": "2026-10-29T03:33:03Z",
+  "target": {
+    "model": "GL-SFT1200",
+    "opalIp": "192.168.77.1",
+    "auxIp": "192.168.77.11",
+    "auxMac": "8c94df55c34c"
+  },
+  "evidence": {
+    "opalUvStatus": {
+      "http": 200,
+      "available": true,
+      "commissioningTestAvailable": true,
+      "uvControlEnabled": false,
+      "hardwareProfileReady": false,
+      "reason": "uv_hardware_profile_unverified",
+      "outputMode": "OFF",
+      "mutationIssued": false
+    },
+    "commissioningTests": [
+      {
+        "channel": "main",
+        "brightness": 255,
+        "http": 200,
+        "deviceReadback": true,
+        "outputOffConfirmed": true,
+        "pulseSeconds": 3
+      },
+      {
+        "channel": "short",
+        "brightness": 255,
+        "http": 200,
+        "deviceReadback": true,
+        "outputOffConfirmed": true,
+        "pulseSeconds": 3
+      }
+    ],
+    "ownerPwa": {
+      "cartConnection": "Cart responding",
+      "cartTestResult": "Cart test finished; both UV outputs read back off. Check whether the strip lit.",
+      "barTestResult": "Bar test finished; both UV outputs read back off. Check whether the strip lit."
+    },
+    "auxReadbackAfterTests": {
+      "firmware": "16.0.1",
+      "globalOn": true,
+      "segment1On": false,
+      "segment2On": false
+    },
+    "ordinaryManualPolicyProbe": {
+      "http": 503,
+      "error": "uv_hardware_profile_unverified",
+      "mutationIssued": false
+    }
+  },
+  "disposition": {
+    "softwareCommandPath": "PASS: Owner PWA test buttons reached Opal, issued the fixed-segment requests, received WLED readback, and returned both UV segments to OFF.",
+    "normalUvOperation": "BLOCKED: the target hardware profile is still unverified; the ordinary MANUAL request was rejected before mutation.",
+    "visualIllumination": "NOT_CHECKED: the agent cannot observe the physical strips; the page explicitly asks the owner to confirm whether each strip lit.",
+    "exactInstalledSourceAndFileHashes": "NOT_CHECKED: live route behavior does not establish exact installed source bytes.",
+    "nextRequiredEvidence": "Owner confirms whether Cart and Bar visibly illuminated during their full-brightness three-second tests. Do not set hardwareProfileReady or commissioning gates from software readback alone."
+  }
+}
