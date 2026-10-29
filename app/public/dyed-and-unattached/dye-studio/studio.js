@@ -861,7 +861,7 @@ function syncEditor(){
 }
 function editorLiveChange(){
   if(selected<0)return;const l=layers[selected];l.shape=$("shape").value;l.strength=+$("strength").value;l.passes=clamp(Math.round(+$("layerPasses").value||1),1,12);l.method=$("layerMethod").value;l.angle=+$("angle").value;l.offset=+$("position").value/100;l.width=+$("stripeWidth").value/100;
-  renderLayerList();syncEditor();requestRender()
+  renderLayerList();syncEditor();requestRender();renderEvidenceAdvisory()
 }
 function renderSwatches(){
   const q=$("search").value.trim().toLowerCase(),grid=$("swatchGrid");grid.innerHTML="";
@@ -1195,12 +1195,12 @@ function classifyObservedProcess(description){
  if(/shaving cream|shaving foam/.test(s))return "shaving-cream";
  return "unknown";
 }
-function evidenceScore(obs,dyes,plastic,baseFamily){
+function evidenceScore(obs,dyes,plastic,baseFamily,overlapRegion=false){
  const activeLayers=layers.filter(l=>Number(l.strength??100)>0);
  const matchingLayers=activeLayers.filter(l=>evidenceDyeFamilyMatches(l.name,obs.dyes));
  // A source naming one dye is not evidence for the entire selected stack.
  const partialDye=matchingLayers.length>0;
- const exactDye=partialDye&&matchingLayers.length===activeLayers.length&&obs.shadeMappingCertain!==false;
+ const exactDye=partialDye&&matchingLayers.length===activeLayers.length&&obs.shadeMappingCertain!==false&&(!overlapRegion||obs.overlapIsolationVerified===true);
  const material=materialClass(plastic),obsMaterial=materialClass(obs.plastic);
  // Award the named-plastic bonus only for maker-verified actual dyed polymer.
  const sought=String(plastic||"").toLowerCase().trim(),observed=String(obs.plastic||"").toLowerCase().trim();
@@ -1269,11 +1269,11 @@ function renderEvidenceAdvisory(){
  if(cool&&hotDye)warnings.push("Warm red/orange/crimson over a cool aqua, blue or green blank can become muted or muddy. Exact color on this base is not verified; preserve original plastic for reliable highlights.");
  if((baseFamily==="yellow"||baseFamily==="orange")&&(has("blue")||has("purple")))warnings.push("Blue or purple on yellow/orange premium plastic has produced brown, gray-black and maroon results. Do not promise clean green/violet from digital color-wheel mixing.");
  if(materialClass(p?.plastic)==="translucent-premium")warnings.push("Translucent discs vary strongly with backlighting and thickness; a thin plate and dark rim may not look alike. A bright preview does not establish dye saturation.");
- if(overlapExists)warnings.push("Two or more dye blocks physically overlap. Simultaneous mixing and separate dyeing passes differ; application order, reheating and dye migration can change this region.");else if(selected.length>1)warnings.push("These distinct dye regions do not currently overlap. Their colors should not be treated as a mixed-dye region; planned remasking or a second application may still change boundaries.");
+ if(overlapExists){warnings.push("Two or more dye blocks physically overlap. Simultaneous mixing and separate dyeing passes differ; application order, reheating and dye migration can change this region.");warnings.push("No indexed controlled A, B and A+B dye-overlap result validates a numeric third hue. A post naming both pigments is NOT measured evidence for their overlap.");}else if(selected.length>1)warnings.push("These distinct dye regions do not currently overlap. Their colors should not be treated as a mixed-dye region; planned remasking or a second application may still change boundaries.");
  if(selected.some(x=>/uv blast|neon|fluorescent/i.test(x)))warnings.push("UV fluorescence and charged-disc phosphorescent glow are distinct. The UV/glow previews here remain uncalibrated visual estimates.");
  if(!warnings.length)warnings.push("This palette has no specific documented warning in the current provisional evidence set; that is not proof of a predictable outcome.");
  warningNode.innerHTML=warnings.map(t=>`<div class="evidence-warning">${escapeHtml(t)}</div>`).join("");
- const related=ALL_DYE_EVIDENCE.map(obs=>{const match=evidenceScore(obs,selected,p?.plastic||"",baseFamily);return match?{obs,...match}:null;}).filter(Boolean).sort((a,b)=>b.score-a.score);
+ const related=ALL_DYE_EVIDENCE.map(obs=>{const match=evidenceScore(obs,selected,p?.plastic||"",baseFamily,overlapExists);return match?{obs,...match}:null;}).filter(Boolean).sort((a,b)=>b.score-a.score);
  const distinct=[],seen=new Set();
  // Display diverse evidence: favor the actual application method, then give
  // named-shade analogs visibly marked as DIFFERENT METHOD. Never imply calibration.

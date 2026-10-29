@@ -2,6 +2,10 @@
 
 This repository uses a two-phase, fail-closed receipt gate. Run `npm run release:admit -- <receipt.json> <receipt-root>` before mutation. It verifies candidate and rollback bytes, current baseline identity/recovery, downloaded-back copies, planned mutation and restoration routes, and acceptance criteria declared as PENDING. The first run writes a one-time `<releaseId>.admission.json` and returns `PENDING`, not PASS. Upload that file to the approved Drive recovery location, download it back, and add its path, byte count, SHA-256, Drive ID/URL, and downloaded-back path/size/hash to `receipt.admission`. Rerun admission; it prints PASS only after verifying this durable copy. After mutation, update the same receipt with provider/device readback and criterion evidence, then run `npm run release:verify -- <receipt.json> <receipt-root>` to validate closeout against the exact admission snapshot and its downloaded-back copy.
 
+### One-release Cloudflare native rollback exception
+
+The owner-approved exception for Dye Studio PR #153 is encoded as a fixed scope in `scripts/validate-release-receipt.mjs`; see `AGENTS.md` for its canonical approval record and exact target. It accepts Cloudflare's authenticated, successful, immutable production deployment as a provider-native rollback target because the historical build archive is unavailable. The receipt must preserve an explicit unavailable state for historical archive bytes, provider evidence separately hashed and downloaded-back byte-equal, the exact candidate archive and its verified Drive recovery, and the provider restoration route. This exception does not relax any candidate, CI, preview, interaction, admission, or closeout requirement and cannot be selected for another release. All other targets continue to require an exact byte-identical artifact rollback.
+
 ## Run the gate
 
 Keep the receipt and its evidence files in one private working directory. Use relative paths that stay inside that directory. Do not put secrets or production data in the receipt. Run:

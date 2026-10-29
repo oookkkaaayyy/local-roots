@@ -5,6 +5,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SHA256 = /^[a-f0-9]{64}$/i;
+const DYE_STUDIO_NATIVE_ROLLBACK = Object.freeze({
+  releaseId: 'local-roots-dye-studio-pr-153-2026-10-29-r2',
+  repository: 'oookkkaaayyy/local-roots',
+  pullRequest: 153,
+  project: 'local-roots',
+  target: 'production',
+  baselineDeployment: 'b56e1122-f55d-48ae-817a-0e511e72b9e4',
+  baselineCommit: '0f8e9c2409bb5a947482f66db0d436de49d1acc0',
+  approvalRecord: '1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM',
+});
 
 function requireString(value, label) {
   if (typeof value !== 'string' || value.trim() === '') throw new Error(`${label} is required`);
@@ -18,6 +28,9 @@ function admissionProjection(receipt, hashes = {}) {
   return {
     schemaVersion: 1,
     releaseId: receipt.releaseId,
+    ...(receipt.recoveryMode?.mode === 'cloudflare-pages-native-rollback'
+      ? { recoveryMode: receipt.recoveryMode }
+      : {}),
     source: receipt.source,
     build: receipt.build,
     baseline: {
@@ -26,17 +39,23 @@ function admissionProjection(receipt, hashes = {}) {
       identity: receipt.baseline.identity,
       sourceCommit: receipt.baseline.sourceCommit,
       sourceEvidence: receipt.baseline.sourceEvidence,
-      artifactDriveFileId: receipt.baseline.artifact.driveFileId,
-      artifactSha256: hashes.baselineSha256 ?? receipt.baseline.artifact.sha256,
-      artifactBytes: hashes.baselineBytes ?? receipt.baseline.artifact.bytes,
-      identityEvidenceSha256: receipt.baseline.identityEvidence.sha256,
-      rollbackSha256: hashes.rollbackSha256 ?? receipt.rollback.artifact.sha256,
-      rollbackBytes: hashes.rollbackBytes ?? receipt.rollback.artifact.bytes,
-      rollbackDriveFileId: receipt.rollback.recovery.driveFileId,
-      rollbackDriveUrl: receipt.rollback.recovery.driveUrl,
-      rollbackDownloadBackSha256: receipt.rollback.recovery.downloadBack.sha256,
-      rollbackDownloadBackBytes: receipt.rollback.recovery.downloadBack.bytes,
+      ...(receipt.recoveryMode?.mode === 'cloudflare-pages-native-rollback'
+        ? { artifactDisposition: receipt.baseline.artifact?.disposition ?? null }
+        : {}),
+      artifactDriveFileId: receipt.baseline.artifact?.driveFileId ?? null,
+      artifactSha256: hashes.baselineSha256 ?? receipt.baseline.artifact?.sha256 ?? null,
+      artifactBytes: hashes.baselineBytes ?? receipt.baseline.artifact?.bytes ?? null,
+      identityEvidenceSha256: receipt.baseline.identityEvidence?.sha256 ?? hashes.providerEvidenceSha256 ?? null,
+      rollbackSha256: hashes.rollbackSha256 ?? receipt.rollback?.artifact?.sha256 ?? null,
+      rollbackBytes: hashes.rollbackBytes ?? receipt.rollback?.artifact?.bytes ?? null,
+      rollbackDriveFileId: receipt.rollback?.recovery?.driveFileId ?? null,
+      rollbackDriveUrl: receipt.rollback?.recovery?.driveUrl ?? null,
+      rollbackDownloadBackSha256: receipt.rollback?.recovery?.downloadBack?.sha256 ?? null,
+      rollbackDownloadBackBytes: receipt.rollback?.recovery?.downloadBack?.bytes ?? null,
       restoreProcedure: receipt.rollback.restoreProcedure,
+      ...(receipt.recoveryMode?.mode === 'cloudflare-pages-native-rollback'
+        ? { providerEvidenceSha256: hashes.providerEvidenceSha256 ?? null }
+        : {}),
     },
     package: {
       sha256: hashes.packageSha256 ?? receipt.package.sha256,
@@ -60,6 +79,88 @@ function admissionProjection(receipt, hashes = {}) {
         ({ id, description, method, expectedOutcome })),
     },
   };
+}
+
+function requireDyeStudioNativeRollbackScope(receipt) {
+  const recovery = receipt.recoveryMode;
+  if (!recovery || recovery.mode !== 'cloudflare-pages-native-rollback') return false;
+  const scope = recovery.scope;
+  const approval = recovery.approval;
+  const expected = DYE_STUDIO_NATIVE_ROLLBACK;
+  const checks = [
+    [receipt.releaseId, expected.releaseId, 'releaseId'],
+    [receipt.source?.repository, expected.repository, 'source.repository'],
+    [receipt.source?.pullRequest, expected.pullRequest, 'source.pullRequest'],
+    [scope?.provider, 'cloudflare-pages', 'recoveryMode.scope.provider'],
+    [scope?.project, expected.project, 'recoveryMode.scope.project'],
+    [scope?.target, expected.target, 'recoveryMode.scope.target'],
+    [scope?.releaseId, expected.releaseId, 'recoveryMode.scope.releaseId'],
+    [scope?.pullRequest, expected.pullRequest, 'recoveryMode.scope.pullRequest'],
+    [scope?.repository, expected.repository, 'recoveryMode.scope.repository'],
+    [approval?.authority, 'owner-approved-AKS', 'recoveryMode.approval.authority'],
+    [approval?.canonicalRecordId, expected.approvalRecord, 'recoveryMode.approval.canonicalRecordId'],
+  ];
+  for (const [actual, wanted, label] of checks) {
+    if (actual !== wanted) throw new Error(`${label} is outside the owner-approved Cloudflare recovery exception`);
+  }
+  requireString(approval?.canonicalUrl, 'recoveryMode.approval.canonicalUrl');
+  if (!approval.canonicalUrl.includes(expected.approvalRecord)) {
+    throw new Error('recoveryMode.approval.canonicalUrl must identify the approved canonical D&U record');
+  }
+  return true;
+}
+
+async function verifyNativeRollbackEvidence(receipt, root, baseline) {
+  const recovery = receipt.recoveryMode;
+  const provider = recovery.providerVerification;
+  requireString(provider?.verifiedAt, 'recoveryMode.providerVerification.verifiedAt');
+  if (!Number.isFinite(Date.parse(provider.verifiedAt))) throw new Error('recoveryMode.providerVerification.verifiedAt must be an ISO date');
+  const expected = DYE_STUDIO_NATIVE_ROLLBACK;
+  const bindings = [
+    [provider.provider, 'cloudflare-pages', 'provider'],
+    [provider.project, expected.project, 'project'],
+    [provider.target, expected.target, 'target'],
+    [provider.environment, 'production', 'environment'],
+    [provider.deploymentId, expected.baselineDeployment, 'deploymentId'],
+    [provider.sourceCommit, expected.baselineCommit, 'sourceCommit'],
+    [baseline.identity, expected.baselineDeployment, 'baseline.identity'],
+    [baseline.sourceCommit, expected.baselineCommit, 'baseline.sourceCommit'],
+  ];
+  for (const [actual, wanted, label] of bindings) {
+    if (actual !== wanted) throw new Error(`recoveryMode.providerVerification.${label} does not match the approved production baseline`);
+  }
+  if (provider.deploymentStatus !== 'success' || provider.rollbackEligible !== true ||
+      provider.authenticatedProviderReadback !== true) {
+    throw new Error('Cloudflare provider readback must confirm an authenticated successful rollback-eligible production deployment');
+  }
+  requireString(provider.immutableUrl, 'recoveryMode.providerVerification.immutableUrl');
+  if (!/^https:\/\/[a-f0-9-]+\.local-roots\.pages\.dev\/?$/i.test(provider.immutableUrl)) {
+    throw new Error('recoveryMode.providerVerification.immutableUrl must be an immutable local-roots Pages URL');
+  }
+  requireString(provider.restoreProcedure, 'recoveryMode.providerVerification.restoreProcedure');
+  requireString(provider.rollbackInstructions, 'recoveryMode.providerVerification.rollbackInstructions');
+  if (!/rollback/i.test(provider.rollbackInstructions)) throw new Error('provider rollback instructions must describe the rollback operation');
+  const evidence = await verifyFile(root, provider.evidence, 'recoveryMode.providerVerification.evidence');
+  let record;
+  try { record = JSON.parse(await readFile(path.resolve(root, provider.evidence.path), 'utf8')); }
+  catch { throw new Error('recoveryMode.providerVerification.evidence must be valid JSON'); }
+  if (record.provider !== 'cloudflare-pages' || record.project !== expected.project || record.target !== expected.target ||
+      record.deploymentId !== expected.baselineDeployment || record.sourceCommit !== expected.baselineCommit ||
+      record.deploymentStatus !== 'success' || record.rollbackEligible !== true ||
+      record.authenticatedProviderReadback !== true || record.immutableUrl !== provider.immutableUrl) {
+    throw new Error('provider evidence file does not prove the approved Cloudflare production rollback target');
+  }
+  requireString(provider.evidence.driveFileId, 'recoveryMode.providerVerification.evidence.driveFileId');
+  requireString(provider.evidence.driveUrl, 'recoveryMode.providerVerification.evidence.driveUrl');
+  if (provider.evidence.downloadBackVerified !== true) throw new Error('provider evidence durable download-back verification is required');
+  const downloaded = await verifyFile(root, provider.evidence.downloadBack, 'recoveryMode.providerVerification.evidence.downloadBack');
+  if (path.resolve(root, provider.evidence.downloadBack.path) === path.resolve(root, provider.evidence.path)) {
+    throw new Error('provider verification evidence download-back must be a separate downloaded file');
+  }
+  if (downloaded.sha256 !== evidence.sha256 || downloaded.bytes !== evidence.bytes) {
+    throw new Error('provider verification evidence download-back must byte-match the archived evidence');
+  }
+  return { sha256: evidence.sha256, bytes: evidence.bytes };
 }
 
 function canonicalJson(value) {
@@ -141,6 +242,9 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   requireString(source?.repository, 'source.repository');
   requireString(source?.ref, 'source.ref');
   if (!/^[a-f0-9]{40}$/i.test(source?.commit ?? '')) throw new Error('source.commit must be a full 40-character commit SHA');
+  if (receipt.recoveryMode && receipt.recoveryMode.mode !== 'cloudflare-pages-native-rollback' && receipt.recoveryMode.mode !== 'exact-artifact') {
+    throw new Error(`unsupported recovery mode: ${receipt.recoveryMode.mode}`);
+  }
 
   const build = receipt.build;
   requireString(build?.command, 'build.command');
@@ -165,58 +269,105 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   }
   requireString(baseline?.sourceEvidence, 'baseline.sourceEvidence');
   requireString(baseline?.acceptance, 'baseline.acceptance');
+  const nativeRollback = requireDyeStudioNativeRollbackScope(receipt);
   const baselineArtifact = baseline?.artifact;
-  if (baselineArtifact?.disposition !== 'recovered') {
-    throw new Error('baseline.artifact must be recovered before mutation');
-  }
-  requireString(baselineArtifact.driveFileId, 'baseline.artifact.driveFileId');
-  const baselineArtifactFile = await verifyFile(root, baselineArtifact, 'baseline.artifact');
-  const identityEvidenceFile = await verifyFile(root, baseline?.identityEvidence, 'baseline.identityEvidence');
-  let identityEvidence;
-  try {
-    identityEvidence = JSON.parse(await readFile(path.resolve(root, baseline.identityEvidence.path), 'utf8'));
-  } catch {
-    throw new Error('baseline.identityEvidence must be valid JSON');
-  }
-  if (identityEvidence.identity !== baseline.identity || identityEvidence.sourceCommit !== baseline.sourceCommit ||
-      identityEvidence.artifactSha256 !== baselineArtifactFile.sha256 || identityEvidence.artifactBytes !== baselineArtifactFile.bytes) {
-    throw new Error('baseline.identityEvidence must bind baseline identity/source commit to the recovered artifact hash and size');
-  }
-  const baselineRollback = baseline?.rollback;
-  requireString(baselineRollback?.driveFileId, 'baseline.rollback.driveFileId');
-  requireString(baselineRollback?.baselineIdentity, 'baseline.rollback.baselineIdentity');
-  if (baselineRollback.baselineIdentity !== baseline.identity) {
-    throw new Error('baseline.rollback.baselineIdentity must match baseline.identity');
-  }
-  requireString(baselineRollback?.restoreProcedure, 'baseline.rollback.restoreProcedure');
-  await verifyFile(root, baselineRollback, 'baseline.rollback');
-  if (baselineRollback.downloadBackVerified !== true) {
-    throw new Error('baseline.rollback.downloadBackVerified must be true');
-  }
-  const baselineRollbackCopy = await verifyFile(root, baselineRollback.downloadBack, 'baseline.rollback.downloadBack');
-  if (baselineRollbackCopy.sha256 !== baselineRollback.sha256 || baselineRollbackCopy.bytes !== baselineRollback.bytes) {
-    throw new Error('baseline.rollback.downloadBack must byte-match the baseline rollback');
+  let baselineArtifactFile;
+  let providerEvidence;
+  let baselineRollback;
+  if (nativeRollback) {
+    if (baselineArtifact?.disposition !== 'provider-native-rollback') {
+      throw new Error('Cloudflare exception requires baseline.artifact.disposition=provider-native-rollback');
+    }
+    if (baselineArtifact.sha256 !== undefined || baselineArtifact.bytes !== undefined || baselineArtifact.path !== undefined) {
+      throw new Error('native rollback mode cannot claim unavailable historical deployment artifact bytes');
+    }
+    providerEvidence = await verifyNativeRollbackEvidence(receipt, root, baseline);
+    baselineArtifactFile = providerEvidence;
+    requireString(baselineArtifact.driveFileId, 'baseline.artifact.driveFileId');
+    requireString(baselineArtifact.driveUrl, 'baseline.artifact.driveUrl');
+    if (baselineArtifact.driveFileId !== receipt.recoveryMode.providerVerification.evidence.driveFileId) {
+      throw new Error('baseline provider evidence reference must match providerVerification.evidence');
+    }
+    baselineRollback = baseline.rollback;
+    if (baselineRollback?.mode !== 'cloudflare-pages-native-rollback' ||
+        baselineRollback.deploymentId !== baseline.identity ||
+        baselineRollback.sourceCommit !== baseline.sourceCommit ||
+        baselineRollback.rollbackEligible !== true) {
+      throw new Error('baseline.rollback must identify the verified immutable Cloudflare native rollback target');
+    }
+    requireString(baselineRollback.restoreProcedure, 'baseline.rollback.restoreProcedure');
+    if (baselineRollback.restoreProcedure !== receipt.recoveryMode.providerVerification.restoreProcedure) {
+      throw new Error('baseline native restore procedure must match the verified provider procedure');
+    }
+  } else {
+    if (baselineArtifact?.disposition !== 'recovered') {
+      throw new Error('baseline.artifact must be recovered before mutation');
+    }
+    requireString(baselineArtifact.driveFileId, 'baseline.artifact.driveFileId');
+    baselineArtifactFile = await verifyFile(root, baselineArtifact, 'baseline.artifact');
+    const identityEvidenceFile = await verifyFile(root, baseline?.identityEvidence, 'baseline.identityEvidence');
+    let identityEvidence;
+    try {
+      identityEvidence = JSON.parse(await readFile(path.resolve(root, baseline.identityEvidence.path), 'utf8'));
+    } catch {
+      throw new Error('baseline.identityEvidence must be valid JSON');
+    }
+    if (identityEvidence.identity !== baseline.identity || identityEvidence.sourceCommit !== baseline.sourceCommit ||
+        identityEvidence.artifactSha256 !== baselineArtifactFile.sha256 || identityEvidence.artifactBytes !== baselineArtifactFile.bytes) {
+      throw new Error('baseline.identityEvidence must bind baseline identity/source commit to the recovered artifact hash and size');
+    }
+    baselineRollback = baseline?.rollback;
+    requireString(baselineRollback?.driveFileId, 'baseline.rollback.driveFileId');
+    requireString(baselineRollback?.baselineIdentity, 'baseline.rollback.baselineIdentity');
+    if (baselineRollback.baselineIdentity !== baseline.identity) {
+      throw new Error('baseline.rollback.baselineIdentity must match baseline.identity');
+    }
+    requireString(baselineRollback?.restoreProcedure, 'baseline.rollback.restoreProcedure');
+    await verifyFile(root, baselineRollback, 'baseline.rollback');
+    if (baselineRollback.downloadBackVerified !== true) {
+      throw new Error('baseline.rollback.downloadBackVerified must be true');
+    }
+    const baselineRollbackCopy = await verifyFile(root, baselineRollback.downloadBack, 'baseline.rollback.downloadBack');
+    if (baselineRollbackCopy.sha256 !== baselineRollback.sha256 || baselineRollbackCopy.bytes !== baselineRollback.bytes) {
+      throw new Error('baseline.rollback.downloadBack must byte-match the baseline rollback');
+    }
   }
   const packageFile = await verifyFile(root, receipt.package, 'package');
-  if (packageFile.sha256 === baselineRollback.sha256) {
+  if (!nativeRollback && packageFile.sha256 === baselineRollback.sha256) {
     throw new Error('candidate package must be distinct from the baseline rollback package');
   }
-  if (baselineArtifactFile.sha256 !== baselineRollback.sha256 || baselineArtifactFile.bytes !== baselineRollback.bytes) {
+  if (!nativeRollback && (baselineArtifactFile.sha256 !== baselineRollback.sha256 || baselineArtifactFile.bytes !== baselineRollback.bytes)) {
     throw new Error('baseline rollback must byte-match the recovered current baseline artifact');
   }
-  const rollbackFile = await verifyFile(root, receipt.rollback?.artifact, 'rollback.artifact');
-  if (rollbackFile.sha256 === packageFile.sha256) throw new Error('rollback artifact must differ from the candidate package');
-  if (rollbackFile.sha256 !== baselineRollback.sha256 || rollbackFile.bytes !== baselineRollback.bytes) {
-    throw new Error('rollback artifact must match the recovered current baseline rollback');
+  let rollbackFile;
+  if (nativeRollback) {
+    if (receipt.rollback?.mode !== 'cloudflare-pages-native-rollback' ||
+        receipt.rollback.deploymentId !== baseline.identity || receipt.rollback.sourceCommit !== baseline.sourceCommit ||
+        receipt.rollback.rollbackEligible !== true) {
+      throw new Error('rollback must bind the same verified immutable Cloudflare production deployment');
+    }
+    rollbackFile = { sha256: providerEvidence.sha256, bytes: providerEvidence.bytes };
+  } else {
+    rollbackFile = await verifyFile(root, receipt.rollback?.artifact, 'rollback.artifact');
+    if (rollbackFile.sha256 === packageFile.sha256) throw new Error('rollback artifact must differ from the candidate package');
+    if (rollbackFile.sha256 !== baselineRollback.sha256 || rollbackFile.bytes !== baselineRollback.bytes) {
+      throw new Error('rollback artifact must match the recovered current baseline rollback');
+    }
   }
   requireString(receipt.rollback?.restoreProcedure, 'rollback.restoreProcedure');
   const rollbackRecovery = receipt.rollback?.recovery;
-  requireString(rollbackRecovery?.driveFileId, 'rollback.recovery.driveFileId');
-  requireString(rollbackRecovery?.driveUrl, 'rollback.recovery.driveUrl');
-  if (rollbackRecovery.downloadBackVerified !== true) throw new Error('rollback.recovery.downloadBackVerified must be true');
-  const recoveredRollback = await verifyFile(root, rollbackRecovery.downloadBack, 'rollback.recovery.downloadBack');
-  if (recoveredRollback.sha256 !== rollbackFile.sha256 || recoveredRollback.bytes !== rollbackFile.bytes) {
-    throw new Error('rollback.recovery.downloadBack must byte-match the rollback artifact');
+  if (nativeRollback) {
+    if (receipt.rollback.restoreProcedure !== receipt.recoveryMode.providerVerification.restoreProcedure) {
+      throw new Error('rollback.restoreProcedure must match the verified Cloudflare restore procedure');
+    }
+  } else {
+    requireString(rollbackRecovery?.driveFileId, 'rollback.recovery.driveFileId');
+    requireString(rollbackRecovery?.driveUrl, 'rollback.recovery.driveUrl');
+    if (rollbackRecovery.downloadBackVerified !== true) throw new Error('rollback.recovery.downloadBackVerified must be true');
+    const recoveredRollback = await verifyFile(root, rollbackRecovery.downloadBack, 'rollback.recovery.downloadBack');
+    if (recoveredRollback.sha256 !== rollbackFile.sha256 || recoveredRollback.bytes !== rollbackFile.bytes) {
+      throw new Error('rollback.recovery.downloadBack must byte-match the rollback artifact');
+    }
   }
 
   const deployment = receipt.deployment;
@@ -286,15 +437,19 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   if (recovered.sha256 !== packageFile.sha256 || recovered.bytes !== packageFile.bytes) {
     throw new Error('recovery.downloadBack must byte-match the release package');
   }
+  if (nativeRollback && path.resolve(root, recovery.downloadBack.path) === path.resolve(root, receipt.package.path)) {
+    throw new Error('candidate package recovery must be a separate downloaded-back file');
+  }
   if (rollbackFile.bytes <= 0) throw new Error('rollback artifact is empty');
 
   const admissionManifest = admissionProjection(receipt, {
-    baselineSha256: baselineArtifactFile.sha256,
-    baselineBytes: baselineArtifactFile.bytes,
+    baselineSha256: nativeRollback ? null : baselineArtifactFile.sha256,
+    baselineBytes: nativeRollback ? null : baselineArtifactFile.bytes,
     packageSha256: packageFile.sha256,
     packageBytes: packageFile.bytes,
     rollbackSha256: rollbackFile.sha256,
     rollbackBytes: rollbackFile.bytes,
+    providerEvidenceSha256: providerEvidence?.sha256,
   });
   const admission = await verifyAdmissionEvidence(root, receipt, admissionManifest, { required: phase === 'closeout' });
   if (phase === 'closeout') {

@@ -815,6 +815,20 @@ test('zero-intensity dye blocks do not create invented evidence or overlaps',()=
   'zero strength cannot create physical overlap warnings');
 });
 
+test('geometry edits refresh the evidence warning for overlap changes',()=>{
+ const start=studioScript.indexOf('function editorLiveChange(){');
+ const end=studioScript.indexOf('\nfunction ',start+12);
+ const source=studioScript.slice(start,end);
+ const nodes={shape:{value:'stripe'},strength:{value:'100'},layerPasses:{value:'1'},layerMethod:{value:'acetone-direct'},angle:{value:'15'},position:{value:'55'},stripeWidth:{value:'20'}};
+ const env={selected:0,layers:[{shape:'edge',strength:100,passes:1,method:'acetone-direct',angle:0,offset:0,width:.45}],$:id=>nodes[id],clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),renderLayerList(){},syncEditor(){},requestRender(){},evidenceRefreshes:0,renderEvidenceAdvisory(){this.evidenceRefreshes++}};
+ const edit=Function('env','with(env){'+source+';return editorLiveChange;}')(env);
+ edit();
+ assert.equal(env.layers[0].shape,'stripe');
+ assert.equal(env.layers[0].offset,.55);
+ assert.equal(env.layers[0].width,.2);
+ assert.equal(env.evidenceRefreshes,1,'moving a boundary must immediately re-evaluate overlap evidence');
+});
+
 test('private before-and-after owner photos are absent from served Studio JavaScript',()=>{
  assert.doesNotMatch(studioScript,/data:image\/(?:jpeg|png|webp);base64,/i);
  assert.match(studioScript,/const actualPhotos=s\.actual&&s\.beforeImg&&s\.afterImg/);
@@ -1181,4 +1195,35 @@ test('original-photo import retries the image-element decoder on bitmap failure 
  assert.deepEqual(await run(true,true),['bitmap','create-url','revoke-url'],
   'a genuinely unreadable photo fails cleanly and releases its temporary URL');
  // No fixture is a real customer photo or controlled dye/pigment measurement.
+});
+
+// Native-source regression to install in app/tests/dye-studio.integration.test.mjs.
+// Integrates the REAL source evidenceScore with FIELD-AC-01 from published source.
+test('a same-method artist naming all pigments cannot validate their unisolated overlap',()=>{
+ const start=studioScript.indexOf('function evidenceScore(');
+ const end=studioScript.indexOf('function renderEvidenceAdvisory()',start);
+ const casesStart=studioScript.indexOf('const FIELD_CASES=');
+ const casesEnd=studioScript.indexOf('];',casesStart);
+ const cases=JSON.parse(studioScript.slice(casesStart+'const FIELD_CASES='.length,casesEnd+1));
+ const original=cases.find(x=>x.id==='FIELD-AC-01');
+ assert.ok(original&&original.dyes.includes('ProChem Sonic Blue')&&original.dyes.includes('ProChem Fluorescent Pink'));
+ assert.match(original.limitations,/no isolated A\/B\/A\+B/i);
+ const env={layers:[
+  {name:'ProChem Sonic Blue',strength:100,method:'acetone-direct'},
+  {name:'ProChem Fluorescent Pink',strength:100,method:'acetone-direct'}],
+  evidenceDyeFamilyMatches:(name,reported)=>reported.includes(name),
+  materialClass:()=> 'unknown',classifyObservedProcess:()=> 'acetone-direct',
+  methodForDyeLayer:l=>l.method};
+ const score=Function('env','with(env){'+studioScript.slice(start,end)+';return evidenceScore;}')(env);
+ const separate=score(original,[],'Innova Star','white',false);
+ const overlap=score(original,[],'Innova Star','white',true);
+ assert.equal(separate.exactDye,true,'all two shade names present for unrelated design regions');
+ assert.equal(overlap.exactDye,false,'unisolated multi-pigment post cannot support a matched overlap');
+ assert.equal(overlap.partialDye,true,'still useful as a qualitative named-shade anecdote');
+ assert.equal(separate.score-overlap.score,10,'withhold only unsupported full-stack bonus');
+ assert.equal(score({...original,overlapIsolationVerified:true},[],'Innova Star','white',true).exactDye,true,
+  'only evidence explicitly confirming isolated A/B/A+B may receive full-stack overlap bonus');
+ assert.equal(score({...original,overlapIsolationVerified:true,shadeMappingCertain:false},[],'Innova Star','white',true).exactDye,false,'uncertain dye identity still blocks numeric-style bonus');
+ assert.match(studioScript,/evidenceScore\(obs,selected,p\?\.plastic\|\|"",baseFamily,overlapExists\)/);
+ assert.match(studioScript,/No indexed controlled A, B and A\+B dye-overlap result/);
 });

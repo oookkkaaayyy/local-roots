@@ -71,6 +71,54 @@ async function fixture() {
   return { root, receipt, cleanup: () => rm(root, { recursive: true, force: true }) };
 }
 
+async function nativeRollbackFixture() {
+  const f = await fixture();
+  const providerRecord = {
+    provider: 'cloudflare-pages', project: 'local-roots', target: 'production', environment: 'production',
+    deploymentId: 'b56e1122-f55d-48ae-817a-0e511e72b9e4',
+    sourceCommit: '0f8e9c2409bb5a947482f66db0d436de49d1acc0', deploymentStatus: 'success',
+    rollbackEligible: true, authenticatedProviderReadback: true,
+    immutableUrl: 'https://b56e1122.local-roots.pages.dev',
+  };
+  const bytes = Buffer.from(JSON.stringify(providerRecord, null, 2) + '\n');
+  await writeFile(path.join(f.root, 'evidence/cloudflare-production-readback.json'), bytes);
+  await writeFile(path.join(f.root, 'evidence/cloudflare-production-readback-download.json'), bytes);
+  const evidence = {
+    path: 'evidence/cloudflare-production-readback.json', bytes: bytes.length, sha256: hash(bytes),
+    driveFileId: 'cloudflare-provider-evidence-id', driveUrl: 'https://drive.google.com/file/d/cloudflare-provider-evidence-id/view',
+    downloadBackVerified: true,
+    downloadBack: { path: 'evidence/cloudflare-production-readback-download.json', bytes: bytes.length, sha256: hash(bytes) },
+  };
+  f.receipt.releaseId = 'local-roots-dye-studio-pr-153-2026-10-29-r2';
+  f.receipt.source.repository = 'oookkkaaayyy/local-roots';
+  f.receipt.source.ref = 'refs/pull/153/head';
+  f.receipt.source.pullRequest = 153;
+  f.receipt.baseline = {
+    provider: 'cloudflare-pages', target: 'production', authorityUrl: 'https://dash.cloudflare.com/',
+    identity: providerRecord.deploymentId, sourceCommit: providerRecord.sourceCommit,
+    sourceEvidence: 'Authenticated Cloudflare Pages dashboard deployment readback.', acceptance: 'Production remains on the recorded successful deployment.',
+    artifact: { disposition: 'provider-native-rollback', driveFileId: evidence.driveFileId, driveUrl: evidence.driveUrl },
+    rollback: { mode: 'cloudflare-pages-native-rollback', deploymentId: providerRecord.deploymentId,
+      sourceCommit: providerRecord.sourceCommit, rollbackEligible: true,
+      restoreProcedure: 'Cloudflare dashboard > local-roots > Deployments > select deployment > Rollback to this deployment; confirm.' },
+  };
+  f.receipt.recoveryMode = {
+    mode: 'cloudflare-pages-native-rollback',
+    scope: { provider: 'cloudflare-pages', project: 'local-roots', target: 'production', releaseId: f.receipt.releaseId, pullRequest: 153, repository: 'oookkkaaayyy/local-roots' },
+    approval: { authority: 'owner-approved-AKS', canonicalRecordId: '1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM', canonicalUrl: 'https://docs.google.com/document/d/1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM/edit' },
+    providerVerification: { ...providerRecord, verifiedAt: '2026-10-29T22:00:00Z', evidence,
+      restoreProcedure: f.receipt.baseline.rollback.restoreProcedure,
+      rollbackInstructions: 'Select the verified successful deployment and choose Rollback to this deployment in Cloudflare Pages.' },
+  };
+  f.receipt.rollback = { mode: 'cloudflare-pages-native-rollback', deploymentId: providerRecord.deploymentId,
+    sourceCommit: providerRecord.sourceCommit, rollbackEligible: true,
+    restoreProcedure: f.receipt.baseline.rollback.restoreProcedure };
+  f.receipt.deployment = { provider: 'cloudflare-pages', target: 'production', plannedRoute: 'Merge PR #153 and allow Git-integrated Pages production deployment.', restoreProcedure: f.receipt.rollback.restoreProcedure };
+  f.receipt.acceptance.criteria[0] = { id: 'candidate-preview', description: 'Candidate preview is available and passed required checks.', method: 'Verify exact preview deployment and CI results.', expectedOutcome: 'Exact candidate preview and all required checks pass.', status: 'PENDING' };
+  delete f.receipt.admission;
+  return f;
+}
+
 test('accepts a complete receipt when package and recovery copy match', async () => {
   const f = await fixture();
   try {
@@ -115,6 +163,8 @@ test('admission CLI writes one immutable manifest and refuses overwrite', async 
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
     assert.equal(manifest.package.sha256, f.receipt.package.sha256);
     assert.equal(manifest.baseline.rollbackSha256, f.receipt.rollback.artifact.sha256);
+    assert.equal(Object.hasOwn(manifest, 'recoveryMode'), false, 'strict artifact-based admission manifest stays unchanged');
+    assert.equal(Object.hasOwn(manifest.baseline, 'artifactDisposition'), false);
     const manifestBytes = await readFile(manifestPath);
     await writeFile(path.join(f.root, 'evidence/admission-download.json'), manifestBytes);
     f.receipt.admission = {
@@ -257,6 +307,57 @@ test('rejects rollback that is not bound to the active baseline identity', async
   try {
     f.receipt.baseline.rollback.baselineIdentity = 'different-version';
     await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /baseline\.rollback\.baselineIdentity must match baseline\.identity/);
+  } finally { await f.cleanup(); }
+});
+
+test('admits only the owner-approved Dye Studio PR #153 Cloudflare rollback alternative', async () => {
+  const f = await nativeRollbackFixture();
+  try {
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(result.phase, 'admission');
+    assert.equal(result.admissionManifest.recoveryMode.mode, 'cloudflare-pages-native-rollback');
+    assert.equal(result.admissionManifest.baseline.artifactSha256, null);
+    assert.equal(result.admissionManifest.baseline.providerEvidenceSha256, f.receipt.recoveryMode.providerVerification.evidence.sha256);
+  } finally { await f.cleanup(); }
+});
+
+test('fails closed when authenticated Cloudflare rollback verification is missing', async () => {
+  const f = await nativeRollbackFixture();
+  try {
+    delete f.receipt.recoveryMode.providerVerification.authenticatedProviderReadback;
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /authenticated successful rollback-eligible production deployment/);
+  } finally { await f.cleanup(); }
+});
+
+test('native rollback evidence requires an independently downloaded provider-evidence copy', async () => {
+  const f = await nativeRollbackFixture();
+  try {
+    f.receipt.recoveryMode.providerVerification.evidence.downloadBack.path = f.receipt.recoveryMode.providerVerification.evidence.path;
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /separate downloaded file/);
+  } finally { await f.cleanup(); }
+});
+
+test('Cloudflare exception cannot target another project, hardware target, or release', async () => {
+  for (const [path, value, expected] of [
+    [['recoveryMode', 'scope', 'project'], 'another-project', /outside the owner-approved Cloudflare recovery exception/],
+    [['recoveryMode', 'scope', 'target'], 'hardware', /outside the owner-approved Cloudflare recovery exception/],
+    [['releaseId'], 'unrelated-release-2026-10-29', /outside the owner-approved Cloudflare recovery exception/],
+  ]) {
+    const f = await nativeRollbackFixture();
+    try {
+      let target = f.receipt;
+      for (const key of path.slice(0, -1)) target = target[key];
+      target[path.at(-1)] = value;
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), expected);
+    } finally { await f.cleanup(); }
+  }
+});
+
+test('native rollback evidence cannot claim unavailable historical archive hashes', async () => {
+  const f = await nativeRollbackFixture();
+  try {
+    f.receipt.baseline.artifact.sha256 = 'a'.repeat(64);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /cannot claim unavailable historical deployment artifact bytes/);
   } finally { await f.cleanup(); }
 });
 
