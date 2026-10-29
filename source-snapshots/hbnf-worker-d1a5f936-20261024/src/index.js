@@ -179,13 +179,17 @@ export async function runGlowSync(env, deps = {}) {
   if (!Array.isArray(rows) || rows.length !== 1 || !rows[0]?.state_json?.glow) throw Error('Glow state is missing or ambiguous.');
   const root = rows[0].state_json;
   const glow = root.glow;
+  // Never let a late, missing, or misdated UDisc export change which Glow
+  // week the site displays. Sync only the week already selected in Glow.
+  if (glow.activeWeek !== event.date) return {disposition:'active_week_mismatch',date:event.date};
+  const existingWeek = glow.weeks?.[event.date] || null;
+  if (!existingWeek) return {disposition:'week_not_initialized',date:event.date};
   const history = Object.values(glow.weeks || {}).flatMap(week => (week.players || []).flatMap(player => [player.partner1,player.partner2])).filter(Boolean);
   const evidence = source.validateIdentityEvidence({aliases:glow.playerAliases || {},historicalNames:history,tagEvidence:[]});
   const model = {eventId:event.eventId,snapshots:[snapshot]};
   const decisions = source.exactAliasDecisions(model,evidence);
   const proposal = source.buildGlowProposal(model,evidence,decisions,{weekDate:event.date});
   if (proposal.issues?.unresolvedIdentityCount || proposal.issues?.duplicateCanonicalTeamRows) throw Error('Player names need a one-time review before scores can be applied.');
-  const existingWeek = glow.weeks?.[event.date] || null;
   const prepared = await source.prepareGlowWeekSync(existingWeek,proposal,{aliases:evidence.aliases});
   if (!prepared.changed) return {disposition:'unchanged',date:event.date,signature:prepared.signature};
   const rpc = await fetchImpl(`${supabaseUrl}/rest/v1/rpc/hbnf_apply_udisc_glow_week`, {method:'POST',headers,body:JSON.stringify({p_week_date:event.date,p_expected_week:existingWeek,p_replacement_week:prepared.week,p_expected_active_week:glow.activeWeek ?? null})});

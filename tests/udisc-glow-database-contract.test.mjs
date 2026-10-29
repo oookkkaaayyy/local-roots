@@ -9,7 +9,9 @@ test('database save locks one row, compares target week and active selection, an
   assert.match(migration,/where id\s*=\s*1\s+for update/i);
   assert.match(migration,/v_current_week[\s\S]{0,160}p_expected_week/i);
   assert.match(migration,/v_active_week[\s\S]{0,160}p_expected_active_week/i);
+  assert.match(migration,/week_not_active_or_initialized/);
   assert.match(migration,/jsonb_set\(v_weeks, array\[p_week_date\], v_replacement_week, true\)/i);
+  assert.doesNotMatch(migration,/jsonb_set\(v_glow,\s*'\{activeWeek\}'/i);
   assert.match(migration,/update public\.league_state set state_json = v_state where id = 1/i);
   assert.match(migration,/scoresLocked/i);
   assert.match(migration,/finalized/i);

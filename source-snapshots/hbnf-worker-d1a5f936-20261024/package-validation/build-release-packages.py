@@ -41,8 +41,11 @@ def build(args, label: str, source: Path, source_commit: str, output: Path) -> t
                 if path.is_file():
                     files[path.relative_to(source).as_posix()] = path.read_bytes()
     asset_count = len([name for name in files if name.startswith("public/")])
-    if asset_count not in (44, 45):
-        raise SystemExit(f"{label}: expected 44 public assets, found {len(files)}")
+    # Current production has 44 static assets. The two additional JS modules
+    # are Worker-imported score parser/proposal code and are included in the
+    # static directory because Wrangler bundles modules from the configured root.
+    if asset_count not in (44, 45, 46):
+        raise SystemExit(f"{label}: expected 44 baseline assets plus at most two Worker modules; found {asset_count}")
     files["wrangler.jsonc"] = production_config(source)
     if (source / "package.json").exists() and (source / "package-lock.json").exists():
         files["package.json"] = (source / "package.json").read_bytes()

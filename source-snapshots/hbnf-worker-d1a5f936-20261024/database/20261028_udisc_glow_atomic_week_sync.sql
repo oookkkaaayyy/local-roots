@@ -39,6 +39,13 @@ begin
   v_current_week := v_weeks->p_week_date;
   v_active_week := v_glow->'activeWeek';
 
+  -- A sync may update only the currently selected, already-created Glow week.
+  -- It must never create a week with missing defaults or switch the displayed week.
+  if v_active_week is distinct from to_jsonb(p_week_date)
+     or v_current_week is null then
+    return jsonb_build_object('applied', false, 'reason', 'week_not_active_or_initialized');
+  end if;
+
   if coalesce(v_current_week, 'null'::jsonb) is distinct from coalesce(p_expected_week, 'null'::jsonb)
      or coalesce(v_active_week, 'null'::jsonb) is distinct from coalesce(p_expected_active_week, 'null'::jsonb) then
     return jsonb_build_object('applied', false, 'reason', 'concurrent_change');
@@ -58,7 +65,6 @@ begin
   v_replacement_week := p_replacement_week || jsonb_build_object('date', p_week_date, 'activeWeek', p_week_date);
   v_weeks := jsonb_set(v_weeks, array[p_week_date], v_replacement_week, true);
   v_glow := jsonb_set(v_glow, '{weeks}', v_weeks, true);
-  v_glow := jsonb_set(v_glow, '{activeWeek}', to_jsonb(p_week_date), true);
   v_state := jsonb_set(v_state, '{glow}', v_glow, true);
 
   update public.league_state set state_json = v_state where id = 1;

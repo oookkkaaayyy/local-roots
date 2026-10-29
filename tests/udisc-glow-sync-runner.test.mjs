@@ -44,11 +44,12 @@ function workbookBytes(rows=fixture.rows) {
 }
 
 const scheduleHtml=`<a href="https://udisc.com/events/${eventId}/leaderboard">Sat, Apr 18, 2026 HB Glow Doubles</a>`;
+const initializedWeek={date:'2026-04-18',activeWeek:'2026-04-18',scoresLocked:false,cards:[{id:'C1',finalized:false,players:[]}],players:[],scorecardText:{holePars:{1:'3'}},entryFee:5,payoutPercent:100,aceWinner:'',tiebreakerWinner:''};
 
 test('scheduled runner applies fixture scores through a mocked atomic RPC and correction/replay simulations', async () => {
   const aliases={};
   for(const row of fixture.rows) for(const name of row.name.split(/\s*&\s*/)) aliases[name]=name;
-  let state={glow:{weeks:{},activeWeek:null,playerAliases:aliases}};
+  let state={glow:{weeks:{'2026-04-18':structuredClone(initializedWeek)},activeWeek:'2026-04-18',playerAliases:aliases}};
   let rpcCalls=0;
   let activeWorkbook=workbookBytes();
   const fetchMock=async (input,init={})=>{
@@ -96,6 +97,34 @@ test('scheduled runner skips when there is no event for the local date and never
   assert.equal(calls,1);
 });
 
+test('scheduled runner will not switch the active Glow week or create an uninitialized week', async () => {
+  const aliases={};
+  for(const row of fixture.rows) for(const name of row.name.split(/\s*&\s*/)) aliases[name]=name;
+  let rpcCalls=0,readCalls=0;
+  const fetchMock=async input=>{
+    const url=String(input);
+    if(url==='https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule')return new Response(scheduleHtml,{status:200,headers:{'Content-Type':'text/html'}});
+    if(url.endsWith('/leaderboard/export'))return new Response(workbookBytes(),{status:200,headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}});
+    if(url.includes('/rest/v1/league_state?')){readCalls++;return Response.json([{state_json:{glow:{weeks:{'2026-04-18':{date:'2026-04-18',players:[],cards:[]}},activeWeek:'2026-04-19',playerAliases:aliases}}}]);}
+    if(url.endsWith('/hbnf_apply_udisc_glow_week')){rpcCalls++;return Response.json({applied:true});}
+    throw Error('Unexpected simulated request');
+  };
+  const result=await runGlowSync({SUPABASE_URL:'https://project.example',SUPABASE_SERVICE_ROLE_KEY:'test-only'},{fetch:fetchMock,now:()=>new Date('2026-04-19T01:00:00.000Z')});
+  assert.equal(result.disposition,'active_week_mismatch');
+  assert.equal(readCalls,1);assert.equal(rpcCalls,0);
+
+  const noWeekFetch=async(input,init)=>{
+    const url=String(input);
+    if(url==='https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule')return new Response(scheduleHtml,{status:200,headers:{'Content-Type':'text/html'}});
+    if(url.endsWith('/leaderboard/export'))return new Response(workbookBytes(),{status:200,headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}});
+    if(url.includes('/rest/v1/league_state?'))return Response.json([{state_json:{glow:{weeks:{},activeWeek:'2026-04-18',playerAliases:aliases}}}]);
+    if(url.endsWith('/hbnf_apply_udisc_glow_week')){rpcCalls++;return Response.json({applied:true});}
+    throw Error(`Unexpected simulated request ${url}`);
+  };
+  const missing=await runGlowSync({SUPABASE_URL:'https://project.example',SUPABASE_SERVICE_ROLE_KEY:'test-only'},{fetch:noWeekFetch,now:()=>new Date('2026-04-19T01:00:00.000Z')});
+  assert.equal(missing.disposition,'week_not_initialized');assert.equal(rpcCalls,0);
+});
+
 test('runner rejects identity ambiguity before invoking the write RPC', async () => {
   const aliases={};
   for(const row of fixture.rows) for(const name of row.name.split(/\s*&\s*/)) aliases[name]=name;
@@ -106,7 +135,7 @@ test('runner rejects identity ambiguity before invoking the write RPC', async ()
     const url=String(input);
     if(url==='https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule')return new Response(scheduleHtml,{status:200,headers:{'Content-Type':'text/html'}});
     if(url.endsWith('/leaderboard/export'))return new Response(workbookBytes(),{status:200,headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}});
-    if(url.includes('/rest/v1/league_state?'))return Response.json([{state_json:{glow:{weeks:{},activeWeek:null,playerAliases:aliases}}}]);
+    if(url.includes('/rest/v1/league_state?'))return Response.json([{state_json:{glow:{weeks:{'2026-04-18':structuredClone(initializedWeek)},activeWeek:'2026-04-18',playerAliases:aliases}}}]);
     if(url.endsWith('/hbnf_apply_udisc_glow_week')){rpcCalls++;return Response.json({applied:true});}
     throw Error('Unexpected simulated request');
   };
