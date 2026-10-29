@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "test:integration": "node run.mjs"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "playwright": "1.64.1",
+    "supabase": "2.122.0",
+    "ws": "8.18.3"
+  }
+}
