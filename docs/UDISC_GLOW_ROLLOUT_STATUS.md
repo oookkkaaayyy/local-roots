@@ -51,3 +51,32 @@ The recovered static assets are now independently matched to the indexed canonic
 6. Complete the established scorecard, tags/payouts, standings, Matrix refresh/reconnect, restore, and physical-device acceptance before live use; then write and verify the same-manifest closeout receipt.
 
 The local tests and preview are source/preview evidence only. They do not satisfy hosted integration, production persistence, device acceptance, or release admission.
+
+## Fixture-driven live-path implementation (2026-10-28)
+
+The owner confirmed that acceptance must use fixture/simulation evidence and must not wait for another active Glow round. The new slice implements the server-side scheduled path while keeping the existing Glow card as the only score presentation:
+
+- A Cloudflare Worker cron checks the public HBNF schedule every two minutes, selects a single Glow event dated today in Pacific time, fetches that event's public XLSX, and parses it server-side. No browser cookie or visible reconciliation screen is needed in the scoring workflow.
+- The runner reads `league_state` id 1 through a server-side service-role credential, uses exact `glow.playerAliases` plus historical Glow names as evidence, and stops before writing if names remain unresolved or conflict. A first-name-only history hit is not treated as confirmation.
+- A pure merge updates only the dated Glow week, preserving existing card/team IDs when identities match, hole order and scores, other week settings, payouts, tags, and unrelated state. It retains UDisc rank, row order, relative-to-par, stroke totals, correction history, and export provenance in `week.udiscSync`.
+- A target-specific Postgres RPC locks `league_state` row 1 and compares the expected event week and active week before changing only `glow.weeks[date]` and `glow.activeWeek`. It rejects concurrent changes, locked weeks, finalized cards, invalid replacement data, and unresolved identity. It is executable only by `service_role`; the Worker has no public write endpoint.
+- Repeated snapshots with the same score signature do not write. Changed snapshots update the same event and append bounded provenance history. No call to `confirmQuickUdiscImport()` or whole-root client save is used.
+
+### Fixture acceptance matrix
+
+| Gate | Result | Evidence |
+|---|---|---|
+| Authentic-derived event shapes, team order, tied ranks, 18 holes | PASS | Four anonymized workbook-derived fixtures in the repository |
+| Correction/replay/incomplete-round behavior | PASS | Simulated scheduled runner applies a change, skips identical replay, and records correction history |
+| Duplicate identities and changed partnerships | PASS | Exact alias identity preserved; ambiguous matches stop before RPC |
+| Existing Glow fields, tags, payouts, notes, team IDs | PASS | Merge tests assert retained values; no replacement of unrelated scorecard fields |
+| No destructive import / no production calls in fixtures | PASS | Runner tests use mocked UDisc and Supabase endpoints; existing import-isolation test passes |
+| Production data state | NOT CHANGED | No migration or production write was run |
+| Active-round UDisc partial-export behavior | NOT CHECKED | Fixture simulation covers incomplete rows; no active UDisc event was available, by owner direction this is not a reason to wait before code work |
+| Focused local acceptance suite | PASS | `npm run test:udisc-glow` — 43/43 tests, including the scheduled runner and compressed XLSX fixture path |
+| Production install and current Glow readback | BLOCKED | Supabase production reads have timed out in the preceding bounded check; no exact candidate admission/closeout receipt or provider-backed Worker rollback has been established |
+| Field/Matrix acceptance | NOT CHECKED | Requires a temporary scorecard through supported scoring, live Matrix refresh/reconnect, delete/restore, and device baseline verification |
+
+### Remaining install gate
+
+This source is still **REVIEW_ONLY**. The observed production deployment remains static-assets-only, so this Worker cron, its server-side Supabase credential, and the atomic RPC are not installed. The SQL file is a proposed migration, not applied. The package builder now includes Worker source, exact dependencies, static assets, and the migration in one candidate input; however, the candidate package has not been built or validated with Wrangler, and the current package builder does not implement the two-phase release receipt. The shared release-control kit also requires the exact installed target, candidate, rollback bytes, durable readback, and same-manifest admission/closeout; the indexed static asset rollback alone does not prove the exact running Worker script. The next integration gate is to recover the live Supabase read and provider Worker version/rollback evidence, wire the candidate through a fail-closed two-phase receipt path, then run provider-backed readback before any field test.

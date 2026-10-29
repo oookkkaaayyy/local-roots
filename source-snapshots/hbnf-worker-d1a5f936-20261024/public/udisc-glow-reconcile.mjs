@@ -75,9 +75,10 @@ export function buildReviewedCrosswalk(model, evidenceInput, decisions = {}) {
   return Object.freeze(crosswalk);
 }
 
-export function buildGlowProposal(model, evidenceInput, decisions = {}) {
+export function buildGlowProposal(model, evidenceInput, decisions = {}, options = {}) {
   const snapshot = model?.snapshots?.at(-1);
   if (!snapshot) throw Error('Load a UDisc snapshot before proposing a Glow week.');
+  const weekDate = String(options.weekDate || snapshot.weekDate || snapshot.eventId || '').trim();
   const evidence = evidenceInput?.candidates ? evidenceInput : validateIdentityEvidence(evidenceInput);
   const crosswalk = buildReviewedCrosswalk(model, evidence, decisions);
   const byKey = new Map(crosswalk.map(item => [item.key, item]));
@@ -147,8 +148,8 @@ export function buildGlowProposal(model, evidenceInput, decisions = {}) {
     }
   }
   const week = Object.freeze({
-    date: snapshot.eventId,
-    activeWeek: snapshot.eventId,
+    date: weekDate,
+    activeWeek: weekDate,
     cards: Object.freeze([Object.freeze({ id: 'C1', finalized: false, players: Object.freeze(proposedPlayers) })]),
     players: Object.freeze(proposedPlayers),
     scoresLocked: false
@@ -157,7 +158,7 @@ export function buildGlowProposal(model, evidenceInput, decisions = {}) {
     schema: 'hbnf.glow.proposed-week.v1',
     disposition: 'PROPOSED_ONLY_NOT_DELIVERED',
     writeTarget: null,
-    event: Object.freeze({ eventId: snapshot.eventId, weekDate: snapshot.eventId, observedAtLocal: snapshot.observedAtLocal, sourceUpdatedAt: snapshot.sourceUpdatedAt, sourceFreshness: snapshot.freshness || 'upstream_freshness_unknown', localImportNumber: snapshot.localImportNumber, contentSignature: snapshot.contentSignature }),
+    event: Object.freeze({ eventId: snapshot.eventId, weekDate, observedAtLocal: snapshot.observedAtLocal, sourceUpdatedAt: snapshot.sourceUpdatedAt, sourceFreshness: snapshot.freshness || 'upstream_freshness_unknown', localImportNumber: snapshot.localImportNumber, contentSignature: snapshot.contentSignature }),
     destination: Object.freeze({ contract: 'Glow week: cards[].players[] and players[] entries with id,name,partner1,partner2,cardId,scores[18],removed', week }),
     sourceProvenance: Object.freeze({ source: 'local UDisc XLSX/CSV snapshot', rowOrderPreserved: true, snapshotHistory: Object.freeze(snapshotHistory), correctionDiffs: Object.freeze(correctionDiffs), udiscRanksPreserved: proposalPlayers.map(item => ({ sourceRow: item.source.sourceRow, rank: item.source.sourceRank, rawRank: item.source.sourceRankRaw, division: item.source.division })), relativeVsStrokeScores: proposalPlayers.map(item => ({ sourceRow: item.source.sourceRow, relativeScore: item.source.relativeScore, strokeTotal: item.source.strokeTotal, holeStrokesTotal: item.source.holeStrokesTotal })), rowEvidence: Object.freeze(proposalPlayers.map(item => item.source)) }),
     identityReview: Object.freeze({ required: false, decisionDeferred: true, reviewedCrosswalk: crosswalk, unresolved: Object.freeze(identityIssues) }),

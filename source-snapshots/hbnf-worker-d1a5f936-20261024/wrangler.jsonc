@@ -1,9 +1,13 @@
 {
-  "$schema": "../tools/node_modules/wrangler/config-schema.json",
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "hbnf",
+  "main": "./src/index.js",
   "compatibility_date": "2026-07-28",
   "workers_dev": false,
+  "triggers": { "crons": ["*/2 * * * *"] },
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/internal/*"]
   }
 }

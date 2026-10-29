@@ -1,9 +1,13 @@
+import {parseUdiscGlowEvents} from './udisc-glow-events.mjs';
+export {parseUdiscGlowEvents};
+
 const EVENT_ID = /^hb-night-flyers-[a-z0-9-]+-[A-Za-z0-9]{4,12}$/;
 const EXPORT_PATH = '/api/udisc-glow/export';
 const EVENTS_PATH = '/api/udisc-glow/events';
 const SCHEDULE_URL = 'https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule';
 const MAX_EXPORT_BYTES = 12 * 1024 * 1024;
 const MAX_SCHEDULE_BYTES = 2 * 1024 * 1024;
+const GLOW_SYNC_PATH = '/internal/udisc-glow-sync';
 
 const errorResponse = (status, message, extraHeaders = {}) => new Response(`${message}\n`, {
   status,
@@ -37,41 +41,6 @@ async function readBounded(response, maxBytes = MAX_EXPORT_BYTES) {
     offset += chunk.byteLength;
   }
   return bytes;
-}
-
-function decodeHtmlText(value) {
-  return String(value || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&#160;/gi, ' ')
-    .replace(/&amp;/gi, '&').replace(/&quot;|&#34;/gi, '"').replace(/&#39;|&apos;/gi, "'")
-    .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/\s+/g, ' ').trim();
-}
-
-export function parseUdiscGlowEvents(html) {
-  if (typeof html !== 'string' || !html.trim()) throw new Error('The UDisc schedule page is empty.');
-  const months = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
-  const events = new Map();
-  const anchors = /<a\b([^>]*?)href\s*=\s*(["'])(.*?)\2([^>]*)>([\s\S]*?)<\/a\s*>/gi;
-  let match;
-  while ((match = anchors.exec(html))) {
-    let link;
-    try { link = new URL(match[3], 'https://udisc.com'); } catch { continue; }
-    if (link.origin !== 'https://udisc.com') continue;
-    const path = link.pathname;
-    const eventMatch = path.match(/^\/events\/([^/]+)\/leaderboard\/?$/);
-    if (!eventMatch) continue;
-    const eventId = eventMatch[1];
-    if (!EVENT_ID.test(eventId) || !/glow/i.test(eventId) || /test/i.test(eventId)) continue;
-    const label = decodeHtmlText(match[5]);
-    const dateMatch = label.match(/\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s+(\d{1,2})\b[\s\S]*?\b(20\d{2})\b/i);
-    if (!dateMatch) continue;
-    const month = months[dateMatch[1].toLowerCase()];
-    const day = Number(dateMatch[2]);
-    const year = Number(dateMatch[3]);
-    const date = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const title = eventId.replace(/-[A-Za-z0-9]{4,12}$/, '').split('-').map(word => word ? word[0].toUpperCase()+word.slice(1) : '').join(' ');
-    events.set(eventId, {eventId, date, title, url:`https://udisc.com/events/${eventId}/leaderboard`});
-  }
-  return [...events.values()].sort((a,b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title)).slice(0,25);
 }
 
 export async function handleUdiscGlowEvents(request, fetchImpl = fetch) {
@@ -180,11 +149,59 @@ export async function handleUdiscExport(request, fetchImpl = fetch) {
   }
 }
 
+/** Authenticated, cron-only live sync. This endpoint is never exposed publicly. */
+export async function runGlowSync(env, deps = {}) {
+  const now = deps.now?.() || new Date();
+  const localDate = new Intl.DateTimeFormat('en-CA', {timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+  const fetchImpl = deps.fetch || fetch;
+  const source = deps.source || await import('./udisc-glow-sync-runner.mjs');
+  const scheduleResponse = await fetchImpl(SCHEDULE_URL, {headers:{Accept:'text/html'},redirect:'manual'});
+  if (!scheduleResponse.ok || scheduleResponse.status >= 300 && scheduleResponse.status < 400) throw Error('UDisc schedule unavailable.');
+  if (!(scheduleResponse.headers.get('content-type') || '').toLowerCase().includes('text/html')) throw Error('UDisc schedule response was not HTML.');
+  const scheduleBytes = await readBounded(scheduleResponse, MAX_SCHEDULE_BYTES);
+  const scheduleHtml = new TextDecoder('utf-8',{fatal:true}).decode(scheduleBytes);
+  const todays = source.parseUdiscGlowEvents(scheduleHtml).filter(event => event.date === localDate);
+  if (todays.length !== 1) return {disposition:todays.length ? 'multiple_events' : 'no_event',eventCount:todays.length};
+  const event = todays[0];
+  const exportResponse = await fetchImpl(`https://udisc.com/events/${event.eventId}/leaderboard/export`, {headers:{Accept:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},redirect:'manual'});
+  if (!exportResponse.ok || exportResponse.status >= 300 && exportResponse.status < 400 || !(exportResponse.headers.get('content-type') || '').toLowerCase().includes('spreadsheetml.sheet')) throw Error('UDisc score export unavailable.');
+  const boundedWorkbook = await readBounded(exportResponse, MAX_EXPORT_BYTES);
+  if (boundedWorkbook.byteLength < 22) throw Error('UDisc score export size is invalid.');
+  const workbookBytes = boundedWorkbook.buffer.slice(boundedWorkbook.byteOffset,boundedWorkbook.byteOffset+boundedWorkbook.byteLength);
+  const snapshot = await source.parseUdiscWorkbook(workbookBytes, {eventId:event.eventId,weekDate:event.date,observedAt:new Date().toISOString()});
+  const supabaseUrl = String(env.SUPABASE_URL || '').replace(/\/$/,'');
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) throw Error('Server sync credentials are not configured.');
+  const headers = {apikey:serviceKey,Authorization:`Bearer ${serviceKey}`,'Content-Type':'application/json',Accept:'application/json'};
+  const read = await fetchImpl(`${supabaseUrl}/rest/v1/league_state?id=eq.1&select=state_json`, {headers,cache:'no-store'});
+  if (!read.ok) throw Error(`Glow state read failed (${read.status}).`);
+  const rows = await read.json();
+  if (!Array.isArray(rows) || rows.length !== 1 || !rows[0]?.state_json?.glow) throw Error('Glow state is missing or ambiguous.');
+  const root = rows[0].state_json;
+  const glow = root.glow;
+  const history = Object.values(glow.weeks || {}).flatMap(week => (week.players || []).flatMap(player => [player.partner1,player.partner2])).filter(Boolean);
+  const evidence = source.validateIdentityEvidence({aliases:glow.playerAliases || {},historicalNames:history,tagEvidence:[]});
+  const model = {eventId:event.eventId,snapshots:[snapshot]};
+  const decisions = source.exactAliasDecisions(model,evidence);
+  const proposal = source.buildGlowProposal(model,evidence,decisions,{weekDate:event.date});
+  if (proposal.issues?.unresolvedIdentityCount || proposal.issues?.duplicateCanonicalTeamRows) throw Error('Player names need a one-time review before scores can be applied.');
+  const existingWeek = glow.weeks?.[event.date] || null;
+  const prepared = await source.prepareGlowWeekSync(existingWeek,proposal,{aliases:evidence.aliases});
+  if (!prepared.changed) return {disposition:'unchanged',date:event.date,signature:prepared.signature};
+  const rpc = await fetchImpl(`${supabaseUrl}/rest/v1/rpc/hbnf_apply_udisc_glow_week`, {method:'POST',headers,body:JSON.stringify({p_week_date:event.date,p_expected_week:existingWeek,p_replacement_week:prepared.week,p_expected_active_week:glow.activeWeek ?? null})});
+  if (!rpc.ok) throw Error(`Glow score save failed (${rpc.status}).`);
+  const result = await rpc.json();
+  if (result !== true && result?.applied !== true) throw Error('Glow score save conflicted; retry on the next scheduled refresh.');
+  return {disposition:'updated',date:event.date,signature:prepared.signature,teamCount:prepared.week.players.length};
+}
+
 export default {
   fetch(request, env) {
     const path = new URL(request.url).pathname;
-    if (path === EXPORT_PATH) return handleUdiscExport(request);
-    if (path === EVENTS_PATH) return handleUdiscGlowEvents(request);
+    if (path === EXPORT_PATH || path === EVENTS_PATH || path === GLOW_SYNC_PATH) return errorResponse(404, 'Not found.');
     return env.ASSETS.fetch(request);
+  },
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(runGlowSync(env).catch(error => console.error('UDisc Glow sync skipped:', error?.message || 'unexpected error')));
   },
 };

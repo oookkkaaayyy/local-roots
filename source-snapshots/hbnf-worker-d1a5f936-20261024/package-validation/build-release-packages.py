@@ -23,7 +23,10 @@ def production_config(source: Path) -> bytes:
     config["$schema"] = "./node_modules/wrangler/config-schema.json"
     config["name"] = "hbnf"
     config["workers_dev"] = False
-    config["assets"] = {"directory": "./public"}
+    assets = dict(config.get("assets", {}))
+    assets["directory"] = "./public"
+    assets["binding"] = "ASSETS"
+    config["assets"] = assets
     return (json.dumps(config, indent=2) + "\n").encode()
 
 
@@ -31,33 +34,43 @@ def build(args, label: str, source: Path, source_commit: str, output: Path) -> t
     files: dict[str, bytes] = {}
     for path in asset_files(source):
         files[path.relative_to(source).as_posix()] = path.read_bytes()
+    for directory in ("src", "database"):
+        directory_path = source / directory
+        if directory_path.exists():
+            for path in sorted(directory_path.rglob("*")):
+                if path.is_file():
+                    files[path.relative_to(source).as_posix()] = path.read_bytes()
     asset_count = len([name for name in files if name.startswith("public/")])
     if asset_count not in (44, 45):
         raise SystemExit(f"{label}: expected 44 public assets, found {len(files)}")
     files["wrangler.jsonc"] = production_config(source)
-    files["package.json"] = json.dumps({
-        "name": "hbnf-worker-release-input",
-        "version": "1.0.0",
-        "private": True,
-        "devDependencies": {"wrangler": "4.152.0"},
-    }, indent=2).encode() + b"\n"
-    lock = json.loads((args.toolchain_root / "package-lock.json").read_text())
-    lock["name"] = "hbnf-worker-release-input"
-    lock["version"] = "1.0.0"
-    lock["packages"][""]["name"] = "hbnf-worker-release-input"
-    lock["packages"][""]["version"] = "1.0.0"
-    files["package-lock.json"] = (json.dumps(lock, indent=2) + "\n").encode()
+    if (source / "package.json").exists() and (source / "package-lock.json").exists():
+        files["package.json"] = (source / "package.json").read_bytes()
+        files["package-lock.json"] = (source / "package-lock.json").read_bytes()
+    else:
+        files["package.json"] = json.dumps({
+            "name": "hbnf-worker-release-input",
+            "version": "1.0.0",
+            "private": True,
+            "devDependencies": {"wrangler": "4.152.0"},
+        }, indent=2).encode() + b"\n"
+        lock = json.loads((args.toolchain_root / "package-lock.json").read_text())
+        lock["name"] = "hbnf-worker-release-input"
+        lock["version"] = "1.0.0"
+        lock["packages"][""]["name"] = "hbnf-worker-release-input"
+        lock["packages"][""]["version"] = "1.0.0"
+        files["package-lock.json"] = (json.dumps(lock, indent=2) + "\n").encode()
     readme = (
         "# HBNF Worker release input\n\n"
         f"Package: {label}\nSource commit: {source_commit}\n"
-        "This archive is a complete static-assets Wrangler input, not an uploaded Cloudflare Version.\n"
+        "This archive contains the Worker source, public assets, pinned build inputs, and any included target migration; it is not an uploaded Cloudflare Version.\n"
         "Install the pinned toolchain with `npm ci`; inspect with `npx wrangler versions upload --help`.\n"
         "An authorized `wrangler versions upload --config ./wrangler.jsonc` creates a remote Worker Version.\n"
         "It does not by itself change traffic. Do not upload or deploy without the applicable approval.\n"
     ).encode()
     files["README-RELEASE-INPUT.md"] = readme
     manifest = {
-        "format": "hbnf-wrangler-static-assets-input-v1",
+        "format": "hbnf-wrangler-worker-input-v2",
         "package": label,
         "sourceCommit": source_commit,
         "activeProductionVersionObservedAtPreparation": args.active_version,

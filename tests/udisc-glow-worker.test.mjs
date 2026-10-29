@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {handleUdiscExport,handleUdiscGlowEvents,parseUdiscGlowEvents} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
+import worker,{handleUdiscExport,handleUdiscGlowEvents,parseUdiscGlowEvents} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
 
 const event = 'hb-night-flyers-test-event-XpuRfW';
 const xlsx = new Uint8Array([0x50, 0x4b, 3, 4, ...new Array(20).fill(0)]);
@@ -128,4 +128,14 @@ test('rejects oversized upstream bodies before forwarding them', async () => {
   });
   const response = await handleUdiscExport(new Request(`https://hbnf.example/api/udisc-glow/export?event=${event}`), async () => new Response(tooLarge, {headers}));
   assert.equal(response.status, 502);
+});
+
+test('production fetch keeps export, schedule, and sync endpoints private', async()=>{
+  let assetCalls=0;
+  const env={ASSETS:{fetch:async()=>{assetCalls++;return new Response('asset');}}};
+  for(const path of ['/api/udisc-glow/events','/api/udisc-glow/export?event='+event,'/internal/udisc-glow-sync']){
+    const response=await worker.fetch(new Request(`https://hbnf.example${path}`),env);
+    assert.equal(response.status,404);
+  }
+  assert.equal(assetCalls,0);
 });
