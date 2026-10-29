@@ -4,13 +4,50 @@
 import argparse
 import hashlib
 import json
+import posixpath
 from pathlib import Path
+import re
 import stat
 import zipfile
 
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+_STATIC_IMPORT = re.compile(r"""(?:^|\n)\s*(?:import|export)\s+(?:(?!;)[^;])*?\sfrom\s*(['\"])([^'\"]+)\1""")
+_SIDE_EFFECT_IMPORT = re.compile(r"""(?:^|\n)\s*import\s+(['\"])([^'\"]+)\1""")
+_DYNAMIC_IMPORT = re.compile(r"""\bimport\s*\(\s*(['\"])([^'\"]+)\1\s*\)""")
+
+
+def assert_worker_import_closure(files: dict[str, bytes]) -> None:
+    """Fail unless every relative import in the Worker source is packaged privately."""
+    modules = {
+        name for name in files
+        if name.startswith(("src/", "worker-private/")) and name.endswith((".js", ".mjs", ".cjs"))
+    }
+    unresolved = []
+    public_edges = []
+    for name in sorted(modules):
+        text = files[name].decode("utf-8")
+        specifiers = set()
+        for pattern in (_STATIC_IMPORT, _SIDE_EFFECT_IMPORT, _DYNAMIC_IMPORT):
+            specifiers.update(match[1] for match in pattern.findall(text))
+        for specifier in sorted(specifiers):
+            if not specifier.startswith("."):
+                continue
+            target = posixpath.normpath(posixpath.join(posixpath.dirname(name), specifier))
+            if target.startswith("public/"):
+                public_edges.append(f"{name} -> {specifier}")
+                continue
+            candidates = (target, target + ".js", target + ".mjs", target + ".cjs",
+                          target + "/index.js", target + "/index.mjs")
+            if not any(candidate in files for candidate in candidates):
+                unresolved.append(f"{name} -> {specifier}")
+    if public_edges:
+        raise SystemExit("Worker imports public asset paths; keep internal modules outside public/: " + ", ".join(public_edges))
+    if unresolved:
+        raise SystemExit("Worker package has unresolved relative imports: " + ", ".join(unresolved))
 
 
 def asset_files(source: Path, manifest: Path, include_save_module: bool) -> list[Path]:
@@ -49,17 +86,27 @@ def production_config(source: Path) -> bytes:
     return (json.dumps(config, indent=2) + "\n").encode()
 
 
-def build(args, label: str, source: Path, source_commit: str, output: Path) -> tuple[Path, str]:
+def build(args, label: str, source: Path, source_commit: str, output: Path, repo_root=None) -> tuple[Path, str]:
     files: dict[str, bytes] = {}
     path_manifest = args.candidate_root / "package-validation" / "LOCAL_ASSET_SHA256SUMS"
     for path in asset_files(source, path_manifest, label == "candidate"):
         files[path.relative_to(source).as_posix()] = path.read_bytes()
-    for directory in ("src", "database"):
+    for directory in ("src", "worker-private"):
         directory_path = source / directory
         if directory_path.exists():
             for path in sorted(directory_path.rglob("*")):
                 if path.is_file():
                     files[path.relative_to(source).as_posix()] = path.read_bytes()
+    migration_root = (repo_root or args.repo_root) / "supabase" / "migrations"
+    migrations = sorted(migration_root.glob("*_hbnf_glow_atomic_week_sync.sql"))
+    if label == "candidate":
+        if len(migrations) != 1:
+            raise SystemExit(f"expected exactly one canonical HBNF Glow migration in {migration_root}; found {len(migrations)}")
+        migration = migrations[0]
+        snapshot_migration = source / "database" / "20261028_udisc_glow_atomic_week_sync.sql"
+        if not snapshot_migration.is_file() or snapshot_migration.read_bytes() != migration.read_bytes():
+            raise SystemExit("canonical Supabase migration differs from the reviewed snapshot migration")
+        files[f"database/{migration.name}"] = migration.read_bytes()
     asset_count = len([name for name in files if name.startswith("public/")])
     expected_assets = 45 if label == "candidate" else 44
     if asset_count != expected_assets:
@@ -81,6 +128,7 @@ def build(args, label: str, source: Path, source_commit: str, output: Path) -> t
         lock["packages"][""]["name"] = "hbnf-worker-release-input"
         lock["packages"][""]["version"] = "1.0.0"
         files["package-lock.json"] = (json.dumps(lock, indent=2) + "\n").encode()
+    assert_worker_import_closure(files)
     readme = (
         "# HBNF Worker release input\n\n"
         f"Package: {label}\nSource commit: {source_commit}\n"
@@ -121,29 +169,35 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--candidate-root", type=Path, required=True)
     parser.add_argument("--candidate-commit", required=True)
-    parser.add_argument("--rollback-archive", type=Path, required=True)
-    parser.add_argument("--rollback-sha256", required=True)
-    parser.add_argument("--rollback-bytes", type=int, required=True)
+    parser.add_argument("--rollback-archive", type=Path)
+    parser.add_argument("--rollback-sha256")
+    parser.add_argument("--rollback-bytes", type=int)
     parser.add_argument("--toolchain-root", type=Path, required=True)
     parser.add_argument("--active-version", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True)
     args = parser.parse_args()
-    for key in ("candidate_root", "rollback_archive", "toolchain_root"):
+    for key in ("candidate_root", "toolchain_root", "repo_root"):
         setattr(args, key, getattr(args, key).resolve())
     items = [build(args, "candidate", args.candidate_root, args.candidate_commit,
                    args.output_dir / "HBNF-scoring-candidate.zip")]
-    rollback = args.output_dir / "HBNF-scoring-rollback.zip"
-    rollback.parent.mkdir(parents=True, exist_ok=True)
-    rollback.write_bytes(args.rollback_archive.read_bytes())
-    rollback_hash = sha256(rollback.read_bytes())
-    if rollback_hash != args.rollback_sha256 or rollback.stat().st_size != args.rollback_bytes:
-        raise SystemExit("rollback archive does not match the declared current-baseline bytes")
-    rollback.with_suffix(rollback.suffix + ".sha256").write_text(f"{rollback_hash}  {rollback.name}\n")
-    items.append((rollback, rollback_hash))
+    rollback_args = (args.rollback_archive, args.rollback_sha256, args.rollback_bytes)
+    if any(value is not None for value in rollback_args):
+        if any(value is None for value in rollback_args):
+            raise SystemExit("rollback archive, SHA-256, and byte count must be supplied together")
+        args.rollback_archive = args.rollback_archive.resolve()
+        rollback = args.output_dir / "HBNF-scoring-rollback.zip"
+        rollback.parent.mkdir(parents=True, exist_ok=True)
+        rollback.write_bytes(args.rollback_archive.read_bytes())
+        rollback_hash = sha256(rollback.read_bytes())
+        if rollback_hash != args.rollback_sha256 or rollback.stat().st_size != args.rollback_bytes:
+            raise SystemExit("rollback archive does not match the declared current-baseline bytes")
+        rollback.with_suffix(rollback.suffix + ".sha256").write_text(f"{rollback_hash}  {rollback.name}\n")
+        items.append((rollback, rollback_hash))
     print(json.dumps({"result": "PASS", "packages": [
         {"path": str(path), "sha256": digest, "bytes": path.stat().st_size}
         for path, digest in items
-    ]}, indent=2))
+    ], "rollbackIncluded": len(items) == 2}, indent=2))
 
 
 if __name__ == "__main__":

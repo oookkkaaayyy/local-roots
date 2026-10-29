@@ -1,4 +1,4 @@
-import {buildGlowProposal, validateIdentityEvidence} from '../public/udisc-glow-reconcile.mjs';
+import {buildGlowProposal, validateIdentityEvidence} from '../worker-private/udisc-glow-reconcile.mjs';
 import {prepareGlowWeekSync} from './udisc-glow-sync.mjs';
 
 const EVENT_ID = /^hb-night-flyers-[a-z0-9-]+-[A-Za-z0-9]{4,12}$/;

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 
-const migrationPath=new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/database/20261028_udisc_glow_atomic_week_sync.sql',import.meta.url);
+const migrationPath=new URL('../supabase/migrations/20261029200450_hbnf_glow_atomic_week_sync.sql',import.meta.url);
 const migration=await readFile(migrationPath,'utf8');
 
 test('database save locks one row, compares target week and active selection, and changes only Glow week state',()=>{
@@ -12,7 +12,8 @@ test('database save locks one row, compares target week and active selection, an
   assert.match(migration,/week_not_active_or_initialized/);
   assert.match(migration,/jsonb_set\(v_weeks, array\[p_week_date\], v_replacement_week, true\)/i);
   assert.doesNotMatch(migration,/jsonb_set\(v_glow,\s*'\{activeWeek\}'/i);
-  assert.match(migration,/update public\.league_state set state_json = v_state where id = 1/i);
+  assert.match(migration,/update public\.league_state[\s\S]{0,180}set state_json = v_state,[\s\S]{0,160}updated_at = greatest\([\s\S]*?clock_timestamp\(\)/i);
+  assert.match(migration,/v_current_week is not distinct from v_replacement_week/i);
   assert.match(migration,/scoresLocked/i);
   assert.match(migration,/finalized/i);
 });

@@ -1,5 +1,5 @@
 import {parseUdiscGlowEvents} from './udisc-glow-events.mjs';
-import {buildGlowProposal, buildReviewedCrosswalk, validateIdentityEvidence} from '../public/udisc-glow-reconcile.mjs';
+import {buildGlowProposal, buildReviewedCrosswalk, validateIdentityEvidence} from '../worker-private/udisc-glow-reconcile.mjs';
 import {prepareGlowWeekSync} from './udisc-glow-sync.mjs';
 
 const attr = (node,key) => node?.attrs?.[key];
@@ -148,7 +148,7 @@ function sourceParser() {
   return parserModule;
 }
 
-import * as parserModule from '../public/udisc-glow-preview.mjs';
+import * as parserModule from '../worker-private/udisc-glow-preview.mjs';
 
 export function exactAliasDecisions(model, evidence) {
   const rows=buildReviewedCrosswalk(model,evidence);

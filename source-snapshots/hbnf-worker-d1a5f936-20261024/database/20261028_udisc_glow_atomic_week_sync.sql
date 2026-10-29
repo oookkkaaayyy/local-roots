@@ -17,6 +17,7 @@ declare
   v_current_week jsonb;
   v_active_week jsonb;
   v_replacement_week jsonb;
+  v_current_updated_at timestamptz;
 begin
   if p_week_date is null or p_week_date !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}$'
      or p_replacement_week->>'date' is distinct from p_week_date
@@ -25,7 +26,7 @@ begin
     return jsonb_build_object('applied', false, 'reason', 'invalid_replacement');
   end if;
 
-  select state_json into v_state
+  select state_json, updated_at into v_state, v_current_updated_at
   from public.league_state
   where id = 1
   for update;
@@ -63,11 +64,24 @@ begin
   end if;
 
   v_replacement_week := p_replacement_week || jsonb_build_object('date', p_week_date, 'activeWeek', p_week_date);
+  if v_current_week is not distinct from v_replacement_week then
+    return jsonb_build_object('applied', true, 'unchanged', true, 'weekDate', p_week_date);
+  end if;
   v_weeks := jsonb_set(v_weeks, array[p_week_date], v_replacement_week, true);
   v_glow := jsonb_set(v_glow, '{weeks}', v_weeks, true);
   v_state := jsonb_set(v_state, '{glow}', v_glow, true);
 
-  update public.league_state set state_json = v_state where id = 1;
+  -- updated_at is also the browser's compare-and-swap revision. Advance it
+  -- under this row lock so an older browser draft cannot overwrite this sync.
+  -- clock_timestamp() plus the prior value guarantees monotonicity even when
+  -- two writes occur within one transaction timestamp tick.
+  update public.league_state
+    set state_json = v_state,
+        updated_at = greatest(
+          clock_timestamp(),
+          coalesce(v_current_updated_at, '-infinity'::timestamptz) + interval '1 microsecond'
+        )
+    where id = 1;
   return jsonb_build_object('applied', true, 'weekDate', p_week_date);
 end;
 $$;
@@ -92,6 +106,7 @@ declare
   v_week jsonb;
   v_status jsonb;
   v_error text;
+  v_current_updated_at timestamptz;
 begin
   if p_week_date is null or p_week_date !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}$'
      or p_expected_active_week is distinct from p_week_date
@@ -104,7 +119,7 @@ begin
     'SAVE_CONFLICT', 'SYNC_FAILED'
   ) then p_error_code else 'SYNC_FAILED' end;
 
-  select state_json into v_state
+  select state_json, updated_at into v_state, v_current_updated_at
   from public.league_state
   where id = 1
   for update;
@@ -143,7 +158,13 @@ begin
   v_week := jsonb_set(v_week, '{udiscSync,status}', v_status, true);
   v_glow := jsonb_set(v_glow, array['weeks', p_week_date], v_week, true);
   v_state := jsonb_set(v_state, '{glow}', v_glow, true);
-  update public.league_state set state_json = v_state, updated_at = now() where id = 1;
+  update public.league_state
+    set state_json = v_state,
+        updated_at = greatest(
+          clock_timestamp(),
+          coalesce(v_current_updated_at, '-infinity'::timestamptz) + interval '1 microsecond'
+        )
+    where id = 1;
   return jsonb_build_object('recorded', true, 'weekDate', p_week_date);
 end;
 $$;
