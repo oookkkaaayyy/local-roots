@@ -1,6 +1,11 @@
 /* Shared revision-conditional writes for the HBNF league_state root. */
 const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
-const stable = value => JSON.stringify(value ?? null);
+const canonical = value => Array.isArray(value) ? value.map(canonical) :
+  value && typeof value === "object" ? Object.keys(value).sort().reduce((out, key) => {
+    out[key] = canonical(value[key]);
+    return out;
+  }, {}) : value;
+const stable = value => JSON.stringify(canonical(value ?? null));
 export function mergeLeagueValue(base, local, remote) {
   const b=stable(base), l=stable(local), r=stable(remote);
   if(l===b)return {status:"merged",value:clone(remote)};
