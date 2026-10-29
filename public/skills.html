@@ -507,7 +507,7 @@ function makeSyncHelpers(ctx){return{
   ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live').on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
    const row=payload.new||{};if(row.id!==1||!row.state_json||!row.updated_at)return;this.applyRemoteRoot(row.state_json,row.updated_at);
   }).subscribe();
-  window.addEventListener('online',()=>{if(ctx.syncBaseline)ctx.pushRoot();else this.pullRoot()});
+  window.addEventListener('online',()=>{if(ctx.initialSyncComplete&&ctx.syncBaseline&&!ctx.syncBaseline.blocked)ctx.pushRoot();else this.pullRoot()});
   if(loaded&&ctx.pendingCloudDraft)setTimeout(()=>ctx.pushRoot(),0);
  },
  async pullRoot(){
@@ -540,7 +540,7 @@ function makeSyncHelpers(ctx){return{
   }catch(error){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),error.name==='HbnfSyncConflictError'?'conflict':'unavailable',error.message);}
  },
  async pushRoot(){
-  if(!ctx.supabaseClient||ctx.syncing)return;ctx.syncing=true;
+  if(!ctx.supabaseClient||ctx.syncing)return;if(!ctx.initialSyncComplete||!ctx.syncBaseline||ctx.syncBaseline.blocked){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),'pending','Cloud baseline is not confirmed; local edits are retained and no write was attempted.');return false}ctx.syncing=true;
   const statusEl=document.querySelector('#syncStatus');
   try{
    const draft=HBNFLeagueStateSync.clone(ctx.rootState||{});draft[ctx.branch]=ctx.state;
