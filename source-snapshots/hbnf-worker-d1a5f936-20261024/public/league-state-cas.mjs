@@ -103,6 +103,12 @@ export async function saveLeagueRootCAS({ client, rootState, baselineRoot, stora
       if (!await write(client, merged, current.revision)) continue;
       const verified = await read(client);
       for (const key of keys) if (key !== "__backups" && stable(verified.root?.[key]) !== stable(merged?.[key])) { onStatus("Not saved — server readback differed"); return { status: "failed", current: verified, retained }; }
+      // Backup history is part of the acknowledged shared root, not optional
+      // metadata: do not clear the local recovery draft on a changed readback.
+      if (stable(verified.root?.__backups) !== stable(merged?.__backups)) {
+        onStatus("Not saved — server backup history differed");
+        return { status: "failed", current: verified, retained };
+      }
       clearIfSame(storage, storageKey, draft)
       onStatus("Saved and verified"); return { status: "saved", current: verified, retained };
     } catch (error) { onStatus(retained ? "Not saved — draft kept on this device" : "Not saved — keep this page open"); return { status: "failed", error, retained }; }
