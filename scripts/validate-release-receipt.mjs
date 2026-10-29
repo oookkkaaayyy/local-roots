@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const SHA256 = /^[a-f0-9]{64}$/i;
 const DYE_STUDIO_NATIVE_ROLLBACK = Object.freeze({
-  releaseId: 'local-roots-dye-studio-pr-153-2026-10-29',
+  releaseId: 'local-roots-dye-studio-pr-153-2026-10-29-r2',
   repository: 'oookkkaaayyy/local-roots',
   pullRequest: 153,
   project: 'local-roots',

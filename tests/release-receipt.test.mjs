@@ -89,7 +89,7 @@ async function nativeRollbackFixture() {
     downloadBackVerified: true,
     downloadBack: { path: 'evidence/cloudflare-production-readback-download.json', bytes: bytes.length, sha256: hash(bytes) },
   };
-  f.receipt.releaseId = 'local-roots-dye-studio-pr-153-2026-10-29';
+  f.receipt.releaseId = 'local-roots-dye-studio-pr-153-2026-10-29-r2';
   f.receipt.source.repository = 'oookkkaaayyy/local-roots';
   f.receipt.source.ref = 'refs/pull/153/head';
   f.receipt.source.pullRequest = 153;
