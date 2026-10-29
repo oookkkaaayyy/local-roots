@@ -18,3 +18,26 @@ test('root writer retries after a competing commit using a fresh server revision
 test('an older in-flight acknowledgement cannot erase a newer saved device draft',async()=>{const db={root:{glow:{n:1}},revision:'server-1'};const storage=new MemoryStorage();const client=clientFor(db,{raceBeforeUpdate(){storage.setItem('pending',JSON.stringify({branch:'glow',branchState:{n:3},baselineBranch:{n:1}}))}});const result=await saveLeagueBranchCAS({client,branch:'glow',branchState:{n:2},baselineBranch:{n:1},storage,storageKey:'pending'});assert.equal(result.status,'saved');assert.deepEqual(db.root.glow,{n:2});assert.deepEqual(recoverLeagueDraft(storage,'pending').branchState,{n:3})});
 
 test('Skins bag-tag state uses a three-way conflict check instead of device-clock ordering',()=>{const base={updated_at:'2026-01-01',tags:{A:1}},local={updated_at:'2099-01-01',tags:{A:2}},remote={updated_at:'2026-01-02',tags:{A:3}};assert.deepEqual(mergeLeagueValue(base,local,base),{status:'merged',value:local});assert.deepEqual(mergeLeagueValue(base,base,remote),{status:'merged',value:remote});assert.equal(mergeLeagueValue(base,local,remote).status,'conflict')});
+
+test('Admin stale backup copy cannot replace updated server record with same ID',async()=>{
+  const oldBackup={id:'x',createdAt:'2026-10-29',content:'old'};
+  const newBackup={...oldBackup,content:'new'};
+  const base={glow:{score:1},__backups:[oldBackup]};
+  const db={root:{glow:{score:1},__backups:[newBackup]},revision:'server-5'};
+  const result=await saveLeagueRootCAS({client:clientFor(db),rootState:base,baselineRoot:base,storage:new MemoryStorage(),storageKey:'admin'});
+  assert.equal(result.status,'saved');
+  assert.deepEqual(db.root.__backups,[newBackup]);
+});
+
+test('Admin overlapping backup edits conflict without losing local recovery draft',async()=>{
+  const oldBackup={id:'x',createdAt:'2026-10-29',content:'base'};
+  const base={glow:{score:1},__backups:[oldBackup]};
+  const db={root:{glow:{score:1},__backups:[{...oldBackup,content:'remote'}]},revision:'server-6'};
+  const local={glow:{score:1},__backups:[{...oldBackup,content:'local'}]};
+  const storage=new MemoryStorage();
+  const result=await saveLeagueRootCAS({client:clientFor(db),rootState:local,baselineRoot:base,storage,storageKey:'admin'});
+  assert.equal(result.status,'conflict');
+  assert.deepEqual(result.conflicts,['__backups:x']);
+  assert.equal(db.root.__backups[0].content,'remote');
+  assert.equal(recoverLeagueDraft(storage,'admin').rootState.__backups[0].content,'local');
+});
