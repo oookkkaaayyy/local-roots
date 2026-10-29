@@ -197,3 +197,37 @@ The package builder retained the exact pre-change 44-asset rollback and reports 
 Pinned Wrangler 4.152.0 authenticated read-only against the account that owns `hbnf`; the other configured account returned Cloudflare `10007` (Worker absent). Current active deployment is `9bfffc7f-3b90-4863-aa1d-97312eba8c38`, routing 100% to version `3b019c24-0288-4c0d-bcc2-46cb6028d0f6` (#343). Version details report `handlers: null` and no bindings, consistent with a static-assets-only Worker; the provider API did not return the static asset bytes or per-asset hashes. This read supersedes the stale indexed assumption only for provider identity/version, not asset bytes.
 
 Fresh public GETs returned `/glow` HTTP 200, 206,629 bytes, SHA-256 `0b4736f070f8da309203c33fd90247fffaeb5bd69eb4fae80b37b9578c4eac38`; recovered `glow.html` is 207,724 bytes, SHA-256 `3bb7c284dd1bb2383a26080e4de9ea22b4a0716f1db7aab7d83b43be8240bc0b`. `/hbnf-cart.html` returned HTTP 200, 19,947 bytes, SHA-256 `0d28c3db1402650cb32b73f91681a3c31fc8b7b916ac6e5d20442398ee2ca457`; Cart remains separately routed and untouched. A bounded 44-path public GET comparison against the retained rollback matched 28/44; 16 differed, including `/glow` and Cart-owned paths. Route responses therefore cannot substitute for an authenticated Worker asset export. The rollback remains the last retained exact 44-asset archive, but current installed asset parity is unresolved and admission stays closed.
+
+## Qualification update — 2026-10-29 (Realtime and active-writer pass)
+
+This update applies to the source work based on the previously verified branch HEAD `e9197077d99391d02ffbef3fe60482b33d122e9d`; the source edits are not yet committed in this working copy. No production data, provider, migration, device, or UDisc access was changed.
+
+### Realtime and scorecard redraw
+
+- **PASS — isolated native Supabase/PostgREST/Realtime plus two-profile Chromium.** Instrumentation distinguished the server commit, WebSocket system readiness frames, actual `postgres_changes` delivery, client state adoption, visible redraw, and independent server GET. A saved score became visible in the other profile without reloading. The test also exercised reconnect after a missed event, focused-field deferral followed by blur, and a real competing offline draft. A clean profile did not invent a conflict; the genuine conflicting draft remained visible and recoverable while server GET retained the other writer's value.
+- Supabase's current Realtime protocol guidance was applied: wait for subscription confirmation and request the `replication_ready` system message; `SUBSCRIBED` alone does not prove replication is ready. Focus/online/visibility transitions trigger bounded authoritative GETs; there is no polling loop.
+- **Demonstrated source cause:** rendering an adopted remote state could call `saveLocal()` and create a false pending draft; with cached state, the previous refresh path could also misclassify a clean client as conflicting. Remote adoption now suppresses local-save side effects, clean authoritative reads are adopted, and focused inputs defer then apply the newest remote snapshot after blur. These fixes address observed harness behavior; they do not claim the earlier native failure had only one cause.
+- Chromium screenshots: `/tmp/hbnf-glow-native-qual-20261029/screenshots/glow-realtime-iphone-390x844.png` and `glow-realtime-ipad-768x1024.png`. Chromium viewport checks at 390x844 and 768x1024 found no horizontal overflow; accessible feedback exposed `role=status` and `aria-live=polite`. Physical iPhone/iPad acceptance remains **NOT CHECKED**.
+
+### Active production writers and integration
+
+- The current read-only production source review covered active Edge Functions `hbnf-tag-editor` v5, `hbnf-tags-live` v4, and `hbnf-watch-score` v14, plus the tag RPC catalog. Their conditional whole-root writes use caller-generated timestamps; no production function or RPC was changed or invoked.
+- **PASS — isolated native revision/CAS simulation:** concurrent whole-root writes from deliberately skewed 2001 and 2035 device clocks allowed one stale-revision writer, rejected its competitor, advanced the revision on the server, and preserved both the Glow and tag branches after a fresh-read retry. The fixture was restored. This verifies the proposed server-owned revision trigger with those writer semantics; it is not a production mutation.
+- **PASS — local native browser smoke:** Glow, Admin backup, Random, Skills, and Skins browser saves had independent server readback, and unrelated Glow data remained intact. The expanded scoring smoke reached the Skins offline-status assertion but stopped on an obsolete test selector `#syncAlert`; this is recorded as **INCOMPLETE**, not a product pass or proven product defect. No Skins source or separate Skins P0 work was changed.
+- Migration ordering was exercised in the isolated local Supabase stack. Production migrations remain unapplied.
+
+### Test results for this source pass
+
+- `npm run test:udisc-glow`: **74/74 PASS**; package import/migration closure: **4/4 PASS**.
+- `npm run test:release-receipt`: **21/21 PASS**.
+- `npm run release:audit-workflows`: **PASS** for the checked GitHub workflow source; this does not interlock provider Dashboard/MCP or arbitrary direct CLI operations.
+- Edge-writer CAS simulation: **PASS**; native two-profile Realtime/browser scenario: **PASS**; five-page native browser smoke: **PASS**.
+- The broad browser-scoring script is **INCOMPLETE** at its stale `#syncAlert` selector. Physical devices, Matrix display/reconnect/restore, and real event-day scoring are **NOT CHECKED**.
+- The existing five unrelated public navigation assertions remain out of scope; the broad repository suite has not been established as passing by this update.
+
+### Provider baseline, release route, and disposition
+
+- Authenticated Cloudflare read-only version evidence identifies active HBNF Worker version `3b019c24-0288-4c0d-bcc2-46cb6028d0f6` (#343), deployment `9bfffc7f-3b90-4863-aa1d-97312eba8c38`, at 100%. Provider metadata reports `handlers: null`, no bindings, and `assets.serve_directly: true`, consistent with static-assets-only. No executable module bytes or provider asset hash list are available from that version readback.
+- A bounded public GET comparison against the retained 44-asset rollback returned 44/44 HTTP 200 but only 28/44 byte matches. `/glow` differs; `/hbnf-cart.html` is separately served by Cart and was not changed. Public status/cache/ETag behavior and the earlier 403 mean the 16 mismatches cannot be attributed conclusively to installed bytes versus response transformation/cache/routing. No candidate change is justified from that evidence. Exact installed asset parity remains unresolved.
+- The shared receipt validator and workflow audit still do not provide an executable, canonical Cloudflare/Supabase mutation wrapper that re-reads the target immediately before mutation and cross-binds a one-time durable admission claim to the same-manifest closeout. External Dashboard/MCP actions cannot be intercepted by the repository. This gap is **OPEN**; no admission PASS is claimed.
+- Current disposition: **REVIEW_ONLY**. The exact source edits, candidate packaging, Drive retention/download-back, and same-manifest provider admission remain pending. No deployment, migration, polling, or live score write occurred. UDisc unattended active-round access remains undocumented and disabled; no vendor correspondence was sent.
