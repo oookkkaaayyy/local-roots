@@ -63,7 +63,7 @@
   }
 
   function conflictError(paths) {
-    const error = new Error('Cloud data changed in overlapping fields. Local edits are retained; review the conflict before retrying.');
+    const error = new Error('Cloud data changed in overlapping fields (' + paths.join(', ') + '). Local edits are retained; review the conflict before retrying.');
     error.name = 'HbnfSyncConflictError';
     error.paths = paths;
     return error;
