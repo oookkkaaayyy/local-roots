@@ -3,16 +3,18 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const watch = readFileSync(new URL("../../supabase/functions/lr-integrity-watch/index.ts", import.meta.url), "utf8");
+const projectRoot = new URL(import.meta.url.includes("/dist/tests/") ? "../../" : "../", import.meta.url);
+const watch = readFileSync(new URL("supabase/functions/lr-integrity-watch/index.ts", projectRoot), "utf8");
 
 test("integrity watch follows the upgraded event discovery and results contract", () => {
   assert.equal(watch.includes('"Show past events"'), false);
   assert.equal(watch.includes('"Results available"'), false);
   assert.equal(watch.includes('"View official results"'), false);
+  assert.equal(watch.includes('"PDGA Results ↗"'), false);
   for (const marker of [
     '"Past events & results"',
     '"Add to Calendar"',
-    '"PDGA Results ↗"',
+    '"PDGA Results"',
     '"On Local Roots"',
     '"Official link"',
     '"Full Results"',
@@ -44,4 +46,16 @@ test("integrity watch verifies upgraded event-page styles", () => {
 test("integrity watch version advances with its deployed contract", () => {
   assert.ok(watch.includes('LocalRootsIntegrityWatch/10.0'));
   assert.equal(watch.includes('LocalRootsIntegrityWatch/9.0'), false);
+});
+
+test("integrity watch inspects lazy-loaded frontend chunks, not only the entrypoint", () => {
+  assert.ok(watch.includes("readFrontendGraph(frontendBundleUrl"));
+  assert.equal(watch.includes("const bundleResponse = await fetch(frontendBundleUrl"), false);
+});
+
+test("integrity watch fails closed on staging HTML redirects and validates CSS origin", () => {
+  assert.ok(watch.includes('assertTrustedResponseOrigin(response, expectedOrigin, "staging_html")'));
+  assert.ok(watch.includes("readCssAsset(cssMatch[1], STAGING_URL"));
+  assert.equal(watch.includes('redirect: "follow"'), false);
+  assert.ok(watch.includes('redirect: "error"'));
 });
