@@ -9,7 +9,7 @@ doctor=(ROOT/"hbnf-wow-bundle/backend/release_doctor.ts").read_text()
 m1=(ROOT/"supabase/migrations/20260922061932_create_hbnf_aux_commissioning_state.sql").read_text()
 m2=(ROOT/"supabase/migrations/20260922062015_harden_hbnf_aux_commissioning_gate.sql").read_text()
 
-assert 'sp803e-v11-fold2-r3-gate' in aux
+assert 'sp803e-v12-uv-follow-r4-gate' in aux
 assert 'safeDefaultClosed' in aux
 assert 'passive_probe' in aux
 assert 'dry_run' in aux
@@ -24,6 +24,8 @@ assert 'if(action==="blackout"||action==="off")' in aux
 assert 'if(!enabled)return json' in aux
 assert 'mixed_load_verified' in aux
 assert 'databaseGateAccepted' in aux
+assert 'st.runtimeTrusted&&uvOutputsVerified' in aux
+assert 'expectedUvOutputsVerified=R3.uvFollow.outputsVerified===true?1:0' in aux
 
 assert 'v5-r3-runtime-gate' in orch
 assert 'TARGET_RELEASE="hbnf-wow-r3-max-2026-09-21-v3"' in orch
@@ -52,10 +54,18 @@ contract=json.loads((ROOT/"hbnf-aux-lighting/commissioning/contract.json").read_
 assert contract["matrix"]["release"]=="hbnf-wow-r3-max-2026-09-21-v3"
 assert contract["matrix"]["effect_ids"]==[220,247]
 assert contract["aux"]["underglow"]["gpio"]==16
-assert contract["aux"]["uv"]["status"]=="external-5v-usb-pending"
+assert contract["aux"]["uv"]["status"]=="assembled-staged-unpowered"
+assert contract["aux"]["uv"]["physical_integration_review"]=="PASS_owner-confirmed_from_dedicated_coordinator"
+assert contract["aux"]["uv"]["module_status"]=="assembled_off_cart_disconnected_unpowered"
+assert contract["aux"]["uv"]["intended_channel_mapping_owner_reported_unverified"]["cart_rim"]=={"gpio":25,"segment":1}
+assert contract["aux"]["uv"]["intended_channel_mapping_owner_reported_unverified"]["bar_short"]=={"gpio":26,"segment":2}
+assert contract["aux"]["uv"]["main_nominal_voltage"]==5
+assert contract["aux"]["uv"]["short_nominal_voltage"]==5
+assert contract["aux"]["uv"]["load_ratings_verified"] is False
 assert contract["aux"]["uv"]["sp803e_pwm_direct_control"] is False
 assert contract["aux"]["spare_pwm_gpios"]==[25,26,27]
-assert contract["safety"]["uv_direct_from_12v_vcc_forbidden"] is True
+assert contract["safety"]["uv_direct_from_controller_vcc_forbidden"] is True
+assert contract["safety"]["uv_requires_verified_per_channel_pwm_path"] is True
 assert contract["sync"]["group_bitfield"]==1
 assert contract["sync"]["receive_segment_options"] is False
 assert contract["sync"]["receive_segment_bounds"] is False
@@ -110,9 +120,9 @@ import local_commission as _lc
 assert "mqtt" not in _lc.AUX_CFG_PATCH["if"]
 print("HBNF_AUX_TURNKEY_COMMISSIONING_GATE_PASS")
 
-assert 'auxRelease:"hbnf-wow-aux-r3-2026-09-22-v1"' in aux
+assert 'auxRelease:"hbnf-wow-aux-r3-2026-10-25-uv-follow-v1"' in aux
 assert 'auxEngine:"aux-r3-wow-1d"' in aux
-assert 'auxBuildWitness:"registry28-fixed-1d-v1"' in aux
+assert 'auxBuildWitness:"registry28-tempo-lock-1d-v7-network-no-starve-uv-follow"' in aux
 assert 'AudioReactive UDP Sound Sync' in aux
 assert 'AUXWOW' in aux
 assert 'runtimeTrusted' in aux

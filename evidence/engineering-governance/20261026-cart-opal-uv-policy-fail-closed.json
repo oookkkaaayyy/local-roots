@@ -1,0 +1,35 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART_OPAL_LOCAL_UV_POLICY_FAIL_CLOSED_20261026",
+  "summary": "Add a paired-owner authenticated Opal UV policy endpoint whose validation consumes a versioned shared policy contract, while it remains unable to issue WLED mutations until trusted local readiness evidence exists.",
+  "change_class": "APPROVED_ADDITIVE_PRODUCTION_DEPLOYMENT",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing paired Owner PWA, authenticated Opal local control gateway, canonical AUX UV policy, and hardware fail-dark gates; follows existing /api/aux/control route and does not create a controller or raw WLED path.",
+      "affected_subsystem": "Supabase Cart control pairing verification and staged Opal local-control package; no device or WLED output mutation.",
+      "rollback_reference": "Restore exact hbnf-cart-control v34 source from evidence/live-production-20261026/hbnf-cart-control-v34/ and revoke/drop the additive expiry RPC if rollback is required.",
+      "evidence_sources": [
+        "hbnf-aux-lighting/backend/aux_uv_command.mjs",
+        "staging/coordinated-backend/opal/owner-local-control/nginx.conf.example",
+        "staging/coordinated-backend/opal/owner-local-control/auth_owner.lua"
+      ],
+      "tests": [
+        "node --test tests/hbnf_owner_local_uv_policy.test.mjs tests/hbnf_owner_uv_local_path.test.mjs hbnf-aux-lighting/tests/test_uv_command.mjs",
+        "python3 hbnf-aux-lighting/tests/test_readiness.py",
+        "python3 -m unittest -v tests.hbnf_owner_local_control_package",
+        "sh -n staging/coordinated-backend/opal/owner-local-control/install.sh; sh -n staging/coordinated-backend/opal/owner-local-control/rollback.sh",
+        "git diff --check",
+        "Deployed Cart control v35 readback: SHA-256 377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+        "Supabase ACL readback: anon/authenticated EXECUTE false; service_role EXECUTE true"
+      ],
+      "limitations": "The server pairing-expiry contract is deployed. Opal is not installed; its shared hardware profile remains default-off. The owner-confirmed physical integration review passes, while powered channel, thermal/current, mixed-load, local-network isolation, iOS, and live readback acceptance remain for the combined field session. No UV output was energized or changed."
+    }
+  }
+}

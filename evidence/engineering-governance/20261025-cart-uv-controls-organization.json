@@ -1,0 +1,40 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART_OWNER_UV_CONTROLS_ORGANIZATION_20261025",
+  "summary": "Put the shared UV cap with the everyday brightness controls and move independent channel caps plus detached controls into System fine tuning, preserving server-side readiness locks.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Cart Owner PWA UV controls and owner-authenticated UV policy path. Matrix audio loss remains fail-dark. No new transport, controller, or actuation path.",
+      "affected_subsystem": "Cart Owner PWA UV control placement, shared cap synchronization, readiness feedback, and layout.",
+      "rollback_reference": "Revert this source commit. No device, settings, or production state is changed by this source slice.",
+      "evidence_sources": [
+        "hbnf-final-controller/hbnf-cart.html",
+        "hbnf-final-controller/hbnf-cart-features.mjs",
+        "hbnf-final-controller/hbnf-cart-ui-v6.css",
+        "tests/hbnf_owner_uv_controls.test.mjs"
+      ],
+      "source_base_commit": "70857a8b796fe52659cb456d8ae752c0302a206c",
+      "tests": [
+        "node tests/hbnf_owner_uv_controls.test.mjs: PASS",
+        "node --test tests/hbnf_owner_pwa_show_scores_system.test.mjs: PASS (2 tests)",
+        "git diff --check: PASS",
+        "Chrome local source preview: landscape brightness layout and System > Fine tuning placement visually inspected; controls remain disabled when local Cart endpoint is unavailable"
+      ],
+      "implementation_limits": {
+        "deployment": false,
+        "production_mutation": false,
+        "UV_lock_or_fail_dark_policy_changed": false,
+        "iPad_exact_viewport_capture": "NOT CHECKED; browser viewport override unavailable in this preview path",
+        "physical_output_and_device_acceptance": "NOT CHECKED"
+      }
+    }
+  }
+}

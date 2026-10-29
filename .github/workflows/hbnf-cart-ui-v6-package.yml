@@ -44,7 +44,7 @@ jobs:
           ! grep -q 'createClient' hbnf-final-controller/hbnf-cart.js
           ! grep -Fq '\\n' hbnf-final-controller/hbnf-cart.html
           python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py
-          grep -q 'hbnf-cart2-owner-control-guest-qr-v1-20261016' hbnf-final-controller/hbnf-cart.html
+          grep -q 'hbnf-cart2-owner-control-home-r6-20261024' hbnf-final-controller/hbnf-cart.html
           node tests/hbnf_owner_local_control.mjs
           node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs
           node tests/hbnf_owner_pwa_package.mjs

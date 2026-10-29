@@ -1,0 +1,48 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART_IPAD_NIGHT_EARTH_FEEDBACK_20261024",
+  "summary": "Refine the Owner Cart iPad presentation with a night/earth palette, owner-approved transparent HBNF Faded Phosphor mark, centered Motion labels, collapsed technical details in System, and one concise truthful connection indicator.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Owner PWA Show/Scores/System views, command handlers, status polling, service-worker assets, and strict package builders remain in place; no new subsystem or dependency.",
+      "affected_subsystem": "Owner Cart iPad Home/Show/System presentation and compact status feedback.",
+      "rollback_reference": "Revert this source commit to its immediate parent; no package, installed runtime, or production device was changed.",
+      "evidence_sources": [
+        "https://github.com/oookkkaaayyy/local-roots/issues/116",
+        "https://github.com/oookkkaaayyy/local-roots/pull/130",
+        "Direct owner-approved bounded UI batch and follow-up brand correction, 2026-10-24",
+        "Owner-selected Drive asset HBNF_Faded_Phosphor_transparent.png (file ID 1UMNNyI82Fzeg6NwBTRMey8i9suotUCHG), preserved byte-for-byte as hbnf-final-controller/hbnf-faded-phosphor.png; SHA-256 043f68e0b44d7c658051a996ec276906c834edbb1f3f19fae7726e93ecf7fbdf; RGBA transparency retained and asset included in package/cache closure."
+      ],
+      "tests": [
+        "node --test tests/hbnf_owner_pwa_redesign_source.test.mjs tests/hbnf_owner_pwa_show_scores_system.test.mjs",
+        "node tests/hbnf_owner_pwa_ipad_home.test.mjs",
+        "node --check hbnf-final-controller/hbnf-cart.js",
+        "node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs",
+        "git diff --check",
+        "Source-bound browser render at 744x1133 and 1133x744; checked navigation, panel geometry, horizontal overflow, primary target sizes, compact connection status, and collapsed System diagnostics."
+      ]
+    },
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "approved_by_owner": true,
+      "selected_option": "Use restrained night/earth colors, keep status concise and truthful, place technical status in collapsed System details, center Motion labels, and use the owner-selected transparent HBNF Faded Phosphor logo.",
+      "approval_reference": "Direct owner instruction in issue #116 task, 2026-10-24; approved logo asset supplied by owner from Drive file 1UMNNyI82Fzeg6NwBTRMey8i9suotUCHG."
+    },
+    "implementation_limits": {
+      "device_mutation": false,
+      "qualification_run": false,
+      "firmware_build": false,
+      "production_deployment": false,
+      "performance_threshold_changes": false
+    },
+    "qualification_boundary": "Source checks and local rendering only at exact source preview build marker hbnf-cart2-owner-control-home-r6-20261024, rendered at 744x1133 and 1133x744; full view showed no horizontal overflow, fit widths and minimum 46px nav/48px controls, logo loaded at 2632px with transparent computed background, Colors/Saved Looks stayed hidden and independent Motion stayed visible. Offline browser preview has no Cart service connection; command feedback and device acknowledgments were not functionally exercised. No Order 2 package, installation, or release promotion was performed pending Scoring Order 1 acceptance. Physical iPad, Opal, Matrix, AUX, relay, WAN, and power acceptance remain unchecked."
+  }
+}

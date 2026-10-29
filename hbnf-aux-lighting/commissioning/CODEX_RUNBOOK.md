@@ -3,10 +3,12 @@
 ## Non-negotiable hardware facts
 
 - Underglow is 12V WS2811 and uses SP803E DATA / GPIO16.
-- The installed UV strip is 5V USB.
-- Do not connect the 5V UV strip to the SP803E's 12V VCC output.
-- Do not configure GPIO25/26/27 as UV outputs until a separate verified 5V switching interface exists.
+- Owner reports the removable UV module is assembled off-Cart using the existing 5V converter, fused shared positive feed, and separate RIM/Cart GPIO25 and SHORT/Bar GPIO26 returns. The module remains disconnected and unpowered. The physical integration review is accepted; do not repeat design/assembly review.
+- The owner confirms AUX V7 is current, with no later install. Exact rollback bytes are retained as `HBNF_SP803E_AUX_V7_ROLLBACK.bin` and `AUX_V7_RECOVERY_MANIFEST.json`; SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`.
+- Keep UV outputs disabled until the combined field acceptance records loaded voltage/current, thermal behavior, PWM response, channel mapping, combined load, physical OFF behavior, and matching device readback.
 - Matrix firmware must not be reflashed during AUX commissioning.
+- An AUX OTA HTTP response plus runtime identity is not release success. The installer reports `PENDING_COMPLETE_DURABLE_RECEIPT` until the complete source-bound receipt and exact rollback evidence have been durably retained, retrieved, and validated.
+- Re-read AUX identity immediately before any future installation and require the retained V7 bytes as exact rollback. Keep UV disabled until the combined field acceptance and durable install receipt pass.
 
 ## Current commissioning order
 
@@ -20,7 +22,7 @@
    - Matrix AudioReactive SEND / AUX RECEIVE on UDP 11988
    - AUX receives color/effect/palette but not brightness or segment bounds/options.
 7. Run underglow visual/audio and thermal acceptance.
-8. Keep full AUX database gates closed until a separate 5V UV switching architecture has been installed and physically accepted.
+8. Keep full AUX database gates closed until each UV channel's matching supply/switch path and physical behavior have been verified and accepted.
 
 ## Recovery rules
 
@@ -32,4 +34,4 @@
 
 ## UV boundary
 
-Manufacturer guidance for SP803E direct PWM loads requires the controller supply voltage to match the LED load voltage. The cart presently runs the SP803E/underglow from 12V, while the actual UV strip is 5V USB. Treat direct SP803E PWM control of that UV strip as unsupported in the current wiring. A separate 5V switching solution is required before UV control can be commissioned.
+The SP803E manual says controller input voltage must match the LED strip voltage and depicts direct PWM strips with positive connected to VCC. It does not show the proposed 12V controller plus separate 5V load supply with shared-ground PWM returns. That difference alone does not prove incompatibility; the exact board FET drain/source/common-ground and backfeed behavior remains unverified because no public schematic was found. A voltage match alone would also not establish safe current, thermal, boot/restart, channel mapping, or optical behavior. Keep outputs off until the exact path is confirmed safe and qualified.

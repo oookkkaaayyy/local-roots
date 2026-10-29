@@ -1,0 +1,29 @@
+{
+  "schema": "hbnf-aux-uv-policy-spec-v1",
+  "modes": ["OFF", "MANUAL", "FOLLOW_MATRIX", "VIBE_REACTIVE"],
+  "defaultMode": "FOLLOW_MATRIX",
+  "followModes": ["FOLLOW_MATRIX", "VIBE_REACTIVE"],
+  "followEffectId": 248,
+  "brightness": {
+    "minimum": 0,
+    "maximum": 255,
+    "requiredChannels": ["main", "short"],
+    "requestValuesMustBeIntegers": true
+  },
+  "requiredCommissioningGates": [
+    "hardware_wired", "power_verified", "gpio_verified", "current_limit_verified", "segments_verified",
+    "uv_main_verified", "uv_short_verified", "uv_full_verified", "thermal_verified", "mixed_load_verified"
+  ],
+  "requiredRuntimeGates": ["auxEnabled", "uvEnabled", "uvOutputsVerified", "hardwareReady"],
+  "channels": {
+    "main": { "gpio": 25, "segmentId": 1 },
+    "short": { "gpio": 26, "segmentId": 2 }
+  },
+  "switching": { "channels": 2, "controlVoltage": 3.3 },
+  "publish": { "retain": true, "qos": 1 },
+  "networkBoundary": {
+    "directWledRouteAllowed": false,
+    "ownerAuthenticationRequired": true,
+    "missingReadbackIsSuccess": false
+  }
+}

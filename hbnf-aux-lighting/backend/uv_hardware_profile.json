@@ -1,0 +1,55 @@
+{
+  "schema": "hbnf-aux-uv-hardware-profile-v1",
+  "verified": false,
+  "evidence": null,
+  "ownerReported": {
+    "physicalIntegrationReview": "PASS_owner-confirmed_from_dedicated_coordinator",
+    "moduleStatus": "assembled_off_cart_disconnected_unpowered",
+    "converter": "TOBSUN EA50-5V",
+    "sharedInlineFuseRatingMa": 5000,
+    "unpoweredMeterChecks": "complete_without_numeric_readings_or_receipt"
+  },
+  "runtimeGates": {
+    "auxEnabled": false,
+    "uvEnabled": false,
+    "uvOutputsVerified": false
+  },
+  "commissioningGates": {
+    "hardware_wired": false,
+    "power_verified": false,
+    "gpio_verified": false,
+    "current_limit_verified": false,
+    "segments_verified": false,
+    "uv_main_verified": false,
+    "uv_short_verified": false,
+    "uv_full_verified": false,
+    "thermal_verified": false,
+    "mixed_load_verified": false
+  },
+  "supplyByChannel": {
+    "main": { "outputVoltageV": null, "currentLimitMa": 0 },
+    "short": { "outputVoltageV": null, "currentLimitMa": 0 }
+  },
+  "sharedSupply": {
+    "topology": "one_converter_one_inline_fuse_shared_by_both_uv_strips",
+    "converter": "TOBSUN EA50-5V",
+    "fuseRatingMa": 5000,
+    "currentLimitMa": 0,
+    "verified": false
+  },
+  "switching": {
+    "verified": false,
+    "isolated": false,
+    "maxLoadVoltageV": 0,
+    "controlInputMinVoltage": 0,
+    "controlInputMaxVoltage": 0,
+    "channels": 0,
+    "maxChannelCurrentMa": 0,
+    "maxTotalCurrentMa": 0
+  },
+  "maxBrightness": 0,
+  "channels": {
+    "main": { "gpio": 25, "segmentId": 1, "loadVoltageV": 5, "loadCurrentMa": 0, "fuseRatingMa": 0, "wireCurrentRatingMa": 0 },
+    "short": { "gpio": 26, "segmentId": 2, "loadVoltageV": 5, "loadCurrentMa": 0, "fuseRatingMa": 0, "wireCurrentRatingMa": 0 }
+  }
+}

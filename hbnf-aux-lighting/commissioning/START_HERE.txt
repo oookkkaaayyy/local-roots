@@ -2,29 +2,44 @@ HB NIGHT FLYERS — SP803E / AUX COMMISSIONING
 
 CURRENT SAFE SCOPE
 - Addressable underglow: 12V WS2811 on DATA / IO16.
-- Installed UV strip: 5V USB. It is NOT a 12V load and must remain disconnected from SP803E VCC/PWM until a separate verified 5V switching interface is installed.
+- The removable UV module is assembled off-Cart using the reported TOBSUN EA50-5V supply, USB-A adapters, shared fused 5V positive, and separate intended PWM return leads. The owner-confirmed physical integration review is PASS. The module remains disconnected and unpowered; powered channel/current/temperature and live PWM acceptance remain for the combined field session.
 - Matrix is required only when the workflow reaches Matrix→AUX sync. It is NOT required for AUX firmware or underglow-local configuration.
 
 BEFORE THE LAUNCHER
 - Put the SP803E on the same current LAN as the Mac.
-- Keep UV disconnected.
+- Keep the staged UV module disconnected and unpowered until its combined field session.
+- Owner-accepted exposure: no unpaired-client `/json/info` denial test is required or claimed. Unpaired Cart-Wi-Fi clients can call the unauthenticated WLED API directly, bypassing Owner/Guest PWA visibility and command constraints and potentially setting supported device states/effects. Owner gateway authentication applies only to traffic routed through the gateway.
 - For underglow color calibration, connect only the correctly wired WS2811 underglow when the launcher explicitly asks for the physical test.
 
 THEN
-1. Extract the ZIP completely.
+1. From the signed-in GitHub run, open its private branch named `hbnf-aux-r3-artifact-run-<run ID>-attempt-<attempt>`. Download both `HBNF_SP803E_AUX_R3_COMMISSIONING.zip` and the separate `ARTIFACT_POINTER.json` from that same branch. Extract the ZIP, then replace the extracted `ARTIFACT_POINTER.json` with the separately downloaded pointer. Keep the ZIP beside the extracted files. The launcher checks the pointer's ZIP hash and compares the ZIP contents with the extracted files.
 2. Double-click COMMISSION_HBNF_AUX.command.
-3. The launcher verifies package/target identity, backs up the AUX, and resumes from the first genuinely unfinished stage.
+3. The launcher verifies package/target identity and saves WLED configuration/state/preset data. This is NOT a firmware image or rollback.
+
+RELEASE STATUS
+- The owner confirms AUX V7 is installed and no later firmware was installed. Its exact image (`HBNF_SP803E_AUX_V7_ROLLBACK.bin`, 1,348,624 bytes, SHA-256 `c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a`) and recovery manifest are retained in this source tree and the verified continuation bundle. Do not repeat V6 recovery.
+- Every candidate package now includes that V7 image and manifest as rollback. The installer still re-reads AUX identity immediately before mutation and requires candidate-specific release admission. The UV module stays unpowered until the combined field session.
+- The latest candidate run, exact source, package, firmware, and rollback hashes are recorded in `UV_FIELD_SESSION.md`. Admission remains `REVIEW_ONLY` until fresh same-target V7 preflight passes; direct WLED exposure is owner-accepted, not represented as blocked.
 
 THE LAUNCHER WILL
 - discover the Mac's real subnet and use direct LAN HTTP (no proxy);
 - positively identify the AUX and refuse Matrix targets;
-- install the exact verified firmware without requiring Matrix presence;
+- allow one AUX firmware OTA only when the exact Actions build receipt and V7 rollback package match, a fresh read identifies the owner-confirmed V7 AUX baseline, and the pre-install snapshot is saved; a second attempt for the same candidate is blocked;
+- for UV output-capable firmware, preserve the owner-accepted direct WLED exposure record in the source-bound admission; do not claim a denial test. Fresh target identity, exact V7 rollback, one-attempt control, and receipt remain required;
+- report OTA runtime identity as pending until a complete durable release receipt validates;
 - use a standards-compliant WLED multipart OTA upload;
 - calibrate real underglow color order at low current;
 - configure ONLY the GPIO16 WS2811 underglow bus, with fail-dark boot and <=900 mA commissioning limit;
-- keep GPIO25/26/27 unused while 5V USB UV control is unresolved;
+- keep the reported Cart/RIM GPIO25 and Bar/SHORT GPIO26 mapping gated off until powered channel and combined-load acceptance is recorded;
+- when the later UV-output configuration step is explicitly run, save a new WLED startup preset in an unused slot, preserve the underglow state, keep both UV segments off, and verify the preset survives a second restart; failure removes only that new preset and restores the previous boot-preset selection;
+- provide a read-only `--phase uv-field-preflight` check that verifies current runtime identity, exact GPIO/segment mapping, both UV outputs off, and the persisted safe startup preset; it never issues output commands or opens activation gates;
 - later require exact Matrix identity before changing Matrix/AUX sync;
 - preserve physical observations in HBNF_AUX_ACCEPTANCE_EVIDENCE.json.
 
+RELEASE RECEIPT
+The build-bound RELEASE_RECEIPT.json is INCOMPLETE. After any future firmware install, complete it with actual before/after image readbacks, the exact rollback and its durable readback, install identity/time/operator, outcome, and evidence links. Upload the receipt, download it again byte-for-byte, then run:
+  python3 commission_guard.py --phase validate-release-receipt --release-receipt RELEASE_RECEIPT.json
+Only exit 0 validates the transaction receipt. The Desktop report is not durable evidence. Never add credentials or secrets. The install-time receipt in the package must match the GitHub Actions run from which the complete ZIP was downloaded; the local package check alone does not prove where a ZIP came from.
+
 FULL AUX / UV ACCEPTANCE
-The database AUX gate remains closed until the separate 5V UV control architecture is physically implemented and tested. Underglow can be commissioned independently without pretending UV acceptance exists.
+The database AUX gate, Opal hardware profile, and commissioning gates remain closed until both UV channels' exact electrical paths are physically verified and tested. Direct WLED API exposure on shared Wi-Fi is accepted by the owner and is not an installation gate. Preserve fresh V7 identity/rollback and durable receipt checks; do not treat Owner-gateway authentication as protection for direct WLED requests. Underglow can be commissioned independently without opening UV activation.

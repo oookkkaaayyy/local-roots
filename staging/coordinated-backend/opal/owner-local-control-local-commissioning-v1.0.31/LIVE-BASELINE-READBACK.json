@@ -1,0 +1,12 @@
+{
+  "schema": "hbnf-opal-live-baseline-readback-v2",
+  "status": "INVALID_SYNTHETIC_NOT_DEVICE_CAPTURE",
+  "note": "This historical placeholder is not evidence of a live readback and must never be used for admission or installation.",
+  "target": null,
+  "installedVersion": null,
+  "observedAtUtc": null,
+  "installedManifestSha256": "8e272b6f7e179fd859806d74e800127dc95f0a6f104530f8981eca6052e0306c",
+  "managedFiles": 0,
+  "uvState": null,
+  "capture": null
+}

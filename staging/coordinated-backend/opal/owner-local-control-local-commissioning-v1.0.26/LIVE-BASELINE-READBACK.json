@@ -1,0 +1,8 @@
+{
+  "identity": "GL-SFT1200 192.168.77.1; Opal UV lock storage v1.0.25 installed from HBNF-OPAL-UV-LOCK-V125-20261028-02; all 20 managed-file hashes matched fresh live readback on 2026-10-28; UV outputs OFF; bounded Cart UV commissioning request still fails in Lua response finalization.",
+  "sourceCommit": "22e9ffcfe036d12c70cbb1658b39149becbe4fe5",
+  "artifactSha256": "ac2a34f8d595b22649b536ad06c9b54bc1f51ecc187fb59e0dd08c73989cc2e9",
+  "artifactBytes": 225782,
+  "liveManifestSha256": "e3bd61b6bde2204ad64ed282eef3e998d35b411b0465989945761df8876eb8d0",
+  "readbackEvidence": "Opal SSH post-install manifest readback PASS; reconstructed exact 20-file v1.0.25 image matches all SHA-256 values; latest gateway UV status HTTP 200; last Cart test errors logged at 2026-10-28 14:31:51; UV segments read OFF."
+}

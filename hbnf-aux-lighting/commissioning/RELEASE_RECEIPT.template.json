@@ -1,0 +1,20 @@
+{
+  "schema": "hbnf-aux-release-receipt-v1",
+  "status": "INCOMPLETE",
+  "source": {"commit": "FILL_FROM_FINAL_METRICS"},
+  "build": {
+    "workflow_path": "FILL_FROM_BUILD",
+    "workflow_ref": "FILL_FROM_BUILD",
+    "run_id": "FILL_FROM_BUILD",
+    "run_url": "FILL_FROM_BUILD",
+    "toolchain": {"python": "FILL_FROM_BUILD", "platformio": "FILL_FROM_BUILD"},
+    "pinned_inputs": {"wled_commit": "FILL_FROM_BUILD", "source_bundle_sha256": "FILL_FROM_BUILD"}
+  },
+  "candidate": {"filename": "HBNF_SP803E_AUX_R3.bin", "size": 0, "sha256": "FILL_FROM_BUILD", "path": "FILL_AFTER_BUILD"},
+  "pre_install": {"release": null, "firmware_sha256": null, "readback_evidence_ref": null, "firmware_image_path": null},
+  "rollback": {"filename": null, "size": null, "sha256": null, "path": null, "durable_location": null, "durable_readback_path": null},
+  "installation": {"timestamp": null, "operator": null, "action": null, "target_identity": null, "durable_receipt_location": null, "durable_receipt_readback_path": null},
+  "post_install": {"firmware_version": null, "release": null, "engine": null, "build_witness": null, "firmware_sha256": null, "firmware_image_path": null, "readback_evidence_ref": null, "runtime_readback_path": null, "runtime_readback_sha256": null},
+  "acceptance": {"runtime": "NOT_CHECKED", "physical_uv": "NOT_CHECKED", "rollback": "NOT_CHECKED"},
+  "evidence_refs": []
+}

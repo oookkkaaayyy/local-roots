@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { uvCommandForSharedSliderRelease } from "../hbnf-final-controller/hbnf-cart-readiness.mjs";
 const html=fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html",import.meta.url),"utf8");
 const shell=fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-ui-v6.mjs",import.meta.url),"utf8");
 const controller=fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js",import.meta.url),"utf8");
@@ -11,6 +12,11 @@ test("Owner PWA exposes Show, Scores and System without duplicating controls",()
     if(id==="truthPanel") assert.match(html,/class="panel truth-panel"/); else assert.ok(html.includes('id="'+id+'"'),"missing existing control "+id);
   }
   assert.match(shell,/move\("#lightsPanel", "show"\)/);
+  assert.match(shell,/move\("\.course-status-panel", "system"\)/);
+  assert.match(shell,/Latest status details/);
+  assert.match(shell,/className = "panel show-device-actions"/);
+  assert.match(shell,/querySelector\(":scope > \.row"\)/);
+  assert.match(shell,/commandPanel\.remove\(\)/);
   assert.match(shell,/move\("#scoresPanel", "scores"\)/);
   assert.match(shell,/move\("\.truth-panel", "system"\)/);
   assert.match(shell,/\["#featureRefreshLive", "#featureScoreboard"\]/);
@@ -26,4 +32,17 @@ test("redesigned view preserves existing command, score-read and owner-only path
   assert.match(features,/bind\("featureOtaInstall"/);
   assert.match(shell,/aria-current/);
   assert.match(shell,/scrollTo\(0, 0\)/);
+});
+test("Show shared UV slider sends only when readiness is confirmed",()=>{
+  assert.equal(uvCommandForSharedSliderRelease("ready",false),"MANUAL");
+  assert.equal(uvCommandForSharedSliderRelease("ready",true),"FOLLOW_MATRIX");
+  for(const readiness of ["checking","unsafe","unavailable","unknown"]){
+    assert.equal(uvCommandForSharedSliderRelease(readiness,false),null);
+    assert.equal(uvCommandForSharedSliderRelease(readiness,true),null);
+  }
+  assert.equal(uvCommandForSharedSliderRelease("ready",null),null);
+  assert.match(features,/uvCommandForSharedSliderRelease\(uvReadiness, uvFollowActive\)/);
+  assert.match(features,/Release the Show slider to send both manual levels/);
+  assert.match(features,/Cart output mode is unconfirmed; slider changes stay local/);
+  assert.match(features,/result\.outputMode === "FOLLOW_MATRIX"/);
 });

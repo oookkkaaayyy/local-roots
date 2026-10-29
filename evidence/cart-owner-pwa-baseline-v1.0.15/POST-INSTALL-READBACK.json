@@ -1,0 +1,67 @@
+{
+  "schema": "hbnf-cart-uv-post-install-evidence-v1",
+  "capturedAtUtc": "2026-10-27T02:11:45Z",
+  "sourceEvidence": {
+    "gatewayInstallerOutput": "OWNER-PASTED-GATEWAY-INSTALL-OUTPUT.txt",
+    "gatewayInstallerOutputSha256": "28798980cb4001724937b41eac39f347e297652ddb574100225b1173c6cca7bd",
+    "gatewayReceiptOnOpal": "/root/hbnf-release-artifacts/OWNER-PWA-LOCAL-V115-GATEWAY-PORT-20261026-03/GATEWAY-INSTALL-20261027T020811Z.log",
+    "limitations": "Owner-pasted terminal output; Opal receipt path reported by installer and retained on Opal."
+  },
+  "installedSoftware": {
+    "ownerPwa": {
+      "version": "1.0.15",
+      "sourceCommit": "58cdcd68c4b4f26813882b3e9bbac8a37dff17e1",
+      "packageSha256": "1c3b54584c813d966f8e8d678810edf6bd0cdd3e8ec000afc08390f51ce2824f",
+      "payloadReadback": "PASS",
+      "rollbackVersion": "1.0.14",
+      "rollbackPathOnOpal": "/root/hbnf-owner-pwa-local.rollback-OWNER-PWA-LOCAL-V115-GATEWAY-PORT-20261026-01"
+    },
+    "opalGateway": {
+      "version": "1.0.14",
+      "sourceCommit": "0c68a472fa58e04714d58b0522132c23a49f4411",
+      "packageSha256": "a5a877c3c9089df245c1262341ad3a3926c9fc85ba660d67197f277fad6096fa",
+      "install": "PASS",
+      "packageIntegrity": "PASS",
+      "preflight": "PASS",
+      "serviceNginxConfig": "PASS",
+      "transportPath": "/mission-control-local/local-transport.js",
+      "transportHttpStatus": 200,
+      "transportSha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+      "pwaGatewayRollbackTransportSha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a"
+    }
+  },
+  "liveReadOnlyChecks": {
+    "gatewaySessionNoToken": {
+      "httpStatus": 401,
+      "expected": 401
+    },
+    "gatewayUvStatusNoToken": {
+      "httpStatus": 401,
+      "expected": 401
+    },
+    "gatewayMatrixInfoNoToken": {
+      "httpStatus": 401,
+      "expected": 401
+    },
+    "auxJsonState": {
+      "httpStatus": 200,
+      "identity": {
+        "release": "hbnf-wow-aux-r3-2026-10-25-uv-follow-v1",
+        "engine": "aux-r3-wow-1d",
+        "buildWitness": "registry28-tempo-lock-1d-v7-network-no-starve-uv-follow",
+        "uvOutputsVerified": 1,
+        "uvBuildProfile": "uv-follow-output-capable-v1"
+      },
+      "segmentIds": [
+        0
+      ]
+    }
+  },
+  "uvCommissioning": {
+    "physicalModule": "assembled but disconnected and unpowered per owner report",
+    "poweredVoltageCurrentThermalPwmChannelMixedLoadAndFieldAcceptance": "NOT_CHECKED",
+    "hardwareProfile": "default-off; commissioning gates remain closed",
+    "uvActivation": "NOT_ACCEPTED",
+    "nextRequiredStep": "Install/connect the staged two-channel module and complete the single powered commissioning session; do not mark UV active before its measured channel and combined-load checks pass."
+  }
+}

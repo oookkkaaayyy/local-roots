@@ -1,10 +1,10 @@
 /* Secure local transport adapter for the existing Owner PWA. */
 import { fetchWithDeadline, HBNF_API_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261015-local-owner-v3";
 
-// The owner-only gateway is a separate Opal Nginx instance. Its nonstandard
-// HTTPS port keeps GL.iNet's existing 443 service and root-worker policy
-// untouched while the new instance drops request workers to nobody.
-export const LOCAL_CONTROL_ORIGIN = "https://cart-control.hbnightflyers.com:8443";
+// The owner-only gateway is a separate Opal Nginx instance on 9443 because
+// GL.iNet already owns 8443 for its admin page. The new instance keeps the
+// global 80/443 services untouched and drops request workers to nobody.
+export const LOCAL_CONTROL_ORIGIN = "https://cart-control.hbnightflyers.com:9443";
 export const LOCAL_MATRIX_IP = "192.168.77.10";
 export const LOCAL_AUX_IP = "192.168.77.11";
 export const LOCAL_MATRIX_MAC = "704bca5b345c";
@@ -22,6 +22,7 @@ function jsonHeaders(token) {
 export class LocalOwnerControl {
   constructor(options = {}) {
     this.origin = String(options.origin || LOCAL_CONTROL_ORIGIN).replace(/\/$/, "");
+    this.pageOrigin = String(options.pageOrigin || globalThis.location?.origin || "");
     this.opalDirect = options.opalDirect === true;
     this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js"));
     this.directStorage = options.storage || (typeof localStorage !== "undefined" ? localStorage : null);
@@ -49,7 +50,7 @@ export class LocalOwnerControl {
     this.localSyncStatus = "not-tracked";
   }
 
-  async request(token, path, method = "GET", body = null) {
+  async request(token, path, method = "GET", body = null, timeoutMs = HBNF_API_TIMEOUT_MS) {
     if (!validToken(token)) throw new Error("A valid paired Owner session is required.");
     const options = {
       method,
@@ -58,7 +59,7 @@ export class LocalOwnerControl {
       credentials: "omit",
     };
     if (body !== null) options.body = JSON.stringify(body);
-    const response = await fetchWithDeadline(this.fetchFn, this.origin + path, options, HBNF_API_TIMEOUT_MS, "Local Cart control");
+    const response = await fetchWithDeadline(this.fetchFn, this.origin + path, options, timeoutMs, "Local Cart control");
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       const error = new Error(data.error || `Local control HTTP ${response.status}`);
@@ -67,6 +68,79 @@ export class LocalOwnerControl {
       throw error;
     }
     return data;
+  }
+
+  isCartLocalUvPage() {
+    return this.pageOrigin === "http://192.168.77.1" && this.origin === LOCAL_CONTROL_ORIGIN;
+  }
+
+  async requestCartLocalUv(path, method = "GET", body = null, timeoutMs = HBNF_API_TIMEOUT_MS) {
+    const allowed = (method === "GET" && path === "/api/aux/uv-status") ||
+      (method === "POST" && path === "/api/aux/uv-policy");
+    if (!this.isCartLocalUvPage() || !allowed) {
+      throw new Error("Unpaired UV access is limited to the Cart-local page and UV routes.");
+    }
+    const options = {
+      method,
+      headers: body === null ? {} : { "Content-Type": "application/json" },
+      cache: "no-store",
+      credentials: "omit",
+    };
+    if (body !== null) options.body = JSON.stringify(body);
+    const response = await fetchWithDeadline(this.fetchFn, this.origin + path, options, timeoutMs, "Cart-local UV control");
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const error = new Error(data.error || `Local UV control HTTP ${response.status}`);
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+    return data;
+  }
+
+  // This path deliberately does not require a live Matrix transport. The
+  // Opal owns authorization and reads the shared policy contract. It remains
+  // fail-closed until trusted local commissioning/runtime evidence is present.
+  async uvPolicy(token, request = {}) {
+    const mode = String(request.mode || "").toUpperCase();
+    if (mode === "COMMISSIONING_TEST") {
+      const channel = String(request.channel || "");
+      const brightness = request.brightness;
+      if ((channel !== "main" && channel !== "short") || !Number.isInteger(brightness) || brightness < 1 || brightness > 255) {
+        throw new Error("Invalid local UV commissioning test; no command was sent.");
+      }
+      if (this.isCartLocalUvPage()) {
+        return this.requestCartLocalUv("/api/aux/uv-policy", "POST", { mode, channel, brightness }, 20000);
+      }
+      if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV policy.");
+      await this.ensureSession(token);
+      return this.request(token, "/api/aux/uv-policy", "POST", { mode, channel, brightness }, 20000);
+    }
+    const levels = request.brightnessBySegment;
+    const validLevel = value => Number.isInteger(value) && value >= 0 && value <= 255;
+    if (!mode || !levels ||
+        !validLevel(levels.main) || !validLevel(levels.short)) {
+      throw new Error("Invalid local UV policy request; no command was sent.");
+    }
+    if (this.isCartLocalUvPage()) {
+      return this.requestCartLocalUv("/api/aux/uv-policy", "POST", {
+        mode,
+        brightnessBySegment: { main: levels.main, short: levels.short },
+      });
+    }
+    if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV policy.");
+    await this.ensureSession(token);
+    return this.request(token, "/api/aux/uv-policy", "POST", {
+      mode,
+      brightnessBySegment: { main: levels.main, short: levels.short },
+    });
+  }
+
+  async uvStatus(token) {
+    if (this.isCartLocalUvPage()) return this.requestCartLocalUv("/api/aux/uv-status");
+    if (!validToken(token)) throw new Error("A valid paired Owner session is required for local UV status.");
+    await this.ensureSession(token);
+    return this.request(token, "/api/aux/uv-status");
   }
 
   async ensureSession(token, expiresAtEpoch) {
@@ -335,7 +409,8 @@ export class LocalOwnerControl {
       desired: { revision, state: {
         sceneId: scene,
         paletteId: h.palette && h.palette.mode === "wled" ? "wled-" + String(h.palette.index) :
-          (h.palette && h.palette.mode === "solid" && Array.isArray(h.palette.rgb) ? "solid-" + h.palette.rgb.map(v => Number(v).toString(16).padStart(2, "0")).join("") : ""),
+          (h.palette && h.palette.mode === "legacy" ? (h.palette.id == null ? "legacy" : (["hbnf-balanced", "copper", "ocean"].includes(String(h.palette.id)) ? "legacy" : "")) :
+          (h.palette && h.palette.mode === "solid" && Array.isArray(h.palette.rgb) ? "solid-" + h.palette.rgb.map(v => Number(v).toString(16).padStart(2, "0")).join("") : "")),
         selectedVibe: vibeNames[Number(h.vibe)] || "",
         vibeMode: Number(h.vibe) === 5 ? "music" : "manual",
         guestMode: null,

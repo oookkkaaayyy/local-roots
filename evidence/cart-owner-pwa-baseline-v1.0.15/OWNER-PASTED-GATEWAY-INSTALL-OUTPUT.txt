@@ -1,0 +1,61 @@
+ssh -o HostKeyAlgorithms=+ssh-rsa root@192.168.77.1 'curl --fail --silent --show-error --resolve cart-control.hbnightflyers.com:8444:192.168.77.180 https://cart-control.hbnightflyers.com:8444/run-opal-install.sh -o /tmp/hbnf-gateway-only-install.sh && printf "%s  %s\n" dcc02d08f3e445e409696b98578083e65f5fb0fdd8d68c39f738f57d95656f45 /tmp/hbnf-gateway-only-install.sh | sha256sum -c - && sh /tmp/hbnf-gateway-only-install.sh'
+root@192.168.77.1's password:
+/tmp/hbnf-gateway-only-install.sh: OK
+/root/hbnf-release-artifacts/OWNER-PWA-LOCAL-V115-GATEWAY-PORT-20261026-03/hbnf-owner-local-control-v1.0.14.zip: OK
+PACKAGE-MANIFEST.json: OK
+README.md: OK
+SOURCE_BASE.json: OK
+auth.lua: OK
+auth_origin.lua: OK
+auth_owner.lua: OK
+auth_websocket.lua: OK
+aux_command_access.lua: OK
+dedicated-nginx.conf.example: OK
+enroll.lua: OK
+hbnf-owner-local-control.init: OK
+install.sh: OK
+local-transport.js: OK
+matrix_command_access.lua: OK
+matrix_topology.sh: OK
+nginx.conf.example: OK
+owner-http-transport.js: OK
+preflight.sh: OK
+revalidate.lua: OK
+revoke.lua: OK
+rollback.sh: OK
+session.lua: OK
+uv_hardware_profile.json: OK
+uv_policy_access.lua: OK
+uv_policy_spec.json: OK
+uv_runtime.lua: OK
+uv_status_access.lua: OK
+vendor/LICENSE.txt: OK
+vendor/sha2.lua: OK
+Starting gateway v1.0.14 install from 0c68a472fa58e04714d58b0522132c23a49f4411; the package installer runs the read-only preflight before changes.
+PREFLIGHT_OK: Opal/Nginx prerequisites, restrictive WAN input policy, local DNS, certificate, exact Matrix release, device identities, 32x16 Matrix segment, and 22-pixel companion topology are present.
+NGINX_ISOLATION: existing GL.iNet Nginx/global workers/listeners remain untouched; a separate 9443 instance uses a root master only to open the root-only TLS key and a single nobody/nogroup request worker.
+SESSION_STORAGE: persistent /etc parent will be root:nogroup 0710; session, revocation, and request-temp directories will be nobody:nogroup 0700.
+OWNER_ACCEPTED_NETWORK_EXPOSURE: direct unpaired-client WLED isolation was NOT_TESTED and is not an admission gate by owner decision; raw WLED API calls can bypass Owner/Guest UI constraints. PWA certificate trust and physical iPad behavior remain NOT_CHECKED.
+nginx: the configuration file /etc/hbnf-local-control/nginx.conf syntax is ok
+nginx: configuration file /etc/hbnf-local-control/nginx.conf test is successful
+nginx: the configuration file /etc/hbnf-local-control/nginx.conf syntax is ok
+nginx: configuration file /etc/hbnf-local-control/nginx.conf test is successful
+hbnf-cart-features.js: OK
+hbnf-cart-icon-180.png: OK
+hbnf-cart-icon-192.png: OK
+hbnf-cart-icon-512.png: OK
+hbnf-cart-live-display.js: OK
+hbnf-cart-local.js: OK
+hbnf-cart-manifest.webmanifest: OK
+hbnf-cart-net.js: OK
+hbnf-cart-readiness.js: OK
+hbnf-cart-semantic.js: OK
+hbnf-cart-skins-score.js: OK
+hbnf-cart-ui-v6.css: OK
+hbnf-cart-ui-v6.js: OK
+hbnf-cart.html: OK
+hbnf-cart.js: OK
+hbnf-faded-phosphor.png: OK
+hbnf-guest-qr.png: OK
+GATEWAY_INSTALL_COMPLETE: Opal Local Control v1.0.14 installed; Owner PWA v1.0.15 payload verified. Receipt: /root/hbnf-release-artifacts/OWNER-PWA-LOCAL-V115-GATEWAY-PORT-20261026-03/GATEWAY-INSTALL-20261027T020811Z.log
+andrew@Andrews-MacBook-Air ~ %

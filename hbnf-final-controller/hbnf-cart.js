@@ -1,8 +1,8 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
 import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
-import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
-import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v112-show-scores-system";
+import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261028-local-uv-local-access-v2";
+import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.mjs?v=20261024-cart-control-home-r4";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -38,6 +38,7 @@ let guestDefaultMigrationInFlight = false;
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
+const truthBadge = $("#truthBadge");
 const authPanel = $("#authPanel");
 const pairAcceptPanel = $("#pairAcceptPanel");
 const managePairPanel = $("#managePairPanel");
@@ -56,6 +57,29 @@ let pendingRevision = null;
 const activeCommandKeys = new Set();
 const syncHealth = null;
 const rendererHealth = null;
+
+function updateCompactStatus() {
+  if (!statusNode || !truthBadge) return;
+  const detail = String(statusNode.textContent || "").trim().toLowerCase();
+  let label = "Status details", tone = "warn";
+  if (/^connecting|^checking/.test(detail)) label = "Checking";
+  else if (/sending cart command|change sent\. checking/.test(detail)) label = "Sending", tone = "warn";
+  else if (/change sent\. waiting|waiting for the cart/.test(detail)) label = "Waiting", tone = "warn";
+  else if (/matrix and underglow confirmed the change/.test(detail)) label = "Update confirmed", tone = "good";
+  else if (/could not connect|you are offline|controls are unavailable|cart is not ready|no change was sent/.test(detail)) label = "Connection issue", tone = "warn";
+  else if (/could not apply|could not complete|not confirmed|has not confirmed/.test(detail)) label = "Needs attention", tone = "warn";
+  else if (/pair this device/.test(detail)) label = "Pair needed", tone = "warn";
+  else if (/cart is reachable, but/.test(detail)) label = "Check devices", tone = "warn";
+  else if (/cart is reachable/.test(detail)) label = "Cart responding", tone = "good";
+  truthBadge.textContent = label;
+  truthBadge.className = "truth-badge " + tone;
+}
+
+if (statusNode && truthBadge && typeof MutationObserver === "function") {
+  const compactStatusObserver = new MutationObserver(updateCompactStatus);
+  compactStatusObserver.observe(statusNode, { childList: true, characterData: true, subtree: true });
+  updateCompactStatus();
+}
 
 function renderLocalLinkStatus(snapshot) {
   if (!cartLanHealth) return;
@@ -202,7 +226,7 @@ async function callCloud(body) {
       headers,
       body: JSON.stringify(body),
       cache: "no-store",
-    }, HBNF_API_TIMEOUT_MS, "Cart control");
+    }, body.action === "uv_policy" ? 12000 : HBNF_API_TIMEOUT_MS, "Cart control");
     if (backendHealth) backendHealth.textContent = "Reachable";
   } catch (error) {
     if (backendHealth) backendHealth.textContent = "Unavailable";
@@ -238,6 +262,14 @@ function hydrateLocalControls(state) {
 }
 
 async function call(body) {
+  // The Opal-hosted Owner PWA must keep UV traffic on its authenticated local
+  // gateway. A local failure is surfaced to the UI; UV never falls back to WAN.
+  if (OPAL_LOCAL_PWA && body.action === "uv_status") {
+    return localOwnerControl.uvStatus(deviceToken());
+  }
+  if (OPAL_LOCAL_PWA && body.action === "uv_policy") {
+    return localOwnerControl.uvPolicy(deviceToken(), body);
+  }
   if (OPAL_LOCAL_PWA && body.action === "status") {
     localPathStatus = "checking";
     try {
@@ -354,7 +386,7 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   const badge = $("#truthBadge");
   renderLocalLinkStatus(canonicalSnapshot);
   if (!snapshot) {
-    if (badge) { badge.textContent = "Controls unavailable"; badge.className = "truth-badge warn"; }
+    if (badge) { badge.textContent = "Connection issue"; badge.className = "truth-badge warn"; }
     return;
   }
   const matrix = snapshot.devices ? snapshot.devices.matrix : null;
@@ -377,11 +409,11 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
-    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
-    if (matrixOk && auxOk) { badge.textContent = snapshot.local === true ? "Cart + device replies current" : "Device replies current"; badge.className = "truth-badge good"; }
-    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
-    else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Device status stale"; badge.className = "truth-badge warn"; }
-    else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Device status unknown"; badge.className = "truth-badge warn"; }
+    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check AUX"; badge.className = "truth-badge warn"; return; }
+    if (matrixOk && auxOk) { badge.textContent = "Devices responding"; badge.className = "truth-badge good"; }
+    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Needs attention"; badge.className = "truth-badge bad"; }
+    else if (matrixCheck.indexOf("STALE") >= 0 || auxCheck.indexOf("STALE") >= 0) { badge.textContent = "Status is old"; badge.className = "truth-badge warn"; }
+    else if (matrixCheck.indexOf("UNCONFIRMED") >= 0 || auxCheck.indexOf("UNCONFIRMED") >= 0) { badge.textContent = "Not confirmed"; badge.className = "truth-badge warn"; }
     else { badge.textContent = "Checking devices"; badge.className = "truth-badge warn"; }
   }
 }
@@ -508,7 +540,7 @@ async function refresh({ hydrate = true } = {}) {
     if (guestStatus) guestStatus.textContent = "Guest access status is unavailable. Reconnect to the Cart to check it.";
     const badge = $("#truthBadge");
     if (badge) {
-      badge.textContent = "Controls unavailable";
+      badge.textContent = "Connection issue";
       badge.className = "truth-badge warn";
     }
     throw error;
@@ -526,8 +558,8 @@ async function refresh({ hydrate = true } = {}) {
     renderVisualHealth(out, out);
     const localChecks = deviceReadinessChecks(out);
     statusNode.textContent = localChecks.every(value => value.indexOf("PASS") >= 0)
-      ? "Cart local path is reachable. Matrix/AUX readbacks are current and acknowledged; physical output is unverified."
-      : "Cart local path is reachable. Matrix/AUX readback or DDP synchronization needs attention.";
+      ? "Cart is reachable. Matrix and underglow responded; check the display to confirm what’s showing."
+      : "Cart is reachable, but Matrix or underglow has not confirmed its status.";
     return out;
   }
 
@@ -547,14 +579,14 @@ async function refresh({ hydrate = true } = {}) {
     const submitted = observed.some(x => Number(x.desired_revision) === Number(revision) && x.status === "submitted");
     if (fullyApplied || failed) pendingRevision = null;
     statusNode.textContent = fullyApplied
-      ? "Settings acknowledged by Matrix and underglow device reports. Physical output is unverified."
+      ? "Matrix and underglow confirmed the change. Check the display to verify the result."
       : failed
-        ? "The Cart could not apply that change. Open Troubleshooting for details."
+        ? "The Cart could not apply that change. Check Cart status before retrying."
         : submitted
           ? "Change sent. Waiting for the Cart…"
         : pendingRevision === revision
           ? "Change sent. Waiting for the Cart…"
-        : "The Cart hasn’t updated yet. Open Troubleshooting for details.";
+        : "Waiting for the Cart to confirm. Check Cart status if it takes too long.";
   } else {
     statusNode.textContent = "The Cart is not ready. No change was sent.";
   }

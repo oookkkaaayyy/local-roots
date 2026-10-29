@@ -10,6 +10,9 @@ const controller = path.join(root, "hbnf-final-controller");
 const guestRoute = path.join(controller, "guest/hbnf-cart");
 const html = fs.readFileSync(path.join(controller, "hbnf-cart.html"), "utf8");
 const css = fs.readFileSync(path.join(controller, "hbnf-cart-ui-v6.css"), "utf8");
+const featureModule = fs.readFileSync(path.join(controller, "hbnf-cart-features.mjs"), "utf8");
+const auxControl = fs.readFileSync(path.join(root, "hbnf-aux-lighting/backend/aux_control.ts"), "utf8");
+const auxUvCommand = fs.readFileSync(path.join(root, "hbnf-aux-lighting/backend/aux_uv_command.mjs"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
 const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui_v6.py"), "utf8");
 const installerCommand = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/INSTALL_UI_V6.command"), "utf8");
@@ -18,12 +21,11 @@ const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-
 const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_package.py");
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
-assert.match(html, /hbnf-cart2-owner-control-guest-qr-v1-20261016/);
-assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html"/);
-assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html">Open Cart controls<\/a>/);
+assert.match(html, /hbnf-cart2-owner-control-home-r6-20261024/);
+assert.doesNotMatch(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html"/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261021-fail-closed-readiness-v2");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261024-night-earth-ui-r2");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
@@ -59,17 +61,23 @@ for (const name of [
   assert.ok(releaseWorkflow.includes(`hbnf-final-controller/${name}`), `release package omits ${name}`);
 }
 
-assert.match(html, /navigator\.serviceWorker\.register/);
-assert.match(html, /local-control-entry/);
-assert.match(html, /id="featureFontIndex"[\s\S]*value="4" selected[\s\S]*Slot 0 · Tom Thumb 6px[\s\S]*Slot 2 · Console 6×8[\s\S]*Slot 3 · C64-esque 9px/);
 assert.doesNotMatch(html, /TinyUnicode/i, "unsupported UTF-8 font slot is not offered by the ASCII overlay adapter");
-const featureModule = fs.readFileSync(path.join(controller, "hbnf-cart-features.mjs"), "utf8");
 assert.match(featureModule, /nativeTextFontIndexV1===true/);
 assert.match(featureModule, /if \(fontIndex\) fontIndex\.disabled=!fontIndexReady/);
 assert.match(featureModule, /if \(canonicalCapabilities\(\)\.nativeTextFontIndexV1===true\) data\.fontIndex=/);
 assert.doesNotMatch(featureModule, /\?\.value\s*\?\?/);
+assert.match(html, /id="uvMainBrightness"/);
+assert.match(html, /id="uvShortBrightness"/);
+assert.doesNotMatch(html, /uvFollowApply|Apply rhythm limits/);
+assert.match(featureModule, /stale audio falls back to that cap/);
+assert.match(featureModule, /result\.uvControlEnabled === true/);
+assert.match(featureModule, /uvCommandForSharedSliderRelease\(uvReadiness, uvFollowActive\)/);
+assert.match(auxControl, /uvControlEnabled=ENV_UV_ENABLED[\s\S]*st\.runtimeTrusted&&uvOutputsVerified/);
+assert.match(auxControl, /outputsVerified:false/);
+assert.match(auxUvCommand, /uvOutputsVerified = false/);
+assert.match(auxUvCommand, /UV_POLICY_SPEC\.requiredRuntimeGates\.every/);
 const sliders = [...html.matchAll(/<input\b[^>]*type="range"[^>]*>/g)].map(([tag]) => tag);
-assert.equal(sliders.length, 7, "all course/audio/brightness sliders are covered");
+assert.equal(sliders.length, 10, "all course/audio/brightness sliders, including shared and per-channel UV caps, are covered");
 for (const tag of sliders) {
   const id = tag.match(/\bid="([^"]+)"/)?.[1];
   assert.ok(id, "each course slider has a stable identifier");
@@ -79,15 +87,15 @@ for (const tag of sliders) {
   const labelEnd = html.indexOf("</label>", inputAt);
   assert.ok(labelStart >= 0 && labelEnd > inputAt, `${id} must have an accessible label`);
 }
-assert.match(css, /height:44px;min-height:44px/, "range hit area is at least 44px high");
+assert.match(css, /height:42px;min-height:44px/, "range hit area is at least 44px high");
 assert.match(css, /width:100%/, "range hit area fills its control column");
 assert.match(css, /min-width:44px/, "range hit area remains at least 44px wide");
-assert.match(css, /::-webkit-slider-thumb[^}]*width:20px;height:20px/);
+assert.match(css, /::-webkit-slider-thumb[^}]*width:22px;height:22px/);
 assert.match(css, /::-moz-range-thumb[^}]*width:16px;height:16px/);
-assert.match(html, /:focus-visible/, "keyboard focus styling remains visible");
+assert.match(css, /:focus-visible/, "keyboard focus styling remains visible");
 assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA service worker missing");
 assert.match(uiWorkflow, /HBNF-CART-OWNER-GUEST-CONTROLS-V1-20261016/);
-assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-control-guest-qr-v1-20261016"/);
+assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-control-home-r6-20261024"/);
 assert.match(installer, /\?release="\+BUILD_MARKER\+/);
 assert.match(installer, /HBNF_CART2_OWNER_GUEST_INSTALL=PASS/);
 assert.match(installer, /if not verified:\s+raise RuntimeError\("Deploy finished but exact Cart 2.0 marker did not verify/);
@@ -130,19 +138,66 @@ try {
 
 const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
 const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");
-assert.match(guestHtml, /Use cellular or another network with internet; HBNF-Cart Wi-Fi is not required/);
+assert.match(guestHtml, /Use these controls over cellular while Guest Mode is on/);
 assert.match(guestHtml, /Skins scoring/);
 assert.match(guestHtml, /Glow scoring/);
-assert.match(guestHtml, /Matrix\/AUX command acknowledgements not confirmed/);
-assert.match(guestJs, /AUX illumination is not verified by this acknowledgement/);
-assert.match(guestJs, /GUEST SERVICE OFFLINE/);
+assert.match(guestHtml, /id="deviceStatus" class="device-status"/);
+assert.match(guestJs, /reported\.confirmed===true/);
+assert.match(guestJs, /matrix==="Responding"&&aux==="Responding"/);
+assert.match(guestJs, /Status unavailable/);
 for (const vibe of ["chill", "groove", "heavy", "psychedelic", "cosmic"]) {
   assert.match(guestHtml, new RegExp(`data-value="${vibe}"`), `Guest page exposes approved ${vibe} name`);
 }
 assert.match(guestHtml, /data-guest-action="vibe_auto" data-vibe-control disabled/);
-assert.match(guestHtml, /Guest Vibes stay disabled until the Cart’s matching Vibe runtime is qualified/);
+assert.match(guestHtml, /data-vibe-control disabled/);
 assert.doesNotMatch(guestHtml, /data-value="(?:mellow|moderate|energetic|peak)"/);
 assert.match(guestJs, /control\.hasAttribute\("data-vibe-control"\)/, "Guest status refresh must never enable an unqualified Vibe action");
-assert.match(guestJs, /Vibe selection is unavailable until the matching Cart runtime is qualified/);
+assert.match(guestJs, /vibeRuntimeReady=!!\(snapshot&&snapshot\.capabilities&&snapshot\.capabilities\.phase2VibeRuntimeV1===true\)/);
+
+const reviewManifestRoot = fs.mkdtempSync(path.join(os.tmpdir(), "hbnf-pwa-review-baseline-state-"));
+try {
+  execFileSync("git", ["init", "-q", reviewManifestRoot]);
+  execFileSync("git", ["-C", reviewManifestRoot, "config", "user.name", "Package verifier test"]);
+  execFileSync("git", ["-C", reviewManifestRoot, "config", "user.email", "package-test@example.invalid"]);
+  execFileSync("git", ["-C", reviewManifestRoot, "commit", "--allow-empty", "-qm", "fixture"]);
+  const reviewDir = path.join(reviewManifestRoot, "review");
+  fs.mkdirSync(reviewDir);
+  const reviewTools = {
+    "install.sh": "#!/bin/sh\necho 'REVIEW ONLY: installation is disabled' >&2\nexit 64\n",
+    "rollback.sh": "#!/bin/sh\necho 'REVIEW ONLY: rollback is disabled' >&2\nexit 64\n",
+    "REVIEW_ONLY.txt": "Review artifact only. No installation or rollback is enabled.\n",
+  };
+  const packageTools = Object.entries(reviewTools).map(([name, content]) => {
+    fs.writeFileSync(path.join(reviewDir, name), content);
+    return {
+      path: name,
+      sha256: crypto.createHash("sha256").update(content).digest("hex"),
+      ...(name === "install.sh" || name === "rollback.sh" ? { mode: "disabled-review-stub" } : {}),
+    };
+  });
+  const reviewManifest = {
+    sourceCommit: execFileSync("git", ["-C", reviewManifestRoot, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+    releaseDisposition: "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED",
+    transactionId: null,
+    packageTools,
+    sourceInputs: [],
+    assets: [],
+    rollbackBaseline: { entries: null, sha256: null, packageArchive: null },
+  };
+  const manifestPath = path.join(reviewDir, "PACKAGE.json");
+  fs.writeFileSync(manifestPath, JSON.stringify(reviewManifest));
+  const verifier = path.join(root, "scripts/hbnf_verify_owner_pwa_source_manifest.mjs");
+  execFileSync("node", [verifier, "--verify-source-manifest", "--cart-root", reviewManifestRoot, "--manifest", manifestPath]);
+  reviewManifest.releaseDisposition = "INSTALLABLE_REQUIRES_EXISTING_ADMISSION";
+  reviewManifest.transactionId = "TEST-TRANSACTION-0001";
+  reviewManifest.packageTools = [];
+  fs.writeFileSync(manifestPath, JSON.stringify(reviewManifest));
+  assert.throws(
+    () => execFileSync("node", [verifier, "--verify-source-manifest", "--cart-root", reviewManifestRoot, "--manifest", manifestPath], { stdio: "pipe" }),
+    "installable packages must fail closed when their exact installed baseline is unavailable",
+  );
+} finally {
+  fs.rmSync(reviewManifestRoot, { recursive: true, force: true });
+}
 
 console.log("HBNF owner PWA package closure: PASS");

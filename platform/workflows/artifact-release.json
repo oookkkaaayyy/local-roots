@@ -11,6 +11,7 @@
     "rehearsal_stage_id": "transaction-rehearsal",
     "capture_stage_id": "capture-current-state",
     "required_before_stage_id": "deploy",
+    "recovery_proven_before_build": true,
     "deterministic_prerequisites_closed_offline": true,
     "consumer_contract_verified": true,
     "recovery_proven_before_first_device_mutation": true,
@@ -25,6 +26,36 @@
       "retry_policy": "idempotent",
       "outputs": [
         "declared complete inputs"
+      ]
+    },
+    {
+      "id": "contract-closure",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "actual consumer path/API/role contract",
+        "immutable target identity independent of mutable discovery aliases"
+      ]
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact last-known-good artifact/version",
+        "exact rollback command/path",
+        "rollback acceptance checks"
+      ]
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact currently deployed version/identity frozen"
       ]
     },
     {
@@ -57,27 +88,6 @@
       ]
     },
     {
-      "id": "contract-closure",
-      "kind": "verification",
-      "mutation": false,
-      "retry_policy": "idempotent",
-      "outputs": [
-        "actual consumer path/API/role contract",
-        "immutable target identity independent of mutable discovery aliases"
-      ]
-    },
-    {
-      "id": "recovery-proof",
-      "kind": "verification",
-      "mutation": false,
-      "retry_policy": "idempotent",
-      "outputs": [
-        "exact last-known-good artifact/version",
-        "exact rollback command/path",
-        "rollback acceptance checks"
-      ]
-    },
-    {
       "id": "transaction-rehearsal",
       "kind": "verification",
       "mutation": false,
@@ -86,15 +96,6 @@
         "preview/version/simulation deployment PASS",
         "consumer readback PASS",
         "rollback rehearsal PASS"
-      ]
-    },
-    {
-      "id": "capture-current-state",
-      "kind": "preflight",
-      "mutation": false,
-      "retry_policy": "idempotent",
-      "outputs": [
-        "exact currently deployed version/identity frozen"
       ]
     },
     {

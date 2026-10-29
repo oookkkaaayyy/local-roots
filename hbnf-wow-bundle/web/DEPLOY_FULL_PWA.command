@@ -3,8 +3,8 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PARTDIR="$HERE/source-bundle"
-EXPECTED_B64="2399ce9c06377c10afdabe256365fe6ebc7013a2519ea565fe7af61b2586bd70"
-EXPECTED_ZIP="ad32a0e6e24c130c9b4ed831b2b4d1af9c009472fcdf57e74f8ff884eaf9bdcc"
+EXPECTED_B64="b445a825942f11cecb14069c639d5462ea4c7b56b1fdd84fe66e65deecca0406"
+EXPECTED_ZIP="a68efa5f253750c2c0466437eb94228897135657b3d12db1f239c6676ac496bf"
 TMPBASE="${TMPDIR:-/tmp}"; TMPBASE="${TMPBASE%/}"
 WORK="$(mktemp -d "$TMPBASE/hbnf-wow-full-pwa.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT

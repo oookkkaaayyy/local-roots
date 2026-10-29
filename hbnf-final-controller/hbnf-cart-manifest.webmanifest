@@ -2,11 +2,11 @@
   "name": "HBNF Cart Control",
   "short_name": "HBNF Cart",
   "id": "/hbnf-cart.html",
-  "start_url": "/hbnf-cart.html?app=20261021-fail-closed-readiness-v2",
+  "start_url": "/hbnf-cart.html?app=20261024-night-earth-ui-r2",
   "scope": "/hbnf-cart.html",
   "display": "standalone",
-  "background_color": "#071018",
-  "theme_color": "#071018",
+  "background_color": "#141916",
+  "theme_color": "#141916",
   "icons": [
     {"src": "/hbnf-cart-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "/hbnf-cart-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}

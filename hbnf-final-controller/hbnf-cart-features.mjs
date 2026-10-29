@@ -1,7 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
 import { formatAcePotDisplay } from "./hbnf-cart-live-display.mjs";
-import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText } from "./hbnf-cart-readiness.mjs?v=20261022-v112-show-scores-system";
+import { courseInternetCloudLabel, courseScoreLabel, deviceReadinessChecks, hbnfEndpointReachabilityText, matrixRelayLabel, readinessStatus, scoreFeedStatus, scoreFreshnessLabel, scoringCloudStatusText, uvCommandForSharedSliderRelease } from "./hbnf-cart-readiness.mjs?v=20261024-cart-control-home-r4";
 
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
@@ -17,6 +17,7 @@ const SHOWS = [
 const SAVED_LOOKS_KEY = "hbnf_cart_saved_looks_v1";
 const LEGACY_SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
 const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
+const UV_CAPS_STORAGE_KEY = "hbnf_cart_uv_caps_v1";
 const LIVE_CACHE_MAX_MS = 12 * 60 * 60 * 1000;
 const HBNF_ENDPOINT_IMAGE_URL = "https://hbnightflyers.com/hbnf-cart-icon-180.png";
 const HBNF_ENDPOINT_PROBE_INTERVAL_MS = 60000;
@@ -30,6 +31,12 @@ let hbnfEndpointProbeLastStartedAt = 0;
 let courseInternetState = "not_checked";
 let courseCloudState = "not_checked";
 let paletteOptionsReady = false;
+let uvFollowActive = null;
+let uvRequestInFlight = false;
+let uvFollowCapsPending = false;
+let uvReadiness = "checking";
+let uvCommissioningTestAvailable = false;
+let uvCapsStorageAvailable = true;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -178,12 +185,17 @@ function paletteControlFromId(paletteId) {
   return "";
 }
 
+function paletteCommandId(paletteId) {
+  const id=String(paletteId || "");
+  return id==="legacy" ? "hbnf-balanced" : id;
+}
+
 async function rollbackCanonicalLook(bridge, before) {
   const state=desiredState(before);
   if (!state) return;
   try {
     if (state.sceneId) await bridge.command("SCENE",{sceneId:String(state.sceneId)});
-    if (state.paletteId) await bridge.command("PALETTE",{paletteId:String(state.paletteId)});
+    if (state.paletteId) await bridge.command("PALETTE",{paletteId:paletteCommandId(state.paletteId)});
   } catch (_) {}
 }
 
@@ -254,7 +266,7 @@ async function applyPalette() {
   } catch (error) {
     let restored=false;
     try {
-      await bridge.command("PALETTE",{paletteId:String(prior.paletteId)});
+      await bridge.command("PALETTE",{paletteId:paletteCommandId(prior.paletteId)});
       const restoredSnapshot=await bridge.refresh({hydrate:false});
       const restoredState=desiredState(restoredSnapshot);
       restored=!!restoredState && String(restoredState.paletteId)===String(prior.paletteId);
@@ -833,7 +845,7 @@ function syncOverlayAvailability() {
   if (!overlayReady) {
     const live=$("featureLive");
     if (live && live.textContent==="Live scores haven’t loaded yet.") {
-      live.textContent="Live scores are available. Cart display isn’t available yet.";
+      live.textContent="Cart score display controls aren’t available yet.";
     }
   }
   return overlayReady && paletteReady;
@@ -854,6 +866,248 @@ function bind(id,fn) {
     });
   });
 }
+
+function readUvCaps(storage) {
+  try {
+    const raw = storage.getItem(UV_CAPS_STORAGE_KEY);
+    if (!raw) return { main: 64, short: 64, storageAvailable: true };
+    const saved = JSON.parse(raw);
+    const valid = value => Number.isInteger(value) && value >= 0 && value <= 255;
+    return {
+      main: valid(saved && saved.main) ? saved.main : 64,
+      short: valid(saved && saved.short) ? saved.short : 64,
+      storageAvailable: true,
+    };
+  } catch (_) {
+    return { main: 64, short: 64, storageAvailable: false };
+  }
+}
+
+function writeUvCaps(storage, main, short) {
+  const valid = value => Number.isInteger(value) && value >= 0 && value <= 255;
+  if (!valid(main) || !valid(short)) return false;
+  try {
+    storage.setItem(UV_CAPS_STORAGE_KEY, JSON.stringify({ main, short }));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function uvLevelSavedMessage() {
+  return uvCapsStorageAvailable
+    ? "Brightness levels are saved on this iPad."
+    : "Brightness levels are set for this screen, but this browser could not save them.";
+}
+
+function uvStateChanged(persist = true) {
+  const main = $("uvMainBrightness"), short = $("uvShortBrightness");
+  if ($("uvMainValue") && main) $("uvMainValue").value = String(main.value);
+  if ($("uvShortValue") && short) $("uvShortValue").value = String(short.value);
+  if ($("uvSharedValue") && main && short) {
+    const mainLevel = Number(main.value), shortLevel = Number(short.value);
+    const mixed = mainLevel !== shortLevel;
+    $("uvSharedValue").value = mixed ? "Mixed" : String(mainLevel);
+    if ($("uvSharedBrightness")) $("uvSharedBrightness").value = String(mixed ? Math.round((mainLevel + shortLevel) / 2) : mainLevel);
+  }
+  if (persist && main && short) {
+    try {
+      uvCapsStorageAvailable = writeUvCaps(window.localStorage, Number(main.value), Number(short.value));
+    } catch (_) {
+      uvCapsStorageAvailable = false;
+    }
+  }
+  const status = $("uvActionStatus");
+  if (status && !uvRequestInFlight) {
+    if (uvReadiness === "ready") status.textContent = uvFollowActive === true
+      ? `${uvLevelSavedMessage()} Release the Show slider to update both Matrix-follow caps.`
+      : uvFollowActive === false
+        ? `${uvLevelSavedMessage()} Release the Show slider to send both manual levels; Fine tuning keeps its separate Apply button.`
+        : `${uvLevelSavedMessage()} Cart output mode is unconfirmed; slider changes stay local. Use Apply levels or Follow Matrix to choose a mode.`;
+    else if (uvReadiness === "unavailable") status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} Use Test Cart or Test Bar for a bounded check.`;
+    else if (uvReadiness === "unsafe") status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
+  }
+  setUvCommissioningTestReady(uvCommissioningTestAvailable);
+}
+
+function restoreUvCaps() {
+  let caps;
+  try { caps = readUvCaps(window.localStorage); }
+  catch (_) { caps = { main: 64, short: 64, storageAvailable: false }; }
+  const main = $("uvMainBrightness"), short = $("uvShortBrightness");
+  if (main) main.value = String(caps.main);
+  if (short) short.value = String(caps.short);
+  uvCapsStorageAvailable = caps.storageAvailable;
+}
+
+function setUvControlsReady(ready, safeOffAvailable = false) {
+  // The safety/status gate protects commands, not local slider state. Leave the
+  // brightness controls editable when the Cart link is unknown so the selected
+  // manual levels survive a Matrix/WAN interruption; lock them only in-flight.
+  ["uvApply", "uvFollow"].forEach(id => { if ($(id)) $(id).disabled = !ready || uvRequestInFlight; });
+  if ($("uvOff")) $("uvOff").disabled = (!ready && !safeOffAvailable) || uvRequestInFlight;
+  ["uvMainBrightness", "uvShortBrightness", "uvSharedBrightness"].forEach(id => { if ($(id)) $(id).disabled = uvRequestInFlight; });
+}
+
+function setUvCommissioningTestReady(ready) {
+  uvCommissioningTestAvailable = ready === true;
+  [["uvTestMain", "uvMainBrightness"], ["uvTestShort", "uvShortBrightness"]].forEach(([buttonId, sliderId]) => {
+    const value = Number($(sliderId)?.value);
+    if ($(buttonId)) $(buttonId).disabled = !uvCommissioningTestAvailable || !Number.isInteger(value) || value < 1 || value > 255 || uvRequestInFlight;
+  });
+}
+
+async function checkUvReadiness(updateStatus = true) {
+  const status = $("uvActionStatus");
+  if (!status) return;
+  setUvControlsReady(false);
+  setUvCommissioningTestReady(false);
+  try {
+    const result = await canonicalRead("uv_status");
+    const safeOutputAccess = result && result.available === true && result.uvOutputsVerified === true;
+    setUvCommissioningTestReady(result && result.commissioningTestAvailable === true && result.uvOutputsVerified === true);
+    setUvControlsReady(result && result.uvControlEnabled === true, safeOutputAccess);
+    if (result && result.uvControlEnabled === true) {
+      uvReadiness = "ready";
+      uvFollowActive = result.outputMode === "FOLLOW_MATRIX" ? true
+        : result.outputMode === "MANUAL" || result.outputMode === "OFF" ? false
+          : null;
+      const outputOn = result.outputOn;
+      if (updateStatus) status.textContent = uvFollowActive === true
+        ? "Matrix follow is active. Fresh audio scales each selected cap; stale audio falls back to that cap."
+        : uvFollowActive === null
+          ? "Cart output mode is unconfirmed. No command was sent; use Apply levels or Follow Matrix to choose a mode."
+        : outputOn && typeof outputOn.main === "boolean" && typeof outputOn.short === "boolean"
+          ? `Cart reports UV output ${outputOn.main ? "on" : "off"}; Bar reports ${outputOn.short ? "on" : "off"}. No new command was sent.`
+          : "UV controls are ready. Current output state is unavailable; no output command was sent. Choose Apply levels, Follow Matrix, or UV off.";
+    } else {
+      uvReadiness = "unsafe";
+      uvFollowActive = false;
+      if (updateStatus) status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
+    }
+  } catch (_) {
+    uvReadiness = "unavailable";
+    // The commissioning endpoint independently verifies AUX identity, limits
+    // each request to one three-second pulse, and confirms both outputs OFF.
+    // Keep that bounded diagnostic reachable when only the status read fails;
+    // ordinary Apply/Follow controls remain locked.
+    setUvCommissioningTestReady(true);
+    if (updateStatus) status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} A bounded Cart/Bar test is available below.`;
+  }
+}
+
+async function sendUvCommissioningTest(channel) {
+  const status = $("uvActionStatus");
+  const input = channel === "main" ? $("uvMainBrightness") : $("uvShortBrightness");
+  if (!status || !input || !["main", "short"].includes(channel) || uvRequestInFlight) return false;
+  uvRequestInFlight = true;
+  setUvControlsReady(false);
+  setUvCommissioningTestReady(false);
+  status.textContent = `Testing ${channel === "main" ? "Cart" : "Bar"} UV for 3 seconds…`;
+  let confirmed = false;
+  try {
+    const result = await canonicalRead("uv_policy", {
+      mode: "COMMISSIONING_TEST", channel, brightness: Number(input.value),
+    });
+    confirmed = result && result.ok === true && result.outputOffConfirmed === true && result.deviceReadback === true;
+    status.textContent = confirmed
+      ? `${channel === "main" ? "Cart" : "Bar"} test finished; both UV outputs read back off. Check whether the strip lit.`
+      : "Test result was not confirmed. Check the Cart before trying again.";
+  } catch (error) {
+    const detail = error && error.data && error.data.error;
+    const reason = error && error.status ? `HTTP ${error.status}${detail ? `: ${String(detail).slice(0, 100)}` : ""}`
+      : error && error.message ? String(error.message).slice(0, 100) : "";
+    status.textContent = error && error.status === 502
+      ? `Test output state is uncertain (${String(detail || "readback failed")}). Check UV state before another test.`
+      : `Test could not run${reason ? ` (${reason})` : ""}. No success was reported.`;
+  } finally {
+    uvRequestInFlight = false;
+    await checkUvReadiness(false);
+  }
+  return confirmed;
+}
+
+async function sendUv(mode) {
+  const status = $("uvActionStatus");
+  const main = $("uvMainBrightness"), short = $("uvShortBrightness");
+  if (!status || !main || !short) return;
+  if (uvRequestInFlight) {
+    if (mode === "FOLLOW_MATRIX" && uvFollowActive) uvFollowCapsPending = true;
+    return false;
+  }
+  uvRequestInFlight = true;
+  if (mode !== "FOLLOW_MATRIX") {
+    uvFollowActive = false;
+    uvFollowCapsPending = false;
+  }
+  setUvControlsReady(false);
+  status.textContent = mode === "OFF" ? "Requesting UV off…" : mode === "FOLLOW_MATRIX" ? "Requesting automatic Matrix/AUX rhythm follow…" : "Sending detached manual levels…";
+  let accepted = false;
+  try {
+    const result = await canonicalRead("uv_policy", {
+      mode,
+      brightnessBySegment: { main: Number(main.value), short: Number(short.value) },
+    });
+    const ack = result && result.acknowledgement;
+    const confirmed = result && result.ok === true && ack && (ack.acceptedByBroker === true || ack.acceptedByDevice === true);
+    if (confirmed) {
+      accepted = true;
+      if (mode === "FOLLOW_MATRIX") uvFollowActive = true;
+      const localReadback = ack.acceptedByDevice === true && ack.deviceReadback === true;
+      status.textContent = localReadback
+        ? (mode === "FOLLOW_MATRIX" ? "Cart confirmed Matrix follow and readback. Stale audio falls back to the selected caps; illumination was not observed." : "Cart confirmed the UV command and readback; illumination was not observed.")
+        : (mode === "FOLLOW_MATRIX" ? "AUX accepted Matrix follow. Stale audio falls back to the selected caps; device output is not confirmed." : "AUX broker accepted the request; device output is not confirmed.");
+    } else {
+      if (mode === "FOLLOW_MATRIX") uvFollowActive = false;
+      status.textContent = "UV request was not confirmed. Check the Cart connection before retrying.";
+    }
+  } catch (error) {
+    const detail = error && error.data && error.data.error;
+    if (mode === "FOLLOW_MATRIX") uvFollowActive = false;
+    if (error && error.status === 409) {
+      status.textContent = String(detail || "UV safety checks are incomplete.") + " No UV command was sent.";
+    } else {
+      status.textContent = "UV result is unknown. Check the Cart before trying again.";
+    }
+  } finally {
+    uvRequestInFlight = false;
+    await checkUvReadiness(false);
+    if (uvFollowCapsPending && uvFollowActive) {
+      uvFollowCapsPending = false;
+      void sendUv("FOLLOW_MATRIX");
+    } else if (!uvFollowActive) {
+      uvFollowCapsPending = false;
+    }
+  }
+  return accepted;
+}
+
+["uvMainBrightness", "uvShortBrightness"].forEach(id => {
+  if ($(id)) $(id).addEventListener("input", uvStateChanged);
+  if ($(id)) $(id).addEventListener("change", () => {
+    if (uvFollowActive) void sendUv("FOLLOW_MATRIX");
+  });
+});
+if ($("uvSharedBrightness")) {
+  $("uvSharedBrightness").addEventListener("input", () => {
+    const value = $("uvSharedBrightness").value;
+    ["uvMainBrightness", "uvShortBrightness"].forEach(id => { if ($(id)) $(id).value = value; });
+    if ($("uvSharedValue")) $("uvSharedValue").value = value;
+    uvStateChanged();
+  });
+  $("uvSharedBrightness").addEventListener("change", () => {
+    const mode = uvCommandForSharedSliderRelease(uvReadiness, uvFollowActive);
+    if (mode) void sendUv(mode);
+  });
+}
+restoreUvCaps();
+if ($("uvApply")) $("uvApply").addEventListener("click", () => sendUv("MANUAL"));
+if ($("uvFollow")) $("uvFollow").addEventListener("click", () => sendUv("FOLLOW_MATRIX"));
+if ($("uvOff")) $("uvOff").addEventListener("click", () => sendUv("OFF"));
+if ($("uvTestMain")) $("uvTestMain").addEventListener("click", () => sendUvCommissioningTest("main"));
+if ($("uvTestShort")) $("uvTestShort").addEventListener("click", () => sendUvCommissioningTest("short"));
+uvStateChanged(false);
+checkUvReadiness();
 
 populateLooks();
 renderSavedLooks("");

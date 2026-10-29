@@ -1,0 +1,18 @@
+{
+  "installedFilesManifestSha256": "3d715ba1e27fedaace1fdcce13e21acb741b521478a8712153d44c5aa322aac7",
+  "localArchiveBytesComparedToManifest": "PASS",
+  "managedFileCount": 20,
+  "note": "Fresh full 20-file snapshot after CORS v1.0.18 install; gateway nginx-server.conf and auth.lua captured from live Opal.",
+  "readAt": "2026-10-28T08:01:00Z",
+  "remoteReadback": "PASS",
+  "rollbackArchiveSha256": "c647f73d0d4c7f25fce5f45db7c61b58567f10487f0f77e1ecbb46dc1725b96b",
+  "rollbackDriveFileId": "1SuxUto9Uw-5TYNVniY3RScwgZCuwiLNs",
+  "rollbackDriveReadbackByteEquality": "PASS",
+  "rollbackDriveReadbackSha256": "c647f73d0d4c7f25fce5f45db7c61b58567f10487f0f77e1ecbb46dc1725b96b",
+  "schema": "hbnf-opal-live-baseline-readback-v1",
+  "target": {
+    "ip": "192.168.77.1",
+    "kernel": "4.14.90",
+    "model": "GL-SFT1200"
+  }
+}

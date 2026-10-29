@@ -39,6 +39,6 @@ test("manual display uses only the local overlay path; live data remains a separ
   assert.match(liveOnly, /canonicalRead\("live_status"/);
   assert.doesNotMatch(liveOnly, /readLiveCache|renderLive\(cached/);
   assert.match(html, /Manual Show Scores[^<]*works offline/);
-  assert.match(html, /not live standings/i);
-  assert.match(html, /Show live standings · internet/);
+  assert.match(html, /Display only\. Nothing is saved or submitted\./i);
+  assert.match(html, /href="https:\/\/hbnightflyers\.com\/skins\.html"[\s\S]*href="https:\/\/hbnightflyers\.com\/glow\.html"/);
 });

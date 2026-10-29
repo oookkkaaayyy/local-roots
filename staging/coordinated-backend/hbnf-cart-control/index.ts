@@ -4,6 +4,8 @@ import { chooseLive, isMatrixLiveReadPath, projectSkinsForMatrix } from "./live.
 import { laDate, readSkinsScoreState, writeSkinsWinner, writeSkinsTiebreaker, writeSkinsAceWinner } from "./skins_scoring.ts";
 import { phase2VibeReady } from "./runtime-vibe.ts";
 import { handleMatrixRelay } from "./matrix-relay.ts";
+import { proxyUvAction } from "./uv-policy-proxy.mjs";
+import { readAuthoritativeDeviceExpiry } from "./pairing-expiry.mjs";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 const cors = {
@@ -55,6 +57,7 @@ Deno.serve(async (req: Request) => {
   let authorized = !protectedAction;
   let operatorAuthorized = false;
   let pairedDeviceAuthorized = false;
+  let pairedDeviceSessionHash: string | null = null;
   const authorization = req.headers.get("Authorization") ?? "";
   if (authorization.startsWith("Bearer ")) {
     const auth = createClient(url, anon, { global: { headers: { Authorization: authorization } }, auth: { persistSession: false, autoRefreshToken: false } });
@@ -73,6 +76,7 @@ Deno.serve(async (req: Request) => {
       const { data: valid, error: deviceError } = await service.rpc("hbnf_cart_device_session_valid", { p_session_hash: digest });
       authorized = !deviceError && valid === true;
       pairedDeviceAuthorized = authorized;
+      if (pairedDeviceAuthorized) pairedDeviceSessionHash = digest;
     }
   }
 
@@ -86,6 +90,7 @@ Deno.serve(async (req: Request) => {
       const { data: valid, error: deviceError } = await service.rpc("hbnf_cart_device_session_valid", { p_session_hash: digest });
       authorized = !deviceError && valid === true;
       pairedDeviceAuthorized = authorized;
+      if (pairedDeviceAuthorized) pairedDeviceSessionHash = digest;
     }
   }
 
@@ -164,8 +169,26 @@ Deno.serve(async (req: Request) => {
   // Read-only enrollment check for the Opal's local Owner Control gateway.
   // Unlike `status`, this action is explicitly paired-owner authenticated.
   if (action === "verify_local_pairing") {
-    if (!pairedDeviceAuthorized) return response({ error: "owner_pairing_required" }, 401);
-    return response({ paired: true });
+    if (!pairedDeviceAuthorized || !pairedDeviceSessionHash) return response({ error: "owner_pairing_required" }, 401);
+    const expiresAtEpoch = await readAuthoritativeDeviceExpiry(service, pairedDeviceSessionHash);
+    if (expiresAtEpoch === null) return response({ error: "authoritative_pair_expiry_unavailable" }, 503);
+    return response({ paired: true, expiresAtEpoch });
+  }
+
+  if (action === "uv_status") {
+    const result = await proxyUvAction(action, request, {
+      operatorAuthorized, pairedDeviceAuthorized,
+      endpoint: `${url}/functions/v1/hbnf-aux-control`, serviceKey, anonKey: anon,
+    });
+    return response(result.body, result.status);
+  }
+
+  if (action === "uv_policy") {
+    const result = await proxyUvAction(action, request, {
+      operatorAuthorized, pairedDeviceAuthorized,
+      endpoint: `${url}/functions/v1/hbnf-aux-control`, serviceKey, anonKey: anon,
+    });
+    return response(result.body, result.status);
   }
 
   if (action === "live_status") {

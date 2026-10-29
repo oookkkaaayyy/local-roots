@@ -16,12 +16,14 @@ for (const expected of ["Lights &amp; looks", "Text", "Refresh scores", "Show sc
   assert.ok(quickControls.includes(expected), `quick controls include ${expected}`);
 }
 
-const statusSection = html.match(/<section class="panel course-status-panel"[\s\S]*?<\/section>/)?.[0] || "";
+const statusSection = html.match(/<details class="panel course-status-panel"[\s\S]*?<\/details>/)?.[0] || "";
+assert.match(statusSection, /<summary>Connection details<\/summary>/);
+assert.doesNotMatch(statusSection, /\sopen(?:\s|>)/, "connection details start collapsed");
 assert.match(statusSection, /<span>Cart<\/span>/);
 assert.match(statusSection, /<span>Internet<\/span>/);
 assert.match(statusSection, /<span>Matrix<\/span>/);
 assert.doesNotMatch(statusSection, /Supabase|acknowledged|updated_at|IPAD|HTTP/i);
-assert.match(statusSection, /don’t confirm what is physically showing/i);
+assert.doesNotMatch(statusSection, /check the display to confirm what you can see/i);
 
 const guestSection = html.match(/<section class="panel guest-quick-panel"[\s\S]*?<\/section>/)?.[0] || "";
 assert.match(guestSection, /id="guestModeStatus"/);
@@ -30,17 +32,31 @@ assert.match(guestSection, /id="guestModeClose"/);
 assert.match(guestSection, /hbnf-guest-qr\.png/);
 assert.ok(html.indexOf('class="panel guest-quick-panel"') < html.indexOf('id="lightsPanel"'), "guest controls appear before detailed light controls");
 
-assert.match(controller, /Cart \+ device replies current/);
-assert.doesNotMatch(controller, /Cart \+ devices confirmed/);
-assert.match(controller, /Controls unavailable/);
+assert.match(controller, /Devices responding/);
+assert.match(controller, /Matrix and underglow confirmed the change/);
+assert.doesNotMatch(controller, /readback|DDP synchronization|Open Troubleshooting for details/);
+assert.match(controller, /Connection issue/);
 assert.match(controller, /guestDefaultEnableNeeded/);
 assert.match(controller, /Guest access status is unavailable\. Reconnect to the Cart to check it\./);
 
-assert.match(css, /\.primary-actions a,\.primary-actions button\{[^}]*min-height:52px/s);
-assert.match(css, /\.guest-invite\{[^}]*padding:14px/s);
-assert.match(css, /\.guest-invite img\{[^}]*padding:8px/s);
+assert.match(css, /\.primary-actions a,\.primary-actions button\{[^}]*min-height:48px/s);
+assert.match(css, /\.guest-invite\{[^}]*padding:8px/s);
+assert.match(css, /\.guest-invite img\{[^}]*padding:5px/s);
 assert.match(css, /summary::?-webkit-details-marker/);
 assert.match(css, /@media\(max-width:699px\)/);
+assert.match(css, /body\{margin:0;min-height:100vh/);
+assert.match(css, /body>main\{width:min\(100%,1080px\)/);
+
+const uiModule = fs.readFileSync("hbnf-final-controller/hbnf-cart-ui-v6.mjs", "utf8");
+assert.match(css, /@media\(min-width:900px\) and \(min-height:680px\) and \(orientation:landscape\)/);
+assert.match(css, /grid-template-areas:"actions actions" "lights motion" "text text"/);
+assert.match(uiModule, /move\("\.course-status-panel", "system"\)/);
+assert.match(uiModule, /Latest status details/);
+assert.match(html, /id="truthBadge"[^>]*role="status"[^>]*aria-live="polite"/);
+assert.match(controller, /function updateCompactStatus\(\)/);
+assert.match(controller, /MutationObserver/);
+assert.match(uiModule, /className = "panel show-device-actions"/);
+assert.match(uiModule, /aria-controls="ownerViewShow"/);
 
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 assert.equal(new Set(ids).size, ids.length, "Owner PWA IDs remain unique after moving controls");

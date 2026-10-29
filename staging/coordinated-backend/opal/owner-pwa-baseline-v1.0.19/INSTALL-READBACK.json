@@ -1,0 +1,9 @@
+{
+  "schema":"hbnf-owner-pwa-install-readback-v1",
+  "transaction_id":"OWNER-PWA-LOCAL-V119-UV-LOCAL-REQUEST-20261028-01",
+  "admission_manifest_sha256":"31a3371aafe57c0f1889e06f59bd12515e40697887942d9fc48ff86d1e9e564e",
+  "candidate_archive_sha256":"4bf5c7f16877ff7a92928e6d1e5374b91b94c230ea5c85b1462ef173e4530fc4",
+  "installed_payload_manifest":"PASS",
+  "version_readback":"PASS",
+  "rollback_copy":"PASS"
+}

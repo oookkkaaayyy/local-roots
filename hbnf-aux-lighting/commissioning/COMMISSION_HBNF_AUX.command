@@ -3,7 +3,7 @@ set -uo pipefail
 cd "$(dirname "$0")"
 clear
 printf '%s\n' 'HB NIGHT FLYERS — AUX / SP803E COMMISSIONING'
-printf '%s\n' 'Guarded one-pass workflow: verify -> discover -> backup -> exact next step.'
+printf '%s\n' 'Guarded workflow: verify -> discover -> configuration snapshot -> admitted next step.'
 printf '%s\n' 'No mutation occurs without an explicit YES prompt.'
 printf '\n'
 REPORT="$HOME/Desktop/HBNF_AUX_COMMISSION_LATEST.json"

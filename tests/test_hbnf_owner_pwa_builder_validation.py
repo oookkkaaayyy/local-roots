@@ -1,8 +1,11 @@
 import importlib.util
+import hashlib
+import json
 import pathlib
 import subprocess
 import tempfile
 import unittest
+import zipfile
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -55,6 +58,163 @@ class OwnerPwaBuilderValidationTests(unittest.TestCase):
             (payload / "app.js").write_text('import {x} from "./missing.js";')
             with self.assertRaisesRegex(SystemExit, "missing or unsafe module"):
                 BUILDER.verify_payload_references(payload)
+
+    def make_live_baseline(self, root):
+        package_dir = root / "package"
+        package_dir.mkdir()
+        assets = {f"asset-{index}.js": f"payload-{index}".encode() for index in range(16)}
+        payload_manifest = "".join(
+            f"{hashlib.sha256(data).hexdigest()}  owner-pwa/{name}\n" for name, data in sorted(assets.items())
+        ).encode()
+        rollback = b"#!/bin/sh\nrollback\n"
+        install = b"#!/bin/sh\ninstall\n"
+        package_baseline = b"baseline\n"
+        package = {
+            "package": "hbnf-owner-pwa-local-v1.0.12",
+            "sourceCommit": "a" * 40,
+            "transactionId": "OWNER-PWA-LOCAL-V112-TEST-20261024-01",
+            "assets": [{"path": name, "sha256": hashlib.sha256(data).hexdigest()} for name, data in sorted(assets.items())],
+        }
+        package_bytes = (json.dumps(package) + "\n").encode()
+        (package_dir / "PACKAGE.json").write_bytes(package_bytes)
+        (package_dir / "PAYLOAD.SHA256SUMS").write_bytes(payload_manifest)
+        (package_dir / "rollback.sh").write_bytes(rollback)
+        (package_dir / "install.sh").write_bytes(install)
+        (package_dir / "BASELINE.SHA256SUMS").write_bytes(package_baseline)
+        archive_path = package_dir / "hbnf-owner-pwa-local-v1.0.12.zip"
+        with zipfile.ZipFile(archive_path, "w") as archive:
+            archive.writestr("PACKAGE.json", package_bytes)
+            archive.writestr("PAYLOAD.SHA256SUMS", payload_manifest)
+            archive.writestr("rollback.sh", rollback)
+            archive.writestr("install.sh", install)
+            archive.writestr("BASELINE.SHA256SUMS", package_baseline)
+            for name, data in sorted(assets.items()):
+                archive.writestr("owner-pwa/" + name, data)
+        archive_sha = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+        (package_dir / "PACKAGE.SHA256").write_text(f"{archive_sha}  {archive_path.name}\n")
+
+        marker_bytes = {
+            ".hbnf-package-marker": b"hbnf-owner-pwa-local-v1\n",
+            ".hbnf-package-version": b"1.0.12\n",
+            ".hbnf-payload.sha256": payload_manifest.replace(b"owner-pwa/", b""),
+            ".hbnf-rollback.sh": rollback,
+        }
+        baseline_entries = {name: hashlib.sha256(data).hexdigest() for name, data in {**assets, **marker_bytes}.items()}
+        baseline_path = root / "BASELINE.SHA256SUMS"
+        baseline_path.write_text("".join(f"{sha}  {name}\n" for name, sha in sorted(baseline_entries.items())))
+        baseline_sha = hashlib.sha256(baseline_path.read_bytes()).hexdigest()
+        receipt = {
+            "schema": "hbnf-owner-pwa-live-readback-v1", "status": "PASS", "runtime_version": "1.0.12",
+            "source_commit": package["sourceCommit"], "transaction_id": package["transactionId"],
+            "device_identity": {"ip": "192.168.77.1", "arp": "? (192.168.77.1) at 94:83:c4:98:78:93 on en0"},
+            "baseline_manifest_sha256": baseline_sha, "baseline_package_sha256": archive_sha,
+            "payload_manifest_sha256": hashlib.sha256(payload_manifest.replace(b"owner-pwa/", b"")).hexdigest(),
+            "served_payload_hashes_verified": True, "observed_expected_path_count": 20,
+            "observed_expected_paths_http_200": True, "rollback_artifact_available": True,
+            "filesystem_entry_count": "NOT_CHECKED", "filesystem_completeness": "REQUIRES_FRESH_INSTALLER_PREFLIGHT",
+            "device_side_prior_rollback_copy": "NOT_CHECKED",
+            "installed_sha256_by_path": {"owner-pwa/" + name: sha for name, sha in baseline_entries.items()},
+            "http_status_by_path": {"owner-pwa/" + name: 200 for name in baseline_entries},
+        }
+        receipt_path = root / "READBACK.json"
+        receipt_path.write_text(json.dumps(receipt))
+        return receipt_path, baseline_path, package_dir, receipt
+
+    def test_direct_live_readback_binds_exact_package_without_claiming_filesystem_completeness(self):
+        with tempfile.TemporaryDirectory() as td:
+            receipt, baseline, package, _ = self.make_live_baseline(pathlib.Path(td))
+            result = BUILDER.verify_live_readback_baseline(receipt, baseline, package, "1.0.12")
+            self.assertEqual(result["observedExpectedHttpPaths"], 20)
+            self.assertEqual(result["filesystemEntryCount"], "NOT_CHECKED")
+            self.assertEqual(result["deviceSidePriorRollbackCopy"], "NOT_CHECKED")
+            self.assertTrue(result["installerMustVerifyExactDirectoryAndCreateFreshRollbackBeforeSwap"])
+
+    def test_direct_live_readback_accepts_vault_copy_only_when_exact_bytes_match(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td)
+            receipt, baseline, package, _ = self.make_live_baseline(root)
+            vault_copy = root / "vault" / "hbnf-owner-pwa-local-v1.0.12.zip"
+            vault_copy.parent.mkdir()
+            vault_copy.write_bytes((package / vault_copy.name).read_bytes())
+            result = BUILDER.verify_live_readback_baseline(receipt, baseline, package, "1.0.12", vault_copy)
+            self.assertEqual(result["observedExpectedHttpPaths"], 20)
+            vault_copy.write_bytes(vault_copy.read_bytes() + b"tampered")
+            with self.assertRaisesRegex(SystemExit, "exact retained Owner PWA package"):
+                BUILDER.verify_live_readback_baseline(receipt, baseline, package, "1.0.12", vault_copy)
+
+    def test_direct_live_readback_rejects_hash_or_status_mismatch(self):
+        with tempfile.TemporaryDirectory() as td:
+            receipt, baseline, package, payload = self.make_live_baseline(pathlib.Path(td))
+            payload["installed_sha256_by_path"]["owner-pwa/asset-0.js"] = "0" * 64
+            receipt.write_text(json.dumps(payload))
+            with self.assertRaisesRegex(SystemExit, "content hashes differ"):
+                BUILDER.verify_live_readback_baseline(receipt, baseline, package, "1.0.12")
+            payload["installed_sha256_by_path"]["owner-pwa/asset-0.js"] = next(
+                sha for name, sha in (line.split("  ", 1)[::-1] for line in baseline.read_text().splitlines()) if name == "asset-0.js"
+            )
+            payload["http_status_by_path"]["owner-pwa/asset-0.js"] = 404
+            receipt.write_text(json.dumps(payload))
+            with self.assertRaisesRegex(SystemExit, "HTTP status set"):
+                BUILDER.verify_live_readback_baseline(receipt, baseline, package, "1.0.12")
+
+    def test_uv_install_receipt_binds_exact_archive_and_pasted_installer_output(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td)
+            receipt_path, baseline_path, package_dir, receipt = self.make_live_baseline(root)
+            package = json.loads((package_dir / "PACKAGE.json").read_text())
+            package["package"] = "hbnf-owner-pwa-local-v1.0.15"
+            package["transactionId"] = "OWNER-PWA-LOCAL-V115-TEST-20261027-01"
+            (package_dir / "PACKAGE.json").write_text(json.dumps(package) + "\n")
+            payload = (package_dir / "PAYLOAD.SHA256SUMS").read_bytes()
+            assets = {}
+            for line in payload.decode().splitlines():
+                sha, archive_name = line.split("  ", 1)
+                assets[archive_name.removeprefix("owner-pwa/")] = sha
+            marker_bytes = {
+                ".hbnf-package-marker": b"hbnf-owner-pwa-local-v1\n",
+                ".hbnf-package-version": b"1.0.15\n",
+                ".hbnf-payload.sha256": payload.replace(b"owner-pwa/", b""),
+                ".hbnf-rollback.sh": (package_dir / "rollback.sh").read_bytes(),
+            }
+            baseline_entries = {**assets, **{name: hashlib.sha256(data).hexdigest() for name, data in marker_bytes.items()}}
+            baseline_path.write_text("".join(f"{sha}  {name}\n" for name, sha in sorted(baseline_entries.items())))
+            archive_path = package_dir / "hbnf-owner-pwa-local-v1.0.15.zip"
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                archive.writestr("PACKAGE.json", (package_dir / "PACKAGE.json").read_bytes())
+                archive.writestr("BASELINE.SHA256SUMS", (package_dir / "BASELINE.SHA256SUMS").read_bytes())
+                archive.writestr("PAYLOAD.SHA256SUMS", payload)
+                archive.writestr("install.sh", (package_dir / "install.sh").read_bytes())
+                archive.writestr("rollback.sh", (package_dir / "rollback.sh").read_bytes())
+                for name in assets:
+                    index = int(name.removeprefix("asset-").removesuffix(".js"))
+                    archive.writestr("owner-pwa/" + name, f"payload-{index}".encode())
+            package_sha = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+            (package_dir / "PACKAGE.SHA256").write_text(f"{package_sha}  {archive_path.name}\n")
+            install_output = "".join(f"{name}: OK\n" for name in assets)
+            install_output += "GATEWAY_INSTALL_COMPLETE: Opal Local Control v1.0.14 installed; Owner PWA v1.0.15 payload verified.\n"
+            output_path = root / "OWNER-PASTED-GATEWAY-INSTALL-OUTPUT.txt"
+            output_path.write_text(install_output)
+            sha_output = hashlib.sha256(install_output.encode()).hexdigest()
+            readback = {
+                "schema": "hbnf-cart-uv-post-install-evidence-v1",
+                "sourceEvidence": {"gatewayInstallerOutput": output_path.name, "gatewayInstallerOutputSha256": sha_output},
+                "installedSoftware": {
+                    "ownerPwa": {"version": "1.0.15", "sourceCommit": package["sourceCommit"],
+                                 "packageSha256": package_sha, "payloadReadback": "PASS",
+                                 "rollbackVersion": "1.0.14", "rollbackPathOnOpal": "/root/rollback"},
+                    "opalGateway": {"version": "1.0.14", "install": "PASS", "packageIntegrity": "PASS", "preflight": "PASS"},
+                },
+            }
+            receipt_path.write_text(json.dumps(readback))
+            result = BUILDER.verify_live_readback_baseline(receipt_path, baseline_path, package_dir, "1.0.15")
+            self.assertEqual(result["evidenceLevel"], "INSTALL_TRANSACTION_PACKAGE_AND_17_ASSET_READBACK_OWNER_REPORTED")
+            self.assertEqual(result["filesystemEntryCount"], "NOT_CHECKED")
+            changed_output = install_output.replace("asset-0.js: OK", "asset-0.js: BAD")
+            output_path.write_text(changed_output)
+            readback["sourceEvidence"]["gatewayInstallerOutputSha256"] = hashlib.sha256(changed_output.encode()).hexdigest()
+            receipt_path.write_text(json.dumps(readback))
+            with self.assertRaisesRegex(SystemExit, "install output does not attest"):
+                BUILDER.verify_live_readback_baseline(receipt_path, baseline_path, package_dir, "1.0.15")
 
 
 if __name__ == "__main__":

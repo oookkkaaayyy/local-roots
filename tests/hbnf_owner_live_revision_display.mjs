@@ -4,12 +4,16 @@ import fs from "node:fs";
 import vm from "node:vm";
 
 const source=fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs",import.meta.url),"utf8");
+const html=fs.readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html",import.meta.url),"utf8");
+assert.doesNotMatch(html,/Live scores need internet/i,"the page must not claim offline before the connection check completes");
 assert.doesNotMatch(source,/\?\./,"live score UI must parse in the supported iOS 12 Safari target");
 assert.doesNotMatch(source,/\?\?/,"live score UI must not use nullish coalescing on the iOS 12 target");
 const displayStart=source.indexOf("function liveSourceRevisionText(updatedAt)");
 const refreshStart=source.indexOf("async function refreshLive(silent)");
 const refreshEnd=source.indexOf("async function showScoreboard()",refreshStart);
 assert.ok(displayStart>=0&&refreshStart>displayStart&&refreshEnd>refreshStart,"live snapshot and refresh functions should be present");
+assert.doesNotMatch(source,/Live scores are available\. Cart display isn’t available yet\./,"overlay capability must not claim scores are available before a score read succeeds");
+assert.match(source,/Cart score display controls aren’t available yet\./,"missing overlay capability is reported without implying score data is available");
 const display=source.slice(displayStart,refreshStart);
 const refresh=source.slice(refreshStart,refreshEnd);
 const revision="2026-10-21T18:30:00.000Z";
@@ -69,7 +73,7 @@ test("source and locally reported Matrix revisions distinguish aligned, stale, a
 test("local Matrix readback reports matching, older, and unavailable source revisions truthfully",async()=>{
   const start=source.indexOf("async function matrixLiveSourceRevisionStatus(");
   const end=source.indexOf("function renderLive(",start);
-  const context={matrixLocal:()=>true,matrixApiUrl:path=>path,fetchJson:async()=>({state:{HBNF:{liveActive:true,liveSourceRevision:revision}}}),compareLiveSourceRevision:(a,b)=>a===b?"aligned":!b?"unknown":Date.parse(b)<Date.parse(a)?"stale":"unknown"};
+  const context={$(id){return {textContent:""};},setFeatureStatus(){},matrixRelayLabel:()=>"Matrix status",matrixLocal:()=>true,matrixApiUrl:path=>path,fetchJson:async()=>({state:{HBNF:{liveActive:true,liveSourceRevision:revision}}}),compareLiveSourceRevision:(a,b)=>a===b?"aligned":!b?"unknown":Date.parse(b)<Date.parse(a)?"stale":"unknown"};
   vm.runInNewContext(source.slice(start,end),context);
   assert.match(await context.matrixLiveSourceRevisionStatus(revision),/same source row revision/);
   context.fetchJson=async()=>({state:{HBNF:{liveActive:true,liveSourceRevision:"2026-10-21T18:29:00.000Z"}}});

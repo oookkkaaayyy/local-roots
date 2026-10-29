@@ -1,0 +1,17 @@
+{
+  "schema": "hbnf-owner-local-control-artifact-record-v1",
+  "package": "hbnf-owner-local-control-v1.0.12.zip",
+  "sourceCommit": "c2dbd7ded57e46818e27af71bfec1c1be44db926",
+  "bytes": 106594,
+  "sha256": "4e89818fdf0551d5d722402b148abfd3c449b18a0325f9b39d380f4aea745daa",
+  "deterministicRebuild": "PASS: two clean outputs byte-identical",
+  "rollbackTransportSourceCommit": "8690ae711767ccfa644e538a169c6c2228272f64",
+  "rollbackTransportSha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+  "rollbackDisposition": "embedded exact transport baseline; device rollback package/current installed artifact still requires fresh Cart preflight",
+  "ownerAcceptedNetworkExposure": {
+    "owner_accepted": true,
+    "observation_status": "NOT_TESTED",
+    "isolation_test_required_for_admission": false
+  },
+  "releaseDisposition": "SOURCE_BOUND_NOT_INSTALLED"
+}

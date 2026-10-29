@@ -1,0 +1,8 @@
+{
+  "identity": "GL-SFT1200 at 192.168.77.1; Opal Local UV v1.0.28 from HBNF-OPAL-UV-LOCK-V128-20261028-01; all 20 managed live files re-read and matched the v1.0.28 post-install manifest immediately before this build; UV segments 1 and 2 confirmed OFF.",
+  "sourceCommit": "6ed2439f5c9e387683a04ea6b24b5c1278dbedbb",
+  "artifactSha256": "390194d7bf9304b41d3ab829f1f2909c2a3de21913968d6441d4a3851cbf82a3",
+  "artifactBytes": 225826,
+  "liveManifestSha256": "f31f7e3a7aace51f218aa53ebb10f4c9dad29de8fcce1be80bb46a4a09ff7de3",
+  "readbackEvidence": "After the v1.0.28 install and live test failure, SSH readback verified all 20 managed Opal files against the installed v1.0.28 manifest. Read-only UV status reported available=true, normal control locked, and outputMode OFF; AUX WLED readback confirmed UV segments 1 and 2 off. The exact v1.0.28 image was reconstructed from exact v1.0.27 rollback plus v1.0.28 changed files; every reconstructed file SHA-256 matches the fresh 20-file live readback."
+}

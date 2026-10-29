@@ -1,0 +1,8 @@
+{
+  "identity": "GL-SFT1200 at 192.168.77.1; Opal Local UV v1.0.27 from HBNF-OPAL-UV-LOCK-V127-20261028-01; freshly re-read all 20 managed files over SSH after Opal power cycle on 2026-10-28; exact hashes match the v1.0.27 post-install closeout; UV segments 1 and 2 confirmed OFF.",
+  "sourceCommit": "a5494d187f3987eead8e95dcbd2b38e6c5b251ee",
+  "artifactSha256": "2cad925a6238d7bcb4db0e8131eeab2ac6156787971749ad6e1333ce935b848b",
+  "artifactBytes": 225693,
+  "liveManifestSha256": "ad4f08924b36b357a13433f416f4eab9dbe4809b18c8e2c92718c23757a68dc6",
+  "readbackEvidence": "Fresh SSH readback streamed all 20 current managed files from Opal after power cycle. Every SHA-256 matched the v1.0.27 installed closeout manifest. Read-only UV status returned available=true and both outputs OFF; AUX identity and topology were valid."
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_CONTROL_HOME_REVISION_20261024",
+  "summary": "Redesign the Owner Cart Show screen as a glanceable device home: connection states and direct power/show actions first, then lighting, independent motion and text controls. Preserve existing handlers, hidden data and score paths.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing static Owner PWA, three-view navigation, current command/status handlers and guest route. Presentation/layout only; no new runtime, backend, dependency, release gate, or device behavior.",
+      "affected_subsystem": "Owner PWA Show screen hierarchy: glanceable Cart/Internet/Matrix state, direct existing power/show commands, Vibe, brightness, independent Show motion and Text. Guest and deferred score/color views, existing IDs, storage, handlers, live score source, relay and permission rules remain.",
+      "rollback_reference": "Revert this source change to its immediate parent draft PR #130 source 5877749869c28b6e210df0c0ea2bcc117e2b0322. No installed package, production device, or device setting changes.",
+      "evidence_sources": [
+        "Accepted HBNF palette values retained from evidence/cart2-owner-guest-vibe-r1-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R1_20261009/controller/hbnf-cart-ui-v6.css; HBNF green is now a restrained accent.",
+        "Local Roots tokens from app/src/styles.css: --cream #fff8ee, --sage-light #dee6cf, --sage #8c956a, --root #3a2618, --clay #a7623a; exact values verified in source and used for dominant surfaces and controls.",
+        "hbnf-final-controller/hbnf-cart-icon-180.png remains unchanged; forest container and screen blend integrate the existing black-backed mark without editing its artwork.",
+        "Apple HIG Layout and UI Design Dos and Don\u2019ts: adapt to screen and orientation, group and align related controls, maintain touch targets and contrast.",
+        "GOV.UK Writing for user interfaces: minimize cognitive load, begin with less, remove explanatory copy where the interface can be self-evident.",
+        "WCAG 2.2: text and non-text contrast, reflow, visible focus, and target size."
+      ],
+      "tests": [
+        "node --test tests/hbnf_cart_network_truth.test.mjs",
+        "node --test tests/hbnf_owner_pwa_redesign_source.test.mjs tests/hbnf_owner_pwa_ipad_home.test.mjs tests/hbnf_owner_pwa_show_scores_system.test.mjs tests/hbnf_owner_palette_deferral.test.mjs tests/hbnf_owner_guest_qr_static.mjs tests/hbnf_owner_text_feedback.test.mjs",
+        "node --test tests/hbnf_owner_legacy_palette_alias.test.mjs",
+        "Render exact source at iPad Mini 744x1133 portrait and 1133x744 landscape and iPhone 390x844; verify compact hierarchy, navigation, no horizontal overflow, controls, offline feedback, colors/Saved Looks hidden and independent Show motion. Final render NOT CHECKED under browser policy restriction.",
+        "node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs; git diff --check."
+      ],
+      "summary": "Show opens on a compact home screen with connection state and direct existing power/show actions, followed by lighting, independent motion and Text. Scores and System remain separate; hidden colors and saved looks retain their data."
+    },
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "selected_option": "Compact field utility led by documented Local Roots cream, stone, soil, clay, sage and forest tones; retain HBNF green only as a restrained accent. Use one system sans family, functional headings and short status copy. Align frequent controls and state first, fit portrait and landscape without dead space, preserve independent Show motion, guest controls, deferred Scores/Colors/Saved Looks and all data paths.",
+      "approval_reference": "Owner's corrective design brief relayed 2026-10-24 after rejecting the prior visual direction. Implement these specific requirements; final design acceptance is pending exact-source visual review.",
+      "approved_by_owner": true,
+      "visual_acceptance_status": "NOT_CHECKED"
+    }
+  }
+}

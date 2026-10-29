@@ -7,10 +7,10 @@ SERVER_CONF=$BASE/nginx-server.conf
 SERVICE=/etc/init.d/hbnf-owner-local-control
 TARGET=/www/mission-control-local/local-transport.js
 OWNER_HTTP_TARGET=/www/mission-control-local/owner-http-transport.js
-BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.4
+BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.14
 CANDIDATE_TRANSPORT_SHA=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a
 CANDIDATE_OWNER_HTTP_SHA=eb293856f93bcd4450d7a4baeec22941932f3fc5a24b33aee6fcdf7cbf265d75
-EXPECTED_ROLLBACK_TRANSPORT_SHA=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e
+EXPECTED_ROLLBACK_TRANSPORT_SHA=51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a
 LOG_DIR=/var/log/hbnf-owner-local-control-nginx
 PID_FILE=/var/run/hbnf-owner-local-control-nginx.pid
 fail(){ echo "ROLLBACK BLOCKED: $*" >&2; exit 1; }
@@ -23,11 +23,11 @@ actual=$(sha256sum "$OWNER_HTTP_TARGET" | awk '{print $1}')
 [ "$actual" = "$CANDIDATE_OWNER_HTTP_SHA" ] || fail "Owner PWA HTTP transport changed after release; preserve files and inspect manually"
 [ -f "$BACKUP/local-transport.js" ] || fail "exact pre-install Mission Control transport snapshot missing"
 actual=$(sha256sum "$BACKUP/local-transport.js" | awk '{print $1}')
-[ "$actual" = "$EXPECTED_ROLLBACK_TRANSPORT_SHA" ] || fail "rollback snapshot hash is not the exact v1.0.1 transport"
+[ "$actual" = "$EXPECTED_ROLLBACK_TRANSPORT_SHA" ] || fail "rollback snapshot hash is not the exact accepted Mission Control v1.0.2 transport"
 [ -x "$SERVICE" ] || fail "dedicated service file is missing; preserve files and inspect manually"
 [ -s "$CONF" ] && [ -s "$SERVER_CONF" ] || fail "dedicated config is incomplete; preserve files and inspect manually"
 
-# Stop/disable only the isolated :8443 instance. The GL.iNet Nginx service and
+# Stop/disable only the isolated :9443 instance. The GL.iNet Nginx service and
 # its global config/listeners are never reloaded or rewritten.
 "$SERVICE" stop || fail "could not stop the dedicated service"
 "$SERVICE" disable || fail "could not disable the dedicated service"

@@ -5,7 +5,7 @@ ROOT=pathlib.Path(__file__).resolve().parent
 CONTROLLER=ROOT/"controller"
 MANIFEST_PATH=ROOT/"MANIFEST.json"
 LIVE_URL="https://hbnightflyers.com/hbnf-cart.html"
-BUILD_MARKER="hbnf-cart2-owner-control-guest-qr-v1-20261016"
+BUILD_MARKER="hbnf-cart2-owner-control-home-r6-20261024"
 RELEASE_LABEL="HBNF CART 2.0 OWNER CONTROL + GUEST QR"
 FILES=[
     "hbnf-cart.html",
@@ -21,6 +21,7 @@ FILES=[
     "hbnf-cart-ui-v6.mjs",
     "hbnf-cart-features.mjs",
     "hbnf-cart-skins-score.mjs",
+    "hbnf-faded-phosphor.png",
     "hbnf-cart-icon-180.png",
     "hbnf-cart-icon-192.png",
     "hbnf-cart-icon-512.png",

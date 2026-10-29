@@ -1,15 +1,15 @@
 # HBNF / Cart Upgrades — Repository Agent Instructions
 
-## CURRENT FIELD-RELIABILITY PROGRAM (OWNER DIRECTIVE — 2026-10-20)
+## CURRENT FIELD-RELIABILITY PROGRAM (OWNER DIRECTIVE — 2026-10-25; supersedes 2026-10-20 priority note)
 
 This is a **project priority and source routing note**, not a change to the operational lifecycle model. Continue to enforce the actual `config/HBNF_CONTROL_MODEL.json`, `config/HBNF_CONTROL_STATE.json`, and `scripts/platform.py` commands below. Do not rebuild or replace these files.
 
-- **Active P0, existing HBNF scoring worker:** https://github.com/oookkkaaayyy/local-roots/issues/115 — recover real October 20 Skins scorecard and prevent silent unsaved results. The genuine Oct20 tag finalization already survives independently; never erase or redo it. Preserve owner's original iPhone browser/PWA storage.
-- **Active P1, existing Cart coordinator/worker:** https://github.com/oookkkaaayyy/local-roots/issues/116 — in parallel, fix deterministic Cart power/startup, Opal WAN reconnect, headless score-to-Matrix path, iPad Mini controls/text/palettes and AUX synchronization. Diagnostics and independently safe offline changes proceed during scoring P0.
-- New UV integration, games, visual upgrades and side features are on hold until **both** tracks pass real-world acceptance. Avoid building an alternate scoreboard service when the existing headless relay can be qualified.
+- **Active P0: Cart UV integration, issue #116 and draft PR #130.** Make the two 5V USB UV strips follow Matrix/AUX rhythm automatically by default; the Main and Short sliders set independent brightness caps. Detached/manual behavior is secondary. Preserve existing Cart/Matrix/underglow behavior. Continue bounded source, firmware, packaging, and recovery work toward a safe install.
+- **Frozen by owner: score-on-Matrix and UDisc-to-HBNF implementation.** Do not start, resume, or require issue #115 scoring work as a prerequisite for UV. Preserve current scoring data and workflows; resume this lane only when the owner asks.
+- Keep UV outputs fail-dark until the established electrical and physical gates pass. Source work may proceed while those gates are open; do not energize, install firmware, or change production/device state without the required release authorization and safety evidence. Use the hardware specifications already provided; do not request duplicate photos/labels unless a specific unresolved fact cannot be established from those records.
 - **Expert-led behavior:** Questions, observations and proposed ideas from the owner are inputs to challenger analysis, **not automatic instructions** to interrupt existing work. Test against current evidence, production identity, risks and simpler alternatives; state adopt/defer/reject. Change agreed direction only on an explicit owner decision or a verified urgent incident.
 - Do not confuse GitHub source availability with installed-device source/version parity. This branch contains genuine Cart control files, but on-course installed Opal and firmware must still be matched to exact verified releases. The separate Local Roots main-branch source-routing candidate is https://github.com/oookkkaaayyy/local-roots/pull/117 (DRAFT and **not accepted production authority**).
-- Keep the owner informed only of substantive results, not prompt chains. At every handoff state P0 status, P1 status, exact next acceptance evidence and any genuine manual gate. No live scoring/Cart mutation merely from this note.
+- Keep the owner informed only of substantive results, not prompt chains. At every handoff state UV source/package status, exact next acceptance evidence, and any genuine owner-only physical/manual gate. No live scoring/Cart mutation merely from this note.
 
 Controlling evidence/priority: https://docs.google.com/document/d/1mydpAPHSuHu7Z75MedZ683s2FoFJVgSi2jLPVGKaYpQ/edit
 Missing-round evidence: https://docs.google.com/document/d/1a0K5wvfnHT-hn9TPxd-ze2vpqM3sPIQcpD5zPSxVt8s/edit
@@ -133,6 +133,9 @@ For any live, deployment, diagnostic, or high-cost task:
 
 - The coordinator must prepare exactly one execution capsule before the worker acts. The capsule consists of the exact repository ref/commit, exact scripts/configs, exact durable artifacts, required hashes, expected terminal outputs, and stop conditions.
 - Use indexed authority first, not archaeology first. Resolve needed material from the current file authority, artifact/source registry, AKS pointers, canonical GitHub paths, and indexed Drive records before searching older local workspaces or historical sources.
+- Before retrieval, state the expected identity, first-stop index/authority, named sources, and stop condition. Keep a compact ledger of each source, exact query/selection, pagination or listing bound, and result. Inspect each named source once; advance pagination only with its returned cursor. Do not repeat equivalent searches with reworded queries or relist the same scope.
+- Use precise dispositions: `FOUND`, `NOT FOUND WITHIN CHECKED SCOPE`, or `INCOMPLETE ACCESS`. A capped/partial listing never proves global absence and is not a reason to search the same scope indefinitely. Expand only for a new pointer, a genuinely different authoritative source, or a materially changed retrieval capability.
+- Once the indexed pass is complete, take one predeclared recovery step: reproduce from exact source plus pinned inputs and compare the expected hash. If exact inputs are unavailable or the hash differs, stop that recovery lane, record the specific gap, and continue independent safe work. Ask the owner only for a concrete known backup/build location, never a speculative broad hunt.
 - Do not forbid genuine rediscovery. If indexed authority does not contain what is genuinely needed, broaden the search deliberately to prior Drive items, GitHub history, archived evidence, prior handoffs/chats, or local workspaces as appropriate. The problem is repeated unindexed archaeology, not evidence retrieval itself.
 - Anything plausibly reusable later must be preserved before the task ends and made easy to retrieve: exact source/config/helper identity, decisive evidence, accepted/rejected artifacts when uniquely informative, recovery companions, hashes, provenance, and the pointer needed to find them.
 - Preservation destinations remain role-based: GitHub for canonical/buildable source and scripts; Drive for durable binaries/evidence/recovery artifacts; AKS/registries for searchable routing, metadata, identities, and pointers. Local Codex paths are workspace only unless no durable copy exists yet.
@@ -146,6 +149,16 @@ For any live, deployment, diagnostic, or high-cost task:
 ## Mandatory standard-engineering execution contract
 
 This section governs every future implementation, build, deployment, release, diagnostic, recovery, and hardware-validation prompt/process in this project.
+
+### Absolute installed-baseline and rollback invariant — all components and future releases
+
+This is a mandatory release invariant, not a recommendation. Enforce it at three independent gates:
+
+1. **Authoritative baseline record:** maintain one per-component record binding the physical/logical target, installed release and source identity, installed artifact SHA-256 (or an explicit `UNAVAILABLE` state with evidence and recovery plan), exact rollback artifact ID/location/hash, candidate source commit/hash, and install/readback receipt. Never infer installed bytes from a version label or build marker.
+2. **Build/package admission:** a package may be labeled `INSTALLABLE` only when the baseline record is current, exact rollback bytes match the recorded installed image, the rollback is durably retained and read-back verified, and candidate/source/package identities agree. Otherwise the only permitted disposition is `REVIEW_ONLY`; never call that package ready to install.
+3. **Mutation and closeout:** immediately before writes, re-read the target identity/baseline and compare with the admitted record; abort before mutation on missing or mismatched evidence. After writes, verify the installed candidate identity and durably write/read back the receipt, then atomically advance the authoritative baseline while retaining the exact prior image for the next rollback.
+
+Automated checks must reject missing, stale, mismatched, replayed, or non-durable baseline/rollback evidence at every applicable gate. Compile success, matching version/build labels, owner reports, and earlier tests are not substitutes. If firmware bytes cannot be read from a device, accept only the repository's explicitly supported source/build witness bound to the exact install transaction; if that cannot establish identity, keep installation blocked and continue independent work. This rule applies to every coordinator and worker. Never ask the owner to locate project-created artifacts.
 
 - Do not treat the project as exploratory unless the unknown is genuinely irreducible runtime/physical behavior. Source identity, dependencies, generated inputs, credentials, API/consumer contracts, mutable-pointer semantics, publication behavior, timeout budgets, rollback paths, and cloud deployment mechanics are deterministic prerequisites and must be closed before live/paid mutation.
 - Before any risky mutation, prove the **entire transaction** end to end in preview/staging/simulation or deterministic fixtures: prepare -> publish/deploy -> actual consumer reads the exact path/role/identity -> execute -> verify -> rollback/recovery -> restore exact prior cloud/device state.

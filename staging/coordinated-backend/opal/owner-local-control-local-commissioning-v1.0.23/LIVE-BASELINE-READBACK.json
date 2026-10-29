@@ -1,0 +1,14 @@
+{
+  "schema": "hbnf-opal-live-baseline-identity-v1",
+  "identity": "GL-SFT1200 at 192.168.77.1; Opal local control runtime matching v1.0.22 transaction receipt, with three UV gateway files verified against that transaction's exact post-install manifest; exact 20-file live snapshot captured 2026-10-28; UV outputs OFF; hardware profile unaccepted.",
+  "sourceCommit": "30159603982ef131551c634e75f62f162ea8f13f",
+  "artifactSha256": "750e929ee6d86f88b99c714aea56c41e6e577e73d24d7119cc2ed7ebdb5d31be",
+  "artifactBytes": 224877,
+  "liveFilesManifestSha256": "8c00c1fff29ccb017633fda9402be59488838daeac552c6346bec2af18d5e325",
+  "liveFiles": 20,
+  "captureMethod": "SSH readback of exact 20 paths listed in v1.0.22 installed receipt; live content matched v1.0.22 POST-INSTALL-READBACK.SHA256SUMS in all files.",
+  "outputState": {
+    "main": false,
+    "short": false
+  }
+}

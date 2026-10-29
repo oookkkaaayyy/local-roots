@@ -3,6 +3,8 @@ name: HBNF SP803E AUX R3 compile
 on:
   push:
     branches:
+      - codex/cart-order2-cumulative-20261024
+      - codex/cart-uv-local-policy-scaffold-20261026
       - hbnf-matrix-wow-bundle-r3-20260921
       - hbnf-aux-luminance-v1-source-coupled-20260927
       - hbnf-generative-projection-v4-20260927
@@ -14,21 +16,33 @@ on:
       - 'hbnf-wow-bundle/config/WOW_SCENES_V2.json'
       - 'hbnf-aux-lighting/commissioning/**'
   workflow_dispatch:
+    inputs:
+      uv_build:
+        description: Build UV output-capable firmware in the full guarded commissioning package; activation remains separately gated
+        type: choice
+        options:
+          - disabled-default
+          - uv-enabled-review
+        default: disabled-default
+        required: true
 
 permissions:
-  contents: read
+  contents: write
+  actions: read
 
 # Rapid tool-driven development can create many tiny commits while a full
 # firmware build takes several minutes. Keep only the newest build alive so
 # superseded intermediate commits do not waste runners or emit failure noise.
 concurrency:
-  group: hbnf-sp803e-aux-r3-build-${{ github.ref }}
+  group: hbnf-sp803e-aux-r3-build-${{ github.ref }}-${{ inputs.uv_build || 'push-default' }}
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      HBNF_UV_BUILD_FLAG: ${{ ((github.event_name == 'workflow_dispatch' && inputs.uv_build == 'uv-enabled-review') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[uv-enabled-review]'))) && '1' || '0' }}
     steps:
       - name: Coalesce rapid development pushes
         if: github.event_name == 'push'
@@ -36,6 +50,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Python
         uses: actions/setup-python@v5
@@ -47,6 +63,41 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Verify the retained exact current AUX V7 rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY2'
+          import hashlib, json, pathlib, shutil
+          root = pathlib.Path('hbnf-aux-lighting/commissioning')
+          image_path = root / 'HBNF_SP803E_AUX_V7_ROLLBACK.bin'
+          manifest_path = root / 'AUX_V7_RECOVERY_MANIFEST.json'
+          image = image_path.read_bytes()
+          manifest = json.loads(manifest_path.read_text())
+          expected = {
+              'source_commit': 'e78fc74c9470b0bafaf43ca6a2823f60f1a4b51e',
+              'workflow_run_id': '40276725561',
+              'archive_sha256': '1dad4eba787a55eba0febd076477ae85cbc9dd339d94e43231182dbae011c86d',
+              'firmware_sha256': 'c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a',
+              'firmware_bytes': 1348624,
+          }
+          provenance = manifest['provenance']
+          assert hashlib.sha256(image).hexdigest() == expected['firmware_sha256']
+          assert len(image) == expected['firmware_bytes']
+          assert manifest['firmware_sha256'] == expected['firmware_sha256']
+          assert manifest['firmware_bytes'] == expected['firmware_bytes']
+          assert provenance['source_commit'] == expected['source_commit']
+          assert str(provenance['workflow_run_id']) == expected['workflow_run_id']
+          assert manifest['recovery_bundle']['sha256'] == expected['archive_sha256']
+          assert manifest['firmware_file'] == image_path.name
+          assert manifest['verification']['owner_confirmed_v7_current'] is True
+          artifact_dir = pathlib.Path('/tmp/artifacts')
+          artifact_dir.mkdir(parents=True, exist_ok=True)
+          (artifact_dir / image_path.name).write_bytes(image)
+          shutil.copyfile(manifest_path, artifact_dir / manifest_path.name)
+          print('HBNF_AUX_EXACT_V7_ROLLBACK_READBACK_PASS')
+          PY2
+
       - name: Aux host contract
         shell: bash
         run: |
@@ -55,7 +106,7 @@ jobs:
           python .hbnf-build-aux-r3/test_luma_policy.py
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_generative_v4.cpp -o /tmp/aux-generative-v4
           /tmp/aux-generative-v4 | tee /tmp/aux-generative-v4.log
-          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_audio_domains_v4.cpp -o /tmp/aux-audio-domains-v4
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max -I.hbnf-build-aux-r3 .hbnf-build-r3max/test_audio_domains_v4.cpp -o /tmp/aux-audio-domains-v4
           /tmp/aux-audio-domains-v4 | tee /tmp/aux-audio-domains-v4.log
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_projection_link_v1.cpp -o /tmp/aux-projection-link-v1
           /tmp/aux-projection-link-v1 | tee /tmp/aux-projection-link-v1.log
@@ -106,11 +157,14 @@ jobs:
 
       - name: Apply AUX R3 source
         shell: bash
+        env:
+          HBNF_UV_BUILD_FLAG: ${{ env.HBNF_UV_BUILD_FLAG }}
         run: |
           set -euo pipefail
           cd /tmp/wled
-          cat > platformio_override.ini <<'EOF'
-          [platformio]
+          python - <<'PY2'
+          import os, pathlib
+          config='''[platformio]
           default_envs = hbnf_aux_sp803e_r3
 
           [env:hbnf_aux_sp803e_r3]
@@ -120,14 +174,21 @@ jobs:
             -D HBNF_VIBE_ANIMARTRIX=1
             -D UM_AUDIOREACTIVE_ENABLE=1
             -D SR_DMTYPE=254
-          EOF
+            -D HBNF_UV_OUTPUTS_VERIFIED=@UV_GATE@
+          '''.replace('@UV_GATE@',os.environ['HBNF_UV_BUILD_FLAG'])
+          pathlib.Path('platformio_override.ini').write_text(config)
+          PY2
           python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
-          cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_generative_v4.h" /tmp/wled/usermods/usermod_v2_animartrix/
+          cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_vibe16.h" "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_animartrix_audio_bridge.h" "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_generative_v4.h" /tmp/wled/usermods/usermod_v2_animartrix/
+          cp "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/hbnf_uv_audio_follower.h" /tmp/wled/usermods/usermod_v2_animartrix/
           cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_projection_link_v1.h" /tmp/wled/usermods/usermod_v2_animartrix/
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/apply_aux_r3.py" /tmp/wled
-          grep -q 'hbnf-wow-aux-r3-2026-09-22-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'registry28-tempo-lock-1d-v6-network-no-starve' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnf-wow-aux-r3-2026-10-25-uv-follow-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'registry28-tempo-lock-1d-v7-network-no-starve-uv-follow' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'uvFollowEffectId.*248' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'uvBuildProfile.*uv-follow-output-capable-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'HBNF_UV_OUTPUTS_VERIFIED.*0' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'source-coupled-v4' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'frame-lock-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'projectionRole.*receiver' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -137,6 +198,9 @@ jobs:
           grep -q 'camera-bright-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnfAuxLiftLuma' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'static uint8_t audioSyncEnabled = 2;' usermods/audioreactive/audio_reactive.cpp
+          python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/test_audio_sync_contract.py" /tmp/wled
+          g++ -std=c++17 -O2 -I"$GITHUB_WORKSPACE/.hbnf-build-aux-r3" "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/test_uv_audio_follower.cpp" -o /tmp/test_uv_audio_follower
+          /tmp/test_uv_audio_follower
           ! grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           ! grep -q 'hbnf_flow' platformio_override.ini
           git diff --check
@@ -146,9 +210,16 @@ jobs:
         shell: bash
         env:
           SOURCE_DATE_EPOCH: '1790035200'
+          # WLED enables a shared ~/.buildcache. A cached ELF can carry build-path
+          # debug strings from a different checkout root, changing ESP's embedded
+          # app_elf_sha256 while leaving executable firmware sections unchanged.
+          # Give each clean build an isolated cache so this gate compares fresh
+          # compiler/linker outputs from the same /tmp/wled source path.
+          PLATFORMIO_BUILD_CACHE_DIR: /tmp/hbnf-build-cache-first
         run: |
           set -euo pipefail
           cd /tmp/wled
+          rm -rf /tmp/hbnf-build-cache-first /tmp/hbnf-build-cache-second
           pio run -e hbnf_aux_sp803e_r3 2>&1 | tee /tmp/build-first.log
           mkdir -p /tmp/artifacts
           cp .pio/build/hbnf_aux_sp803e_r3/firmware.bin /tmp/artifacts/HBNF_SP803E_AUX_R3.bin
@@ -167,6 +238,7 @@ jobs:
         shell: bash
         env:
           SOURCE_DATE_EPOCH: '1790035200'
+          PLATFORMIO_BUILD_CACHE_DIR: /tmp/hbnf-build-cache-second
         run: |
           set -euo pipefail
           cd /tmp/wled
@@ -175,7 +247,7 @@ jobs:
           pio run -e hbnf_aux_sp803e_r3 2>&1 | tee /tmp/build-second.log
           cmp /tmp/first.bin .pio/build/hbnf_aux_sp803e_r3/firmware.bin
 
-      - name: Final metrics
+      - name: Final metrics and exact release admission
         shell: bash
         run: |
           set -euo pipefail
@@ -189,25 +261,38 @@ jobs:
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
           AUXPATCH=$(sha256sum .hbnf-build-aux-r3/apply_aux_r3.py | awk '{print $1}')
+          PYVER=$(python --version 2>&1)
+          PIOVER=$(pio --version 2>&1 | tr '\n' ' ')
+          NODEVER=$(node --version)
+          PIPVER=$(python -m pip --version)
+          REQSHA=$(sha256sum /tmp/wled/requirements.txt | awk '{print $1}')
+          WOWPATCH=$(sha256sum .hbnf-build-r3max/apply_wowmax_v3.py | awk '{print $1}')
+          UVFOLLOW=$(sha256sum .hbnf-build-aux-r3/hbnf_uv_audio_follower.h | awk '{print $1}')
+          PROJECTION=$(sha256sum .hbnf-build-r3max/hbnf_projection_link_v1.h | awk '{print $1}')
+          GEN4=$(sha256sum .hbnf-build-r3max/hbnf_generative_v4.h | awk '{print $1}')
+          if [ "$HBNF_UV_BUILD_FLAG" = 1 ]; then UV_OUTPUTS_VERIFIED=YES; UV_BUILD_PROFILE=uv-follow-output-capable-v1; else UV_OUTPUTS_VERIFIED=NO; UV_BUILD_PROFILE=uv-follow-fail-dark-v1; fi
           cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-aux-r3-source.patch /tmp/fold2-audit.log /tmp/aux-generative-v4.log /tmp/aux-audio-domains-v4.log /tmp/aux-projection-link-v1.log /tmp/artifacts/
-          cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/audit_animartrix_projection.py .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h /tmp/artifacts/
+          cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/test_audio_sync_contract.py .hbnf-build-aux-r3/test_uv_audio_follower.cpp .hbnf-build-aux-r3/hbnf_uv_audio_follower.h .hbnf-build-aux-r3/audit_animartrix_projection.py .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/local_commission.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/commission_operator.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/commission_guard.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/generate_release_admission.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/build_commissioning_distribution.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/generate_release_receipt.py hbnf-aux-lighting/commissioning/validate_release_receipt.py hbnf-aux-lighting/commissioning/test_release_receipt.py hbnf-aux-lighting/commissioning/RELEASE_RECEIPT.schema.json hbnf-aux-lighting/commissioning/RELEASE_RECEIPT.template.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/START_HERE.txt /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/COMMISSION_HBNF_AUX.command /tmp/artifacts/
           chmod +x /tmp/artifacts/COMMISSION_HBNF_AUX.command
           cp hbnf-aux-lighting/commissioning/README.md /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/CODEX_RUNBOOK.md /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/UV_FIELD_SESSION.md /tmp/artifacts/
           cp hbnf-wow-bundle/config/WOW_SCENES_V2.json /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
-            echo release=hbnf-wow-aux-r3-2026-09-22-v1
+            echo release=hbnf-wow-aux-r3-2026-10-25-uv-follow-v1
             echo engine=aux-r3-wow-1d
-            echo build_witness=registry28-tempo-lock-1d-v6-network-no-starve
+            echo build_witness=registry28-tempo-lock-1d-v7-network-no-starve-uv-follow
             echo firmware_sha256=$SHA
             echo firmware_bytes=$BYTES
             echo ota_slot_bytes=$SLOT
@@ -217,6 +302,12 @@ jobs:
             echo aux_patch_sha256=$AUXPATCH
             echo EFFECT_ID_RANGE=220-247
             echo EFFECT_COUNT=28
+            echo UV_FOLLOW_EFFECT_ID=248
+            echo UV_OUTPUTS_VERIFIED=$UV_OUTPUTS_VERIFIED
+            echo UV_COMPILE_GATE_DEFAULT=$HBNF_UV_BUILD_FLAG
+            echo UV_BUILD_PROFILE=$UV_BUILD_PROFILE
+            echo UV_ACTIVATION_GATES=CLOSED
+            echo UV_DIRECT_WLED_ACCESS=NOT_CHECKED
             echo AUDIO_SYNC_DEFAULT=RECEIVE
             echo AUDIO_SYNC_PORT=11988
             echo PROJECTION=FRAME_LOCK_V1_WITH_FOLD2_FALLBACK
@@ -246,9 +337,36 @@ jobs:
             echo LOCAL_SYNC_CONFIGURES_MQTT=NO
             echo SOURCE_DATE_EPOCH=1790035200
             echo github_run_id=$GITHUB_RUN_ID
+            echo github_run_attempt=$GITHUB_RUN_ATTEMPT
+            echo github_run_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+            echo github_ref=$GITHUB_REF
             echo github_sha=$GITHUB_SHA
+            echo workflow_path=.github/workflows/hbnf-sp803e-aux-r3-build.yml
+            echo toolchain_python=$PYVER
+            echo toolchain_platformio=$PIOVER
+            echo toolchain_node=$NODEVER
+            echo toolchain_pip=$PIPVER
+            echo input_wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
+            echo input_source_bundle_sha256=a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb
+            echo input_wled_requirements_sha256=$REQSHA
+            echo input_aux_patch_sha256=$AUXPATCH
+            echo input_wowmax_patch_sha256=$WOWPATCH
+            echo input_uv_follower_sha256=$UVFOLLOW
+            echo input_projection_header_sha256=$PROJECTION
+            echo input_generative_v4_sha256=$GEN4
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
+          python hbnf-aux-lighting/commissioning/generate_release_admission.py \
+            --firmware /tmp/artifacts/HBNF_SP803E_AUX_R3.bin \
+            --metrics /tmp/artifacts/FINAL_METRICS.txt \
+            --out /tmp/artifacts/RELEASE_ADMISSION.json \
+            --rollback /tmp/artifacts/HBNF_SP803E_AUX_V7_ROLLBACK.bin \
+            --rollback-manifest /tmp/artifacts/AUX_V7_RECOVERY_MANIFEST.json
+          python hbnf-aux-lighting/commissioning/generate_release_receipt.py \
+            --firmware /tmp/artifacts/HBNF_SP803E_AUX_R3.bin \
+            --metrics /tmp/artifacts/FINAL_METRICS.txt \
+            --template /tmp/artifacts/RELEASE_RECEIPT.template.json \
+            --out /tmp/artifacts/RELEASE_RECEIPT.json
 
       - name: Commission tooling selftest
         shell: bash
@@ -257,20 +375,13 @@ jobs:
           python hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py --selftest
           python hbnf-aux-lighting/commissioning/commission_guard.py --selftest
           python hbnf-aux-lighting/commissioning/build_commissioning_distribution.py --selftest
+          python hbnf-aux-lighting/commissioning/generate_release_admission.py --selftest
+          python hbnf-aux-lighting/commissioning/generate_release_receipt.py --selftest
+          python hbnf-aux-lighting/commissioning/validate_release_receipt.py ignored.json --selftest
+          python hbnf-aux-lighting/commissioning/test_release_receipt.py
           cp /tmp/artifacts/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin
           cp /tmp/artifacts/FINAL_METRICS.txt hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
           python hbnf-aux-lighting/commissioning/commission_operator.py --selftest
-          python - <<'PY2'
-          import pathlib,sys
-          source=pathlib.Path('hbnf-aux-lighting/commissioning').resolve()
-          sys.path.insert(0,str(source))
-          import commission_operator as c
-          package=pathlib.Path('/tmp/artifacts').resolve()
-          r=c.verify_package(package)
-          assert r['ok'],r
-          print('HBNF_AUX_COMMISSION_PACKAGE_VERIFY_PASS')
-          PY2
-          rm -f hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
 
       - name: Build permission-safe commissioning ZIP
         shell: bash
@@ -286,10 +397,97 @@ jobs:
               assert mode==0o755,oct(mode)
               assert 'commission_guard.py' in z.namelist()
               assert 'HBNF_SP803E_AUX_R3.bin' in z.namelist()
+              assert 'HBNF_SP803E_AUX_V7_ROLLBACK.bin' in z.namelist()
+              assert 'AUX_V7_RECOVERY_MANIFEST.json' in z.namelist()
+              assert 'ARTIFACT_POINTER.json' in z.namelist()
+              pointer=__import__('json').loads(z.read('ARTIFACT_POINTER.json'))
+              assert str(pointer['run_id'])==__import__('os').environ['GITHUB_RUN_ID']
+              assert pointer['run_attempt']==int(__import__('os').environ['GITHUB_RUN_ATTEMPT'])
+              assert pointer['source_commit']==__import__('os').environ['GITHUB_SHA']
+              admission=__import__('json').loads(z.read('RELEASE_ADMISSION.json'))
+              assert admission['status']=='REVIEW_ONLY'
+              assert admission['blocker_code']=='FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED'
+              assert admission['candidate_source_commit']==__import__('os').environ['GITHUB_SHA']
+              assert admission['rollback_artifact']['sha256']=='c44298bb4b80a0e3d36d094f8270a1959708997571784803592e257ecdef054a'
+              receipt=__import__('json').loads(z.read('RELEASE_RECEIPT.json'))
+              assert receipt['status']=='INCOMPLETE'
+              assert receipt['source']['commit']==__import__('os').environ['GITHUB_SHA']
+              metrics=dict(line.split('=',1) for line in z.read('FINAL_METRICS.txt').decode().splitlines() if '=' in line)
+              if metrics.get('UV_COMPILE_GATE_DEFAULT')=='1':
+                  assert metrics['UV_OUTPUTS_VERIFIED']=='YES'
+                  assert metrics['UV_BUILD_PROFILE']=='uv-follow-output-capable-v1'
+                  assert metrics['UV_ACTIVATION_GATES']=='CLOSED'
+                  assert metrics['UV_DIRECT_WLED_ACCESS']=='NOT_CHECKED'
+                  assert admission.get('uv_activation',{}).get('owner_opal_database_gates')=='CLOSED'
+                  assert admission.get('uv_activation',{}).get('direct_wled_network_isolation')=='OWNER_ACCEPTED_NOT_REQUIRED'
+                  exposure=admission.get('network_exposure',{})
+                  assert exposure.get('owner_accepted') is True
+                  assert exposure.get('decision')=='OWNER_ACCEPTED_EXPOSURE'
+                  assert exposure.get('observation_status')=='NOT_TESTED'
+                  assert exposure.get('isolation_test_required_for_admission') is False
+                  assert len(exposure.get('consequences',[]))>=2
           print('HBNF_AUX_DISTRIBUTION_MODE_GATE_PASS')
           PY2
 
-      - name: Upload artifact
+      - name: Verify exact commissioning package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY2'
+          import pathlib,sys
+          source=pathlib.Path('/tmp/artifacts').resolve()
+          sys.path.insert(0,str(pathlib.Path('hbnf-aux-lighting/commissioning').resolve()))
+          import commission_operator as c
+          r=c.verify_package(source)
+          assert r['ok'],r
+          assert r['releaseAdmission']['status']=='REVIEW_ONLY',r
+          assert r['releaseAdmission']['reason']=='FRESH_CURRENT_DEVICE_PREFLIGHT_REQUIRED',r
+          assert r['releaseAdmission']['rollbackVerified'],r
+          assert not r['installAdmissible'],r
+          print('HBNF_AUX_COMMISSION_PACKAGE_VERIFY_PASS')
+          PY2
+
+      - name: Preserve exact commissioning ZIP in a private run branch
+        if: github.ref == 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"
+          package=/tmp/artifacts/HBNF_SP803E_AUX_R3_COMMISSIONING.zip
+          test -s "$package"
+          branch="hbnf-aux-r3-artifact-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}"
+          temp_repo="$(mktemp -d)"
+          trap 'git -C "$temp_repo" config --unset-all http.https://github.com/.extraheader 2>/dev/null || true; rm -rf "$temp_repo"' EXIT
+          cp "$package" "$temp_repo/HBNF_SP803E_AUX_R3_COMMISSIONING.zip"
+          python - "$temp_repo" "$package" <<'PY2'
+          import hashlib, json, pathlib, sys, zipfile
+          out=pathlib.Path(sys.argv[1]); package=pathlib.Path(sys.argv[2])
+          with zipfile.ZipFile(package) as archive:
+              pointer=json.loads(archive.read('ARTIFACT_POINTER.json'))
+          pointer['run_attempt']=int(__import__('os').environ['GITHUB_RUN_ATTEMPT'])
+          pointer['package_file']=package.name
+          pointer['package_sha256']=hashlib.sha256(package.read_bytes()).hexdigest()
+          (out/'ARTIFACT_POINTER.json').write_text(json.dumps(pointer,indent=2,sort_keys=True)+'\n')
+          PY2
+          git -C "$temp_repo" init --initial-branch "$branch"
+          git -C "$temp_repo" config user.name "github-actions[bot]"
+          git -C "$temp_repo" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$temp_repo" add ARTIFACT_POINTER.json HBNF_SP803E_AUX_R3_COMMISSIONING.zip
+          git -C "$temp_repo" commit -m "Preserve HBNF AUX run ${GITHUB_RUN_ID} package"
+          git -C "$temp_repo" remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          auth_b64="$(python -c 'import base64,os; print(base64.b64encode(("x-access-token:"+os.environ["GH_TOKEN"]).encode()).decode())')"
+          echo "::add-mask::${auth_b64}"
+          git -C "$temp_repo" config http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_b64}"
+          unset auth_b64
+          git -C "$temp_repo" push origin "HEAD:refs/heads/${branch}"
+          git -C "$temp_repo" config --unset-all http.https://github.com/.extraheader
+          unset GH_TOKEN
+          echo "HBNF_AUX_PACKAGE_PUBLISHED branch=${branch}"
+
+      - name: Upload artifacts for other workflow refs
+        if: env.HBNF_UV_BUILD_FLAG == '0' && github.ref != 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
         uses: actions/upload-artifact@v4
         with:
           name: HBNF-SP803E-AUX-R3

@@ -1,0 +1,26 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART_UV_CONTROL_LINK_NO_IMPLICIT_OFF_TEST_20261025",
+  "summary": "Regress control-link and acknowledgment failures so they cannot trigger an implicit UV OFF request or claim that output is confirmed off.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "failure": "Existing UV proxy tests covered unknown outcome after a timeout only for an explicit OFF request; they did not protect the follow-mode request, unavailable status, or Owner PWA presentation from an implicit OFF or false off confirmation.",
+    "implementation": [
+      "tests/hbnf_owner_uv_controls.test.mjs",
+      "staging/coordinated-backend/hbnf-cart-control/uv-policy-proxy.test.mjs"
+    ],
+    "validation": [
+      "UV readiness and send handlers are checked for no implicit OFF path and no confirmed-off message on failed status or missing acknowledgment.",
+      "Proxy tests verify status-link loss is GET-only and a missing FOLLOW_MATRIX acknowledgment remains unknown without a second OFF request.",
+      "Focused Owner UV controls test and UV policy proxy test pass."
+    ],
+    "rollback": "Revert these focused test additions and this record. No production source, device, network setting, firmware, package, or release state changed. Existing fail-dark behavior for stale Matrix-to-AUX audio and all hardware/commissioning gates are unchanged."
+  }
+}
