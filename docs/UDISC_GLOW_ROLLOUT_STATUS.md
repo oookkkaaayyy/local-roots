@@ -200,7 +200,7 @@ Fresh public GETs returned `/glow` HTTP 200, 206,629 bytes, SHA-256 `0b4736f070f
 
 ## Qualification update — 2026-10-29 (Realtime and active-writer pass)
 
-This update applies to the source work based on the previously verified branch HEAD `e9197077d99391d02ffbef3fe60482b33d122e9d`; the source edits are not yet committed in this working copy. No production data, provider, migration, device, or UDisc access was changed.
+The Realtime source correction and focused regression test were committed as `5fbde8c574d53b96ea25534aa40f1ad8a67f36d1`, based on the previously verified branch HEAD `e9197077d99391d02ffbef3fe60482b33d122e9d`. A following status-only commit records final qualification evidence. No production data, provider, migration, device, or UDisc access was changed.
 
 ### Realtime and scorecard redraw
 
@@ -221,6 +221,7 @@ This update applies to the source work based on the previously verified branch H
 - `npm run test:udisc-glow`: **74/74 PASS**; package import/migration closure: **4/4 PASS**.
 - `npm run test:release-receipt`: **21/21 PASS**.
 - `npm run release:audit-workflows`: **PASS** for the checked GitHub workflow source; this does not interlock provider Dashboard/MCP or arbitrary direct CLI operations.
+- `npm test`: **122/127 PASS**; the same five unrelated public navigation assertions failed (known destination labels, HBNF external-action label, first-party official-info link, footer-vs-primary navigation, and compact navigation visibility). TypeScript typecheck passed. These failures are not in the Glow/UDisc scope.
 - Edge-writer CAS simulation: **PASS**; native two-profile Realtime/browser scenario: **PASS**; five-page native browser smoke: **PASS**.
 - The broad browser-scoring script is **INCOMPLETE** at its stale `#syncAlert` selector. Physical devices, Matrix display/reconnect/restore, and real event-day scoring are **NOT CHECKED**.
 - The existing five unrelated public navigation assertions remain out of scope; the broad repository suite has not been established as passing by this update.
@@ -231,3 +232,4 @@ This update applies to the source work based on the previously verified branch H
 - A bounded public GET comparison against the retained 44-asset rollback returned 44/44 HTTP 200 but only 28/44 byte matches. `/glow` differs; `/hbnf-cart.html` is separately served by Cart and was not changed. Public status/cache/ETag behavior and the earlier 403 mean the 16 mismatches cannot be attributed conclusively to installed bytes versus response transformation/cache/routing. No candidate change is justified from that evidence. Exact installed asset parity remains unresolved.
 - The shared receipt validator and workflow audit still do not provide an executable, canonical Cloudflare/Supabase mutation wrapper that re-reads the target immediately before mutation and cross-binds a one-time durable admission claim to the same-manifest closeout. External Dashboard/MCP actions cannot be intercepted by the repository. This gap is **OPEN**; no admission PASS is claimed.
 - Current disposition: **REVIEW_ONLY**. The exact source edits, candidate packaging, Drive retention/download-back, and same-manifest provider admission remain pending. No deployment, migration, polling, or live score write occurred. UDisc unattended active-round access remains undocumented and disabled; no vendor correspondence was sent.
+- Source package inventory compares 44 candidate static assets to the retained rollback; five differ (`admin.html`, `glow.html`, `random.html`, `skills.html`, `skins.html`) because they contain the current scoring/CAS fixes. The other 39 match. The candidate-local integrity manifest is updated to those exact source bytes. This is source-to-rollback comparison only, not proof of parity with the installed Cloudflare assets.
