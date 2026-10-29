@@ -3,7 +3,7 @@ import {createServer} from 'node:http';
 import {readFile, stat} from 'node:fs/promises';
 import {extname, resolve, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {handleUdiscExport} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
+import {handleUdiscExport, handleUdiscGlowEvents} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const publicRoot = resolve(here, '../source-snapshots/hbnf-worker-d1a5f936-20261024/public');
@@ -15,9 +15,11 @@ const reply = (res, status, body, headers = {}) => { res.writeHead(status, {'Cac
 const server = createServer(async (req,res) => {
   try {
     const url = new URL(req.url || '/', `http://${host}:${port}`);
-    if (url.pathname === '/api/udisc-glow/export') {
+    if (url.pathname === '/api/udisc-glow/export' || url.pathname === '/api/udisc-glow/events') {
       const upstreamRequest = new Request(new URL(req.url, `http://${req.headers.host || host}`), {method:req.method,headers:req.headers});
-      const response = await handleUdiscExport(upstreamRequest);
+      const response = url.pathname === '/api/udisc-glow/events'
+        ? await handleUdiscGlowEvents(upstreamRequest)
+        : await handleUdiscExport(upstreamRequest);
       const headers = Object.fromEntries(response.headers.entries());
       res.writeHead(response.status, headers);
       if (req.method === 'HEAD') return res.end();

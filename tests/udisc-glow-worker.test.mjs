@@ -1,10 +1,62 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {handleUdiscExport} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
+import {handleUdiscExport,handleUdiscGlowEvents,parseUdiscGlowEvents} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
 
 const event = 'hb-night-flyers-test-event-XpuRfW';
 const xlsx = new Uint8Array([0x50, 0x4b, 3, 4, ...new Array(20).fill(0)]);
 const headers = {'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'content-disposition': 'attachment; filename="round.xlsx"'};
+
+const scheduleHtml = `<!doctype html><a href="/events/hb-night-flyers-hb-glow-doubles-ZUDJEk/leaderboard">OCT 24 HB Night Flyers HB Glow Doubles 2026 Huntington Beach</a>
+<a href="https://udisc.com/events/hb-night-flyers-hb-glow-monthly-RPCgGV/leaderboard">SEP 19 HB Night Flyers HB Glow Monthly 2026 Huntington Beach</a>
+<a href="/events/hb-night-flyers-test-event-XpuRfW/leaderboard">OCT 25 HB Night Flyers Test Event 2026</a>
+<a href="/events/back-9-skins-round-random-doubles-l619PB/leaderboard">OCT 27 HB Night Flyers Back 9 Skins Round 2026</a>
+<a href="https://attacker.example/events/hb-night-flyers-fake-glow-XpuRfW/leaderboard">OCT 29 HB Night Flyers Glow 2026</a>`;
+
+test('discovers only bounded HBNF Glow events from the league schedule',()=>{
+  const events=parseUdiscGlowEvents(scheduleHtml);
+  assert.deepEqual(events.map(x=>[x.eventId,x.date]),[
+    ['hb-night-flyers-hb-glow-doubles-ZUDJEk','2026-10-24'],
+    ['hb-night-flyers-hb-glow-monthly-RPCgGV','2026-09-19'],
+  ]);
+  assert.equal(events[0].url,'https://udisc.com/events/hb-night-flyers-hb-glow-doubles-ZUDJEk/leaderboard');
+  assert.equal(JSON.stringify(events).includes('players'),false);
+});
+
+test('schedule endpoint fetches one public page without cookies and returns titles/dates only',async()=>{
+  let requested;
+  const response=await handleUdiscGlowEvents(new Request('https://hbnf.example/api/udisc-glow/events',{headers:{origin:'https://hbnf.example',cookie:'must-not-forward'}}),async(input,init)=>{
+    requested={url:String(input),init};
+    return new Response(scheduleHtml,{headers:{'content-type':'text/html; charset=utf-8'}});
+  });
+  assert.equal(response.status,200);
+  assert.match(requested.url,/^https:\/\/udisc\.com\/leagues\/hb-night-flyers-he7y5I\/schedule$/);
+  assert.equal(requested.init.method,'GET');
+  assert.equal(requested.init.redirect,'manual');
+  assert.equal(requested.init.headers.cookie,undefined);
+  assert.equal(requested.init.headers.Accept,'text/html');
+  assert.equal(response.headers.get('cache-control'),'public, max-age=120');
+  assert.deepEqual((await response.json()).events.map(e=>e.date),['2026-10-24','2026-09-19']);
+});
+
+test('schedule endpoint rejects writes, foreign origins, queries, redirects and non-HTML',async()=>{
+  for(const [request,status] of [
+    [new Request('https://hbnf.example/api/udisc-glow/events',{method:'POST'}),405],
+    [new Request('https://hbnf.example/api/udisc-glow/events?all=1'),400],
+    [new Request('https://hbnf.example/api/udisc-glow/events',{headers:{origin:'https://attacker.example'}}),403],
+  ]) assert.equal((await handleUdiscGlowEvents(request,()=>{throw Error('must reject before fetch')})).status,status);
+  for(const upstream of [
+    new Response('',{status:302,headers:{location:'https://attacker.example'}}),
+    new Response('no',{headers:{'content-type':'application/json'}}),
+  ]) assert.equal((await handleUdiscGlowEvents(new Request('https://hbnf.example/api/udisc-glow/events'),async()=>upstream)).status,502);
+});
+
+test('schedule parser rejects empty HTML and bounds oversized upstream responses',async()=>{
+  assert.throws(()=>parseUdiscGlowEvents('   '),/empty/);
+  const big=new Uint8Array(2*1024*1024+1);
+  const response=await handleUdiscGlowEvents(new Request('https://hbnf.example/api/udisc-glow/events'),async()=>new Response(big,{headers:{'content-type':'text/html'}}));
+  assert.equal(response.status,502);
+  assert.match(await response.text(),/size limit/);
+});
 
 test('serves only bounded event XLSX bytes and source provenance', async () => {
   let upstreamRequest;

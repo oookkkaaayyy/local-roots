@@ -13,6 +13,20 @@ export function udiscEventSlug(value) {
   return slug;
 }
 
+/** Read only the bounded HBNF Glow event choices from the same-origin schedule endpoint. */
+export async function fetchUdiscGlowEvents(fetchImpl = fetch, origin = globalThis.location?.origin || 'http://127.0.0.1:8767') {
+  const endpoint = new URL('/api/udisc-glow/events', origin);
+  const response = await fetchImpl(endpoint, {headers:{Accept:'application/json'},cache:'no-store'});
+  if (!response.ok) throw Error(`UDisc events request failed (${response.status}).`);
+  const payload = await response.json();
+  if (!Array.isArray(payload?.events)) throw Error('UDisc returned an invalid event list.');
+  return payload.events.map(event => {
+    const eventId = udiscEventSlug(event?.eventId);
+    if (!/glow/i.test(eventId) || !/^\d{4}-\d{2}-\d{2}$/.test(String(event?.date||''))) throw Error('UDisc returned an invalid Glow event.');
+    return Object.freeze({eventId,date:String(event.date),title:String(event.title||''),url:`https://udisc.com/events/${eventId}/leaderboard`});
+  });
+}
+
 export async function fetchUdiscExport(eventLink, fetchImpl = fetch, origin = globalThis.location?.origin || 'http://127.0.0.1:8767') {
   const eventId = udiscEventSlug(eventLink);
   const endpoint = new URL('/api/udisc-glow/export', origin);
