@@ -2,6 +2,12 @@
 
 **Disposition: REVIEW_ONLY. No production change has been made.**
 
+## Release-control integration (2026-10-29)
+
+The feature branch now carries the current mainline fail-closed receipt validator, its regression tests, and the GitHub Actions workflow audit. Admission validates exact source/build inputs, installed baseline evidence, candidate/rollback byte parity, declared acceptance criteria, and a one-time manifest; the first run remains `PENDING` until the manifest is stored and its downloaded copy matches byte-for-byte. Closeout requires the same manifest plus provider readback and durable receipt evidence. The current-main CI checks run on pull requests and pushes to `main`; branch-protection requirements have not been read back and are not claimed.
+
+This integration does **not** yet mechanically intercept Cloudflare Dashboard actions or Supabase MCP/SQL execution. The repository currently has no provider deployment workflow or migration execution script to wrap: its only Wrangler command is a non-mutating dry run, and the SQL file is a proposed migration. Therefore the requested actual-provider mutation routes remain **FAIL / REVIEW_ONLY** until those routes themselves are implemented through the validator and tested. Do not treat the workflow audit's PASS as proof that external provider actions are gated.
+
 ## Controlling sequence: data path before site behavior
 
 The owner has clarified that the underlying automatic UDisc-to-Glow score path must be implemented, installed, and verified before any further HBNF site-behavior work. Treat the local picker and preview as frozen review aids until that gate passes.

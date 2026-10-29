@@ -4,8 +4,12 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "test:release-receipt": "node --test tests/release-receipt.test.mjs",
+    "release:admit": "node scripts/validate-release-receipt.mjs",
+    "release:verify": "node scripts/validate-release-receipt.mjs",
+    "release:audit-workflows": "node scripts/audit-release-workflows.mjs",
     "test:m2": "rm -rf dist && tsc && mkdir -p dist/tests/fixtures && cp tests/fixtures/events.json dist/tests/fixtures/events.json && node --test dist/tests/*.test.js",
-    "test": "npm run typecheck && npm run test:m2 && npm run test:udisc-glow",
+    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && npm run test:udisc-glow",
     "test:udisc-glow": "HBNF_GLOW_HTML=source-snapshots/hbnf-worker-d1a5f936-20261024/public/glow.html node --test --test-concurrency=1 tests/udisc-glow-*.test.mjs"
   },
   "devDependencies": {
