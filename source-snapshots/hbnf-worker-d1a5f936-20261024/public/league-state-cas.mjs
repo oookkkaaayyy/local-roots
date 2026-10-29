@@ -77,9 +77,27 @@ export async function saveLeagueRootCAS({ client, rootState, baselineRoot, stora
       if (localChanged && remoteChanged && local !== remote) conflicts.push(key);
       else if (localChanged) { if (Object.hasOwn(draft.rootState || {}, key)) merged[key] = clone(draft.rootState[key]); else delete merged[key]; }
     }
-    const backups = new Map();
-    for (const item of [...(current.root?.__backups || []), ...(draft.rootState?.__backups || [])]) if (item?.id) backups.set(item.id, item);
+    // Merge backups by ID without replacing a newer server record with a stale local copy.
+    // Preserve disjoint historical backups and retain conflicting local drafts for review.
+    const byId = items => new Map((items || []).filter(item => item?.id).map(item => [item.id, item]));
+    const baseBackups = byId(draft.baselineRoot?.__backups);
+    const localBackups = byId(draft.rootState?.__backups);
+    const remoteBackups = byId(current.root?.__backups);
+    const backups = new Map(remoteBackups);
+    for (const [id, local] of localBackups) {
+      const base = baseBackups.get(id), remote = remoteBackups.get(id);
+      if (stable(local) === stable(base)) {
+        if (remote === undefined) backups.set(id, local); // preserve disjoint historical backups
+        continue; // unchanged local copy cannot replace a changed server record
+      }
+      if (remote !== undefined && stable(remote) !== stable(base) && stable(remote) !== stable(local)) {
+        conflicts.push(`__backups:${id}`);
+      } else {
+        backups.set(id, local);
+      }
+    }
     if (backups.size) merged.__backups = [...backups.values()].sort((a,b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,100);
+    else delete merged.__backups;
     if (conflicts.length) { onStatus(retained ? `Conflict — shared data changed (${conflicts.join(", ")}); your edits are kept on this device` : "Conflict — shared data changed; keep this page open"); return { status: "conflict", conflicts, current, retained }; }
     try {
       if (!await write(client, merged, current.revision)) continue;
