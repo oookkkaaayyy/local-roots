@@ -175,9 +175,12 @@ if not acquired then
   return respond(429, { error = "uv_policy_request_in_progress", mutationIssued = false })
 end
 local payload = cjson.encode({ seg = { make_segment(1, levels.main), make_segment(2, levels.short) } })
-local capture_ok, response = pcall(ngx.location.capture, "/__aux_uv_apply", { method = ngx.HTTP_POST, body = payload })
-if not capture_ok then rate:delete("uv_policy_lock") end
-if not capture_ok then return respond(502, { error = "uv_device_response_unconfirmed", mutationIssued = "unknown" }) end
+-- OpenResty internal subrequests can yield. Do not wrap this call in pcall:
+-- on the Opal's LuaJIT runtime that raises "attempt to yield across
+-- metamethod/C-call boundary" before a manual/follow command reaches WLED.
+-- The shared lock has a 15-second expiry, so an unexpected Lua error cannot
+-- leave UV commands blocked indefinitely.
+local response = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST, body = payload })
 if not response or response.status ~= 200 then
   rate:delete("uv_policy_lock")
   return respond(502, { error = "uv_device_response_unconfirmed", mutationIssued = "unknown" })
