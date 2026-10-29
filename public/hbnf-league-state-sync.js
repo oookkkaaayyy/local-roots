@@ -19,9 +19,20 @@
     return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
   };
   const keyHash = (root, key) => hash(has(root, key) ? root[key] : ABSENT);
+  function revisionMicros(value) {
+    const milliseconds = Date.parse(value);
+    if (!Number.isFinite(milliseconds)) return null;
+    const fraction = String(value).match(/\.(\d+)(?=Z|[+-]\d\d:\d\d$)/i)?.[1] || '';
+    const subMillisecondMicros = fraction.slice(3, 6).padEnd(3, '0');
+    return BigInt(milliseconds) * 1000n + BigInt(subMillisecondMicros || '0');
+  }
+  const revisionBefore = (left, right) => {
+    const a = revisionMicros(left), b = revisionMicros(right);
+    return a === null || b === null || a < b;
+  };
 
   async function snapshot(root, revision) {
-    if (!root || !isObject(root) || !revision || !Number.isFinite(Date.parse(revision))) {
+    if (!root || !isObject(root) || !revision || revisionMicros(revision) === null) {
       throw new Error('Cloud baseline is missing or invalid; changes were not sent.');
     }
     const keyHashes = {};
@@ -39,7 +50,7 @@
   function loadBaseline(storage, key) {
     try {
       const value = JSON.parse(storage.getItem(key) || 'null');
-      if (!value || value.schemaVersion !== 2 || !value.revision || !Number.isFinite(Date.parse(value.revision)) || !value.keyHashes || !isObject(value.keyHashes)) return null;
+      if (!value || value.schemaVersion !== 2 || !value.revision || revisionMicros(value.revision) === null || !value.keyHashes || !isObject(value.keyHashes)) return null;
       return { revision: String(value.revision), keyHashes: value.keyHashes };
     } catch (_) { return null; }
   }
@@ -56,7 +67,7 @@
   function loadPendingDraft(storage, key) {
     try {
       const value = JSON.parse(storage.getItem(key) || 'null');
-      if (!value || value.schemaVersion !== 1 || !isObject(value.root) || !value.revision || !Number.isFinite(Date.parse(value.revision))) return null;
+      if (!value || value.schemaVersion !== 1 || !isObject(value.root) || !value.revision || revisionMicros(value.revision) === null) return null;
       return { root: clone(value.root), revision: String(value.revision), forceKeys: Array.isArray(value.forceKeys) ? value.forceKeys.slice() : [] };
     } catch (_) { return null; }
   }
@@ -70,7 +81,7 @@
     const remote = verifiedRemote || await read(client);
     const cached = loadBaseline(storage, storageKey);
     if (cached) {
-      if (Date.parse(remote.revision) < Date.parse(cached.revision)) throw new Error('Cloud returned a stale revision; local edits were retained and sync is paused.');
+      if (revisionBefore(remote.revision, cached.revision)) throw new Error('Cloud returned a stale revision; local edits were retained and sync is paused.');
       const result = await reconcile(cached, localRoot, remote.root);
       if (!result.hasLocalChanges) {
         cacheBaseline(storage, storageKey, remote);
@@ -121,7 +132,7 @@
     const maxAttempts = Math.max(1, Math.min(5, Number(options && options.maxAttempts) || 3));
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const current = await read(client);
-      if (Date.parse(current.revision) < Date.parse(baseline.revision)) throw new Error('Cloud returned a stale revision; local edits were retained and no write was attempted.');
+      if (revisionBefore(current.revision, baseline.revision)) throw new Error('Cloud returned a stale revision; local edits were retained and no write was attempted.');
       const result = await reconcile(baseline, draftRoot, current.root, options && options.forceKeys);
       if (!result.hasLocalChanges) {
         if (options && typeof options.clearPending === 'function') {
@@ -144,7 +155,7 @@
           throw error;
         }
       }
-      const currentMs = Date.parse(current.revision), nowMs = Date.now();
+      const currentMs = Date.parse(current.revision), currentRevisionMicros = revisionMicros(current.revision), nowMs = Date.now();
       const sentAt = new Date(Math.max(nowMs, currentMs + 1)).toISOString();
       const response = await client.from('league_state')
         .update({ state_json: result.root, updated_at: sentAt })
@@ -155,13 +166,14 @@
       if (!Array.isArray(response.data) || response.data.length === 0) continue;
       if (response.data.length !== 1) throw new Error('Cloud acknowledgment was ambiguous; local edits were retained.');
       const ack = response.data[0];
-      if (Number(ack.id) !== 1 || ack.updated_at !== sentAt || !equal(ack.state_json, result.root)) {
-        throw new Error('Cloud acknowledgment did not match the submitted state; local edits were retained.');
+      const ackRevisionMicros = revisionMicros(ack.updated_at);
+      if (Number(ack.id) !== 1 || ackRevisionMicros === null || ackRevisionMicros <= currentRevisionMicros || !equal(ack.state_json, result.root)) {
+        throw new Error('Cloud acknowledgment did not match the submitted state or advance its revision; local edits were retained.');
       }
       // The UPDATE response is an acknowledgment, not the independent readback
       // that callers require before clearing their recoverable local draft.
       const verified = await read(client);
-      if (Date.parse(verified.revision) < Date.parse(ack.updated_at)) {
+      if (revisionBefore(verified.revision, ack.updated_at)) {
         throw new Error('Cloud readback returned an older revision; the save remains unverified and the local draft was retained.');
       }
       const allKeys = new Set([
@@ -183,7 +195,7 @@
           throw error;
         }
       }
-      if (!equal(verified.root, ack.state_json) && Date.parse(verified.revision) === Date.parse(ack.updated_at)) {
+      if (!equal(verified.root, ack.state_json) && revisionMicros(verified.revision) === revisionMicros(ack.updated_at)) {
         throw new Error('Cloud readback diverged from the acknowledged state at the same revision; local edits were retained.');
       }
       if (options && typeof options.clearPending === 'function') {

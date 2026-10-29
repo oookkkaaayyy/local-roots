@@ -23,7 +23,7 @@ function fakeClient(initial, hooks = {}) {
         if (hooks.beforeWrite) await hooks.beforeWrite({ get: () => clone(row), set: value => { row = clone(value); } });
         if (hooks.writeError) return { data: null, error: { message: 'denied' } };
         if (id !== 1 || revision !== row.updated_at) return { data: [], error: null };
-        row = { id: 1, state_json: clone(payload.state_json), updated_at: payload.updated_at };
+        row = { id: 1, state_json: clone(payload.state_json), updated_at: hooks.serverRevisionAtAck || payload.updated_at };
         if (hooks.badAck) return { data: [{ ...clone(row), state_json: { corrupted: true } }], error: null };
         return { data: [clone(row)], error: null };
       } }; return query; }
@@ -180,4 +180,17 @@ test('pending marker storage failure blocks write; marker cleanup failure remain
   const server2=fakeClient(initialRoot()),base2=await sync.read(server2.client),draft2=clone(base2.root);draft2.skills.score=43;
   await assert.rejects(sync.save(server2.client,base2,draft2,{retainDraft:()=>true,clearPending:()=>false}),{name:'HbnfSyncStorageError'});
   assert.equal(server2.counts().writes,1,'cloud accepted the edit, but caller must remain pending until recovery marker cleanup');
+});
+
+
+test('server-derived monotonic revision is accepted when it replaces a skewed client timestamp', async () => {
+  const sync=makeSync(),server=fakeClient(initialRoot(),{serverRevisionAtAck:'2026-10-29T08:00:00.000001Z'});
+  const baseline=await sync.read(server.client),draft=clone(baseline.root);draft.glow.weeks['2099-01-06']={cards:[{id:'clock-skew'}]};
+  const originalNow=Date.now;
+  Date.now=()=>Date.parse('2099-01-01T00:00:00.000Z');
+  try {
+    const saved=await sync.save(server.client,baseline,draft);
+    assert.equal(saved.revision,'2026-10-29T08:00:00.000001Z');
+    assert.equal(saved.root.glow.weeks['2099-01-06'].cards[0].id,'clock-skew');
+  } finally { Date.now=originalNow; }
 });
