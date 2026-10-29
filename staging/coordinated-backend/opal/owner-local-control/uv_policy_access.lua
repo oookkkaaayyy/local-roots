@@ -180,12 +180,14 @@ local payload = cjson.encode({ seg = { make_segment(1, levels.main), make_segmen
 -- metamethod/C-call boundary" before a manual/follow command reaches WLED.
 -- The shared lock has a 15-second expiry, so an unexpected Lua error cannot
 -- leave UV commands blocked indefinitely.
-local response = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST, body = payload })
-if not response or response.status ~= 200 then
+local applied = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST, body = payload })
+if not applied or applied.status ~= 200 then
   rate:delete("uv_policy_lock")
   return respond(502, { error = "uv_device_response_unconfirmed", mutationIssued = "unknown" })
 end
-local readback, readback_error = runtime.decode_state(response.body)
+-- WLED's POST response is only an acknowledgement, not /json/state. Read the
+-- device state separately before claiming the requested mode was applied.
+local readback, readback_error = runtime.read_state()
 if not readback then
   rate:delete("uv_policy_lock")
   return respond(502, { error = readback_error or "uv_device_readback_unavailable", mutationIssued = "unknown" })

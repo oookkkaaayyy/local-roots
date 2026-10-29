@@ -34,8 +34,10 @@ test("first-output tests are owner-local, limited to verified segments, and turn
   assert.match(policy, /local applied, on_error = apply_and_read\(pulse\)/);
   assert.match(policy, /local off, off_error = apply_and_read\(/);
   assert.doesNotMatch(policy, /pcall\(apply_and_read/);
-  assert.match(policy, /local response = ngx\.location\.capture\("\/__aux_uv_apply"/,
-    "ordinary Manual/Matrix-follow writes must use a yield-capable OpenResty subrequest call");
+  assert.match(policy, /local applied = ngx\.location\.capture\("\/__aux_uv_apply"[\s\S]*?local readback, readback_error = runtime\.read_state\(\)/,
+    "ordinary Manual/Matrix-follow writes must use a yield-capable POST followed by a separate full-state GET readback");
+  assert.doesNotMatch(policy, /runtime\.decode_state\(applied\.body\)/,
+    "do not decode WLED's POST acknowledgement as a full device state");
   assert.doesNotMatch(policy, /pcall\(ngx\.location\.capture/,
     "a yielding WLED subrequest must not be wrapped in pcall on the Opal LuaJIT runtime");
   assert.match(policy, /uv_policy_lock/);
