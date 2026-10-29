@@ -815,6 +815,20 @@ test('zero-intensity dye blocks do not create invented evidence or overlaps',()=
   'zero strength cannot create physical overlap warnings');
 });
 
+test('geometry edits refresh the evidence warning for overlap changes',()=>{
+ const start=studioScript.indexOf('function editorLiveChange(){');
+ const end=studioScript.indexOf('\nfunction ',start+12);
+ const source=studioScript.slice(start,end);
+ const nodes={shape:{value:'stripe'},strength:{value:'100'},layerPasses:{value:'1'},layerMethod:{value:'acetone-direct'},angle:{value:'15'},position:{value:'55'},stripeWidth:{value:'20'}};
+ const env={selected:0,layers:[{shape:'edge',strength:100,passes:1,method:'acetone-direct',angle:0,offset:0,width:.45}],$:id=>nodes[id],clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),renderLayerList(){},syncEditor(){},requestRender(){},evidenceRefreshes:0,renderEvidenceAdvisory(){this.evidenceRefreshes++}};
+ const edit=Function('env','with(env){'+source+';return editorLiveChange;}')(env);
+ edit();
+ assert.equal(env.layers[0].shape,'stripe');
+ assert.equal(env.layers[0].offset,.55);
+ assert.equal(env.layers[0].width,.2);
+ assert.equal(env.evidenceRefreshes,1,'moving a boundary must immediately re-evaluate overlap evidence');
+});
+
 test('private before-and-after owner photos are absent from served Studio JavaScript',()=>{
  assert.doesNotMatch(studioScript,/data:image\/(?:jpeg|png|webp);base64,/i);
  assert.match(studioScript,/const actualPhotos=s\.actual&&s\.beforeImg&&s\.afterImg/);

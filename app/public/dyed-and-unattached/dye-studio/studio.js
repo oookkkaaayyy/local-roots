@@ -861,7 +861,7 @@ function syncEditor(){
 }
 function editorLiveChange(){
   if(selected<0)return;const l=layers[selected];l.shape=$("shape").value;l.strength=+$("strength").value;l.passes=clamp(Math.round(+$("layerPasses").value||1),1,12);l.method=$("layerMethod").value;l.angle=+$("angle").value;l.offset=+$("position").value/100;l.width=+$("stripeWidth").value/100;
-  renderLayerList();syncEditor();requestRender()
+  renderLayerList();syncEditor();requestRender();renderEvidenceAdvisory()
 }
 function renderSwatches(){
   const q=$("search").value.trim().toLowerCase(),grid=$("swatchGrid");grid.innerHTML="";
