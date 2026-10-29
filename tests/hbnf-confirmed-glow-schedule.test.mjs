@@ -74,6 +74,38 @@ test("Tuesday schedule rollover retains expired confirmed dates without false so
   assert.deepEqual(findMissingSourceRecords([expiredTuesday], [], true), []);
 });
 
+test("expired owner-confirmed Glow is preserved with absent or empty upstream week", () => {
+  const date = "2026-11-10";
+  const afterHorizon = new Set(buildConfirmedGlowSchedule("2026-11-11").map((entry) => entry.date));
+  assert.equal(afterHorizon.has(date), false);
+
+  const confirmed = {
+    event_id: "confirmed-glow-nov10",
+    external_id: `hbnf:glow:${date}`,
+    source_payload: schedulePayload(date),
+  };
+  // Absent upstream: the existing confirmed provenance must not be treated as disappearance.
+  assert.deepEqual(findMissingSourceRecords([confirmed], [], true), []);
+
+  // Present but unfinalized/empty upstream: preserve the same confirmed provenance.
+  const emptyWeek = { players: [], cards: { card1: { finalized: false } }, finalized: false };
+  assert.equal(isUnobservedGlowPlaceholderWeek(emptyWeek), true);
+  assert.equal(isConfirmedGlowScheduleProvenance(confirmed.source_payload), true);
+  assert.equal(isConfirmedGlowScheduleProvenance({
+    origin: "league_state", observed_in_league_state: true,
+  }), false);
+  const quarantineLoop = adapter.indexOf("for (const externalId of quarantinedEmptyGlowExternalIds)");
+  const persistedProvenanceGuard = adapter.indexOf(
+    "if (isConfirmedGlowScheduleProvenance(existingEmpty.source_payload)) continue;",
+    quarantineLoop,
+  );
+  const resultCountCheck = adapter.indexOf('const resultCount = await service.from("lr_results")', quarantineLoop);
+  assert.ok(quarantineLoop >= 0 && persistedProvenanceGuard > quarantineLoop
+    && resultCountCheck > persistedProvenanceGuard,
+  "the persisted confirmation guard must precede empty-week unpublication");
+  assert.match(adapter, /if \(!confirmedGlowDates\.has\(date\) && isUnobservedGlowPlaceholderWeek\(week\)\)/);
+});
+
 test("successful HBNF read with no matching scored week still retains confirmed event and does not flag it missing", () => {
   const today = "2026-10-25";
   const schedule = buildConfirmedGlowSchedule(today);
