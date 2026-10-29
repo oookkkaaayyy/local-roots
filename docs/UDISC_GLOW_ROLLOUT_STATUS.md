@@ -2,6 +2,16 @@
 
 **Disposition: REVIEW_ONLY. No production change has been made.**
 
+## Controlling sequence: data path before site behavior
+
+The owner has clarified that the underlying automatic UDisc-to-Glow score path must be implemented, installed, and verified before any further HBNF site-behavior work. Treat the local picker and preview as frozen review aids until that gate passes.
+
+- A current read-only Supabase function inventory for HBNF project `phcpbvuqibyarpfrftgx` contains no UDisc/Glow score-sync function. The existing `deploy-disc-glow-cloudflare` helper returns HTTP 410 and states it is disabled.
+- The existing production `/glow` page has no UDisc score import path; production `/api/udisc-glow/export` and `/udisc-glow-preview.html` were previously verified as 404. Therefore automatic score delivery into the production Glow week is **not installed**.
+- The already verified UDisc route is a public event XLSX export. It can be read without a browser login for a known HBNF event; this proves source access and parsing feasibility, not automatic delivery or persistence. No official UDisc push/webhook has been established. A future flow must refresh the selected event from a server-side route while a round is active, then merge only that event's 18-hole scores into the established Glow week with concurrency protection and full provenance.
+- The destructive `confirmQuickUdiscImport()` path is not acceptable for sync: it replaces all teams/scores in the selected week and invokes the whole-root save. Any integration must preserve other week data and avoid last-writer-wins overwrites; it must have idempotent correction handling, stale/error visibility, and readback verification.
+- No further picker or presentation work is in scope before the underlying flow is implemented. The next code slice is the server-side fetch/parse/transaction-safe merge with tests against the four authentic-derived fixtures and no production writes. Installation remains blocked until the canonical HBNF source/deploy path and same-manifest release admission/rollback gates are verified.
+
 ## Verified in this slice
 
 - UDisc's public, event-specific `leaderboard/export` route returned a valid XLSX for the public HBNF test event. The workbook was 19,846 bytes; SHA-256 `7b5b50ee487161a72ba6299aee4ae86325c1bbe3b82d479c1112ed7a7718078d`.
