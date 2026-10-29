@@ -19,7 +19,7 @@ class WorkerPackageClosureTests(unittest.TestCase):
         for line in (ROOT / "package-validation" / "LOCAL_ASSET_SHA256SUMS").read_text().splitlines():
             _, name = line.split(maxsplit=1)
             paths.append(name.strip())
-        for name in paths + ["public/glow-save-sync.mjs"]:
+        for name in paths + ["public/glow-save-sync.mjs", "public/league-state-cas.mjs"]:
             path = root / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(b"test asset\n")
@@ -32,6 +32,7 @@ class WorkerPackageClosureTests(unittest.TestCase):
         (root / "worker-private/parser.mjs").write_text("export const parse = () => true;\n")
         (root / "database").mkdir(exist_ok=True)
         (root / "database/20261028_udisc_glow_atomic_week_sync.sql").write_text((ROOT / "database/20261028_udisc_glow_atomic_week_sync.sql").read_text())
+        (root / "database/20261029203741_hbnf_league_state_server_revision_guard.sql").write_text((ROOT / "database/20261029203741_hbnf_league_state_server_revision_guard.sql").read_text())
         (root / "wrangler.jsonc").write_text(json.dumps({"name":"test","assets":{"directory":"./public"}}))
         (root / "package.json").write_text(json.dumps({"name":"test","private":True}))
         (root / "package-lock.json").write_text(json.dumps({"name":"test","lockfileVersion":3,"packages":{"":{"name":"test"}}}))
@@ -43,6 +44,8 @@ class WorkerPackageClosureTests(unittest.TestCase):
         migration_dir.mkdir(parents=True)
         canonical = migration_dir / "20261029200450_hbnf_glow_atomic_week_sync.sql"
         canonical.write_text((ROOT / "database" / "20261028_udisc_glow_atomic_week_sync.sql").read_text())
+        revision = migration_dir / "20261029203741_hbnf_league_state_server_revision_guard.sql"
+        revision.write_text((ROOT / "database" / "20261029203741_hbnf_league_state_server_revision_guard.sql").read_text())
         return SimpleNamespace(candidate_root=root, active_version="baseline-test", repo_root=repo)
 
     def test_success_package_contains_private_import_closure_not_public_review_modules(self):
@@ -59,10 +62,12 @@ class WorkerPackageClosureTests(unittest.TestCase):
             self.assertIn("worker-private/parser.mjs", names)
             self.assertIn("public/glow-save-sync.mjs", names)
             self.assertIn("database/20261029200450_hbnf_glow_atomic_week_sync.sql", names)
+            self.assertIn("database/20261029203741_hbnf_league_state_server_revision_guard.sql", names)
+            self.assertIn("public/league-state-cas.mjs", names)
             self.assertNotIn("public/udisc-glow-reconcile.mjs", names)
             self.assertNotIn("public/udisc-glow-preview.mjs", names)
             public_assets = [name for name in names if name.startswith("public/")]
-            self.assertEqual(len(public_assets), 45)
+            self.assertEqual(len(public_assets), 46)
             self.assertEqual({item["path"] for item in manifest["files"]}, names - {"PACKAGE_MANIFEST.json"})
 
     def test_package_rejects_migration_drift(self):
@@ -76,6 +81,8 @@ class WorkerPackageClosureTests(unittest.TestCase):
             args.repo_root = repo
             canonical = migration_dir / "20261029200450_hbnf_glow_atomic_week_sync.sql"
             canonical.write_text("select different;\n")
+            revision = migration_dir / "20261029203741_hbnf_league_state_server_revision_guard.sql"
+            revision.write_text((ROOT / "database" / "20261029203741_hbnf_league_state_server_revision_guard.sql").read_text())
             with self.assertRaisesRegex(SystemExit, "differs from the reviewed snapshot"):
                 BUILDER.build(args, "candidate", root, "e089-test", Path(tmp) / "candidate.zip", args.repo_root)
 

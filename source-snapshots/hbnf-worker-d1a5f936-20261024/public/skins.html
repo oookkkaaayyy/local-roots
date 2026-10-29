@@ -1286,9 +1286,13 @@ function makeSyncHelpers(ctx){return{
    if(incomingRootHash&&incomingRootHash===ctx.lastRemoteRootHash)return;
    const incomingBranchHash=hbnfSyncHash(incoming&&incoming[ctx.branch]);
    const remoteBranch=incoming&&incoming[ctx.branch];
+   const localBagTags=ctx.rootState&&ctx.rootState.bagTags,baseBagTags=ctx.baselineBagTags;
+   const localBagTagsChanged=hbnfSyncHash(localBagTags)!==hbnfSyncHash(baseBagTags);
+   const remoteBagTagsChanged=hbnfSyncHash(incoming&&incoming.bagTags)!==hbnfSyncHash(baseBagTags);
+   if(localBagTagsChanged&&remoteBagTagsChanged&&hbnfSyncHash(localBagTags)!==hbnfSyncHash(incoming&&incoming.bagTags)){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — bag tags changed on another device; your edits are kept here.');return}
    if(ctx.localDirty){
     if(ctx.syncing&&incomingBranchHash&&incomingBranchHash===ctx.inFlightBranchHash){
-     ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;
+     ctx.rootState=incoming;ctx.baselineBagTags=hbnfSyncClone(incoming&&incoming.bagTags);ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;
      if(incomingBranchHash===hbnfSyncHash(ctx.state)){ctx.localDirty=false;hbnfSetSyncStatus('Saved to cloud')}
      else{ctx.localDirty=true;ctx.pendingPush=true;hbnfSetSyncStatus('Pending — newer edits are waiting to save.')}
      return
@@ -1296,10 +1300,10 @@ function makeSyncHelpers(ctx){return{
     if(ctx.lastRemoteBranchHash&&incomingBranchHash!==ctx.lastRemoteBranchHash){
      ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return
     }
-    ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;return
+    ctx.rootState=localBagTagsChanged?Object.assign({},incoming,{bagTags:localBagTags}):incoming;ctx.baselineBagTags=localBagTagsChanged?baseBagTags:hbnfSyncClone(incoming&&incoming.bagTags);ctx.lastRemoteRootHash=incomingRootHash;return
    }
    const beforeBranchHash=hbnfSyncHash(ctx.state);
-   ctx.rootState=incoming||{};
+   ctx.rootState=incoming||{};ctx.baselineBagTags=hbnfSyncClone(incoming&&incoming.bagTags);
    ctx.lastRemoteRootHash=incomingRootHash;
    ctx.lastRemoteBranchHash=incomingBranchHash;
    // Normalize a COPY: normalization rewrites week objects, which must not change the cloud revision fingerprint.
@@ -1336,7 +1340,7 @@ function makeSyncHelpers(ctx){return{
    const pendingEditHasAuthoritativeBase=editedWhileBaselinePending&&ctx.startupBranchHash===hbnfSyncHash(authoritative);
    const cachedDiffers=!!cached&&hbnfSyncHash(cached)!==hbnfSyncHash(authoritative);
    if(cachedDiffers&&ctx.preserveLocalDraft)ctx.preserveLocalDraft(cached,res.data.updated_at);
-   ctx.rootState=incoming||{};
+   ctx.rootState=incoming||{};ctx.baselineBagTags=hbnfSyncClone(incoming&&incoming.bagTags);
    ctx.syncBaselineReady=true;
    ctx.lastRemoteRootHash=hbnfSyncHash(incoming);
    ctx.lastRemoteBranchHash=hbnfSyncHash(remoteBranch);
@@ -1375,16 +1379,17 @@ function makeSyncHelpers(ctx){return{
     }
     ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return
    }
-   const localBagTags=ctx.rootState&&ctx.rootState.bagTags,remoteBagTags=currentRoot&&currentRoot.bagTags,localBackups=ctx.rootState&&ctx.rootState.__backups;
-   const localBagTagStamp=Date.parse(localBagTags&&localBagTags.lastManualSaveAt||''),remoteBagTagStamp=Date.parse(remoteBagTags&&remoteBagTags.lastManualSaveAt||'');
+   const localBagTags=ctx.rootState&&ctx.rootState.bagTags,remoteBagTags=currentRoot&&currentRoot.bagTags,baseBagTags=ctx.baselineBagTags,localBackups=ctx.rootState&&ctx.rootState.__backups;
+   const {mergeLeagueValue}=await import('./league-state-cas.mjs');
+   const bagMerge=mergeLeagueValue(baseBagTags,localBagTags,remoteBagTags);
+   if(bagMerge.status==='conflict'){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — bag tags changed on another device; your edits are kept here.');return}
    ctx.rootState=Object.assign({},ctx.rootState||{},currentRoot);
-   if(localBagTags&&(!remoteBagTags||(Number.isFinite(localBagTagStamp)?localBagTagStamp:0)>(Number.isFinite(remoteBagTagStamp)?remoteBagTagStamp:0)))ctx.rootState.bagTags=localBagTags;
-   if(Array.isArray(localBackups))ctx.rootState.__backups=localBackups;
+   if(bagMerge.value!==undefined)ctx.rootState.bagTags=bagMerge.value;
    const remoteBranch=currentRoot&&currentRoot[ctx.branch];
    const saveSnapshot=hbnfSyncClone(ctx.state),saveSnapshotHash=hbnfSyncHash(saveSnapshot);
    ctx.rootState[ctx.branch]=saveSnapshot;
    if(Array.isArray(currentRoot&&currentRoot.__backups)&&Array.isArray(ctx.rootState.__backups)){
-    const byId={};[...currentRoot.__backups,...ctx.rootState.__backups].forEach(x=>{if(x&&x.id)byId[x.id]=x});
+    const byId={};[...ctx.rootState.__backups,...currentRoot.__backups].forEach(x=>{if(x&&x.id)byId[x.id]=x});
     ctx.rootState.__backups=Object.values(byId).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,50)
    }else if(Array.isArray(currentRoot&&currentRoot.__backups))ctx.rootState.__backups=currentRoot.__backups;
    const targetRootHash=hbnfSyncHash(ctx.rootState);
@@ -1397,9 +1402,13 @@ function makeSyncHelpers(ctx){return{
    if(!Array.isArray(res.data)||res.data.length!==1){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — cloud changed during save; your edits are kept on this device.');return}
    // Use the server-returned JSONB representation for the next CAS comparison. Postgres
    // can reorder object keys, so a locally serialized snapshot is not a cloud revision.
-   const confirmedRoot=res.data[0]&&res.data[0].state_json;
-   if(!confirmedRoot||!res.data[0].updated_at||hbnfSemanticHash(ctx.normalize(hbnfSyncClone(confirmedRoot[ctx.branch])))!==hbnfSemanticHash(saveSnapshot))throw new Error('Cloud save acknowledgment did not match the submitted scorecard.');
-   ctx.rootState=confirmedRoot;
+   const ackRoot=res.data[0]&&res.data[0].state_json;
+   if(!ackRoot||!res.data[0].updated_at||hbnfSemanticHash(ctx.normalize(hbnfSyncClone(ackRoot[ctx.branch])))!==hbnfSemanticHash(saveSnapshot))throw new Error('Cloud save acknowledgment did not match the submitted scorecard.');
+   const independent=await ctx.supabaseClient.from('league_state').select('state_json,updated_at').eq('id',1).single();
+   if(independent.error||!independent.data||!independent.data.updated_at)throw independent.error||new Error('Cloud save readback is unavailable.');
+   const confirmedRoot=independent.data.state_json;
+   if(hbnfSemanticHash(ctx.normalize(hbnfSyncClone(confirmedRoot&&confirmedRoot[ctx.branch])))!==hbnfSemanticHash(saveSnapshot))throw new Error('Independent server readback did not match the submitted scorecard.');
+   ctx.rootState=confirmedRoot;ctx.baselineBagTags=hbnfSyncClone(confirmedRoot&&confirmedRoot.bagTags);
    ctx.lastRemoteRootHash=hbnfSyncHash(confirmedRoot);
    ctx.lastRemoteBranchHash=hbnfSyncHash(confirmedRoot[ctx.branch]);
    ctx.syncBaselineReady=true;ctx.remoteConflictPending=false;
@@ -1414,7 +1423,7 @@ function makeSyncHelpers(ctx){return{
  }
 }}
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s)), esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',localDirty:false,localDraftStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
+const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',baselineBagTags:null,localDirty:false,localDraftStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
 function preserveStaleLocalSkinsDraft(state,cloudRevision){try{const key='hbnf-sync-skins-recovery-v1',rows=JSON.parse(localStorage.getItem(key)||'[]'),signature=hbnfSyncHash(state);if(rows.some(r=>r&&r.signature===signature))return;rows.unshift({savedAt:new Date().toISOString(),cloudRevision:String(cloudRevision||''),signature,branchState:hbnfSyncClone(state)});localStorage.setItem(key,JSON.stringify(rows.slice(0,3)))}catch(e){console.error('Could not archive local Skins draft',e)}}ctx.preserveLocalDraft=preserveStaleLocalSkinsDraft;
 function iso(d){return d.toISOString().slice(0,10)}function todayLocal(){const d=new Date();d.setHours(0,0,0,0);return d}function nextTuesday(){const d=todayLocal();const add=(2-d.getDay()+7)%7;d.setDate(d.getDate()+add);return d}function fmtDate(key){const [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
 function defaultDateList(){const arr=[];let d=new Date(2026,4,26);const end=new Date(2026,9,27);while(d<=end){arr.push(iso(d));d.setDate(d.getDate()+7)}return arr}function dateList(extraWeeks,deletedWeeks,restoredWeeks){const set=new Set(defaultDateList());if(extraWeeks&&typeof extraWeeks==='object')Object.keys(extraWeeks).forEach(k=>{if(/^\d{4}-\d{2}-\d{2}$/.test(k))set.add(k)});return Array.from(set).filter(k=>!hbnfWeekDeletedByMaps(deletedWeeks,restoredWeeks,k)).sort()}

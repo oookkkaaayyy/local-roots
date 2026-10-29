@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
 
 const migrationUrl = new URL('../supabase/migrations/20261029200450_hbnf_glow_atomic_week_sync.sql', import.meta.url);
+const revisionMigrationUrl = new URL('../supabase/migrations/20261029203741_hbnf_league_state_server_revision_guard.sql', import.meta.url);
 const weekDate = '2026-04-18';
 const revisionA = '2099-01-01T00:00:00.000000Z';
 
@@ -20,7 +21,7 @@ const originalWeek = () => ({
   udiscSync:{latest:{observedAt:'2026-04-18T16:00:00Z',signature:'old-signature'},status:{state:'fresh',lastSuccessAt:'2026-04-18T16:00:00Z'}},
 });
 
-async function database() {
+async function database(initialRevision = revisionA) {
   const pg = new PGlite();
   await pg.exec('create role anon; create role authenticated; create role service_role; create table public.league_state (id integer primary key,state_json jsonb not null,updated_at timestamptz not null);');
   const glow = {
@@ -29,8 +30,9 @@ async function database() {
     playerAliases:{'Test Player A':'Test Player A'},
   };
   const root = {glow,skins:{activeWeek:'2026-04-18',weeks:{'2026-04-18':{score:7}}},bagTags:{rounds:['preserve']}};
-  await pg.query('insert into public.league_state(id,state_json,updated_at) values (1,$1::jsonb,$2::timestamptz)',[JSON.stringify(root),revisionA]);
+  await pg.query('insert into public.league_state(id,state_json,updated_at) values (1,$1::jsonb,$2::timestamptz)',[JSON.stringify(root),initialRevision]);
   await pg.exec(await readFile(migrationUrl,'utf8'));
+  await pg.exec(await readFile(revisionMigrationUrl,'utf8'));
   return {pg,root};
 }
 
@@ -144,10 +146,29 @@ test('failure status advances the same revision and locked or absent weeks stay 
     );
     assert.equal(finalizedResult.rows[0].result.reason,'week_locked');
 
+    const expectedRevision = (await pg.query('select updated_at::text as updated_at from public.league_state where id=1')).rows[0].updated_at;
     const finalRead = await pg.query('select state_json,updated_at::text as updated_at from public.league_state where id=1');
-    assert.equal(finalRead.rows[0].updated_at,after.rows[0].updated_at);
+    assert.equal(finalRead.rows[0].updated_at,expectedRevision);
     assert.deepEqual(finalRead.rows[0].state_json,current);
   } finally {
     await pg.close();
   }
+});
+
+
+test('browser device clocks cannot move or reuse the server revision', async () => {
+  const {pg}=await database('2026-10-29T00:00:00.000000Z');
+  try {
+    const before=(await pg.query('select updated_at from public.league_state where id=1')).rows[0].updated_at;
+    const futureClientClock='2099-01-01T00:00:00.000000Z';
+    await pg.query('update public.league_state set state_json=state_json || $1::jsonb,updated_at=$2::timestamptz where id=1',[JSON.stringify({admin:{edit:1}}),futureClientClock]);
+    const first=(await pg.query('select updated_at::text as updated_at,extract(epoch from updated_at)>extract(epoch from $1::timestamptz) as advanced from public.league_state where id=1',[before])).rows[0];
+    assert.equal(first.advanced,true);
+    assert.ok(Date.parse(first.updated_at) < Date.parse('2100-01-01T00:00:00Z'),'the server must ignore a device clock years in the future');
+    const olderClientClock='1990-01-01T00:00:00.000000Z';
+    await pg.query('update public.league_state set state_json=state_json || $1::jsonb,updated_at=$2::timestamptz where id=1',[JSON.stringify({glow:{manual:true}}),olderClientClock]);
+    const second=(await pg.query('select updated_at::text as updated_at,updated_at > $1::timestamptz as advanced from public.league_state where id=1',[first.updated_at])).rows[0];
+    assert.equal(second.advanced,true,'older device clock cannot make an acknowledged revision reusable');
+    assert.ok(second.advanced,'older device clock cannot leave the previous acknowledged revision reusable');
+  } finally { await pg.close(); }
 });

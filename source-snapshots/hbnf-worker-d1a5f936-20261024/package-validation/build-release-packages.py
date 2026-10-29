@@ -66,7 +66,7 @@ def asset_files(source: Path, manifest: Path, include_save_module: bool) -> list
     if len(paths) != 44 or len(set(paths)) != 44:
         raise SystemExit(f"expected 44 unique installed asset paths in {manifest}")
     if include_save_module:
-        paths.append("public/glow-save-sync.mjs")
+        paths.extend(("public/glow-save-sync.mjs", "public/league-state-cas.mjs"))
     files = [source / name for name in paths]
     missing = [path.relative_to(source).as_posix() for path in files if not path.is_file()]
     if missing:
@@ -98,17 +98,20 @@ def build(args, label: str, source: Path, source_commit: str, output: Path, repo
                 if path.is_file():
                     files[path.relative_to(source).as_posix()] = path.read_bytes()
     migration_root = (repo_root or args.repo_root) / "supabase" / "migrations"
-    migrations = sorted(migration_root.glob("*_hbnf_glow_atomic_week_sync.sql"))
+    migration_patterns = ("*_hbnf_glow_atomic_week_sync.sql", "*_hbnf_league_state_server_revision_guard.sql")
+    migrations = sorted(path for pattern in migration_patterns for path in migration_root.glob(pattern))
     if label == "candidate":
-        if len(migrations) != 1:
-            raise SystemExit(f"expected exactly one canonical HBNF Glow migration in {migration_root}; found {len(migrations)}")
-        migration = migrations[0]
-        snapshot_migration = source / "database" / "20261028_udisc_glow_atomic_week_sync.sql"
-        if not snapshot_migration.is_file() or snapshot_migration.read_bytes() != migration.read_bytes():
-            raise SystemExit("canonical Supabase migration differs from the reviewed snapshot migration")
-        files[f"database/{migration.name}"] = migration.read_bytes()
+        if len(migrations) != 2:
+            raise SystemExit(f"expected both canonical HBNF Glow migrations in {migration_root}; found {len(migrations)}")
+        snapshots = {"hbnf_glow_atomic_week_sync": "20261028_udisc_glow_atomic_week_sync.sql", "hbnf_league_state_server_revision_guard": "20261029203741_hbnf_league_state_server_revision_guard.sql"}
+        for migration in migrations:
+            snapshot_name = next((value for key, value in snapshots.items() if key in migration.name), None)
+            snapshot_migration = source / "database" / snapshot_name if snapshot_name else None
+            if not snapshot_migration or not snapshot_migration.is_file() or snapshot_migration.read_bytes() != migration.read_bytes():
+                raise SystemExit(f"canonical Supabase migration differs from the reviewed snapshot migration: {migration.name}")
+            files[f"database/{migration.name}"] = migration.read_bytes()
     asset_count = len([name for name in files if name.startswith("public/")])
-    expected_assets = 45 if label == "candidate" else 44
+    expected_assets = 46 if label == "candidate" else 44
     if asset_count != expected_assets:
         raise SystemExit(f"{label}: expected {expected_assets} approved assets; found {asset_count}")
     files["wrangler.jsonc"] = production_config(source)
