@@ -513,13 +513,13 @@ function makeSyncHelpers(ctx){return{
  async pullRoot(){
   const statusEl=document.querySelector('#syncStatus');
   try{
-   const wasStored=localStorage.getItem(ctx.localKey)!==null, localState=ctx.state;
+   const wasStored=ctx.initialSyncComplete?localStorage.getItem(ctx.localKey)!==null:ctx.localStatePresentAtStartup, localState=ctx.state;
    const remote=await HBNFLeagueStateSync.read(ctx.supabaseClient);
    let draft=HBNFLeagueStateSync.clone(remote.root);
    const localDiffers=wasStored&&!HBNFLeagueStateSync.equal(ctx.normalize(remote.root[ctx.branch]||null),localState);
    if(localDiffers)draft[ctx.branch]=localState;
    const prepared=await HBNFLeagueStateSync.prepare(ctx.supabaseClient,localStorage,ctx.localKey+':cloud-baseline-v2',draft,ctx.branch,localDiffers,remote);
-   ctx.syncBaseline=prepared.baseline;ctx.rootState=prepared.root;
+   ctx.initialSyncComplete=true;ctx.syncBaseline=prepared.baseline;ctx.rootState=prepared.root;
    if(!prepared.legacyConflict)ctx.state=ctx.normalize(ctx.rootState[ctx.branch]||null);
    if(prepared.legacyConflict){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(statusEl,'legacy');}
    else if(prepared.pending){ctx.pendingCloudDraft=true;saveLocal();HBNFLeagueStateSync.status(statusEl,'pending');}
@@ -558,7 +558,7 @@ function makeSyncHelpers(ctx){return{
 </script>
 <script>(()=> {
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s));
-const ctx={branch:'skills',localKey:'hbnf-sync-skills',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,syncBaseline:null,syncRetryTimer:null,pushTimer:null,activeInput:null};
+const ctx={branch:'skills',localKey:'hbnf-sync-skills',state:null,rootState:{},localStatePresentAtStartup:false,initialSyncComplete:false,supabaseClient:null,realtimeChannel:null,syncing:false,syncBaseline:null,syncRetryTimer:null,pushTimer:null,activeInput:null};
 Object.assign(ctx, makeSyncHelpers(ctx));
 
 function defaultScorecardText(){
@@ -821,6 +821,7 @@ ctx.renderAll=function(){ const sel=qs('#weekSelect'); sel.innerHTML=''; Object.
 
 
 document.addEventListener('DOMContentLoaded', async()=>{
+  ctx.localStatePresentAtStartup=localStorage.getItem(ctx.localKey)!==null;
   ctx.state=loadLocal(); 
   qs('#homeLogoLink').addEventListener('click',()=>location.href='index.html'); qs('#backHomeBtn').addEventListener('click',()=>location.href='index.html');
   qsa('#leagueNav .nav-btn').forEach(btn=>btn.addEventListener('click',()=>setActivePage(btn.dataset.page)));
