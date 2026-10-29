@@ -20,7 +20,6 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
       <nav id="primary-navigation" className={`primary-nav${menuOpen?' is-open':''}`} aria-label="Primary" onKeyDown={handleNavKeyDown} onClick={event=>{if((event.target as HTMLElement).closest('a'))setMenuOpen(false);}}>
         <a className="nav-events" href="/events" aria-current={eventsCurrent}>Events</a>
         <a className="nav-weather" href="/weather" aria-current={current('/weather')}>Weather</a>
-        <a className="nav-hbnf" href="/hb-night-flyers" aria-current={current('/hb-night-flyers')}>HB Night Flyers</a>
         <a className="nav-du" href="/dyed-and-unattached" aria-current={current('/dyed-and-unattached')}>Dyed &amp; Unattached</a>
         {admin?<a className="nav-admin" href="/admin/events" aria-current={path==='/admin'||path==='/admin/events'?'page':undefined}>Events admin</a>:null}
         {admin?<a className="nav-du-admin" href="/admin/dyed-and-unattached" aria-current={current('/admin/dyed-and-unattached')}>D&amp;U queue</a>:null}
@@ -28,6 +27,6 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
       </nav>
     </header>
     <div id="main-content" tabIndex={-1}>{children}</div>
-    {!admin?<footer className="site-footer"><nav className="footer-nav" aria-label="Footer"><a href="https://hbnightflyers.com/">HB Night Flyers</a>{path==='/dyed-and-unattached'?<a href="https://localrootsdg.com/admin/dyed-and-unattached" style={{fontSize:'.85rem'}}>Admin</a>:null}</nav></footer>:null}
+    {!admin?<footer className="site-footer"><nav className="footer-nav" aria-label="Footer"><a href="https://hbnightflyers.com/">HB Night Flyers</a><a href="/hb-night-flyers">HB Night Flyers events</a>{path==='/dyed-and-unattached'?<a href="https://localrootsdg.com/admin/dyed-and-unattached" style={{fontSize:'.85rem'}}>Admin</a>:null}</nav></footer>:null}
   </div>;
 }

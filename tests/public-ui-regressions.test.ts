@@ -99,11 +99,13 @@ test("event search covers event, location, host, and TD fields", () => {
 
 test("results link labels identify known destinations without importing their content", () => {
   const presentation = source("lib/eventPresentation.ts");
-  assert.ok(presentation.includes("return 'PDGA Results ↗'"));
-  assert.ok(presentation.includes("return 'Disc Golf Scene Results ↗'"));
-  assert.ok(presentation.includes("return 'UDisc Results ↗'"));
-  assert.ok(presentation.includes("return 'HBNF Results ↗'"));
-  assert.ok(presentation.includes("return 'Official Results ↗'"));
+  assert.match(presentation,/export function resultsLinkLabel\(url: string\)/);
+  assert.ok(presentation.includes("return 'PDGA Results'"));
+  assert.ok(presentation.includes("return 'Disc Golf Scene Results'"));
+  assert.ok(presentation.includes("return 'UDisc Results'"));
+  assert.ok(presentation.includes("return 'HBNF Results'"));
+  assert.ok(presentation.includes("return 'Official Results'"));
+  assert.equal(presentation.includes("return 'PDGA Results ↗'"),false,'labels should not depend on a decorative source-level arrow');
 });
 
 test("event cards expose permanent detail URLs, filtered return state, and calendar actions", () => {
@@ -157,8 +159,9 @@ test("calendar downloads are all-day ICS files with exclusive end dates and cano
 
 test("HBNF external action discloses new-tab behavior without changing visible label", () => {
   const hbnf = source("pages/HbnfPage.tsx");
-  assert.ok(hbnf.includes('aria-label="Open hbnightflyers.com (opens in new tab)"'));
-  assert.ok(hbnf.includes('>Open hbnightflyers.com</a>'));
+  assert.ok(hbnf.includes("target=\"_blank\" rel=\"noreferrer\" aria-label={'Open ' + label + ' (opens in a new tab)'}"));
+  assert.ok(hbnf.includes("{ label: 'Skins', href: 'https://hbnightflyers.com/skins' }"));
+  assert.ok(hbnf.includes("{ label: 'Glow', href: 'https://hbnightflyers.com/glow' }"));
 });
 
 test("D&U request errors are assertive and all request status messages are atomic", () => {
@@ -199,10 +202,10 @@ test("event cards and detail pages expose permitted first-party official info wi
   const types = source("types.ts");
   assert.ok(types.includes("official_url: string | null"));
   assert.ok(events.includes("event.official_url&&!hbnfEvent"));
-  assert.ok(events.includes(">Official Info ↗</a>"));
+  assert.ok(events.includes(">Official Info</a>"));
   assert.ok(events.includes("aria-label={`Official info for ${event.name} (opens in new tab)`}"));
   assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
-  assert.ok(detail.includes(">Official Info ↗</a>"));
+  assert.ok(detail.includes(">Official Info</a>"));
 });
 
 test("the Local Roots landing page is the event utility, not the old three-card hub", () => {
@@ -261,15 +264,26 @@ test("public brand audit does not add new marketing copy and includes D&U contro
   }
 });
 
-test("HB Night Flyers is a footer link, not a primary navigation item", () => {
+test("HB Night Flyers links directly from the footer, not primary navigation", () => {
   const shell = source("components/Shell.tsx");
-  assert.equal(shell.includes('className="nav-hbnf"'), false);
+  const footerStart=shell.indexOf('<footer className="site-footer">');
+  assert.ok(footerStart>0);
+  const primaryStart=shell.indexOf('<nav id="primary-navigation"');
+  const primaryEnd=shell.indexOf('</nav>',primaryStart);
+  assert.ok(primaryStart>0&&primaryEnd>primaryStart);
+  assert.equal(shell.slice(primaryStart,primaryEnd).includes('href="/hb-night-flyers"'),false);
   assert.ok(shell.includes('<a href="https://hbnightflyers.com/">HB Night Flyers</a>'));
   assert.ok(shell.includes('<footer className="site-footer"><nav className="footer-nav" aria-label="Footer">'));
-  assert.equal(shell.slice(0,shell.indexOf('<footer className="site-footer"')).includes('href="https://hbnightflyers.com/"'),false);
+  assert.ok(shell.includes('<a href="/hb-night-flyers">HB Night Flyers events</a>'));
 });
 
-test("compact public navigation keeps Events and Dyed & Unattached visible", () => {
-  const styles = source("styles.css");
-  assert.ok(styles.includes(".site-header .nav-events,.site-header .nav-du{display:block}"));
+test("compact public navigation exposes an accessible disclosure menu", () => {
+  const shell=source("components/Shell.tsx");
+  const styles=source("lr-hbnf-integration.css");
+  assert.ok(shell.includes('className="mobile-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="primary-navigation"'));
+  assert.ok(shell.includes('id="primary-navigation" className={`primary-nav${menuOpen?\' is-open\':\'\'}`}'));
+  assert.ok(shell.includes("event.key==='Escape'&&menuOpen"));
+  assert.ok(styles.includes('@media(max-width:840px)'));
+  assert.ok(styles.includes('.site-header nav.primary-nav.is-open{display:flex}'));
+  assert.ok(styles.includes('min-height:44px'));
 });
