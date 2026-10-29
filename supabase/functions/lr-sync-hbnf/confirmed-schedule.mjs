@@ -46,6 +46,27 @@ export function hasGlowActivity(week) {
   return activePlayers.length > 0 || cards.some((card) => card?.finalized === true);
 }
 
+// A known synthetic scoring fixture must never become a public event or result.
+// Requiring every active player to carry the explicit Fixture prefix avoids
+// classifying legitimate unfinalized rounds as synthetic.
+export function isSyntheticGlowFixtureWeek(week) {
+  const players = Array.isArray(week?.players)
+    ? week.players.filter((player) => player?.removed !== true)
+    : [];
+  if (!players.length || week?.finalized === true) return false;
+  const cards = week?.cards && typeof week.cards === "object" ? Object.values(week.cards) : [];
+  if (cards.some((card) => card?.finalized === true)) return false;
+  return players.every((player) => typeof player?.name === "string"
+    && /^Fixture(?:\s|$)/i.test(player.name.trim()));
+}
+
+// An unconfirmed Glow week with no participant or finalized-card evidence
+// is a placeholder, not proof that an event occurred. Explicit cancellations
+// are retained so existing event status can still be updated.
+export function isUnobservedGlowPlaceholderWeek(week) {
+  return !hasGlowActivity(week) && !isCanceledGlowWeek(week);
+}
+
 export function isCanceledGlowWeek(week) {
   const status = String(week?.status ?? "").toLowerCase();
   return week?.canceled === true || week?.cancelled === true || status === "canceled" || status === "cancelled";
