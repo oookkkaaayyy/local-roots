@@ -152,6 +152,15 @@ This section records offline source work after the release-validator integration
 
 **Remaining gates:** exact Random/Skills integration UI acceptance; current authenticated Cloudflare baseline and `/glow` route reconciliation; mechanically gated provider mutation route and durable same-manifest admission/closeout; rebuilt exact-commit candidate plus private Drive download-back; external permission for unattended UDisc access; physical iPhone/iPad and Matrix/recovery acceptance. Candidate remains REVIEW_ONLY.
 
+### Exact committed qualification artifacts
+
+- Final feature-branch commit: `992d51e5f0c02acc955ccfa97c9d33607550aca4` (parent `ddc76aa2fbb527a7b9275551c49983b50c1ec9bd`); pushed and independently fetched from `origin/feature/udisc-glow-standings-prototype` with identical SHA.
+- Candidate: Drive `1G0M5UwNW_P1LtZXJ8ALLrywBvKeWKLzU`, stored in the indexed live-build backup folder. 5,021,923 bytes; SHA-256 `a6cbdef714c164ffa428f4e75abed626eba3ed21899dfb89605b74aa66894668`; ZIP integrity PASS; extracted pinned Wrangler 4.152.0 dry-run PASS, 47 public assets read, no upload/deploy.
+- Candidate Drive copy was downloaded back and compared byte-for-byte: PASS, same 5,021,923 bytes and SHA-256. Exact-commit source checkpoint: Drive `1X0qP2B04me7mzvuhhDs6RYaePecFx7L_`, 4,365,753 bytes, SHA-256 `c0ae3a712eeb0dde9fc00d312e308ba834378158d6ddd780d8facdda18ea14b8`. Local pre-edit recovery bundle also retained at `/tmp/hbnf-udisc-pre-qualification-fixes.bundle`, SHA-256 `d95db7c3da73ba2c2d85f7e5ef22270f7e722df2a4672726cb67cf05679a7815`.
+- The exact 44-asset rollback remains Drive `16ILHuKGKxbll0kpagHS5UFu3xtxUttZz`, 3,264,714 bytes, SHA-256 `29d3c6c2aa9038063c659a5361b932ce2c9819a481fd020b5172701450dc477a`. It was not rebuilt or changed. This is the retained static asset rollback, not evidence of installed Worker executable bytes.
+- Post-fix focused Glow suite: **67/67 PASS**; CAS helper suite: **9/9 PASS**; release validator: **21/21 PASS**; workflow audit: **PASS**; package import/migration closure: **4/4 PASS**; pinned Wrangler dry-run: **PASS**. Full `npm test`: **122/127 PASS**, five known unrelated public navigation assertions fail. Native local persistence smoke and Glow scorecard browser smoke are reported above; Random/Skills UI, comprehensive multi-writer combined browser acceptance, physical devices, and Matrix remain **NOT CHECKED**.
+- Release admission: **NOT PASSED / REVIEW_ONLY**. The candidate is durably recovered, but exact currently installed executable source bytes and a canonical Cloudflare/Supabase execution wrapper bound to the shared validator are still unavailable. The validator’s own unit tests and workflow YAML audit do not prove that provider Dashboard/MCP or direct CLI routes are interlocked.
+
 ## 2026-10-29 cross-writer CAS and qualification continuation
 
 **Disposition: REVIEW_ONLY. No production deployment, migration, score write, polling activation, merge, or vendor communication occurred.**
