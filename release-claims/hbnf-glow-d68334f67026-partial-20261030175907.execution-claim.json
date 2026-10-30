@@ -1,0 +1,21 @@
+{
+  "format": "hbnf-partial-successor-execution-claim-v1",
+  "successorId": "hbnf-glow-d68334f67026-partial-20261030175907",
+  "releaseId": "hbnf-glow-d68334f67026",
+  "manifestSha256": "279bc21040814c6506392c132cc515aa61aef46011f85bec94d73e770333650d",
+  "candidateSha256": "a3ef09676caf0a39d53cc269ed8863cf2705708c528641cf94cd47dd49d58dc7",
+  "rollbackSha256": "29d3c6c2aa9038063c659a5361b932ce2c9819a481fd020b5172701450dc477a",
+  "baselineVersion": "3b019c24-0288-4c0d-bcc2-46cb6028d0f6",
+  "partialLedgerVersion": "20261030175907",
+  "remaining": [
+    {
+      "name": "20261029203741_hbnf_league_state_server_revision_guard.sql",
+      "sha256": "8521bc34fdaf7e3015c76c0d0f2f1bd6d1baf00d8dca7b262aec19b38e587b2d"
+    },
+    {
+      "name": "20261030021038_hbnf_league_state_anon_cas_rpc.sql",
+      "sha256": "460a8bee8961ebd78968678d1690b7c4565f6a8785347e6c08f6cba4903739b7"
+    }
+  ],
+  "oneTime": true
+}
