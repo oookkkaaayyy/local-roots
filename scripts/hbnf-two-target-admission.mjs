@@ -16,7 +16,7 @@ export const HBNF_ADMISSION = Object.freeze({
   evidenceBytes: 4672,
   cloudflareAccount: 'e3bc6b78f1104fa0c2a01245084594cf',
   cloudflareWorker: 'hbnf',
-  cloudflareVersion: '3b019c24-0288-4c0d-bbcc-46cb6028d0f6',
+  cloudflareVersion: '3b019c24-0288-4c0d-bcc2-46cb6028d0f6',
   rollbackSha256: '29d3c6c2aa9038063c659a5361b932ce2c9819a481fd020b5172701450dc477a',
   rollbackBytes: 3264714,
   supabaseProject: 'phcpbvuqibyarpfrftgx',
