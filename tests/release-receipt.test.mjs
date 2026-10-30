@@ -211,7 +211,8 @@ async function nativeRollbackPR156Fixture() {
     downloadBack: { path: 'evidence/pr156-candidate-manifest-download.json', bytes: candidateManifestBytes.length, sha256: hash(candidateManifestBytes) },
   };
   f.receipt.releaseId = releaseId;
-  f.receipt.source = { repository: 'oookkkaaayyy/local-roots', ref: 'refs/pull/156/head', commit: sourceCommit, pullRequest: 156 };
+  f.receipt.source = { repository: 'oookkkaaayyy/local-roots', ref: 'refs/pull/156/head', commit: sourceCommit, pullRequest: 156,
+    pullRequestHeadCommit: sourceCommit, treeSha: 'e'.repeat(40) };
   f.receipt.baseline = {
     provider: 'cloudflare-pages', target: 'production', authorityUrl: 'https://dash.cloudflare.com/account/pages/view/local-roots',
     identity: providerRecord.deploymentId, sourceCommit: providerRecord.sourceCommit,
@@ -283,9 +284,72 @@ async function attachDeploymentCloseout(f) {
     sourceCommit: f.receipt.source.commit, packageSha256: f.receipt.package.sha256,
     baselineIdentity: f.receipt.baseline.identity,
   };
+  if (f.receipt.releaseId === 'local-roots-dye-studio-pr-156-2026-10-30-r1') {
+    await attachPR156MergeIdentityBridge(f);
+    readback.sourceCommit = f.mergeCommitSha;
+    readback.sourceTreeSha = f.sourceTreeSha;
+    readback.admittedCandidateCommit = f.receipt.source.commit;
+    readback.candidateTreeSha = f.sourceTreeSha;
+  }
   const readbackBytes = Buffer.from(JSON.stringify(readback));
   await writeFile(path.join(f.root, 'evidence/pr156-deployment-readback.json'), readbackBytes);
   f.receipt.deployment.readback = { path: 'evidence/pr156-deployment-readback.json', bytes: readbackBytes.length, sha256: hash(readbackBytes) };
+}
+
+async function attachPR156MergeIdentityBridge(f) {
+  f.sourceTreeSha = 'e'.repeat(40);
+  f.mergeCommitSha = 'b'.repeat(40);
+  f.receipt.source.treeSha = f.sourceTreeSha;
+  f.receipt.source.pullRequestHeadCommit = f.receipt.source.commit;
+  const apiRoot = 'https://api.github.com/repos/oookkkaaayyy/local-roots';
+  const proof = {
+    schemaVersion: 1,
+    repository: 'oookkkaaayyy/local-roots',
+    retrievedAt: new Date().toISOString(),
+    pullRequest: {
+      url: `${apiRoot}/pulls/156`,
+      payload: {
+        number: 156, state: 'closed', merged: true, merged_at: '2026-10-30T18:44:00Z',
+        merge_commit_sha: f.mergeCommitSha,
+        head: { sha: f.receipt.source.commit, repo: { full_name: 'oookkkaaayyy/local-roots' } },
+        base: { sha: 'c'.repeat(40), repo: { full_name: 'oookkkaaayyy/local-roots' } },
+      },
+    },
+    candidateCommit: {
+      url: `${apiRoot}/commits/${f.receipt.source.commit}`,
+      payload: { sha: f.receipt.source.commit, commit: { tree: { sha: f.sourceTreeSha } } },
+    },
+    mergeCommit: {
+      url: `${apiRoot}/commits/${f.mergeCommitSha}`,
+      payload: { sha: f.mergeCommitSha, commit: { tree: { sha: f.sourceTreeSha } } },
+    },
+  };
+  const bytes = Buffer.from(JSON.stringify(proof, null, 2) + '\n');
+  await writeFile(path.join(f.root, 'evidence/pr156-github-merge-proof.json'), bytes);
+  await writeFile(path.join(f.root, 'evidence/pr156-github-merge-proof-download.json'), bytes);
+  f.receipt.deployment.identityBridge = {
+    mode: 'github-pr156-squash-tree-match',
+    evidence: {
+      path: 'evidence/pr156-github-merge-proof.json', bytes: bytes.length, sha256: hash(bytes),
+      driveFileId: 'pr156-github-merge-proof-id', driveUrl: 'https://drive.google.com/file/d/pr156-github-merge-proof-id/view',
+      downloadBackVerified: true,
+      downloadBack: { path: 'evidence/pr156-github-merge-proof-download.json', bytes: bytes.length, sha256: hash(bytes) },
+    },
+  };
+  f.mergeProofPath = path.join(f.root, 'evidence/pr156-github-merge-proof.json');
+}
+
+async function rewritePR156MergeProof(f, update) {
+  const proof = JSON.parse(await readFile(f.mergeProofPath, 'utf8'));
+  update(proof);
+  const bytes = Buffer.from(JSON.stringify(proof, null, 2) + '\n');
+  await writeFile(f.mergeProofPath, bytes);
+  await writeFile(path.join(f.root, 'evidence/pr156-github-merge-proof-download.json'), bytes);
+  const entry = f.receipt.deployment.identityBridge.evidence;
+  entry.bytes = bytes.length;
+  entry.sha256 = hash(bytes);
+  entry.downloadBack.bytes = bytes.length;
+  entry.downloadBack.sha256 = hash(bytes);
 }
 
 test('accepts a complete receipt when package and recovery copy match', async () => {
@@ -643,6 +707,88 @@ test('PR #156 cannot skip same-manifest post-deployment release verification', a
   try {
     await attachDeploymentCloseout(f);
     await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' }), /admission manifest reference and durable recovery are required/);
+  } finally { await f.cleanup(); }
+});
+
+test('PR #156 same-manifest closeout accepts only the GitHub-verified squash merge with the admitted tree', async () => {
+  const f = await nativeRollbackPR156Fixture();
+  try {
+    const admission = await attachAdmissionManifest(f);
+    await attachDeploymentCloseout(f);
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' });
+    assert.equal(result.phase, 'closeout');
+    assert.equal(result.releaseId, 'local-roots-dye-studio-pr-156-2026-10-30-r1');
+    assert.equal(f.receipt.source.commit, 'a'.repeat(40), 'admitted candidate identity remains the PR head');
+    const readback = JSON.parse(await readFile(path.join(f.root, f.receipt.deployment.readback.path), 'utf8'));
+    assert.equal(readback.sourceCommit, 'b'.repeat(40), 'provider identity remains the truthful squash SHA');
+    assert.equal((await readFile(path.join(f.root, f.receipt.admission.path))).toString(), admission.toString(),
+      'the original immutable admission manifest is unchanged');
+  } finally { await f.cleanup(); }
+});
+
+test('PR #156 squash bridge fails closed for missing, tampered, or nondurable GitHub evidence', async () => {
+  for (const variant of ['missing', 'tampered', 'no-download-back', 'missing-drive-id']) {
+    const f = await nativeRollbackPR156Fixture();
+    try {
+      await attachAdmissionManifest(f);
+      await attachDeploymentCloseout(f);
+      if (variant === 'missing') delete f.receipt.deployment.identityBridge;
+      if (variant === 'tampered') await writeFile(f.mergeProofPath, '{"forged":true}\n');
+      if (variant === 'no-download-back') f.receipt.deployment.identityBridge.evidence.downloadBackVerified = false;
+      if (variant === 'missing-drive-id') delete f.receipt.deployment.identityBridge.evidence.driveFileId;
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' }));
+    } finally { await f.cleanup(); }
+  }
+});
+
+test('PR #156 squash bridge rejects false PR merge, candidate head, merge SHA, and tree evidence', async () => {
+  const cases = [
+    [proof => { proof.pullRequest.payload.number = 157; }, /does not prove the admitted PR #156/],
+    [proof => { proof.pullRequest.payload.merged = false; }, /does not prove the admitted PR #156/],
+    [proof => { proof.pullRequest.payload.head.sha = 'f'.repeat(40); }, /does not prove the admitted PR #156/],
+    [proof => { proof.pullRequest.payload.merge_commit_sha = 'c'.repeat(40); }, /does not prove the admitted PR #156/],
+    [proof => { proof.mergeCommit.payload.commit.tree.sha = 'd'.repeat(40); }, /identical admitted-head and squash-merge trees/],
+  ];
+  for (const [mutate, expected] of cases) {
+    const f = await nativeRollbackPR156Fixture();
+    try {
+      await attachAdmissionManifest(f);
+      await attachDeploymentCloseout(f);
+      await rewritePR156MergeProof(f, mutate);
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' }), expected);
+    } finally { await f.cleanup(); }
+  }
+});
+
+test('PR #156 squash bridge rejects provider, baseline, or unrelated-release identity drift', async () => {
+  for (const variant of ['provider-source', 'provider-tree', 'baseline', 'wrong-release']) {
+    const f = await nativeRollbackPR156Fixture();
+    try {
+      await attachAdmissionManifest(f);
+      await attachDeploymentCloseout(f);
+      if (variant === 'provider-source' || variant === 'provider-tree' || variant === 'baseline') {
+        const entry = f.receipt.deployment.readback;
+        const p = path.join(f.root, entry.path);
+        const readback = JSON.parse(await readFile(p, 'utf8'));
+        if (variant === 'provider-source') readback.sourceCommit = 'c'.repeat(40);
+        if (variant === 'provider-tree') readback.sourceTreeSha = 'd'.repeat(40);
+        if (variant === 'baseline') readback.baselineIdentity = 'stale-baseline';
+        const bytes = Buffer.from(JSON.stringify(readback));
+        await writeFile(p, bytes);
+        entry.bytes = bytes.length;
+        entry.sha256 = hash(bytes);
+      }
+      if (variant === 'wrong-release') f.receipt.releaseId = 'future-release-2026';
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' }));
+    } finally { await f.cleanup(); }
+  }
+});
+
+test('PR #156 merge identity bridge is closeout-only and cannot alter admission', async () => {
+  const f = await nativeRollbackPR156Fixture();
+  try {
+    await attachPR156MergeIdentityBridge(f);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /closeout-only/);
   } finally { await f.cleanup(); }
 });
 
