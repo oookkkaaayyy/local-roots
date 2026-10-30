@@ -1401,7 +1401,7 @@ function makeSyncHelpers(ctx){return{
     ctx.lastRemoteRootHash=currentRootHash;ctx.localDirty=false;ctx.lastRemoteBranchHash=currentBranchHash;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud');return
    }
    ctx.inFlightBranchHash=saveSnapshotHash;
-   const res=await ctx.supabaseClient.from('league_state').update({state_json:ctx.rootState,updated_at:new Date().toISOString()}).eq('id',1).eq('updated_at',cur.data.updated_at).select('id,state_json,updated_at');
+   const res=await ctx.supabaseClient.rpc('hbnf_save_league_state_v1',{p_expected_updated_at:cur.data.updated_at,p_state_json:ctx.rootState});
    if(res.error)throw res.error;
    if(!Array.isArray(res.data)||res.data.length!==1){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — cloud changed during save; your edits are kept on this device.');return}
    // Use the server-returned JSONB representation for the next CAS comparison. Postgres

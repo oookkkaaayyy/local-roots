@@ -4,12 +4,15 @@ import test from 'node:test';
 
 const migration = await readFile(new URL('../supabase/migrations/20261029204700_hbnf_league_state_guarded_rpc_cutover.sql', import.meta.url), 'utf8');
 const sync = await readFile(new URL('../public/hbnf-league-state-sync.js', import.meta.url), 'utf8');
+const skins = await readFile(new URL('../public/skins.html', import.meta.url), 'utf8');
 
 test('login-free browser saves use mandatory revision-guarded RPC', () => {
   assert.match(sync, /client\.rpc\('hbnf_save_league_state_v1'/);
   assert.match(sync, /p_expected_updated_at:\s*current\.revision/);
   assert.match(sync, /p_state_json:\s*result\.root/);
   assert.doesNotMatch(sync, /client\.from\('league_state'\)\s*\.update\(/);
+  assert.match(skins, /supabaseClient\.rpc\('hbnf_save_league_state_v1'/);
+  assert.doesNotMatch(skins, /supabaseClient\.from\('league_state'\)\.update\(/);
 });
 
 test('cutover revokes public direct insert/update and keeps anonymous RPC execution', () => {
