@@ -1,0 +1,23 @@
+name: HBNF parent-release review-only validation
+on:
+  push:
+    branches:
+      - review/hbnf-four-writer-cas-20261029
+  pull_request:
+    paths:
+      - 'scripts/hbnf-parent-release/**'
+      - 'tests/hbnf-parent-release-driver.test.mjs'
+      - '.github/workflows/hbnf-parent-release-review.yml'
+permissions:
+  contents: read
+jobs:
+  review-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify parent release driver (mock only, no secrets)
+        run: node --test tests/hbnf-parent-release-driver.test.mjs
