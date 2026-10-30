@@ -6,6 +6,7 @@
     "typecheck": "tsc --noEmit",
     "test:release-receipt": "node --test tests/release-receipt.test.mjs tests/guarded-provider-release.test.mjs",
     "release:admit": "node scripts/validate-release-receipt.mjs",
+    "release:hbnf-glow-admit": "node scripts/hbnf-two-target-admission.mjs",
     "release:verify": "node scripts/validate-release-receipt.mjs",
     "release:audit-workflows": "node scripts/audit-release-workflows.mjs",
     "test:m2": "rm -rf dist && tsc && mkdir -p dist/tests/fixtures && cp tests/fixtures/events.json dist/tests/fixtures/events.json && node --test dist/tests/*.test.js",
