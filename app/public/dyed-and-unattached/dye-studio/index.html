@@ -416,16 +416,17 @@ body.calibration-mode #du-lighting{display:none!important}
      <button type="button" id="chooseDiscPhoto">Choose photo</button><span id="photoColorChip" class="photo-chip" hidden aria-hidden="true"></span></div>
    <input id="discCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
    <input id="discPhotoInput" type="file" accept="image/*" class="hidden">
-   <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Auto-match flight-plate and rim colors from your photo. Keep the full disc in even light.</p>
+   <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Photo color is a suggestion. Review it before applying; photos are not color calibrated.</p>
+   <div class="photo-suggestion-actions"><button type="button" id="applyPhotoSuggestion" hidden>Apply suggested color</button><button type="button" id="keepPhotoCurrent" hidden>Keep current</button></div>
    <details id="photoRimPanel" class="photo-rim-panel">
-     <summary>Rim appearance (automatic with photo; optional correction)</summary>
+     <summary>Disc appearance</summary>
      <div class="photo-rim-grid">
-       <label class="photo-rim-enabled"><input id="photoRimEnabled" type="checkbox"> Different rim color</label>
+       <label class="photo-rim-enabled"><input id="photoRimEnabled" type="checkbox"> Different rim color (Halo style)</label>
        <label>Rim color <input id="photoRimColor" type="color" value="#333333"></label>
        <label>Rim width <input id="photoRimWidth" type="range" min="5" max="44" step="1" value="15"></label>
        <label>Edge softness <input id="photoRimSoftness" type="range" min="1" max="18" step="1" value="2"></label>
      </div>
-     <p class="small">Photo estimates are not calibrated; if the border looks wrong, adjust the rim here. No photo is uploaded or stored.</p>
+     <p class="small">Single-color is the default. A photo may suggest a rim, but it is never applied automatically. No photo is uploaded or stored.</p>
    </details>
  </div>
  <label for="baseColor">Or choose color</label><div id="consumerBaseSlot" class="consumer-base-row"></div>

@@ -105,7 +105,7 @@ function estimatePixels(imageData,options={}){
  const {data,width:w,height:h}=imageData||{};
  if(!data||!w||!h||data.length<w*h*4)throw Error("Invalid photo pixels");
  const disc=locateDisc(data,w,h),samples=[];
- // The mid-flight-plate ring avoids both most center stamps and the outer rim.
+ // Sample a broad plate area, excluding the center graphic and physical rim.
  const step=Math.max(1,Math.floor(Math.min(w,h)/105));
  for(let y=Math.max(0,Math.floor(disc.y-disc.r*.79));y<Math.min(h,Math.ceil(disc.y+disc.r*.79));y+=step)
  for(let x=Math.max(0,Math.floor(disc.x-disc.r*.79));x<Math.min(w,Math.ceil(disc.x+disc.r*.79));x+=step){
@@ -114,16 +114,22 @@ function estimatePixels(imageData,options={}){
    const index=(y*w+x)*4;
    if(data[index+3]<240)continue;
    const rgb=[data[index],data[index+1],data[index+2]];
-   // Very dark stamps, glare and saturated existing marks are excluded later.
    samples.push(rgb);
  }
  if(samples.length<40)throw Error("The disc was too small to estimate its color");
- const med=[0,1,2].map(c=>median(samples.map(v=>v[c])));
- const ranked=samples.map(rgb=>({rgb,d:distance(rgb,med)})).sort((a,b)=>a.d-b.d);
+ // Red/pink stamp ink is a common minority foreground. Exclude it only when
+ // enough non-red plate pixels remain, so a genuinely red disc is preserved.
+ const redPrint=rgb=>rgb[0]>rgb[1]*1.22&&rgb[0]>rgb[2]*1.12&&rgb[0]-Math.min(rgb[1],rgb[2])>38;
+ const nonPrint=samples.filter(rgb=>!redPrint(rgb));
+ const clean=nonPrint.length>=samples.length*.58?nonPrint:samples;
+ const med=[0,1,2].map(c=>median(clean.map(v=>v[c])));
+ const ranked=clean.map(rgb=>({rgb,d:distance(rgb,med)})).sort((a,b)=>a.d-b.d);
  const core=ranked.slice(0,Math.ceil(ranked.length*.64));
  const rgb=[0,1,2].map(ch=>core.reduce((s,x)=>s+x.rgb[ch],0)/core.length);
- const q=(i)=>ranked[clamp(Math.floor(ranked.length*i),0,ranked.length-1)].d;
- const spread=q(.75),outliers=ranked.filter(x=>x.d>48).length/ranked.length;
+ const rawMedian=[0,1,2].map(c=>median(samples.map(v=>v[c])));
+ const rawRanked=samples.map(rgb=>({rgb,d:distance(rgb,rawMedian)})).sort((a,b)=>a.d-b.d);
+ const q=(i)=>rawRanked[clamp(Math.floor(rawRanked.length*i),0,rawRanked.length-1)].d;
+ const spread=q(.75),outliers=rawRanked.filter(x=>x.d>48).length/rawRanked.length;
  // A few bright boundaries must not count as a whole circular disc edge.
  // Require coherent contrast across at least 70% of sampled circumference.
  // This is an image-geometry validation gate, not a physical pigment fit.
@@ -136,8 +142,9 @@ function estimatePixels(imageData,options={}){
  const consistent=spread<34&&outliers<.35;
  const confidence=edgeFound&&consistent?"good":"check";
  const appearance=edgeFound?estimateRim(data,w,h,disc):null;
- const plateHex=appearance?appearance.plateHex:hex(rgb);
- return {hex:plateHex,rgb:appearance?[1,3,5].map(i=>parseInt(plateHex.slice(i,i+2),16)):rgb.map(x=>Math.round(x)),confidence:severeMixedColor?"check":appearance?.confidence||confidence,appearance,severeMixedColor,
+ const plateHex=hex(rgb);
+ return {hex:plateHex,rgb:rgb.map(x=>Math.round(x)),confidence:severeMixedColor?"check":confidence,appearance,severeMixedColor,
+   localizationConfidence:edgeFound?"check":"low",plateConfidence:severeMixedColor?"low":confidence,rimConfidence:appearance?.confidence||"low",
    edgeDetected:edgeFound,spread:Math.round(spread),outlierFraction:+outliers.toFixed(2),
    pixelCount:samples.length};
 }
@@ -178,7 +185,7 @@ function bind(){
  if(!camera||!library||!status)return;
  const rimPanel=document.getElementById("photoRimPanel"),rimOn=document.getElementById("photoRimEnabled"),
   rimColor=document.getElementById("photoRimColor"),rimWidth=document.getElementById("photoRimWidth"),
-  rimSoftness=document.getElementById("photoRimSoftness");
+  rimSoftness=document.getElementById("photoRimSoftness"),applySuggestion=document.getElementById("applyPhotoSuggestion"),keepSuggestion=document.getElementById("keepPhotoCurrent");
  for(const [button,input] of [["takeDiscPhoto",camera],["chooseDiscPhoto",library]]){
    document.getElementById(button).addEventListener("click",()=>input.click());
  }
@@ -200,31 +207,39 @@ function bind(){
   syncControls();
  }
  window.DUDiscPhoto.syncControls=syncControls;
+ let pending=null;
+ if(keepSuggestion)keepSuggestion.addEventListener("click",()=>{
+   pending=null;if(applySuggestion)applySuggestion.hidden=true;keepSuggestion.hidden=true;
+   status.textContent="Kept your current disc appearance and edits.";status.className="photo-status";
+ });
+ if(applySuggestion)applySuggestion.addEventListener("click",()=>{
+   if(!pending)return;
+   const result=pending,color=document.getElementById("baseColor"),field=document.getElementById("baseHex");
+   color.value=result.hex;field.value=result.hex;color.dispatchEvent(new Event("input",{bubbles:true}));
+   window.DUDiscAppearance?.set?.(null,false,true);syncControls();
+   document.getElementById("autoTransmission").click();
+   status.textContent="Starting color applied: "+result.hex+". Review it against the blank disc; photo color is not calibrated.";
+   status.className="photo-status photo-check";pending=null;applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;
+   document.getElementById("photoColorChip").style.backgroundColor=result.hex;
+ });
  async function apply(event){
    const input=event.currentTarget,file=input.files&&input.files[0];
    if(!file)return;
+   pending=null;if(applySuggestion)applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;
    status.textContent="Reading disc color…";status.className="photo-status";
    try{
      const result=await analyzeImage(file);
      if(result.severeMixedColor)throw Error("Photo contains strongly mixed colors or multiple discs. Crop to a single undyed disc and retry; the selected color was not changed.");
      if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
-     const color=document.getElementById("baseColor"),field=document.getElementById("baseHex");
-     color.value=result.hex;field.value=result.hex;
-     // Same existing UI color handlers; automatically refresh model and undo history.
-     color.dispatchEvent(new Event("input",{bubbles:true}));
-     window.DUDiscAppearance?.set?.(result.appearance||null,false,true);
-     syncControls();
-     // Reuse the existing optical-profile transmission estimate and single undo/history commit.
-     document.getElementById("autoTransmission").click();
-     const shape=result.appearance?" · two-tone plate and rim detected; check rim controls.":" · single-color estimate; optional rim controls below.";
-     const summary=result.confidence==="good"?
-       "Estimated "+result.hex+shape+" Lighting can shift colors.":
-       "Estimated "+result.hex+shape+" Uncertain photo: try even light and contrasting background.";
+     pending=result;if(applySuggestion)applySuggestion.hidden=false;if(keepSuggestion)keepSuggestion.hidden=false;
+     if(result.appearance){rimColor.value=result.appearance.rimHex;rimWidth.value=String(Math.round((1-result.appearance.boundary)*100));rimSoftness.value=String(Math.round(result.appearance.softness*100))}
+     const summary="Suggested starting color "+result.hex+". Review it before applying; your current work is unchanged. "+(result.appearance?"A possible rim is only a suggestion; select Different rim color to use it.":"No separate rim was confirmed.");
      status.textContent=summary;
-     status.className="photo-status "+(result.confidence==="good"?"photo-ok":"photo-check");
+     status.className="photo-status photo-check";
      document.getElementById("photoColorChip").style.backgroundColor=result.hex;
      document.getElementById("photoColorChip").hidden=false;
    }catch(error){
+     pending=null;if(applySuggestion)applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;
      status.className="photo-status photo-check";
      status.textContent=error&&error.message?error.message:"Couldn't read the photo. Set color manually or try another photo.";
    }finally{input.value="";}

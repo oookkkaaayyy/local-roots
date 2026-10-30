@@ -371,6 +371,7 @@ test('photo matcher ignores minority stamp colors in synthetic test images',()=>
   return {data,width:w,height:h};
  }
  const cases=[
+  {base:[89,169,222],mark:[238,35,92],options:{x:30,r:46},color:'#59A9DE'},
   {base:[89,169,222],mark:[15,15,20],options:{},color:'#59A9DE'},
   {base:[235,232,220],mark:[5,5,5],options:{x:50,r:34},color:'#EBE8DC'},
   {base:[216,70,88],mark:null,options:{},color:'#D84658'},
@@ -408,7 +409,8 @@ test('photo topology separates plate/rim without inventing brand plastic choices
  }
  const halo=estimate(disc([250,165,195],[25,146,208],.74,.095,true));
  assert.equal(halo.edgeDetected,true);
- assert.equal(halo.hex,'#FAA5C3');
+ assert.equal(halo.hex,'#FAA5C3','primary estimate must come from the plate samples');
+ assert.equal(halo.hex,halo.appearance.plateHex,'rim analysis cannot overwrite primary plate color');
  assert.equal(halo.appearance.rimHex,'#1992D0');
  assert.ok(Math.abs(halo.appearance.boundary-.74)<.04);
  assert.equal(halo.appearance.kind,'soft');
@@ -418,7 +420,10 @@ test('photo topology separates plate/rim without inventing brand plastic choices
  assert.ok(Math.abs(hard.appearance.boundary-.82)<.04);
  const one=estimate(disc([89,169,222],[89,169,222],.82,0,true));
  assert.equal(one.appearance,null);
- assert.ok(photo.includes('window.DUDiscAppearance?.set?.(result.appearance||null,false,true)'));
+ assert.doesNotMatch(photo,/set\?\.\(result\.appearance\|\|null/,'photo rim hypothesis must not auto-apply');
+ assert.match(photo,/applyPhotoSuggestion/);
+ assert.match(studioHtml,/id="applyPhotoSuggestion"/);
+ assert.match(studioHtml,/Different rim color \(Halo style\)/);
  assert.match(studioHtml,/id="photoRimPanel"/);
  assert.match(studioScript,/function appearanceAt\(x,y\)/);
  assert.match(studioScript,/discAppearance:discAppearance\?/);
@@ -1143,6 +1148,45 @@ test('small single-color disc does not invent a two-tone rim from its surroundin
 });
 
 
+test('photo suggestion keeps edits until accepted or explicitly retained',async()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const width=280,height=280,pixels=new Uint8ClampedArray(width*height*4);
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const inside=Math.hypot(x-140,y-140)<95,i=(y*width+x)*4,rgb=inside?[130,180,225]:[35,32,28];
+  pixels[i]=rgb[0];pixels[i+1]=rgb[1];pixels[i+2]=rgb[2];pixels[i+3]=255;
+ }
+ const elements=new Map(),appearanceCalls=[];let autoCommits=0;
+ class Element{
+  constructor(id){this.id=id;this.value='';this.hidden=false;this.checked=false;this.files=[];this.listeners={};this.style={};this.className='';this.textContent='';this.classList={toggle(){}}}
+  addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)}
+  async fire(type,event={}){for(const fn of this.listeners[type]||[])await fn({currentTarget:this,...event})}
+  click(){if(this.id==='autoTransmission'){autoCommits++;return}return this.fire('click')}
+  dispatchEvent(event){return this.fire(event.type,event)}
+ }
+ const get=id=>{if(!elements.has(id))elements.set(id,new Element(id));return elements.get(id)};
+ get('baseColor').value='#123456';get('baseHex').value='#123456';
+ const ctx={drawImage(){},getImageData(){return{data:pixels,width,height}}};
+ const doc={readyState:'complete',getElementById:get,createElement(){return{width:0,height:0,getContext(){return ctx}}}};
+ const win={DUDiscAppearance:{get(){return null},set(...args){appearanceCalls.push(args)}}};
+ const imageBitmap=async()=>({width,height,close(){}});
+ Function('window','document','createImageBitmap','Event',photo)(win,doc,imageBitmap,class{constructor(type){this.type=type}});
+ const input=get('discPhotoInput'),apply=get('applyPhotoSuggestion'),keep=get('keepPhotoCurrent');
+ input.files=[{type:'image/jpeg'}];await input.fire('change');
+ assert.equal(get('baseHex').value,'#123456','analysis must not overwrite current project');
+ assert.deepEqual(appearanceCalls,[],'analysis must not mutate disc geometry');
+ assert.equal(apply.hidden,false);assert.equal(keep.hidden,false);assert.equal(get('photoRimEnabled').checked,false);
+ await keep.click();
+ assert.equal(get('baseHex').value,'#123456','Keep current preserves accepted value');
+ assert.equal(apply.hidden,true);assert.equal(keep.hidden,true);
+ input.files=[{type:'image/jpeg'}];await input.fire('change');
+ const suggestion=get('photoColorStatus').textContent.match(/#[0-9A-F]{6}/)?.[0];
+ assert.ok(suggestion&&suggestion!=='#123456','a new estimate is available to review');
+ await apply.click();
+ assert.equal(get('baseHex').value,suggestion,'only confirmation applies the suggested color');
+ assert.deepEqual(appearanceCalls,[[null,false,true]],'accepting photo clears any unconfirmed rim hypothesis');
+ assert.equal(autoCommits,1,'accepted color follows the existing single project commit path');
+ assert.equal(apply.hidden,true);assert.equal(keep.hidden,true);
+});
 test('original-photo import retries the image-element decoder on bitmap failure and cleans up',async()=>{
  const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
  const width=460,height=460,pixels=new Uint8ClampedArray(width*height*4);
