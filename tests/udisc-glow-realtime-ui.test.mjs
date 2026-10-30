@@ -24,6 +24,8 @@ test('clean remote Glow state is adopted without treating cached localStorage as
 
 test('focused fields defer remote state and apply it after blur without dropping real drafts', () => {
   assert.match(html, /if\(deferIfFocused&&shouldDeferRender\(\)\)\{ctx\.pendingRootState=remote;return false\}/);
+  assert.match(html, /function applyPendingRemoteState\(\)\{if\(!ctx\.pendingRootState\)return false;if\(shouldDeferRender\(\)\)return false;/,
+    'the deferred blur callback must recheck focus after focus has moved to the next score field, or it can redraw before the next keystroke');
   assert.match(html, /document\.addEventListener\('focusout',[\s\S]*setTimeout\(applyPendingRemoteState,0\)/);
   assert.match(html, /if\(ctx\.saveCoordinator&&ctx\.saveCoordinator\.hasPending\)\{ctx\.saveCoordinator\.markConflict\(\);return false\}/);
   assert.doesNotMatch(html, /focusout[^;]{0,500}clearPendingRemoteState\(\)/);

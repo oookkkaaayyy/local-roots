@@ -77,11 +77,16 @@ export async function runGuardedProviderRelease({ receipt, receiptPath, root, pr
   if (sha(manifestBytes) !== manifestHash) throw new Error('admission manifest changed before use');
 
   assertSourceWitness(await sourceControl.read(), receipt);
+  // Verify the target before consuming the one-time admission. Then claim the
+  // manifest and immediately reread it at the mutation boundary to close the
+  // race between preflight and provider execution.
+  const preClaimTarget = await provider.readTarget({ provider: receipt.baseline.provider, target: receipt.baseline.target });
+  assertProviderBaseline(preClaimTarget, receipt);
   if (!await oneTimeLedger.claim(receipt.releaseId, manifestHash)) throw new Error('admission manifest has already been consumed');
-  const beforeMutation = await provider.readTarget({ provider: receipt.baseline.provider, target: receipt.baseline.target });
-  assertProviderBaseline(beforeMutation, receipt);
   let mutationAttempted = false;
   try {
+  const beforeMutation = await provider.readTarget({ provider: receipt.baseline.provider, target: receipt.baseline.target });
+  assertProviderBaseline(beforeMutation, receipt);
   mutationAttempted = true;
   // This is the sole mutation call in the repository-owned route.
   const mutation = await provider.mutate({
@@ -137,10 +142,13 @@ export async function runGuardedProviderRelease({ receipt, receiptPath, root, pr
   } catch (error) {
     let observed;
     try { observed = await provider.readTarget({ provider: receipt.baseline.provider, target: receipt.baseline.target }); }
-    catch { throw new Error(`provider route failed after mutation was armed; current target is unknown and requires exact manual recovery: ${error.message}`); }
+    catch (readError) {
+      if (!mutationAttempted) await oneTimeLedger.fail(receipt.releaseId, manifestHash, { disposition: 'ABORTED_TARGET_READBACK_UNAVAILABLE', error: readError.message });
+      throw new Error(`provider route failed after ${mutationAttempted ? 'mutation was armed' : 'admission was consumed before mutation'}; current target is unknown and requires exact manual recovery: ${error.message}`);
+    }
     const unchanged = observed?.identity === receipt.baseline.identity &&
       observed?.artifactSha256 === receipt.baseline.artifact.sha256 && observed?.artifactBytes === receipt.baseline.artifact.bytes;
-    if (!unchanged) {
+    if (mutationAttempted && !unchanged) {
       if (typeof provider.restore !== 'function') {
         throw new Error(`provider route failed and target changed; exact rollback adapter is unavailable: ${error.message}`);
       }
@@ -163,6 +171,7 @@ export async function runGuardedProviderRelease({ receipt, receiptPath, root, pr
       throw new Error(`provider route failed; exact baseline rollback was independently read back and retained (${rollbackReceipt.id}): ${error.message}`);
     }
     if (mutationAttempted) await oneTimeLedger.fail(receipt.releaseId, manifestHash, { disposition: 'NO_TARGET_CHANGE', observedIdentity: observed.identity });
+    else await oneTimeLedger.fail(receipt.releaseId, manifestHash, { disposition: 'ABORTED_BEFORE_MUTATION', observedIdentity: observed?.identity });
     throw error;
   }
 }

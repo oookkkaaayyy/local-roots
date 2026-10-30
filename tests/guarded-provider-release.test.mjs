@@ -60,10 +60,12 @@ async function fixture() {
     async download(id) { const bytes = objects.get(id); if (!bytes) throw new Error('missing durable object'); return Buffer.from(bytes); },
   };
   const claimed = new Set();
+  const failed = [];
+  let claimCalls = 0;
   const oneTimeLedger = {
-    async claim(id, manifestHash) { const key = `${id}:${manifestHash}`; if (claimed.has(key)) return false; claimed.add(key); return true; },
+    async claim(id, manifestHash) { claimCalls++; const key = `${id}:${manifestHash}`; if (claimed.has(key)) return false; claimed.add(key); return true; },
     async close() {},
-    async fail() {},
+    async fail(id, manifestHash, details) { failed.push({ id, manifestHash, details }); },
   };
   let target = { provider: 'example', target: 'isolated-test', identity: 'installed-v1', sourceCommit: 'd'.repeat(40), artifactSha256: baseline.sha256, artifactBytes: baseline.bytes };
   const calls = [];
@@ -76,7 +78,7 @@ async function fixture() {
   };
   const receiptPath = path.join(root, 'receipt.json');
   await writeFile(receiptPath, JSON.stringify(receipt));
-  return { root, receiptPath, receipt, provider, durableStore, oneTimeLedger, sourceControl, calls, durableNames, get sourceReads() { return sourceReads; }, get target() { return target; }, setTarget(value) { target = value; }, candidate, baseline, cleanup: () => rm(root, { recursive: true, force: true }) };
+  return { root, receiptPath, receipt, provider, durableStore, oneTimeLedger, sourceControl, calls, durableNames, failed, get claimCalls() { return claimCalls; }, get sourceReads() { return sourceReads; }, get target() { return target; }, setTarget(value) { target = value; }, candidate, baseline, cleanup: () => rm(root, { recursive: true, force: true }) };
 }
 
 test('guarded route durably admits, rereads target, mutates once, and closes with same manifest', async () => {
@@ -131,6 +133,40 @@ test('fresh mismatched installed baseline aborts before mutation', async () => {
     f.provider.readTarget = async () => ({ ...f.target, identity: 'changed-version' });
     await assert.rejects(runGuardedProviderRelease({ ...f, approved: true }), /does not exactly match/);
     assert.equal(f.calls.includes('mutate'), false);
+    assert.equal(f.claimCalls, 0, 'stale preflight must not consume the one-time admission');
+  } finally { await f.cleanup(); }
+});
+
+test('target changed after admission is reread and aborts before mutation, recording a consumed admission', async () => {
+  const f = await fixture();
+  try {
+    let reads = 0;
+    const baselineRead = f.provider.readTarget.bind(f.provider);
+    f.provider.readTarget = async args => {
+      reads++;
+      const value = await baselineRead(args);
+      return reads === 1 ? value : { ...value, identity: 'changed-after-admission' };
+    };
+    await assert.rejects(runGuardedProviderRelease({ ...f, approved: true }), /does not exactly match/);
+    assert.equal(reads, 3, 'the third read is the failure-path confirmation of the observed target');
+    assert.equal(f.calls.includes('mutate'), false);
+    assert.equal(f.failed.at(-1)?.details.disposition, 'ABORTED_BEFORE_MUTATION');
+  } finally { await f.cleanup(); }
+});
+
+test('unavailable target read at the mutation boundary records a consumed but unexecuted admission', async () => {
+  const f = await fixture();
+  try {
+    let reads = 0;
+    const baselineRead = f.provider.readTarget.bind(f.provider);
+    f.provider.readTarget = async args => {
+      reads++;
+      if (reads > 1) throw new Error('provider readback unavailable');
+      return baselineRead(args);
+    };
+    await assert.rejects(runGuardedProviderRelease({ ...f, approved: true }), /admission was consumed before mutation/);
+    assert.equal(f.calls.includes('mutate'), false);
+    assert.equal(f.failed.at(-1)?.details.disposition, 'ABORTED_TARGET_READBACK_UNAVAILABLE');
   } finally { await f.cleanup(); }
 });
 
