@@ -90,6 +90,16 @@ test('candidate packager hashes every build file into the exact archived ZIP', a
     assert.equal(manifest.archiveBytes, archive.length);
     assert.equal(manifest.archiveSha256, hash(archive));
     assert.deepEqual(manifest.files, [{ path: 'index.html', bytes: html.length, sha256: hash(html) }]);
+
+    const pr159Output = path.join(root, 'capsule-pr159');
+    const pr159 = spawnSync(process.execPath, [script, dist, pr159Output, 'b'.repeat(40), '159'], { encoding: 'utf8' });
+    assert.equal(pr159.status, 0, pr159.stderr);
+    const pr159Manifest = JSON.parse(await readFile(path.join(pr159Output, 'manifest.json'), 'utf8'));
+    assert.equal(pr159Manifest.releaseId, 'local-roots-dye-photo-pr-159-2026-10-30-r1');
+    assert.equal(pr159Manifest.sourceCommit, 'b'.repeat(40));
+    const rejectedOutput = path.join(root, 'capsule-pr157');
+    const rejected = spawnSync(process.execPath, [script, dist, rejectedOutput, 'c'.repeat(40), '157'], { encoding: 'utf8' });
+    assert.notEqual(rejected.status, 0, 'unapproved PR cannot receive a release identity');
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 

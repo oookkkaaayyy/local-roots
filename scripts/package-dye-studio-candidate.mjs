@@ -6,8 +6,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const RELEASE_ID = 'local-roots-dye-studio-pr-156-2026-10-30-r1';
 const REPOSITORY = 'oookkkaaayyy/local-roots';
+const RELEASE_IDS = new Map([
+  ['156', 'local-roots-dye-studio-pr-156-2026-10-30-r1'],
+  ['159', 'local-roots-dye-photo-pr-159-2026-10-30-r1'],
+]);
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
 async function listFiles(root, current = root) {
@@ -26,9 +29,10 @@ async function listFiles(root, current = root) {
 }
 
 async function main() {
-  const [distArg, outputArg, sourceCommit] = process.argv.slice(2);
-  if (!distArg || !outputArg || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '')) {
-    throw new Error('usage: package-dye-studio-candidate.mjs <dist-directory> <output-directory> <full-source-commit>');
+  const [distArg, outputArg, sourceCommit, pullRequest = '156'] = process.argv.slice(2);
+  const releaseId = RELEASE_IDS.get(pullRequest);
+  if (!distArg || !outputArg || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '') || !releaseId) {
+    throw new Error('usage: package-dye-studio-candidate.mjs <dist-directory> <output-directory> <full-source-commit> [approved-pr: 156|159]');
   }
   const dist = path.resolve(distArg);
   const output = path.resolve(outputArg);
@@ -44,7 +48,7 @@ async function main() {
   const lockfile = await readFile(path.resolve(dist, '../package-lock.json')).catch(async () =>
     readFile(path.resolve(dist, '../../app/package-lock.json')));
   const manifest = {
-    releaseId: RELEASE_ID,
+    releaseId,
     repository: REPOSITORY,
     sourceCommit: sourceCommit.toLowerCase(),
     command: 'npm run build (working-directory: app)',
