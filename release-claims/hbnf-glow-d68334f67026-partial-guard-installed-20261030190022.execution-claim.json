@@ -1,0 +1,26 @@
+{
+  "format": "hbnf-glow-final-successor-execution-claim-v1",
+  "successorId": "hbnf-glow-d68334f67026-partial-guard-installed-20261030190022",
+  "releaseId": "hbnf-glow-d68334f67026",
+  "manifestSha256": "ec79fb3c43a6b9d3d00d6ab620b6cde2df85a07f599e61503989accf1a28f9a6",
+  "candidateSha256": "a3ef09676caf0a39d53cc269ed8863cf2705708c528641cf94cd47dd49d58dc7",
+  "rollbackSha256": "29d3c6c2aa9038063c659a5361b932ce2c9819a481fd020b5172701450dc477a",
+  "baselineWorkerVersion": "3b019c24-0288-4c0d-bcc2-46cb6028d0f6",
+  "baselineLedger": [
+    {
+      "name": "20261029200450_hbnf_glow_atomic_week_sync",
+      "version": "20261030175907"
+    },
+    {
+      "name": "20261029203741_hbnf_league_state_server_revision_guard",
+      "version": "20261030190022"
+    }
+  ],
+  "remaining": [
+    {
+      "name": "20261030021038_hbnf_league_state_anon_cas_rpc.sql",
+      "sha256": "460a8bee8961ebd78968678d1690b7c4565f6a8785347e6c08f6cba4903739b7"
+    }
+  ],
+  "oneTime": true
+}
