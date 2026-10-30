@@ -85,9 +85,10 @@ export function createPinnedWranglerRunner({binary,exec=execFile,env=process.env
 
 // GitHub's create-file API is the atomic one-time primitive: it creates this
 // deterministic path without an update SHA, and rejects a replayed path.
-export function createGitHubExecutionLockAdapter({createFile,fetchFile,repository='oookkkaaayyy/local-roots',branch='feature/udisc-glow-standings-prototype'}={}){
+export function createGitHubExecutionLockAdapter({createFile,fetchFile,repository='oookkkaaayyy/local-roots',branch='feature/udisc-glow-standings-prototype',claimPath=`release-claims/${RELEASE_ID}.execution-claim.json`}={}){
  assert(typeof createFile==='function'&&typeof fetchFile==='function','GitHub create/read functions are required');
- const filename=`release-claims/${RELEASE_ID}.execution-claim.json`;
+ assert(typeof claimPath==='string'&&/^release-claims\/[A-Za-z0-9._-]+\.json$/.test(claimPath),'GitHub immutable claim path is invalid');
+ const filename=claimPath;
  let claimCommit='';
  return {
   async createExclusive(_name,bytes){
@@ -257,7 +258,7 @@ export function createWranglerAdapter({run,candidatePath,rollbackPath,verifyRout
     return matching.length?matching.every(r=>r.script==='hbnf'):activeCustomDomain;
    });
    const staticAssetsOnly=d.versionId===EXPECTED_VERSION&&info?.id===EXPECTED_VERSION&&info?.resources?.script?.handlers===null&&info?.resources?.script_runtime?.assets?.serve_directly===true;
-   return {worker:'hbnf',...d,rollbackRetained:items.some(x=>(x.versions||[]).some(v=>v.version_id===EXPECTED_VERSION)),pollingDisabled:true,cronRemoved:schedules.length===0,staticAssetsOnly,installedAssetHash:null,assetHashUnavailable:true,glowRouteCovered,activeCustomDomain,schedules,routePatterns:routes.map(x=>x.pattern),routeOwners,scriptHandlers:info?.resources?.script?.handlers??null,bindings};
+   return {worker:'hbnf',...d,capturedUtc:new Date().toISOString(),rollbackRetained:items.some(x=>(x.versions||[]).some(v=>v.version_id===EXPECTED_VERSION)),pollingDisabled:true,cronRemoved:schedules.length===0,staticAssetsOnly,installedAssetHash:null,assetHashUnavailable:true,glowRouteCovered,activeCustomDomain,schedules,routePatterns:routes.map(x=>x.pattern),routeOwners,scriptHandlers:info?.resources?.script?.handlers??null,bindings};
   },
   async deployExact({zip,sha256:expected,keepPollingDisabled}){
    assert(sha256(zip)===expected,'candidate bytes mismatch');assert(keepPollingDisabled===true,'polling must remain disabled');
