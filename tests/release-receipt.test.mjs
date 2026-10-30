@@ -370,3 +370,19 @@ test('rejects the identical local file as deployment receipt download-back', asy
     await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /independent recovered copy/);
   } finally { await f.cleanup(); }
 });
+
+test('rejects self-referential baseline rollback download-back at admission', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.baseline.rollback.downloadBack = { ...f.receipt.baseline.rollback };
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /independent recovered copy/);
+  } finally { await f.cleanup(); }
+});
+
+test('rejects self-referential closeout rollback artifact recovery', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.rollback.recovery.downloadBack = { ...f.receipt.rollback.artifact };
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /independent recovered copy/);
+  } finally { await f.cleanup(); }
+});
