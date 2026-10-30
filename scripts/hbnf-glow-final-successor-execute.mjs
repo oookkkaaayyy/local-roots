@@ -41,4 +41,4 @@ async function main(){
  const outcome=await executeFinalSuccessor({evidence,admission,providers:{cloudflare:cf,supabase:db},storage,executionLock:lock,currentGateSourceCommit:gateSource});
  process.stdout.write(`${JSON.stringify({type:'result',status:outcome.status,successorId:FINAL.id,manifestDriveId:admission.manifestDriveId,manifestSha256:admission.manifestSha256,decisionDriveId:admission.decisionDriveId,decisionSha256:admission.decisionSha256,executionClaimGithubRef:admission.claim.githubRef,executionClaimDriveId:admission.claim.driveId,executionClaimSha256:admission.claim.sha256,closeoutDriveId:outcome.driveId,closeoutSha256:outcome.sha256,closeoutBytes:outcome.bytes,installedWorkerVersion:outcome.closeout.cloudflare.versionId,appliedMigration:outcome.closeout.supabase.appliedMigration})}\n`);
 }
-main().catch(e=>{process.stdout.write(`${JSON.stringify({type:'result',status:'BLOCKED_OR_FAILED',error:e.message})}\n`);process.exitCode=2;});
+main().then(()=>rl.close()).catch(e=>{process.stdout.write(`${JSON.stringify({type:'result',status:'BLOCKED_OR_FAILED',error:e.message})}\n`);process.exitCode=2;rl.close();});
