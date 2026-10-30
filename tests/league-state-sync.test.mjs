@@ -15,20 +15,22 @@ function clone(value) { return JSON.parse(JSON.stringify(value)); }
 function fakeClient(initial, hooks = {}) {
   let row = { id: 1, state_json: clone(initial), updated_at: '2026-10-29T08:00:00.000Z' };
   let reads = 0, writes = 0;
-  const client = { from(table) {
-    assert.equal(table, 'league_state');
-    return { select() { return { eq() { return { single: async () => { reads++; if (hooks.beforeRead) await hooks.beforeRead({ reads, get: () => clone(row), set: value => { row = clone(value); } }); return (hooks.readError || hooks.readErrorAt === reads) ? { data: null, error: { message: hooks.readErrorMessage || 'offline' } } : { data: clone(row), error: null }; } }; } }; },
-      update(payload) { let id, revision; const query = { eq(column, value) { if (column === 'id') id = value; if (column === 'updated_at') revision = value; return query; }, async select() {
-        writes++;
-        if (hooks.beforeWrite) await hooks.beforeWrite({ get: () => clone(row), set: value => { row = clone(value); } });
-        if (hooks.writeError) return { data: null, error: { message: 'denied' } };
-        if (id !== 1 || revision !== row.updated_at) return { data: [], error: null };
-        row = { id: 1, state_json: clone(payload.state_json), updated_at: hooks.serverRevisionAtAck || payload.updated_at };
-        if (hooks.badAck) return { data: [{ ...clone(row), state_json: { corrupted: true } }], error: null };
-        return { data: [clone(row)], error: null };
-      } }; return query; }
-    };
-  } };
+  const client = {
+    from(table) {
+      assert.equal(table, 'league_state');
+      return { select() { return { eq() { return { single: async () => { reads++; if (hooks.beforeRead) await hooks.beforeRead({ reads, get: () => clone(row), set: value => { row = clone(value); } }); return (hooks.readError || hooks.readErrorAt === reads) ? { data: null, error: { message: hooks.readErrorMessage || 'offline' } } : { data: clone(row), error: null }; } }; } }; } };
+    },
+    async rpc(name, args) {
+      assert.equal(name, 'hbnf_save_league_state_v1');
+      writes++;
+      if (hooks.beforeWrite) await hooks.beforeWrite({ get: () => clone(row), set: value => { row = clone(value); } });
+      if (hooks.writeError) return { data: null, error: { message: 'denied' } };
+      if (args.p_expected_updated_at !== row.updated_at) return { data: [], error: null };
+      row = { id: 1, state_json: clone(args.p_state_json), updated_at: hooks.serverRevisionAtAck || new Date(Date.parse(row.updated_at) + 1).toISOString() };
+      if (hooks.badAck) return { data: [{ ...clone(row), state_json: { corrupted: true } }], error: null };
+      return { data: [clone(row)], error: null };
+    },
+  };
   return { client, get: () => clone(row), set: value => { row = clone(value); }, counts: () => ({ reads, writes }) };
 }
 const initialRoot = () => ({ skins: { weeks: { '2099-01-06': { front: { winners: { 1: 'Mason' } } } } }, glow: { weeks: {} }, admin: { backups: [] }, random: { weeks: {} }, skills: { weeks: {} }, bagTags: { players: [] }, __backups: [] });

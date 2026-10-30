@@ -155,13 +155,14 @@
           throw error;
         }
       }
-      const currentMs = Date.parse(current.revision), currentRevisionMicros = revisionMicros(current.revision), nowMs = Date.now();
-      const sentAt = new Date(Math.max(nowMs, currentMs + 1)).toISOString();
-      const response = await client.from('league_state')
-        .update({ state_json: result.root, updated_at: sentAt })
-        .eq('id', 1)
-        .eq('updated_at', current.revision)
-        .select('id,state_json,updated_at');
+      const currentRevisionMicros = revisionMicros(current.revision);
+      // The anonymous Data API no longer accepts direct table writes after
+      // cutover. This revision-guarded RPC keeps scoring login-free while
+      // rejecting stale clients that still issue unconditional table upserts.
+      const response = await client.rpc('hbnf_save_league_state_v1', {
+        p_expected_updated_at: current.revision,
+        p_state_json: result.root,
+      });
       if (response.error) throw new Error('Cloud save failed; local edits were retained. ' + response.error.message);
       if (!Array.isArray(response.data) || response.data.length === 0) continue;
       if (response.data.length !== 1) throw new Error('Cloud acknowledgment was ambiguous; local edits were retained.');
