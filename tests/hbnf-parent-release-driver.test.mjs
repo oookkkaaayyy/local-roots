@@ -139,8 +139,8 @@ test('authenticated provider adapter reads the five exact production target type
   const calls=[];
   const functionRows=['hbnf-tag-editor','hbnf-tags-live','hbnf-watch-score'].map((slug,i)=>({slug,status:'ACTIVE',version:[5,4,14][i],ezbr_sha256:`sha-${i}`,verify_jwt:false,updated_at:'2026-10-30T00:00:00Z'}));
   const replies=[
-    {result:{id:'dep',versions:[{version_id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',percentage:100}]}},
-    {result:[{id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',number:343,source:{hash:'source'}}]},
+    {result:{deployments:[{id:'dep',versions:[{version_id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',percentage:100}]}]}},
+    {result:{items:[{id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',number:343,metadata:{source:'wrangler'}}]}},
     {result:[{pattern:'hbnightflyers.com',script:'hbnf'}]},
     {id:'phcpbvuqibyarpfrftgx',status:'ACTIVE_HEALTHY',region:'us-west-2'},
     functionRows,
@@ -150,6 +150,9 @@ test('authenticated provider adapter reads the five exact production target type
   const targets=await adapter.readAllTargets();
   assert.deepEqual(Object.keys(targets).sort(),targetIds.slice().sort());
   assert.equal(targets['cloudflare-worker'].activeVersionId,'3b019c24-0288-4c0d-bcc2-46cb6028d0f6');
+  assert.equal(targets['cloudflare-worker'].deploymentId,'dep');
+  assert(calls.some(c=>c.url.endsWith('/workers/scripts/hbnf/deployments')));
+  assert(calls.some(c=>c.url.endsWith('/workers/scripts/hbnf/versions')));
   assert.equal(targets['cloudflare-worker'].retainedRollbackVersionId,'3b019c24-0288-4c0d-bcc2-46cb6028d0f6');
   assert.equal(targets['edge-watch-score'].version,14);
   assert(calls.every(c=>c.auth?.startsWith('Bearer ')));
