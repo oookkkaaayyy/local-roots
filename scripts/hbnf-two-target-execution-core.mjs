@@ -50,6 +50,8 @@ export function verifyExistingAuthority({manifest, parent, admissionClaim, decis
 }
 function cfBaseline(c) {
   if (c?.worker !== 'hbnf' || c.versionId !== RELEASE.baseline || c.percentage !== 100 || c.rollbackRetained !== true || c.pollingDisabled !== true) bad('Cloudflare live baseline/rollback/disabled-poll mismatch');
+  if (c.cronRemoved !== true || c.assetHashUnavailable !== true || c.staticAssetsOnly !== true) bad('Cloudflare Cron/static-only baseline evidence is missing; installed asset hash remains unavailable');
+  if (c.glowRouteCovered !== true) bad('the admitted HBNF Worker does not own the Glow page and helper routes');
 }
 function dbBaseline(s) {
   if (s?.projectId !== RELEASE.database || s.tableExists !== true || s.rlsEnabled !== true || !Array.isArray(s.migrations) || s.migrations.length !== 0) bad('Supabase live baseline/migration mismatch');
@@ -64,7 +66,7 @@ function dbBaseline(s) {
 async function roundTrip(store, name, value) {
   const data=json(value);
   const x=await store.putOnce(name,data);
-  if (!x?.id || x.exclusive !== true) bad(`${name} not durably stored with unique, exclusive identity`);
+  if (!x?.id || x.durable !== true) bad(`${name} not durably stored in the approved provider`);
   if (!Buffer.from(await store.download(x.id)).equals(data)) bad(`${name} independent remote download-back mismatch`);
   return { id:x.id,sha256:digest(data),bytes:data.length };
 }
@@ -107,11 +109,16 @@ export async function runAdmittedHbnfExecution({evidence,providers,storage,execu
       if(observed.projectId!==RELEASE.database || !observed.migrations?.includes(name.replace(/\.sql$/,''))) bad(`migration ${name} did not appear in provider readback`);
     }
     await providers.supabase.verifyInstalled({migrations:RELEASE.migrations.map(([n])=>n),legacyGrants:true,unrelatedDataPreserved:true});
+    // The Worker target is re-read after database installation and directly
+    // before the second target is mutated; a drift leaves only additive DB
+    // migrations and is recorded as a partial installation.
+    const workerPreflight=await providers.cloudflare.read();
+    if(workerPreflight.versionId!==first.cloudflare.versionId||workerPreflight.percentage!==100||workerPreflight.rollbackRetained!==true||workerPreflight.pollingDisabled!==true||workerPreflight.cronRemoved!==true||workerPreflight.assetHashUnavailable!==true||workerPreflight.staticAssetsOnly!==true||workerPreflight.glowRouteCovered!==true) bad('Cloudflare target changed or baseline/Cron/Glow-route evidence is missing after database migrations; aborting Worker deployment');
     workerMutated=true; // armed before remote request: provider may mutate then time out
     const deployed=await providers.cloudflare.deployExact({zip:evidence.candidate,sha256:RELEASE.candidate,keepPollingDisabled:true});
     if(!deployed?.versionId) bad('Worker deployment did not return a full version identity');
     const actual=await providers.cloudflare.read();
-    if(actual.versionId!==deployed.versionId || actual.percentage!==100 || actual.pollingDisabled!==true || actual.rollbackRetained!==true) bad('Worker deployment/readback or disabled polling mismatch');
+    if(actual.versionId!==deployed.versionId || actual.percentage!==100 || actual.pollingDisabled!==true || actual.rollbackRetained!==true || actual.glowRouteCovered!==true) bad('Worker deployment/readback, Glow route ownership, or disabled polling mismatch');
     await providers.cloudflare.verifyDeployed({versionId:deployed.versionId,expectedAssetDelta:{same:43,modified:['glow.html'],added:['glow-save-sync.mjs','league-state-cas.mjs']},legacyReadOnly:true});
     const closeout={format:'hbnf-two-target-closeout-v1',...identity,executionLockId:lock.id,workerVersionId:deployed.versionId,dbMigrations:RELEASE.migrations.map(([n])=>n),pollingDisabled:true,status:'INSTALLED_CLOSEOUT_PASS',recordedUtc:clock()};
     const receipt=await roundTrip(storage,`${RELEASE.id}.closeout.json`,closeout);

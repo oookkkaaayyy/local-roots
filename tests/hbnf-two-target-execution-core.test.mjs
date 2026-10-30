@@ -25,7 +25,7 @@ function make(overrides={}){
  const state={applied:[],version:RELEASE.baseline,cronRemoved:false,claimed:false,events:[],dataChanged:false};
  const files=new Map();let executionBytes;
  const storage={
-   async putOnce(name,bytes){state.events.push(`drive:${name}`);if(overrides.failCloseout&&name.endsWith('.closeout.json'))throw Error('remote Drive down');if(files.has(name))throw Error('Drive duplicate');files.set(name,Buffer.from(bytes));return{id:name,exclusive:true};},
+   async putOnce(name,bytes){state.events.push(`drive:${name}`);if(overrides.failCloseout&&name.endsWith('.closeout.json'))throw Error('remote Drive down');if(files.has(name))throw Error('Drive duplicate');files.set(name,Buffer.from(bytes));return{id:name,durable:true};},
    async download(id){return Buffer.from(files.get(id)||'');},
  };
  const executionLock={
@@ -33,7 +33,7 @@ function make(overrides={}){
    async read(){return Buffer.from(executionBytes||'');},
  };
  const cloudflare={
-   async read(){state.events.push('cloudflare:read');return {worker:'hbnf',versionId:overrides.badBaseline&&state.version===RELEASE.baseline?'not-the-baseline':state.version,percentage:100,rollbackRetained:true,pollingDisabled:true,cronRemoved:state.cronRemoved};},
+   async read(){state.events.push('cloudflare:read');return {worker:'hbnf',versionId:overrides.badBaseline&&state.version===RELEASE.baseline?'not-the-baseline':state.version,percentage:100,rollbackRetained:true,pollingDisabled:true,cronRemoved:state.version===RELEASE.baseline?true:state.cronRemoved,assetHashUnavailable:true,staticAssetsOnly:true,glowRouteCovered:true};},
    async deployExact(){state.events.push('cloudflare:deploy');state.version='11111111-2222-4333-8444-555555555555';if(overrides.failDeploy)throw Error('timeout after Worker mutation');return{versionId:state.version};},
    async restoreV343({removeCron}){state.events.push('cloudflare:restore');assert.equal(removeCron,true);state.version=RELEASE.baseline;state.cronRemoved=true;},
    async verifyDeployed(){state.events.push('cloudflare:verify');if(overrides.failVerify)throw Error('worker assets wrong');},
@@ -57,6 +57,12 @@ test('unwritable Mac Wrangler log prevents any claim or provider mutation',async
 });
 test('provider baseline drift prevents claim',async()=>{
  const f=make({badBaseline:true});await assert.rejects(()=>runAdmittedHbnfExecution(f.options),/Cloudflare live baseline/);assert.equal(f.state.claimed,false);
+});
+test('missing Worker route to the live Glow page blocks before execution claim or migration',async()=>{
+ const f=make();const read=f.options.providers.cloudflare.read.bind(f.options.providers.cloudflare);
+ f.options.providers.cloudflare.read=async()=>({...await read(),glowRouteCovered:false});
+ await assert.rejects(()=>runAdmittedHbnfExecution(f.options),/does not own the Glow page/);
+ assert.equal(f.state.claimed,false);assert.equal(f.state.applied.length,0);
 });
 test('replayed execution claim fails before production mutation',async()=>{
  const f=make({replay:true});await assert.rejects(()=>runAdmittedHbnfExecution(f.options),/replayed, nonexclusive/);assert.equal(f.state.events.filter(x=>x.includes(':apply:')).length,0);
