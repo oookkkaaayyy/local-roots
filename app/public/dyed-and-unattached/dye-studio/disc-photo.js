@@ -143,8 +143,14 @@ function estimatePixels(imageData,options={}){
  const confidence=edgeFound&&consistent?"good":"check";
  const appearance=edgeFound?estimateRim(data,w,h,disc):null;
  const plateHex=hex(rgb);
+ // A stable median can still have no recoverable hue when camera white
+ // balance or warm illumination has collapsed a pastel toward neutral.
+ // This is a visibility check, not color accuracy or a calibrated confidence.
+ const channelRange=Math.max(...rgb)-Math.min(...rgb);
+ const hueConfidence=channelRange>=18?"visible":"insufficient";
+ const colorStatus=!edgeFound||severeMixedColor?"unreliable":(!consistent||hueConfidence==="insufficient"?"uncertain":"estimate");
  return {hex:plateHex,rgb:rgb.map(x=>Math.round(x)),confidence:severeMixedColor?"check":confidence,appearance,severeMixedColor,
-   localizationConfidence:edgeFound?(disc.support>=.85&&disc.edge>=30?"good":"check"):"low",plateConfidence:severeMixedColor?"low":confidence,rimConfidence:appearance?"check":"low",
+   localizationConfidence:edgeFound?(disc.support>=.85&&disc.edge>=30?"good":"check"):"low",plateConfidence:severeMixedColor?"low":confidence,rimConfidence:appearance?"check":"low",hueConfidence,colorStatus,
    edgeDetected:edgeFound,spread:Math.round(spread),outlierFraction:+outliers.toFixed(2),
    pixelCount:samples.length};
 }
@@ -207,7 +213,13 @@ function bind(){
   syncControls();
  }
  window.DUDiscPhoto.syncControls=syncControls;
- if(suggestedColor)suggestedColor.addEventListener("input",()=>{document.getElementById("photoColorChip").style.backgroundColor=suggestedColor.value});
+ if(suggestedColor)suggestedColor.addEventListener("input",()=>{
+  document.getElementById("photoColorChip").style.backgroundColor=suggestedColor.value;
+  if(!pending)return;
+  const changed=suggestedColor.value.toUpperCase()!==pending.hex.toUpperCase();
+  if(applySuggestion)applySuggestion.textContent=changed?"Apply adjusted color":"Apply suggested color";
+  status.textContent=changed?"Adjusted starting color "+suggestedColor.value.toUpperCase()+". The photo hue remains uncertain; your current work is unchanged until you apply this color.":"Uncertain photo color "+pending.hex+". Adjust the swatch to the known blank color before applying. Your current work is unchanged.";
+ });
  let pending=null;
  if(keepSuggestion)keepSuggestion.addEventListener("click",()=>{
    pending=null;if(applySuggestion)applySuggestion.hidden=true;keepSuggestion.hidden=true;if(suggestedColorLabel)suggestedColorLabel.hidden=true;
@@ -234,9 +246,10 @@ function bind(){
      if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
      pending=result;if(applySuggestion)applySuggestion.hidden=false;if(keepSuggestion)keepSuggestion.hidden=false;
      if(suggestedColor){suggestedColor.value=result.hex;if(suggestedColorLabel)suggestedColorLabel.hidden=false}
+     if(applySuggestion)applySuggestion.textContent="Apply suggested color";
      if(result.appearance){rimColor.value=result.appearance.rimHex;rimWidth.value=String(Math.round((1-result.appearance.boundary)*100));rimSoftness.value=String(Math.round(result.appearance.softness*100))}
-     const certainty=result.plateConfidence==="good"?"Check the swatch against the blank plastic; lighting can shift it.":"The color is uncertain in this lighting. Adjust the swatch to match a clean plastic area before applying.";
-     const summary="Suggested starting color "+result.hex+". "+certainty+" Your current work is unchanged. "+(result.appearance?"A possible rim is only a suggestion; select Different rim color to use it.":"No separate rim was confirmed.");
+     const certainty=result.colorStatus==="uncertain"?"Hue is unclear in this photo; warm or colored light can hide a pale tint. Adjust the swatch to the known blank color before applying.":"Photo colors are uncalibrated; compare the estimate with the blank before applying.";
+     const summary=(result.colorStatus==="uncertain"?"Uncertain photo color ":"Photo color estimate ")+result.hex+". "+certainty+" Your current work is unchanged. "+(result.appearance?"A possible rim is only a suggestion; select Different rim color to use it.":"No separate rim was confirmed.");
      status.textContent=summary;
      status.className="photo-status photo-check";
      document.getElementById("photoColorChip").style.backgroundColor=result.hex;

@@ -1185,11 +1185,35 @@ test('photo suggestion keeps edits until accepted or explicitly retained',async(
  assert.ok(suggestion&&suggestion!=='#123456','a new estimate is available to review');
  assert.equal(get('photoSuggestedColor').value,suggestion,'suggested color can be inspected or corrected');
  get('photoSuggestedColor').value='#B4D2F2';await get('photoSuggestedColor').fire('input');
+ assert.match(get('photoColorStatus').textContent,/Adjusted starting color #B4D2F2/);
+ assert.equal(apply.textContent,'Apply adjusted color');
  await apply.click();
  assert.equal(get('baseHex').value,'#B4D2F2','the user correction is applied only after confirmation');
  assert.deepEqual(appearanceCalls,[[null,false,true]],'accepting photo clears any unconfirmed rim hypothesis');
  assert.equal(autoCommits,1,'accepted color follows the existing single project commit path');
  assert.equal(apply.hidden,true);assert.equal(keep.hidden,true);
+});
+test('photo confidence abstains when a stable plate has no recoverable hue',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const win={},doc={readyState:'loading',addEventListener(){}};
+ Function('window','document',photo)(win,doc);
+ const estimate=win.DUDiscPhoto.estimatePixels;
+ function scene(plate){
+  const width=280,height=280,data=new Uint8ClampedArray(width*height*4);
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+   const inside=Math.hypot(x-140,y-140)<105,rgb=inside?plate:[38,29,23],i=(y*width+x)*4;
+   data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];data[i+3]=255;
+  }
+  return estimate({data,width,height});
+ }
+ const warmNeutral=scene([150,146,142]),clearBlue=scene([153,190,232]);
+ assert.equal(warmNeutral.edgeDetected,true,'location is distinct from hue identifiability');
+ assert.equal(warmNeutral.hueConfidence,'insufficient','near-neutral captured pixels cannot justify a blue claim');
+ assert.equal(warmNeutral.colorStatus,'uncertain','the app must disclose recoverable color uncertainty');
+ assert.equal(clearBlue.hueConfidence,'visible','a clear chromatic signal remains available');
+ assert.equal(clearBlue.colorStatus,'estimate');
+ assert.match(photo,/Hue is unclear in this photo/,'uncertainty is presented before acceptance');
+ // Synthetic values exercise thresholds only; they are not physical RGB truth.
 });
 test('original-photo import retries the image-element decoder on bitmap failure and cleans up',async()=>{
  const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
