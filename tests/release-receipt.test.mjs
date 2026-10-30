@@ -103,6 +103,21 @@ test('candidate packager hashes every build file into the exact archived ZIP', a
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
+test('PR #159 candidate packaging binds the manifest and artifact name to the exact PR head', async () => {
+  const workflow = await readFile(path.resolve('.github/workflows/ci.yml'), 'utf8');
+  const start = workflow.indexOf('name: Package exact PR #159 photo workflow build for release evidence');
+  const end = workflow.indexOf('\n      - name:', start + 1);
+  assert.ok(start >= 0 && end > start);
+  const packaging = workflow.slice(start, end);
+  assert.match(packaging, /\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
+  assert.doesNotMatch(packaging, /\$GITHUB_SHA|\$\{\{ github\.sha \}\}/,
+    'synthetic pull-request merge SHA must not be recorded as the candidate source');
+  const artifactStart = workflow.indexOf('name: Retain PR #159 candidate archive and manifest');
+  const artifactEnd = workflow.indexOf('\n      - name:', artifactStart + 1);
+  const artifact = workflow.slice(artifactStart, artifactEnd < 0 ? workflow.length : artifactEnd);
+  assert.match(artifact, /dye-photo-pr159-candidate-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
+});
+
 async function nativeRollbackFixture() {
   const f = await fixture();
   const providerRecord = {

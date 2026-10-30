@@ -78,13 +78,13 @@ jobs:
 
       - name: Package exact PR #159 photo workflow build for release evidence
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 159
-        run: node scripts/package-dye-studio-candidate.mjs app/dist release-capsule "$GITHUB_SHA" 159
+        run: node scripts/package-dye-studio-candidate.mjs app/dist release-capsule "${{ github.event.pull_request.head.sha }}" 159
 
       - name: Retain PR #159 candidate archive and manifest
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 159
         uses: actions/upload-artifact@v4
         with:
-          name: dye-photo-pr159-candidate-${{ github.sha }}
+          name: dye-photo-pr159-candidate-${{ github.event.pull_request.head.sha }}
           path: release-capsule/
           if-no-files-found: error
           retention-days: 7
