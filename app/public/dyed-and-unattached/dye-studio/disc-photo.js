@@ -144,7 +144,7 @@ function estimatePixels(imageData,options={}){
  const appearance=edgeFound?estimateRim(data,w,h,disc):null;
  const plateHex=hex(rgb);
  return {hex:plateHex,rgb:rgb.map(x=>Math.round(x)),confidence:severeMixedColor?"check":confidence,appearance,severeMixedColor,
-   localizationConfidence:edgeFound?"check":"low",plateConfidence:severeMixedColor?"low":confidence,rimConfidence:appearance?.confidence||"low",
+   localizationConfidence:edgeFound?(disc.support>=.85&&disc.edge>=30?"good":"check"):"low",plateConfidence:severeMixedColor?"low":confidence,rimConfidence:appearance?"check":"low",
    edgeDetected:edgeFound,spread:Math.round(spread),outlierFraction:+outliers.toFixed(2),
    pixelCount:samples.length};
 }
@@ -185,7 +185,7 @@ function bind(){
  if(!camera||!library||!status)return;
  const rimPanel=document.getElementById("photoRimPanel"),rimOn=document.getElementById("photoRimEnabled"),
   rimColor=document.getElementById("photoRimColor"),rimWidth=document.getElementById("photoRimWidth"),
-  rimSoftness=document.getElementById("photoRimSoftness"),applySuggestion=document.getElementById("applyPhotoSuggestion"),keepSuggestion=document.getElementById("keepPhotoCurrent");
+  rimSoftness=document.getElementById("photoRimSoftness"),applySuggestion=document.getElementById("applyPhotoSuggestion"),keepSuggestion=document.getElementById("keepPhotoCurrent"),suggestedColor=document.getElementById("photoSuggestedColor"),suggestedColorLabel=document.getElementById("photoSuggestedColorLabel");
  for(const [button,input] of [["takeDiscPhoto",camera],["chooseDiscPhoto",library]]){
    document.getElementById(button).addEventListener("click",()=>input.click());
  }
@@ -207,39 +207,42 @@ function bind(){
   syncControls();
  }
  window.DUDiscPhoto.syncControls=syncControls;
+ if(suggestedColor)suggestedColor.addEventListener("input",()=>{document.getElementById("photoColorChip").style.backgroundColor=suggestedColor.value});
  let pending=null;
  if(keepSuggestion)keepSuggestion.addEventListener("click",()=>{
-   pending=null;if(applySuggestion)applySuggestion.hidden=true;keepSuggestion.hidden=true;
+   pending=null;if(applySuggestion)applySuggestion.hidden=true;keepSuggestion.hidden=true;if(suggestedColorLabel)suggestedColorLabel.hidden=true;
    status.textContent="Kept your current disc appearance and edits.";status.className="photo-status";
  });
  if(applySuggestion)applySuggestion.addEventListener("click",()=>{
    if(!pending)return;
-   const result=pending,color=document.getElementById("baseColor"),field=document.getElementById("baseHex");
-   color.value=result.hex;field.value=result.hex;color.dispatchEvent(new Event("input",{bubbles:true}));
+   const result=pending,acceptedHex=suggestedColor?.value||result.hex,color=document.getElementById("baseColor"),field=document.getElementById("baseHex");
+   color.value=acceptedHex;field.value=acceptedHex;color.dispatchEvent(new Event("input",{bubbles:true}));
    window.DUDiscAppearance?.set?.(null,false,true);syncControls();
    document.getElementById("autoTransmission").click();
-   status.textContent="Starting color applied: "+result.hex+". Review it against the blank disc; photo color is not calibrated.";
+   status.textContent="Starting color applied: "+acceptedHex+". Review it against the blank disc; photo color is not calibrated.";
    status.className="photo-status photo-check";pending=null;applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;
-   document.getElementById("photoColorChip").style.backgroundColor=result.hex;
+   document.getElementById("photoColorChip").style.backgroundColor=acceptedHex;
  });
  async function apply(event){
    const input=event.currentTarget,file=input.files&&input.files[0];
    if(!file)return;
-   pending=null;if(applySuggestion)applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;
+   pending=null;if(applySuggestion)applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;if(suggestedColorLabel)suggestedColorLabel.hidden=true;
    status.textContent="Reading disc color…";status.className="photo-status";
    try{
      const result=await analyzeImage(file);
      if(result.severeMixedColor)throw Error("Photo contains strongly mixed colors or multiple discs. Crop to a single undyed disc and retry; the selected color was not changed.");
      if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
      pending=result;if(applySuggestion)applySuggestion.hidden=false;if(keepSuggestion)keepSuggestion.hidden=false;
+     if(suggestedColor){suggestedColor.value=result.hex;if(suggestedColorLabel)suggestedColorLabel.hidden=false}
      if(result.appearance){rimColor.value=result.appearance.rimHex;rimWidth.value=String(Math.round((1-result.appearance.boundary)*100));rimSoftness.value=String(Math.round(result.appearance.softness*100))}
-     const summary="Suggested starting color "+result.hex+". Review it before applying; your current work is unchanged. "+(result.appearance?"A possible rim is only a suggestion; select Different rim color to use it.":"No separate rim was confirmed.");
+     const certainty=result.plateConfidence==="good"?"Check the swatch against the blank plastic; lighting can shift it.":"The color is uncertain in this lighting. Adjust the swatch to match a clean plastic area before applying.";
+     const summary="Suggested starting color "+result.hex+". "+certainty+" Your current work is unchanged. "+(result.appearance?"A possible rim is only a suggestion; select Different rim color to use it.":"No separate rim was confirmed.");
      status.textContent=summary;
      status.className="photo-status photo-check";
      document.getElementById("photoColorChip").style.backgroundColor=result.hex;
      document.getElementById("photoColorChip").hidden=false;
    }catch(error){
-     pending=null;if(applySuggestion)applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;
+     pending=null;if(applySuggestion)applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;if(suggestedColorLabel)suggestedColorLabel.hidden=true;
      status.className="photo-status photo-check";
      status.textContent=error&&error.message?error.message:"Couldn't read the photo. Set color manually or try another photo.";
    }finally{input.value="";}
