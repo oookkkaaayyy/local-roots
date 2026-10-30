@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261019-unified-1">
 <link rel="icon" type="image/png" sizes="32x32" href="/hbnf-favicon-32.png?v=20261019-unified-1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script><script>(function(){var fb={SUPABASE_URL:"https://phcpbvuqibyarpfrftgx.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC"};function ok(c){return !!(c&&c.SUPABASE_URL&&c.SUPABASE_ANON_KEY&&!String(c.SUPABASE_URL).includes('PASTE_')&&!String(c.SUPABASE_ANON_KEY).includes('PASTE_'));}window.HBNF_SUPABASE_FALLBACK=fb;if(!ok(window.APP_CONFIG))window.APP_CONFIG=fb;if(!window.SUPABASE_URL)window.SUPABASE_URL=fb.SUPABASE_URL;if(!window.SUPABASE_ANON_KEY)window.SUPABASE_ANON_KEY=fb.SUPABASE_ANON_KEY;})();</script>
+<script src="config.js"></script><script src="hbnf-league-state-sync.js?v=20261030-revision-order"></script><script>(function(){var fb={SUPABASE_URL:"https://phcpbvuqibyarpfrftgx.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC"};function ok(c){return !!(c&&c.SUPABASE_URL&&c.SUPABASE_ANON_KEY&&!String(c.SUPABASE_URL).includes('PASTE_')&&!String(c.SUPABASE_ANON_KEY).includes('PASTE_'));}window.HBNF_SUPABASE_FALLBACK=fb;if(!ok(window.APP_CONFIG))window.APP_CONFIG=fb;if(!window.SUPABASE_URL)window.SUPABASE_URL=fb.SUPABASE_URL;if(!window.SUPABASE_ANON_KEY)window.SUPABASE_ANON_KEY=fb.SUPABASE_ANON_KEY;})();</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@700;800&family=Unbounded:wght@500;700&display=swap');
 :root{--bg:#031006;--card:#0b1710;--card2:#102216;--line:#255d31;--text:#ecffea;--muted:#a8dca8;--bright:#d8ff88;--warn:#ffce56;--danger:#ff6f7d;--shadow:0 0 18px rgba(57,255,20,.18),0 0 42px rgba(57,255,20,.08)}
@@ -1196,7 +1196,7 @@ table.dash-table:not(.scorecard-table) .money{color:var(--h5-green-soft,var(--br
 <link rel="manifest" href="/hbnf-main-manifest.webmanifest?v=20261019-unified-1">
 </head>
 <body><div class="aurora"></div><div class="site-shell">
-<header class="site-header"><a class="brand-wrap" id="homeLogoLink" href="/" aria-label="Return to HB Night Flyers home"><img class="brand-logo" src="/hbnf-bone-ink-logo.png?v=20261018-bone-ink-1" alt="HB Night Flyers logo"><div><h1 class="brand-title">HB Night Flyers</h1><p class="tagline">Tuesday Skins</p></div></a><div class="top-tools"><label class="week-tool">Week<select id="weekSelect"></select></label><div class="header-tools-menu"><button type="button" class="tools-menu-button" aria-expanded="false" aria-label="More options">⌄</button><div class="tools-menu-panel"><label class="history-tool">History<select id="historySelect" class="history-select"><option value="">History</option><option value="random.html">Random Doubles Putting League</option><option value="skills.html">Singles Skills Challenge</option></select></label><span class="pill" id="syncStatus">Local only</span><a class="btn ecosystem-menu-link" href="https://localrootsdg.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Local Roots in a new tab">Local Roots</a><a class="btn matrix-link" href="matrix.html">Matrix</a><a class="btn admin-link" href="admin.html">Admin</a></div></div></div></header><div id="syncAlert" class="hbnf-sync-alert" role="status" aria-live="polite" hidden></div>
+<header class="site-header"><a class="brand-wrap" id="homeLogoLink" href="/" aria-label="Return to HB Night Flyers home"><img class="brand-logo" src="/hbnf-bone-ink-logo.png?v=20261018-bone-ink-1" alt="HB Night Flyers logo"><div><h1 class="brand-title">HB Night Flyers</h1><p class="tagline">Tuesday Skins</p></div></a><div class="top-tools"><label class="week-tool">Week<select id="weekSelect"></select></label><div class="header-tools-menu"><button type="button" class="tools-menu-button" aria-expanded="false" aria-label="More options">⌄</button><div class="tools-menu-panel"><label class="history-tool">History<select id="historySelect" class="history-select"><option value="">History</option><option value="random.html">Random Doubles Putting League</option><option value="skills.html">Singles Skills Challenge</option></select></label><span class="pill" id="syncStatus" role="status" aria-live="polite">Local only</span><a class="btn ecosystem-menu-link" href="https://localrootsdg.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Local Roots in a new tab">Local Roots</a><a class="btn matrix-link" href="matrix.html">Matrix</a><a class="btn admin-link" href="admin.html">Admin</a></div></div></div></header><div id="syncAlert" class="hbnf-sync-alert" role="status" aria-live="polite" hidden></div>
 <main class="main-wrap"><div class="main-inner"><div class="mobile-page-switch"><label>View<select id="mobilePageSelect" aria-label="Choose Skins page"><option value="dashboard">Dashboard</option><option value="setup">Setup</option><option value="scorecards">Scorecards</option><option value="standings">Standings</option></select></label></div><div class="nav-row"><button class="nav-btn active" data-page="dashboard">Dashboard</button><button class="nav-btn" data-page="setup">Setup</button><button class="nav-btn" data-page="scorecards">Scorecards</button><button class="nav-btn" data-page="standings">Standings</button></div>
 <section id="dashboard" class="page active hbnf-dashboard">
  <div class="dash-hero"><div><h2 class="dash-title">Tuesday Skins</h2><p class="dash-subtitle">Front 9 singles. Back 9 doubles.</p></div><div class="dash-status"><strong><span class="dash-dot"></span> League Active</strong><small id="skinsDashWeek">Loading week…</small></div></div>
@@ -1276,37 +1276,42 @@ function makeSyncHelpers(ctx){return{
   const cfg=getConfiguredSupabase();
   if(!cfg){hbnfSetSyncStatus(ctx.localDirty?'Pending — offline; edits retained on this device.':'Local only');return}
   if(!window.supabase||!window.supabase.createClient){hbnfSetSyncStatus(ctx.localDirty?'Pending — cloud library unavailable; edits retained.':'Supabase load failed');return}
-  ctx.startupBranchHash=ctx.pendingBaseHash||hbnfSyncHash(ctx.state);
+  ctx.startupBranchHash=ctx.pendingBaseHash||hbnfSemanticHash(ctx.state);
   ctx.supabaseClient=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
   hbnfSetSyncStatus('Connecting…');
   ctx.syncBaselineReady=false;
   ctx.syncBaselinePromise=this.pullRoot();
   await ctx.syncBaselinePromise;
   ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live').on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
+   // Realtime delivery can lag the HTTP ACK/GET. Ignore an older or already
+   // confirmed revision so a delayed echo cannot mark this page conflicted.
+   const incomingRevision=String(payload.new&&payload.new.updated_at||'');
+   if(incomingRevision&&ctx.lastRemoteRevision&&HBNFLeagueStateSync.revisionAtOrBefore(incomingRevision,ctx.lastRemoteRevision))return;
    const incoming=(payload.new&&payload.new.state_json)||{};
-   const incomingRootHash=hbnfSyncHash(incoming);
+   const incomingRootHash=hbnfSemanticHash(incoming);
    if(incomingRootHash&&incomingRootHash===ctx.lastRemoteRootHash)return;
-   const incomingBranchHash=hbnfSyncHash(incoming&&incoming[ctx.branch]);
+   const incomingBranchHash=hbnfSemanticHash(incoming&&incoming[ctx.branch]);
    const remoteBranch=incoming&&incoming[ctx.branch];
    if(ctx.localDirty){
     if(ctx.syncing&&incomingBranchHash&&incomingBranchHash===ctx.inFlightBranchHash){
-     ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;
-     if(incomingBranchHash===hbnfSyncHash(ctx.state)){ctx.localDirty=true;ctx.pendingPush=true;hbnfSetSyncStatus('Pending — waiting for independent cloud readback.')}
+     ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;ctx.lastRemoteRevision=incomingRevision;
+     if(incomingBranchHash===hbnfSemanticHash(ctx.state)){ctx.localDirty=true;ctx.pendingPush=true;hbnfSetSyncStatus('Pending — waiting for independent cloud readback.')}
      else{ctx.localDirty=true;ctx.pendingPush=true;hbnfSetSyncStatus('Pending — newer edits are waiting to save.')}
      return
     }
     if(ctx.lastRemoteBranchHash&&incomingBranchHash!==ctx.lastRemoteBranchHash){
      ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return
     }
-    ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;return
+    ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteRevision=incomingRevision;return
    }
-   const beforeBranchHash=hbnfSyncHash(ctx.state);
+   const beforeBranchHash=hbnfSemanticHash(ctx.state);
    ctx.rootState=incoming||{};
    ctx.lastRemoteRootHash=incomingRootHash;
    ctx.lastRemoteBranchHash=incomingBranchHash;
+   ctx.lastRemoteRevision=incomingRevision;
    // Normalize a COPY: normalization rewrites week objects, which must not change the cloud revision fingerprint.
    const authoritative=ctx.normalize?ctx.normalize(hbnfSyncClone(remoteBranch)):hbnfSyncClone(remoteBranch);
-   const afterBranchHash=hbnfSyncHash(authoritative);
+   const afterBranchHash=hbnfSemanticHash(authoritative);
    if(afterBranchHash===beforeBranchHash)return;
    ctx.state=authoritative;
    ctx.remoteSyncing=true;saveLocal();ctx.remoteSyncing=false;
@@ -1315,6 +1320,7 @@ function makeSyncHelpers(ctx){return{
    if(status==='SUBSCRIBED'){if(ctx.lastSyncError)hbnfSetSyncStatus('Cloud unavailable — pending local draft retained.');else if(ctx.remoteConflictPending)hbnfSetSyncStatus(ctx.legacyUnconfirmed?'Review needed — older scorecard data preserved on this device, not uploaded.':'Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');}
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')hbnfSetSyncStatus('Sync reconnecting…');
   });
+  window.addEventListener('online',()=>{if(ctx.supabaseClient)ctx.syncBaselinePromise=ctx.pullRoot()});
   if(ctx.lastSyncError)hbnfSetSyncStatus('Cloud unavailable — pending local draft retained.');else if(ctx.remoteConflictPending)hbnfSetSyncStatus(ctx.legacyUnconfirmed?'Review needed — older scorecard data preserved on this device, not uploaded.':'Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');
  },
  async pullRoot(){
@@ -1329,14 +1335,16 @@ function makeSyncHelpers(ctx){return{
    }
    if(!res.data||!res.data.updated_at)throw new Error('Cloud baseline unavailable; local copy retained.');
    const incoming=(res.data&&res.data.state_json)||{};
+   ctx.lastRemoteRevision=res.data.updated_at;
    const remoteBranch=incoming&&incoming[ctx.branch];
    // Normalize a COPY: normalization rewrites week objects, which must not change the cloud revision fingerprint.
    const authoritative=ctx.normalize?ctx.normalize(hbnfSyncClone(remoteBranch)):hbnfSyncClone(remoteBranch);
    const cached=ctx.state?hbnfSyncClone(ctx.state):null;
    const editedWhileBaselinePending=!!ctx.localDirty&&!!(ctx.localEditedBeforeBaseline||ctx.pendingBaseHash!==null);
    const pendingLocalBranch=editedWhileBaselinePending?cached:null;
-   const pendingEditHasAuthoritativeBase=editedWhileBaselinePending&&ctx.startupBranchHash===hbnfSyncHash(remoteBranch);
-   const cachedDiffers=!!cached&&hbnfSyncHash(cached)!==hbnfSyncHash(authoritative);
+   const pendingEditBaseHash=ctx.pendingBaseHash||ctx.startupBranchHash;
+   const pendingEditHasAuthoritativeBase=editedWhileBaselinePending&&(pendingEditBaseHash===hbnfSemanticHash(remoteBranch)||pendingEditBaseHash===hbnfSyncHash(remoteBranch));
+   const cachedDiffers=!!cached&&hbnfSemanticHash(cached)!==hbnfSemanticHash(authoritative);
    // Legacy app edits have no pending marker. If the local cache contains
    // scorecard evidence missing from cloud, quarantine it as a conflict,
    // never silently replace it or auto-push it over someone else's round.
@@ -1344,8 +1352,8 @@ function makeSyncHelpers(ctx){return{
    if(cachedDiffers&&ctx.preserveLocalDraft)ctx.preserveLocalDraft(cached,res.data.updated_at);
    ctx.rootState=incoming||{};
    ctx.syncBaselineReady=true;ctx.lastSyncError=false;
-   ctx.lastRemoteRootHash=hbnfSyncHash(incoming);
-   ctx.lastRemoteBranchHash=hbnfSyncHash(remoteBranch);
+   ctx.lastRemoteRootHash=hbnfSemanticHash(incoming);
+   ctx.lastRemoteBranchHash=hbnfSemanticHash(remoteBranch);
    ctx.state=(editedWhileBaselinePending||legacyUnconfirmed)?cached:authoritative;
    ctx.localDirty=editedWhileBaselinePending||legacyUnconfirmed;
    ctx.localSyncNeedsConfirmation=editedWhileBaselinePending;
@@ -1376,10 +1384,10 @@ function makeSyncHelpers(ctx){return{
    if(cur.error)throw cur.error;
    if(!cur.data||!cur.data.updated_at)throw new Error('Cloud sync needs a current row revision; no data was written.');
    const currentRoot=(cur.data.state_json)||{};
-   const currentBranchHash=hbnfSyncHash(currentRoot&&currentRoot[ctx.branch]);
-   const currentRootHash=hbnfSyncHash(currentRoot);
+   const currentBranchHash=hbnfSemanticHash(currentRoot&&currentRoot[ctx.branch]);
+   const currentRootHash=hbnfSemanticHash(currentRoot);
    if(ctx.lastRemoteBranchHash&&currentBranchHash!==ctx.lastRemoteBranchHash){
-    if(currentBranchHash===hbnfSyncHash(ctx.state)){
+    if(currentBranchHash===hbnfSemanticHash(ctx.state)){
      ctx.rootState=currentRoot;ctx.lastRemoteRootHash=currentRootHash;ctx.lastRemoteBranchHash=currentBranchHash;ctx.localDirty=false;ctx.remoteConflictPending=false;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud');return
     }
     ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return
@@ -1390,18 +1398,18 @@ function makeSyncHelpers(ctx){return{
    if(localBagTags&&(!remoteBagTags||(Number.isFinite(localBagTagStamp)?localBagTagStamp:0)>(Number.isFinite(remoteBagTagStamp)?remoteBagTagStamp:0)))ctx.rootState.bagTags=localBagTags;
    if(Array.isArray(localBackups))ctx.rootState.__backups=localBackups;
    const remoteBranch=currentRoot&&currentRoot[ctx.branch];
-   const saveSnapshot=hbnfSyncClone(ctx.state),saveSnapshotHash=hbnfSyncHash(saveSnapshot);
+   const saveSnapshot=hbnfSyncClone(ctx.state),saveSnapshotHash=hbnfSemanticHash(saveSnapshot);
    ctx.rootState[ctx.branch]=saveSnapshot;
    if(Array.isArray(currentRoot&&currentRoot.__backups)&&Array.isArray(ctx.rootState.__backups)){
     const byId={};[...currentRoot.__backups,...ctx.rootState.__backups].forEach(x=>{if(x&&x.id)byId[x.id]=x});
     ctx.rootState.__backups=Object.values(byId).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,50)
    }else if(Array.isArray(currentRoot&&currentRoot.__backups))ctx.rootState.__backups=currentRoot.__backups;
-   const targetRootHash=hbnfSyncHash(ctx.rootState);
+   const targetRootHash=hbnfSemanticHash(ctx.rootState);
    if(targetRootHash===currentRootHash){
-    ctx.lastRemoteRootHash=currentRootHash;ctx.localDirty=false;ctx.lastRemoteBranchHash=currentBranchHash;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud');return
+    ctx.lastRemoteRootHash=currentRootHash;ctx.localDirty=false;ctx.lastRemoteBranchHash=currentBranchHash;ctx.lastRemoteRevision=cur.data.updated_at;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud');return
    }
    ctx.inFlightBranchHash=saveSnapshotHash;
-   const res=await ctx.supabaseClient.from('league_state').update({state_json:ctx.rootState,updated_at:new Date().toISOString()}).eq('id',1).eq('updated_at',cur.data.updated_at).select('id,state_json,updated_at');
+   const res=await ctx.supabaseClient.rpc('hbnf_save_league_state_v1',{p_expected_updated_at:cur.data.updated_at,p_state_json:ctx.rootState});
    if(res.error)throw res.error;
    if(!Array.isArray(res.data)||res.data.length!==1){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — cloud changed during save; your edits are kept on this device.');return}
    // Use the server-returned JSONB representation for the next CAS comparison. Postgres
@@ -1415,10 +1423,11 @@ function makeSyncHelpers(ctx){return{
       hbnfSemanticHash(ctx.normalize(hbnfSyncClone(readback.data.state_json&&readback.data.state_json[ctx.branch])))!==hbnfSemanticHash(saveSnapshot))
     throw new Error('Cloud save not independently confirmed; local draft retained.');
    ctx.rootState=readback.data.state_json;
-   ctx.lastRemoteRootHash=hbnfSyncHash(readback.data.state_json);
-   ctx.lastRemoteBranchHash=hbnfSyncHash(readback.data.state_json[ctx.branch]);
+   ctx.lastRemoteRootHash=hbnfSemanticHash(readback.data.state_json);
+   ctx.lastRemoteBranchHash=hbnfSemanticHash(readback.data.state_json[ctx.branch]);
+   ctx.lastRemoteRevision=readback.data.updated_at;
    ctx.syncBaselineReady=true;ctx.remoteConflictPending=false;
-   if(hbnfSyncHash(ctx.state)===saveSnapshotHash){ctx.localDirty=false;ctx.localSyncNeedsConfirmation=false;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud')}
+   if(hbnfSemanticHash(ctx.state)===saveSnapshotHash){ctx.localDirty=false;ctx.localSyncNeedsConfirmation=false;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud')}
    else{ctx.localDirty=true;hbnfSetSyncStatus('Pending — newer edits are waiting to save.');ctx.pendingPush=true}
   }catch(err){console.error('Cloud save failed',err);hbnfSetSyncStatus(!hbnfReadPendingDraft()?'Cloud not confirmed; protected draft unavailable — keep page open.':'Cloud not confirmed — pending draft retained on this device.')}
   finally{
@@ -1429,7 +1438,7 @@ function makeSyncHelpers(ctx){return{
  }
 }}
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s)), esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',localDirty:false,localDraftStored:true,pendingMarkerStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,legacyUnconfirmed:false,lastSyncError:false,pendingBaseHash:null,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
+const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',lastRemoteRevision:'',localDirty:false,localDraftStored:true,pendingMarkerStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,legacyUnconfirmed:false,lastSyncError:false,pendingBaseHash:null,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
 // A redundant write-ahead draft survives app termination and a stale startup GET.
 // Never treat a device-only draft as a cloud save. The original cache is left intact.
 const HBNF_PENDING_DRAFT_KEY='hbnf-sync-skins-pending-v1';

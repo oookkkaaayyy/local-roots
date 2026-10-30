@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Singles Skills Challenge</title><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="apple-touch-icon.png"><!-- sync-fix-v3-random-strategy --><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script>(function(){var fb={SUPABASE_URL:"https://phcpbvuqibyarpfrftgx.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC"};function ok(c){return !!(c&&c.SUPABASE_URL&&c.SUPABASE_ANON_KEY&&!String(c.SUPABASE_URL).includes('PASTE_')&&!String(c.SUPABASE_ANON_KEY).includes('PASTE_'));}window.HBNF_SUPABASE_FALLBACK=fb;if(!ok(window.APP_CONFIG))window.APP_CONFIG=fb;if(!window.SUPABASE_URL)window.SUPABASE_URL=fb.SUPABASE_URL;if(!window.SUPABASE_ANON_KEY)window.SUPABASE_ANON_KEY=fb.SUPABASE_ANON_KEY;})();</script><style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@700;800&family=Unbounded:wght@500;700&display=swap');
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Singles Skills Challenge</title><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="apple-touch-icon.png"><!-- sync-fix-v3-random-strategy --><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="hbnf-league-state-sync.js?v=20261029-cas4"></script><script>(function(){var fb={SUPABASE_URL:"https://phcpbvuqibyarpfrftgx.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC"};function ok(c){return !!(c&&c.SUPABASE_URL&&c.SUPABASE_ANON_KEY&&!String(c.SUPABASE_URL).includes('PASTE_')&&!String(c.SUPABASE_ANON_KEY).includes('PASTE_'));}window.HBNF_SUPABASE_FALLBACK=fb;if(!ok(window.APP_CONFIG))window.APP_CONFIG=fb;if(!window.SUPABASE_URL)window.SUPABASE_URL=fb.SUPABASE_URL;if(!window.SUPABASE_ANON_KEY)window.SUPABASE_ANON_KEY=fb.SUPABASE_ANON_KEY;})();</script><style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@700;800&family=Unbounded:wght@500;700&display=swap');
 :root{--bg:#031006;--card:#0b1710;--card2:#102216;--line:#255d31;--text:#ecffea;--muted:#a8dca8;--bright:#d8ff88;--warn:#ffce56;--danger:#ff6f7d;--shadow:0 0 18px rgba(57,255,20,.18),0 0 42px rgba(57,255,20,.08)}
 *{box-sizing:border-box} html,body{margin:0;padding:0;color:var(--text);font-family:'Outfit',system-ui,Arial,sans-serif;background:radial-gradient(circle at 15% 0%, rgba(57,255,20,.18), transparent 24%),radial-gradient(circle at 85% 0%, rgba(216,255,136,.08), transparent 18%),linear-gradient(180deg,#031006 0%, #020804 100%);max-width:100%;overflow-x:hidden} body{min-height:100vh;overflow-x:hidden}
 .aurora{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 20% 10%, rgba(57,255,20,.16), transparent 18%),radial-gradient(circle at 80% 16%, rgba(216,255,136,.08), transparent 16%);filter:blur(16px)}
@@ -497,14 +497,68 @@ function todayLocal(){const d=new Date(),off=d.getTimezoneOffset(),local=new Dat
 function prettyDate(key){if(!key)return'';if(/^\d{4}-\d{2}-\d{2}$/.test(key)){const[y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}return key}
 function getConfiguredSupabase(){const cfg=window.APP_CONFIG||{}; const url=cfg.SUPABASE_URL||window.SUPABASE_URL||window.supabaseUrl||''; const key=cfg.SUPABASE_ANON_KEY||window.SUPABASE_ANON_KEY||window.supabaseAnonKey||''; if(url&&key&&!String(url).includes('PASTE_')&&!String(key).includes('PASTE_')) return {SUPABASE_URL:url,SUPABASE_ANON_KEY:key}; try{ const raw=localStorage.getItem('hbnf-sync-config'); if(raw){ const parsed=JSON.parse(raw); if(parsed && parsed.SUPABASE_URL && parsed.SUPABASE_ANON_KEY) return parsed; } }catch(e){} return null;}
 function makeSyncHelpers(ctx){return{
-  async initSync(){const cfg=getConfiguredSupabase(), statusEl=document.querySelector('#syncStatus'); if(!cfg){if(statusEl)statusEl.textContent='Local only'; return;} if(!window.supabase||!window.supabase.createClient){if(statusEl)statusEl.textContent='Supabase load failed';return;} ctx.supabaseClient=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY); if(statusEl)statusEl.textContent='Connecting…'; await this.pullRoot(); if(ctx.supabaseClient){ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live').on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{const incoming=(payload.new&&payload.new.state_json)||{};ctx.rootState=incoming||{};ctx.state=ctx.normalize(ctx.rootState[ctx.branch]||null);if(!ctx.activeInput)ctx.renderAll();}).subscribe();} if(statusEl)statusEl.textContent='Cloud sync connected';},
-  async pullRoot(){if(!ctx.supabaseClient)return; try{const res=await ctx.supabaseClient.from('league_state').select('state_json').eq('id',1).single(); if(res.error&&!String(res.error.message||'').includes('0 rows'))throw res.error; ctx.rootState=(res.data&&res.data.state_json)||{}; ctx.state=ctx.normalize(ctx.rootState[ctx.branch]||null); if(!ctx.activeInput)ctx.renderAll();}catch(err){const el=document.querySelector('#syncStatus'); if(el)el.textContent='Sync error';}},
-  async pushRoot(){if(!ctx.supabaseClient||ctx.syncing)return; ctx.syncing=true; try{ctx.rootState=ctx.rootState||{}; ctx.rootState[ctx.branch]=ctx.state; const res=await ctx.supabaseClient.from('league_state').upsert({id:1,state_json:ctx.rootState,updated_at:new Date().toISOString()}); if(res.error)throw res.error;}catch(err){const el=document.querySelector('#syncStatus'); if(el)el.textContent='Sync error';} finally{ctx.syncing=false;}}
+ async initSync(){
+  const statusEl=document.querySelector('#syncStatus'),cfg=getConfiguredSupabase();
+  if(!cfg){HBNFLeagueStateSync.status(statusEl,'unavailable','Local only — cloud sync is not configured.');return}
+  if(!window.supabase||!window.supabase.createClient){HBNFLeagueStateSync.status(statusEl,'unavailable','Cloud client failed to load; local edits are retained.');return}
+  ctx.supabaseClient=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
+  ctx.syncBaseline=HBNFLeagueStateSync.loadBaseline(localStorage,ctx.localKey+':cloud-baseline-v2');
+  const loaded=await this.pullRoot();
+  ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live').on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
+   const row=payload.new||{};if(row.id!==1||!row.state_json||!row.updated_at)return;this.applyRemoteRoot(row.state_json,row.updated_at);
+  }).subscribe();
+  window.addEventListener('online',()=>{if(ctx.initialSyncComplete&&ctx.syncBaseline&&!ctx.syncBaseline.blocked)ctx.pushRoot();else this.pullRoot()});
+  if(loaded&&ctx.pendingCloudDraft)setTimeout(()=>ctx.pushRoot(),0);
+ },
+ async pullRoot(){
+  const statusEl=document.querySelector('#syncStatus');
+  try{
+   const pending=HBNFLeagueStateSync.loadPendingDraft(localStorage,ctx.localKey+':pending-v1'),wasStored=(ctx.initialSyncComplete?localStorage.getItem(ctx.localKey)!==null:ctx.localStatePresentAtStartup)||!!pending, localState=pending?ctx.normalize(pending.root[ctx.branch]||null):ctx.state;
+   const remote=await HBNFLeagueStateSync.read(ctx.supabaseClient);
+   let draft=pending?HBNFLeagueStateSync.clone(pending.root):HBNFLeagueStateSync.clone(remote.root);
+   const localDiffers=wasStored&&!HBNFLeagueStateSync.equal(ctx.normalize(remote.root[ctx.branch]||null),localState);
+   if(localDiffers)draft[ctx.branch]=localState;
+   const prepared=await HBNFLeagueStateSync.prepare(ctx.supabaseClient,localStorage,ctx.localKey+':cloud-baseline-v2',draft,ctx.branch,localDiffers,remote);
+   const pendingCleanupOk=!pending||prepared.pending||HBNFLeagueStateSync.clearPendingDraft(localStorage,ctx.localKey+':pending-v1');ctx.initialSyncComplete=true;ctx.syncBaseline=prepared.baseline;ctx.rootState=prepared.root;
+   if(!prepared.legacyConflict)ctx.state=ctx.normalize(ctx.rootState[ctx.branch]||null);
+   if(prepared.legacyConflict){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(statusEl,'legacy');}
+   else if(prepared.pending||!pendingCleanupOk){ctx.pendingCloudDraft=true;ctx.saveLocal();HBNFLeagueStateSync.status(statusEl,'pending');}
+   else{ctx.pendingCloudDraft=false;HBNFLeagueStateSync.status(statusEl,'loaded');}
+   ctx.renderAll();return true;
+  }catch(error){ctx.syncBaseline=ctx.syncBaseline||HBNFLeagueStateSync.loadBaseline(localStorage,ctx.localKey+':cloud-baseline-v2');HBNFLeagueStateSync.status(statusEl,'unavailable',error.message||'Cloud read failed; local edits are retained.');return false;}
+ },
+ async applyRemoteRoot(remoteRoot,revision){
+  if(!ctx.syncBaseline||ctx.syncBaseline.blocked)return;
+  if(Date.parse(revision)<=Date.parse(ctx.syncBaseline.revision))return;
+  const draft=HBNFLeagueStateSync.clone(ctx.rootState||{});draft[ctx.branch]=ctx.state;
+  try{
+   const merged=await HBNFLeagueStateSync.reconcile(ctx.syncBaseline,draft,remoteRoot);
+   ctx.syncBaseline=await HBNFLeagueStateSync.snapshot(remoteRoot,revision);ctx.rootState=merged.root;ctx.state=ctx.normalize(ctx.rootState[ctx.branch]||null);
+   if(merged.hasLocalChanges){ctx.pendingCloudDraft=true;ctx.saveLocal();HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),'pending');setTimeout(()=>ctx.pushRoot(),80);}
+   else{ctx.pendingCloudDraft=false;HBNFLeagueStateSync.cacheBaseline(localStorage,ctx.localKey+':cloud-baseline-v2',ctx.syncBaseline);HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),'loaded');}
+   if(!ctx.activeInput)ctx.renderAll();
+  }catch(error){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),error.name==='HbnfSyncConflictError'?'conflict':'unavailable',error.message);}
+ },
+ async pushRoot(){
+  if(!ctx.supabaseClient||ctx.syncing)return;if(!ctx.initialSyncComplete||!ctx.syncBaseline||ctx.syncBaseline.blocked){ctx.pendingCloudDraft=true;HBNFLeagueStateSync.status(document.querySelector('#syncStatus'),'pending','Cloud baseline is not confirmed; local edits are retained and no write was attempted.');return false}ctx.syncing=true;
+  const statusEl=document.querySelector('#syncStatus');
+  try{
+   const draft=HBNFLeagueStateSync.clone(ctx.rootState||{});draft[ctx.branch]=ctx.state;
+   const ack=await HBNFLeagueStateSync.save(ctx.supabaseClient,ctx.syncBaseline,draft,{retainDraft:(root,base)=>HBNFLeagueStateSync.retainPendingDraft(localStorage,ctx.localKey+':pending-v1',root,base),clearPending:()=>HBNFLeagueStateSync.clearPendingDraft(localStorage,ctx.localKey+':pending-v1')});
+   ctx.syncBaseline=ack;ctx.rootState=ack.root;ctx.pendingCloudDraft=false;
+   const cached=HBNFLeagueStateSync.cacheBaseline(localStorage,ctx.localKey+':cloud-baseline-v2',ack);
+   HBNFLeagueStateSync.status(statusEl,'saved',cached?'Cloud save confirmed.':'Cloud save confirmed; this device could not cache its sync baseline.');
+   return true;
+  }catch(error){ctx.pendingCloudDraft=true;const conflict=error.name==='HbnfSyncConflictError';HBNFLeagueStateSync.status(statusEl,conflict?'conflict':'pending',ctx.localStorageFailed?'Cloud save not confirmed — browser storage is full; edits remain in memory only.':(error.message||'Cloud save was not confirmed; local edits are retained.'));
+   if(!conflict&&ctx.syncBaseline){clearTimeout(ctx.syncRetryTimer);ctx.syncRetryTimer=setTimeout(()=>{if(navigator.onLine)ctx.pushRoot()},5000)}
+   return false;
+  }finally{ctx.syncing=false;}
+ }
 };}
 </script>
 <script>(()=> {
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s));
-const ctx={branch:'skills',localKey:'hbnf-sync-skills',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pushTimer:null,activeInput:null};
+const ctx={branch:'skills',localKey:'hbnf-sync-skills',state:null,rootState:{},localStatePresentAtStartup:false,initialSyncComplete:false,supabaseClient:null,realtimeChannel:null,syncing:false,syncBaseline:null,syncRetryTimer:null,pushTimer:null,activeInput:null};
 Object.assign(ctx, makeSyncHelpers(ctx));
 
 function defaultScorecardText(){
@@ -621,6 +675,7 @@ function normalize(input){
 ctx.normalize=normalize;
 function loadLocal(){ try{return normalize(JSON.parse(localStorage.getItem(ctx.localKey)||'null'));}catch{return normalize(null);} }
 function saveLocal(){ localStorage.setItem(ctx.localKey, JSON.stringify(ctx.state)); }
+ctx.saveLocal=saveLocal;
 function getWeek(){ return ctx.state.weeks[ctx.state.activeWeek]; }
 function ensureWeek(d){ if(!ctx.state.weeks[d]) ctx.state.weeks[d]=blankWeek(); ctx.state.activeWeek=d; }
 function flattenCardPlayers(cards){ return cards.flatMap(c=>c.players.map(p=>(p||'').trim()).filter(Boolean)); }
@@ -767,6 +822,7 @@ ctx.renderAll=function(){ const sel=qs('#weekSelect'); sel.innerHTML=''; Object.
 
 
 document.addEventListener('DOMContentLoaded', async()=>{
+  ctx.localStatePresentAtStartup=localStorage.getItem(ctx.localKey)!==null;
   ctx.state=loadLocal(); 
   qs('#homeLogoLink').addEventListener('click',()=>location.href='index.html'); qs('#backHomeBtn').addEventListener('click',()=>location.href='index.html');
   qsa('#leagueNav .nav-btn').forEach(btn=>btn.addEventListener('click',()=>setActivePage(btn.dataset.page)));
