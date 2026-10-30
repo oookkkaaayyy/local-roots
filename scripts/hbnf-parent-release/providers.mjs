@@ -10,9 +10,10 @@ const sha = value => createHash('sha256').update(typeof value === 'string' || Bu
 const STABLE_STATE_SQL = `select jsonb_build_object(
  'project', (select jsonb_build_object('id', project, 'version', version) from (select current_database() as project, current_setting('server_version') as version) p),
  'league_state', (select jsonb_build_object('id',id,'updated_at',updated_at,'bytes',octet_length(state_json::text),'sha256',encode(digest(state_json::text,'sha256'),'hex')) from public.league_state where id=1),
- 'triggers', (select coalesce(jsonb_agg(jsonb_build_object('name',tgname,'enabled',tgenabled) order by tgname),'[]'::jsonb) from pg_trigger where tgrelid='public.league_state'::regclass and not tgisinternal),
- 'functions', (select coalesce(jsonb_agg(p.proname order by p.proname),'[]'::jsonb) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('hbnf_enforce_league_state_revision','hbnf_save_league_state_v1','hbnf_verify_round_tag_v1')),
- 'grants', (select coalesce(jsonb_agg(jsonb_build_object('grantee',grantee,'privilege',privilege_type) order by grantee,privilege_type),'[]'::jsonb) from information_schema.role_table_grants where table_schema='public' and table_name='league_state' and grantee in ('anon','authenticated','service_role'))
+ 'triggers', (select coalesce(jsonb_agg(jsonb_build_object('name',tgname,'enabled',tgenabled,'definitionSha256',encode(digest(pg_get_triggerdef(oid)::text,'sha256'),'hex')) order by tgname),'[]'::jsonb) from pg_trigger where tgrelid='public.league_state'::regclass and not tgisinternal),
+ 'functions', (select coalesce(jsonb_agg(jsonb_build_object('name',p.proname,'securityDefiner',p.prosecdef,'definitionSha256',encode(digest(pg_get_functiondef(p.oid)::text,'sha256'),'hex')) order by p.proname),'[]'::jsonb) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('hbnf_enforce_league_state_revision','hbnf_save_league_state_v1','hbnf_verify_round_tag_v1')),
+ 'grants', (select coalesce(jsonb_agg(jsonb_build_object('grantee',grantee,'privilege',privilege_type) order by grantee,privilege_type),'[]'::jsonb) from information_schema.role_table_grants where table_schema='public' and table_name='league_state' and grantee in ('anon','authenticated','service_role')),
+ 'policies', (select coalesce(jsonb_agg(jsonb_build_object('name',policyname,'permissive',permissive,'roles',roles,'cmd',cmd,'qual',qual,'withCheck',with_check) order by policyname),'[]'::jsonb) from pg_policies where schemaname='public' and tablename='league_state')
 ) as snapshot`;
 
 function authFetch(fetchImpl, base, token) {
