@@ -42,7 +42,7 @@ export function validateFinalBaseline({cloudflare:c,supabase:s,now=Date.now(),ma
  fresh(c.capturedUtc,'Cloudflare baseline',now,maxAgeMs);if((c.schedules||[]).length)fail('Cloudflare schedules are not empty');
  const cart=(c.routeOwners||[]).filter(x=>x.pattern.includes('hbnf-cart')).sort((a,b)=>a.pattern.localeCompare(b.pattern));if(!same(cart,[...FINAL.cartRoutes].sort((a,b)=>a.pattern.localeCompare(b.pattern))))fail('Cart route owners changed');
  if(s?.projectId!==RELEASE.database||s.rlsEnabled!==true||s.stateFingerprint!==FINAL.stateFingerprint||s.revisionTriggerPresent!==true)fail('Supabase identity/data/trigger baseline mismatch');fresh(s.serverTime,'Supabase baseline',now,maxAgeMs);
- const expectedLedger=[{version:FINAL.first.version,name:FINAL.first.name},{version:FINAL.second.version,name:FINAL.second.name}];if(!same(s.migrationLedger,expectedLedger))fail('Supabase partial migration ledger does not match the exact two applied provider versions/names');
+ const expectedLedger=[{version:FINAL.first.version,name:FINAL.first.name},{version:FINAL.second.version,name:FINAL.second.name}],actualLedger=s.migrationLedger||[];if(actualLedger.length!==expectedLedger.length||expectedLedger.some(e=>actualLedger.filter(a=>a?.version===e.version&&a?.name===e.name).length!==1))fail('Supabase partial migration ledger does not match the exact two applied provider versions/names');
  checkFns(s.functionEvidence,FINAL.functions);if(!same([...(s.triggers||[])].sort(),[...FINAL.triggers].sort()))fail('preserved triggers/revision trigger mismatch');checkGrants(s);return true;
 }
 

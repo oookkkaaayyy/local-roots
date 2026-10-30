@@ -27,6 +27,7 @@ async function admit(f){return admitFinalSuccessor({evidence,readbacks:f.readbac
 
 test('real two-migration partial baseline accepts exact provider versions and service_role default ACL',()=>{
  assert.equal(validateFinalBaseline({cloudflare:cf(),supabase:db()}),true);
+ const reversed=db();reversed.migrationLedger=reversed.migrationLedger.map(x=>({name:x.name,version:x.version}));assert.equal(validateFinalBaseline({cloudflare:cf(),supabase:reversed}),true);
  const bad=db();bad.functionEvidence[2].serviceRoleExecute=false;assert.throws(()=>validateFinalBaseline({cloudflare:cf(),supabase:bad}),/function evidence/);
  const wrong=db();wrong.migrationLedger[1].version='20261029203741';assert.throws(()=>validateFinalBaseline({cloudflare:cf(),supabase:wrong}),/ledger/);
  const stale=db();stale.serverTime='2026-10-30T00:00:00Z';assert.throws(()=>validateFinalBaseline({cloudflare:cf(),supabase:stale}),/stale/);
