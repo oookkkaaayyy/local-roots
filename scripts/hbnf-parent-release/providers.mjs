@@ -1,11 +1,12 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { readZipMember } from './zip-member.mjs';
 
 const ACCOUNT = 'e3bc6b78f1104fa0c2a01245084594cf';
 const ZONE = 'f126298df13dcb1d8b58b62b47f52a20';
 const PROJECT = 'phcpbvuqibyarpfrftgx';
 const RETAINED_WORKER_ROLLBACK = '3b019c24-0288-4c0d-bcc2-46cb6028d0f6';
 const EDGE_SLUGS = Object.freeze({ 'edge-tag-editor': 'hbnf-tag-editor', 'edge-tags-live': 'hbnf-tags-live', 'edge-watch-score': 'hbnf-watch-score' });
-const sha = value => createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
+const sha = value => createHash('sha256').update(typeof value === 'string' || Buffer.isBuffer(value) || value instanceof Uint8Array ? value : JSON.stringify(value)).digest('hex');
 const STABLE_STATE_SQL = `select jsonb_build_object(
  'project', (select jsonb_build_object('id', project, 'version', version) from (select current_database() as project, current_setting('server_version') as version) p),
  'league_state', (select jsonb_build_object('id',id,'updated_at',updated_at,'bytes',octet_length(state_json::text),'sha256',encode(digest(state_json::text,'sha256'),'hex')) from public.league_state where id=1),
@@ -74,10 +75,21 @@ export function createAuthenticatedReadAdapters({ env = process.env, fetchImpl =
       if (!Buffer.from(bytes).equals(downloaded)) throw new Error('DURABLE_EVIDENCE_DOWNLOADBACK_MISMATCH');
       return { id: created.id, name: created.name, bytes: downloaded.length, sha256: sha(downloaded), downloadBackVerified: true };
     },
-    async readAndVerifyDriveArtifact({ driveFileId, sha256: expectedSha, bytes: expectedBytes }) {
+    async readAndVerifyDriveArtifact({ driveFileId, sha256: expectedSha, bytes: expectedBytes, zipMember, memberSha256, memberBytes }) {
       const response=await drive(`/drive/v3/files/${encodeURIComponent(driveFileId)}?alt=media`);
       const downloaded=Buffer.from(await response.arrayBuffer()), actualSha=sha(downloaded);
-      return { driveFileId, bytes:downloaded.length, sha256:actualSha, verified:downloaded.length===expectedBytes&&actualSha===expectedSha };
+      const archiveVerified=downloaded.length===expectedBytes&&actualSha===expectedSha;
+      if (!zipMember) return { driveFileId, bytes:downloaded.length, sha256:actualSha, verified:archiveVerified };
+      if (!archiveVerified || !/^[a-f0-9]{64}$/.test(memberSha256||'') || !Number.isSafeInteger(memberBytes) || memberBytes < 1) {
+        return { driveFileId, zipMember, bytes:downloaded.length, sha256:actualSha, verified:false };
+      }
+      try {
+        const member=readZipMember(downloaded,zipMember);
+        const memberActualSha=sha(member);
+        return {driveFileId,zipMember,bytes:downloaded.length,sha256:actualSha,
+          memberBytes:member.length,memberSha256:memberActualSha,
+          verified:member.length===memberBytes&&memberActualSha===memberSha256};
+      } catch { return {driveFileId,zipMember,bytes:downloaded.length,sha256:actualSha,verified:false}; }
     },
   });
 }
