@@ -423,6 +423,8 @@ test('photo topology separates plate/rim without inventing brand plastic choices
  assert.doesNotMatch(photo,/set\?\.\(result\.appearance\|\|null/,'photo rim hypothesis must not auto-apply');
  assert.match(photo,/applyPhotoSuggestion/);
  assert.match(studioHtml,/id="applyPhotoSuggestion"/);
+ assert.match(studioHtml,/id="photoSuggestedColor" type="color"/);
+ assert.match(studioHtml,/id="keepPhotoCurrent"/);
  assert.match(studioHtml,/Different rim color \(Halo style\)/);
  assert.match(studioHtml,/id="photoRimPanel"/);
  assert.match(studioScript,/function appearanceAt\(x,y\)/);
@@ -1181,8 +1183,10 @@ test('photo suggestion keeps edits until accepted or explicitly retained',async(
  input.files=[{type:'image/jpeg'}];await input.fire('change');
  const suggestion=get('photoColorStatus').textContent.match(/#[0-9A-F]{6}/)?.[0];
  assert.ok(suggestion&&suggestion!=='#123456','a new estimate is available to review');
+ assert.equal(get('photoSuggestedColor').value,suggestion,'suggested color can be inspected or corrected');
+ get('photoSuggestedColor').value='#B4D2F2';await get('photoSuggestedColor').fire('input');
  await apply.click();
- assert.equal(get('baseHex').value,suggestion,'only confirmation applies the suggested color');
+ assert.equal(get('baseHex').value,'#B4D2F2','the user correction is applied only after confirmation');
  assert.deepEqual(appearanceCalls,[[null,false,true]],'accepting photo clears any unconfirmed rim hypothesis');
  assert.equal(autoCommits,1,'accepted color follows the existing single project commit path');
  assert.equal(apply.hidden,true);assert.equal(keep.hidden,true);
