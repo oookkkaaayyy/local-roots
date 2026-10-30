@@ -22,9 +22,15 @@ const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
 const text=r=>typeof r==='string'?r:(r?.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n');
 function sqlRows(r){
  let parsed;try{parsed=JSON.parse(text(r))}catch{throw new Error('Supabase MCP returned non-JSON SQL result')}
- const match=String(parsed.result||'').match(/<untrusted-data-[^>]+>\s*([\s\S]*?)\s*<\/untrusted-data-/);
- if(!match)throw new Error('Supabase SQL result omitted the bounded data block');
- return JSON.parse(match[1]);
+ const result=String(parsed.result||'');
+ const closings=[...result.matchAll(/<\/untrusted-data-([^>]+)>/g)];
+ const closing=closings.at(-1);
+ if(!closing)throw new Error('Supabase SQL result omitted the bounded data block');
+ const opening=`<untrusted-data-${closing[1]}>`;
+ const start=result.lastIndexOf(opening,closing.index);
+ if(start<0)throw new Error('Supabase SQL result omitted the matching data-block start');
+ try{return JSON.parse(result.slice(start+opening.length,closing.index).trim())}
+ catch{throw new Error('Supabase SQL result data block was not valid JSON')}
 }
 function assertMcpSuccess(result,label){
  if(result?.isError===true)throw new Error(`${label} MCP operation failed: ${text(result).slice(0,600)}`);
