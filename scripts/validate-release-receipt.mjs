@@ -99,6 +99,7 @@ async function verifyAdmissionEvidence(root, receipt, expectedManifest, { requir
     throw new Error('admission.downloadBackVerified must be true');
   }
   const recovered = await verifyFile(root, receipt.admission.downloadBack, 'admission.downloadBack');
+  await assertIndependentRecovery(root, receipt.admission, receipt.admission.downloadBack, 'admission.downloadBack');
   if (recovered.sha256 !== admission.sha256 || recovered.bytes !== admission.bytes) {
     throw new Error('admission.downloadBack must byte-match the admission manifest');
   }
@@ -117,6 +118,19 @@ async function checkedFile(root, relativePath, label) {
   if (!info.isFile()) throw new Error(`${label}.path is not a file`);
   const bytes = await readFile(actual);
   return { bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') };
+}
+
+// A byte-equal recovery claim must refer to a separate local file. This does
+// not replace an authenticated Drive download, which the release executor must
+// independently perform, but prevents accidental self-referential receipts.
+async function assertIndependentRecovery(root, original, recovered, label) {
+  const from = await realpath(path.resolve(root, original.path));
+  const to = await realpath(path.resolve(root, recovered.path));
+  const first = await stat(from);
+  const second = await stat(to);
+  if (from === to || (first.dev === second.dev && first.ino === second.ino)) {
+    throw new Error(`${label} must refer to an independent recovered copy, not the source file`);
+  }
 }
 
 async function verifyFile(root, entry, label) {
@@ -194,6 +208,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     throw new Error('baseline.rollback.downloadBackVerified must be true');
   }
   const baselineRollbackCopy = await verifyFile(root, baselineRollback.downloadBack, 'baseline.rollback.downloadBack');
+  await assertIndependentRecovery(root, baselineRollback, baselineRollback.downloadBack, 'baseline.rollback.downloadBack');
   if (baselineRollbackCopy.sha256 !== baselineRollback.sha256 || baselineRollbackCopy.bytes !== baselineRollback.bytes) {
     throw new Error('baseline.rollback.downloadBack must byte-match the baseline rollback');
   }
@@ -215,6 +230,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   requireString(rollbackRecovery?.driveUrl, 'rollback.recovery.driveUrl');
   if (rollbackRecovery.downloadBackVerified !== true) throw new Error('rollback.recovery.downloadBackVerified must be true');
   const recoveredRollback = await verifyFile(root, rollbackRecovery.downloadBack, 'rollback.recovery.downloadBack');
+  await assertIndependentRecovery(root, receipt.rollback.artifact, rollbackRecovery.downloadBack, 'rollback.recovery.downloadBack');
   if (recoveredRollback.sha256 !== rollbackFile.sha256 || recoveredRollback.bytes !== rollbackFile.bytes) {
     throw new Error('rollback.recovery.downloadBack must byte-match the rollback artifact');
   }
@@ -241,6 +257,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
       throw new Error('deployment.receipt.downloadBackVerified must be true');
     }
     const deploymentReceiptCopy = await verifyFile(root, deployment.receipt.downloadBack, 'deployment.receipt.downloadBack');
+    await assertIndependentRecovery(root, deployment.receipt, deployment.receipt.downloadBack, 'deployment.receipt.downloadBack');
     if (deploymentReceiptCopy.sha256 !== deploymentReceipt.sha256 || deploymentReceiptCopy.bytes !== deploymentReceipt.bytes) {
       throw new Error('deployment.receipt.downloadBack must byte-match the deployment receipt');
     }
@@ -283,6 +300,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   requireString(recovery?.driveUrl, 'recovery.driveUrl');
   if (recovery.downloadBackVerified !== true) throw new Error('recovery.downloadBackVerified must be true');
   const recovered = await verifyFile(root, recovery?.downloadBack, 'recovery.downloadBack');
+  await assertIndependentRecovery(root, receipt.package, recovery.downloadBack, 'recovery.downloadBack');
   if (recovered.sha256 !== packageFile.sha256 || recovered.bytes !== packageFile.bytes) {
     throw new Error('recovery.downloadBack must byte-match the release package');
   }
