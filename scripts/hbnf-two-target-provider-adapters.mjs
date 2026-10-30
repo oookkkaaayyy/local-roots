@@ -193,16 +193,30 @@ export function createWranglerAdapter({run,candidatePath,rollbackPath,verifyRout
    const items=await deployments(),d=activeDeployment(items);
    const [secrets,info,scheduleResult,zones]=await Promise.all([invoke(['secret','list','--name','hbnf']),versionInfo(d.versionId),api('GET','/workers/scripts/hbnf/schedules'),api('GET','/zones?name=hbnightflyers.com')]);
    assert(Array.isArray(zones)&&zones.length===1,'Cloudflare zone readback did not identify hbnightflyers.com exactly');
-   const routes=await api('GET',`/zones/${zones[0].id}/workers/routes`);
+   // A Worker Custom Domain owns all paths of its hostname. Zone Routes
+   // match URL patterns and may override Custom Domains at specific paths.
+   // Both inventories are required; a root-only Route is NOT evidence that
+   // a separately enabled Custom Domain fails to serve /glow.html.
+   const [routes,domains]=await Promise.all([
+    api('GET',`/zones/${zones[0].id}/workers/routes`),
+    api('GET','/workers/domains?hostname=hbnightflyers.com&service=hbnf&enabled=true'),
+   ]);
    const bindings=info?.resources?.bindings||[];
    assert(!secrets.includes('UDISC_GLOW_ACCESS_APPROVED')&&!bindings.some(x=>x.name==='UDISC_GLOW_ACCESS_APPROVED'&&x.text==='true'),'UDISC_GLOW_ACCESS_APPROVED is enabled or cannot be proven disabled');
    assert(Array.isArray(scheduleResult?.schedules),'Cloudflare schedule readback is malformed');
    const schedules=scheduleResult.schedules;
    assert(Array.isArray(routes),'Cloudflare routes readback is malformed');
+   assert(Array.isArray(domains),'Cloudflare Worker Custom Domains readback is malformed');
+   const activeCustomDomain=domains.some(d=>d.hostname==='hbnightflyers.com'&&d.service==='hbnf'&&d.enabled===true);
    const paths=['/glow.html','/glow-save-sync.mjs','/league-state-cas.mjs'];
-   const glowRouteCovered=paths.every(p=>routes.some(r=>r.script==='hbnf'&&routeCovers(r.pattern,`https://hbnightflyers.com${p}`)));
+   const glowRouteCovered=paths.every(p=>{
+    const matching=routes.filter(r=>routeCovers(r.pattern,`https://hbnightflyers.com${p}`));
+    // Cloudflare lets Routes precede Custom Domains. Without an exact,
+    // trusted precedence witness, any conflicting match must fail closed.
+    return matching.length?matching.every(r=>r.script==='hbnf'):activeCustomDomain;
+   });
    const staticAssetsOnly=d.versionId===EXPECTED_VERSION&&info?.id===EXPECTED_VERSION&&info?.resources?.script?.handlers===null&&info?.resources?.script_runtime?.assets?.serve_directly===true;
-   return {worker:'hbnf',...d,rollbackRetained:items.some(x=>(x.versions||[]).some(v=>v.version_id===EXPECTED_VERSION)),pollingDisabled:true,cronRemoved:schedules.length===0,staticAssetsOnly,installedAssetHash:null,assetHashUnavailable:true,glowRouteCovered,schedules,routePatterns:routes.map(x=>x.pattern),scriptHandlers:info?.resources?.script?.handlers??null,bindings};
+   return {worker:'hbnf',...d,rollbackRetained:items.some(x=>(x.versions||[]).some(v=>v.version_id===EXPECTED_VERSION)),pollingDisabled:true,cronRemoved:schedules.length===0,staticAssetsOnly,installedAssetHash:null,assetHashUnavailable:true,glowRouteCovered,activeCustomDomain,schedules,routePatterns:routes.map(x=>x.pattern),scriptHandlers:info?.resources?.script?.handlers??null,bindings};
   },
   async deployExact({zip,sha256:expected,keepPollingDisabled}){
    assert(sha256(zip)===expected,'candidate bytes mismatch');assert(keepPollingDisabled===true,'polling must remain disabled');
