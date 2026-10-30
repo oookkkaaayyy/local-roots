@@ -46,11 +46,20 @@ test('Supabase MCP reader is fixed to the admitted project and interprets exact 
 test('Wrangler reader requires a single 100% active version and disabled access secret',async()=>{
  const items=[{id:'d',created_on:'2026-10-28',versions:[{version_id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',percentage:100}]}];
  const token='a'.repeat(93);const run=async args=>({code:0,stdout:args[0]==='deployments'?JSON.stringify(items):args[0]==='versions'?'{}':args[0]==='secret'?'[]':token,stderr:''});
- const fetchImpl=async url=>({ok:true,json:async()=>({success:true,result:String(url).includes('/workers/routes')?[{pattern:'hbnightflyers.com/*',script:'hbnf'}]:String(url).includes('/zones?')?[{id:'zone'}]:{schedules:[]}})});
+ const fakeApi=(routeList,domainList=[])=>async url=>({ok:true,json:async()=>({success:true,result:String(url).includes('/workers/routes')?routeList:String(url).includes('/workers/domains')?domainList:String(url).includes('/zones?')?[{id:'zone'}]:{schedules:[]}})});
+ const fetchImpl=fakeApi([{pattern:'hbnightflyers.com/*',script:'hbnf'}]);
  const adapter=createWranglerAdapter({run,fetchImpl,verifyRoutes:async()=>({passed:true})});
  const state=await adapter.read();assert.equal(state.versionId,'3b019c24-0288-4c0d-bcc2-46cb6028d0f6');assert.equal(state.pollingDisabled,true);assert.equal(state.rollbackRetained,true);assert.equal(state.cronRemoved,true);assert.equal(state.glowRouteCovered,true);
- const rootOnly=createWranglerAdapter({run,fetchImpl:async url=>({ok:true,json:async()=>({success:true,result:String(url).includes('/workers/routes')?[{pattern:'hbnightflyers.com',script:'hbnf'}]:String(url).includes('/zones?')?[{id:'zone'}]:{schedules:[]}})}),verifyRoutes:async()=>({passed:true})});
+ const rootOnly=createWranglerAdapter({run,fetchImpl:fakeApi([{pattern:'hbnightflyers.com',script:'hbnf'}]),verifyRoutes:async()=>({passed:true})});
  assert.equal((await rootOnly.read()).glowRouteCovered,false);
+ const enabledDomain=[{id:'existing-domain-id',hostname:'hbnightflyers.com',service:'hbnf',enabled:true}];
+ const customDomain=createWranglerAdapter({run,fetchImpl:fakeApi([{pattern:'hbnightflyers.com',script:'hbnf'}],enabledDomain),verifyRoutes:async()=>({passed:true})});
+ assert.equal((await customDomain.read()).activeCustomDomain,true);
+ assert.equal((await customDomain.read()).glowRouteCovered,true);
+ const disabledDomain=createWranglerAdapter({run,fetchImpl:fakeApi([{pattern:'hbnightflyers.com',script:'hbnf'}],[{...enabledDomain[0],enabled:false}]),verifyRoutes:async()=>({passed:true})});
+ assert.equal((await disabledDomain.read()).glowRouteCovered,false);
+ const intercepted=createWranglerAdapter({run,fetchImpl:fakeApi([{pattern:'hbnightflyers.com',script:'hbnf'},{pattern:'hbnightflyers.com/glow.html*',script:'other-worker'}],enabledDomain),verifyRoutes:async()=>({passed:true})});
+ assert.equal((await intercepted.read()).glowRouteCovered,false);
  const unsafe=createWranglerAdapter({run:async args=>({code:0,stdout:args[0]==='deployments'?JSON.stringify(items):args[0]==='versions'?'{}':args[0]==='secret'?'UDISC_GLOW_ACCESS_APPROVED':token,stderr:''}),fetchImpl,verifyRoutes:async()=>({passed:true})});
  await assert.rejects(()=>unsafe.read(),/cannot be proven disabled/);
 });
