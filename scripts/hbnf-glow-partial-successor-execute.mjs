@@ -44,7 +44,7 @@ async function main(){
  ];
  for(const [id,expected,label] of originalRemote){const raw=await tool('drive.fetch',{id,download_raw_file:true,include_base64:true});const actual=driveBytes(raw);if(expected&&!actual.equals(expected))throw Error(`${label} Drive bytes differ from the verified local authority`);if(id===SUCCESSOR.priorExecutionClaimId&&sha(actual)!==SUCCESSOR.priorExecutionClaimSha256)throw Error(`${label} exact hash mismatch`);}
  const github={create_file:a=>tool('github.create_file',a),fetch_file:a=>tool('github.fetch_file',a)};
- const drive={upload_file:a=>tool('drive.upload_file',a),fetch:a=>tool('drive.fetch',{id:a.url.match(/\/d\/([^/]+)/)?.[1],download_raw_file:true,include_base64:true})};
+ const drive={upload_file:a=>tool('drive.upload_file',a),fetch:id=>tool('drive.fetch',{id,download_raw_file:true,include_base64:true})};
  const supabase={execute_sql:a=>tool('supabase.execute_sql',a),apply_migration:a=>tool('supabase.apply_migration',a)};
  const lock=createGitHubExecutionLockAdapter({createFile:github.create_file,fetchFile:github.fetch_file,claimPath:SUCCESSOR.claimPath});
  const store=createGoogleDriveEvidenceStore({uploadFile:drive.upload_file,fetchFile:drive.fetch,writeLocal:async(name,bytes)=>{const dir=await mkdtemp(path.join(tmpdir(),'hbnf-successor-'));const file=path.join(dir,name.replace(/[^A-Za-z0-9._-]/g,'_'));await writeFile(file,bytes,{flag:'wx'});return file;},cleanupLocal:async file=>rm(path.dirname(file),{recursive:true,force:true})});
