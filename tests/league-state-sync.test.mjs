@@ -6,12 +6,26 @@ import { TextEncoder } from 'node:util';
 import { readFile } from 'node:fs/promises';
 
 const source = await readFile(new URL('../public/hbnf-league-state-sync.js', import.meta.url), 'utf8');
-function makeSync() {
-  const window = { crypto: webcrypto, TextEncoder };
+function makeSync(document = undefined) {
+  const window = { crypto: webcrypto, TextEncoder, ...(document ? { document } : {}) };
   vm.runInNewContext(source, { window, TextEncoder, Uint8Array, Set, Object, Array, JSON, Date, Number, Math, Error, String, Promise });
   return window.HBNFLeagueStateSync;
 }
 function clone(value) { return JSON.parse(JSON.stringify(value)); }
+
+test('Skins mirrors actionable sync states into its always-visible accessible alert', () => {
+  const alert = { hidden: true, textContent: '' };
+  const document = { querySelector: selector => selector === '#syncAlert' ? alert : null };
+  const sync = makeSync(document), attributes = {};
+  const status = { id: 'syncStatus', textContent: '', setAttribute: (name, value) => { attributes[name] = value; } };
+  sync.status(status, 'pending', 'Cloud not confirmed — edits remain on this device.');
+  assert.equal(alert.hidden, false);
+  assert.equal(alert.textContent, status.textContent);
+  assert.equal(attributes.role, 'status');
+  assert.equal(attributes['aria-live'], 'polite');
+  sync.status(status, 'saved');
+  assert.equal(alert.hidden, true, 'the duplicate alert is hidden after confirmed save');
+});
 function fakeClient(initial, hooks = {}) {
   let row = { id: 1, state_json: clone(initial), updated_at: '2026-10-29T08:00:00.000Z' };
   let reads = 0, writes = 0;

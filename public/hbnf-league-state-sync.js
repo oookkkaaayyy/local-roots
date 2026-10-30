@@ -230,7 +230,19 @@
       unavailable: 'Cloud data could not be verified — no write was attempted.',
       legacy: 'Saved local data has no matching cloud baseline — it is retained and automatic sync is paused for review.',
     };
-    element.textContent = detail || messages[kind] || String(kind || '');
+    const message = detail || messages[kind] || String(kind || '');
+    element.textContent = message;
+    // Skins keeps its compact status inside the collapsed header tools. Mirror
+    // actionable states into the always-visible alert so offline edits and
+    // conflicts remain apparent without opening that menu.
+    if (element.id === 'syncStatus' && global.document && typeof global.document.querySelector === 'function') {
+      const alert = global.document.querySelector('#syncAlert');
+      if (alert) {
+        alert.textContent = message;
+        alert.hidden = !(['connecting', 'pending', 'conflict', 'unavailable', 'legacy'].includes(kind) ||
+          (kind === 'saved' && /could not cache/i.test(message)));
+      }
+    }
   }
 
   global.HBNFLeagueStateSync = Object.freeze({ clone, equal, hash, read, reconcile, prepare, save, snapshot, cacheBaseline, loadBaseline, retainPendingDraft, loadPendingDraft, clearPendingDraft, revisionAtOrBefore, status });
