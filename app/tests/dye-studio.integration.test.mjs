@@ -550,32 +550,15 @@ test('consumer plastic labels remain concise while the technical descriptions ar
 });
 
 
-test('optional photographed-disc corrections alter the blank, not the prediction model',()=>{
+test('photo color correction uses the review-before-apply swatch, without a legacy direct-apply panel',()=>{
  const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
- const begin=v2.indexOf('function rgbChannels(hex)');
- const end=v2.indexOf('if(photoStatus){\n new MutationObserver(',begin);
- assert.ok(begin>=0&&end>begin,'extract actual shipped correction functions');
- const code=v2.slice(begin,end);
- const fields=Object.fromEntries(['baseColor','baseHex','transmissionHex','transmissionColor'].map(id=>[id,{value:id==='baseColor'||id==='baseHex'?'#B0AB8B':'#000000',events:[],dispatchEvent(e){this.events.push(e.type)}}]));
- const buttons=['lighter','vivid','reset'].map(x=>({dataset:{photoAdjust:x}}));
- const env={fields,buttons,g:id=>fields[id],photoControls:{querySelectorAll:()=>buttons},autoTransmissionHex:()=> '#ECECEC',profile:()=>({}),Event:class {constructor(type){this.type=type}}};
- const fn=Function('env','with(env){let originalPhotoHex="#B0AB8B";'+code+';return {fields,buttons};}');
- const actual=fn(env);
- buttons[0].onclick();
- const lighter=actual.fields.baseHex.value;
- assert.ok(/^#[0-9A-F]{6}$/.test(lighter));
- const numeric=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
- const original=numeric('#B0AB8B'),light=numeric(lighter);
- assert.ok(light.every((v,i)=>v>original[i]),'lighter is brighter than photographed color');
- buttons[1].onclick();
- assert.ok(actual.fields.baseHex.value!==lighter,'more-colorful changes the blank');
- buttons[2].onclick();
- assert.equal(actual.fields.baseHex.value,'#B0AB8B');
- assert.equal(actual.fields.transmissionHex.value,'#ECECEC');
- assert.equal(actual.fields.transmissionColor.value,'#ECECEC');
- assert.equal(actual.fields.baseColor.events.filter(x=>x==='change').length,3,'one history change event per tap');
- assert.match(v2,/new MutationObserver\(\(\)=>\{\n  if\(!photoStatus\.textContent\.startsWith\("Estimated "\)\)/);
- assert.match(studioHtml,/#du-photo-adjust\[hidden\]\{display:none!important\}/);
+ assert.doesNotMatch(v2,/data-photo-adjust|du-photo-adjust|startsWith\("Estimated "\)/,'retired buttons cannot be stranded or bypass Apply');
+ assert.match(studioHtml,/id="photoSuggestedColor" type="color"/);
+ assert.match(studioHtml,/id="applyPhotoSuggestion"/);
+ assert.match(studioHtml,/id="keepPhotoCurrent"/);
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ assert.match(photo,/Adjusted starting color .*unchanged until you apply this color/);
+ assert.match(photo,/applySuggestion\.addEventListener\("click"/);
 });
 
 
