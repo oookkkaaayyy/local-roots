@@ -1341,7 +1341,8 @@ function makeSyncHelpers(ctx){return{
    const cached=ctx.state?hbnfSyncClone(ctx.state):null;
    const editedWhileBaselinePending=!!ctx.localDirty&&!!(ctx.localEditedBeforeBaseline||ctx.pendingBaseHash!==null);
    const pendingLocalBranch=editedWhileBaselinePending?cached:null;
-   const pendingEditHasAuthoritativeBase=editedWhileBaselinePending&&(ctx.startupBranchHash===hbnfSemanticHash(remoteBranch)||ctx.startupBranchHash===hbnfSyncHash(remoteBranch));
+   const pendingEditBaseHash=ctx.pendingBaseHash||ctx.startupBranchHash;
+   const pendingEditHasAuthoritativeBase=editedWhileBaselinePending&&(pendingEditBaseHash===hbnfSemanticHash(remoteBranch)||pendingEditBaseHash===hbnfSyncHash(remoteBranch));
    const cachedDiffers=!!cached&&hbnfSemanticHash(cached)!==hbnfSemanticHash(authoritative);
    // Legacy app edits have no pending marker. If the local cache contains
    // scorecard evidence missing from cloud, quarantine it as a conflict,

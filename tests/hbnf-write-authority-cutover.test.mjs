@@ -28,6 +28,11 @@ test('Skins compares remote JSONB snapshots semantically despite object-key reor
   assert.match(skins, /if\(hbnfSemanticHash\(ctx\.state\)===saveSnapshotHash\)/);
 });
 
+test('Skins recovery matches the persisted pending draft base before the original startup snapshot', () => {
+  assert.match(skins, /const pendingEditBaseHash=ctx\.pendingBaseHash\|\|ctx\.startupBranchHash/);
+  assert.match(skins, /pendingEditBaseHash===hbnfSemanticHash\(remoteBranch\)\|\|pendingEditBaseHash===hbnfSyncHash\(remoteBranch\)/);
+});
+
 test('cutover revokes public direct insert/update and keeps anonymous RPC execution', () => {
   assert.match(migration, /revoke insert, update on table public\.league_state from public, anon, authenticated/i);
   assert.match(migration, /grant select on table public\.league_state to anon, authenticated/i);
