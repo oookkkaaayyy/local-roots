@@ -196,3 +196,13 @@ test('server-derived monotonic revision is accepted when it replaces a skewed cl
     assert.equal(saved.root.glow.weeks['2099-01-06'].cards[0].id,'clock-skew');
   } finally { Date.now=originalNow; }
 });
+
+test('realtime revision ordering uses microseconds across equivalent ISO timezone formats', () => {
+  const sync=makeSync();
+  assert.equal(sync.revisionAtOrBefore('2099-01-06T00:00:00.000010Z','2099-01-06T00:00:00.00001+00:00'),true,
+    'an equal instant must be treated as an already confirmed revision even when serialized differently');
+  assert.equal(sync.revisionAtOrBefore('2099-01-06T00:00:00.000009Z','2099-01-06T00:00:00.00001+00:00'),true,
+    'a delayed older Realtime echo must not be treated as a conflict');
+  assert.equal(sync.revisionAtOrBefore('2099-01-06T00:00:00.000011Z','2099-01-06T00:00:00.00001+00:00'),false,
+    'a genuinely newer concurrent write must still be processed');
+});

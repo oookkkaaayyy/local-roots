@@ -16,6 +16,18 @@ test('login-free browser saves use mandatory revision-guarded RPC', () => {
   assert.doesNotMatch(skins, /supabaseClient\.from\('league_state'\)\.update\(/);
 });
 
+test('Skins loads the shared revision comparator before using it for Realtime events', () => {
+  assert.match(skins, /<script src="hbnf-league-state-sync\.js\?v=20261030-revision-order"><\/script>/);
+  assert.match(skins, /HBNFLeagueStateSync\.revisionAtOrBefore\(incomingRevision,ctx\.lastRemoteRevision\)/);
+});
+
+test('Skins compares remote JSONB snapshots semantically despite object-key reordering', () => {
+  assert.match(skins, /const incomingRootHash=hbnfSemanticHash\(incoming\)/);
+  assert.match(skins, /const currentBranchHash=hbnfSemanticHash\(currentRoot&&currentRoot\[ctx\.branch\]\)/);
+  assert.match(skins, /ctx\.lastRemoteRootHash=hbnfSemanticHash\(readback\.data\.state_json\)/);
+  assert.match(skins, /if\(hbnfSemanticHash\(ctx\.state\)===saveSnapshotHash\)/);
+});
+
 test('cutover revokes public direct insert/update and keeps anonymous RPC execution', () => {
   assert.match(migration, /revoke insert, update on table public\.league_state from public, anon, authenticated/i);
   assert.match(migration, /grant select on table public\.league_state to anon, authenticated/i);

@@ -30,6 +30,10 @@
     const a = revisionMicros(left), b = revisionMicros(right);
     return a === null || b === null || a < b;
   };
+  const revisionAtOrBefore = (left, right) => {
+    const a = revisionMicros(left), b = revisionMicros(right);
+    return a !== null && b !== null && a <= b;
+  };
 
   async function snapshot(root, revision) {
     if (!root || !isObject(root) || !revision || revisionMicros(revision) === null) {
@@ -229,5 +233,5 @@
     element.textContent = detail || messages[kind] || String(kind || '');
   }
 
-  global.HBNFLeagueStateSync = Object.freeze({ clone, equal, hash, read, reconcile, prepare, save, snapshot, cacheBaseline, loadBaseline, retainPendingDraft, loadPendingDraft, clearPendingDraft, status });
+  global.HBNFLeagueStateSync = Object.freeze({ clone, equal, hash, read, reconcile, prepare, save, snapshot, cacheBaseline, loadBaseline, retainPendingDraft, loadPendingDraft, clearPendingDraft, revisionAtOrBefore, status });
 })(window);
