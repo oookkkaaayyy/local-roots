@@ -71,6 +71,28 @@ async function fixture() {
   return { root, receipt, cleanup: () => rm(root, { recursive: true, force: true }) };
 }
 
+test('candidate packager hashes every build file into the exact archived ZIP', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'pr156-package-'));
+  try {
+    const dist = path.join(root, 'app/dist');
+    const output = path.join(root, 'capsule');
+    await mkdir(dist, { recursive: true });
+    await writeFile(path.join(root, 'app/package-lock.json'), '{"lock":true}\n');
+    const html = Buffer.from('<main>candidate</main>');
+    await writeFile(path.join(dist, 'index.html'), html);
+    const script = path.resolve('scripts/package-dye-studio-candidate.mjs');
+    const run = spawnSync(process.execPath, [script, dist, output, 'a'.repeat(40)], { encoding: 'utf8' });
+    assert.equal(run.status, 0, run.stderr);
+    const manifest = JSON.parse(await readFile(path.join(output, 'manifest.json'), 'utf8'));
+    const archive = await readFile(path.join(output, 'candidate.zip'));
+    assert.equal(manifest.releaseId, 'local-roots-dye-studio-pr-156-2026-10-30-r1');
+    assert.equal(manifest.sourceCommit, 'a'.repeat(40));
+    assert.equal(manifest.archiveBytes, archive.length);
+    assert.equal(manifest.archiveSha256, hash(archive));
+    assert.deepEqual(manifest.files, [{ path: 'index.html', bytes: html.length, sha256: hash(html) }]);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
 async function nativeRollbackFixture() {
   const f = await fixture();
   const providerRecord = {
