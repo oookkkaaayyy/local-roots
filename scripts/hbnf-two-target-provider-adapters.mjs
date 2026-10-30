@@ -135,7 +135,12 @@ export function createGoogleDriveEvidenceStore({uploadFile,fetchFile,writeLocal,
 export const SUPABASE_READ_SQL=`select jsonb_build_object(
  'tableExists',exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='league_state' and c.relkind='r'),
  'rlsEnabled',coalesce((select c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='league_state'),false),
- 'migrations',coalesce((select jsonb_agg(version||'_'||name order by version) from supabase_migrations.schema_migrations where version::text in ('20261029200450','20261029203741','20261030021038')),'[]'::jsonb),
+ -- Supabase MCP apply_migration allocates its own ledger version. The caller's
+ -- original timestamped filename is stored as the NAME, not the VERSION.
+ -- Do not join version and name: that double-prefixes the name and falsely
+ -- reports a successfully applied migration as missing.
+ 'migrations',coalesce((select jsonb_agg(name order by version) from supabase_migrations.schema_migrations where name in ('20261029200450_hbnf_glow_atomic_week_sync','20261029203741_hbnf_league_state_server_revision_guard','20261030021038_hbnf_league_state_anon_cas_rpc')),'[]'::jsonb),
+ 'migrationLedger',coalesce((select jsonb_agg(jsonb_build_object('version',version::text,'name',name) order by version) from supabase_migrations.schema_migrations where name in ('20261029200450_hbnf_glow_atomic_week_sync','20261029203741_hbnf_league_state_server_revision_guard','20261030021038_hbnf_league_state_anon_cas_rpc')),'[]'::jsonb),
  'candidateFunctions',coalesce((select jsonb_agg(p.proname order by p.proname) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('hbnf_apply_udisc_glow_week','hbnf_record_udisc_glow_sync_status','hbnf_save_league_state_v1','hbnf_enforce_league_state_revision')),'[]'::jsonb),
  'triggers',coalesce((select jsonb_agg(t.tgname order by t.tgname) from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='league_state' and not t.tgisinternal),'[]'::jsonb),
  'stateFingerprint',(select md5(to_jsonb(ls)::text) from public.league_state ls where ls.id=1),
@@ -149,6 +154,8 @@ export function createSupabaseMcpAdapter({executeSql,applyMigration,verifySql=ex
    assert(projectId===PROJECT,'Supabase project ID mismatch');const rows=sqlRows(assertMcpSuccess(await executeSql({project_id:PROJECT,query:SUPABASE_READ_SQL}),'Supabase read'));
    assert(Array.isArray(rows)&&rows.length===1,'Supabase readback was not one state row');
    const state=rows[0].state;assert(typeof state.stateFingerprint==='string','Supabase independent state fingerprint missing');
+   assert(Array.isArray(state.migrations)&&Array.isArray(state.migrationLedger)&&state.migrations.length===state.migrationLedger.length,'Supabase migration ledger shape or count mismatch');
+   assert(state.migrationLedger.every(e=>typeof e?.name==='string'&&/^\\d{14}$/.test(e.version)&&state.migrations.includes(e.name))&&new Set(state.migrations).size===state.migrations.length,'Supabase migration ledger has a malformed, duplicate, or unmatched entry');
    if(initialStateFingerprint&&state.stateFingerprint!==initialStateFingerprint)throw new Error('league_state changed during migration installation');
    initialStateFingerprint??=state.stateFingerprint;
    return {projectId:PROJECT,...state};
