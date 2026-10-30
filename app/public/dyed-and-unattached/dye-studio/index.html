@@ -411,8 +411,25 @@ body.calibration-mode #du-lighting{display:none!important}
    <input id="discCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
    <input id="discPhotoInput" type="file" accept="image/*" class="hidden">
    <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Photo color is a suggestion. Review or adjust it before applying; photos are not color calibrated.</p>
-   <label id="photoSuggestedColorLabel" class="photo-suggested-color" hidden>Adjust suggested blank color <input id="photoSuggestedColor" type="color" value="#E8F0F6"></label>
-   <div class="photo-suggestion-actions"><button type="button" id="applyPhotoSuggestion" hidden>Apply suggested color</button><button type="button" id="keepPhotoCurrent" hidden>Keep current</button></div>
+   <section id="photoColorWorkspace" class="photo-color-workspace" hidden aria-label="Sample and adjust a draft starting color">
+     <div class="photo-color-comparison">
+       <div class="photo-reference-card"><strong>Original photo</strong>
+         <div id="photoReferenceStage" class="photo-reference-stage"><img id="photoReferenceImage" alt="Your disc photo. Tap or drag over clean plastic to sample its color." tabindex="0"><span id="photoSampleMarker" class="photo-sample-target" aria-hidden="true" hidden></span></div>
+         <div class="photo-sample-row"><canvas id="photoSampleLoupe" width="120" height="120" aria-hidden="true"></canvas><span id="photoSampleReadout">Tap unstamped plastic to sample</span></div>
+       </div>
+       <div class="photo-draft-card"><strong>Blank preview</strong><div id="photoDraftDisc" aria-hidden="true"></div><output id="photoDraftHex">#FFFFFF</output><span>Preview only</span></div>
+     </div>
+     <p id="photoSampleHelp" class="photo-workspace-help">Tap or drag on clean, unstamped plastic. The color is a local photo sample, not calibrated physical color. Your current project stays unchanged until Apply.</p>
+     <button id="photoUseSample" type="button" class="photo-sample-button">Use marked spot</button>
+     <div class="photo-adjustments" aria-label="Adjust proposed color">
+       <label>Hue <input id="photoHue" type="range" min="0" max="359" value="210"><output id="photoHueValue">210°</output></label>
+       <label>Colorfulness <input id="photoSaturation" type="range" min="0" max="100" value="15"><output id="photoSaturationValue">15%</output></label>
+       <label>Lightness <input id="photoLightness" type="range" min="0" max="100" value="70"><output id="photoLightnessValue">70%</output></label>
+     </div>
+     <details class="photo-advanced-color"><summary>Precise color (optional)</summary><label>HEX <input id="photoDraftHexInput" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="#FFFFFF" aria-label="Draft color HEX"></label></details>
+     <p id="photoDraftWarning" class="photo-draft-warning">Changing the draft updates the disc preview immediately. Apply accepts it; Cancel keeps your previous color and edits.</p>
+     <div class="photo-suggestion-actions"><button type="button" id="applyPhotoSuggestion" class="primary">Apply color</button><button type="button" id="keepPhotoCurrent">Cancel / keep current</button></div>
+   </section>
    <details id="photoRimPanel" class="photo-rim-panel">
      <summary>Disc appearance</summary>
      <div class="photo-rim-grid">

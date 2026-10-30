@@ -152,55 +152,114 @@ function estimatePixels(imageData,options={}){
  return {hex:plateHex,rgb:rgb.map(x=>Math.round(x)),confidence:severeMixedColor?"check":confidence,appearance,severeMixedColor,
    localizationConfidence:edgeFound?(disc.support>=.85&&disc.edge>=30?"good":"check"):"low",plateConfidence:severeMixedColor?"low":confidence,rimConfidence:appearance?"check":"low",hueConfidence,colorStatus,
    edgeDetected:edgeFound,spread:Math.round(spread),outlierFraction:+outliers.toFixed(2),
-   pixelCount:samples.length};
+   pixelCount:samples.length,disc:{x:disc.x/w,y:disc.y/h,r:disc.r/Math.min(w,h)}};
 }
-async function analyzeImage(file){
- if(!file||!file.type.startsWith("image/"))throw Error("Choose a photo of your disc");
+function photoFile(file){return !!file&&(String(file.type||"").startsWith("image/")||/\.(heic|heif)$/i.test(file.name||""))}
+function loadPhotoImage(file){
+ if(!photoFile(file))return Promise.reject(Error("Choose a JPEG, PNG, WebP, or browser-supported HEIC photo."));
+ const url=URL.createObjectURL(file);
+ return new Promise((resolve,reject)=>{
+   const image=new Image();
+   image.onload=()=>resolve({url,image});
+   image.onerror=()=>{URL.revokeObjectURL(url);reject(Error("This browser couldn't decode the photo. Try a JPEG, PNG, or WebP image."))};
+   image.src=url;
+ });
+}
+function analysisCanvas(image,maxSide){
  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d",{willReadFrequently:true});
  if(!ctx)throw Error("Photo processing unavailable in this browser");
- let img=null,url=null;
+ const width=image.naturalWidth||image.width,height=image.naturalHeight||image.height;
+ if(!width||!height)throw Error("Photo was empty");
+ const scale=Math.min(1,maxSide/Math.max(width,height));
+ canvas.width=Math.max(80,Math.round(width*scale));canvas.height=Math.max(80,Math.round(height*scale));
+ ctx.drawImage(image,0,0,canvas.width,canvas.height);
+ return{canvas,ctx,data:ctx.getImageData(0,0,canvas.width,canvas.height),width:canvas.width,height:canvas.height};
+}
+function releasePhotoSession(session){
+ if(!session)return;
+ if(session.url)URL.revokeObjectURL(session.url);
+ if(session.sampleCanvas){session.sampleCanvas.width=0;session.sampleCanvas.height=0}
+ if(session.analysisCanvas){session.analysisCanvas.width=0;session.analysisCanvas.height=0}
+ session.image=null;session.imageData=null;
+}
+async function createPhotoSession(file){
+ const loaded=await loadPhotoImage(file);
+ let sampled=null,analysis=null;
  try{
-   // Some displayable photos cannot be decoded by createImageBitmap (notably
-   // platform-specific phone formats). Retry with the browser's image element
-   // before rejecting the original-disc color import.
-   if(typeof createImageBitmap==="function"){
-     try{img=await createImageBitmap(file)}
-     catch{/* The image-element decoder gets a chance below. */}
-   }
-   if(!img){
-     url=URL.createObjectURL(file);
-     img=await new Promise((resolve,reject)=>{
-       const element=new Image();element.onload=()=>resolve(element);element.onerror=()=>reject(Error("Unable to open photo"));element.src=url;
-     });
-   }
-   const w=img.width||img.naturalWidth,h=img.height||img.naturalHeight;
-   if(!w||!h)throw Error("Photo was empty");
-   const scale=Math.min(1,460/Math.max(w,h));
-   canvas.width=Math.max(80,Math.round(w*scale));canvas.height=Math.max(80,Math.round(h*scale));
-   ctx.drawImage(img,0,0,canvas.width,canvas.height);
-   return estimatePixels(ctx.getImageData(0,0,canvas.width,canvas.height));
- }finally{
-   if(img&&typeof img.close==="function")img.close();
-   if(url)URL.revokeObjectURL(url);
-   canvas.width=0;canvas.height=0;
+   sampled=analysisCanvas(loaded.image,900);analysis=analysisCanvas(loaded.image,460);
+   const result=estimatePixels(analysis.data);
+   if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
+   if(result.severeMixedColor)throw Error("Photo contains strongly mixed colors or multiple discs. Choose one undyed disc and retry.");
+   return{url:loaded.url,image:loaded.image,sampleCanvas:sampled.canvas,imageData:sampled.data,analysisCanvas:analysis.canvas,result,
+     disc:{x:result.disc.x*sampled.width,y:result.disc.y*sampled.height,r:result.disc.r*Math.min(sampled.width,sampled.height)},width:sampled.width,height:sampled.height};
+ }catch(error){
+   if(sampled?.canvas){sampled.canvas.width=0;sampled.canvas.height=0}
+   if(analysis?.canvas){analysis.canvas.width=0;analysis.canvas.height=0}
+   URL.revokeObjectURL(loaded.url);throw error
  }
 }
+async function analyzeImage(file){
+ const session=await createPhotoSession(file);
+ try{return session.result}finally{releasePhotoSession(session)}
+}
+function distanceRgb(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])}
+function samplePhotoPatch(imageData,x,y,disc,overall,radius=8){
+ const {data,width,height}=imageData||{};
+ if(!data||!width||!height||!disc)throw Error("Photo sample is unavailable");
+ const nx=(x-disc.x)/disc.r,ny=(y-disc.y)/disc.r,radial=Math.hypot(nx,ny);
+ if(radial<.20||radial>.80)throw Error("Choose plastic inside the flight plate, away from the edge.");
+ const pixels=[];
+ for(let py=Math.max(0,Math.floor(y-radius));py<=Math.min(height-1,Math.ceil(y+radius));py++)
+ for(let px=Math.max(0,Math.floor(x-radius));px<=Math.min(width-1,Math.ceil(x+radius));px++){
+   if((px-x)**2+(py-y)**2>radius*radius)continue;
+   const dx=(px-disc.x)/disc.r,dy=(py-disc.y)/disc.r,r=Math.hypot(dx,dy);
+   if(r<.18||r>.82)continue;
+   const i=(py*width+px)*4;if(data[i+3]<240)continue;
+   pixels.push([data[i],data[i+1],data[i+2]]);
+ }
+ if(pixels.length<12)throw Error("Not enough clear plastic in that spot. Tap a larger unstamped area.");
+ const med=channel=>{const v=pixels.map(p=>p[channel]).sort((a,b)=>a-b),m=Math.floor(v.length/2);return v.length%2?v[m]:(v[m-1]+v[m])/2};
+ const rgb=[0,1,2].map(med),base=Array.isArray(overall)?overall:(overall?.rgb||[0,0,0]);
+ const redInk=c=>c[0]>c[1]*1.22&&c[0]>c[2]*1.12&&c[0]-Math.min(c[1],c[2])>38;
+ if(redInk(rgb)&&!redInk(base)&&distanceRgb(rgb,base)>30)throw Error("That spot looks like printed stamp ink. Tap nearby clean plastic.");
+ if(Math.min(...rgb)>247&&Math.max(...base)<225)throw Error("That spot may be glare. Tap a softly lit plastic area.");
+ return{rgb,hex:hex(rgb),pixelCount:pixels.length,normalized:{x:x/width,y:y/height}};
+}
+function rgbToHsl(rgb){let[r,g,b]=rgb.map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,h=0,s=0,l=(mx+mn)/2;if(d){s=d/(1-Math.abs(2*l-1));if(mx===r)h=60*(((g-b)/d)%6);else if(mx===g)h=60*((b-r)/d+2);else h=60*((r-g)/d+4)}if(h<0)h+=360;return[h,s,l]}
+function hslHex(h,s,l){h=((h%360)+360)%360;s=clamp(s,0,1);l=clamp(l,0,1);const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;let r=0,g=0,b=0;if(h<60)[r,g,b]=[c,x,0];else if(h<120)[r,g,b]=[x,c,0];else if(h<180)[r,g,b]=[0,c,x];else if(h<240)[r,g,b]=[0,x,c];else if(h<300)[r,g,b]=[x,0,c];else[r,g,b]=[c,0,x];return hex([(r+m)*255,(g+m)*255,(b+m)*255])}
 function bind(){
  const camera=document.getElementById("discCameraInput"),library=document.getElementById("discPhotoInput"),
        status=document.getElementById("photoColorStatus");
  if(!camera||!library||!status)return;
  const rimPanel=document.getElementById("photoRimPanel"),rimOn=document.getElementById("photoRimEnabled"),
   rimColor=document.getElementById("photoRimColor"),rimWidth=document.getElementById("photoRimWidth"),
-  rimSoftness=document.getElementById("photoRimSoftness"),applySuggestion=document.getElementById("applyPhotoSuggestion"),keepSuggestion=document.getElementById("keepPhotoCurrent"),suggestedColor=document.getElementById("photoSuggestedColor"),suggestedColorLabel=document.getElementById("photoSuggestedColorLabel");
+  rimSoftness=document.getElementById("photoRimSoftness"),workspace=document.getElementById("photoColorWorkspace"),
+  applySuggestion=document.getElementById("applyPhotoSuggestion"),keepSuggestion=document.getElementById("keepPhotoCurrent"),
+  photoImage=document.getElementById("photoReferenceImage"),photoStage=document.getElementById("photoReferenceStage"),
+  marker=document.getElementById("photoSampleMarker"),loupe=document.getElementById("photoSampleLoupe"),
+  sampleReadout=document.getElementById("photoSampleReadout"),sampleHelp=document.getElementById("photoSampleHelp"),
+  sampleButton=document.getElementById("photoUseSample"),draftDisc=document.getElementById("photoDraftDisc"),draftHex=document.getElementById("photoDraftHex"),
+  draftHexInput=document.getElementById("photoDraftHexInput"),
+  hueInput=document.getElementById("photoHue"),satInput=document.getElementById("photoSaturation"),lightInput=document.getElementById("photoLightness");
+ const byId=id=>document.getElementById(id),chip=byId("photoColorChip");
  for(const [button,input] of [["takeDiscPhoto",camera],["chooseDiscPhoto",library]]){
    document.getElementById(button).addEventListener("click",()=>input.click());
  }
+ let pending=null,session=null,draftHexValue=null,target={x:.5,y:.45},dragging=false,loadToken=0;
  function syncControls(){
   if(!rimPanel)return;
   const a=window.DUDiscAppearance?.get?.()||null;
   rimOn.checked=!!a;
   if(a){rimColor.value=a.rimHex;rimWidth.value=String(Math.round((1-a.boundary)*100));rimSoftness.value=String(Math.round(a.softness*100))}
   rimPanel.classList.toggle("has-rim",!!a);
+  syncBlankMockup();
+ }
+ function syncBlankMockup(){
+  if(!draftDisc||!draftHexValue)return;
+  const base=draftHexValue;
+  if(rimOn?.checked){const boundary=100-(+rimWidth.value||15),edge=rimColor.value||"#333333";draftDisc.style.background=`radial-gradient(circle, ${base} 0 ${Math.max(50,boundary-2)}%, ${edge} ${Math.min(98,boundary+3)}% 100%)`}
+  else draftDisc.style.background=base;
+  draftHex.textContent=base.toUpperCase();
  }
  function changedRim(){
   if(!rimOn.checked){window.DUDiscAppearance?.set?.(null,true);syncControls();return}
@@ -213,56 +272,105 @@ function bind(){
   syncControls();
  }
  window.DUDiscPhoto.syncControls=syncControls;
- if(suggestedColor)suggestedColor.addEventListener("input",()=>{
-  document.getElementById("photoColorChip").style.backgroundColor=suggestedColor.value;
-  if(!pending)return;
-  const changed=suggestedColor.value.toUpperCase()!==pending.hex.toUpperCase();
-  if(applySuggestion)applySuggestion.textContent=changed?"Apply adjusted color":"Apply suggested color";
-  status.textContent=changed?"Adjusted starting color "+suggestedColor.value.toUpperCase()+". The photo hue remains uncertain; your current work is unchanged until you apply this color.":"Uncertain photo color "+pending.hex+". Adjust the swatch to the known blank color before applying. Your current work is unchanged.";
+ function setTarget(x,y){target={x:clamp(x,0,1),y:clamp(y,0,1)};if(marker){marker.hidden=false;marker.style.left=(target.x*100)+"%";marker.style.top=(target.y*100)+"%"}}
+ function updateLoupe(x,y){
+  if(!session||!loupe)return;
+  const c=loupe.getContext("2d");if(!c)return;
+  const size=Math.max(10,Math.round(Math.min(session.width,session.height)*.035)),sx=clamp(Math.round(x-size/2),0,session.width-size),sy=clamp(Math.round(y-size/2),0,session.height-size);
+  c.clearRect(0,0,loupe.width,loupe.height);c.imageSmoothingEnabled=false;c.drawImage(session.sampleCanvas,sx,sy,size,size,0,0,loupe.width,loupe.height);
+ }
+ function setHslControls(hexColor){
+  const rgb=[parseInt(hexColor.slice(1,3),16),parseInt(hexColor.slice(3,5),16),parseInt(hexColor.slice(5,7),16)],hsl=rgbToHsl(rgb);
+  hueInput.value=String(Math.round(hsl[0]));satInput.value=String(Math.round(hsl[1]*100));lightInput.value=String(Math.round(hsl[2]*100));
+  byId("photoHueValue").textContent=hueInput.value+"°";byId("photoSaturationValue").textContent=satInput.value+"%";byId("photoLightnessValue").textContent=lightInput.value+"%";
+ }
+ function setDraftColor(hexColor,{syncSliders=true,source="adjustment"}={}){
+  if(!/^#[0-9a-f]{6}$/i.test(hexColor||""))return;
+  draftHexValue=hexColor.toUpperCase();
+  if(draftHexInput)draftHexInput.value=draftHexValue;
+  if(syncSliders)setHslControls(draftHexValue);
+  if(chip){chip.hidden=false;chip.style.backgroundColor=draftHexValue}
+  syncBlankMockup();window.DUPhotoColor?.preview?.(draftHexValue);
+  if(pending&&source!=="sample")status.textContent=(pending.result.colorStatus==="uncertain"?"Photo hue is uncertain. ":"Photo colors are not calibrated. ")+"Draft "+draftHexValue+" is previewed; current project stays unchanged until Apply.";
+ }
+ function sampleAt(x,y){
+  if(!session||!pending)return;
+  const radius=clamp(Math.round(Math.min(session.width,session.height)*.013),6,17);
+  try{
+   const sample=samplePhotoPatch(session.imageData,x,y,session.disc,pending.result,radius);
+   pending.sample=sample;setDraftColor(sample.hex,{source:"sample"});
+   sampleReadout.textContent="Sample "+sample.hex+" · "+sample.pixelCount+" nearby pixels";
+   sampleHelp.textContent="This is a robust local photo sample, not calibrated physical color. Adjust while comparing both panels; Apply accepts it.";
+   status.textContent="Local sample "+sample.hex+" shown as a draft. Your accepted project is unchanged until Apply.";
+  }catch(error){sampleHelp.textContent=error.message||"Choose a clean plastic area."}
+ }
+ function samplePointer(event){
+  if(!session||!photoImage)return;
+  const rect=photoImage.getBoundingClientRect(),x=clamp((event.clientX-rect.left)/rect.width,0,1),y=clamp((event.clientY-rect.top)/rect.height,0,1);
+  setTarget(x,y);updateLoupe(x*session.width,y*session.height);
+  if(dragging)sampleAt(x*session.width,y*session.height);
+ }
+ function sampleTarget(){if(session)sampleAt(target.x*session.width,target.y*session.height)}
+ function resetPhotoSession(){
+  pending=null;draftHexValue=null;dragging=false;
+  if(session){releasePhotoSession(session);session=null}
+  if(photoImage)photoImage.removeAttribute("src");if(marker)marker.hidden=true;
+  if(workspace)workspace.hidden=true;
+  window.DUPhotoColor?.cancel?.();
+ }
+ function beginDraft(nextSession){
+  resetPhotoSession();session=nextSession;pending={result:nextSession.result,sample:null};
+  photoImage.src=nextSession.url;workspace.hidden=false;setTarget(.5,.45);updateLoupe(target.x*session.width,target.y*session.height);
+  sampleReadout.textContent="Tap unstamped plastic to sample";
+  const uncertain=nextSession.result.colorStatus==="uncertain"||nextSession.result.hueConfidence==="insufficient";
+  sampleHelp.textContent=uncertain?"The photo's hue is uncertain. Tap a clean area of the flight plate; lighting can shift sampled colors.":"Tap or drag across clean, unstamped plastic to sample a starting color.";
+  status.className="photo-status photo-check";
+  status.textContent=(uncertain?"Uncertain starting suggestion ":"Photo starting suggestion ")+nextSession.result.hex+". Original photo and draft preview stay visible; nothing is applied until you confirm.";
+  setDraftColor(nextSession.result.hex,{source:"suggestion"});
+  if(nextSession.result.appearance){rimColor.value=nextSession.result.appearance.rimHex;rimWidth.value=String(Math.round((1-nextSession.result.appearance.boundary)*100));rimSoftness.value=String(Math.round(nextSession.result.appearance.softness*100));syncBlankMockup()}
+ }
+ if(photoImage){
+  photoImage.addEventListener("pointerdown",event=>{if(!session)return;event.preventDefault();dragging=true;try{photoImage.setPointerCapture(event.pointerId)}catch{}samplePointer(event)});
+  photoImage.addEventListener("pointermove",samplePointer);
+  photoImage.addEventListener("pointerup",event=>{dragging=false;try{photoImage.releasePointerCapture(event.pointerId)}catch{}});
+  photoImage.addEventListener("pointercancel",()=>{dragging=false});
+  photoImage.addEventListener("keydown",event=>{if(!session)return;const step=event.shiftKey?0.05:0.01;let moved=false;if(event.key==="ArrowLeft"){target.x-=step;moved=true}else if(event.key==="ArrowRight"){target.x+=step;moved=true}else if(event.key==="ArrowUp"){target.y-=step;moved=true}else if(event.key==="ArrowDown"){target.y+=step;moved=true}else if(event.key==="Enter"){sampleTarget();event.preventDefault();return}if(moved){event.preventDefault();setTarget(target.x,target.y);updateLoupe(target.x*session.width,target.y*session.height)}});
+ }
+ sampleButton?.addEventListener("click",sampleTarget);
+ for(const [input,output,suffix] of [[hueInput,"photoHueValue","°"],[satInput,"photoSaturationValue","%"],[lightInput,"photoLightnessValue","%"]])input?.addEventListener("input",()=>{
+  byId(output).textContent=input.value+suffix;
+  setDraftColor(hslHex(+hueInput.value,+satInput.value/100,+lightInput.value/100),{syncSliders:false});
  });
- let pending=null;
- if(keepSuggestion)keepSuggestion.addEventListener("click",()=>{
-   pending=null;if(applySuggestion)applySuggestion.hidden=true;keepSuggestion.hidden=true;if(suggestedColorLabel)suggestedColorLabel.hidden=true;
-   status.textContent="Kept your current disc appearance and edits.";status.className="photo-status";
+ draftHexInput?.addEventListener("input",()=>{const value=draftHexInput.value.trim();if(/^#[0-9a-f]{6}$/i.test(value))setDraftColor(value,{source:"hex"})});
+ keepSuggestion?.addEventListener("click",()=>{
+  resetPhotoSession();if(chip){chip.hidden=false;chip.style.backgroundColor=byId("baseHex").value}status.textContent="Canceled photo color draft. Your accepted color and project edits were kept.";status.className="photo-status";
  });
- if(applySuggestion)applySuggestion.addEventListener("click",()=>{
-   if(!pending)return;
-   const result=pending,acceptedHex=suggestedColor?.value||result.hex,color=document.getElementById("baseColor"),field=document.getElementById("baseHex");
-   color.value=acceptedHex;field.value=acceptedHex;color.dispatchEvent(new Event("input",{bubbles:true}));
-   window.DUDiscAppearance?.set?.(null,false,true);syncControls();
-   document.getElementById("autoTransmission").click();
-   status.textContent="Starting color applied: "+acceptedHex+". Review it against the blank disc; photo color is not calibrated.";
-   status.className="photo-status photo-check";pending=null;applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;
-   document.getElementById("photoColorChip").style.backgroundColor=acceptedHex;
+ applySuggestion?.addEventListener("click",()=>{
+  if(!pending||!draftHexValue)return;
+  const accepted=draftHexValue;
+  if(!window.DUPhotoColor?.apply?.(accepted)){status.textContent="The color could not be applied. Your project was not changed.";return}
+  resetPhotoSession();if(chip){chip.hidden=false;chip.style.backgroundColor=accepted}
+  status.textContent="Starting color applied: "+accepted+". Photo samples are not calibrated; review the simulated result.";status.className="photo-status photo-check";
  });
  async function apply(event){
    const input=event.currentTarget,file=input.files&&input.files[0];
    if(!file)return;
-   pending=null;if(applySuggestion)applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;if(suggestedColorLabel)suggestedColorLabel.hidden=true;
+   const token=++loadToken;
    status.textContent="Reading disc color…";status.className="photo-status";
    try{
-     const result=await analyzeImage(file);
-     if(result.severeMixedColor)throw Error("Photo contains strongly mixed colors or multiple discs. Crop to a single undyed disc and retry; the selected color was not changed.");
-     if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
-     pending=result;if(applySuggestion)applySuggestion.hidden=false;if(keepSuggestion)keepSuggestion.hidden=false;
-     if(suggestedColor){suggestedColor.value=result.hex;if(suggestedColorLabel)suggestedColorLabel.hidden=false}
-     if(applySuggestion)applySuggestion.textContent="Apply suggested color";
-     if(result.appearance){rimColor.value=result.appearance.rimHex;rimWidth.value=String(Math.round((1-result.appearance.boundary)*100));rimSoftness.value=String(Math.round(result.appearance.softness*100))}
-     const certainty=result.colorStatus==="uncertain"?"Hue is unclear in this photo; warm or colored light can hide a pale tint. Adjust the swatch to the known blank color before applying.":"Photo colors are uncalibrated; compare the estimate with the blank before applying.";
-     const summary=(result.colorStatus==="uncertain"?"Uncertain photo color ":"Photo color estimate ")+result.hex+". "+certainty+" Your current work is unchanged. "+(result.appearance?"A possible rim is only a suggestion; select Different rim color to use it.":"No separate rim was confirmed.");
-     status.textContent=summary;
-     status.className="photo-status photo-check";
-     document.getElementById("photoColorChip").style.backgroundColor=result.hex;
-     document.getElementById("photoColorChip").hidden=false;
+     const nextSession=await createPhotoSession(file);
+     if(token!==loadToken){releasePhotoSession(nextSession);return}
+     beginDraft(nextSession);
    }catch(error){
-     pending=null;if(applySuggestion)applySuggestion.hidden=true;if(keepSuggestion)keepSuggestion.hidden=true;if(suggestedColorLabel)suggestedColorLabel.hidden=true;
+     if(token!==loadToken)return;
      status.className="photo-status photo-check";
-     status.textContent=error&&error.message?error.message:"Couldn't read the photo. Set color manually or try another photo.";
+     status.textContent=error&&error.message?error.message:"Couldn't read the photo. Choose a supported image and try again.";
    }finally{input.value="";}
  }
  camera.addEventListener("change",apply);library.addEventListener("change",apply);
+ window.addEventListener("pagehide",()=>{loadToken++;resetPhotoSession()},{once:true});
 }
-window.DUDiscPhoto={estimatePixels,analyzeImage,bind};
+window.DUDiscPhoto={estimatePixels,analyzeImage,samplePhotoPatch,bind};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});
 else bind();
 })();

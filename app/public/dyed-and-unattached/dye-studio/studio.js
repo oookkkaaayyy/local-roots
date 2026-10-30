@@ -437,9 +437,10 @@ function researchPredictPoint(baseHex,active,mode,p,x,y){
  return out
 }
 // Photo geometry is independent of the chosen Innova dye-response model.
-let discAppearance=null,photoBaseSelected=false;
+let discAppearance=null,photoBaseSelected=false,photoDraftBaseHex=null;
+function displayBaseHex(){return photoDraftBaseHex||$("baseHex").value}
 function appearanceAt(x,y){
- const base=$("baseHex").value,a=discAppearance;
+ const base=displayBaseHex(),a=discAppearance;
  if(!a||!validHex(a.rimHex))return base;
  const r=Math.hypot(x,y),half=a.softness/2;
  const offsets=a.edgeOffsets,theta=(Math.atan2(y,x)+2*Math.PI)%(2*Math.PI);
@@ -502,6 +503,7 @@ function autoTransmissionHex(baseHex,p=profile()){
  return rgbHex(b.map(v=>v+(255-v)*lift))
 }
 function currentTransmissionHex(baseHex=$("baseHex").value,p=profile()){
+ if(photoDraftBaseHex&&baseHex.toUpperCase()===photoDraftBaseHex.toUpperCase())return autoTransmissionHex(baseHex,p);
  const el=$("transmissionHex"),h=el?.value?.toUpperCase();return validHex(h)?h:autoTransmissionHex(baseHex,p)
 }
 function isExactHbnfAnchor(baseHex,active,p=profile()){
@@ -583,6 +585,7 @@ const sourceIndex=[
 
 let history=[],historyIndex=-1,isRestoring=false,dragChanged=false;
 const regionColorCache=new Map(),spectralColorCache=new Map();
+let photoDraftControlState=null,photoDraftCanvasPointerEvents=null;
 
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
@@ -594,6 +597,35 @@ function normAngle(deg){let a=((deg+180)%360+360)%360-180;return a===-180?180:a}
 function deepCopy(x){return JSON.parse(JSON.stringify(x))}
 function stateObject(){return{photoBaseSelected,discAppearance:discAppearance?{...discAppearance}:null,base:$("baseHex").value.toUpperCase(),transmission:$("transmissionHex").value.toUpperCase(),blend:$("blendMode").value,viewMode,daylightScene,activeProfileId,layers:deepCopy(layers),sample:deepCopy(sample),processKey:activeRecipeKey(),method:activeMethod(),passCount:activePassCount(),showGuides:$("showGuides").checked}}
 function stateString(){return JSON.stringify(stateObject())}
+function setPhotoDraftControls(active){
+ if(active){
+  if(!photoDraftControlState){
+   photoDraftControlState=new Map([...document.querySelectorAll("button,input,select,textarea")].filter(el=>!el.closest("#photoColorWorkspace")).map(el=>[el,el.disabled]));
+   photoDraftCanvasPointerEvents=$("canvas").style.pointerEvents;
+  }
+  for(const el of photoDraftControlState.keys())el.disabled=true;
+  $("canvas").style.pointerEvents="none";
+ }else if(photoDraftControlState){
+  for(const[el,wasDisabled]of photoDraftControlState)el.disabled=wasDisabled;
+  photoDraftControlState=null;$("canvas").style.pointerEvents=photoDraftCanvasPointerEvents||"";photoDraftCanvasPointerEvents=null;updateHistoryButtons();
+ }
+}
+function setPhotoDraftBaseColor(hex){
+ if(!validHex(hex))return false;
+ photoDraftBaseHex=hex.toUpperCase();regionColorCache.clear();setPhotoDraftControls(true);requestRender(true);return true
+}
+function cancelPhotoDraftColor(){
+ if(!photoDraftBaseHex)return false;
+ photoDraftBaseHex=null;regionColorCache.clear();setPhotoDraftControls(false);requestRender(true);return true
+}
+function applyPhotoBaseColor(hex){
+ if(!validHex(hex))return false;
+ const accepted=hex.toUpperCase();photoDraftBaseHex=null;
+ $("baseHex").value=accepted;$("baseColor").value=accepted;
+ const transmission=autoTransmissionHex(accepted,profile());$("transmissionHex").value=transmission;$("transmissionColor").value=transmission;
+ photoBaseSelected=true;regionColorCache.clear();setPhotoDraftControls(false);requestRender(true);commitHistory();return true
+}
+window.DUPhotoColor={preview:setPhotoDraftBaseColor,cancel:cancelPhotoDraftColor,apply:applyPhotoBaseColor,isDraft:()=>!!photoDraftBaseHex};
 function applyState(s){
   isRestoring=true;
   $("methodSelect").value=s.method||"acetone-direct";
@@ -699,9 +731,10 @@ function researchPredict(baseHex,active,p=viewMode,profileObj=profile()){
   return baseHex
 }
 function colorForRegion(key){
-  const cacheKey=activeProfileId+"|"+String(photoBaseSelected)+"|"+JSON.stringify(discAppearance)+"|"+$("baseHex").value+"|"+currentTransmissionHex()+"|"+viewMode+"|"+daylightScene+"|"+layers.map(l=>`${l.name}:${l.hex}:${l.strength}`).join(",")+"|"+key;
+  const base=displayBaseHex();
+  const cacheKey=activeProfileId+"|"+String(photoBaseSelected)+"|"+JSON.stringify(discAppearance)+"|"+base+"|"+currentTransmissionHex(base)+"|"+viewMode+"|"+daylightScene+"|"+layers.map(l=>`${l.name}:${l.hex}:${l.strength}`).join(",")+"|"+key;
   if(regionColorCache.has(cacheKey))return regionColorCache.get(cacheKey);
-  const active=layers.filter((_,i)=>key[i]==="1"),base=$("baseHex").value,empirical=discAppearance?null:recordFor(active);let out;
+  const active=layers.filter((_,i)=>key[i]==="1"),empirical=discAppearance?null:recordFor(active);let out;
   if(photoBaseSelected&&viewMode==="daylight"&&daylightScene==="outdoor"&&!active.some(l=>Number(l.strength)>0))out=base;
   else if(empirical&&viewMode==="daylight")out=empirical.measuredHex;
   else out=researchPredict(base,active,viewMode,profile());
@@ -941,15 +974,17 @@ $("search").oninput=renderSwatches;
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");activeGroup=t.dataset.group;renderSwatches()});
 $("undoBtn").onclick=undo;$("redoBtn").onclick=redo;
 document.addEventListener("keydown",e=>{
+  if(photoDraftBaseHex)return;
   const mod=e.metaKey||e.ctrlKey;if(!mod||e.key.toLowerCase()!=="z")return;
   const tag=document.activeElement?.tagName;if(tag==="INPUT"&&document.activeElement.type==="text")return;
   e.preventDefault();e.shiftKey?redo():undo()
 });
 
 
-$("saveProject").onclick=()=>{try{localStorage.setItem("discDyeColorBlockLabV3",stateString());toast("Project saved in this browser")}catch{toast("Browser storage is unavailable")}};
-$("loadProject").onclick=()=>{try{const p=JSON.parse(localStorage.getItem("discDyeColorBlockLabV3")||"null");if(!p){toast("No saved project was found");return}mutate(()=>applyState(p),"Saved project loaded")}catch{toast("Saved project could not be loaded")}};
+$("saveProject").onclick=()=>{if($("saveProject").disabled)return;try{localStorage.setItem("discDyeColorBlockLabV3",stateString());toast("Project saved in this browser")}catch{toast("Browser storage is unavailable")}};
+$("loadProject").onclick=()=>{if($("loadProject").disabled)return;try{const p=JSON.parse(localStorage.getItem("discDyeColorBlockLabV3")||"null");if(!p){toast("No saved project was found");return}mutate(()=>applyState(p),"Saved project loaded")}catch{toast("Saved project could not be loaded")}};
 $("copyRecipe").onclick=async()=>{
+  if($("copyRecipe").disabled)return;
   const regions=collectRegions(),lines=[`Surface disc color: ${$("baseHex").value}`,`Photographed rim: ${discAppearance?discAppearance.rimHex+"; nominal width "+Math.round((1-discAppearance.boundary)*100)+"%; edge "+discAppearance.kind:"none detected / single tone"}`,`Transmission color: ${currentTransmissionHex()}`,`View: ${viewMode}${viewMode==="daylight"?" / "+daylightScene:""}`,`Method: ${$("methodSelect").selectedOptions[0].text}`,`Default passes for new blocks: ${activePassCount()}`,`Exact process ID: ${activeRecipeKey()||"not provided"}`,`Prediction model: ${$("blendMode").selectedOptions[0].text}`,
     ...layers.map((l,i)=>`${i+1}. ${l.name} — source ${l.hex} — application intensity ${l.strength}% — ${clamp(Math.round(+l.passes||1),1,12)} passes/coats — method ${methodForDyeLayer(l)} — ${l.shape==="full"?"whole disc":l.shape==="stripe"?`stripe, angle ${Math.round(l.angle)}°, position ${Math.round(l.offset*100)}%, width ${Math.round(l.width*100)}%`:`edge block, angle ${Math.round(l.angle)}°, position ${Math.round(l.offset*100)}%, ${l.side>0?"positive":"negative"} side`}`),
     "", "Predicted region colors:",...regions.map(r=>`${r.hex} overall; plate ${r.plateHex}; shoulder ${r.shoulderHex}; rim ${r.rimHex} — ${r.label}`),`Sampled result: ${$("sampleHex").textContent} at ${$("samplePos").textContent}`];
@@ -994,6 +1029,7 @@ function drawLegendRow(c,x,y,width,swatchHex,title,subtitle,rowH){
   const subY=y+23+titleLines.length*20+4,subLines=wrapLines(c,subtitle,width-76).slice(0,2);subLines.forEach((line,i)=>c.fillText(line,x+62,subY+i*18))
 }
 $("exportPng").onclick=()=>{
+  if($("exportPng").disabled)return;
   regionColorCache.clear();makePaintImage();const regions=collectRegions(),dyeRows=layers.length||1,regionRows=regions.length||1;
   const width=1800,margin=70,discSize=920,rightX=1060,rightW=670,rowH=96;
   const rightHeight=145+dyeRows*rowH+70+regionRows*rowH+90,height=Math.max(1120,rightHeight);
