@@ -1,5 +1,5 @@
--- Keep the established no-login scoring flow while closing the direct-DML
--- stale-client bypass. The server owns both the compare and revision advance.
+-- Add an acknowledged CAS save path for Glow while preserving the existing
+-- no-login direct INSERT/UPDATE privileges used by Skins, Admin, Random, and Skills.
 create or replace function public.hbnf_save_league_state_v1(
   p_expected_updated_at timestamptz,
   p_state_json jsonb
@@ -44,7 +44,6 @@ $function$;
 revoke all on function public.hbnf_save_league_state_v1(timestamptz, jsonb) from public, anon, authenticated;
 grant execute on function public.hbnf_save_league_state_v1(timestamptz, jsonb) to anon, authenticated;
 
--- SELECT remains available to the existing public scorecards. All anonymous
--- writes, including legacy whole-root PATCH/UPSERT clients, must use the CAS RPC.
-revoke insert, update on table public.league_state from public, anon, authenticated;
+-- Preserve the existing public scorecard access. Legacy pages still use direct
+-- league_state PATCH/UPSERT; the new RPC is additive and does not revoke it.
 grant select on table public.league_state to anon, authenticated;
