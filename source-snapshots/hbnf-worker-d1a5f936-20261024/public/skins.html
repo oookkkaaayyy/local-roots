@@ -42,6 +42,7 @@
  body{font-size:15px}.site-header{padding:10px 12px;gap:10px;align-items:flex-start}.brand-logo{width:52px;height:52px}.brand-title{font-size:1.1rem;line-height:1.05}.tagline{font-size:.68rem;line-height:1.15}.top-tools{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px;border-radius:16px}.top-tools label{font-size:.78rem}.top-tools select,.top-tools input,.top-tools .btn,.top-tools .pill,.top-tools .admin-link{width:100%;min-height:44px;justify-content:center;text-align:center}.main-wrap{padding:0 10px 22px}.nav-row{position:sticky;top:0;z-index:18;margin:10px -10px 12px;padding:8px 10px;background:rgba(3,10,5,.84);backdrop-filter:blur(10px);overflow-x:auto;flex-wrap:nowrap}.nav-btn{flex:0 0 auto;min-height:44px;white-space:nowrap;border-radius:999px;padding:10px 14px}.panel,.card{border-radius:18px;padding:12px;margin-bottom:12px}.panel-header{align-items:flex-start}.inline-tools,.header-actions{gap:8px}.inline-tools .btn,.header-actions .btn{min-height:44px}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.summary-card{padding:10px;border-radius:14px}.summary-card strong{font-size:1.1rem}.two-col,.three-col,.setup-row{grid-template-columns:1fr!important}.responsive-table-wrap{margin:0 -2px}.standings-table th,.standings-table td{padding:9px 8px}.helper{font-size:.86rem}.scorecard-table{font-size:.78rem}.scorecard-table .sticky-col{width:150px}.player-textarea{min-height:180px}
 }
 @media (max-width:430px){.top-tools{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr 1fr}.btn{padding:10px}.standings-table{font-size:.88rem}}
+.sync-status-strip{max-width:1160px;margin:10px auto 0;padding:0 16px}.sync-status-strip .pill{display:inline-flex;min-height:40px;align-items:center}
 
 
 /* 7.1.26_8 scorecard readability + back-9 partner fields */
@@ -1194,7 +1195,8 @@ table.dash-table:not(.scorecard-table) .money{color:var(--h5-green-soft,var(--br
 <link rel="manifest" href="/hbnf-main-manifest.webmanifest?v=20261019-unified-1">
 </head>
 <body><div class="aurora"></div><div class="site-shell">
-<header class="site-header"><a class="brand-wrap" id="homeLogoLink" href="/" aria-label="Return to HB Night Flyers home"><img class="brand-logo" src="/hbnf-bone-ink-logo.png?v=20261018-bone-ink-1" alt="HB Night Flyers logo"><div><h1 class="brand-title">HB Night Flyers</h1><p class="tagline">Tuesday Skins</p></div></a><div class="top-tools"><label class="week-tool">Week<select id="weekSelect"></select></label><div class="header-tools-menu"><button type="button" class="tools-menu-button" aria-expanded="false" aria-label="More options">⌄</button><div class="tools-menu-panel"><label class="history-tool">History<select id="historySelect" class="history-select"><option value="">History</option><option value="random.html">Random Doubles Putting League</option><option value="skills.html">Singles Skills Challenge</option></select></label><span class="pill" id="syncStatus" role="status" aria-live="polite">Local only</span><a class="btn ecosystem-menu-link" href="https://localrootsdg.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Local Roots in a new tab">Local Roots</a><a class="btn matrix-link" href="matrix.html">Matrix</a><a class="btn admin-link" href="admin.html">Admin</a></div></div></div></header>
+<header class="site-header"><a class="brand-wrap" id="homeLogoLink" href="/" aria-label="Return to HB Night Flyers home"><img class="brand-logo" src="/hbnf-bone-ink-logo.png?v=20261018-bone-ink-1" alt="HB Night Flyers logo"><div><h1 class="brand-title">HB Night Flyers</h1><p class="tagline">Tuesday Skins</p></div></a><div class="top-tools"><label class="week-tool">Week<select id="weekSelect"></select></label><div class="header-tools-menu"><button type="button" class="tools-menu-button" aria-expanded="false" aria-label="More options">⌄</button><div class="tools-menu-panel"><label class="history-tool">History<select id="historySelect" class="history-select"><option value="">History</option><option value="random.html">Random Doubles Putting League</option><option value="skills.html">Singles Skills Challenge</option></select></label><a class="btn ecosystem-menu-link" href="https://localrootsdg.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Local Roots in a new tab">Local Roots</a><a class="btn matrix-link" href="matrix.html">Matrix</a><a class="btn admin-link" href="admin.html">Admin</a></div></div></div></header>
+<div class="sync-status-strip"><span class="pill" id="syncStatus" role="status" aria-live="polite">Local only</span></div>
 <main class="main-wrap"><div class="main-inner"><div class="mobile-page-switch"><label>View<select id="mobilePageSelect" aria-label="Choose Skins page"><option value="dashboard">Dashboard</option><option value="setup">Setup</option><option value="scorecards">Scorecards</option><option value="standings">Standings</option></select></label></div><div class="nav-row"><button class="nav-btn active" data-page="dashboard">Dashboard</button><button class="nav-btn" data-page="setup">Setup</button><button class="nav-btn" data-page="scorecards">Scorecards</button><button class="nav-btn" data-page="standings">Standings</button></div>
 <section id="dashboard" class="page active hbnf-dashboard">
  <div class="dash-hero"><div><h2 class="dash-title">Tuesday Skins</h2><p class="dash-subtitle">Front 9 singles. Back 9 doubles.</p></div><div class="dash-status"><strong><span class="dash-dot"></span> League Active</strong><small id="skinsDashWeek">Loading week…</small></div></div>
@@ -1270,7 +1272,9 @@ function hbnfSemanticHash(value){const sorted=v=>Array.isArray(v)?v.map(sorted):
 function hbnfSetSyncStatus(text){const el=document.querySelector('#syncStatus');if(el)el.textContent=text}
 function makeSyncHelpers(ctx){return{
  queuePush(delay=140){clearTimeout(ctx.pushDebounceTimer);ctx.pushDebounceTimer=setTimeout(()=>{ctx.pushDebounceTimer=null;ctx.pushRoot()},delay)},
- async initSync(){
+ requestAuthoritativeCatchup(){if(!ctx.supabaseClient)return Promise.resolve();if(ctx.catchupPromise)return ctx.catchupPromise;ctx.catchupPromise=this.pullRoot().finally(()=>{ctx.catchupPromise=null});return ctx.catchupPromise},
+async initSync(){
+  try{const saved=JSON.parse(localStorage.getItem('hbnf-sync-skins-pending-v1')||'null');ctx.recoveredPendingDraft=saved&&saved.version===1&&saved.branch==='skins'&&saved.branchState&&typeof saved.branchState==='object'?saved:null}catch{ctx.recoveredPendingDraft=null}
   const cfg=getConfiguredSupabase();
   if(!cfg){hbnfSetSyncStatus('Local only');return}
   if(!window.supabase||!window.supabase.createClient){hbnfSetSyncStatus('Supabase load failed');return}
@@ -1280,20 +1284,25 @@ function makeSyncHelpers(ctx){return{
   ctx.syncBaselineReady=false;
   ctx.syncBaselinePromise=this.pullRoot();
   await ctx.syncBaselinePromise;
-  ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live').on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
+  ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live',{config:{broadcast:{replication_ready:true},postgres_changes_options:{wait:true}}}).on('system',{},payload=>{
+   if(payload?.extension==='system'&&payload?.message==='Replication connection established'&&payload?.status==='ok')ctx.requestAuthoritativeCatchup();
+  }).on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
+   const incomingRevision=String(payload.new&&payload.new.updated_at||'');
+   if(incomingRevision&&ctx.remoteUpdatedAt&&incomingRevision<=ctx.remoteUpdatedAt)return;
+   if(incomingRevision)ctx.remoteUpdatedAt=incomingRevision;
    const incoming=(payload.new&&payload.new.state_json)||{};
    const incomingRootHash=hbnfSyncHash(incoming);
    if(incomingRootHash&&incomingRootHash===ctx.lastRemoteRootHash)return;
-   const incomingBranchHash=hbnfSyncHash(incoming&&incoming[ctx.branch]);
+   const incomingBranchHash=skinsSemanticBranch(incoming&&incoming[ctx.branch]);
    const remoteBranch=incoming&&incoming[ctx.branch];
    const localBagTags=ctx.rootState&&ctx.rootState.bagTags,baseBagTags=ctx.baselineBagTags;
-   const localBagTagsChanged=hbnfSyncHash(localBagTags)!==hbnfSyncHash(baseBagTags);
-   const remoteBagTagsChanged=hbnfSyncHash(incoming&&incoming.bagTags)!==hbnfSyncHash(baseBagTags);
-   if(localBagTagsChanged&&remoteBagTagsChanged&&hbnfSyncHash(localBagTags)!==hbnfSyncHash(incoming&&incoming.bagTags)){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — bag tags changed on another device; your edits are kept here.');return}
+   const localBagTagsChanged=hbnfSemanticHash(localBagTags)!==hbnfSemanticHash(baseBagTags);
+   const remoteBagTagsChanged=hbnfSemanticHash(incoming&&incoming.bagTags)!==hbnfSemanticHash(baseBagTags);
+   if(localBagTagsChanged&&remoteBagTagsChanged&&hbnfSemanticHash(localBagTags)!==hbnfSemanticHash(incoming&&incoming.bagTags)){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — bag tags changed on another device; your edits are kept here.');return}
    if(ctx.localDirty){
     if(ctx.syncing&&incomingBranchHash&&incomingBranchHash===ctx.inFlightBranchHash){
      ctx.rootState=incoming;ctx.baselineBagTags=hbnfSyncClone(incoming&&incoming.bagTags);ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;
-     if(incomingBranchHash===hbnfSyncHash(ctx.state)){ctx.localDirty=false;hbnfSetSyncStatus('Saved to cloud')}
+     if(incomingBranchHash===skinsSemanticBranch(ctx.state)){ctx.localDirty=false;hbnfSetSyncStatus('Saved to cloud')}
      else{ctx.localDirty=true;ctx.pendingPush=true;hbnfSetSyncStatus('Pending — newer edits are waiting to save.')}
      return
     }
@@ -1314,7 +1323,7 @@ function makeSyncHelpers(ctx){return{
    ctx.remoteSyncing=true;saveLocal();ctx.remoteSyncing=false;
    renderAll();
   }).subscribe(status=>{
-   if(status==='SUBSCRIBED'){if(ctx.remoteConflictPending)hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');}
+   if(status==='SUBSCRIBED'){ctx.requestAuthoritativeCatchup();if(ctx.remoteConflictPending)hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');}
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')hbnfSetSyncStatus('Sync reconnecting…');
   });
   if(ctx.remoteConflictPending)hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');
@@ -1330,6 +1339,7 @@ function makeSyncHelpers(ctx){return{
     throw res.error;
    }
    if(!res.data||!res.data.updated_at)throw new Error('Cloud baseline unavailable; local copy retained.');
+   ctx.remoteUpdatedAt=res.data.updated_at;
    const incoming=(res.data&&res.data.state_json)||{};
    const remoteBranch=incoming&&incoming[ctx.branch];
    // Normalize a COPY: normalization rewrites week objects, which must not change the cloud revision fingerprint.
@@ -1339,13 +1349,40 @@ function makeSyncHelpers(ctx){return{
    const pendingLocalBranch=editedWhileBaselinePending?cached:null;
    const pendingEditHasAuthoritativeBase=editedWhileBaselinePending&&ctx.startupBranchHash===hbnfSyncHash(authoritative);
    const cachedDiffers=!!cached&&hbnfSyncHash(cached)!==hbnfSyncHash(authoritative);
+   const pending=ctx.recoveredPendingDraft;
+   if(pending){
+    const pendingState=ctx.normalize?ctx.normalize(hbnfSyncClone(pending.branchState)):hbnfSyncClone(pending.branchState);
+    const remoteHash=hbnfSemanticHash(authoritative),draftHash=hbnfSemanticHash(pendingState);
+    const baselineMatches=!!pending.baseBranchHash&&remoteHash===pending.baseBranchHash;
+    const alreadySaved=remoteHash===draftHash;
+    let recoveredState=pendingState;
+    if(!alreadySaved&&!baselineMatches&&pending.baseBranchState&&typeof pending.baseBranchState==='object'){
+     const {mergeLeagueTree}=await import('./league-state-cas.mjs');
+     const baseState=ctx.normalize?ctx.normalize(hbnfSyncClone(pending.baseBranchState)):hbnfSyncClone(pending.baseBranchState);
+     const recoveryMerge=mergeLeagueTree(baseState,pendingState,authoritative);
+     if(recoveryMerge.status==='merged')recoveredState=ctx.normalize?ctx.normalize(recoveryMerge.value):recoveryMerge.value;
+     else{
+      if(ctx.preserveLocalDraft)ctx.preserveLocalDraft(pendingState,res.data.updated_at);
+      ctx.state=pendingState;ctx.rootState=incoming||{};ctx.baselineBagTags=hbnfSyncClone(incoming&&incoming.bagTags);ctx.syncBaselineReady=true;
+      ctx.lastRemoteRootHash=hbnfSyncHash(incoming);ctx.lastRemoteBranchHash=skinsSemanticBranch(remoteBranch);ctx.localDirty=true;ctx.remoteConflictPending=true;
+      renderAll();hbnfSetSyncStatus('Conflict — the same scores changed elsewhere; your edits are kept here.');return
+     }
+    }else if(!alreadySaved&&!baselineMatches){
+     if(ctx.preserveLocalDraft)ctx.preserveLocalDraft(pendingState,res.data.updated_at);
+     ctx.state=pendingState;ctx.rootState=incoming||{};ctx.baselineBagTags=hbnfSyncClone(incoming&&incoming.bagTags);ctx.syncBaselineReady=true;
+     ctx.lastRemoteRootHash=hbnfSyncHash(incoming);ctx.lastRemoteBranchHash=skinsSemanticBranch(remoteBranch);ctx.localDirty=true;ctx.remoteConflictPending=true;
+     renderAll();hbnfSetSyncStatus('Conflict — scores changed elsewhere; your edits are kept here.');return
+    }
+    if(alreadySaved){try{localStorage.removeItem('hbnf-sync-skins-pending-v1')}catch{}ctx.recoveredPendingDraft=null}
+    else if(baselineMatches||recoveredState!==pendingState){ctx.state=recoveredState;ctx.localDirty=hbnfSemanticHash(recoveredState)!==remoteHash;ctx.remoteConflictPending=false;ctx.localEditedBeforeBaseline=false;if(ctx.localDirty){ctx.recoveredPendingDraft=pending;persistSkinsPendingDraft(skinsSemanticBranch(authoritative),true,authoritative)}else{try{localStorage.removeItem('hbnf-sync-skins-pending-v1')}catch{}ctx.recoveredPendingDraft=null}}
+   }
    if(cachedDiffers&&ctx.preserveLocalDraft)ctx.preserveLocalDraft(cached,res.data.updated_at);
    ctx.rootState=incoming||{};ctx.baselineBagTags=hbnfSyncClone(incoming&&incoming.bagTags);
    ctx.syncBaselineReady=true;
    ctx.lastRemoteRootHash=hbnfSyncHash(incoming);
-   ctx.lastRemoteBranchHash=hbnfSyncHash(remoteBranch);
-   ctx.state=editedWhileBaselinePending?pendingLocalBranch:authoritative;
-   ctx.localDirty=editedWhileBaselinePending;
+   ctx.lastRemoteBranchHash=skinsSemanticBranch(remoteBranch);
+   if(!ctx.recoveredPendingDraft||(!ctx.localDirty&&!ctx.remoteConflictPending))ctx.state=editedWhileBaselinePending?pendingLocalBranch:authoritative;
+   if(!ctx.recoveredPendingDraft)ctx.localDirty=editedWhileBaselinePending;
    ctx.localSyncNeedsConfirmation=false;
    ctx.localSyncConfirmed=false;
    ctx.syncDeclined=false;
@@ -1354,16 +1391,16 @@ function makeSyncHelpers(ctx){return{
    ctx.remoteSyncing=true;saveLocal();ctx.remoteSyncing=false;
    if(cachedDiffers||editedWhileBaselinePending)renderAll();
    if(ctx.remoteConflictPending){hbnfSetSyncStatus('Conflict — cloud changed while this page was opening; your edits are kept on this device.');return}
-   if(editedWhileBaselinePending){hbnfSetSyncStatus('Saving…');if(ctx.queuePush)ctx.queuePush(0);else setTimeout(()=>ctx.pushRoot(),0);return}
+   if(editedWhileBaselinePending||ctx.localDirty){hbnfSetSyncStatus('Saving…');if(ctx.queuePush)ctx.queuePush(0);else setTimeout(()=>ctx.pushRoot(),0);return}
    hbnfSetSyncStatus('Saved to cloud');
   }catch(err){ctx.syncBaselineReady=false;console.error('Initial sync failed',err);hbnfSetSyncStatus('Cloud unavailable — local changes stay on this device')}
  },
  async pushRoot(){
   saveLocal();
-  if(!ctx.supabaseClient){hbnfSetSyncStatus(ctx.localDraftStored===false?'Cloud unavailable; device draft also could not be stored — keep this page open':'Pending — local only');return}
+  if(!ctx.supabaseClient){hbnfSetSyncStatus(ctx.localDraftStored===false||ctx.pendingDraftStored===false?'Cloud unavailable; device draft also could not be stored — keep this page open':'Pending — local only');return}
   if(ctx.syncDeclined){hbnfSetSyncStatus('Local changes retained; cloud sync paused');return}
   if(ctx.remoteConflictPending){hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return}
-  if(!ctx.syncBaselineReady||!ctx.lastRemoteRootHash||!ctx.lastRemoteBranchHash){hbnfSetSyncStatus(ctx.localDraftStored===false?'Cloud baseline unavailable and device draft could not be stored — keep this page open':'Pending — waiting for an authoritative cloud baseline.');return}
+  if(!ctx.syncBaselineReady||!ctx.lastRemoteRootHash||!ctx.lastRemoteBranchHash){hbnfSetSyncStatus(ctx.localDraftStored===false||ctx.pendingDraftStored===false?'Cloud baseline unavailable and device draft could not be stored — keep this page open':'Pending — waiting for an authoritative cloud baseline.');return}
   if(ctx.syncing){ctx.pendingPush=true;return}
   ctx.syncing=true;
   try{
@@ -1371,10 +1408,10 @@ function makeSyncHelpers(ctx){return{
    if(cur.error)throw cur.error;
    if(!cur.data||!cur.data.updated_at)throw new Error('Cloud sync needs a current row revision; no data was written.');
    const currentRoot=(cur.data.state_json)||{};
-   const currentBranchHash=hbnfSyncHash(currentRoot&&currentRoot[ctx.branch]);
+   const currentBranchHash=skinsSemanticBranch(currentRoot&&currentRoot[ctx.branch]);
    const currentRootHash=hbnfSyncHash(currentRoot);
    if(ctx.lastRemoteBranchHash&&currentBranchHash!==ctx.lastRemoteBranchHash){
-    if(currentBranchHash===hbnfSyncHash(ctx.state)){
+    if(currentBranchHash===skinsSemanticBranch(ctx.state)){
      ctx.rootState=currentRoot;ctx.lastRemoteRootHash=currentRootHash;ctx.lastRemoteBranchHash=currentBranchHash;ctx.localDirty=false;ctx.remoteConflictPending=false;hbnfSetSyncStatus('Saved to cloud');return
     }
     ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return
@@ -1396,8 +1433,8 @@ function makeSyncHelpers(ctx){return{
    if(targetRootHash===currentRootHash){
     ctx.lastRemoteRootHash=currentRootHash;ctx.localDirty=false;ctx.lastRemoteBranchHash=currentBranchHash;hbnfSetSyncStatus('Saved to cloud');return
    }
-   ctx.inFlightBranchHash=saveSnapshotHash;
-   const res=await ctx.supabaseClient.from('league_state').update({state_json:ctx.rootState,updated_at:new Date().toISOString()}).eq('id',1).eq('updated_at',cur.data.updated_at).select('id,state_json,updated_at');
+   ctx.inFlightBranchHash=skinsSemanticBranch(saveSnapshot);
+   const res=await ctx.supabaseClient.rpc('hbnf_save_league_state_v1',{p_expected_updated_at:cur.data.updated_at,p_state_json:ctx.rootState});
    if(res.error)throw res.error;
    if(!Array.isArray(res.data)||res.data.length!==1){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — cloud changed during save; your edits are kept on this device.');return}
    // Use the server-returned JSONB representation for the next CAS comparison. Postgres
@@ -1406,15 +1443,15 @@ function makeSyncHelpers(ctx){return{
    if(!ackRoot||!res.data[0].updated_at||hbnfSemanticHash(ctx.normalize(hbnfSyncClone(ackRoot[ctx.branch])))!==hbnfSemanticHash(saveSnapshot))throw new Error('Cloud save acknowledgment did not match the submitted scorecard.');
    const independent=await ctx.supabaseClient.from('league_state').select('state_json,updated_at').eq('id',1).single();
    if(independent.error||!independent.data||!independent.data.updated_at)throw independent.error||new Error('Cloud save readback is unavailable.');
-   const confirmedRoot=independent.data.state_json;
+   const confirmedRoot=independent.data.state_json;ctx.remoteUpdatedAt=independent.data.updated_at;
    if(hbnfSemanticHash(ctx.normalize(hbnfSyncClone(confirmedRoot&&confirmedRoot[ctx.branch])))!==hbnfSemanticHash(saveSnapshot))throw new Error('Independent server readback did not match the submitted scorecard.');
    ctx.rootState=confirmedRoot;ctx.baselineBagTags=hbnfSyncClone(confirmedRoot&&confirmedRoot.bagTags);
    ctx.lastRemoteRootHash=hbnfSyncHash(confirmedRoot);
-   ctx.lastRemoteBranchHash=hbnfSyncHash(confirmedRoot[ctx.branch]);
+   ctx.lastRemoteBranchHash=skinsSemanticBranch(confirmedRoot[ctx.branch]);
    ctx.syncBaselineReady=true;ctx.remoteConflictPending=false;
-   if(hbnfSyncHash(ctx.state)===saveSnapshotHash){ctx.localDirty=false;ctx.localSyncNeedsConfirmation=false;hbnfSetSyncStatus('Saved to cloud')}
-   else{ctx.localDirty=true;hbnfSetSyncStatus('Pending — newer edits are waiting to save.');ctx.pendingPush=true}
-  }catch(err){console.error('Cloud save failed',err);hbnfSetSyncStatus(ctx.localDraftStored===false?'Cloud save failed and device draft could not be stored — keep this page open and retry':'Save failed — changes kept on this device')}
+   if(hbnfSyncHash(ctx.state)===saveSnapshotHash){ctx.localDirty=false;ctx.localSyncNeedsConfirmation=false;ctx.pendingDraftStored=true;try{localStorage.removeItem('hbnf-sync-skins-pending-v1')}catch{}hbnfSetSyncStatus('Saved to cloud')}
+   else{ctx.localDirty=true;const pendingStored=persistSkinsPendingDraft(skinsSemanticBranch(confirmedRoot&&confirmedRoot[ctx.branch]||null),true);hbnfSetSyncStatus(pendingStored?'Pending — newer edits are waiting to save.':'Newer edits are waiting; device recovery could not be stored — keep this page open.');ctx.pendingPush=true}
+  }catch(err){console.error('Cloud save failed',err);hbnfSetSyncStatus(ctx.localDraftStored===false||ctx.pendingDraftStored===false?'Cloud save failed and device draft could not be stored — keep this page open and retry':'Save failed — changes kept on this device')}
   finally{
    ctx.inFlightBranchHash='';
    ctx.syncing=false;
@@ -1423,7 +1460,9 @@ function makeSyncHelpers(ctx){return{
  }
 }}
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s)), esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',baselineBagTags:null,localDirty:false,localDraftStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
+const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,catchupPromise:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',baselineBagTags:null,localDirty:false,localDraftStored:true,pendingDraftStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false,recoveredPendingDraft:null};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
+function skinsSemanticBranch(value){return hbnfSemanticHash(ctx.normalize?ctx.normalize(hbnfSyncClone(value)):value)}
+function persistSkinsPendingDraft(baseBranchHash=skinsSemanticBranch(ctx.rootState&&ctx.rootState[ctx.branch]||null),resetBaseline=false,baseBranchState=ctx.rootState&&ctx.rootState[ctx.branch]){try{const old=ctx.recoveredPendingDraft||JSON.parse(localStorage.getItem('hbnf-sync-skins-pending-v1')||'null');const record={version:1,branch:'skins',baseBranchHash:resetBaseline?baseBranchHash:(old?.baseBranchHash||baseBranchHash||''),baseRevision:resetBaseline?ctx.remoteUpdatedAt||'':(old?.baseRevision||ctx.remoteUpdatedAt||''),baseBranchState:hbnfSyncClone(resetBaseline?baseBranchState:(old?.baseBranchState||baseBranchState)),savedAt:new Date().toISOString(),branchState:hbnfSyncClone(ctx.state)};localStorage.setItem('hbnf-sync-skins-pending-v1',JSON.stringify(record));ctx.recoveredPendingDraft=record;ctx.pendingDraftStored=true;return true}catch(e){ctx.pendingDraftStored=false;console.error('Pending Skins recovery save failed',e);return false}}
 function preserveStaleLocalSkinsDraft(state,cloudRevision){try{const key='hbnf-sync-skins-recovery-v1',rows=JSON.parse(localStorage.getItem(key)||'[]'),signature=hbnfSyncHash(state);if(rows.some(r=>r&&r.signature===signature))return;rows.unshift({savedAt:new Date().toISOString(),cloudRevision:String(cloudRevision||''),signature,branchState:hbnfSyncClone(state)});localStorage.setItem(key,JSON.stringify(rows.slice(0,3)))}catch(e){console.error('Could not archive local Skins draft',e)}}ctx.preserveLocalDraft=preserveStaleLocalSkinsDraft;
 function iso(d){return d.toISOString().slice(0,10)}function todayLocal(){const d=new Date();d.setHours(0,0,0,0);return d}function nextTuesday(){const d=todayLocal();const add=(2-d.getDay()+7)%7;d.setDate(d.getDate()+add);return d}function fmtDate(key){const [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
 function defaultDateList(){const arr=[];let d=new Date(2026,4,26);const end=new Date(2026,9,27);while(d<=end){arr.push(iso(d));d.setDate(d.getDate()+7)}return arr}function dateList(extraWeeks,deletedWeeks,restoredWeeks){const set=new Set(defaultDateList());if(extraWeeks&&typeof extraWeeks==='object')Object.keys(extraWeeks).forEach(k=>{if(/^\d{4}-\d{2}-\d{2}$/.test(k))set.add(k)});return Array.from(set).filter(k=>!hbnfWeekDeletedByMaps(deletedWeeks,restoredWeeks,k)).sort()}
@@ -1485,7 +1524,7 @@ function hbnfDownloadSnapshot(id){const snap=hbnfReadHistory().find(x=>x.id===id
 function hbnfRestoreById(id){const snap=hbnfReadHistory().find(x=>x.id===id);if(!snap)return alert('Backup not found.');if(confirm('Restore this backup? Current state will be saved for Redo first.'))hbnfRestoreSnapshot(snap,false)}
 function hbnfRenderBackupPanel(){return false}
 function hbnfBackupClick(e){const t=e.target&&e.target.closest?e.target.closest('[data-save-backup-now],[data-undo-backup],[data-redo-backup],[data-restore-backup],[data-download-backup]'):null;if(!t)return false;e.preventDefault();if(t.dataset.saveBackupNow!==undefined){hbnfSaveSnapshot('Manual backup');if(ctx.pushRoot)ctx.pushRoot();return true}if(t.dataset.undoBackup!==undefined)return hbnfUndoLast();if(t.dataset.redoBackup!==undefined)return hbnfRedoLast();if(t.dataset.restoreBackup)return hbnfRestoreById(t.dataset.restoreBackup);if(t.dataset.downloadBackup){hbnfDownloadSnapshot(t.dataset.downloadBackup);return true}return false}
-function push(){if(!ctx.syncBaselineReady)ctx.localEditedBeforeBaseline=true;const localStored=saveLocal();ctx.localDirty=true;hbnfSetSyncStatus(ctx.supabaseClient?(localStored?'Saving…':'Saving to cloud — device draft unavailable'):localStored?'Pending — local only':'Device draft unavailable — no cloud connection; keep this page open');if(ctx.queuePush)ctx.queuePush(140);else ctx.pushRoot();renderAll()}
+function push(){if(!ctx.syncBaselineReady)ctx.localEditedBeforeBaseline=true;const localStored=saveLocal();ctx.localDirty=true;const pendingStored=persistSkinsPendingDraft();hbnfSetSyncStatus(ctx.supabaseClient?(localStored&&pendingStored?'Saving…':'Saving to cloud — device draft unavailable'):localStored&&pendingStored?'Pending — local only':'Device draft unavailable — no cloud connection; keep this page open');if(ctx.queuePush)ctx.queuePush(140);else ctx.pushRoot();renderAll()}
 function parseLines(text){return String(text||'').split('\n').map(s=>s.trim()).filter(Boolean)}function parseTeams(text,cardId){return parseLines(text).map((line,i)=>{const parts=line.split('/').map(s=>s.trim()).filter(Boolean);return{id:cardId+'_team_'+i,name:parts.length>1?parts.join(' / '):line,players:parts.length?parts:[line]}})}function money(v){return '$'+(Number(v)||0).toFixed(2).replace(/\.00$/,'')}
 const BAG_TAG_DEFAULTS=[{tag:1,name:'Carlos'},{tag:2,name:'Dylan'},{tag:3,name:'Matt'},{tag:4,name:'Andrew'},{tag:5,name:'Rusty'},{tag:6,name:'Quiotee'},{tag:7,name:'Karl'},{tag:8,name:'Kyle'},{tag:9,name:'Jayden'},{tag:10,name:'Marc'},{tag:13,name:'Jason'},{tag:14,name:'Fox'},{tag:15,name:'Erik'}];
 function btCleanName(name){return String(name||'').trim()}
@@ -1938,7 +1977,7 @@ document.addEventListener('click',e=>{if(hbnfBackupClick(e))return;const moneyTo
 ${note||'No notes for this hole.'}`);return}if(e.target.closest&&e.target.closest('[data-save-bag-tags]')){e.preventDefault();saveBagTagInputs(e.target.closest('[data-save-bag-tags]'));return}if(e.target.closest&&e.target.closest('[data-add-back-team]')){e.preventDefault();const button=e.target.closest('[data-add-back-team]'),row=ensureBackTeamBlankRow(button.dataset.card),input=row&&row.querySelector('[data-team-field="p1"]');if(input)input.focus();return}if(e.target.classList.contains('remove-back-team')){const card=findCard('back',e.target.dataset.card);if(card){const rows=backTeamRows(card);rows.splice(Number(e.target.dataset.teamIndex)||0,1);writeBackTeamRows(card,rows);push()}return}if(e.target.id==='addFrontCard')addCard('front');if(e.target.id==='addBackCard')addCard('back');if(e.target.classList.contains('remove-card'))removeCard(e.target.dataset.round,e.target.dataset.card)});
 const mobileNav=qs('#mobilePageSelect');if(mobileNav)mobileNav.addEventListener('change',()=>setPage(mobileNav.value));qsa('.nav-btn').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));qs('#addWeek').addEventListener('click',()=>{const entered=prompt('Enter week date (YYYY-MM-DD):',ctx.state.activeWeek||iso(todayLocal()));if(!entered)return;const key=String(entered).trim();if(!/^\d{4}-\d{2}-\d{2}$/.test(key)){alert('Please use YYYY-MM-DD format.');return}const d=new Date(key+'T00:00:00');if(Number.isNaN(d.getTime())){alert('That date is not valid.');return}if(d.getDay()!==2&&!confirm(fmtDate(key)+' is not a Tuesday. Add it anyway?'))return;ctx.state.restoredWeeks=ctx.state.restoredWeeks&&typeof ctx.state.restoredWeeks==='object'?ctx.state.restoredWeeks:{};ctx.state.restoredWeeks[key]=new Date().toISOString();if(!ctx.state.weeks[key])ctx.state.weeks[key]=blankWeek();ctx.state.activeWeek=key;push();setPage('setup')});qs('#clearWeek').addEventListener('click',()=>{if(confirm('Clear all Skins data for this selected week?')){ctx.state.weeks[ctx.state.activeWeek]=Object.assign(blankWeek(),{__clearedAt:new Date().toISOString()});push()}});qs('#deleteWeek').addEventListener('click',async()=>{const key=ctx.state.activeWeek,w=ctx.state.weeks&&ctx.state.weeks[key];if(!key||!w)return;if(w.finalized){alert('Reopen this week before deleting it. This prevents accidental removal of finalized results.');return}const hasData=hbnfWeekDataScore(w)>0;const warning='Delete '+fmtDate(key)+'?\n\nThis removes the week from Setup, Scorecards, Standings, History, and its Round Tags draft on all synced devices. A recovery snapshot will be saved first.'+(hasData?'\n\nThis week contains entered setup or results.':'');if(!confirm(warning))return;try{hbnfSnapshot('Before deleting Skins week '+key)}catch(e){}ctx.state.deletedWeeks=ctx.state.deletedWeeks&&typeof ctx.state.deletedWeeks==='object'?ctx.state.deletedWeeks:{};ctx.state.deletedWeeks[key]=new Date().toISOString();delete ctx.state.weeks[key];const keys=dateList(ctx.state.weeks,ctx.state.deletedWeeks,ctx.state.restoredWeeks);ctx.state.activeWeek=keys.find(k=>k>key)||keys.slice().reverse().find(k=>k<key)||keys[0]||null;hbnfSetSyncStatus('Deleting week…');push();setPage('setup');if(ctx.supabaseClient){try{const tables=['hbnf_round_tag_entries','hbnf_round_available_tags'];for(const table of tables){const res=await ctx.supabaseClient.from(table).delete().eq('round_date',key).eq('event_type','skins');if(res.error)throw res.error}hbnfSetSyncStatus('Cloud sync connected')}catch(err){console.error('Round Tags cleanup failed',err);hbnfSetSyncStatus('Week deleted; tag cleanup retry needed')}}});async function finalizeSelectedWeek(){const key=ctx.state.activeWeek,w=getWeek(),rt=window.HBNFRoundTags;if(!key||!w)return;if(!rt||typeof rt.prepareCloseoutForWeek!=='function'){alert('Round Tags is not ready. Reload this page before finishing the round.');return}await rt.prepareCloseoutForWeek(key)}
 qs('#finalizeWeek').addEventListener('click',()=>{finalizeSelectedWeek()});qs('#reopenWeek').addEventListener('click',()=>{getWeek().finalized=false;push()});qs('#copyFrontToBack').addEventListener('click',()=>{const w=getWeek();w.back.cards=w.front.cards.map((fc,i)=>{const players=parseLines(fc.playersText);const teams=[];for(let j=0;j<players.length;j+=2)teams.push(players.slice(j,j+2).join(' / '));return{id:newId('card'),name:fc.name||('Card '+(i+1)),teamsText:teams.join('\n'),winners:{}}});push()});
-ctx.state=loadLocal();renderAll();ctx.initSync();
+ctx.state=loadLocal();renderAll();ctx.initSync();window.addEventListener('online',()=>ctx.requestAuthoritativeCatchup());window.addEventListener('focus',()=>ctx.requestAuthoritativeCatchup());document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ctx.requestAuthoritativeCatchup()});
 let officialTagRenderQueued=false;
 document.addEventListener('hbnf:incoming-tags-changed',()=>{const active=document.activeElement;if((active&&active.matches&&active.matches('.skins-setup-tag-input')))refreshSetupTagValues(active);else if((active&&active.matches&&active.matches('.back-team-input')))refreshSetupTagValues();else renderSetup();renderScorecard('front');renderScorecard('back');renderSummary()});
 document.addEventListener('hbnf:official-tags-changed',()=>{

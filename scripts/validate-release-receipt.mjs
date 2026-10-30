@@ -235,6 +235,19 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     throw new Error('rollback.recovery.downloadBack must byte-match the rollback artifact');
   }
 
+  const admissionManifest = admissionProjection(receipt, {
+    baselineSha256: baselineArtifactFile.sha256,
+    baselineBytes: baselineArtifactFile.bytes,
+    packageSha256: packageFile.sha256,
+    packageBytes: packageFile.bytes,
+    rollbackSha256: rollbackFile.sha256,
+    rollbackBytes: rollbackFile.bytes,
+  });
+  const admissionManifestFile = receipt.admission
+    ? await checkedFile(root, receipt.admission.path, 'admission')
+    : null;
+  const admissionManifestSha256 = admissionManifestFile?.sha256 ?? null;
+
   const deployment = receipt.deployment;
   requireString(deployment?.provider, 'deployment.provider');
   requireString(deployment?.target, 'deployment.target');
@@ -270,8 +283,9 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     }
     if (readback.provider !== deployment.provider || readback.target !== deployment.target ||
         readback.versionId !== deployment.versionId || readback.sourceCommit !== receipt.source.commit ||
-        readback.packageSha256 !== packageFile.sha256 || readback.baselineIdentity !== baseline.identity) {
-      throw new Error('deployment.readback must bind provider/target/version, source commit, candidate hash, and prior baseline');
+        readback.packageSha256 !== packageFile.sha256 || readback.baselineIdentity !== baseline.identity ||
+        readback.admissionManifestSha256 !== admissionManifestSha256) {
+      throw new Error('deployment.readback must bind provider/target/version, source commit, candidate hash, prior baseline, and the admitted manifest');
     }
   }
 
@@ -306,15 +320,8 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   }
   if (rollbackFile.bytes <= 0) throw new Error('rollback artifact is empty');
 
-  const admissionManifest = admissionProjection(receipt, {
-    baselineSha256: baselineArtifactFile.sha256,
-    baselineBytes: baselineArtifactFile.bytes,
-    packageSha256: packageFile.sha256,
-    packageBytes: packageFile.bytes,
-    rollbackSha256: rollbackFile.sha256,
-    rollbackBytes: rollbackFile.bytes,
-  });
   const admission = await verifyAdmissionEvidence(root, receipt, admissionManifest, { required: phase === 'closeout' });
+
   if (phase === 'closeout') {
     if (deployment.restoreProcedure !== receipt.rollback.restoreProcedure ||
         deployment.plannedRoute !== admissionManifest.deployment.plannedRoute) {

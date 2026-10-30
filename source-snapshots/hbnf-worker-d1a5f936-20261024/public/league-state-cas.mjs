@@ -12,14 +12,55 @@ export function mergeLeagueValue(base, local, remote) {
   if(r===b||l===r)return {status:"merged",value:clone(local)};
   return {status:"conflict"};
 }
+export function mergeLeagueTree(base, local, remote) {
+  const missing = Symbol('missing');
+  const same = (left, right) => left === missing || right === missing ? left === right : stable(left) === stable(right);
+  const plain = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+  const merge = (b, l, r) => {
+    if (same(l, b)) return { ok: true, value: r };
+    if (same(r, b) || same(l, r)) return { ok: true, value: l };
+    const objectBase = b === missing ? {} : b;
+    if (plain(l) && plain(r) && (b === missing || plain(objectBase))) {
+      const out = {};
+      const keys = new Set([...Object.keys(objectBase), ...Object.keys(l), ...Object.keys(r)]);
+      for (const key of keys) {
+        const child = merge(
+          Object.hasOwn(objectBase, key) ? objectBase[key] : missing,
+          Object.hasOwn(l, key) ? l[key] : missing,
+          Object.hasOwn(r, key) ? r[key] : missing,
+        );
+        if (!child.ok) return child;
+        if (child.value !== missing) out[key] = child.value;
+      }
+      return { ok: true, value: out };
+    }
+    if (Array.isArray(b) && Array.isArray(l) && Array.isArray(r) && b.length === l.length && l.length === r.length) {
+      const out = [];
+      for (let index = 0; index < b.length; index++) {
+        if (b[index]?.id != null && (b[index]?.id !== l[index]?.id || b[index]?.id !== r[index]?.id)) return { ok: false };
+        const child = merge(b[index], l[index], r[index]);
+        if (!child.ok) return child;
+        out.push(child.value);
+      }
+      return { ok: true, value: out };
+    }
+    return { ok: false };
+  };
+  const result = merge(base === undefined ? missing : base, local === undefined ? missing : local, remote === undefined ? missing : remote);
+  return result.ok && result.value !== missing ? { status: 'merged', value: clone(result.value) } : { status: 'conflict' };
+}
 const read = async client => {
   const result = await client.from("league_state").select("id,state_json,updated_at").eq("id", 1).single();
   if (result.error || !result.data || result.data.id !== 1 || !result.data.updated_at || !result.data.state_json) throw result.error || new Error("The current shared scores could not be verified.");
   return { root: result.data.state_json, revision: result.data.updated_at };
 };
 const write = async (client, root, revision) => {
-  // The database BEFORE trigger ignores device time and assigns the monotonic revision.
-  const result = await client.from("league_state").update({ state_json: root }).eq("id", 1).eq("updated_at", revision).select("id");
+  // This RPC is the only anonymous write path after legacy direct DML is revoked.
+  // The database locks the row, compares the server revision and advances it itself.
+  const result = await client.rpc("hbnf_save_league_state_v1", {
+    p_expected_updated_at: revision,
+    p_state_json: root,
+  });
   if (result.error) throw result.error;
   return Array.isArray(result.data) && result.data.length === 1;
 };

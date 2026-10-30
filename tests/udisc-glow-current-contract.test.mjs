@@ -16,7 +16,7 @@ test('proposal teams pass through the current Glow player builder without confir
   assert.match(html, /id="glowSaveStatus" role="status" aria-live="polite"/);
   assert.match(html, /id="udiscFreshness" role="status" aria-live="polite"/);
   assert.match(html, /glow-save-sync\.mjs/);
-  assert.match(html, /\.eq\('updated_at',expectedUpdatedAt\)\.select\('id,state_json,updated_at'\)/);
+  assert.match(html, /rpc\('hbnf_save_league_state_v1',\{p_expected_updated_at:expectedUpdatedAt,p_state_json:root\}\)/);
   assert.doesNotMatch(html, /\.upsert\(\{id:1,state_json/);
   assert.match(html, /function confirmQuickUdiscImport\(\)/);
   const helpersStart = html.indexOf('const teamParts=');

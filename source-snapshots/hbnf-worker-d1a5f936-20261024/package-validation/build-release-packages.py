@@ -98,12 +98,12 @@ def build(args, label: str, source: Path, source_commit: str, output: Path, repo
                 if path.is_file():
                     files[path.relative_to(source).as_posix()] = path.read_bytes()
     migration_root = (repo_root or args.repo_root) / "supabase" / "migrations"
-    migration_patterns = ("*_hbnf_glow_atomic_week_sync.sql", "*_hbnf_league_state_server_revision_guard.sql")
+    migration_patterns = ("*_hbnf_glow_atomic_week_sync.sql", "*_hbnf_league_state_server_revision_guard.sql", "*_hbnf_league_state_anon_cas_rpc.sql")
     migrations = sorted(path for pattern in migration_patterns for path in migration_root.glob(pattern))
     if label == "candidate":
-        if len(migrations) != 2:
-            raise SystemExit(f"expected both canonical HBNF Glow migrations in {migration_root}; found {len(migrations)}")
-        snapshots = {"hbnf_glow_atomic_week_sync": "20261028_udisc_glow_atomic_week_sync.sql", "hbnf_league_state_server_revision_guard": "20261029203741_hbnf_league_state_server_revision_guard.sql"}
+        if len(migrations) != 3:
+            raise SystemExit(f"expected all three canonical HBNF Glow migrations in {migration_root}; found {len(migrations)}")
+        snapshots = {"hbnf_glow_atomic_week_sync": "20261028_udisc_glow_atomic_week_sync.sql", "hbnf_league_state_server_revision_guard": "20261029203741_hbnf_league_state_server_revision_guard.sql", "hbnf_league_state_anon_cas_rpc": "20261030021038_hbnf_league_state_anon_cas_rpc.sql"}
         for migration in migrations:
             snapshot_name = next((value for key, value in snapshots.items() if key in migration.name), None)
             snapshot_migration = source / "database" / snapshot_name if snapshot_name else None

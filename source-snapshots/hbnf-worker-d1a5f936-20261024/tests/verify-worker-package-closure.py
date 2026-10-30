@@ -33,6 +33,7 @@ class WorkerPackageClosureTests(unittest.TestCase):
         (root / "database").mkdir(exist_ok=True)
         (root / "database/20261028_udisc_glow_atomic_week_sync.sql").write_text((ROOT / "database/20261028_udisc_glow_atomic_week_sync.sql").read_text())
         (root / "database/20261029203741_hbnf_league_state_server_revision_guard.sql").write_text((ROOT / "database/20261029203741_hbnf_league_state_server_revision_guard.sql").read_text())
+        (root / "database/20261030021038_hbnf_league_state_anon_cas_rpc.sql").write_text((ROOT / "database/20261030021038_hbnf_league_state_anon_cas_rpc.sql").read_text())
         (root / "wrangler.jsonc").write_text(json.dumps({"name":"test","assets":{"directory":"./public"}}))
         (root / "package.json").write_text(json.dumps({"name":"test","private":True}))
         (root / "package-lock.json").write_text(json.dumps({"name":"test","lockfileVersion":3,"packages":{"":{"name":"test"}}}))
@@ -46,6 +47,8 @@ class WorkerPackageClosureTests(unittest.TestCase):
         canonical.write_text((ROOT / "database" / "20261028_udisc_glow_atomic_week_sync.sql").read_text())
         revision = migration_dir / "20261029203741_hbnf_league_state_server_revision_guard.sql"
         revision.write_text((ROOT / "database" / "20261029203741_hbnf_league_state_server_revision_guard.sql").read_text())
+        rpc = migration_dir / "20261030021038_hbnf_league_state_anon_cas_rpc.sql"
+        rpc.write_text((ROOT / "database" / "20261030021038_hbnf_league_state_anon_cas_rpc.sql").read_text())
         return SimpleNamespace(candidate_root=root, active_version="baseline-test", repo_root=repo)
 
     def test_success_package_contains_private_import_closure_not_public_review_modules(self):
@@ -63,6 +66,7 @@ class WorkerPackageClosureTests(unittest.TestCase):
             self.assertIn("public/glow-save-sync.mjs", names)
             self.assertIn("database/20261029200450_hbnf_glow_atomic_week_sync.sql", names)
             self.assertIn("database/20261029203741_hbnf_league_state_server_revision_guard.sql", names)
+            self.assertIn("database/20261030021038_hbnf_league_state_anon_cas_rpc.sql", names)
             self.assertIn("public/league-state-cas.mjs", names)
             self.assertNotIn("public/udisc-glow-reconcile.mjs", names)
             self.assertNotIn("public/udisc-glow-preview.mjs", names)
@@ -83,6 +87,8 @@ class WorkerPackageClosureTests(unittest.TestCase):
             canonical.write_text("select different;\n")
             revision = migration_dir / "20261029203741_hbnf_league_state_server_revision_guard.sql"
             revision.write_text((ROOT / "database" / "20261029203741_hbnf_league_state_server_revision_guard.sql").read_text())
+            rpc = migration_dir / "20261030021038_hbnf_league_state_anon_cas_rpc.sql"
+            rpc.write_text((ROOT / "database" / "20261030021038_hbnf_league_state_anon_cas_rpc.sql").read_text())
             with self.assertRaisesRegex(SystemExit, "differs from the reviewed snapshot"):
                 BUILDER.build(args, "candidate", root, "e089-test", Path(tmp) / "candidate.zip", args.repo_root)
 

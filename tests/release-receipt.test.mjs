@@ -59,6 +59,9 @@ async function fixture() {
   delete preflight.acceptance.criteria[0].evidence;
   const admitted = await validateReleaseReceipt(preflight, root, { phase: 'admission' });
   const manifestBytes = Buffer.from(JSON.stringify(admitted.admissionManifest, null, 2) + '\n');
+  files.readback = Buffer.from(JSON.stringify({ ...JSON.parse(files.readback), admissionManifestSha256: hash(manifestBytes) }));
+  await writeFile(path.join(root, 'evidence/readback.bin'), files.readback);
+  receipt.deployment.readback = entry('readback');
   const admissionPath = `${receipt.releaseId}.admission.json`;
   await writeFile(path.join(root, admissionPath), manifestBytes);
   await writeFile(path.join(root, 'evidence/admission-download.json'), manifestBytes);
@@ -187,6 +190,20 @@ test('rejects closeout readback for a different target or candidate', async () =
       await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /deployment\.readback must bind/);
     } finally { await f.cleanup(); }
   }
+});
+
+test('rejects provider closeout readback that is not bound to the one-time admission manifest', async () => {
+  const f = await fixture();
+  try {
+    const readbackPath = path.join(f.root, f.receipt.deployment.readback.path);
+    const readback = JSON.parse(await readFile(readbackPath, 'utf8'));
+    readback.admissionManifestSha256 = 'f'.repeat(64);
+    const bytes = Buffer.from(JSON.stringify(readback));
+    await writeFile(readbackPath, bytes);
+    f.receipt.deployment.readback.bytes = bytes.length;
+    f.receipt.deployment.readback.sha256 = hash(bytes);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /prior baseline, and the admitted manifest/);
+  } finally { await f.cleanup(); }
 });
 
 test('rejects a recovery copy that differs from the candidate package', async () => {
