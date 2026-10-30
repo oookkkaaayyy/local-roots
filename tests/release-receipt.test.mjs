@@ -119,6 +119,153 @@ async function nativeRollbackFixture() {
   return f;
 }
 
+async function nativeRollbackPR156Fixture() {
+  const f = await nativeRollbackFixture();
+  const releaseId = 'local-roots-dye-studio-pr-156-2026-10-30-r1';
+  const sourceCommit = 'a'.repeat(40);
+  const providerRecord = {
+    provider: 'cloudflare-pages', project: 'local-roots', target: 'production', environment: 'production',
+    deploymentId: '310d16df-cb08-4d06-90f9-7c252fcf06e5',
+    sourceCommit: '55c2251011415b7c975d7f873b075955335101d4', deploymentStatus: 'success',
+    rollbackEligible: true, authenticatedProviderReadback: true,
+    immutableUrl: 'https://310d16df.local-roots.pages.dev', verifiedAt: new Date().toISOString(),
+  };
+  const bytes = Buffer.from(JSON.stringify(providerRecord, null, 2) + '\n');
+  await writeFile(path.join(f.root, 'evidence/cloudflare-production-readback.json'), bytes);
+  await writeFile(path.join(f.root, 'evidence/cloudflare-production-readback-download.json'), bytes);
+  const evidence = {
+    path: 'evidence/cloudflare-production-readback.json', bytes: bytes.length, sha256: hash(bytes),
+    driveFileId: 'cloudflare-pr156-provider-evidence-id', driveUrl: 'https://drive.google.com/file/d/cloudflare-pr156-provider-evidence-id/view',
+    downloadBackVerified: true,
+    downloadBack: { path: 'evidence/cloudflare-production-readback-download.json', bytes: bytes.length, sha256: hash(bytes) },
+  };
+  const restoreProcedure = 'Cloudflare dashboard > local-roots > Deployments > select the exact prior production deployment > Rollback to this deployment > confirm.';
+  const assetRecord = {
+    provider: 'cloudflare-pages', project: 'local-roots', target: 'production',
+    deploymentId: providerRecord.deploymentId, sourceCommit: providerRecord.sourceCommit,
+    publicAssetCount: 1, matchedPublicAssetCount: 1,
+    publicAssets: [{ path: 'dyed-and-unattached/dye-studio/index.html', bytes: 1, sha256: 'c'.repeat(64) }],
+    providerManagedConfiguration: {
+      disposition: 'provider-managed-not-public', publicByteIdentity: 'unavailable',
+      paths: ['dist/_headers', 'dist/_redirects', 'dist/_routes.json'],
+    },
+  };
+  const assetBytes = Buffer.from(JSON.stringify(assetRecord, null, 2) + '\n');
+  await writeFile(path.join(f.root, 'evidence/pr156-public-assets.json'), assetBytes);
+  await writeFile(path.join(f.root, 'evidence/pr156-public-assets-download.json'), assetBytes);
+  const publicAssetEvidence = {
+    path: 'evidence/pr156-public-assets.json', bytes: assetBytes.length, sha256: hash(assetBytes), publicAssetCount: 1,
+    driveFileId: 'pr156-public-assets-id', driveUrl: 'https://drive.google.com/file/d/pr156-public-assets-id/view',
+    downloadBackVerified: true,
+    downloadBack: { path: 'evidence/pr156-public-assets-download.json', bytes: assetBytes.length, sha256: hash(assetBytes) },
+  };
+  const candidateManifest = {
+    releaseId, repository: 'oookkkaaayyy/local-roots', sourceCommit,
+    command: f.receipt.build.command, toolchain: f.receipt.build.toolchain,
+    lockfileSha256: f.receipt.build.lockfileSha256, fileCount: 1,
+    files: [{ path: 'index.html', bytes: Buffer.byteLength('<h1>PR 156 fixture</h1>'), sha256: hash(Buffer.from('<h1>PR 156 fixture</h1>')) }],
+  };
+  const buildDir = path.join(f.root, 'evidence/pr156-build');
+  await mkdir(buildDir);
+  const html = Buffer.from('<h1>PR 156 fixture</h1>');
+  await writeFile(path.join(buildDir, 'index.html'), html);
+  const archivePath = path.join(f.root, 'evidence/pr156-candidate.zip');
+  const zip = spawnSync('zip', ['-X', '-q', '-r', archivePath, 'index.html'], { cwd: buildDir, encoding: 'utf8' });
+  assert.equal(zip.status, 0, zip.stderr);
+  const archiveBytes = await readFile(archivePath);
+  candidateManifest.archiveSha256 = hash(archiveBytes);
+  candidateManifest.archiveBytes = archiveBytes.length;
+  await writeFile(path.join(f.root, 'evidence/package.bin'), archiveBytes);
+  await writeFile(path.join(f.root, 'evidence/recovery.bin'), archiveBytes);
+  f.receipt.package = { path: 'evidence/package.bin', bytes: archiveBytes.length, sha256: hash(archiveBytes) };
+  f.receipt.recovery.downloadBack = { path: 'evidence/recovery.bin', bytes: archiveBytes.length, sha256: hash(archiveBytes) };
+  const candidateManifestBytes = Buffer.from(JSON.stringify(candidateManifest, null, 2) + '\n');
+  await writeFile(path.join(f.root, 'evidence/pr156-candidate-manifest.json'), candidateManifestBytes);
+  await writeFile(path.join(f.root, 'evidence/pr156-candidate-manifest-download.json'), candidateManifestBytes);
+  const packageManifest = {
+    path: 'evidence/pr156-candidate-manifest.json', bytes: candidateManifestBytes.length, sha256: hash(candidateManifestBytes),
+    driveFileId: 'pr156-candidate-manifest-id', driveUrl: 'https://drive.google.com/file/d/pr156-candidate-manifest-id/view',
+    downloadBackVerified: true,
+    downloadBack: { path: 'evidence/pr156-candidate-manifest-download.json', bytes: candidateManifestBytes.length, sha256: hash(candidateManifestBytes) },
+  };
+  f.receipt.releaseId = releaseId;
+  f.receipt.source = { repository: 'oookkkaaayyy/local-roots', ref: 'refs/pull/156/head', commit: sourceCommit, pullRequest: 156 };
+  f.receipt.baseline = {
+    provider: 'cloudflare-pages', target: 'production', authorityUrl: 'https://dash.cloudflare.com/account/pages/view/local-roots',
+    identity: providerRecord.deploymentId, sourceCommit: providerRecord.sourceCommit,
+    sourceEvidence: 'Fresh authenticated Cloudflare Pages production deployment readback.',
+    acceptance: 'Current successful immutable production deployment is provider-native rollback target.',
+    artifact: { disposition: 'provider-native-rollback', driveFileId: evidence.driveFileId, driveUrl: evidence.driveUrl },
+    publicAssetEvidence,
+    providerManagedConfiguration: {
+      disposition: 'provider-managed-not-public', publicByteIdentity: 'unavailable', publiclyReadable: false,
+      paths: ['dist/_headers', 'dist/_redirects', 'dist/_routes.json'],
+    },
+    rollback: { mode: 'cloudflare-pages-native-rollback', deploymentId: providerRecord.deploymentId,
+      sourceCommit: providerRecord.sourceCommit, rollbackEligible: true, restoreProcedure },
+  };
+  f.receipt.recoveryMode = {
+    mode: 'cloudflare-pages-native-rollback',
+    scope: { provider: 'cloudflare-pages', project: 'local-roots', target: 'production', releaseId, pullRequest: 156, repository: 'oookkkaaayyy/local-roots' },
+    approval: {
+      authority: 'owner-approved-AKS', canonicalRecordId: '1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM',
+      canonicalUrl: 'https://docs.google.com/document/d/1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM/edit',
+      deltaInboxSpreadsheetId: '1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY', deltaInboxRow: 2787,
+      ownerResponse: 'Yes I approve.',
+      evidence: { url: 'https://docs.google.com/spreadsheets/d/1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY/edit#gid=1794604334&range=A2787:K2787' },
+    },
+    providerVerification: { ...providerRecord, evidence, restoreProcedure,
+      rollbackInstructions: 'Select the verified successful deployment and choose Rollback to this deployment in Cloudflare Pages.' },
+  };
+  f.receipt.rollback = { mode: 'cloudflare-pages-native-rollback', deploymentId: providerRecord.deploymentId,
+    sourceCommit: providerRecord.sourceCommit, rollbackEligible: true, restoreProcedure };
+  f.receipt.deployment = { provider: 'cloudflare-pages', target: 'production',
+    plannedRoute: 'Merge the admitted PR #156 candidate to main; allow Git-integrated Cloudflare Pages production deployment.', restoreProcedure };
+  f.receipt.acceptance.criteria[0] = { id: 'candidate-preview', description: 'The exact PR #156 preview passes required interactive acceptance.',
+    method: 'Run the declared preview/browser acceptance plan and verify exact-head CI.',
+    expectedOutcome: 'Every mandatory preview criterion passes on this exact source candidate.', status: 'PENDING' };
+  f.receipt.packageManifest = packageManifest;
+  delete f.receipt.admission;
+  return f;
+}
+
+async function attachAdmissionManifest(f) {
+  const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+  const bytes = Buffer.from(JSON.stringify(result.admissionManifest, null, 2) + '\n');
+  const manifestPath = `${f.receipt.releaseId}.admission.json`;
+  await writeFile(path.join(f.root, manifestPath), bytes);
+  await writeFile(path.join(f.root, 'evidence/admission-download.json'), bytes);
+  f.receipt.admission = {
+    path: manifestPath, bytes: bytes.length, sha256: hash(bytes), driveFileId: 'pr156-admission-manifest-id',
+    driveUrl: 'https://drive.google.com/file/d/pr156-admission-manifest-id/view', downloadBackVerified: true,
+    downloadBack: { path: 'evidence/admission-download.json', bytes: bytes.length, sha256: hash(bytes) },
+  };
+  return bytes;
+}
+
+async function attachDeploymentCloseout(f) {
+  f.receipt.acceptance.criteria[0] = { ...f.receipt.acceptance.criteria[0], status: 'PASS', evidence: ['evidence/runtime-check.txt'] };
+  f.receipt.deployment.versionId = 'production-deployment-after-pr156';
+  f.receipt.deployment.installedAt = new Date().toISOString();
+  const deploymentBytes = Buffer.from('immutable Cloudflare deployment receipt');
+  await writeFile(path.join(f.root, 'evidence/pr156-deployment.txt'), deploymentBytes);
+  await writeFile(path.join(f.root, 'evidence/pr156-deployment-download.txt'), deploymentBytes);
+  f.receipt.deployment.receipt = {
+    path: 'evidence/pr156-deployment.txt', bytes: deploymentBytes.length, sha256: hash(deploymentBytes),
+    driveFileId: 'pr156-deployment-receipt-id', driveUrl: 'https://drive.google.com/file/d/pr156-deployment-receipt-id/view',
+    downloadBackVerified: true,
+    downloadBack: { path: 'evidence/pr156-deployment-download.txt', bytes: deploymentBytes.length, sha256: hash(deploymentBytes) },
+  };
+  const readback = {
+    provider: 'cloudflare-pages', target: 'production', versionId: f.receipt.deployment.versionId,
+    sourceCommit: f.receipt.source.commit, packageSha256: f.receipt.package.sha256,
+    baselineIdentity: f.receipt.baseline.identity,
+  };
+  const readbackBytes = Buffer.from(JSON.stringify(readback));
+  await writeFile(path.join(f.root, 'evidence/pr156-deployment-readback.json'), readbackBytes);
+  f.receipt.deployment.readback = { path: 'evidence/pr156-deployment-readback.json', bytes: readbackBytes.length, sha256: hash(readbackBytes) };
+}
+
 test('accepts a complete receipt when package and recovery copy match', async () => {
   const f = await fixture();
   try {
@@ -348,7 +495,7 @@ test('Cloudflare exception cannot target another project, hardware target, or re
       let target = f.receipt;
       for (const key of path.slice(0, -1)) target = target[key];
       target[path.at(-1)] = value;
-      await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), expected);
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), path[0] === 'releaseId' ? /not authorized for this release identity/ : expected);
     } finally { await f.cleanup(); }
   }
 });
@@ -358,6 +505,122 @@ test('native rollback evidence cannot claim unavailable historical archive hashe
   try {
     f.receipt.baseline.artifact.sha256 = 'a'.repeat(64);
     await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /cannot claim unavailable historical deployment artifact bytes/);
+  } finally { await f.cleanup(); }
+});
+
+test('admits the separately owner-approved PR #156 Cloudflare rollback recovery and candidate binding', async () => {
+  const f = await nativeRollbackPR156Fixture();
+  try {
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(result.phase, 'admission');
+    assert.equal(result.admissionManifest.releaseId, 'local-roots-dye-studio-pr-156-2026-10-30-r1');
+    assert.equal(result.admissionManifest.source.commit, f.receipt.source.commit);
+    assert.equal(result.admissionManifest.recoveryMode.approval.deltaInboxRow, 2787);
+    assert.equal(result.admissionManifest.baseline.identity, '310d16df-cb08-4d06-90f9-7c252fcf06e5');
+    assert.equal(result.admissionManifest.baseline.artifactSha256, null, 'unavailable historical bytes remain explicitly unavailable');
+    assert.equal(result.admissionManifest.baseline.providerEvidenceSha256, f.receipt.recoveryMode.providerVerification.evidence.sha256);
+  } finally { await f.cleanup(); }
+});
+
+test('PR #156 native rollback fails closed for wrong repository, project, target, PR, release, or approval provenance', async () => {
+  const mutations = [
+    [r => { r.source.repository = 'other/repo'; }, /source\.repository is outside/],
+    [r => { r.recoveryMode.scope.project = 'other-project'; }, /scope\.project is outside/],
+    [r => { r.recoveryMode.scope.target = 'hardware'; }, /scope\.target is outside/],
+    [r => { r.recoveryMode.scope.pullRequest = 153; }, /scope\.pullRequest is outside/],
+    [r => { r.releaseId = 'future-release'; }, /not authorized for this release identity/],
+    [r => { r.source.ref = 'main'; }, /source\.ref is outside/],
+    [r => { r.recoveryMode.approval.deltaInboxRow = 2786; }, /deltaInboxRow is outside/],
+    [r => { r.recoveryMode.approval.ownerResponse = 'Yes'; }, /ownerResponse is outside/],
+  ];
+  for (const [mutate, expected] of mutations) {
+    const f = await nativeRollbackPR156Fixture();
+    try { mutate(f.receipt); await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), expected); }
+    finally { await f.cleanup(); }
+  }
+});
+
+test('PR #156 native rollback rejects stale or mismatched provider baseline and ineligible deployment', async () => {
+  for (const [mutate, expected] of [
+    [r => { r.baseline.identity = 'stale-deployment'; }, /providerVerification\.deploymentId does not match/],
+    [r => { r.recoveryMode.providerVerification.deploymentStatus = 'failed'; }, /successful rollback-eligible/],
+    [r => { r.recoveryMode.providerVerification.rollbackEligible = false; }, /successful rollback-eligible/],
+    [r => { r.recoveryMode.providerVerification.authenticatedProviderReadback = false; }, /successful rollback-eligible/],
+    [r => { r.recoveryMode.providerVerification.verifiedAt = '2020-01-01T00:00:00Z'; }, /current within the admission window/],
+  ]) {
+    const f = await nativeRollbackPR156Fixture();
+    try { mutate(f.receipt); await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), expected); }
+    finally { await f.cleanup(); }
+  }
+});
+
+test('PR #156 native rollback requires hashed provider and candidate recovery evidence', async () => {
+  for (const mutate of [
+    r => { delete r.recoveryMode.providerVerification.evidence.sha256; },
+    r => { r.recoveryMode.providerVerification.evidence.downloadBackVerified = false; },
+    r => { delete r.recovery.driveFileId; },
+    r => { r.recovery.downloadBackVerified = false; },
+    r => { delete r.packageManifest; },
+    r => { r.packageManifest.downloadBackVerified = false; },
+    r => { delete r.baseline.publicAssetEvidence; },
+    r => { r.baseline.publicAssetEvidence.downloadBackVerified = false; },
+    r => { r.baseline.providerManagedConfiguration.publicByteIdentity = 'sha256-known'; },
+  ]) {
+    const f = await nativeRollbackPR156Fixture();
+    try { mutate(f.receipt); await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' })); }
+    finally { await f.cleanup(); }
+  }
+});
+
+test('PR #156 candidate manifest and provider configuration evidence cannot overclaim or drift', async () => {
+  for (const mutate of [
+    r => { r.packageManifest.sha256 = 'f'.repeat(64); },
+    r => { r.baseline.providerManagedConfiguration.paths = ['dist/_headers']; },
+  ]) {
+    const f = await nativeRollbackPR156Fixture();
+    try { mutate(f.receipt); await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' })); }
+    finally { await f.cleanup(); }
+  }
+  const f = await nativeRollbackPR156Fixture();
+  try {
+    const recordPath = path.join(f.root, f.receipt.baseline.publicAssetEvidence.path);
+    const record = JSON.parse(await readFile(recordPath, 'utf8'));
+    record.publicAssetCount = 2;
+    const bytes = Buffer.from(JSON.stringify(record));
+    await writeFile(recordPath, bytes);
+    await writeFile(path.join(f.root, f.receipt.baseline.publicAssetEvidence.downloadBack.path), bytes);
+    f.receipt.baseline.publicAssetEvidence.bytes = bytes.length;
+    f.receipt.baseline.publicAssetEvidence.sha256 = hash(bytes);
+    f.receipt.baseline.publicAssetEvidence.downloadBack.bytes = bytes.length;
+    f.receipt.baseline.publicAssetEvidence.downloadBack.sha256 = hash(bytes);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' }), /every listed public asset hash and size/);
+  } finally { await f.cleanup(); }
+});
+
+test('PR #156 admission manifest cannot be replayed for a changed candidate and closeout is mandatory', async () => {
+  const f = await nativeRollbackPR156Fixture();
+  try {
+    await attachAdmissionManifest(f);
+    await attachDeploymentCloseout(f);
+    const pass = await validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' });
+    assert.equal(pass.phase, 'closeout');
+    f.receipt.source.commit = 'e'.repeat(40);
+    const readbackPath = path.join(f.root, f.receipt.deployment.readback.path);
+    const readback = JSON.parse(await readFile(readbackPath, 'utf8'));
+    readback.sourceCommit = f.receipt.source.commit;
+    const readbackBytes = Buffer.from(JSON.stringify(readback));
+    await writeFile(readbackPath, readbackBytes);
+    f.receipt.deployment.readback.bytes = readbackBytes.length;
+    f.receipt.deployment.readback.sha256 = hash(readbackBytes);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' }), /candidate manifest must bind the exact release, source, build and archived candidate bytes/);
+  } finally { await f.cleanup(); }
+});
+
+test('PR #156 cannot skip same-manifest post-deployment release verification', async () => {
+  const f = await nativeRollbackPR156Fixture();
+  try {
+    await attachDeploymentCloseout(f);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' }), /admission manifest reference and durable recovery are required/);
   } finally { await f.cleanup(); }
 });
 
