@@ -1320,6 +1320,7 @@ function makeSyncHelpers(ctx){return{
    if(status==='SUBSCRIBED'){if(ctx.lastSyncError)hbnfSetSyncStatus('Cloud unavailable — pending local draft retained.');else if(ctx.remoteConflictPending)hbnfSetSyncStatus(ctx.legacyUnconfirmed?'Review needed — older scorecard data preserved on this device, not uploaded.':'Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');}
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')hbnfSetSyncStatus('Sync reconnecting…');
   });
+  window.addEventListener('online',()=>{if(ctx.supabaseClient)ctx.syncBaselinePromise=ctx.pullRoot()});
   if(ctx.lastSyncError)hbnfSetSyncStatus('Cloud unavailable — pending local draft retained.');else if(ctx.remoteConflictPending)hbnfSetSyncStatus(ctx.legacyUnconfirmed?'Review needed — older scorecard data preserved on this device, not uploaded.':'Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');
  },
  async pullRoot(){
