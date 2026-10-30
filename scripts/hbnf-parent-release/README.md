@@ -1,0 +1,11 @@
+# HBNF P0 parent release driver — REVIEW ONLY
+
+This code is deliberately incapable of live mutation. `createAuthenticatedReadAdapters()` contains read-only Cloudflare and Supabase provider calls; there are no Worker upload, Worker deployment, SQL migration, Edge deployment, permission-change, or restore methods. The saga engine accepts mutation adapters only when they self-identify as `testOnly`, for isolated mocked tests. It returns `*_NOT_ADMITTED` even after a complete mock sequence.
+
+`preflight.mjs` accepts a complete immutable transaction JSON, obtains authenticated provider snapshots, compares all five exact target identities, re-downloads each bound source/candidate/rollback artifact and checks its size and SHA-256, then stores a PENDING preflight receipt through Google Drive with independent media download and byte/hash equality. It never changes the provider. Credentials are read only from `CLOUDFLARE_API_TOKEN`, `SUPABASE_ACCESS_TOKEN`, and `GOOGLE_DRIVE_ACCESS_TOKEN`; values are never logged. The transaction binds the private evidence folder ID.
+
+The transaction must include the exact PR source commit, downloaded-back source attestation, all five baselines and rollback artifacts, all seven stages and inverses, exact per-stage before/after/restore readback identities, the existing parent-gate contract, old-client disposition, Watch v14 compatibility evidence, and acceptance criteria with method and expected result. Admission remains PENDING by design. The existing contract requires old write permissions to be restored before Worker rollback; validation requires that final cutover stage to be last, and the saga reverses it first.
+
+The file journal uses exclusive local one-time lock creation and fsync for every event. The Drive journal writes each event as a separate verified artifact but refuses to claim a run unless an atomic shared `claimOnce` provider is supplied; ordinary Drive file creation alone is not a replay-safe lock. An interrupted/replayed or mismatched run fails closed and requires review; it is not resumed automatically. No provider mutation or deployment admission is implemented or qualified by mock tests.
+
+Focused checks: `node --test tests/hbnf-parent-release-driver.test.mjs`.
