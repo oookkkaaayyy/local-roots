@@ -416,7 +416,8 @@ body.calibration-mode #du-lighting{display:none!important}
      <button type="button" id="chooseDiscPhoto">Choose photo</button><span id="photoColorChip" class="photo-chip" hidden aria-hidden="true"></span></div>
    <input id="discCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
    <input id="discPhotoInput" type="file" accept="image/*" class="hidden">
-   <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Photo color is a suggestion. Review it before applying; photos are not color calibrated.</p>
+   <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Photo color is a suggestion. Review or adjust it before applying; photos are not color calibrated.</p>
+   <label id="photoSuggestedColorLabel" class="photo-suggested-color" hidden>Adjust suggested blank color <input id="photoSuggestedColor" type="color" value="#E8F0F6"></label>
    <div class="photo-suggestion-actions"><button type="button" id="applyPhotoSuggestion" hidden>Apply suggested color</button><button type="button" id="keepPhotoCurrent" hidden>Keep current</button></div>
    <details id="photoRimPanel" class="photo-rim-panel">
      <summary>Disc appearance</summary>
