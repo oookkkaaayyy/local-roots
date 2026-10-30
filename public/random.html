@@ -490,7 +490,7 @@ function makeSyncHelpers(ctx){return{
    const pending=HBNFLeagueStateSync.loadPendingDraft(localStorage,ctx.localKey+':pending-v1'),wasStored=(ctx.initialSyncComplete?localStorage.getItem(ctx.localKey)!==null:ctx.localStatePresentAtStartup)||!!pending, localState=pending?ctx.normalize(pending.root[ctx.branch]||null):ctx.state;
    const remote=await HBNFLeagueStateSync.read(ctx.supabaseClient);
    let draft=pending?HBNFLeagueStateSync.clone(pending.root):HBNFLeagueStateSync.clone(remote.root);
-   const localDiffers=wasStored&&!HBNFLeagueStateSync.equal(ctx.normalize(remote.root[ctx.branch]||null),localState);
+   const localDiffers=!!pending||wasStored&&!HBNFLeagueStateSync.equal(ctx.normalize(remote.root[ctx.branch]||null),localState);
    if(localDiffers)draft[ctx.branch]=localState;
    const prepared=await HBNFLeagueStateSync.prepare(ctx.supabaseClient,localStorage,ctx.localKey+':cloud-baseline-v2',draft,ctx.branch,localDiffers,remote);
    const pendingCleanupOk=!pending||prepared.pending||HBNFLeagueStateSync.clearPendingDraft(localStorage,ctx.localKey+':pending-v1');ctx.initialSyncComplete=true;ctx.syncBaseline=prepared.baseline;ctx.rootState=prepared.root;
