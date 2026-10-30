@@ -155,7 +155,7 @@ export function createSupabaseMcpAdapter({executeSql,applyMigration,verifySql=ex
    assert(Array.isArray(rows)&&rows.length===1,'Supabase readback was not one state row');
    const state=rows[0].state;assert(typeof state.stateFingerprint==='string','Supabase independent state fingerprint missing');
    assert(Array.isArray(state.migrations)&&Array.isArray(state.migrationLedger)&&state.migrations.length===state.migrationLedger.length,'Supabase migration ledger shape or count mismatch');
-   assert(state.migrationLedger.every(e=>typeof e?.name==='string'&&/^\\d{14}$/.test(e.version)&&state.migrations.includes(e.name))&&new Set(state.migrations).size===state.migrations.length,'Supabase migration ledger has a malformed, duplicate, or unmatched entry');
+   assert(state.migrationLedger.every(e=>typeof e?.name==='string'&&/^\d{14}$/.test(e.version)&&state.migrations.includes(e.name))&&new Set(state.migrations).size===state.migrations.length,'Supabase migration ledger has a malformed, duplicate, or unmatched entry');
    if(initialStateFingerprint&&state.stateFingerprint!==initialStateFingerprint)throw new Error('league_state changed during migration installation');
    initialStateFingerprint??=state.stateFingerprint;
    return {projectId:PROJECT,...state};
