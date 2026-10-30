@@ -1,20 +1,32 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFile, realpath, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SHA256 = /^[a-f0-9]{64}$/i;
-const DYE_STUDIO_NATIVE_ROLLBACK = Object.freeze({
-  releaseId: 'local-roots-dye-studio-pr-153-2026-10-29-r2',
-  repository: 'oookkkaaayyy/local-roots',
-  pullRequest: 153,
-  project: 'local-roots',
-  target: 'production',
-  baselineDeployment: 'b56e1122-f55d-48ae-817a-0e511e72b9e4',
-  baselineCommit: '0f8e9c2409bb5a947482f66db0d436de49d1acc0',
-  approvalRecord: '1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM',
+const DYE_STUDIO_NATIVE_ROLLBACK_SCOPES = Object.freeze({
+  'local-roots-dye-studio-pr-153-2026-10-29-r2': Object.freeze({
+    releaseId: 'local-roots-dye-studio-pr-153-2026-10-29-r2',
+    repository: 'oookkkaaayyy/local-roots', pullRequest: 153, project: 'local-roots', target: 'production',
+    baselineDeployment: 'b56e1122-f55d-48ae-817a-0e511e72b9e4',
+    baselineCommit: '0f8e9c2409bb5a947482f66db0d436de49d1acc0',
+    approvalRecord: '1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM',
+  }),
+  'local-roots-dye-studio-pr-156-2026-10-30-r1': Object.freeze({
+    releaseId: 'local-roots-dye-studio-pr-156-2026-10-30-r1',
+    repository: 'oookkkaaayyy/local-roots', pullRequest: 156, project: 'local-roots', target: 'production',
+    approvalRecord: '1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM',
+    approvalDeltaSpreadsheetId: '1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY',
+    approvalDeltaRow: 2787, approvalResponse: 'Yes I approve.',
+    maxProviderEvidenceAgeMs: 10 * 60 * 1000,
+  }),
 });
+const DYE_STUDIO_PR156_RELEASE_ID = 'local-roots-dye-studio-pr-156-2026-10-30-r1';
+const DYE_STUDIO_PR156_PROVIDER_CONFIG_PATHS = Object.freeze([
+  'dist/_headers', 'dist/_redirects', 'dist/_routes.json',
+]);
 
 function requireString(value, label) {
   if (typeof value !== 'string' || value.trim() === '') throw new Error(`${label} is required`);
@@ -56,10 +68,20 @@ function admissionProjection(receipt, hashes = {}) {
       ...(receipt.recoveryMode?.mode === 'cloudflare-pages-native-rollback'
         ? { providerEvidenceSha256: hashes.providerEvidenceSha256 ?? null }
         : {}),
+      ...(receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID ? {
+        publicAssetEvidenceSha256: hashes.publicAssetEvidenceSha256 ?? receipt.baseline.publicAssetEvidence?.sha256 ?? null,
+        publicAssetEvidenceDriveFileId: receipt.baseline.publicAssetEvidence?.driveFileId ?? null,
+        publicAssetCount: receipt.baseline.publicAssetEvidence?.publicAssetCount ?? null,
+        providerManagedConfiguration: receipt.baseline.providerManagedConfiguration ?? null,
+      } : {}),
     },
     package: {
       sha256: hashes.packageSha256 ?? receipt.package.sha256,
       bytes: hashes.packageBytes ?? receipt.package.bytes,
+      ...(receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID ? {
+        manifestSha256: hashes.candidateManifestSha256 ?? receipt.packageManifest?.sha256 ?? null,
+        manifestDriveFileId: receipt.packageManifest?.driveFileId ?? null,
+      } : {}),
     },
     recovery: {
       driveFileId: receipt.recovery.driveFileId,
@@ -86,7 +108,8 @@ function requireDyeStudioNativeRollbackScope(receipt) {
   if (!recovery || recovery.mode !== 'cloudflare-pages-native-rollback') return false;
   const scope = recovery.scope;
   const approval = recovery.approval;
-  const expected = DYE_STUDIO_NATIVE_ROLLBACK;
+  const expected = DYE_STUDIO_NATIVE_ROLLBACK_SCOPES[receipt.releaseId];
+  if (!expected) throw new Error('Cloudflare native rollback is not authorized for this release identity');
   const checks = [
     [receipt.releaseId, expected.releaseId, 'releaseId'],
     [receipt.source?.repository, expected.repository, 'source.repository'],
@@ -107,24 +130,50 @@ function requireDyeStudioNativeRollbackScope(receipt) {
   if (!approval.canonicalUrl.includes(expected.approvalRecord)) {
     throw new Error('recoveryMode.approval.canonicalUrl must identify the approved canonical D&U record');
   }
+  if (expected.approvalDeltaRow !== undefined) {
+    const approvalScope = [
+      [receipt.source?.pullRequest, expected.pullRequest, 'source.pullRequest'],
+      [receipt.source?.ref, `refs/pull/${expected.pullRequest}/head`, 'source.ref'],
+      [approval?.deltaInboxSpreadsheetId, expected.approvalDeltaSpreadsheetId, 'recoveryMode.approval.deltaInboxSpreadsheetId'],
+      [approval?.deltaInboxRow, expected.approvalDeltaRow, 'recoveryMode.approval.deltaInboxRow'],
+      [approval?.ownerResponse, expected.approvalResponse, 'recoveryMode.approval.ownerResponse'],
+    ];
+    for (const [actual, wanted, label] of approvalScope) {
+      if (actual !== wanted) throw new Error(`${label} is outside the owner-approved PR #156 recovery exception`);
+    }
+    const approvalEvidence = approval.evidence;
+    requireString(approvalEvidence?.url, 'recoveryMode.approval.evidence.url');
+    if (!approvalEvidence.url.includes(`${expected.approvalDeltaSpreadsheetId}`) ||
+        !approvalEvidence.url.includes(`range=A${expected.approvalDeltaRow}:K${expected.approvalDeltaRow}`)) {
+      throw new Error('PR #156 approval evidence URL must identify the approved Delta Inbox row');
+    }
+  }
   return true;
 }
 
-async function verifyNativeRollbackEvidence(receipt, root, baseline) {
+async function verifyNativeRollbackEvidence(receipt, root, baseline, { phase }) {
   const recovery = receipt.recoveryMode;
   const provider = recovery.providerVerification;
   requireString(provider?.verifiedAt, 'recoveryMode.providerVerification.verifiedAt');
   if (!Number.isFinite(Date.parse(provider.verifiedAt))) throw new Error('recoveryMode.providerVerification.verifiedAt must be an ISO date');
-  const expected = DYE_STUDIO_NATIVE_ROLLBACK;
+  const expected = DYE_STUDIO_NATIVE_ROLLBACK_SCOPES[receipt.releaseId];
+  const expectedDeployment = expected.baselineDeployment ?? baseline.identity;
+  const expectedCommit = expected.baselineCommit ?? baseline.sourceCommit;
+  if (expected.maxProviderEvidenceAgeMs && phase === 'admission') {
+    const age = Date.now() - Date.parse(provider.verifiedAt);
+    if (age < -30_000 || age > expected.maxProviderEvidenceAgeMs) {
+      throw new Error('PR #156 provider baseline verification must be current within the admission window');
+    }
+  }
   const bindings = [
     [provider.provider, 'cloudflare-pages', 'provider'],
     [provider.project, expected.project, 'project'],
     [provider.target, expected.target, 'target'],
     [provider.environment, 'production', 'environment'],
-    [provider.deploymentId, expected.baselineDeployment, 'deploymentId'],
-    [provider.sourceCommit, expected.baselineCommit, 'sourceCommit'],
-    [baseline.identity, expected.baselineDeployment, 'baseline.identity'],
-    [baseline.sourceCommit, expected.baselineCommit, 'baseline.sourceCommit'],
+    [provider.deploymentId, expectedDeployment, 'deploymentId'],
+    [provider.sourceCommit, expectedCommit, 'sourceCommit'],
+    [baseline.identity, expectedDeployment, 'baseline.identity'],
+    [baseline.sourceCommit, expectedCommit, 'baseline.sourceCommit'],
   ];
   for (const [actual, wanted, label] of bindings) {
     if (actual !== wanted) throw new Error(`recoveryMode.providerVerification.${label} does not match the approved production baseline`);
@@ -145,9 +194,10 @@ async function verifyNativeRollbackEvidence(receipt, root, baseline) {
   try { record = JSON.parse(await readFile(path.resolve(root, provider.evidence.path), 'utf8')); }
   catch { throw new Error('recoveryMode.providerVerification.evidence must be valid JSON'); }
   if (record.provider !== 'cloudflare-pages' || record.project !== expected.project || record.target !== expected.target ||
-      record.deploymentId !== expected.baselineDeployment || record.sourceCommit !== expected.baselineCommit ||
+      record.deploymentId !== expectedDeployment || record.sourceCommit !== expectedCommit ||
       record.deploymentStatus !== 'success' || record.rollbackEligible !== true ||
-      record.authenticatedProviderReadback !== true || record.immutableUrl !== provider.immutableUrl) {
+      record.authenticatedProviderReadback !== true || record.immutableUrl !== provider.immutableUrl ||
+      (expected.maxProviderEvidenceAgeMs && record.verifiedAt !== provider.verifiedAt)) {
     throw new Error('provider evidence file does not prove the approved Cloudflare production rollback target');
   }
   requireString(provider.evidence.driveFileId, 'recoveryMode.providerVerification.evidence.driveFileId');
@@ -161,6 +211,94 @@ async function verifyNativeRollbackEvidence(receipt, root, baseline) {
     throw new Error('provider verification evidence download-back must byte-match the archived evidence');
   }
   return { sha256: evidence.sha256, bytes: evidence.bytes };
+}
+
+async function verifyPR156PublicAssetEvidence(receipt, root, baseline) {
+  const evidence = baseline.publicAssetEvidence;
+  const source = await verifyFile(root, evidence, 'baseline.publicAssetEvidence');
+  requireString(evidence?.driveFileId, 'baseline.publicAssetEvidence.driveFileId');
+  requireString(evidence?.driveUrl, 'baseline.publicAssetEvidence.driveUrl');
+  if (evidence.downloadBackVerified !== true) throw new Error('baseline.publicAssetEvidence.downloadBackVerified must be true');
+  const recovered = await verifyFile(root, evidence.downloadBack, 'baseline.publicAssetEvidence.downloadBack');
+  if (path.resolve(root, evidence.downloadBack.path) === path.resolve(root, evidence.path) ||
+      recovered.sha256 !== source.sha256 || recovered.bytes !== source.bytes) {
+    throw new Error('baseline public asset evidence download-back must be a separate byte-identical copy');
+  }
+  let record;
+  try { record = JSON.parse(await readFile(path.resolve(root, evidence.path), 'utf8')); }
+  catch { throw new Error('baseline public asset evidence must be valid JSON'); }
+  const configuration = baseline.providerManagedConfiguration;
+  if (record.provider !== 'cloudflare-pages' || record.project !== 'local-roots' || record.target !== 'production' ||
+      record.deploymentId !== baseline.identity || record.sourceCommit !== baseline.sourceCommit ||
+      !Number.isInteger(record.publicAssetCount) || record.publicAssetCount <= 0 ||
+      !Number.isInteger(record.matchedPublicAssetCount) || record.matchedPublicAssetCount !== record.publicAssetCount ||
+      evidence.publicAssetCount !== record.publicAssetCount ||
+      !Array.isArray(record.publicAssets) || record.publicAssets.length !== record.publicAssetCount ||
+      record.publicAssets.some(asset => !asset.path || !Number.isInteger(asset.bytes) || asset.bytes <= 0 || !SHA256.test(asset.sha256))) {
+    throw new Error('public asset readback must bind the baseline deployment and prove every listed public asset hash and size');
+  }
+  if (!configuration || configuration.disposition !== 'provider-managed-not-public' || configuration.publicByteIdentity !== 'unavailable' ||
+      configuration.publiclyReadable !== false || !Array.isArray(configuration.paths) ||
+      JSON.stringify(configuration.paths) !== JSON.stringify(DYE_STUDIO_PR156_PROVIDER_CONFIG_PATHS) ||
+      record.providerManagedConfiguration?.disposition !== configuration.disposition ||
+      JSON.stringify(record.providerManagedConfiguration?.paths) !== JSON.stringify(configuration.paths) ||
+      record.providerManagedConfiguration?.publicByteIdentity !== 'unavailable') {
+    throw new Error('PR #156 must distinguish Cloudflare-managed configuration from public assets without claiming unavailable bytes');
+  }
+  return { sha256: source.sha256, bytes: source.bytes, publicAssetCount: record.publicAssetCount };
+}
+
+async function verifyPR156CandidateManifest(receipt, root, packageFile) {
+  const manifestRef = receipt.packageManifest;
+  const manifestFile = await verifyFile(root, manifestRef, 'packageManifest');
+  requireString(manifestRef?.driveFileId, 'packageManifest.driveFileId');
+  requireString(manifestRef?.driveUrl, 'packageManifest.driveUrl');
+  if (manifestRef.downloadBackVerified !== true) throw new Error('packageManifest.downloadBackVerified must be true');
+  const recovered = await verifyFile(root, manifestRef.downloadBack, 'packageManifest.downloadBack');
+  if (path.resolve(root, manifestRef.downloadBack.path) === path.resolve(root, manifestRef.path) ||
+      recovered.sha256 !== manifestFile.sha256 || recovered.bytes !== manifestFile.bytes) {
+    throw new Error('candidate manifest download-back must be a separate byte-identical copy');
+  }
+  let manifest;
+  try { manifest = JSON.parse(await readFile(path.resolve(root, manifestRef.path), 'utf8')); }
+  catch { throw new Error('candidate manifest must be valid JSON'); }
+  if (manifest.releaseId !== receipt.releaseId || manifest.repository !== receipt.source.repository ||
+      manifest.sourceCommit !== receipt.source.commit || manifest.archiveSha256 !== packageFile.sha256 ||
+      manifest.archiveBytes !== packageFile.bytes || manifest.command !== receipt.build.command ||
+      manifest.toolchain !== receipt.build.toolchain || manifest.lockfileSha256 !== receipt.build.lockfileSha256 ||
+      !Array.isArray(manifest.files) || manifest.files.length === 0 || manifest.fileCount !== manifest.files.length) {
+    throw new Error('candidate manifest must bind the exact release, source, build and archived candidate bytes');
+  }
+  const seen = new Set();
+  for (const [i, file] of manifest.files.entries()) {
+    requireString(file?.path, `packageManifest.files[${i}].path`);
+    if (path.isAbsolute(file.path) || file.path.split(/[\\/]/).includes('..') || seen.has(file.path)) {
+      throw new Error(`packageManifest.files[${i}].path must be a unique relative path`);
+    }
+    seen.add(file.path);
+    if (!Number.isInteger(file.bytes) || file.bytes < 0) throw new Error(`packageManifest.files[${i}].bytes must be a non-negative integer`);
+    requireSha(file.sha256, `packageManifest.files[${i}].sha256`);
+  }
+  let archiveEntries;
+  try {
+    archiveEntries = execFileSync('unzip', ['-Z1', path.resolve(root, receipt.package.path)], { encoding: 'utf8' })
+      .split(/\r?\n/).filter(name => name && !name.endsWith('/'));
+  } catch {
+    throw new Error('PR #156 candidate package must be a readable ZIP archive');
+  }
+  if (archiveEntries.length !== seen.size || new Set(archiveEntries).size !== archiveEntries.length ||
+      archiveEntries.some(name => !seen.has(name))) {
+    throw new Error('candidate manifest file list must exactly match the candidate archive entries');
+  }
+  for (const file of manifest.files) {
+    let content;
+    try { content = execFileSync('unzip', ['-p', path.resolve(root, receipt.package.path), file.path], { maxBuffer: 128 * 1024 * 1024 }); }
+    catch { throw new Error(`candidate archive is missing manifest file ${file.path}`); }
+    if (content.length !== file.bytes || createHash('sha256').update(content).digest('hex') !== file.sha256) {
+      throw new Error(`candidate archive file ${file.path} does not match its manifest hash and size`);
+    }
+  }
+  return { sha256: manifestFile.sha256, bytes: manifestFile.bytes };
 }
 
 function canonicalJson(value) {
@@ -273,6 +411,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   const baselineArtifact = baseline?.artifact;
   let baselineArtifactFile;
   let providerEvidence;
+  let publicAssetEvidence;
   let baselineRollback;
   if (nativeRollback) {
     if (baselineArtifact?.disposition !== 'provider-native-rollback') {
@@ -281,7 +420,10 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     if (baselineArtifact.sha256 !== undefined || baselineArtifact.bytes !== undefined || baselineArtifact.path !== undefined) {
       throw new Error('native rollback mode cannot claim unavailable historical deployment artifact bytes');
     }
-    providerEvidence = await verifyNativeRollbackEvidence(receipt, root, baseline);
+    providerEvidence = await verifyNativeRollbackEvidence(receipt, root, baseline, { phase });
+    if (receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID) {
+      publicAssetEvidence = await verifyPR156PublicAssetEvidence(receipt, root, baseline);
+    }
     baselineArtifactFile = providerEvidence;
     requireString(baselineArtifact.driveFileId, 'baseline.artifact.driveFileId');
     requireString(baselineArtifact.driveUrl, 'baseline.artifact.driveUrl');
@@ -333,6 +475,9 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     }
   }
   const packageFile = await verifyFile(root, receipt.package, 'package');
+  const candidateManifest = receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID
+    ? await verifyPR156CandidateManifest(receipt, root, packageFile)
+    : null;
   if (!nativeRollback && packageFile.sha256 === baselineRollback.sha256) {
     throw new Error('candidate package must be distinct from the baseline rollback package');
   }
@@ -450,6 +595,8 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     rollbackSha256: rollbackFile.sha256,
     rollbackBytes: rollbackFile.bytes,
     providerEvidenceSha256: providerEvidence?.sha256,
+    publicAssetEvidenceSha256: publicAssetEvidence?.sha256,
+    candidateManifestSha256: candidateManifest?.sha256,
   });
   const admission = await verifyAdmissionEvidence(root, receipt, admissionManifest, { required: phase === 'closeout' });
   if (phase === 'closeout') {

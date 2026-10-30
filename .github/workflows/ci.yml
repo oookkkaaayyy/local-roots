@@ -62,3 +62,16 @@ jobs:
       - name: Build web app
         working-directory: app
         run: npm run build
+
+      - name: Package exact PR #156 build for release evidence
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 156
+        run: node scripts/package-dye-studio-candidate.mjs app/dist release-capsule "$GITHUB_SHA"
+
+      - name: Retain PR #156 candidate archive and manifest
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 156
+        uses: actions/upload-artifact@v4
+        with:
+          name: dye-studio-pr156-candidate-${{ github.sha }}
+          path: release-capsule/
+          if-no-files-found: error
+          retention-days: 7
