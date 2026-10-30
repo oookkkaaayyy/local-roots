@@ -349,8 +349,9 @@ test('photo match is local-only and applies the existing model/color controls',(
  assert.match(studioHtml,/id="discPhotoInput" type="file" accept="image\/\*"/);
  assert.match(studioHtml,/id="photoColorStatus"/);
  assert.match(studioHtml,/<script src="\.\/disc-photo\.js" defer><\/script>/);
- assert.match(photo,/window\.DUDiscPhoto=\{estimatePixels,analyzeImage,bind\}/);
- assert.match(photo,/document\.getElementById\("autoTransmission"\)\.click\(\)/);
+ assert.match(photo,/window\.DUDiscPhoto=\{estimatePixels,analyzeImage,samplePhotoPatch,bind\}/);
+ assert.match(photo,/window\.DUPhotoColor\?\.apply/);
+ assert.match(photo,/samplePhotoPatch/);
  assert.match(photo,/Disc edge not found/);
  assert.doesNotMatch(photo,/fetch\(|XMLHttpRequest|sendBeacon|\.upload\(|FileReader/);
  assert.doesNotMatch(studioScript,/if\(m==="client"\)\$\("blendMode"\)\.value="research"/);
@@ -389,6 +390,22 @@ test('photo matcher ignores minority stamp colors in synthetic test images',()=>
  assert.equal(estimate({data:blank,width:280,height:280}).edgeDetected,false,'reject background-only shot');
 });
 
+test('local photo sampling rejects printed red ink and the background without claiming calibration',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const win={},doc={readyState:'loading',addEventListener(){}};Function('window','document',photo)(win,doc);
+ const width=200,height=200,data=new Uint8ClampedArray(width*height*4);
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const r=Math.hypot(x-100,y-100),inside=r<80,stamp=inside&&Math.hypot(x-122,y-100)<10;
+  const rgb=!inside?[40,30,25]:stamp?[235,38,83]:[150,146,142],i=(y*width+x)*4;
+  data.set([...rgb,255],i);
+ }
+ const image={data,width,height},disc={x:100,y:100,r:80},overall={rgb:[150,146,142]};
+ assert.equal(win.DUDiscPhoto.samplePhotoPatch(image,145,100,disc,overall,6).hex,'#96928E','a clean patch uses local robust pixels');
+ assert.throws(()=>win.DUDiscPhoto.samplePhotoPatch(image,122,100,disc,overall,7),/printed stamp ink/);
+ assert.throws(()=>win.DUDiscPhoto.samplePhotoPatch(image,10,10,disc,overall,6),/inside the flight plate/);
+ // The warm neutral is what the pixels support; this test deliberately makes no claim that it is the disc's physical hue.
+});
+
 
 
 test('photo topology separates plate/rim without inventing brand plastic choices',()=>{
@@ -423,7 +440,9 @@ test('photo topology separates plate/rim without inventing brand plastic choices
  assert.doesNotMatch(photo,/set\?\.\(result\.appearance\|\|null/,'photo rim hypothesis must not auto-apply');
  assert.match(photo,/applyPhotoSuggestion/);
  assert.match(studioHtml,/id="applyPhotoSuggestion"/);
- assert.match(studioHtml,/id="photoSuggestedColor" type="color"/);
+ assert.match(studioHtml,/id="photoColorWorkspace"/);
+ assert.match(studioHtml,/id="photoDraftHexInput" type="text"/);
+ assert.doesNotMatch(studioHtml,/id="photoSuggestedColor"/);
  assert.match(studioHtml,/id="keepPhotoCurrent"/);
  assert.match(studioHtml,/Different rim color \(Halo style\)/);
  assert.match(studioHtml,/id="photoRimPanel"/);
@@ -441,7 +460,7 @@ test('photo topology separates plate/rim without inventing brand plastic choices
 
 
 test('photo rim geometry actually colors pixels independently of Innova model',()=>{
- const start=studioScript.indexOf('let discAppearance=null,photoBaseSelected=false;');
+ const start=studioScript.indexOf('let discAppearance=null,photoBaseSelected=false,photoDraftBaseHex=null;');
  const end=studioScript.indexOf('\nconst transmissionTargets=',start);
  assert.ok(start>0&&end>start);
  const env={
@@ -553,12 +572,14 @@ test('consumer plastic labels remain concise while the technical descriptions ar
 test('photo color correction uses the review-before-apply swatch, without a legacy direct-apply panel',()=>{
  const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
  assert.doesNotMatch(v2,/data-photo-adjust|du-photo-adjust|startsWith\("Estimated "\)/,'retired buttons cannot be stranded or bypass Apply');
- assert.match(studioHtml,/id="photoSuggestedColor" type="color"/);
+ assert.match(studioHtml,/id="photoColorWorkspace"/);
+ assert.match(studioHtml,/id="photoDraftHexInput" type="text"/);
+ assert.doesNotMatch(studioHtml,/id="photoSuggestedColor"/);
  assert.match(studioHtml,/id="applyPhotoSuggestion"/);
  assert.match(studioHtml,/id="keepPhotoCurrent"/);
  const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
- assert.match(photo,/Adjusted starting color .*unchanged until you apply this color/);
- assert.match(photo,/applySuggestion\.addEventListener\("click"/);
+ assert.match(photo,/Draft .*previewed; current project stays unchanged until Apply/);
+ assert.match(photo,/applySuggestion\?\.addEventListener\("click"/);
 });
 
 
@@ -1092,7 +1113,7 @@ test('a strongly mixed two-disc photo is rejected before it can overwrite the un
  // it only in the message after setDiscAppearance or baseHex has been changed.
  const gate=photo.slice(photo.indexOf('if(result.severeMixedColor)'),photo.indexOf('const color=document.getElementById("baseColor")'));
  assert.match(gate,/if\(result\.severeMixedColor\)throw Error/);
- assert.match(gate,/Crop to a single undyed disc/);
+ assert.match(gate,/Choose one undyed disc/);
  // The real first-party Wraith/Tern photographs stay in private Google Drive;
  // this regression draws synthetic circles and embeds no photo payloads.
 });
@@ -1133,48 +1154,28 @@ test('small single-color disc does not invent a two-tone rim from its surroundin
 });
 
 
-test('photo suggestion keeps edits until accepted or explicitly retained',async()=>{
+test('photo color workspace keeps sampling and adjustment as an uncommitted draft',()=>{
  const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
- const width=280,height=280,pixels=new Uint8ClampedArray(width*height*4);
- for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  const inside=Math.hypot(x-140,y-140)<95,i=(y*width+x)*4,rgb=inside?[130,180,225]:[35,32,28];
-  pixels[i]=rgb[0];pixels[i+1]=rgb[1];pixels[i+2]=rgb[2];pixels[i+3]=255;
- }
- const elements=new Map(),appearanceCalls=[];let autoCommits=0;
- class Element{
-  constructor(id){this.id=id;this.value='';this.hidden=false;this.checked=false;this.files=[];this.listeners={};this.style={};this.className='';this.textContent='';this.classList={toggle(){}}}
-  addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)}
-  async fire(type,event={}){for(const fn of this.listeners[type]||[])await fn({currentTarget:this,...event})}
-  click(){if(this.id==='autoTransmission'){autoCommits++;return}return this.fire('click')}
-  dispatchEvent(event){return this.fire(event.type,event)}
- }
- const get=id=>{if(!elements.has(id))elements.set(id,new Element(id));return elements.get(id)};
- get('baseColor').value='#123456';get('baseHex').value='#123456';
- const ctx={drawImage(){},getImageData(){return{data:pixels,width,height}}};
- const doc={readyState:'complete',getElementById:get,createElement(){return{width:0,height:0,getContext(){return ctx}}}};
- const win={DUDiscAppearance:{get(){return null},set(...args){appearanceCalls.push(args)}}};
- const imageBitmap=async()=>({width,height,close(){}});
- Function('window','document','createImageBitmap','Event',photo)(win,doc,imageBitmap,class{constructor(type){this.type=type}});
- const input=get('discPhotoInput'),apply=get('applyPhotoSuggestion'),keep=get('keepPhotoCurrent');
- input.files=[{type:'image/jpeg'}];await input.fire('change');
- assert.equal(get('baseHex').value,'#123456','analysis must not overwrite current project');
- assert.deepEqual(appearanceCalls,[],'analysis must not mutate disc geometry');
- assert.equal(apply.hidden,false);assert.equal(keep.hidden,false);assert.equal(get('photoRimEnabled').checked,false);
- await keep.click();
- assert.equal(get('baseHex').value,'#123456','Keep current preserves accepted value');
- assert.equal(apply.hidden,true);assert.equal(keep.hidden,true);
- input.files=[{type:'image/jpeg'}];await input.fire('change');
- const suggestion=get('photoColorStatus').textContent.match(/#[0-9A-F]{6}/)?.[0];
- assert.ok(suggestion&&suggestion!=='#123456','a new estimate is available to review');
- assert.equal(get('photoSuggestedColor').value,suggestion,'suggested color can be inspected or corrected');
- get('photoSuggestedColor').value='#B4D2F2';await get('photoSuggestedColor').fire('input');
- assert.match(get('photoColorStatus').textContent,/Adjusted starting color #B4D2F2/);
- assert.equal(apply.textContent,'Apply adjusted color');
- await apply.click();
- assert.equal(get('baseHex').value,'#B4D2F2','the user correction is applied only after confirmation');
- assert.deepEqual(appearanceCalls,[[null,false,true]],'accepting photo clears any unconfirmed rim hypothesis');
- assert.equal(autoCommits,1,'accepted color follows the existing single project commit path');
- assert.equal(apply.hidden,true);assert.equal(keep.hidden,true);
+ assert.match(studioHtml,/id="photoColorWorkspace"[^>]*hidden/);
+ assert.match(studioHtml,/id="photoReferenceImage"[^>]*tabindex="0"/);
+ assert.match(studioHtml,/id="photoSampleMarker" class="photo-sample-target"/);
+ assert.doesNotMatch(studioHtml,/id="photoDraftColorPicker"/);
+ assert.match(studioHtml,/id="photoUseSample"/);
+ assert.match(studioHtml,/id="photoHue" type="range"/);
+ assert.match(studioHtml,/id="photoSaturation" type="range"/);
+ assert.match(studioHtml,/id="photoLightness" type="range"/);
+ assert.match(studioHtml,/id="applyPhotoSuggestion"/);
+ assert.match(studioHtml,/id="keepPhotoCurrent"/);
+ assert.match(photo,/window\.DUPhotoColor\?\.preview/);
+ assert.match(photo,/window\.DUPhotoColor\?\.apply/);
+ assert.match(photo,/window\.DUPhotoColor\?\.cancel/);
+ assert.match(studioScript,/setPhotoDraftControls\(true\)/);
+ assert.match(studioScript,/photoDraftBaseHex=hex\.toUpperCase\(\)/);
+ assert.match(studioScript,/function cancelPhotoDraftColor\(\)/);
+ assert.match(studioScript,/function applyPhotoBaseColor\(hex\)/);
+ assert.match(studioScript,/commitHistory\(\);return true/);
+ assert.match(studioScript,/photoDraftBaseHex\)return/,'save/export shortcuts are blocked during an unaccepted draft');
+ assert.doesNotMatch(photo,/photoSuggestedColor/,'the obsolete native picker is removed');
 });
 test('photo confidence abstains when a stable plate has no recoverable hue',()=>{
  const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
@@ -1195,10 +1196,10 @@ test('photo confidence abstains when a stable plate has no recoverable hue',()=>
  assert.equal(warmNeutral.colorStatus,'uncertain','the app must disclose recoverable color uncertainty');
  assert.equal(clearBlue.hueConfidence,'visible','a clear chromatic signal remains available');
  assert.equal(clearBlue.colorStatus,'estimate');
- assert.match(photo,/Hue is unclear in this photo/,'uncertainty is presented before acceptance');
+ assert.match(photo,/Uncertain starting suggestion/,'uncertainty is presented before acceptance');
  // Synthetic values exercise thresholds only; they are not physical RGB truth.
 });
-test('original-photo import retries the image-element decoder on bitmap failure and cleans up',async()=>{
+test('browser photo decoder releases temporary image canvases and reports unsupported images',async()=>{
  const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
  const width=460,height=460,pixels=new Uint8ClampedArray(width*height*4);
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
@@ -1232,7 +1233,7 @@ test('original-photo import retries the image-element decoder on bitmap failure 
   Function('window','document','createImageBitmap','URL','Image',photo)(
    win,doc,bitmap,urls,TestImage);
   if(imageFails){
-   await assert.rejects(win.DUDiscPhoto.analyzeImage({type:'image/heic'}),/Unable to open photo/);
+   await assert.rejects(win.DUDiscPhoto.analyzeImage({type:'image/heic'}),/couldn't decode the photo/);
   }else{
    const outcome=await win.DUDiscPhoto.analyzeImage({type:'image/heic'});
    assert.equal(outcome.hex,'#CABE82','synthetic source plate is preserved');
@@ -1243,11 +1244,11 @@ test('original-photo import retries the image-element decoder on bitmap failure 
   assert.equal(canvas.height,0,'transient canvas cleared');
   return calls;
  }
- assert.deepEqual(await run(false),['bitmap','draw:bitmap','close-bitmap'],
-  'working bitmap decode must remain the fast path');
- assert.deepEqual(await run(true),['bitmap','create-url','draw:img','revoke-url'],
-  'bitmap rejection must retry browser Image decoding and revoke its object URL');
- assert.deepEqual(await run(true,true),['bitmap','create-url','revoke-url'],
+ assert.deepEqual(await run(false),['create-url','draw:img','draw:img','revoke-url'],
+  'browser Image decoding creates a temporary sampling and analysis canvas');
+ assert.deepEqual(await run(true),['create-url','draw:img','draw:img','revoke-url'],
+  'supported browser Image decoding uses and revokes its object URL');
+ assert.deepEqual(await run(true,true),['create-url','revoke-url'],
   'a genuinely unreadable photo fails cleanly and releases its temporary URL');
  // No fixture is a real customer photo or controlled dye/pigment measurement.
 });

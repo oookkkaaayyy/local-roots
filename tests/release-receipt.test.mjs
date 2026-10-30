@@ -90,7 +90,32 @@ test('candidate packager hashes every build file into the exact archived ZIP', a
     assert.equal(manifest.archiveBytes, archive.length);
     assert.equal(manifest.archiveSha256, hash(archive));
     assert.deepEqual(manifest.files, [{ path: 'index.html', bytes: html.length, sha256: hash(html) }]);
+
+    const pr159Output = path.join(root, 'capsule-pr159');
+    const pr159 = spawnSync(process.execPath, [script, dist, pr159Output, 'b'.repeat(40), '159'], { encoding: 'utf8' });
+    assert.equal(pr159.status, 0, pr159.stderr);
+    const pr159Manifest = JSON.parse(await readFile(path.join(pr159Output, 'manifest.json'), 'utf8'));
+    assert.equal(pr159Manifest.releaseId, 'local-roots-dye-photo-pr-159-2026-10-30-r1');
+    assert.equal(pr159Manifest.sourceCommit, 'b'.repeat(40));
+    const rejectedOutput = path.join(root, 'capsule-pr157');
+    const rejected = spawnSync(process.execPath, [script, dist, rejectedOutput, 'c'.repeat(40), '157'], { encoding: 'utf8' });
+    assert.notEqual(rejected.status, 0, 'unapproved PR cannot receive a release identity');
   } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('PR #159 candidate packaging binds the manifest and artifact name to the exact PR head', async () => {
+  const workflow = await readFile(path.resolve('.github/workflows/ci.yml'), 'utf8');
+  const start = workflow.indexOf('name: Package exact PR #159 photo workflow build for release evidence');
+  const end = workflow.indexOf('\n      - name:', start + 1);
+  assert.ok(start >= 0 && end > start);
+  const packaging = workflow.slice(start, end);
+  assert.match(packaging, /\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
+  assert.doesNotMatch(packaging, /\$GITHUB_SHA|\$\{\{ github\.sha \}\}/,
+    'synthetic pull-request merge SHA must not be recorded as the candidate source');
+  const artifactStart = workflow.indexOf('name: Retain PR #159 candidate archive and manifest');
+  const artifactEnd = workflow.indexOf('\n      - name:', artifactStart + 1);
+  const artifact = workflow.slice(artifactStart, artifactEnd < 0 ? workflow.length : artifactEnd);
+  assert.match(artifact, /dye-photo-pr159-candidate-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
 });
 
 async function nativeRollbackFixture() {
@@ -251,6 +276,34 @@ async function nativeRollbackPR156Fixture() {
   return f;
 }
 
+async function standingCloudflarePRFixture(prNumber, releaseId = `local-roots-dye-photo-pr-${prNumber}-2026-10-30-r1`) {
+  const f = await nativeRollbackPR156Fixture();
+  const sourceCommit = f.receipt.source.commit;
+  f.receipt.releaseId = releaseId;
+  f.receipt.source.pullRequest = prNumber;
+  f.receipt.source.ref = `refs/pull/${prNumber}/head`;
+  f.receipt.packageManifest.path = 'evidence/standing-candidate-manifest.json';
+  f.receipt.packageManifest.downloadBack.path = 'evidence/standing-candidate-manifest-download.json';
+  const manifest = JSON.parse(await readFile(path.join(f.root, 'evidence/pr156-candidate-manifest.json'), 'utf8'));
+  manifest.releaseId = releaseId;
+  manifest.sourceCommit = sourceCommit;
+  const manifestBytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\n');
+  await writeFile(path.join(f.root, f.receipt.packageManifest.path), manifestBytes);
+  await writeFile(path.join(f.root, f.receipt.packageManifest.downloadBack.path), manifestBytes);
+  Object.assign(f.receipt.packageManifest, { bytes: manifestBytes.length, sha256: hash(manifestBytes) });
+  Object.assign(f.receipt.packageManifest.downloadBack, { bytes: manifestBytes.length, sha256: hash(manifestBytes) });
+  f.receipt.recoveryMode.authorization = 'standing-owner-approved-cloudflare-pages-production';
+  f.receipt.recoveryMode.scope.releaseId = releaseId;
+  f.receipt.recoveryMode.scope.pullRequest = prNumber;
+  f.receipt.recoveryMode.approval.canonicalUrl = 'https://github.com/oookkkaaayyy/local-roots/issues/62#issuecomment-6532457701';
+  f.receipt.recoveryMode.approval.issueCommentId = '6532457701';
+  f.receipt.recoveryMode.approval.deltaInboxSpreadsheetId = '1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY';
+  f.receipt.recoveryMode.approval.deltaInboxRow = 2800;
+  f.receipt.recoveryMode.approval.evidence.url = 'https://docs.google.com/spreadsheets/d/1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY/edit#gid=1&range=A2800:K2800';
+  delete f.receipt.admission;
+  return f;
+}
+
 async function attachAdmissionManifest(f) {
   const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
   const bytes = Buffer.from(JSON.stringify(result.admissionManifest, null, 2) + '\n');
@@ -286,6 +339,42 @@ async function attachDeploymentCloseout(f) {
   const readbackBytes = Buffer.from(JSON.stringify(readback));
   await writeFile(path.join(f.root, 'evidence/pr156-deployment-readback.json'), readbackBytes);
   f.receipt.deployment.readback = { path: 'evidence/pr156-deployment-readback.json', bytes: readbackBytes.length, sha256: hash(readbackBytes) };
+}
+
+async function attachSquashIdentityProof(f) {
+  const prNumber = f.receipt.source.pullRequest;
+  const sourceCommit = f.receipt.source.commit;
+  const mergeCommit = 'f'.repeat(40);
+  const tree = 'e'.repeat(40);
+  f.receipt.source.pullRequestHeadCommit = sourceCommit;
+  f.receipt.source.treeSha = tree;
+  const api = 'https://api.github.com/repos/oookkkaaayyy/local-roots';
+  const proof = {
+    schemaVersion: 1, repository: 'oookkkaaayyy/local-roots', retrievedAt: new Date().toISOString(),
+    pullRequest: { url: `${api}/pulls/${prNumber}`, payload: {
+      number: prNumber, state: 'closed', merged: true, merged_at: new Date().toISOString(), merge_commit_sha: mergeCommit,
+      head: { repo: { full_name: 'oookkkaaayyy/local-roots' }, sha: sourceCommit },
+      base: { repo: { full_name: 'oookkkaaayyy/local-roots' } },
+    } },
+    candidateCommit: { url: `${api}/commits/${sourceCommit}`, payload: { sha: sourceCommit, commit: { tree: { sha: tree } } } },
+    mergeCommit: { url: `${api}/commits/${mergeCommit}`, payload: { sha: mergeCommit, commit: { tree: { sha: tree } } } },
+  };
+  const bytes = Buffer.from(JSON.stringify(proof, null, 2) + '\n');
+  await writeFile(path.join(f.root, 'evidence/github-merge-proof.json'), bytes);
+  await writeFile(path.join(f.root, 'evidence/github-merge-proof-download.json'), bytes);
+  f.receipt.deployment.identityBridge = {
+    mode: 'github-pr-squash-tree-match',
+    evidence: { path: 'evidence/github-merge-proof.json', bytes: bytes.length, sha256: hash(bytes),
+      driveFileId: 'github-merge-proof-id', driveUrl: 'https://drive.google.com/file/d/github-merge-proof-id/view', downloadBackVerified: true,
+      downloadBack: { path: 'evidence/github-merge-proof-download.json', bytes: bytes.length, sha256: hash(bytes) } },
+  };
+  await attachDeploymentCloseout(f);
+  const readback = JSON.parse(await readFile(path.join(f.root, f.receipt.deployment.readback.path), 'utf8'));
+  Object.assign(readback, { sourceCommit: mergeCommit, sourceTreeSha: tree,
+    admittedCandidateCommit: sourceCommit, candidateTreeSha: tree });
+  const readbackBytes = Buffer.from(JSON.stringify(readback));
+  await writeFile(path.join(f.root, f.receipt.deployment.readback.path), readbackBytes);
+  f.receipt.deployment.readback = { path: f.receipt.deployment.readback.path, bytes: readbackBytes.length, sha256: hash(readbackBytes) };
 }
 
 test('accepts a complete receipt when package and recovery copy match', async () => {
@@ -644,6 +733,93 @@ test('PR #156 cannot skip same-manifest post-deployment release verification', a
     await attachDeploymentCloseout(f);
     await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' }), /admission manifest reference and durable recovery are required/);
   } finally { await f.cleanup(); }
+});
+
+test('standing Cloudflare production authorization admits PR #159 and a differently numbered future eligible PR', async () => {
+  for (const pr of [159, 247]) {
+    const f = await standingCloudflarePRFixture(pr);
+    try {
+      const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+      assert.equal(result.phase, 'admission');
+      assert.equal(result.releaseId, f.receipt.releaseId);
+      assert.equal(result.admissionManifest.baseline.identity, f.receipt.baseline.identity);
+      assert.equal(result.admissionManifest.package.manifestSha256, f.receipt.packageManifest.sha256);
+    } finally { await f.cleanup(); }
+  }
+});
+
+test('standing Cloudflare authorization fails closed outside its provider, repository, project, target and approval', async () => {
+  for (const mutate of [
+    r => { r.source.repository = 'other/repo'; },
+    r => { r.recoveryMode.scope.project = 'other-pages'; },
+    r => { r.recoveryMode.scope.target = 'preview'; },
+    r => { r.baseline.provider = 'other-provider'; },
+    r => { r.deployment.target = 'preview'; },
+    r => { r.recoveryMode.approval.issueCommentId = 'different'; },
+    r => { r.releaseId = 'unrelated-release'; r.recoveryMode.scope.releaseId = 'unrelated-release'; },
+  ]) {
+    const f = await standingCloudflarePRFixture(159);
+    try { mutate(f.receipt); await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' })); }
+    finally { await f.cleanup(); }
+  }
+});
+
+test('standing Cloudflare authorization requires fresh authenticated eligible baseline and durable candidate evidence', async () => {
+  for (const mutate of [
+    r => { r.recoveryMode.providerVerification.authenticatedProviderReadback = false; },
+    r => { r.recoveryMode.providerVerification.rollbackEligible = false; },
+    r => { r.recoveryMode.providerVerification.deploymentStatus = 'failed'; },
+    r => { r.recoveryMode.providerVerification.deploymentId = 'stale-deployment'; },
+    r => { r.recoveryMode.providerVerification.verifiedAt = '2020-01-01T00:00:00Z'; },
+    r => { delete r.packageManifest.downloadBack; },
+    r => { delete r.baseline.publicAssetEvidence; },
+    r => { r.recovery.downloadBackVerified = false; },
+  ]) {
+    const f = await standingCloudflarePRFixture(159);
+    try { mutate(f.receipt); await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' })); }
+    finally { await f.cleanup(); }
+  }
+});
+
+test('standing Cloudflare closeout verifies the actual PR head, squash tree, provider source and same admission', async () => {
+  const f = await standingCloudflarePRFixture(159);
+  try {
+    f.receipt.source.pullRequestHeadCommit = f.receipt.source.commit;
+    f.receipt.source.treeSha = 'e'.repeat(40);
+    await attachAdmissionManifest(f);
+    await attachSquashIdentityProof(f);
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' });
+    assert.equal(result.phase, 'closeout');
+    assert.equal(result.admissionSha256, f.receipt.admission.sha256);
+  } finally { await f.cleanup(); }
+});
+
+test('standing Cloudflare closeout rejects forged PR head, tree and provider source identity', async () => {
+  for (const mutation of ['head', 'tree', 'provider']) {
+    const f = await standingCloudflarePRFixture(247);
+    try {
+      f.receipt.source.pullRequestHeadCommit = f.receipt.source.commit;
+      f.receipt.source.treeSha = 'e'.repeat(40);
+      await attachAdmissionManifest(f);
+      await attachSquashIdentityProof(f);
+      const proofPath = path.join(f.root, f.receipt.deployment.identityBridge.evidence.path);
+      const proof = JSON.parse(await readFile(proofPath, 'utf8'));
+      const readbackPath = path.join(f.root, f.receipt.deployment.readback.path);
+      const readback = JSON.parse(await readFile(readbackPath, 'utf8'));
+      if (mutation === 'head') proof.pullRequest.payload.head.sha = 'd'.repeat(40);
+      if (mutation === 'tree') proof.mergeCommit.payload.commit.tree.sha = 'd'.repeat(40);
+      if (mutation === 'provider') readback.sourceCommit = 'd'.repeat(40);
+      const proofBytes = Buffer.from(JSON.stringify(proof, null, 2) + '\n');
+      await writeFile(proofPath, proofBytes);
+      await writeFile(path.join(f.root, f.receipt.deployment.identityBridge.evidence.downloadBack.path), proofBytes);
+      Object.assign(f.receipt.deployment.identityBridge.evidence, { bytes: proofBytes.length, sha256: hash(proofBytes) });
+      Object.assign(f.receipt.deployment.identityBridge.evidence.downloadBack, { bytes: proofBytes.length, sha256: hash(proofBytes) });
+      const readbackBytes = Buffer.from(JSON.stringify(readback));
+      await writeFile(readbackPath, readbackBytes);
+      Object.assign(f.receipt.deployment.readback, { bytes: readbackBytes.length, sha256: hash(readbackBytes) });
+      await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' }));
+    } finally { await f.cleanup(); }
+  }
 });
 
 test('rejects a candidate identical to its rollback', async () => {
