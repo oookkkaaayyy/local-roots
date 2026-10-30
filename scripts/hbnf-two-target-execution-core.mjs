@@ -46,7 +46,19 @@ export function verifyExistingAuthority({manifest, parent, admissionClaim, decis
     const [name,hash] = RELEASE.migrations[i];
     if (migrationBytes[i]?.name !== name || !Buffer.isBuffer(migrationBytes[i]?.bytes) || digest(migrationBytes[i].bytes) !== hash) bad(`migration ${i+1} not exact or ordered`);
   }
-  return { releaseId: RELEASE.id, source: RELEASE.source, candidateSha256: RELEASE.candidate, parentSha256: RELEASE.parent, approvalSha256: RELEASE.approval };
+  return {
+    releaseId: RELEASE.id,
+    source: RELEASE.source,
+    candidateSha256: RELEASE.candidate,
+    rollbackSha256: RELEASE.rollback,
+    databaseProject: RELEASE.database,
+    migrationHashes: RELEASE.migrations.map(([name,sha256])=>({name,sha256})),
+    admissionManifestSha256: RELEASE.originalManifest,
+    parentSha256: RELEASE.parent,
+    admissionClaimSha256: RELEASE.claim,
+    decisionSha256: RELEASE.decision,
+    approvalSha256: RELEASE.approval,
+  };
 }
 function cfBaseline(c) {
   if (c?.worker !== 'hbnf' || c.versionId !== RELEASE.baseline || c.percentage !== 100 || c.rollbackRetained !== true || c.pollingDisabled !== true) bad('Cloudflare live baseline/rollback/disabled-poll mismatch');
@@ -108,7 +120,8 @@ export async function runAdmittedHbnfExecution({evidence,providers,storage,execu
       const observed=await providers.supabase.read();
       if(observed.projectId!==RELEASE.database || !observed.migrations?.includes(name.replace(/\.sql$/,''))) bad(`migration ${name} did not appear in provider readback`);
     }
-    await providers.supabase.verifyInstalled({migrations:RELEASE.migrations.map(([n])=>n),legacyGrants:true,unrelatedDataPreserved:true});
+    const supabaseReadback=await providers.supabase.verifyInstalled({migrations:RELEASE.migrations.map(([n])=>n),legacyGrants:true,unrelatedDataPreserved:true});
+    if(supabaseReadback?.projectId!==RELEASE.database || !Array.isArray(supabaseReadback?.migrations) || RELEASE.migrations.some(([name])=>!supabaseReadback.migrations.includes(name.replace(/\.sql$/,'')))) bad('Supabase install receipt lacks exact project/migration readback');
     // The Worker target is re-read after database installation and directly
     // before the second target is mutated; a drift leaves only additive DB
     // migrations and is recorded as a partial installation.
@@ -119,8 +132,15 @@ export async function runAdmittedHbnfExecution({evidence,providers,storage,execu
     if(!deployed?.versionId) bad('Worker deployment did not return a full version identity');
     const actual=await providers.cloudflare.read();
     if(actual.versionId!==deployed.versionId || actual.percentage!==100 || actual.pollingDisabled!==true || actual.rollbackRetained!==true || actual.glowRouteCovered!==true) bad('Worker deployment/readback, Glow route ownership, or disabled polling mismatch');
-    await providers.cloudflare.verifyDeployed({versionId:deployed.versionId,expectedAssetDelta:{same:43,modified:['glow.html'],added:['glow-save-sync.mjs','league-state-cas.mjs']},legacyReadOnly:true});
-    const closeout={format:'hbnf-two-target-closeout-v1',...identity,executionLockId:lock.id,workerVersionId:deployed.versionId,dbMigrations:RELEASE.migrations.map(([n])=>n),pollingDisabled:true,status:'INSTALLED_CLOSEOUT_PASS',recordedUtc:clock()};
+    const assetReadback=await providers.cloudflare.verifyDeployed({versionId:deployed.versionId,expectedAssetDelta:{same:43,modified:['glow.html'],added:['glow-save-sync.mjs','league-state-cas.mjs']},legacyReadOnly:true});
+    if(assetReadback?.passed!==true || assetReadback.assetCount+assetReadback.externallyRoutedAssetCount!==46) bad('public assets and externally routed paths were not completely accounted for');
+    const closeout={
+      format:'hbnf-two-target-closeout-v1',...identity,executionLockId:lock.id,
+      cloudflare:{worker:'hbnf',versionId:deployed.versionId,trafficPercent:100,rollbackVersionId:RELEASE.baseline,rollbackSha256:RELEASE.rollback,rollbackRetained:actual.rollbackRetained,customDomain:actual.activeCustomDomain,glowRouteCovered:actual.glowRouteCovered,routeOwners:actual.routeOwners,cronSchedules:actual.schedules,pollingDisabled:actual.pollingDisabled,assetReadback},
+      supabase:{projectId:supabaseReadback.projectId,migrations:RELEASE.migrations.map(([name,sha256])=>({name:name.replace(/\.sql$/,''),sha256})),functions:supabaseReadback.candidateFunctions,grants:supabaseReadback.grants,triggers:supabaseReadback.triggers,leagueStateFingerprint:supabaseReadback.stateFingerprint,unrelatedDataPreserved:true},
+      acceptance:{candidateBytesExact:true,sourceIdentityExact:true,allThreeMigrationsReadBack:true,legacyGrantsPreserved:true,leagueStateUnchanged:true,glowAssetsServed:true,cartRouteOwnershipUnchanged:true,pollingDisabled:true},
+      status:'INSTALLED_CLOSEOUT_PASS',recordedUtc:clock(),
+    };
     const receipt=await roundTrip(storage,`${RELEASE.id}.closeout.json`,closeout);
     return {status:'INSTALLED_CLOSEOUT_PASS',...receipt,workerVersionId:deployed.versionId};
   } catch (error) {

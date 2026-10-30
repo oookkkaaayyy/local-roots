@@ -36,12 +36,12 @@ function make(overrides={}){
    async read(){state.events.push('cloudflare:read');return {worker:'hbnf',versionId:overrides.badBaseline&&state.version===RELEASE.baseline?'not-the-baseline':state.version,percentage:100,rollbackRetained:true,pollingDisabled:true,cronRemoved:state.version===RELEASE.baseline?true:state.cronRemoved,assetHashUnavailable:true,staticAssetsOnly:true,glowRouteCovered:true};},
    async deployExact(){state.events.push('cloudflare:deploy');state.version='11111111-2222-4333-8444-555555555555';if(overrides.failDeploy)throw Error('timeout after Worker mutation');return{versionId:state.version};},
    async restoreV343({removeCron}){state.events.push('cloudflare:restore');assert.equal(removeCron,true);state.version=RELEASE.baseline;state.cronRemoved=true;},
-   async verifyDeployed(){state.events.push('cloudflare:verify');if(overrides.failVerify)throw Error('worker assets wrong');},
+   async verifyDeployed(){state.events.push('cloudflare:verify');if(overrides.failVerify)throw Error('worker assets wrong');return{passed:true,assetCount:36,externallyRoutedAssetCount:10,assetMapSha256:'a'.repeat(64)};},
  };
  const supabase={
    async read(){state.events.push('supabase:read');return{projectId:RELEASE.database,tableExists:true,rlsEnabled:true,migrations:[...state.applied],candidateFunctions:[],triggers:['hbnf_matrix_vnext_capture_after_state_change','hbnf_project_current_tags_into_league_state','trg_hbnf_matrix_sync'],grants:{anon:{SELECT:true,INSERT:true,UPDATE:true},authenticated:{SELECT:true,INSERT:true,UPDATE:true}}};},
    async applyExactMigration({name}){state.events.push(`supabase:apply:${name}`);if(overrides.failMigration===name)throw Error('migration request failed');state.applied.push(name.replace(/\.sql$/,''));},
-   async verifyInstalled(){state.events.push('supabase:verify');},
+   async verifyInstalled(){state.events.push('supabase:verify');return{projectId:RELEASE.database,migrations:[...state.applied],candidateFunctions:['hbnf_apply_udisc_glow_week','hbnf_save_league_state_v1'],grants:{anon:{SELECT:true,INSERT:true,UPDATE:true},authenticated:{SELECT:true,INSERT:true,UPDATE:true}},triggers:['hbnf_matrix_vnext_capture_after_state_change','hbnf_project_current_tags_into_league_state','trg_hbnf_matrix_sync'],stateFingerprint:'fixture-fingerprint'};},
  };
  const options={evidence,providers:{cloudflare,supabase},storage,executionLock,environment:{wranglerLogWriteVerified:!overrides.badDisk,scratchWriteVerified:true},clock:()=> '2026-10-30T12:00:00Z'};
  return{state,files,options};
@@ -69,6 +69,7 @@ test('replayed execution claim fails before production mutation',async()=>{
 });
 test('exact three migrations, Worker deployment, remote closeout complete',async()=>{
  const f=make();const result=await runAdmittedHbnfExecution(f.options);assert.equal(result.status,'INSTALLED_CLOSEOUT_PASS');assert.equal(f.state.applied.length,3);assert.equal(f.state.version,'11111111-2222-4333-8444-555555555555');assert.ok(f.state.events.indexOf('claim')<f.state.events.findIndex(x=>x.includes(':apply:')));assert.ok(f.files.has(`${RELEASE.id}.closeout.json`));
+ const closeout=JSON.parse(f.files.get(`${RELEASE.id}.closeout.json`));assert.equal(closeout.rollbackSha256,RELEASE.rollback);assert.equal(closeout.databaseProject,RELEASE.database);assert.equal(closeout.cloudflare.rollbackRetained,true);assert.equal(closeout.cloudflare.assetReadback.assetCount+closeout.cloudflare.assetReadback.externallyRoutedAssetCount,46);assert.equal(closeout.supabase.migrations.length,3);assert.equal(closeout.acceptance.pollingDisabled,true);
 });
 test('DB migration failure persists partial-state receipt and never deploys Worker',async()=>{
  const f=make({failMigration:RELEASE.migrations[1][0]});await assert.rejects(()=>runAdmittedHbnfExecution(f.options),/migration request failed/);assert.equal(f.state.version,RELEASE.baseline);assert.equal(f.state.events.includes('cloudflare:deploy'),false);const result=JSON.parse(f.files.get(`${RELEASE.id}.execution-failed.json`));assert.equal(result.additiveDatabaseMayRemain,true);assert.equal(result.dbMigrationsAttempted,2);
