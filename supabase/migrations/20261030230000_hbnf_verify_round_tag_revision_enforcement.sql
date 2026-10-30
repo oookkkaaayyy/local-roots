@@ -73,4 +73,4 @@ begin
     'current_revision',v_authority.revision,'bag_tags',v_bag,'displaced_player_keys',coalesce(to_jsonb(v_displaced),'[]'::jsonb));
 end;
 $function$
-\n
+
