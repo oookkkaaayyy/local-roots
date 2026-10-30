@@ -27,6 +27,12 @@ const DYE_STUDIO_PR156_RELEASE_ID = 'local-roots-dye-studio-pr-156-2026-10-30-r1
 const DYE_STUDIO_PR156_PROVIDER_CONFIG_PATHS = Object.freeze([
   'dist/_headers', 'dist/_redirects', 'dist/_routes.json',
 ]);
+const STANDING_CLOUDFLARE_PAGES_AUTHORIZATION = Object.freeze({
+  repository: 'oookkkaaayyy/local-roots', project: 'local-roots', target: 'production',
+  approvalIssue: 'https://github.com/oookkkaaayyy/local-roots/issues/62#issuecomment-6532457701',
+  approvalRecord: '1NCpsNS9zTSlYLvV7afP4hhJNsLDTbKBToBysNH_ZeWM',
+  maxProviderEvidenceAgeMs: 10 * 60 * 1000,
+});
 
 function requireString(value, label) {
   if (typeof value !== 'string' || value.trim() === '') throw new Error(`${label} is required`);
@@ -68,7 +74,7 @@ function admissionProjection(receipt, hashes = {}) {
       ...(receipt.recoveryMode?.mode === 'cloudflare-pages-native-rollback'
         ? { providerEvidenceSha256: hashes.providerEvidenceSha256 ?? null }
         : {}),
-      ...(receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID ? {
+      ...(receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID || receipt.recoveryMode?.authorization === 'standing-owner-approved-cloudflare-pages-production' ? {
         publicAssetEvidenceSha256: hashes.publicAssetEvidenceSha256 ?? receipt.baseline.publicAssetEvidence?.sha256 ?? null,
         publicAssetEvidenceDriveFileId: receipt.baseline.publicAssetEvidence?.driveFileId ?? null,
         publicAssetCount: receipt.baseline.publicAssetEvidence?.publicAssetCount ?? null,
@@ -78,7 +84,7 @@ function admissionProjection(receipt, hashes = {}) {
     package: {
       sha256: hashes.packageSha256 ?? receipt.package.sha256,
       bytes: hashes.packageBytes ?? receipt.package.bytes,
-      ...(receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID ? {
+      ...(receipt.packageManifest ? {
         manifestSha256: hashes.candidateManifestSha256 ?? receipt.packageManifest?.sha256 ?? null,
         manifestDriveFileId: receipt.packageManifest?.driveFileId ?? null,
       } : {}),
@@ -108,8 +114,21 @@ function requireDyeStudioNativeRollbackScope(receipt) {
   if (!recovery || recovery.mode !== 'cloudflare-pages-native-rollback') return false;
   const scope = recovery.scope;
   const approval = recovery.approval;
-  const expected = DYE_STUDIO_NATIVE_ROLLBACK_SCOPES[receipt.releaseId];
-  if (!expected) throw new Error('Cloudflare native rollback is not authorized for this release identity');
+  const legacy = DYE_STUDIO_NATIVE_ROLLBACK_SCOPES[receipt.releaseId];
+  const standing = recovery.authorization === 'standing-owner-approved-cloudflare-pages-production' &&
+    approval?.canonicalUrl === STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.approvalIssue;
+  const expected = legacy ?? (standing ? {
+    releaseId: receipt.releaseId, repository: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.repository,
+    pullRequest: receipt.source?.pullRequest, project: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.project,
+    target: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.target,
+    approvalRecord: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.approvalRecord,
+    maxProviderEvidenceAgeMs: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.maxProviderEvidenceAgeMs,
+  } : null);
+  if (!expected) throw new Error('Cloudflare native rollback is not authorized for this release identity and scope');
+  if (standing && (!/^local-roots-dye-[a-z0-9-]+-pr-\d+-\d{4}-\d{2}-\d{2}-r\d+$/i.test(receipt.releaseId) ||
+      !Number.isInteger(receipt.source?.pullRequest) || receipt.source.pullRequest < 1)) {
+    throw new Error('standing Cloudflare authorization requires a unique Local Roots release ID bound to a positive PR number');
+  }
   const checks = [
     [receipt.releaseId, expected.releaseId, 'releaseId'],
     [receipt.source?.repository, expected.repository, 'source.repository'],
@@ -127,25 +146,34 @@ function requireDyeStudioNativeRollbackScope(receipt) {
     if (actual !== wanted) throw new Error(`${label} is outside the owner-approved Cloudflare recovery exception`);
   }
   requireString(approval?.canonicalUrl, 'recoveryMode.approval.canonicalUrl');
-  if (!approval.canonicalUrl.includes(expected.approvalRecord)) {
+  if (standing && (approval.canonicalUrl !== STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.approvalIssue ||
+      approval?.issueCommentId !== '6532457701' || approval?.deltaInboxSpreadsheetId !== '1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY' || approval?.deltaInboxRow !== 2800)) {
+    throw new Error('standing Cloudflare authorization must cite the verified issue approval and AKS Delta Inbox row 2800');
+  }
+  if (!standing && !approval.canonicalUrl.includes(expected.approvalRecord)) {
     throw new Error('recoveryMode.approval.canonicalUrl must identify the approved canonical D&U record');
   }
-  if (expected.approvalDeltaRow !== undefined) {
+  if (expected.approvalDeltaRow !== undefined || standing) {
     const approvalScope = [
       [receipt.source?.pullRequest, expected.pullRequest, 'source.pullRequest'],
       [receipt.source?.ref, `refs/pull/${expected.pullRequest}/head`, 'source.ref'],
-      [approval?.deltaInboxSpreadsheetId, expected.approvalDeltaSpreadsheetId, 'recoveryMode.approval.deltaInboxSpreadsheetId'],
-      [approval?.deltaInboxRow, expected.approvalDeltaRow, 'recoveryMode.approval.deltaInboxRow'],
-      [approval?.ownerResponse, expected.approvalResponse, 'recoveryMode.approval.ownerResponse'],
+      ...(expected.approvalDeltaRow !== undefined ? [
+        [approval?.deltaInboxSpreadsheetId, expected.approvalDeltaSpreadsheetId, 'recoveryMode.approval.deltaInboxSpreadsheetId'],
+        [approval?.deltaInboxRow, expected.approvalDeltaRow, 'recoveryMode.approval.deltaInboxRow'],
+        [approval?.ownerResponse, expected.approvalResponse, 'recoveryMode.approval.ownerResponse'],
+      ] : []),
     ];
     for (const [actual, wanted, label] of approvalScope) {
       if (actual !== wanted) throw new Error(`${label} is outside the owner-approved PR #156 recovery exception`);
     }
     const approvalEvidence = approval.evidence;
     requireString(approvalEvidence?.url, 'recoveryMode.approval.evidence.url');
-    if (!approvalEvidence.url.includes(`${expected.approvalDeltaSpreadsheetId}`) ||
-        !approvalEvidence.url.includes(`range=A${expected.approvalDeltaRow}:K${expected.approvalDeltaRow}`)) {
+    if (expected.approvalDeltaRow !== undefined && (!approvalEvidence.url.includes(`${expected.approvalDeltaSpreadsheetId}`) ||
+        !approvalEvidence.url.includes(`range=A${expected.approvalDeltaRow}:K${expected.approvalDeltaRow}`))) {
       throw new Error('PR #156 approval evidence URL must identify the approved Delta Inbox row');
+    }
+    if (standing && (!approvalEvidence.url.includes('1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY') || !approvalEvidence.url.includes('2800'))) {
+      throw new Error('standing approval evidence URL must identify AKS Delta Inbox row 2800');
     }
   }
   return true;
@@ -156,13 +184,17 @@ async function verifyNativeRollbackEvidence(receipt, root, baseline, { phase }) 
   const provider = recovery.providerVerification;
   requireString(provider?.verifiedAt, 'recoveryMode.providerVerification.verifiedAt');
   if (!Number.isFinite(Date.parse(provider.verifiedAt))) throw new Error('recoveryMode.providerVerification.verifiedAt must be an ISO date');
-  const expected = DYE_STUDIO_NATIVE_ROLLBACK_SCOPES[receipt.releaseId];
+  const expected = DYE_STUDIO_NATIVE_ROLLBACK_SCOPES[receipt.releaseId] ?? {
+    project: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.project,
+    target: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.target,
+    maxProviderEvidenceAgeMs: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.maxProviderEvidenceAgeMs,
+  };
   const expectedDeployment = expected.baselineDeployment ?? baseline.identity;
   const expectedCommit = expected.baselineCommit ?? baseline.sourceCommit;
   if (expected.maxProviderEvidenceAgeMs && phase === 'admission') {
     const age = Date.now() - Date.parse(provider.verifiedAt);
     if (age < -30_000 || age > expected.maxProviderEvidenceAgeMs) {
-      throw new Error('PR #156 provider baseline verification must be current within the admission window');
+      throw new Error('Cloudflare provider baseline verification must be current within the admission window');
     }
   }
   const bindings = [
@@ -239,7 +271,8 @@ async function verifyPR156PublicAssetEvidence(receipt, root, baseline) {
   }
   if (!configuration || configuration.disposition !== 'provider-managed-not-public' || configuration.publicByteIdentity !== 'unavailable' ||
       configuration.publiclyReadable !== false || !Array.isArray(configuration.paths) ||
-      JSON.stringify(configuration.paths) !== JSON.stringify(DYE_STUDIO_PR156_PROVIDER_CONFIG_PATHS) ||
+      !configuration.paths.includes('dist/_headers') || !configuration.paths.includes('dist/_redirects') ||
+      !configuration.paths.includes('dist/_routes.json') || configuration.paths.some(value => !DYE_STUDIO_PR156_PROVIDER_CONFIG_PATHS.includes(value)) ||
       record.providerManagedConfiguration?.disposition !== configuration.disposition ||
       JSON.stringify(record.providerManagedConfiguration?.paths) !== JSON.stringify(configuration.paths) ||
       record.providerManagedConfiguration?.publicByteIdentity !== 'unavailable') {
@@ -299,6 +332,55 @@ async function verifyPR156CandidateManifest(receipt, root, packageFile) {
     }
   }
   return { sha256: manifestFile.sha256, bytes: manifestFile.bytes };
+}
+
+async function verifySquashMergeIdentity(receipt, root, readback) {
+  const bridge = receipt.deployment?.identityBridge;
+  if (!bridge || bridge.mode !== 'github-pr-squash-tree-match') {
+    throw new Error('Cloudflare Pages closeout requires a GitHub-verified squash-merge identity bridge');
+  }
+  const evidence = bridge.evidence;
+  const evidenceFile = await verifyFile(root, evidence, 'deployment.identityBridge.evidence');
+  requireString(evidence.driveFileId, 'deployment.identityBridge.evidence.driveFileId');
+  requireString(evidence.driveUrl, 'deployment.identityBridge.evidence.driveUrl');
+  if (evidence.downloadBackVerified !== true) throw new Error('GitHub identity evidence download-back is required');
+  const recovered = await verifyFile(root, evidence.downloadBack, 'deployment.identityBridge.evidence.downloadBack');
+  if (recovered.sha256 !== evidenceFile.sha256 || recovered.bytes !== evidenceFile.bytes) {
+    throw new Error('GitHub identity evidence download-back must be byte-identical');
+  }
+  let proof;
+  try { proof = JSON.parse(await readFile(path.resolve(root, evidence.path), 'utf8')); }
+  catch { throw new Error('GitHub identity evidence must be valid JSON'); }
+  const repository = STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.repository;
+  const apiRoot = `https://api.github.com/repos/${repository}`;
+  const prNumber = receipt.source.pullRequest;
+  const pr = proof.pullRequest?.payload;
+  const candidate = proof.candidateCommit?.payload;
+  const merge = proof.mergeCommit?.payload;
+  if (!Number.isInteger(prNumber) || prNumber < 1 || proof.schemaVersion !== 1 || proof.repository !== repository ||
+      proof.pullRequest?.url !== `${apiRoot}/pulls/${prNumber}` ||
+      proof.candidateCommit?.url !== `${apiRoot}/commits/${receipt.source.commit}` ||
+      typeof proof.retrievedAt !== 'string' || !Number.isFinite(Date.parse(proof.retrievedAt)) ||
+      Date.parse(proof.retrievedAt) > Date.now() + 5 * 60 * 1000) {
+    throw new Error('GitHub identity evidence must identify this repository, PR, exact candidate and retrieval time');
+  }
+  if (receipt.source.repository !== repository || receipt.source.pullRequestHeadCommit !== receipt.source.commit ||
+      pr?.number !== prNumber || pr.state !== 'closed' || pr.merged !== true ||
+      pr.head?.repo?.full_name !== repository || pr.head.sha !== receipt.source.commit ||
+      pr.base?.repo?.full_name !== repository || !pr.merged_at || !/^[a-f0-9]{40}$/i.test(pr.merge_commit_sha ?? '') ||
+      proof.mergeCommit?.url !== `${apiRoot}/commits/${pr.merge_commit_sha}` ||
+      candidate?.sha !== receipt.source.commit || merge?.sha !== pr.merge_commit_sha) {
+    throw new Error('GitHub identity evidence does not prove that this exact admitted PR head was merged');
+  }
+  const candidateTree = candidate.commit?.tree?.sha;
+  const mergeTree = merge.commit?.tree?.sha;
+  if (!/^[a-f0-9]{40}$/i.test(candidateTree ?? '') || candidateTree !== mergeTree || receipt.source.treeSha !== candidateTree) {
+    throw new Error('GitHub evidence must prove the admitted head and squash commit have the same tree');
+  }
+  if (readback.sourceCommit !== pr.merge_commit_sha || readback.sourceTreeSha !== mergeTree ||
+      readback.admittedCandidateCommit !== receipt.source.commit || readback.candidateTreeSha !== candidateTree) {
+    throw new Error('Cloudflare readback must truthfully bind the squash commit and admitted candidate tree');
+  }
 }
 
 function canonicalJson(value) {
@@ -421,7 +503,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
       throw new Error('native rollback mode cannot claim unavailable historical deployment artifact bytes');
     }
     providerEvidence = await verifyNativeRollbackEvidence(receipt, root, baseline, { phase });
-    if (receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID) {
+    if (receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID || receipt.recoveryMode?.authorization === 'standing-owner-approved-cloudflare-pages-production') {
       publicAssetEvidence = await verifyPR156PublicAssetEvidence(receipt, root, baseline);
     }
     baselineArtifactFile = providerEvidence;
@@ -475,7 +557,9 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     }
   }
   const packageFile = await verifyFile(root, receipt.package, 'package');
-  const candidateManifest = receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID
+  const candidateManifestRequired = nativeRollback && (receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID ||
+    receipt.recoveryMode?.authorization === 'standing-owner-approved-cloudflare-pages-production');
+  const candidateManifest = candidateManifestRequired || receipt.packageManifest
     ? await verifyPR156CandidateManifest(receipt, root, packageFile)
     : null;
   if (!nativeRollback && packageFile.sha256 === baselineRollback.sha256) {
@@ -548,9 +632,14 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
       throw new Error('deployment.readback must be valid JSON');
     }
     if (readback.provider !== deployment.provider || readback.target !== deployment.target ||
-        readback.versionId !== deployment.versionId || readback.sourceCommit !== receipt.source.commit ||
+        readback.versionId !== deployment.versionId ||
         readback.packageSha256 !== packageFile.sha256 || readback.baselineIdentity !== baseline.identity) {
       throw new Error('deployment.readback must bind provider/target/version, source commit, candidate hash, and prior baseline');
+    }
+    if (nativeRollback && receipt.recoveryMode?.authorization === 'standing-owner-approved-cloudflare-pages-production') {
+      await verifySquashMergeIdentity(receipt, root, readback);
+    } else if (readback.sourceCommit !== receipt.source.commit) {
+      throw new Error('deployment.readback sourceCommit must equal the admitted source commit');
     }
   }
 
