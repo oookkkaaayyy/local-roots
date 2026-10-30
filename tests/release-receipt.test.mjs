@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { link, mkdtemp, mkdir, readFile, rm, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -334,4 +334,39 @@ test('rejects baseline artifact size or hash metadata that differs from its byte
       await assert.rejects(validateReleaseReceipt(f.receipt, f.root), expected);
     } finally { await f.cleanup(); }
   }
+});
+
+test('rejects self-referential admission download-back instead of accepting the original file', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.admission.downloadBack = { ...f.receipt.admission, path: f.receipt.admission.path };
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /independent recovered copy/);
+  } finally { await f.cleanup(); }
+});
+
+test('rejects candidate download-back that aliases the original candidate', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.recovery.downloadBack = { ...f.receipt.package };
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /independent recovered copy/);
+  } finally { await f.cleanup(); }
+});
+
+test('rejects hard-linked download-back even when path and hashes differ', async () => {
+  const f = await fixture();
+  try {
+    const original = path.join(f.root, f.receipt.package.path);
+    const returned = path.join(f.root, f.receipt.recovery.downloadBack.path);
+    await unlink(returned);
+    await link(original, returned);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /independent recovered copy/);
+  } finally { await f.cleanup(); }
+});
+
+test('rejects the identical local file as deployment receipt download-back', async () => {
+  const f = await fixture();
+  try {
+    f.receipt.deployment.receipt.downloadBack = { ...f.receipt.deployment.receipt };
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /independent recovered copy/);
+  } finally { await f.cleanup(); }
 });
