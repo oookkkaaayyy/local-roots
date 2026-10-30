@@ -36,6 +36,65 @@ function requireSha(value, label) {
   if (typeof value !== 'string' || !SHA256.test(value)) throw new Error(`${label} must be a 64-character SHA-256`);
 }
 
+async function verifyPR156SquashMergeIdentity(receipt, root, readback) {
+  const bridge = receipt.deployment?.identityBridge;
+  if (!bridge || bridge.mode !== 'github-pr156-squash-tree-match') {
+    throw new Error('PR #156 closeout requires its GitHub-verified squash-merge identity bridge');
+  }
+  const evidence = bridge.evidence;
+  const evidenceFile = await verifyFile(root, evidence, 'deployment.identityBridge.evidence');
+  requireString(evidence.driveFileId, 'deployment.identityBridge.evidence.driveFileId');
+  requireString(evidence.driveUrl, 'deployment.identityBridge.evidence.driveUrl');
+  if (evidence.downloadBackVerified !== true) {
+    throw new Error('deployment.identityBridge.evidence.downloadBackVerified must be true');
+  }
+  const downloaded = await verifyFile(root, evidence.downloadBack, 'deployment.identityBridge.evidence.downloadBack');
+  if (downloaded.sha256 !== evidenceFile.sha256 || downloaded.bytes !== evidenceFile.bytes) {
+    throw new Error('deployment.identityBridge.evidence.downloadBack must byte-match GitHub identity evidence');
+  }
+
+  let proof;
+  try {
+    proof = JSON.parse(await readFile(path.resolve(root, evidence.path), 'utf8'));
+  } catch {
+    throw new Error('deployment.identityBridge.evidence must be valid JSON');
+  }
+  const repository = 'oookkkaaayyy/local-roots';
+  const apiRoot = 'https://api.github.com/repos/oookkkaaayyy/local-roots';
+  const pr = proof.pullRequest?.payload;
+  const candidate = proof.candidateCommit?.payload;
+  const merge = proof.mergeCommit?.payload;
+  if (proof.schemaVersion !== 1 || proof.repository !== repository ||
+      proof.pullRequest?.url !== `${apiRoot}/pulls/156` ||
+      proof.candidateCommit?.url !== `${apiRoot}/commits/${receipt.source.commit}` ||
+      typeof proof.retrievedAt !== 'string' || !Number.isFinite(Date.parse(proof.retrievedAt)) ||
+      Date.parse(proof.retrievedAt) > Date.now() + 5 * 60 * 1000) {
+    throw new Error('GitHub identity evidence must identify the fixed repository, PR, commits, and retrieval time');
+  }
+  if (receipt.releaseId !== DYE_STUDIO_PR156_RELEASE_ID || receipt.source.repository !== repository ||
+      receipt.source.pullRequest !== 156 || receipt.source.pullRequestHeadCommit !== receipt.source.commit ||
+      pr?.number !== 156 || pr.state !== 'closed' || pr.merged !== true ||
+      pr.head?.repo?.full_name !== repository || pr.head.sha !== receipt.source.commit ||
+      pr.base?.repo?.full_name !== repository || !pr.merged_at ||
+      typeof pr.merge_commit_sha !== 'string' ||
+      proof.mergeCommit?.url !== `${apiRoot}/commits/${pr.merge_commit_sha}` ||
+      candidate?.sha !== receipt.source.commit || merge?.sha !== pr.merge_commit_sha) {
+    throw new Error('GitHub identity evidence does not prove the admitted PR #156 was merged from its exact head');
+  }
+  const candidateTree = candidate.commit?.tree?.sha;
+  const mergeTree = merge.commit?.tree?.sha;
+  if (!/^[a-f0-9]{40}$/i.test(candidateTree ?? '') || candidateTree !== mergeTree ||
+      receipt.source.treeSha !== candidateTree) {
+    throw new Error('GitHub identity evidence must prove identical admitted-head and squash-merge trees');
+  }
+  if (readback.sourceCommit !== pr.merge_commit_sha || readback.sourceTreeSha !== mergeTree ||
+      readback.admittedCandidateCommit !== receipt.source.commit ||
+      readback.candidateTreeSha !== candidateTree) {
+    throw new Error('Cloudflare readback must report the verified squash SHA and admitted candidate tree identity');
+  }
+  return pr.merge_commit_sha;
+}
+
 function admissionProjection(receipt, hashes = {}) {
   return {
     schemaVersion: 1,
@@ -522,6 +581,9 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     throw new Error('deployment provider/target must match the current baseline provider/target');
   }
   if (phase === 'admission') {
+    if (deployment?.identityBridge !== undefined) {
+      throw new Error('deployment.identityBridge is closeout-only and cannot alter admission');
+    }
     requireString(deployment?.plannedRoute, 'deployment.plannedRoute');
     requireString(deployment?.restoreProcedure, 'deployment.restoreProcedure');
     if (deployment.restoreProcedure !== receipt.rollback.restoreProcedure) {
@@ -548,9 +610,14 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
       throw new Error('deployment.readback must be valid JSON');
     }
     if (readback.provider !== deployment.provider || readback.target !== deployment.target ||
-        readback.versionId !== deployment.versionId || readback.sourceCommit !== receipt.source.commit ||
+        readback.versionId !== deployment.versionId ||
         readback.packageSha256 !== packageFile.sha256 || readback.baselineIdentity !== baseline.identity) {
       throw new Error('deployment.readback must bind provider/target/version, source commit, candidate hash, and prior baseline');
+    }
+    if (nativeRollback && receipt.releaseId === DYE_STUDIO_PR156_RELEASE_ID) {
+      await verifyPR156SquashMergeIdentity(receipt, root, readback);
+    } else if (readback.sourceCommit !== receipt.source.commit) {
+      throw new Error('deployment.readback sourceCommit must equal the admitted source commit');
     }
   }
 
