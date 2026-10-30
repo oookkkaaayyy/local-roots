@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createGitHubExecutionLockAdapter,createGoogleDriveEvidenceStore,createSupabaseMcpAdapter,createWranglerAdapter,resolvePinnedWrangler,verifyWritableCapacity} from '../scripts/hbnf-two-target-provider-adapters.mjs';
+import {execFileSync} from 'node:child_process';
+import {mkdtemp, mkdir, rm, writeFile} from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {createGitHubExecutionLockAdapter,createGoogleDriveEvidenceStore,createHbnfPublicAssetVerifier,createSupabaseMcpAdapter,createWranglerAdapter,normalizeCloudflareInjectedHtml,resolvePinnedWrangler,verifyWritableCapacity} from '../scripts/hbnf-two-target-provider-adapters.mjs';
 
 test('existing pinned Wrangler and writable scratch/log paths are discovered',async()=>{
  const bin=await resolvePinnedWrangler();assert.match(bin,/wrangler\.js$/);
@@ -62,4 +66,32 @@ test('Wrangler reader requires a single 100% active version and disabled access 
  assert.equal((await intercepted.read()).glowRouteCovered,false);
  const unsafe=createWranglerAdapter({run:async args=>({code:0,stdout:args[0]==='deployments'?JSON.stringify(items):args[0]==='versions'?'{}':args[0]==='secret'?'UDISC_GLOW_ACCESS_APPROVED':token,stderr:''}),fetchImpl,verifyRoutes:async()=>({passed:true})});
  await assert.rejects(()=>unsafe.read(),/cannot be proven disabled/);
+});
+
+test('public asset verification normalizes only the injected Cloudflare challenge and excludes assets routed to Cart',async()=>{
+ const dir=await mkdtemp(path.join(os.tmpdir(),'hbnf-asset-verifier-'));
+ try{
+  const pub=path.join(dir,'public');await mkdir(pub);
+  const lineage={};const bodies=new Map();
+  for(let i=0;i<43;i++){
+   const name=i===0?'hbnf-cart.js':`asset-${String(i).padStart(2,'0')}.bin`;
+   const relative=`public/${name}`,bytes=Buffer.from(`baseline-${i}`);
+   await writeFile(path.join(pub,name),bytes);bodies.set(name,bytes);lineage[relative]={source:'v343:3b019c24-0288-4c0d-bcc2-46cb6028d0f6',sha256:(await import('node:crypto')).createHash('sha256').update(bytes).digest('hex')};
+  }
+  const glow=Buffer.from('<!doctype html><title>Glow</title>');await writeFile(path.join(pub,'glow.html'),glow);bodies.set('glow.html',glow);lineage['public/glow.html']={source:'candidate',sha256:(await import('node:crypto')).createHash('sha256').update(glow).digest('hex'),change:'intentional Glow integration'};
+  for(const name of ['glow-save-sync.mjs','league-state-cas.mjs']){const bytes=Buffer.from(`new-${name}`);await writeFile(path.join(pub,name),bytes);bodies.set(name,bytes);lineage[`public/${name}`]={source:'candidate',sha256:(await import('node:crypto')).createHash('sha256').update(bytes).digest('hex'),change:'required new Glow helper'};}
+  await writeFile(path.join(dir,'PACKAGE_MANIFEST.json'),JSON.stringify({assetLineage:lineage}));
+  const zip=path.join(dir,'candidate.zip');execFileSync('zip',['-q','-r',zip,'PACKAGE_MANIFEST.json','public'],{cwd:dir});
+  const verifier=createHbnfPublicAssetVerifier({candidatePath:zip,fetchImpl:async url=>{
+   const route=new URL(url).pathname.slice(1);let bytes=bodies.get(route);assert(bytes,`unexpected external fetch for ${route}`);
+   if(route.endsWith('.html'))bytes=Buffer.concat([bytes,Buffer.from("<script>(function(){function c(){window.__CF$cv$params={r:'ray'};var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=ray';}c();})();</script>")]);
+   return new Response(bytes,{status:200});
+  }});
+  const proof=await verifier({expectedAssetDelta:{same:43,modified:['glow.html'],added:['glow-save-sync.mjs','league-state-cas.mjs']},routeOwners:[{pattern:'hbnightflyers.com/hbnf-cart*',script:'hbnf-cart2'}],activeCustomDomain:true});
+  assert.equal(proof.passed,true);assert.equal(proof.assetCount,45);assert.equal(proof.externallyRoutedAssetCount,1);
+  const noDomain=createHbnfPublicAssetVerifier({candidatePath:zip,fetchImpl:async()=>new Response('unused')});
+  await assert.rejects(()=>noDomain({expectedAssetDelta:{same:43,modified:['glow.html'],added:['glow-save-sync.mjs','league-state-cas.mjs']},routeOwners:[]}),/Custom Domain ownership is unavailable/);
+  const ambiguous=normalizeCloudflareInjectedHtml(Buffer.from(`<html><script>(function(){function c(){window.__CF$cv$params={r:'x'};var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=x';}c();})();</script></html>`));
+  assert.equal(ambiguous.toString(),' <html></html>'.trim());
+ } finally {await rm(dir,{recursive:true,force:true});}
 });

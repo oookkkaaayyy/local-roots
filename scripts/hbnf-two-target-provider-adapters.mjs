@@ -175,6 +175,26 @@ function routeCovers(pattern,url){
  const expression='^'+source.replace(/[.+?^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*')+'$';
  return new RegExp(expression).test(url);
 }
+export function normalizeCloudflareInjectedHtml(bytes){
+ const source=Buffer.from(bytes).toString('utf8');
+ if(!source.includes('window.__CF$cv$params'))return Buffer.from(bytes);
+ const injected=source.match(/<script>\(function\(\)\{function c\(\)[\s\S]*?window\.__CF\$cv\$params[\s\S]*?\/cdn-cgi\/challenge-platform\/scripts\/jsd\/main\.js[\s\S]*?<\/script>/g)||[];
+ assert(injected.length===1,'Cloudflare HTML response contains an unrecognized or ambiguous challenge injection');
+ const normalized=source.replace(injected[0],'');
+ assert(!normalized.includes('window.__CF$cv$params'),'Cloudflare challenge injection was not fully removed');
+ return Buffer.from(normalized);
+}
+function externallyRoutedAsset(route,routeOwners,activeCustomDomain){
+ const url=`https://hbnightflyers.com/${route}`;
+ const matching=routeOwners.filter(item=>routeCovers(item.pattern,url));
+ if(matching.length){
+  const owners=new Set(matching.map(item=>item.script));
+  assert(!owners.has('hbnf')||owners.size===1,`asset route has conflicting Worker owners: ${route}`);
+  return !owners.has('hbnf');
+ }
+ assert(activeCustomDomain,`HBNF Custom Domain ownership is unavailable for ${route}`);
+ return false;
+}
 export function createWranglerAdapter({run,candidatePath,rollbackPath,verifyRoutes,fetchImpl=fetch}={}){
  assert(typeof run==='function','Wrangler command runner is required');
  assert(typeof verifyRoutes==='function','real public-route asset verifier is required');
@@ -188,6 +208,7 @@ export function createWranglerAdapter({run,candidatePath,rollbackPath,verifyRout
   const json=await response.json();assert(response.ok&&json.success===true,`Cloudflare read/update API failed (${response.status})`);return json.result;
  };
  const versionInfo=async id=>JSON.parse(await invoke(['versions','view',id,'--name','hbnf','--json']));
+ let establishedRouteSignature=null,establishedDomainSignature=null;
  return {
   async read(){
    const items=await deployments(),d=activeDeployment(items);
@@ -206,8 +227,15 @@ export function createWranglerAdapter({run,candidatePath,rollbackPath,verifyRout
    assert(Array.isArray(scheduleResult?.schedules),'Cloudflare schedule readback is malformed');
    const schedules=scheduleResult.schedules;
    assert(Array.isArray(routes),'Cloudflare routes readback is malformed');
+   assert(routes.every(r=>typeof r.pattern==='string'&&typeof r.script==='string'&&r.script.length>0),'Cloudflare route ownership identities are incomplete');
    assert(Array.isArray(domains),'Cloudflare Worker Custom Domains readback is malformed');
    const activeCustomDomain=domains.some(d=>d.hostname==='hbnightflyers.com'&&d.service==='hbnf'&&d.enabled===true);
+   const routeOwners=routes.map(r=>({pattern:r.pattern,script:r.script})).sort((a,b)=>`${a.pattern}\0${a.script}`.localeCompare(`${b.pattern}\0${b.script}`));
+   const routeSignature=JSON.stringify(routeOwners);
+   const domainSignature=JSON.stringify(domains.filter(d=>d.hostname==='hbnightflyers.com').map(d=>({hostname:d.hostname,service:d.service,enabled:d.enabled})).sort((a,b)=>`${a.hostname}\0${a.service}\0${a.enabled}`.localeCompare(`${b.hostname}\0${b.service}\0${b.enabled}`)));
+   if(establishedRouteSignature!==null)assert(routeSignature===establishedRouteSignature,'Cloudflare route ownership changed during release execution');
+   if(establishedDomainSignature!==null)assert(domainSignature===establishedDomainSignature,'Cloudflare Custom Domain ownership changed during release execution');
+   establishedRouteSignature??=routeSignature;establishedDomainSignature??=domainSignature;
    const paths=['/glow.html','/glow-save-sync.mjs','/league-state-cas.mjs'];
    const glowRouteCovered=paths.every(p=>{
     const matching=routes.filter(r=>routeCovers(r.pattern,`https://hbnightflyers.com${p}`));
@@ -216,7 +244,7 @@ export function createWranglerAdapter({run,candidatePath,rollbackPath,verifyRout
     return matching.length?matching.every(r=>r.script==='hbnf'):activeCustomDomain;
    });
    const staticAssetsOnly=d.versionId===EXPECTED_VERSION&&info?.id===EXPECTED_VERSION&&info?.resources?.script?.handlers===null&&info?.resources?.script_runtime?.assets?.serve_directly===true;
-   return {worker:'hbnf',...d,rollbackRetained:items.some(x=>(x.versions||[]).some(v=>v.version_id===EXPECTED_VERSION)),pollingDisabled:true,cronRemoved:schedules.length===0,staticAssetsOnly,installedAssetHash:null,assetHashUnavailable:true,glowRouteCovered,activeCustomDomain,schedules,routePatterns:routes.map(x=>x.pattern),scriptHandlers:info?.resources?.script?.handlers??null,bindings};
+   return {worker:'hbnf',...d,rollbackRetained:items.some(x=>(x.versions||[]).some(v=>v.version_id===EXPECTED_VERSION)),pollingDisabled:true,cronRemoved:schedules.length===0,staticAssetsOnly,installedAssetHash:null,assetHashUnavailable:true,glowRouteCovered,activeCustomDomain,schedules,routePatterns:routes.map(x=>x.pattern),routeOwners,scriptHandlers:info?.resources?.script?.handlers??null,bindings};
   },
   async deployExact({zip,sha256:expected,keepPollingDisabled}){
    assert(sha256(zip)===expected,'candidate bytes mismatch');assert(keepPollingDisabled===true,'polling must remain disabled');
@@ -245,7 +273,9 @@ export function createWranglerAdapter({run,candidatePath,rollbackPath,verifyRout
   async verifyDeployed({versionId,expectedAssetDelta,legacyReadOnly}){
    const active=activeDeployment(await deployments());assert(active.versionId===versionId&&active.percentage===100,'deployed Worker identity readback mismatch');
    assert(legacyReadOnly===true,'legacy route preservation was not requested');
-   const proof=await verifyRoutes({versionId,expectedAssetDelta});assert(proof?.passed===true,'public route asset verification did not pass');return proof;
+   const routeRead=await this.read();
+   assert(routeRead.versionId===versionId&&routeRead.activeCustomDomain&&routeRead.glowRouteCovered,'deployed Glow routes or HBNF Custom Domain readback failed');
+   const proof=await verifyRoutes({versionId,expectedAssetDelta,routeOwners:routeRead.routeOwners,activeCustomDomain:routeRead.activeCustomDomain});assert(proof?.passed===true,'public route asset verification did not pass');return proof;
   },
  };
 }
@@ -254,7 +284,7 @@ export function createHbnfPublicAssetVerifier({candidatePath,origin='https://hbn
  assert(candidatePath,'exact candidate path required for public route verification');
  let manifestPromise;
  const manifest=()=>manifestPromise??=(async()=>JSON.parse((await execFile('unzip',['-p',candidatePath,'PACKAGE_MANIFEST.json'],{encoding:'utf8',maxBuffer:5*1024*1024})).stdout))();
- return async({kind,expectedAssetDelta}={})=>{
+ return async({kind,expectedAssetDelta,routeOwners=[],activeCustomDomain=false}={})=>{
   const pkg=await manifest();const lineage=pkg.assetLineage||{};let expected=[];
   if(kind==='rollback'){
    expected=Object.entries(lineage).flatMap(([name,row])=>row.source?.startsWith('v343:')?[[name,row.sha256]]:row.replacesBaselineSha256?[[name,row.replacesBaselineSha256]]:[]);
@@ -268,14 +298,16 @@ export function createHbnfPublicAssetVerifier({candidatePath,origin='https://hbn
    assert(expectedAssetDelta?.same===43&&expectedAssetDelta?.modified?.includes('glow.html')&&expectedAssetDelta?.added?.length===2,'caller asset delta does not match admitted package');
    assert(expected.length===46,'candidate manifest does not describe 46 static assets');
   }
-  const queue=[...expected];let matched=0;const errors=[];
+  const queue=[...expected];let matched=0,externallyRouted=0;const errors=[];
   async function worker(){for(;;){const item=queue.shift();if(!item)return;const [name,hash]=item;const route=name.replace(/^public\//,'');
-   try{const response=await fetchImpl(`${origin.replace(/\/$/,'')}/${route}`,{cache:'no-store',redirect:'follow',headers:{'Cache-Control':'no-cache'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);const bytes=Buffer.from(await response.arrayBuffer());if(sha256(bytes)!==hash)throw new Error('SHA-256 mismatch');matched++;}
+   try{if(externallyRoutedAsset(route,routeOwners,activeCustomDomain)){externallyRouted++;continue;}
+    const response=await fetchImpl(`${origin.replace(/\/$/,'')}/${route}`,{cache:'no-store',redirect:'follow',headers:{'Cache-Control':'no-cache'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);let bytes=Buffer.from(await response.arrayBuffer());if(route.toLowerCase().endsWith('.html'))bytes=normalizeCloudflareInjectedHtml(bytes);if(sha256(bytes)!==hash)throw new Error('SHA-256 mismatch');matched++;}
    catch(e){errors.push(`${route}: ${e.message}`);}
   }}
   await Promise.all(Array.from({length:5},worker));
   if(errors.length)throw new Error(`public asset verification failed for ${errors.length}/${expected.length}: ${errors.slice(0,5).join('; ')}`);
-  return {passed:matched===expected.length,kind,assetCount:matched,assetMapSha256:sha256(Buffer.from(JSON.stringify(expected.slice().sort((a,b)=>a[0].localeCompare(b[0])))))};
+  assert(matched+externallyRouted===expected.length,`public asset verification accounted for ${matched+externallyRouted}/${expected.length} assets`);
+  return {passed:true,kind,assetCount:matched,externallyRoutedAssetCount:externallyRouted,assetMapSha256:sha256(Buffer.from(JSON.stringify(expected.slice().sort((a,b)=>a[0].localeCompare(b[0])))))};
  };
 }
 
