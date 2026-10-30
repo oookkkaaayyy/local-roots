@@ -1283,6 +1283,10 @@ function makeSyncHelpers(ctx){return{
   ctx.syncBaselinePromise=this.pullRoot();
   await ctx.syncBaselinePromise;
   ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live').on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
+   // Realtime delivery can lag the HTTP ACK/GET. Ignore an older or already
+   // confirmed revision so a delayed echo cannot mark this page conflicted.
+   const incomingRevision=String(payload.new&&payload.new.updated_at||'');
+   if(incomingRevision&&ctx.lastRemoteRevision&&incomingRevision<=ctx.lastRemoteRevision)return;
    const incoming=(payload.new&&payload.new.state_json)||{};
    const incomingRootHash=hbnfSyncHash(incoming);
    if(incomingRootHash&&incomingRootHash===ctx.lastRemoteRootHash)return;
@@ -1290,7 +1294,7 @@ function makeSyncHelpers(ctx){return{
    const remoteBranch=incoming&&incoming[ctx.branch];
    if(ctx.localDirty){
     if(ctx.syncing&&incomingBranchHash&&incomingBranchHash===ctx.inFlightBranchHash){
-     ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;
+     ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;ctx.lastRemoteRevision=incomingRevision;
      if(incomingBranchHash===hbnfSyncHash(ctx.state)){ctx.localDirty=true;ctx.pendingPush=true;hbnfSetSyncStatus('Pending — waiting for independent cloud readback.')}
      else{ctx.localDirty=true;ctx.pendingPush=true;hbnfSetSyncStatus('Pending — newer edits are waiting to save.')}
      return
@@ -1298,12 +1302,13 @@ function makeSyncHelpers(ctx){return{
     if(ctx.lastRemoteBranchHash&&incomingBranchHash!==ctx.lastRemoteBranchHash){
      ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return
     }
-    ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;return
+    ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteRevision=incomingRevision;return
    }
    const beforeBranchHash=hbnfSyncHash(ctx.state);
    ctx.rootState=incoming||{};
    ctx.lastRemoteRootHash=incomingRootHash;
    ctx.lastRemoteBranchHash=incomingBranchHash;
+   ctx.lastRemoteRevision=incomingRevision;
    // Normalize a COPY: normalization rewrites week objects, which must not change the cloud revision fingerprint.
    const authoritative=ctx.normalize?ctx.normalize(hbnfSyncClone(remoteBranch)):hbnfSyncClone(remoteBranch);
    const afterBranchHash=hbnfSyncHash(authoritative);
@@ -1329,6 +1334,7 @@ function makeSyncHelpers(ctx){return{
    }
    if(!res.data||!res.data.updated_at)throw new Error('Cloud baseline unavailable; local copy retained.');
    const incoming=(res.data&&res.data.state_json)||{};
+   ctx.lastRemoteRevision=res.data.updated_at;
    const remoteBranch=incoming&&incoming[ctx.branch];
    // Normalize a COPY: normalization rewrites week objects, which must not change the cloud revision fingerprint.
    const authoritative=ctx.normalize?ctx.normalize(hbnfSyncClone(remoteBranch)):hbnfSyncClone(remoteBranch);
@@ -1398,7 +1404,7 @@ function makeSyncHelpers(ctx){return{
    }else if(Array.isArray(currentRoot&&currentRoot.__backups))ctx.rootState.__backups=currentRoot.__backups;
    const targetRootHash=hbnfSyncHash(ctx.rootState);
    if(targetRootHash===currentRootHash){
-    ctx.lastRemoteRootHash=currentRootHash;ctx.localDirty=false;ctx.lastRemoteBranchHash=currentBranchHash;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud');return
+    ctx.lastRemoteRootHash=currentRootHash;ctx.localDirty=false;ctx.lastRemoteBranchHash=currentBranchHash;ctx.lastRemoteRevision=cur.data.updated_at;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud');return
    }
    ctx.inFlightBranchHash=saveSnapshotHash;
    const res=await ctx.supabaseClient.rpc('hbnf_save_league_state_v1',{p_expected_updated_at:cur.data.updated_at,p_state_json:ctx.rootState});
@@ -1417,6 +1423,7 @@ function makeSyncHelpers(ctx){return{
    ctx.rootState=readback.data.state_json;
    ctx.lastRemoteRootHash=hbnfSyncHash(readback.data.state_json);
    ctx.lastRemoteBranchHash=hbnfSyncHash(readback.data.state_json[ctx.branch]);
+   ctx.lastRemoteRevision=readback.data.updated_at;
    ctx.syncBaselineReady=true;ctx.remoteConflictPending=false;
    if(hbnfSyncHash(ctx.state)===saveSnapshotHash){ctx.localDirty=false;ctx.localSyncNeedsConfirmation=false;hbnfClearPendingDraft();hbnfSetSyncStatus('Saved to cloud')}
    else{ctx.localDirty=true;hbnfSetSyncStatus('Pending — newer edits are waiting to save.');ctx.pendingPush=true}
@@ -1429,7 +1436,7 @@ function makeSyncHelpers(ctx){return{
  }
 }}
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s)), esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',localDirty:false,localDraftStored:true,pendingMarkerStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,legacyUnconfirmed:false,lastSyncError:false,pendingBaseHash:null,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
+const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',lastRemoteRevision:'',localDirty:false,localDraftStored:true,pendingMarkerStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,legacyUnconfirmed:false,lastSyncError:false,pendingBaseHash:null,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
 // A redundant write-ahead draft survives app termination and a stale startup GET.
 // Never treat a device-only draft as a cloud save. The original cache is left intact.
 const HBNF_PENDING_DRAFT_KEY='hbnf-sync-skins-pending-v1';
