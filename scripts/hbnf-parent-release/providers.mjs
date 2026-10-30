@@ -32,17 +32,20 @@ export function createAuthenticatedReadAdapters({ env = process.env, fetchImpl =
     readOnly: true,
     async readAllTargets() {
       const [deployment, versions, routes, project, functions, query] = await Promise.all([
-        cf(`/accounts/${ACCOUNT}/workers/services/hbnf/environments/production/deployments`).then(json),
+        cf(`/accounts/${ACCOUNT}/workers/scripts/hbnf/deployments`).then(json),
         cf(`/accounts/${ACCOUNT}/workers/scripts/hbnf/versions`).then(json),
         cf(`/zones/${ZONE}/workers/routes`).then(json),
         sb(`/v1/projects/${PROJECT}`).then(json),
         sb(`/v1/projects/${PROJECT}/functions`).then(json),
         sb(`/v1/projects/${PROJECT}/database/query`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query: STABLE_STATE_SQL }) }).then(json),
       ]);
-      const active = deployment.result?.versions?.find(v => v.percentage === 100);
+      const latestDeployment = deployment.result?.deployments?.[0];
+      const active = latestDeployment?.versions?.find(v => v.percentage === 100);
       if (!active?.version_id) throw new Error('ACTIVE_WORKER_VERSION_NOT_UNAMBIGUOUS');
-      const version = (versions.result || []).find(v => v.id === active.version_id);
-      const retainedRollback = (versions.result || []).find(v => v.id === RETAINED_WORKER_ROLLBACK);
+      const versionItems = versions.result?.items;
+      if (!Array.isArray(versionItems)) throw new Error('WORKER_VERSION_LIST_MISSING');
+      const version = versionItems.find(v => v.id === active.version_id);
+      const retainedRollback = versionItems.find(v => v.id === RETAINED_WORKER_ROLLBACK);
       const route = (routes.result || []).find(r => r.pattern === 'hbnightflyers.com' && r.script === 'hbnf');
       if (!version || !route || !retainedRollback) throw new Error('WORKER_VERSION_ROUTE_OR_RETAINED_ROLLBACK_NOT_FOUND');
       const rows = query.result || query;
@@ -50,7 +53,7 @@ export function createAuthenticatedReadAdapters({ env = process.env, fetchImpl =
       if (!dbSnapshot) throw new Error('DATABASE_READBACK_MISSING');
       const bySlug = new Map((functions || []).map(f => [f.slug, f]));
       const targets = {
-        'cloudflare-worker': { accountId: ACCOUNT, service: 'hbnf', activeVersionId: version.id, versionNumber: version.number, deploymentId: deployment.result.id, percentage: active.percentage, route, versionIdentity: version.source?.hash || version.id, retainedRollbackVersionId: retainedRollback.id, retainedRollbackVersionNumber: retainedRollback.number },
+        'cloudflare-worker': { accountId: ACCOUNT, service: 'hbnf', activeVersionId: version.id, versionNumber: version.number, deploymentId: latestDeployment.id, percentage: active.percentage, route, versionIdentity: version.source?.hash || version.id, retainedRollbackVersionId: retainedRollback.id, retainedRollbackVersionNumber: retainedRollback.number },
         'supabase-schema': { projectId: PROJECT, projectStatus: project.status, region: project.region, snapshot: dbSnapshot },
       };
       for (const [targetId, slug] of Object.entries(EDGE_SLUGS)) {
