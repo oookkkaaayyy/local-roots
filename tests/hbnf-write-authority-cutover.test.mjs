@@ -5,6 +5,7 @@ import test from 'node:test';
 const migration = await readFile(new URL('../supabase/migrations/20261029204700_hbnf_league_state_guarded_rpc_cutover.sql', import.meta.url), 'utf8');
 const sync = await readFile(new URL('../public/hbnf-league-state-sync.js', import.meta.url), 'utf8');
 const skins = await readFile(new URL('../public/skins.html', import.meta.url), 'utf8');
+const tagRevision = await readFile(new URL('../supabase/migrations/20261030230000_hbnf_verify_round_tag_revision_enforcement.sql', import.meta.url), 'utf8');
 
 test('login-free browser saves use mandatory revision-guarded RPC', () => {
   assert.match(sync, /client\.rpc\('hbnf_save_league_state_v1'/);
@@ -27,4 +28,11 @@ test('RPC rejects missing revisions and returns zero rows for stale CAS', () => 
   assert.match(migration, /p_expected_updated_at is null[\s\S]*?errcode = '22023'/i);
   assert.match(migration, /where ls\.id = 1\s+and ls\.updated_at = p_expected_updated_at/i);
   assert.match(migration, /returns setof public\.league_state/i);
+});
+
+test('round-tag verification enforces both revisions after idempotent retry checks', () => {
+  assert.match(tagRevision, /p_expected_authority_revision\s+is null or p_expected_authority_revision<>v_authority\.revision/i);
+  assert.match(tagRevision, /p_expected_entry_revision\s+is null or p_expected_entry_revision<>v_entry\.revision/i);
+  assert.match(tagRevision, /elsif p_expected_entry_revision is distinct from 0/i);
+  assert.match(tagRevision, /edit_id_reused/);
 });
