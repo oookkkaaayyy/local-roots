@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
 import path from 'node:path';
 import {RELEASE,verifyExistingAuthority,runAdmittedHbnfExecution} from '../scripts/hbnf-two-target-execution-core.mjs';
 
@@ -16,7 +17,7 @@ async function input(){
    approval:await bytes('HBNF-glow-d68334f67026-owner-install-authorization-2026-10-30.json'),
    candidate:await bytes('HBNF-scoring-candidate-7c559.zip'),
    rollback:await bytes('HBNF-scoring-rollback-v343.zip'),
-   migrationBytes:await Promise.all(RELEASE.migrations.map(async ([name])=>({name,bytes:await bytes(`hbnf-two-target-exec-review/fixtures/database/${name}`)}))),
+   migrationBytes:RELEASE.migrations.map(([name])=>({name,bytes:execFileSync('unzip',['-p',path.join(root,'HBNF-scoring-candidate-7c559.zip'),`database/${name}`],{maxBuffer:1024*1024})})),
  };
 }
 const evidence=await input();
