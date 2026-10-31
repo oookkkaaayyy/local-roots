@@ -73,6 +73,7 @@ export function WeatherPage() {
   const [shareMessage,setShareMessage]=useState('');
   const [refreshKey,setRefreshKey]=useState(0);
   const [filtersOpen,setFiltersOpen]=useState(false);
+  const [copyFeedback,setCopyFeedback]=useState<{id:string;message:string}|null>(null);
 
   useEffect(()=>{try{localStorage.setItem(PREF_KEY,JSON.stringify(preferences));}catch{/* optional */}},[preferences]);
   useEffect(()=>{
@@ -164,6 +165,15 @@ export function WeatherPage() {
     setPreferences({...draft,location:draft.location.trim()});setExpanded(null);setFiltersOpen(false);
     syncWeatherUrl({...draft,location:draft.location.trim()});
   }
+  async function copyCourseLocation(course:WeatherCourse) {
+    const location=course.postalCode||course.coordinates.map(value=>value.toFixed(6)).join(', ');
+    try {
+      await navigator.clipboard.writeText(location);
+      setCopyFeedback({id:course.id,message:'Copied'});
+    } catch {
+      setCopyFeedback({id:course.id,message:'Copy unavailable'});
+    }
+  }
   async function share() {
     const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0'}).toString();
     try {if(navigator.share){await navigator.share({title:'Disc Golf Weather · Local Roots',url:url.toString()});return;}}catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
@@ -241,7 +251,9 @@ export function WeatherPage() {
             {hourly&&hourly.coverage>0&&hourly.coverage<0.999?<p className="weather-stale">Forecast covers {Math.round(hourly.coverage*100)}% of these hours.</p>:null}
             <div className="weather-location-actions">
               <span>{view.course.postalCode?`ZIP ${view.course.postalCode}`:`${courseLat.toFixed(5)}, ${courseLon.toFixed(5)}`}</span>
+              <button type="button" onClick={()=>void copyCourseLocation(view.course)}>Copy location</button>
               <a href={`https://forecast.weather.gov/MapClick.php?lat=${courseLat.toFixed(6)}&lon=${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`NWS forecast for ${view.course.name}`}>NWS forecast</a>
+              {copyFeedback?.id===view.course.id?<small role="status">{copyFeedback.message}</small>:null
             </div>
             <p className="weather-hourly-period">{periodLabel}</p>
             <div className="weather-hourly-scroll"><table className="weather-hourly"><thead><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain</th><th>Conditions</th></tr></thead><tbody>{(hourly?.rows||[]).map((row,i)=><tr key={`${row.startTime}-${i}`}><th scope="row">{formatHourlyTimeLabel(row.startTime,hourly?.rows||[],timeZone,referenceTime)}</th><td>{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td>{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td>{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td>{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td>{row.conditions||'—'}</td></tr>)}</tbody></table></div>
