@@ -1,0 +1,63 @@
+{
+  "release": "HBNF iPad Safari compatibility and navigation fix",
+  "baseline_worker_version": "45e895f4-0e3f-4aa1-bb3b-d6c8ef045f55",
+  "rollback_worker_version": "45e895f4-0e3f-4aa1-bb3b-d6c8ef045f55",
+  "asset_count": 44,
+  "changed_assets": [
+    {
+      "path": "public/glow.html",
+      "baseline_sha256": "e9c2ee770ecf42a6633ecb8f5634c0af939a07a36e1e91737a558d77fb0886d5",
+      "candidate_sha256": "99c12f383bad549f793c329d358ae85e75a1efafa619836e36c3824b23e3ec11",
+      "bytes": 205148
+    },
+    {
+      "path": "public/hbnf-main-cart-shell.js",
+      "baseline_sha256": "15ddae0a94d3c0139812185c93dd6d0f0b6be105c6c42d683fefc04366a6acae",
+      "candidate_sha256": "7e2e22230780a5f9c5e2939f7d669e3ed2307b9171f03b4904d53c86b40a419b",
+      "bytes": 4570
+    },
+    {
+      "path": "public/hbnf-mobile-ux.js",
+      "baseline_sha256": "a7fe2b45a5225169106a5e97cf1912a9553467ed28284be563bd32fdbdca099f",
+      "candidate_sha256": "4b29921790e046017f64d74273fa650f67e6b915f491f3afe474228d3fb5ef97",
+      "bytes": 10720
+    },
+    {
+      "path": "public/index.html",
+      "baseline_sha256": "5179757a5913f568f42bae2d234848adc82c6d47fa7ef37d11d9056f34e7706b",
+      "candidate_sha256": "476db1ee01c6f9a9cbf31b04d8e226017c0d0f5aeb476f6963282a3f5f827e12",
+      "bytes": 98937
+    },
+    {
+      "path": "public/matrix-quick-controls.js",
+      "baseline_sha256": "40e8ef9fc7fe0316694e71a7b444f9b22c76ee5af361a061a14f428563b4389b",
+      "candidate_sha256": "2d7476e74b07bb7de0812087303fda658d68ff4dbec7a6d7b95b2601a4d2487d",
+      "bytes": 8023
+    },
+    {
+      "path": "public/round-tags.js",
+      "baseline_sha256": "baf2055c7e60d833316e38165be5d8104fd42c5690c87b876fc0e6cccd0dd298",
+      "candidate_sha256": "79cc22987781a4a007f97be7a7dde17e14843c1d69fe5b6ca521522967fdb344",
+      "bytes": 121458
+    },
+    {
+      "path": "public/skins-ux-polish.js",
+      "baseline_sha256": "3ac85e8bb8a3cb1a4201b702a5ae93ce988a670b7eff2a76c4e2c65a802a54ad",
+      "candidate_sha256": "b190f1decf6e2c64a798575ebbc6febfb2b767c584c80ea0f63b613c9e2cff53",
+      "bytes": 13602
+    },
+    {
+      "path": "public/skins.html",
+      "baseline_sha256": "04a37f829fcc59f2724e22c9294e59875f862e93ab053a09be2dec48a8f0c196",
+      "candidate_sha256": "a8f083776fb81af25249b6b202e75cb531ce74dcae63d3aeb02ff54fb2a9996e",
+      "bytes": 206811
+    }
+  ],
+  "all_unchanged_asset_hashes_match": true,
+  "scope": [
+    "iPad Mini header placement",
+    "native HBNF logo home navigation",
+    "iOS 12-compatible Skins/Glow/index syntax and changed support scripts"
+  ],
+  "production_data_changed": false
+}

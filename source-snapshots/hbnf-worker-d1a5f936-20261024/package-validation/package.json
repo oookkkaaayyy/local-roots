@@ -1,0 +1,21 @@
+{
+  "name": "hbnf-worker-observed-snapshot",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Reproducible local validation for the observed HBNF Worker source snapshot; not proof of deployed-source parity.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "wrangler:version": "wrangler --version",
+    "verify:assets": "node ./verify-assets.mjs",
+    "verify:live-routes": "node ./verify-live-routes.mjs",
+    "test:route-parity": "node --test ./verify-live-routes.test.mjs",
+    "test:save-reconnect": "node ../tests/verify-save-reconnect.cjs",
+    "test:sync-baseline": "node ../tests/verify-conflict-baseline.cjs",
+    "build:dry-run": "npm run verify:assets && wrangler deploy --dry-run --config ./wrangler.jsonc --outdir .wrangler-output"
+  },
+  "devDependencies": {
+    "wrangler": "4.152.0"
+  }
+}
