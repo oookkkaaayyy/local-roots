@@ -4,7 +4,7 @@
 import {createHash} from 'node:crypto';
 
 export const WEEKLY_RELEASE = Object.freeze({
-  id: 'hbnf-glow-weekly-20261030-44612c09677f',
+  id: 'hbnf-glow-weekly-20261030-44612c09677f-partial-20261031',
   runtimeSource: '44612c09677f59b84bece7de655af7bb011b51e7',
   candidate: '0b51b7ecdfeced01cc73bee96dff8085f2f1f9529df48223fa4f7185c7d15b4c',
   candidateBytes: 5015699,
@@ -17,6 +17,7 @@ export const WEEKLY_RELEASE = Object.freeze({
   migration: '20261031054752_hbnf_udisc_glow_event_bindings.sql',
   migrationSha256: 'dbcf993694c054f3ea45de721258b5822c1c45042415309437a94ae583deaf8c',
   migrationBytes: 2269,
+  expectedMigrationVersion: '20261031082937',
   migrationRollback: 'DROP TABLE public.hbnf_udisc_glow_event_bindings;',
   migrationRollbackSha256: '30359675987363ed48a8377b6fd88be9e65b5cf81bbb1d6cbf3c42469f13950c',
   assets: 46,
@@ -30,6 +31,8 @@ export const WEEKLY_RELEASE = Object.freeze({
 const digest = b => createHash('sha256').update(b).digest('hex');
 const fail = message => { throw new Error(message); };
 const jsonBytes = v => Buffer.from(`${JSON.stringify(v,null,2)}\n`);
+const canonicalValue = v => Array.isArray(v) ? v.map(canonicalValue) : v && typeof v==='object' ? Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonicalValue(v[k])])) : v;
+export const sameJson = (a,b) => JSON.stringify(canonicalValue(a))===JSON.stringify(canonicalValue(b));
 function fresh(e, label, now, age) {
   const t=Date.parse(e?.capturedAt);
   if(!Number.isFinite(t)||t>now+30_000||now-t>age) fail(`${label} readback missing, future-dated, or stale`);
@@ -42,7 +45,11 @@ function verifyWorkerBaseline(w) {
   if(w.cron?.length!==1||w.cron[0]!=='* * * * *') fail('baseline Cron differs from the admitted one-minute schedule');
 }
 function verifyDatabaseBaseline(s, expected) {
-  if(s?.projectId!==WEEKLY_RELEASE.project||s.bindingTableExists!==false||s.migrationPresent!==false||!expected?.stateFingerprint||s.stateFingerprint!==expected.stateFingerprint||s.activeWeek!==expected.activeWeek||s.nov3WeekExists!==expected.nov3WeekExists) fail('Supabase project, migration/table baseline, or manifest-bound league state differs');
+  if(s?.projectId!==WEEKLY_RELEASE.project||!expected?.stateFingerprint||s.stateFingerprint!==expected.stateFingerprint||s.activeWeek!==expected.activeWeek||s.nov3WeekExists!==expected.nov3WeekExists) fail('Supabase project or manifest-bound league state differs');
+  if(expected.migrationPresent===true){
+    const rows=(s.migrationLedger||[]).filter(m=>m.name==='hbnf_udisc_glow_event_bindings');
+    if(s.bindingTableExists!==true||s.migrationPresent!==true||rows.length!==1||rows[0].version!==expected.migrationVersion||s.rlsEnabled!==true||s.serviceRoleOnly!==true||!sameJson(s.bindings,expected.bindings)) fail('pre-applied migration baseline, provider ledger version, permissions, or event bindings differ');
+  }else if(s.bindingTableExists!==false||s.migrationPresent!==false) fail('unexpected migration/table state for this admission');
   for(const name of ['hbnf_apply_udisc_glow_week','hbnf_record_udisc_glow_sync_status']) if(!s.functions?.includes(name)) fail(`pre-existing Glow function missing: ${name}`);
   if(s.legacyAnonWriteGrants!==true||s.matrixAndTagTriggersPreserved!==true) fail('legacy grants or Matrix/tag triggers are not preserved');
 }
@@ -62,22 +69,25 @@ export async function admitWeeklyGlowRelease({manifest,manifestBytes,downloadedM
   exactBytes(artifactBytes?.rollback,WEEKLY_RELEASE.rollback,WEEKLY_RELEASE.rollbackBytes,'v086 rollback');
   exactBytes(artifactBytes?.migration,WEEKLY_RELEASE.migrationSha256,WEEKLY_RELEASE.migrationBytes,'event-binding migration');
   if(manifest.candidate?.sha256!==WEEKLY_RELEASE.candidate||manifest.rollback?.versionId!==WEEKLY_RELEASE.rollbackVersion||manifest.rollback?.sha256!==WEEKLY_RELEASE.rollback||manifest.migration?.name!==WEEKLY_RELEASE.migration||manifest.migration?.sha256!==WEEKLY_RELEASE.migrationSha256||manifest.migration?.rollbackSha256!==WEEKLY_RELEASE.migrationRollbackSha256||manifest.migration?.order!==1||manifest.assetCount!==46||manifest.assetDelta?.unchanged!==46||manifest.assetDelta?.modified?.length!==0||manifest.assetDelta?.added?.length!==0) fail('manifest candidate, rollback, exact migration/rollback, or 46-asset preservation binding mismatch');
+  const prior=manifest.supersedes;
+  if(manifest.migration?.alreadyApplied!==true||manifest.migration?.recordedVersion!==manifest.supabaseBaseline?.migrationVersion||prior?.previousReleaseId!=='hbnf-glow-weekly-20261030-44612c09677f'||prior?.previousManifestDriveId!=='1EdKCakECFK8BqRQ-wJLvPJVfV_sAAGva'||prior?.previousManifestSha256!=='f62698bfb6f0d7b8395cd5cdb76b80b6a51effe3bb15bb4afa39861a7bd44bf4'||prior?.previousAdmissionDecisionDriveId!=='1dWOWkg0AmTZAgblZ0bUzY3RrCdS8qpS3'||prior?.previousExecutionClaimDriveId!=='1Ap3S34eOn_Cu0ql4mQQ9zd_2sNkwDC5V'||prior?.previousFailureReceiptDriveId!=='1WpoOd7HOH8y6wbNUwJA8Q3YdvETuITDB') fail('partial-state successor is not bound to the independently recorded prior attempt');
   const cf=readbacks?.cloudflare,sb=readbacks?.supabase;fresh(cf,'Cloudflare',now,maxAgeMs);fresh(sb,'Supabase',now,maxAgeMs);verifyWorkerBaseline(cf);verifyDatabaseBaseline(sb,manifest.supabaseBaseline);
   if(!Array.isArray(manifest.acceptanceCriteria)||manifest.acceptanceCriteria.length<5||manifest.acceptanceCriteria.some(c=>c.status!=='PENDING'||!c.scope||!c.description||!c.method||!c.expectedOutcome)) fail('admission acceptance criteria are incomplete or not PENDING');
-  return Object.freeze({status:'ADMISSION_PASS',releaseId:WEEKLY_RELEASE.id,manifestSha256,manifestDriveFileId:durableManifest.driveFileId,gateSourceCommit:manifest.gateSourceCommit,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollbackSha256:WEEKLY_RELEASE.rollback,migrationSha256:WEEKLY_RELEASE.migrationSha256,cloudflareVersion:cf.versionId,supabaseProject:sb.projectId,supabaseBaseline:Object.freeze({...manifest.supabaseBaseline}),admittedAt:new Date(now).toISOString()});
+  return Object.freeze({status:'ADMISSION_PASS',releaseId:WEEKLY_RELEASE.id,manifestSha256,manifestDriveFileId:durableManifest.driveFileId,gateSourceCommit:manifest.gateSourceCommit,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollbackSha256:WEEKLY_RELEASE.rollback,migrationSha256:WEEKLY_RELEASE.migrationSha256,migrationAlreadyInstalled:manifest.migration.alreadyApplied===true,cloudflareVersion:cf.versionId,supabaseProject:sb.projectId,supabaseBaseline:Object.freeze({...manifest.supabaseBaseline}),admittedAt:new Date(now).toISOString()});
 }
 
 function assertTargetUnchanged(cf,sb,admission) {
   if(cf?.versionId!==admission.cloudflareVersion||cf.trafficPercent!==100||cf.rollbackRetained!==true) fail('Cloudflare baseline changed at mutation boundary');
   const b=admission.supabaseBaseline;
-  if(sb?.projectId!==admission.supabaseProject||sb.bindingTableExists!==false||sb.migrationPresent!==false||sb.stateFingerprint!==b?.stateFingerprint||sb.activeWeek!==b?.activeWeek||sb.nov3WeekExists!==b?.nov3WeekExists) fail('Supabase baseline changed at mutation boundary');
+  if(sb?.projectId!==admission.supabaseProject||sb.bindingTableExists!==b?.bindingTableExists||sb.migrationPresent!==b?.migrationPresent||sb.stateFingerprint!==b?.stateFingerprint||sb.activeWeek!==b?.activeWeek||sb.nov3WeekExists!==b?.nov3WeekExists) fail('Supabase baseline changed at mutation boundary');
+  if(b.migrationPresent===true){const rows=(sb.migrationLedger||[]).filter(m=>m.name==='hbnf_udisc_glow_event_bindings');if(rows.length!==1||rows[0].version!==b.migrationVersion||!sameJson(sb.bindings,b.bindings))fail('pre-applied migration changed at the execution boundary');}
 }
 function verifyPostMigration(s, baseline) {
   if(s?.projectId!==WEEKLY_RELEASE.project||s.bindingTableExists!==true||s.migrationPresent!==true||s.migrationName!=='hbnf_udisc_glow_event_bindings'||s.rlsEnabled!==true||s.serviceRoleOnly!==true||s.stateFingerprint!==baseline?.stateFingerprint||s.activeWeek!==baseline?.activeWeek||s.nov3WeekExists!==baseline?.nov3WeekExists||s.legacyAnonWriteGrants!==true||s.matrixAndTagTriggersPreserved!==true) fail('post-migration Supabase readback failed its schema/data/grant checks');
   const bindings=s.bindings||[];
-  if(JSON.stringify(bindings)!==JSON.stringify(WEEKLY_RELEASE.bindings)) fail('post-migration event IDs, dates, or windows differ from admitted values');
+  if(!sameJson(bindings,WEEKLY_RELEASE.bindings)||baseline?.bindings&&!sameJson(bindings,baseline.bindings)) fail('post-migration event IDs, dates, or windows differ from admitted values');
   const migrationRows=(s.migrationLedger||[]).filter(m=>m.name==='hbnf_udisc_glow_event_bindings');
-  if(migrationRows.length!==1||!/^\d{14}$/.test(String(migrationRows[0].version||''))) fail('provider migration ledger did not record exactly one provider-versioned migration');
+  if(migrationRows.length!==1||!/^\d{14}$/.test(String(migrationRows[0].version||''))||baseline?.migrationVersion&&migrationRows[0].version!==baseline.migrationVersion) fail('provider migration ledger did not record exactly one expected provider-versioned migration');
 }
 
 /** One executor owns the actual API migration call and Worker stage/deploy. */
@@ -95,13 +105,13 @@ export async function runWeeklyGlowRelease({admission,admissionDecision,manifest
   if(lock?.created!==true||!lock.id||!Buffer.from(await ledger.read(lock.id)).equals(claim)) fail('unique execution claim is unavailable/replayed or its independent readback differs');
   const stored=await storage.putOnce(`${WEEKLY_RELEASE.id}.execution-claim.json`,claim);
   if(!stored?.id||!Buffer.from(await storage.download(stored.id)).equals(claim)) fail('execution claim durable download-back failed');
-  let migrationApplied=false,stage=null,workerDeployAttempted=false;
+  let migrationMutationPerformed=false,migrationVerified=false,stage=null,workerDeployAttempted=false;
   const receipts=[];
   try {
     const [cf0,sb0]=await Promise.all([providers.cloudflare.read(),providers.supabase.read()]);assertTargetUnchanged(cf0,sb0,admission);
-    const migrationResult=await providers.supabase.applyExactMigration({projectId:WEEKLY_RELEASE.project,name:WEEKLY_RELEASE.migration,sha256:WEEKLY_RELEASE.migrationSha256,query:artifactBytes.migration.toString('utf8'),rollback:WEEKLY_RELEASE.migrationRollback,rollbackSha256:WEEKLY_RELEASE.migrationRollbackSha256});
-    if(migrationResult?.applied!==true) fail('Supabase Management API did not confirm the exact migration');migrationApplied=true;
-    const sb1=await providers.supabase.read();verifyPostMigration(sb1,admission.supabaseBaseline);
+    let sb1;
+    if(admission.migrationAlreadyInstalled){sb1=sb0;verifyPostMigration(sb1,admission.supabaseBaseline);migrationVerified=true;}
+    else {const migrationResult=await providers.supabase.applyExactMigration({projectId:WEEKLY_RELEASE.project,name:WEEKLY_RELEASE.migration,sha256:WEEKLY_RELEASE.migrationSha256,query:artifactBytes.migration.toString('utf8'),rollback:WEEKLY_RELEASE.migrationRollback,rollbackSha256:WEEKLY_RELEASE.migrationRollbackSha256});if(migrationResult?.applied!==true)fail('Supabase Management API did not confirm the exact migration');migrationMutationPerformed=true;sb1=await providers.supabase.read();verifyPostMigration(sb1,admission.supabaseBaseline);migrationVerified=true;}
     const cf1=await providers.cloudflare.read();
     if(cf1.versionId!==WEEKLY_RELEASE.rollbackVersion||cf1.trafficPercent!==100||cf1.rollbackRetained!==true) fail('Cloudflare baseline drifted after migration; Worker staging aborted');
     stage=await providers.cloudflare.stageExact({candidate:artifactBytes.candidate,sha256:WEEKLY_RELEASE.candidate,sourceCommit:WEEKLY_RELEASE.runtimeSource,requireSecret:'SUPABASE_SERVICE_ROLE_KEY',approvedAccessVariable:'true'});
@@ -126,7 +136,7 @@ export async function runWeeklyGlowRelease({admission,admissionDecision,manifest
       try{await providers.cloudflare.restoreBaseline({versionId:WEEKLY_RELEASE.rollbackVersion,rollbackBytes:artifactBytes.rollback,rollbackSha256:WEEKLY_RELEASE.rollback,cron:['* * * * *']});cloudflareAfter=await providers.cloudflare.read();}catch{}
     }
     const observedMigration=(supabaseAfter?.migrationPresent===true)||(supabaseAfter?.migrationLedger||[]).some(m=>m.name==='hbnf_udisc_glow_event_bindings');
-    const failure={format:'hbnf-weekly-glow-execution-failure-v1',releaseId:WEEKLY_RELEASE.id,manifestSha256,executionClaimId:lock.id,migrationApplyConfirmed:migrationApplied,workerStageVersion:stage?.versionId||null,workerDeployAttempted,observedWorkerVersion:cloudflareAfter?.versionId||'UNKNOWN',observedMigration,partialState:(migrationApplied||observedMigration)?'MIGRATION_PRESENT; WORKER STATE AS READ BACK':'NO_DATABASE_MIGRATION_CONFIRMED',error:String(error?.message||error),failedAt:clock()};
+    const failure={format:'hbnf-weekly-glow-execution-failure-v1',releaseId:WEEKLY_RELEASE.id,manifestSha256,executionClaimId:lock.id,migrationMutationPerformed,migrationVerified,workerStageVersion:stage?.versionId||null,workerDeployAttempted,observedWorkerVersion:cloudflareAfter?.versionId||'UNKNOWN',observedMigration,partialState:(migrationMutationPerformed||observedMigration)?'MIGRATION_PRESENT; WORKER STATE AS READ BACK':'NO_DATABASE_MIGRATION_CONFIRMED',error:String(error?.message||error),failedAt:clock()};
     try{const bytes=jsonBytes(failure),file=await storage.putOnce(`${WEEKLY_RELEASE.id}.failure.json`,bytes);if(!file?.id||!Buffer.from(await storage.download(file.id)).equals(bytes))throw new Error('failure evidence download-back mismatch');}catch(storeError){throw new AggregateError([error,storeError],'release failed and durable failure receipt could not be verified');}
     throw new Error(`REVIEW_ONLY partial release state recorded: ${failure.partialState}; ${failure.error}`);
   }

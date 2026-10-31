@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 import path from 'node:path';
-import {admitWeeklyGlowRelease,canonicalManifestBytes,createSupabaseManagementAdapter,runWeeklyGlowRelease,sha256,WEEKLY_RELEASE} from '../scripts/hbnf-weekly-two-target-release.mjs';
+import {admitWeeklyGlowRelease,canonicalManifestBytes,createSupabaseManagementAdapter,runWeeklyGlowRelease,sameJson,sha256,WEEKLY_RELEASE} from '../scripts/hbnf-weekly-two-target-release.mjs';
 
 const root=process.env.HBNF_WEEKLY_RELEASE_ARTIFACT_DIR;
 if(!root) throw new Error('Set HBNF_WEEKLY_RELEASE_ARTIFACT_DIR to the independently verified private candidate packet');
@@ -12,25 +12,29 @@ const rollback=await readFile(path.join(root,'HBNF-weekly-glow-rollback-086.zip'
 const migration=execFileSync('unzip',['-p',path.join(root,'HBNF-weekly-glow-candidate.zip'),`database/${WEEKLY_RELEASE.migration}`]);
 const now=Date.parse('2026-10-31T10:00:00Z');
 async function setup(){
- const manifest={format:'hbnf-weekly-glow-release-admission-v1',releaseId:WEEKLY_RELEASE.id,phase:'PENDING',oneTime:true,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,gateSourceCommit:'e5835cfd3b4fd66568330c2a77a44bad2b70a02c',workerTarget:'hbnf',supabaseProject:WEEKLY_RELEASE.project,supabaseBaseline:{stateFingerprint:'fixture-state-hash',activeWeek:'2026-10-28',nov3WeekExists:false},candidate:{sha256:WEEKLY_RELEASE.candidate},rollback:{versionId:WEEKLY_RELEASE.rollbackVersion,sha256:WEEKLY_RELEASE.rollback},migration:{name:WEEKLY_RELEASE.migration,sha256:WEEKLY_RELEASE.migrationSha256,rollbackSha256:WEEKLY_RELEASE.migrationRollbackSha256,order:1},assetCount:46,assetDelta:{unchanged:46,modified:[],added:[]},acceptanceCriteria:['manifest','migration','worker','routes','closeout'].map(id=>({id,status:'PENDING',scope:id,description:`verify ${id}`,method:'independent readback',expectedOutcome:'exact match'}))};
+ const bindings=JSON.parse(JSON.stringify(WEEKLY_RELEASE.bindings));
+ const manifest={format:'hbnf-weekly-glow-release-admission-v1',releaseId:WEEKLY_RELEASE.id,phase:'PENDING',oneTime:true,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,gateSourceCommit:'74c2e171416178bc084be2622ec801af4300296b',workerTarget:'hbnf',supabaseProject:WEEKLY_RELEASE.project,supabaseBaseline:{stateFingerprint:'fixture-state-hash',activeWeek:'2026-10-28',nov3WeekExists:false,bindingTableExists:true,migrationPresent:true,migrationVersion:WEEKLY_RELEASE.expectedMigrationVersion,bindings,rlsEnabled:true,serviceRoleOnly:true},candidate:{sha256:WEEKLY_RELEASE.candidate},rollback:{versionId:WEEKLY_RELEASE.rollbackVersion,sha256:WEEKLY_RELEASE.rollback},migration:{name:WEEKLY_RELEASE.migration,sha256:WEEKLY_RELEASE.migrationSha256,rollbackSha256:WEEKLY_RELEASE.migrationRollbackSha256,order:1,alreadyApplied:true,recordedVersion:WEEKLY_RELEASE.expectedMigrationVersion},supersedes:{previousReleaseId:'hbnf-glow-weekly-20261030-44612c09677f',previousManifestDriveId:'1EdKCakECFK8BqRQ-wJLvPJVfV_sAAGva',previousManifestSha256:'f62698bfb6f0d7b8395cd5cdb76b80b6a51effe3bb15bb4afa39861a7bd44bf4',previousAdmissionDecisionDriveId:'1dWOWkg0AmTZAgblZ0bUzY3RrCdS8qpS3',previousExecutionClaimDriveId:'1Ap3S34eOn_Cu0ql4mQQ9zd_2sNkwDC5V',previousFailureReceiptDriveId:'1WpoOd7HOH8y6wbNUwJA8Q3YdvETuITDB'},assetCount:46,assetDelta:{unchanged:46,modified:[],added:[]},acceptanceCriteria:['manifest','migration','worker','routes','closeout'].map(id=>({id,status:'PENDING',scope:id,description:`verify ${id}`,method:'independent readback',expectedOutcome:'exact match'}))};
  const manifestBytes=canonicalManifestBytes(manifest),files=new Map([['parent',manifestBytes]]),events=[];
  const cfBase=()=>({worker:'hbnf',versionId:WEEKLY_RELEASE.rollbackVersion,trafficPercent:100,rollbackRetained:true,assets:46,customDomainEnabled:true,glowRouteCovered:true,cartRoutesUnchanged:true,cron:['* * * * *'],capturedAt:new Date(now).toISOString()});
- const dbBase=()=>({projectId:WEEKLY_RELEASE.project,bindingTableExists:false,migrationPresent:false,stateFingerprint:'fixture-state-hash',activeWeek:'2026-10-28',nov3WeekExists:false,functions:['hbnf_apply_udisc_glow_week','hbnf_record_udisc_glow_sync_status'],legacyAnonWriteGrants:true,matrixAndTagTriggersPreserved:true,capturedAt:new Date(now).toISOString()});
+ const dbBase=()=>({projectId:WEEKLY_RELEASE.project,bindingTableExists:true,migrationPresent:true,migrationName:'hbnf_udisc_glow_event_bindings',migrationLedger:[{version:WEEKLY_RELEASE.expectedMigrationVersion,name:'hbnf_udisc_glow_event_bindings'}],rlsEnabled:true,serviceRoleOnly:true,bindings,stateFingerprint:'fixture-state-hash',activeWeek:'2026-10-28',nov3WeekExists:false,functions:['hbnf_apply_udisc_glow_week','hbnf_record_udisc_glow_sync_status'],legacyAnonWriteGrants:true,matrixAndTagTriggersPreserved:true,capturedAt:new Date(now).toISOString()});
  const parent={manifest,manifestBytes,downloadedManifestBytes:manifestBytes,durableManifest:{driveFileId:'parent',sha256:sha256(manifestBytes),bytes:manifestBytes.length,downloadBackVerified:true},artifactBytes:{candidate,rollback,migration},readbacks:{cloudflare:cfBase(),supabase:dbBase()},now};
  const admission=await admitWeeklyGlowRelease(parent);
- const state={version:WEEKLY_RELEASE.rollbackVersion,applied:false,claimed:false};
+ const state={version:WEEKLY_RELEASE.rollbackVersion,claimed:false,baselineMismatch:false};
  const storage={async putOnce(name,b){if(files.has(name))throw Error('duplicate');const id=`file-${files.size}`;files.set(id,Buffer.from(b));return{id};},async download(id){return Buffer.from(files.get(id)||[]);}};
  const ledger={async createExclusive(_name,b){if(state.claimed)return{created:false};state.claimed=true;state.claim=Buffer.from(b);return{created:true,id:'claim',ref:'deadbeef'};},async read(){return Buffer.from(state.claim||[]);}};
  const providers={
-  supabase:{async read(){events.push('db:read');return state.applied?{...dbBase(),bindingTableExists:true,migrationPresent:true,migrationName:'hbnf_udisc_glow_event_bindings',migrationLedger:[{version:'20261031080000',name:'hbnf_udisc_glow_event_bindings'}],rlsEnabled:true,serviceRoleOnly:true,bindings:WEEKLY_RELEASE.bindings}:dbBase();},async applyExactMigration(arg){events.push('db:apply');assert.equal(arg.sha256,WEEKLY_RELEASE.migrationSha256);assert.equal(arg.rollbackSha256,WEEKLY_RELEASE.migrationRollbackSha256);if(parent.failMigration)throw Error('migration failed');state.applied=true;return{applied:true};}},
+  supabase:{async read(){events.push('db:read');if(state.baselineMismatch)return{...dbBase(),bindings:[{...WEEKLY_RELEASE.bindings[0],id:'wrong-event'}]};return dbBase();},async applyExactMigration(){events.push('db:apply');throw Error('already applied migration must never be reissued');}},
   cloudflare:{async read(){events.push('cf:read');return state.version===WEEKLY_RELEASE.rollbackVersion?cfBase():{...cfBase(),versionId:state.version,candidateSha256:WEEKLY_RELEASE.candidate,assetCount:46,assetsUnchanged:true,approvalVariable:'true',requiredSecretPresent:true};},async stageExact(arg){events.push('cf:stage');return{versionId:'staged-weekly',trafficPercent:0,sourceCommit:arg.sourceCommit,candidateSha256:arg.sha256,approvalVariable:'true',requiredSecretPresent:true,cron:['* * * * *']};},async deployStaged(){events.push('cf:deploy');state.version='staged-weekly';return{versionId:state.version,trafficPercent:100};},async verifyDeployed(arg){events.push('cf:verify');return{passed:true,versionId:arg.versionId,assetCount:46,glowRouteCovered:true,cartRoutesUnchanged:true};},async restoreBaseline(){events.push('cf:restore');state.version=WEEKLY_RELEASE.rollbackVersion;}},
  };
  const decisionRecord={format:'hbnf-weekly-glow-admission-decision-v1',releaseId:WEEKLY_RELEASE.id,status:'ADMISSION_PASS',manifestSha256:admission.manifestSha256};const decisionBytes=canonicalManifestBytes(decisionRecord);const decisionFile=await storage.putOnce('decision.json',decisionBytes);const admissionDecision={record:decisionRecord,bytes:decisionBytes,driveFileId:decisionFile.id,sha256:sha256(decisionBytes)};
- return {parent,admission,admissionDecision,state,storage,ledger,providers,events};
+ return {parent,admission,admissionDecision,state,storage,files,ledger,providers,events};
 }
 
 test('exact package/source/rollback, fresh target baselines and independently fetched manifest admit',async()=>{
- const s=await setup();assert.equal(s.admission.status,'ADMISSION_PASS');assert.equal(s.admission.candidateSha256,WEEKLY_RELEASE.candidate);
+ const s=await setup();assert.equal(s.admission.status,'ADMISSION_PASS');assert.equal(s.admission.candidateSha256,WEEKLY_RELEASE.candidate);assert.equal(s.admission.migrationAlreadyInstalled,true);
+});
+test('JSONB object key order does not create a false migration mismatch',()=>{
+ const reversed=WEEKLY_RELEASE.bindings.map(row=>Object.fromEntries(Object.entries(row).reverse()));assert.equal(sameJson(reversed,WEEKLY_RELEASE.bindings),true);
 });
 test('missing or byte-different durable manifest fails admission',async()=>{
  const s=await setup();await assert.rejects(()=>admitWeeklyGlowRelease({...s.parent,downloadedManifestBytes:Buffer.from('different')}),/byte-identical/);
@@ -46,16 +50,17 @@ test('manifest cannot substitute a different current league-state baseline',asyn
 test('execution re-fetches admitted parent and blocks before claim if unavailable',async()=>{
  const s=await setup();s.storage.download=async()=>Buffer.from('changed');await assert.rejects(()=>runWeeklyGlowRelease({admission:s.admission,admissionDecision:s.admissionDecision,manifest:s.parent.manifest,artifactBytes:s.parent.artifactBytes,providers:s.providers,storage:s.storage,ledger:s.ledger}),/execution time/);assert.equal(s.state.claimed,false);
 });
-test('unique execution claim precedes exact migration and same-manifest closeout',async()=>{
+test('unique successor claim verifies existing migration and closes out without replaying it',async()=>{
  const s=await setup();const result=await runWeeklyGlowRelease({admission:s.admission,admissionDecision:s.admissionDecision,manifest:s.parent.manifest,artifactBytes:s.parent.artifactBytes,providers:s.providers,storage:s.storage,ledger:s.ledger,clock:()=>new Date(now).toISOString()});
- assert.equal(result.status,'INSTALLED_CLOSEOUT_PASS');assert.ok(s.events.indexOf('db:apply')<s.events.indexOf('cf:stage'));assert.ok(s.events.includes('cf:verify'));
+ assert.equal(result.status,'INSTALLED_CLOSEOUT_PASS');assert.equal(s.events.includes('db:apply'),false);assert.ok(s.events.indexOf('db:read')<s.events.indexOf('cf:stage'));assert.ok(s.events.includes('cf:verify'));
  const receipt=JSON.parse((await s.storage.download(result.receiptDriveId)).toString());assert.equal(receipt.manifestSha256,s.admission.manifestSha256);assert.equal(receipt.cloudflare.versionId,'staged-weekly');
 });
 test('replayed execution claim prevents migration and deployment',async()=>{
  const s=await setup();s.state.claimed=true;await assert.rejects(()=>runWeeklyGlowRelease({admission:s.admission,admissionDecision:s.admissionDecision,manifest:s.parent.manifest,artifactBytes:s.parent.artifactBytes,providers:s.providers,storage:s.storage,ledger:s.ledger}),/unavailable\/replayed/);assert.equal(s.events.includes('db:apply'),false);
 });
-test('migration failure does not deploy Worker and records exact partial state',async()=>{
- const s=await setup();s.parent.failMigration=true;await assert.rejects(()=>runWeeklyGlowRelease({admission:s.admission,admissionDecision:s.admissionDecision,manifest:s.parent.manifest,artifactBytes:s.parent.artifactBytes,providers:s.providers,storage:s.storage,ledger:s.ledger}),/MIGRATION_PRESENT|migration failed/);assert.equal(s.state.version,WEEKLY_RELEASE.rollbackVersion);assert.equal(s.events.includes('cf:deploy'),false);
+test('changed pre-applied migration readback fails closed before Worker stage and records state',async()=>{
+ const s=await setup();s.state.baselineMismatch=true;await assert.rejects(()=>runWeeklyGlowRelease({admission:s.admission,admissionDecision:s.admissionDecision,manifest:s.parent.manifest,artifactBytes:s.parent.artifactBytes,providers:s.providers,storage:s.storage,ledger:s.ledger}),/pre-applied migration changed/);assert.equal(s.state.version,WEEKLY_RELEASE.rollbackVersion);assert.equal(s.events.includes('db:apply'),false);assert.equal(s.events.includes('cf:stage'),false);
+ const failureFile=[...s.files.entries()].find(([,bytes])=>JSON.parse(bytes.toString()).format==='hbnf-weekly-glow-execution-failure-v1');assert.ok(failureFile);const failure=JSON.parse(failureFile[1].toString());assert.equal(failure.migrationMutationPerformed,false);assert.equal(failure.observedMigration,true);
 });
 test('Management API adapter refuses absent token without making a request',()=>{
  let requests=0;assert.throws(()=>createSupabaseManagementAdapter({token:'',fetchImpl:async()=>{requests++;}}),/SUPABASE_ACCESS_TOKEN/);assert.equal(requests,0);
