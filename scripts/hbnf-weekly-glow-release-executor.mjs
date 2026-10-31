@@ -18,7 +18,9 @@ const execFile=promisify(execFileCb), ACCOUNT=WEEKLY_RELEASE.account;
 const ARTIFACTS=process.env.HBNF_WEEKLY_RELEASE_ARTIFACT_DIR||'/Users/andrew/Documents/Codex/restart-checkpoints/hbnf-glow-live-acceptance-20261030/weekly-readiness-candidate-final';
 const PAT_FILE=path.join(os.homedir(),'.hbnf-private','supabase-management.pat');
 const SERVICE_KEY_FILE=path.join(os.homedir(),'.hbnf-private','legacy-service-role.jwt');
-const DRIVE_FOLDER='1mZWMyzLIKnSjBTP82-EfGOqktld17X84';
+// The parent authority folder exceeds the connector's 100-entry listing cap.
+// This release-specific child keeps immutable-name recovery complete.
+const DRIVE_FOLDER='1s_lIT2CGm7JdUcwXfMElXbI-atdWgGsa';
 const DRIVE_FILES={candidate:'1UUDgrd5udbV7ZX0BG-GwSAT6FRLpd69v',rollback:'1PJuaxzp0oLRhcH3R72IKu4rvV2J2x30Q',source:'11L_1CzY0Mz7oofSvqSYnp695DfwszdVh'};
 const TOOL_TIMEOUT=30_000;
 const pending=new Map();let nextToolId=1;
@@ -138,7 +140,7 @@ async function main(){
     assetCount:46,assetDelta:{unchanged:46,modified:[],added:[]},
     cloudflareBaseline:{versionId:cloudflareRead.versionId,trafficPercent:cloudflareRead.trafficPercent,rollbackRetained:cloudflareRead.rollbackRetained,cron:cloudflareRead.cron,domainEnabled:cloudflareRead.customDomainEnabled,glowRouteCovered:cloudflareRead.glowRouteCovered,routeOwners:cloudflareRead.routeOwners},
     supabaseBaseline:{stateFingerprint:supabaseRead.stateFingerprint,activeWeek:supabaseRead.activeWeek,nov3WeekExists:supabaseRead.nov3WeekExists,bindingTableExists:false,migrationPresent:false,legacyAnonWriteGrants:supabaseRead.legacyAnonWriteGrants},
-    sourceBundleDriveId:DRIVE_FILES.source,serverCredentialName:'SUPABASE_SERVICE_ROLE_KEY',runtimeAccessApproved:true,
+    sourceBundleDriveId:DRIVE_FILES.source,evidenceFolderDriveId:DRIVE_FOLDER,serverCredentialName:'SUPABASE_SERVICE_ROLE_KEY',runtimeAccessApproved:true,
     eventBindings:WEEKLY_RELEASE.bindings,
     acceptanceCriteria:[
       {id:'one-migration',scope:'Supabase phcpbvuqibyarpfrftgx',description:'Apply only the exact event-binding migration and verify its provider ledger, RLS, grants, bindings and unchanged league_state.',method:'Management API POST inside guarded executor, then read-only SQL and migration-ledger GET.',expectedOutcome:'One provider-versioned migration, all three exact dated rows, service-role-only access, legacy grants/triggers/data unchanged.',status:'PENDING'},
