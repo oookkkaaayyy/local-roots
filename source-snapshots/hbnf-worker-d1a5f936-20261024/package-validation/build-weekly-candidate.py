@@ -73,19 +73,19 @@ def main() -> None:
             raise SystemExit(f"rollback asset witness mismatch: {name}")
 
     source_assets_all = source_files(source, "public")
-    if not set(baseline_assets).issubset(source_assets_all):
-        raise SystemExit("candidate source is missing one or more assets from the current installed 46-asset set")
-    # The historical source snapshot contains review/rehearsal files that were
-    # never installed. Preserve the complete live baseline and select only
-    # paths that existed in that baseline; never import snapshot-only assets.
-    source_assets = {name: source_assets_all[name] for name in baseline_assets}
-    changed = [name for name in sorted(baseline_assets)
-               if sha(source_assets[name]) != sha(baseline_assets[name])]
-    if changed != EXPECTED_MODIFIED_ASSETS:
-        raise SystemExit(f"unexpected public asset delta: {changed}")
+    if not set(EXPECTED_MODIFIED_ASSETS).issubset(source_assets_all):
+        raise SystemExit("candidate source is missing an explicitly approved asset change")
+    # The historical snapshot contains preview files and newer, uninstalled
+    # Skins/Admin/Random/Skills variants. Start from the exact live archive and
+    # overlay only the one approved UDisc source-chooser asset.
+    changed = EXPECTED_MODIFIED_ASSETS
+    if any(name not in baseline_assets for name in changed):
+        raise SystemExit("an approved asset change is not present in the installed baseline")
+    if any(sha(source_assets_all[name]) == sha(baseline_assets[name]) for name in changed):
+        raise SystemExit("an expected approved asset change has no byte difference")
     assets = dict(baseline_assets)
     for name in changed:
-        assets[name] = source_assets[name]
+        assets[name] = source_assets_all[name]
 
     runtime = {}
     for folder in ("src", "worker-private"):
@@ -141,6 +141,7 @@ def main() -> None:
                      "rollbackPackageSha256": BASELINE_SHA256, "rollbackPackageBytes": len(baseline_bytes), "assetCount": 46},
         "assetChanges": modifications,
         "assetCounts": {"unchanged": 45, "modified": changed, "added": []},
+        "snapshotOnlyAssetDeltasExcluded": ["public/admin.html", "public/random.html", "public/skills.html", "public/skins.html"],
         "databaseMigration": {"path": "database/" + EVENT_MIGRATION, "sha256": sha(migration_bytes), "bytes": len(migration_bytes), "order": 1},
         "runtimeAccess": {"sourceMethod": "event-specific /leaderboard/export XLSX", "approvalFlag": "UDISC_GLOW_ACCESS_APPROVED=true",
                           "credentialName": "SUPABASE_SERVICE_ROLE_KEY", "credentialIncludedInPackage": False},
