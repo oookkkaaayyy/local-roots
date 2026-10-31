@@ -90,7 +90,7 @@
   .weather-controls .weather-field-start{grid-area:start}
   .weather-controls .weather-field-end{grid-area:end}
   .weather-controls label{min-width:0;max-width:100%}
-  .weather-controls input[type="date"]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden}
+  .weather-controls input[type="date"]{display:block;width:calc(100% - 16px);min-width:0;max-width:calc(100% - 16px);box-sizing:border-box;overflow:hidden;justify-self:start}
   .weather-controls input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
   .weather-controls label{font-size:.73rem}
   .weather-controls input,.weather-controls select{min-height:44px}
