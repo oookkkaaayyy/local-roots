@@ -94,8 +94,8 @@
   .weather-controls input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
   .weather-controls label{font-size:.73rem}
   .weather-controls input,.weather-controls select{min-height:44px}
-  .weather-controls .weather-all-day{grid-area:allDay;grid-column:auto}
-  .weather-controls .weather-search{grid-area:search;grid-column:auto;min-height:44px}
+  .weather-controls .weather-all-day{grid-area:allDay}
+  .weather-controls .weather-search{grid-area:search;min-height:44px}
   .weather-status{gap:3px;min-height:8px;margin:5px 2px 8px;font-size:.75rem}
   .weather-results-heading{gap:8px;margin:12px 0 6px}
   .weather-results-heading h2{font-size:1.1rem}
