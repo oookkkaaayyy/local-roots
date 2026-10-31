@@ -680,7 +680,7 @@ def main() -> None:
         "package": f"hbnf-owner-pwa-local-v{version}",
         "sourceCommit": args.source_commit,
         "transactionId": args.transaction_id,
-        "releaseDisposition": "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED" if args.review_only else "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
+        "releaseDisposition": "REVIEW_ONLY_NOT_ADMITTED_NOT_INSTALLED" if args.review_only else "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
         "releaseSlice": ({
             "id": args.release_slice,
             "scope": ("Owner PWA shared UV slider applies locally only when fresh gateway output-mode status confirms the supported mode; no AUX firmware, gateway service, network policy, or scoring changes"
