@@ -1,7 +1,7 @@
 import {parseUdiscGlowEvents} from './udisc-glow-events.mjs';
+import {isHbnfGlowEventId} from './udisc-glow-event-bindings.mjs';
 export {parseUdiscGlowEvents};
 
-const EVENT_ID = /^hb-night-flyers-[a-z0-9-]+-[A-Za-z0-9]{4,12}$/;
 const EXPORT_PATH = '/api/udisc-glow/export';
 const EVENTS_PATH = '/api/udisc-glow/events';
 const SCHEDULE_URL = 'https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule';
@@ -92,7 +92,7 @@ export async function handleUdiscExport(request, fetchImpl = fetch) {
     return errorResponse(400, 'Invalid event request.');
   }
   const eventId = requestUrl.searchParams.get('event') || '';
-  if (!EVENT_ID.test(eventId)) return errorResponse(400, 'Invalid HB Night Flyers event.');
+  if (!isHbnfGlowEventId(eventId)) return errorResponse(400, 'Invalid HB Night Flyers Glow Doubles event.');
 
   const origin = request.headers.get('origin');
   if (origin && origin !== requestUrl.origin) return errorResponse(403, 'Request origin not allowed.');

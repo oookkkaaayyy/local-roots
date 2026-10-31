@@ -9,7 +9,7 @@ export function udiscEventSlug(value) {
     if (!match) throw Error('The link must point to a UDisc event.');
     slug = match[1];
   }
-  if (!/^hb-night-flyers-[a-z0-9-]+-[A-Za-z0-9]{4,12}$/.test(slug)) throw Error('This rehearsal only accepts HB Night Flyers event links.');
+  if (!/^(?:hb-glow-doubles-[A-Za-z0-9]{6}|hb-night-flyers-(?:hb-glow-doubles(?:-[a-z0-9]+)*|hb-glow-monthly)-[A-Za-z0-9]{6})$/.test(slug)) throw Error('This rehearsal only accepts HB Night Flyers Glow event links.');
   return slug;
 }
 

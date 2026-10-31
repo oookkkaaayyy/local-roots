@@ -6,6 +6,7 @@ import {runGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src
 
 const fixture = JSON.parse(await readFile(new URL('./fixtures/authentic-udisc/2026-04-18.json', import.meta.url),'utf8'));
 const eventId='hb-night-flyers-hb-glow-doubles-ZUDJEk';
+const eventDate='2026-04-21';
 const xmlEscape=value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const colName=index=>{let n=index+1,out='';while(n){const r=(n-1)%26;out=String.fromCharCode(65+r)+out;n=Math.floor((n-1)/26);}return out;};
 function crc32(buffer){let crc=0xffffffff;for(const byte of buffer){crc^=byte;for(let bit=0;bit<8;bit++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return(crc^0xffffffff)>>>0;}
@@ -43,26 +44,28 @@ function workbookBytes(rows=fixture.rows) {
   return makeZip(files);
 }
 
-const initializedWeek={date:'2026-04-18',activeWeek:'2026-04-18',scoresLocked:false,cards:[{id:'C1',finalized:false,players:[]}],players:[],scorecardText:{holePars:{1:'3'}},entryFee:5,payoutPercent:100,aceWinner:'',tiebreakerWinner:''};
-const attemptAt='2026-04-18T19:00:00.000Z';
-const env={UDISC_GLOW_ACCESS_APPROVED:'true',UDISC_GLOW_EVENT_ID:eventId,UDISC_GLOW_EVENT_DATE:'2026-04-18',UDISC_GLOW_WINDOW_START:'2026-04-18T16:00:00.000Z',UDISC_GLOW_WINDOW_END:'2026-04-18T22:00:00.000Z',SUPABASE_URL:'https://project.example',SUPABASE_SERVICE_ROLE_KEY:'test-only'};
+const initializedWeek={date:eventDate,activeWeek:eventDate,scoresLocked:false,cards:[{id:'C1',finalized:false,players:[]}],players:[],scorecardText:{holePars:{1:'3'}},entryFee:5,payoutPercent:100,aceWinner:'',tiebreakerWinner:''};
+const attemptAt='2026-04-21T19:00:00.000Z';
+const binding={event_id:eventId,event_date:eventDate,window_start:'2026-04-21T19:00:00.000Z',window_end:'2026-04-22T00:00:00.000Z'};
+const env={UDISC_GLOW_ACCESS_APPROVED:'true',SUPABASE_URL:'https://project.example',SUPABASE_SERVICE_ROLE_KEY:'test-only'};
 const now=()=>new Date(attemptAt);
 
-function makeFetch(initialGlow, workbookRef) {
+function makeFetch(initialGlow, workbookRef, sourceBinding=binding) {
   let root={glow:structuredClone(initialGlow),skins:{unchanged:true}}, updatedAt='2026-04-18T15:00:00.000Z';
-  const calls={udisc:0,reads:0,writes:0,failures:0};
+  const calls={udisc:0,reads:0,bindingReads:0,writes:0,failures:0};
   const fetch=async(input,init={})=>{
     const url=String(input);
+    if(url.includes('/rest/v1/hbnf_udisc_glow_event_bindings?')){calls.bindingReads++;return Response.json([sourceBinding]);}
     if(url.includes('/rest/v1/league_state?')){calls.reads++;return Response.json([{id:1,state_json:root,updated_at:updatedAt}]);}
-    if(url===`https://udisc.com/events/${eventId}/leaderboard/export`){calls.udisc++;return new Response(workbookRef.value,{status:200,headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}});}
+    if(url===`https://udisc.com/events/${sourceBinding.event_id}/leaderboard/export`){calls.udisc++;return new Response(workbookRef.value,{status:200,headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}});}
     if(url.endsWith('/rest/v1/rpc/hbnf_apply_udisc_glow_week')){
       calls.writes++;
       const body=JSON.parse(init.body);
-      assert.equal(body.p_week_date,'2026-04-18');
-      assert.equal(body.p_expected_active_week,'2026-04-18');
-      if(JSON.stringify(root.glow.weeks['2026-04-18'])!==JSON.stringify(body.p_expected_week))return Response.json({applied:false,reason:'concurrent_change'});
+      assert.equal(body.p_week_date,sourceBinding.event_date);
+      assert.equal(body.p_expected_active_week,sourceBinding.event_date);
+      if(JSON.stringify(root.glow.weeks[sourceBinding.event_date])!==JSON.stringify(body.p_expected_week))return Response.json({applied:false,reason:'concurrent_change'});
       root={...root,glow:{...root.glow,weeks:{...root.glow.weeks,[body.p_week_date]:body.p_replacement_week}}};
-      updatedAt=`2026-04-18T19:${String(calls.writes).padStart(2,'0')}:00.000Z`;
+      updatedAt=`2026-04-21T19:${String(calls.writes).padStart(2,'0')}:00.000Z`;
       return Response.json({applied:true});
     }
     if(url.endsWith('/rest/v1/rpc/hbnf_record_udisc_glow_sync_status')){
@@ -77,7 +80,7 @@ function makeFetch(initialGlow, workbookRef) {
 }
 
 const aliasesForFixture=()=>Object.fromEntries(fixture.rows.flatMap(row=>row.name.split(/\s*&\s*/).map(name=>[name,name])));
-const glowWithWeek=(week=structuredClone(initializedWeek))=>({weeks:{'2026-04-18':week},activeWeek:'2026-04-18',playerAliases:aliasesForFixture()});
+const glowWithWeek=(week=structuredClone(initializedWeek))=>({weeks:{[eventDate]:week},activeWeek:eventDate,playerAliases:aliasesForFixture()});
 
 test('scheduled runner applies fixture scores with independently verified readback; replay and corrections are idempotent', async () => {
   const workbook={value:workbookBytes()};
@@ -85,7 +88,7 @@ test('scheduled runner applies fixture scores with independently verified readba
   const first=await runGlowSync(env,{fetch:fake.fetch,now});
   assert.equal(first.disposition,'updated');assert.equal(first.teamCount,fixture.rows.length);
   assert.equal(fake.calls.udisc,1);assert.equal(fake.calls.writes,1);assert.ok(fake.calls.reads>=2);
-  assert.equal(fake.root.glow.weeks['2026-04-18'].players[0].scores.length,18);
+  assert.equal(fake.root.glow.weeks[eventDate].players[0].scores.length,18);
   assert.equal(fake.root.skins.unchanged,true);
 
   const replay=await runGlowSync(env,{fetch:fake.fetch,now});
@@ -95,33 +98,50 @@ test('scheduled runner applies fixture scores with independently verified readba
   workbook.value=workbookBytes(corrected);
   const correction=await runGlowSync(env,{fetch:fake.fetch,now});
   assert.equal(correction.disposition,'updated');assert.equal(fake.calls.writes,2);
-  assert.equal(fake.root.glow.weeks['2026-04-18'].udiscSync.history.length,1);
-  assert.equal(fake.root.glow.weeks['2026-04-18'].players[0].scores[0],String(corrected[0].hole_1));
+  assert.equal(fake.root.glow.weeks[eventDate].udiscSync.history.length,1);
+  assert.equal(fake.root.glow.weeks[eventDate].players[0].scores[0],String(corrected[0].hole_1));
 
-  fake.root.glow.weeks['2026-04-18'].players[0].scores[0]='99';
+  fake.root.glow.weeks[eventDate].players[0].scores[0]='99';
   const laterCorrection=corrected.map((row,index)=>index===0?{...row,hole_1:Number(row.hole_1)+1,event_total_score:Number(row.event_total_score)+1}:row);
   workbook.value=workbookBytes(laterCorrection);
   await runGlowSync(env,{fetch:fake.fetch,now});
-  assert.equal(fake.root.glow.weeks['2026-04-18'].players[0].scores[0],'99');
-  assert.equal(fake.root.glow.weeks['2026-04-18'].udiscSync.latest.manualOverrides[0].keptScore,'99');
+  assert.equal(fake.root.glow.weeks[eventDate].players[0].scores[0],'99');
+  assert.equal(fake.root.glow.weeks[eventDate].udiscSync.latest.manualOverrides[0].keptScore,'99');
 });
 
-test('unapproved, unconfigured, or out-of-window access makes no network request', async () => {
+test('scheduled runner binds a current new-format UDisc event only to its exact initialized Glow Tuesday',async()=>{
+  const sourceBinding={event_id:'hb-glow-doubles-tAP8Y5',event_date:'2026-11-03',window_start:'2026-11-04T01:30:00+00:00',window_end:'2026-11-04T07:30:00+00:00'};
+  const week={...structuredClone(initializedWeek),date:sourceBinding.event_date,activeWeek:sourceBinding.event_date};
+  const glow={weeks:{[sourceBinding.event_date]:week},activeWeek:sourceBinding.event_date,playerAliases:aliasesForFixture()};
+  const fake=makeFetch(glow,{value:workbookBytes()},sourceBinding);
+  const at=()=>new Date('2026-11-04T02:00:00.000Z');
+  const result=await runGlowSync(env,{fetch:fake.fetch,now:at});
+  assert.equal(result.disposition,'updated');
+  assert.equal(result.date,'2026-11-03');
+  assert.equal(result.eventId,'hb-glow-doubles-tAP8Y5');
+  assert.equal(fake.calls.udisc,1);
+  assert.equal(fake.root.glow.weeks['2026-11-03'].udiscSync.eventId,'hb-glow-doubles-tAP8Y5');
+});
+
+test('unapproved or unconfigured access makes no request; out-of-window binding makes no score or UDisc request', async () => {
   let calls=0;const fetch=async()=>{calls++;throw Error('network must not run')};
   assert.equal((await runGlowSync({}, {fetch,now})).disposition,'source_access_disabled');
   assert.equal((await runGlowSync({...env,UDISC_GLOW_ACCESS_APPROVED:'false'}, {fetch,now})).disposition,'source_access_disabled');
-  assert.equal((await runGlowSync({...env,UDISC_GLOW_WINDOW_START:'2026-04-18T20:00:00Z',UDISC_GLOW_WINDOW_END:'2026-04-19T02:00:00Z'}, {fetch,now})).disposition,'outside_event_window');
   const missing={...env};delete missing.SUPABASE_SERVICE_ROLE_KEY;
   assert.equal((await runGlowSync(missing,{fetch,now})).disposition,'credentials_not_configured');
   assert.equal(calls,0);
+  let outOfWindowCalls=0;
+  const noActiveBinding=async input=>{outOfWindowCalls++;assert.match(String(input),/hbnf_udisc_glow_event_bindings/);return Response.json([]);};
+  assert.equal((await runGlowSync(env,{fetch:noActiveBinding,now:()=>new Date('2026-04-21T23:00:00.000Z')})).disposition,'outside_event_window');
+  assert.equal(outOfWindowCalls,1);
 });
 
 test('active-week and initialization preflight complete before any UDisc request', async () => {
   const workbook={value:workbookBytes()};
-  const wrong=makeFetch({...glowWithWeek(),activeWeek:'2026-04-19'},workbook);
+  const wrong=makeFetch({...glowWithWeek(),activeWeek:'2026-04-28'},workbook);
   assert.equal((await runGlowSync(env,{fetch:wrong.fetch,now})).disposition,'active_week_mismatch');
   assert.equal(wrong.calls.udisc,0);
-  const missingWeek=makeFetch({weeks:{},activeWeek:'2026-04-18',playerAliases:aliasesForFixture()},workbook);
+  const missingWeek=makeFetch({weeks:{},activeWeek:eventDate,playerAliases:aliasesForFixture()},workbook);
   assert.equal((await runGlowSync(env,{fetch:missingWeek.fetch,now})).disposition,'week_not_initialized');
   assert.equal(missingWeek.calls.udisc,0);
   const lockedWeek=makeFetch(glowWithWeek({...structuredClone(initializedWeek),scoresLocked:true}),workbook);
@@ -135,5 +155,5 @@ test('identity ambiguity fails before score write and records verified error sta
   const fake=makeFetch({...glowWithWeek(),playerAliases:aliases},{value:workbookBytes()});
   await assert.rejects(()=>runGlowSync(env,{fetch:fake.fetch,now}),/one-time review/);
   assert.equal(fake.calls.writes,0);assert.equal(fake.calls.failures,1);
-  assert.equal(fake.root.glow.weeks['2026-04-18'].udiscSync.status.state,'failed');
+  assert.equal(fake.root.glow.weeks[eventDate].udiscSync.status.state,'failed');
 });

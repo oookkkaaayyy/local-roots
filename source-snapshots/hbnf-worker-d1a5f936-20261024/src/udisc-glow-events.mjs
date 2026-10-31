@@ -1,4 +1,4 @@
-const EVENT_ID = /^hb-night-flyers-[a-z0-9-]+-[A-Za-z0-9]{4,12}$/;
+import {isHbnfGlowEventId} from './udisc-glow-event-bindings.mjs';
 
 function decodeHtmlText(value) {
   return String(value || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&#160;/gi, ' ')
@@ -20,7 +20,7 @@ export function parseUdiscGlowEvents(html) {
     const eventMatch = link.pathname.match(/^\/events\/([^/]+)\/leaderboard\/?$/);
     if (!eventMatch) continue;
     const eventId = eventMatch[1];
-    if (!EVENT_ID.test(eventId) || !/glow/i.test(eventId) || /test/i.test(eventId)) continue;
+    if (!isHbnfGlowEventId(eventId) || /test/i.test(eventId)) continue;
     const label = decodeHtmlText(match[5]);
     const dateMatch = label.match(/\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s+(\d{1,2})\b[\s\S]*?\b(20\d{2})\b/i);
     if (!dateMatch) continue;

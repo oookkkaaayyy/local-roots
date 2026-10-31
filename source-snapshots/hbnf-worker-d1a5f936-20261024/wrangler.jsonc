@@ -4,6 +4,11 @@
   "main": "./src/index.js",
   "compatibility_date": "2026-07-28",
   "workers_dev": false,
+  "vars": {
+    "SUPABASE_URL": "https://phcpbvuqibyarpfrftgx.supabase.co",
+    "UDISC_GLOW_ACCESS_APPROVED": "true"
+  },
+  "secrets": { "required": ["SUPABASE_SERVICE_ROLE_KEY"] },
   "triggers": { "crons": ["* * * * *"] },
   "assets": {
     "directory": "./public",

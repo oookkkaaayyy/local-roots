@@ -1,0 +1,243 @@
+{
+  "format": "hbnf-installed-worker-asset-baseline-v1",
+  "worker": "hbnf",
+  "activeVersionId": "08633e43-dbaa-4421-a072-5af56f75d4b7",
+  "activePercentage": 100,
+  "releaseMessageCandidateSha256": "a3ef09676caf0a39d53cc269ed8863cf2705708c528641cf94cd47dd49d58dc7",
+  "rollbackPackageSha256": "a3ef09676caf0a39d53cc269ed8863cf2705708c528641cf94cd47dd49d58dc7",
+  "rollbackPackageBytes": 5029798,
+  "assetCount": 46,
+  "assets": [
+    {
+      "path": "public/admin.html",
+      "bytes": 67303,
+      "sha256": "efb836fa3abccfafbb332beeb76eb5a9359b1f6fdf5e706c358404f2be7f04ec"
+    },
+    {
+      "path": "public/apple-touch-icon.png",
+      "bytes": 23180,
+      "sha256": "ca9b69edd803628c8eff75c763b221807f41c8ca513ccd4dab2f871e78533742"
+    },
+    {
+      "path": "public/bag-tags-prominence.js",
+      "bytes": 3912,
+      "sha256": "e4db42185d987e72abe79ec181efad160ba176067eebdcae77a45b3814d811ce"
+    },
+    {
+      "path": "public/cart.html",
+      "bytes": 5531,
+      "sha256": "4533d1967bbe72cf696aa44dbe71d8d67d4de11274427b0e8f3843bfaf4ab793"
+    },
+    {
+      "path": "public/config.js",
+      "bytes": 3655,
+      "sha256": "e68fd3b58982298169fd0d98bfe5e46a9e3d43eb59878df2bdc52e36fc0ea1d4"
+    },
+    {
+      "path": "public/fonts/cabin-latin-400.woff2",
+      "bytes": 16888,
+      "sha256": "9c72abe1427dd4bb1fb8fda80f15d2232932864b05bba38e816f9885bd877a74"
+    },
+    {
+      "path": "public/fonts/cabin-latin-700.woff2",
+      "bytes": 16680,
+      "sha256": "e0a2b0e87b833f07a76bdaaecef067579c0988c25e6fd528c96b410004605e60"
+    },
+    {
+      "path": "public/glow-save-sync.mjs",
+      "bytes": 6152,
+      "sha256": "6792729103367e09941b93c97a1b17f7da2d7bc74d0761ff75ce6a14c06d289c"
+    },
+    {
+      "path": "public/glow.html",
+      "bytes": 207823,
+      "sha256": "764f57663b072d41e1123d0b1cf1c25b657d8efeebd6194b2ed4287fa06e4c62"
+    },
+    {
+      "path": "public/hbnf-bone-ink-logo.png",
+      "bytes": 71051,
+      "sha256": "0439a88017524c0c37fd28075b170bfd79c84c530ad9e1802942ae33934b1e37"
+    },
+    {
+      "path": "public/hbnf-bone-ink-theme.css",
+      "bytes": 11947,
+      "sha256": "5cd1ac0b18d014b63e1adb0cf8236af881318978aa77d58d9d1eb0d5a001f8e9"
+    },
+    {
+      "path": "public/hbnf-cart-features.mjs",
+      "bytes": 46321,
+      "sha256": "2ba72cae97012a8b0a9b19860be38e2929a40e84fb2e6f109b0558447902fb92"
+    },
+    {
+      "path": "public/hbnf-cart-icon-180.png",
+      "bytes": 50069,
+      "sha256": "2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e"
+    },
+    {
+      "path": "public/hbnf-cart-icon-512.png",
+      "bytes": 299892,
+      "sha256": "3088b88b82ac601cf32b3902e70de7bdc0ffb7236a7533d7a71775fcc3fb6d27"
+    },
+    {
+      "path": "public/hbnf-cart-manifest.webmanifest",
+      "bytes": 488,
+      "sha256": "9f75747ca24aec6436484337064d0530e16cc6e07f4462b50b67b389b52ce4d5"
+    },
+    {
+      "path": "public/hbnf-cart-semantic.mjs",
+      "bytes": 3411,
+      "sha256": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7"
+    },
+    {
+      "path": "public/hbnf-cart-skins-score.mjs",
+      "bytes": 7067,
+      "sha256": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7"
+    },
+    {
+      "path": "public/hbnf-cart-ui-v6.css",
+      "bytes": 15962,
+      "sha256": "6dc3652bc436ddb14b10dc2ce89e6f1c2ec7ab6024f097d854bd700e3df36d57"
+    },
+    {
+      "path": "public/hbnf-cart-ui-v6.mjs",
+      "bytes": 6499,
+      "sha256": "07d027ef857e628110cecb97e5bfd25eb04f010bc5872f4c53d69174cf8d2382"
+    },
+    {
+      "path": "public/hbnf-cart.html",
+      "bytes": 18269,
+      "sha256": "e2283aa913a07e2b9887060165a63ab7f92bb80ec0f7c7f8172d379c4761cb88"
+    },
+    {
+      "path": "public/hbnf-cart.js",
+      "bytes": 40047,
+      "sha256": "53f807062606e5dbf328a8dcf9e153a7614f2c4d8955a8a6d9d212ebebeff616"
+    },
+    {
+      "path": "public/hbnf-favicon-32.png",
+      "bytes": 2468,
+      "sha256": "d05191d638a60235e0daae2b1d3395dc881cbf1f2c8845091f79fd48e0303456"
+    },
+    {
+      "path": "public/hbnf-main-cart-shell.js",
+      "bytes": 4570,
+      "sha256": "7e2e22230780a5f9c5e2939f7d669e3ed2307b9171f03b4904d53c86b40a419b"
+    },
+    {
+      "path": "public/hbnf-main-icon-180.png",
+      "bytes": 23180,
+      "sha256": "ca9b69edd803628c8eff75c763b221807f41c8ca513ccd4dab2f871e78533742"
+    },
+    {
+      "path": "public/hbnf-main-icon-192.png",
+      "bytes": 23219,
+      "sha256": "60dc017dd806adc9b19585da3665febbb28eb06df5abff24978ad9c4e98090c8"
+    },
+    {
+      "path": "public/hbnf-main-icon-512.png",
+      "bytes": 92285,
+      "sha256": "67671c59633eb5acb64aa14fc7b8dd8549878a7a0f8232fb79945d5fc8390df3"
+    },
+    {
+      "path": "public/hbnf-main-manifest.webmanifest",
+      "bytes": 649,
+      "sha256": "6c12b9055d5347ffe8f1ce5108c4941f4f1307019175fdb1adbfc819034cb545"
+    },
+    {
+      "path": "public/hbnf-mobile-ux.js",
+      "bytes": 10720,
+      "sha256": "4b29921790e046017f64d74273fa650f67e6b915f491f3afe474228d3fb5ef97"
+    },
+    {
+      "path": "public/index.html",
+      "bytes": 98937,
+      "sha256": "476db1ee01c6f9a9cbf31b04d8e226017c0d0f5aeb476f6963282a3f5f827e12"
+    },
+    {
+      "path": "public/league-state-cas.mjs",
+      "bytes": 10615,
+      "sha256": "0060aebce65ec667c7b396cf1a2874dfb96c64192c26a168bd3bb3d1c2ddef57"
+    },
+    {
+      "path": "public/matrix-apple-touch-icon.png",
+      "bytes": 48333,
+      "sha256": "b4714e155ca82dc92a07b92cbfa0b69b11fc0095b5209d40d86e5794c67d6d47"
+    },
+    {
+      "path": "public/matrix-build.json",
+      "bytes": 329,
+      "sha256": "68a0c2ee0174cc245c0f0d804ebd5c81da49c5c636fe7e57058bcb1a337145db"
+    },
+    {
+      "path": "public/matrix-control.js",
+      "bytes": 5465,
+      "sha256": "cf9abf652c7c3c07d0156251cd1490c56d6d095217c5b8db4bda36486ee17f9f"
+    },
+    {
+      "path": "public/matrix-icon-512.png",
+      "bytes": 235800,
+      "sha256": "e4c30160cdafe215de87c6b25ef491d783c01c00b6fb9798beb024a12fbcba6f"
+    },
+    {
+      "path": "public/matrix-manifest.webmanifest",
+      "bytes": 563,
+      "sha256": "5e641e40faa5d293b9c420f245a16389c362a66a06b3131a94414dfd8b7adce7"
+    },
+    {
+      "path": "public/matrix-quick-controls.js",
+      "bytes": 8023,
+      "sha256": "2d7476e74b07bb7de0812087303fda658d68ff4dbec7a6d7b95b2601a4d2487d"
+    },
+    {
+      "path": "public/matrix-show-library.json",
+      "bytes": 36890,
+      "sha256": "554e730552ea907b6bcf98486724ba094e2ac0188f3c6f6d5264761266c54f5b"
+    },
+    {
+      "path": "public/matrix.html",
+      "bytes": 10266,
+      "sha256": "12ec18dd2c5d882a7c8224c25d8cbf65f2899b4c4f4d1c5c7e30b430a1db81b6"
+    },
+    {
+      "path": "public/random.html",
+      "bytes": 1471806,
+      "sha256": "93d48bfefde2cd4b3acdd61f458bf3cb9f357358188064a042c0d8e0a6c54aba"
+    },
+    {
+      "path": "public/round-tags.js",
+      "bytes": 121458,
+      "sha256": "79cc22987781a4a007f97be7a7dde17e14843c1d69fe5b6ca521522967fdb344"
+    },
+    {
+      "path": "public/skills.html",
+      "bytes": 1473787,
+      "sha256": "4c89b5b50dc451948de14847f7582a5ef70e5a995a21a49a871b83d13382825e"
+    },
+    {
+      "path": "public/skins-tag-editor.js",
+      "bytes": 18705,
+      "sha256": "590abbebb490106047c22f37bf0df4b0405fc19d682c169cd12ed93f79508125"
+    },
+    {
+      "path": "public/skins-tag-projection-modal.js",
+      "bytes": 5283,
+      "sha256": "40498efa59d7eeb1e9bf38f1483aa7b6455839327be7ababcbcd59dad54824da"
+    },
+    {
+      "path": "public/skins-tag-tracker.js",
+      "bytes": 24403,
+      "sha256": "0e029fc93896f3971240d721a9f1d95eb1c378d2dc47e663d70bfbca4d2951f8"
+    },
+    {
+      "path": "public/skins-ux-polish.js",
+      "bytes": 13602,
+      "sha256": "b190f1decf6e2c64a798575ebbc6febfb2b767c584c80ea0f63b613c9e2cff53"
+    },
+    {
+      "path": "public/skins.html",
+      "bytes": 209351,
+      "sha256": "e8e1d0513f53b1c273b921e1ef5fbf42330f8ec9191693f33d066bd0e63e4a97"
+    }
+  ],
+  "evidence": "Wrangler 4.152.0 authenticated deployments list and versions view; exact candidate archive independently hash-verified and matches the deployment release message."
+}

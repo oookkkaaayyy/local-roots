@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import worker,{handleUdiscExport,handleUdiscGlowEvents,parseUdiscGlowEvents,runGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
 import {readFile} from 'node:fs/promises';
 
-const event = 'hb-night-flyers-test-event-XpuRfW';
+const event = 'hb-night-flyers-hb-glow-doubles-test-only-F7DOx3';
 const xlsx = new Uint8Array([0x50, 0x4b, 3, 4, ...new Array(20).fill(0)]);
 const headers = {'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'content-disposition': 'attachment; filename="round.xlsx"'};
 
-const scheduleHtml = `<!doctype html><a href="/events/hb-night-flyers-hb-glow-doubles-ZUDJEk/leaderboard">OCT 24 HB Night Flyers HB Glow Doubles 2026 Huntington Beach</a>
+const scheduleHtml = `<!doctype html><a href="/events/hb-glow-doubles-tAP8Y5/leaderboard">NOV 3 HB Glow Doubles 2026 Huntington Beach</a>
+<a href="/events/hb-glow-doubles-af85rU/leaderboard">NOV 10 HB Glow Doubles 2026 Huntington Beach</a>
+<a href="/events/hb-glow-doubles-C1mFl8/leaderboard">NOV 17 HB Glow Doubles 2026 Huntington Beach</a>
+<a href="/events/hb-night-flyers-hb-glow-doubles-ZUDJEk/leaderboard">OCT 24 HB Night Flyers HB Glow Doubles 2026 Huntington Beach</a>
 <a href="https://udisc.com/events/hb-night-flyers-hb-glow-monthly-RPCgGV/leaderboard">SEP 19 HB Night Flyers HB Glow Monthly 2026 Huntington Beach</a>
 <a href="/events/hb-night-flyers-test-event-XpuRfW/leaderboard">OCT 25 HB Night Flyers Test Event 2026</a>
 <a href="/events/back-9-skins-round-random-doubles-l619PB/leaderboard">OCT 27 HB Night Flyers Back 9 Skins Round 2026</a>
@@ -16,10 +19,13 @@ const scheduleHtml = `<!doctype html><a href="/events/hb-night-flyers-hb-glow-do
 test('discovers only bounded HBNF Glow events from the league schedule',()=>{
   const events=parseUdiscGlowEvents(scheduleHtml);
   assert.deepEqual(events.map(x=>[x.eventId,x.date]),[
+    ['hb-glow-doubles-C1mFl8','2026-11-17'],
+    ['hb-glow-doubles-af85rU','2026-11-10'],
+    ['hb-glow-doubles-tAP8Y5','2026-11-03'],
     ['hb-night-flyers-hb-glow-doubles-ZUDJEk','2026-10-24'],
     ['hb-night-flyers-hb-glow-monthly-RPCgGV','2026-09-19'],
   ]);
-  assert.equal(events[0].url,'https://udisc.com/events/hb-night-flyers-hb-glow-doubles-ZUDJEk/leaderboard');
+  assert.equal(events.find(x=>x.eventId==='hb-night-flyers-hb-glow-doubles-ZUDJEk').url,'https://udisc.com/events/hb-night-flyers-hb-glow-doubles-ZUDJEk/leaderboard');
   assert.equal(JSON.stringify(events).includes('players'),false);
 });
 
@@ -36,7 +42,7 @@ test('schedule endpoint fetches one public page without cookies and returns titl
   assert.equal(requested.init.headers.cookie,undefined);
   assert.equal(requested.init.headers.Accept,'text/html');
   assert.equal(response.headers.get('cache-control'),'public, max-age=120');
-  assert.deepEqual((await response.json()).events.map(e=>e.date),['2026-10-24','2026-09-19']);
+  assert.deepEqual((await response.json()).events.map(e=>e.date),['2026-11-17','2026-11-10','2026-11-03','2026-10-24','2026-09-19']);
 });
 
 test('schedule endpoint rejects writes, foreign origins, queries, redirects and non-HTML',async()=>{
@@ -141,24 +147,25 @@ test('production fetch keeps export, schedule, and sync endpoints private', asyn
   assert.equal(assetCalls,0);
 });
 
-test('production configuration has no unconditional schedule polling and unapproved runner makes no request',async()=>{
+test('scheduled runner remains date/window/approval guarded and disabled runner makes no request',async()=>{
   const config=JSON.parse(await readFile(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/wrangler.jsonc',import.meta.url),'utf8'));
-  assert.equal(config.triggers,undefined);
+  assert.deepEqual(config.triggers?.crons,['* * * * *']);
+  assert.equal(config.vars?.UDISC_GLOW_ACCESS_APPROVED,'true');
   let calls=0;
   const result=await runGlowSync({}, {fetch:async()=>{calls++;throw Error('must not fetch')}});
   assert.equal(result.disposition,'source_access_disabled');
   assert.equal(calls,0);
 });
 
-test('switching from static-only Worker to fetch handler preserves every existing public asset route',async()=>{
-  const text=await readFile(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/package-validation/LOCAL_ASSET_SHA256SUMS',import.meta.url),'utf8');
+test('Worker fetch handler preserves all 46 installed public asset routes',async()=>{
+  const text=await readFile(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/package-validation/INSTALLED_086_ASSET_SHA256SUMS',import.meta.url),'utf8');
   const paths=text.trim().split(/\r?\n/).map(line=>{
     const match=line.match(/^[a-f0-9]{64}\s+public\/(.+)$/);
     assert.ok(match,'unexpected static asset manifest line: '+line);
     return match[1];
   });
-  assert.equal(paths.length,44);
-  assert.equal(new Set(paths).size,44);
+  assert.equal(paths.length,46);
+  assert.equal(new Set(paths).size,46);
   for(const file of paths){
     let calls=0;
     const url='https://hbnf.example/'+file;
