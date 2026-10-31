@@ -75,8 +75,13 @@ def main() -> None:
     state_text = pg_jsonb_text(row["state_json"])
     state_md5 = hashlib.md5(state_text.encode()).hexdigest()
     evidence = json.loads(args.baseline_evidence.read_text())
+    def timestamp(value: str):
+        normalized = value.replace("Z", "+00:00")
+        if normalized.endswith("+00"):
+            normalized += ":00"
+        return datetime.fromisoformat(normalized)
     try:
-        state_time_equal = datetime.fromisoformat(evidence["stateUpdatedAt"].replace("Z", "+00:00")) == datetime.fromisoformat(row["updated_at"].replace("Z", "+00:00"))
+        state_time_equal = timestamp(evidence["stateUpdatedAt"]) == timestamp(row["updated_at"])
     except (KeyError, TypeError, ValueError):
         state_time_equal = False
     if evidence.get("project") != PROJECT or evidence.get("stateMd5") != state_md5 or evidence.get("stateBytes") != len(state_text.encode()) or not state_time_equal:
