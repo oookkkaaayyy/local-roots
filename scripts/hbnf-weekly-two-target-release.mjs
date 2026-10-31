@@ -17,8 +17,6 @@ export const WEEKLY_RELEASE = Object.freeze({
   migration: '20261031054752_hbnf_udisc_glow_event_bindings.sql',
   migrationSha256: 'dbcf993694c054f3ea45de721258b5822c1c45042415309437a94ae583deaf8c',
   migrationBytes: 2269,
-  priorStateFingerprint: '02bf8a874ba99cf9ecad77c5882977bd0ff345371db37813bba81c62e3e3b141',
-  activeWeek: '2026-10-28',
   assets: 46,
   bindings: Object.freeze([
     {date:'2026-11-03',id:'hb-glow-doubles-tAP8Y5',start:'2026-11-04T01:30:00Z',end:'2026-11-04T07:30:00Z'},
@@ -41,8 +39,8 @@ function verifyWorkerBaseline(w) {
   if(w?.worker!==WEEKLY_RELEASE.worker||w.versionId!==WEEKLY_RELEASE.rollbackVersion||w.trafficPercent!==100||w.rollbackRetained!==true||w.assets!==WEEKLY_RELEASE.assets||w.customDomainEnabled!==true||w.glowRouteCovered!==true||w.cartRoutesUnchanged!==true) fail('Cloudflare baseline/rollback/routing evidence mismatch');
   if(w.cron?.length!==1||w.cron[0]!=='* * * * *') fail('baseline Cron differs from the admitted one-minute schedule');
 }
-function verifyDatabaseBaseline(s) {
-  if(s?.projectId!==WEEKLY_RELEASE.project||s.bindingTableExists!==false||s.migrationPresent!==false||s.stateFingerprint!==WEEKLY_RELEASE.priorStateFingerprint||s.activeWeek!==WEEKLY_RELEASE.activeWeek||s.nov3WeekExists!==false) fail('Supabase project, migration/table baseline, or protected league state differs');
+function verifyDatabaseBaseline(s, expected) {
+  if(s?.projectId!==WEEKLY_RELEASE.project||s.bindingTableExists!==false||s.migrationPresent!==false||!expected?.stateFingerprint||s.stateFingerprint!==expected.stateFingerprint||s.activeWeek!==expected.activeWeek||s.nov3WeekExists!==expected.nov3WeekExists) fail('Supabase project, migration/table baseline, or manifest-bound league state differs');
   for(const name of ['hbnf_apply_udisc_glow_week','hbnf_record_udisc_glow_sync_status']) if(!s.functions?.includes(name)) fail(`pre-existing Glow function missing: ${name}`);
   if(s.legacyAnonWriteGrants!==true||s.matrixAndTagTriggersPreserved!==true) fail('legacy grants or Matrix/tag triggers are not preserved');
 }
@@ -62,17 +60,18 @@ export async function admitWeeklyGlowRelease({manifest,manifestBytes,downloadedM
   exactBytes(artifactBytes?.rollback,WEEKLY_RELEASE.rollback,WEEKLY_RELEASE.rollbackBytes,'v086 rollback');
   exactBytes(artifactBytes?.migration,WEEKLY_RELEASE.migrationSha256,WEEKLY_RELEASE.migrationBytes,'event-binding migration');
   if(manifest.candidate?.sha256!==WEEKLY_RELEASE.candidate||manifest.rollback?.versionId!==WEEKLY_RELEASE.rollbackVersion||manifest.rollback?.sha256!==WEEKLY_RELEASE.rollback||manifest.migration?.name!==WEEKLY_RELEASE.migration||manifest.migration?.sha256!==WEEKLY_RELEASE.migrationSha256||manifest.migration?.order!==1||manifest.assetCount!==46||manifest.assetDelta?.unchanged!==46||manifest.assetDelta?.modified?.length!==0||manifest.assetDelta?.added?.length!==0) fail('manifest candidate, rollback, single migration, or 46-asset preservation binding mismatch');
-  const cf=readbacks?.cloudflare,sb=readbacks?.supabase;fresh(cf,'Cloudflare',now,maxAgeMs);fresh(sb,'Supabase',now,maxAgeMs);verifyWorkerBaseline(cf);verifyDatabaseBaseline(sb);
+  const cf=readbacks?.cloudflare,sb=readbacks?.supabase;fresh(cf,'Cloudflare',now,maxAgeMs);fresh(sb,'Supabase',now,maxAgeMs);verifyWorkerBaseline(cf);verifyDatabaseBaseline(sb,manifest.supabaseBaseline);
   if(!Array.isArray(manifest.acceptanceCriteria)||manifest.acceptanceCriteria.length<5||manifest.acceptanceCriteria.some(c=>c.status!=='PENDING'||!c.scope||!c.description||!c.method||!c.expectedOutcome)) fail('admission acceptance criteria are incomplete or not PENDING');
-  return Object.freeze({status:'ADMISSION_PASS',releaseId:WEEKLY_RELEASE.id,manifestSha256,manifestDriveFileId:durableManifest.driveFileId,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollbackSha256:WEEKLY_RELEASE.rollback,migrationSha256:WEEKLY_RELEASE.migrationSha256,cloudflareVersion:cf.versionId,supabaseProject:sb.projectId,admittedAt:new Date(now).toISOString()});
+  return Object.freeze({status:'ADMISSION_PASS',releaseId:WEEKLY_RELEASE.id,manifestSha256,manifestDriveFileId:durableManifest.driveFileId,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollbackSha256:WEEKLY_RELEASE.rollback,migrationSha256:WEEKLY_RELEASE.migrationSha256,cloudflareVersion:cf.versionId,supabaseProject:sb.projectId,supabaseBaseline:Object.freeze({...manifest.supabaseBaseline}),admittedAt:new Date(now).toISOString()});
 }
 
 function assertTargetUnchanged(cf,sb,admission) {
   if(cf?.versionId!==admission.cloudflareVersion||cf.trafficPercent!==100||cf.rollbackRetained!==true) fail('Cloudflare baseline changed at mutation boundary');
-  if(sb?.projectId!==admission.supabaseProject||sb.bindingTableExists!==false||sb.migrationPresent!==false||sb.stateFingerprint!==WEEKLY_RELEASE.priorStateFingerprint) fail('Supabase baseline changed at mutation boundary');
+  const b=admission.supabaseBaseline;
+  if(sb?.projectId!==admission.supabaseProject||sb.bindingTableExists!==false||sb.migrationPresent!==false||sb.stateFingerprint!==b?.stateFingerprint||sb.activeWeek!==b?.activeWeek||sb.nov3WeekExists!==b?.nov3WeekExists) fail('Supabase baseline changed at mutation boundary');
 }
-function verifyPostMigration(s) {
-  if(s?.projectId!==WEEKLY_RELEASE.project||s.bindingTableExists!==true||s.migrationPresent!==true||s.migrationName!=='hbnf_udisc_glow_event_bindings'||s.rlsEnabled!==true||s.serviceRoleOnly!==true||s.stateFingerprint!==WEEKLY_RELEASE.priorStateFingerprint||s.activeWeek!==WEEKLY_RELEASE.activeWeek||s.nov3WeekExists!==false||s.legacyAnonWriteGrants!==true||s.matrixAndTagTriggersPreserved!==true) fail('post-migration Supabase readback failed its schema/data/grant checks');
+function verifyPostMigration(s, baseline) {
+  if(s?.projectId!==WEEKLY_RELEASE.project||s.bindingTableExists!==true||s.migrationPresent!==true||s.migrationName!=='hbnf_udisc_glow_event_bindings'||s.rlsEnabled!==true||s.serviceRoleOnly!==true||s.stateFingerprint!==baseline?.stateFingerprint||s.activeWeek!==baseline?.activeWeek||s.nov3WeekExists!==baseline?.nov3WeekExists||s.legacyAnonWriteGrants!==true||s.matrixAndTagTriggersPreserved!==true) fail('post-migration Supabase readback failed its schema/data/grant checks');
   const bindings=s.bindings||[];
   if(JSON.stringify(bindings)!==JSON.stringify(WEEKLY_RELEASE.bindings)) fail('post-migration event IDs, dates, or windows differ from admitted values');
   if(!s.migrationLedger?.some(m=>m.name==='hbnf_udisc_glow_event_bindings')) fail('provider migration ledger did not record the new migration');
@@ -97,7 +96,7 @@ export async function runWeeklyGlowRelease({admission,manifest,artifactBytes,pro
     const [cf0,sb0]=await Promise.all([providers.cloudflare.read(),providers.supabase.read()]);assertTargetUnchanged(cf0,sb0,admission);
     const migrationResult=await providers.supabase.applyExactMigration({projectId:WEEKLY_RELEASE.project,name:WEEKLY_RELEASE.migration,sha256:WEEKLY_RELEASE.migrationSha256,query:artifactBytes.migration.toString('utf8'),rollback:'DROP TABLE public.hbnf_udisc_glow_event_bindings;'});
     if(migrationResult?.applied!==true) fail('Supabase Management API did not confirm the exact migration');migrationApplied=true;
-    const sb1=await providers.supabase.read();verifyPostMigration(sb1);
+    const sb1=await providers.supabase.read();verifyPostMigration(sb1,admission.supabaseBaseline);
     const cf1=await providers.cloudflare.read();
     if(cf1.versionId!==WEEKLY_RELEASE.rollbackVersion||cf1.trafficPercent!==100||cf1.rollbackRetained!==true) fail('Cloudflare baseline drifted after migration; Worker staging aborted');
     stage=await providers.cloudflare.stageExact({candidate:artifactBytes.candidate,sha256:WEEKLY_RELEASE.candidate,sourceCommit:WEEKLY_RELEASE.runtimeSource,requireSecret:'SUPABASE_SERVICE_ROLE_KEY',approvedAccessVariable:'true'});
@@ -108,7 +107,7 @@ export async function runWeeklyGlowRelease({admission,manifest,artifactBytes,pro
     if(deployed?.versionId!==stage.versionId||deployed?.trafficPercent!==100) fail('Worker deployment did not activate only the staged candidate at 100%');
     const [cf3,sb3]=await Promise.all([providers.cloudflare.read(),providers.supabase.read()]);
     if(cf3.versionId!==stage.versionId||cf3.trafficPercent!==100||cf3.rollbackRetained!==true||cf3.candidateSha256!==WEEKLY_RELEASE.candidate||cf3.assetCount!==46||cf3.assetsUnchanged!==true||cf3.approvalVariable!=='true'||cf3.requiredSecretPresent!==true||cf3.cron?.length!==1||cf3.cron[0]!=='* * * * *') fail('deployed Worker identity, bindings, schedule, or assets failed readback');
-    verifyPostMigration(sb3);
+    verifyPostMigration(sb3,admission.supabaseBaseline);
     const routeVerification=await providers.cloudflare.verifyDeployed({versionId:stage.versionId,candidateSha256:WEEKLY_RELEASE.candidate,expectedAssets:46});
     if(routeVerification?.passed!==true||routeVerification?.versionId!==stage.versionId||routeVerification?.assetCount!==46||routeVerification?.glowRouteCovered!==true||routeVerification?.cartRoutesUnchanged!==true) fail('deployed version, 46 assets, or route ownership verification failed');
     const receipt={format:'hbnf-weekly-glow-two-target-closeout-v1',releaseId:WEEKLY_RELEASE.id,manifestSha256,executionClaimDriveId:stored.id,executionClaimGithubRef:lock.ref||null,sourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollback:{workerVersion:WEEKLY_RELEASE.rollbackVersion,sha256:WEEKLY_RELEASE.rollback},cloudflare:{worker:WEEKLY_RELEASE.worker,versionId:cf3.versionId,trafficPercent:100,rollbackRetained:cf3.rollbackRetained,assetCount:cf3.assetCount,assetsUnchanged:cf3.assetsUnchanged,cron:cf3.cron,pollingGuardsVerified:true},supabase:{projectId:sb3.projectId,migration:sb3.migrationLedger.find(m=>m.name==='hbnf_udisc_glow_event_bindings'),bindingRows:sb3.bindings,stateFingerprint:sb3.stateFingerprint,activeWeek:sb3.activeWeek,nov3WeekExists:sb3.nov3WeekExists,legacyAnonWriteGrants:sb3.legacyAnonWriteGrants},acceptance:manifest.acceptanceCriteria.map(c=>({id:c.id,status:'PASS',evidence:c.evidenceRef||`provider-readback:${clock()}`})),status:'INSTALLED_CLOSEOUT_PASS',closedAt:clock()};
