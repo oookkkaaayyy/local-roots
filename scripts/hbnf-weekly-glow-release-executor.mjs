@@ -41,7 +41,8 @@ async function main(){
   const migration=execFileSync('unzip',['-p',path.join(ARTIFACTS,'HBNF-weekly-glow-candidate.zip'),`database/${WEEKLY_RELEASE.migration}`],{maxBuffer:1024*1024});
   if(sha256(candidate)!==WEEKLY_RELEASE.candidate||sha256(rollback)!==WEEKLY_RELEASE.rollback||sha256(migration)!==WEEKLY_RELEASE.migrationSha256)throw new Error('exact candidate, v086 rollback or migration bytes do not match the qualified hashes');
   const packageManifest=JSON.parse(execFileSync('unzip',['-p',path.join(ARTIFACTS,'HBNF-weekly-glow-candidate.zip'),'PACKAGE_MANIFEST.json'],{encoding:'utf8',maxBuffer:5*1024*1024}));
-  if(packageManifest.source?.commit!==WEEKLY_RELEASE.runtimeSource||packageManifest.assetCounts?.unchanged!==46||Object.keys(packageManifest.assetLineage||{}).length!==46||packageManifest.databaseMigration?.sha256!==WEEKLY_RELEASE.migrationSha256)throw new Error('candidate package manifest lineage or 46-asset preservation differs');
+  const publicAssetEntries=(packageManifest.files||[]).filter(row=>row.path?.startsWith('public/'));
+  if(packageManifest.source?.commit!==WEEKLY_RELEASE.runtimeSource||packageManifest.baseline?.worker!=='hbnf'||packageManifest.baseline?.activeVersionId!==WEEKLY_RELEASE.rollbackVersion||packageManifest.baseline?.activePercentage!==100||packageManifest.baseline?.rollbackPackageSha256!==WEEKLY_RELEASE.rollback||packageManifest.assetCounts?.unchanged!==46||publicAssetEntries.length!==46||packageManifest.databaseMigration?.sha256!==WEEKLY_RELEASE.migrationSha256)throw new Error('candidate package manifest lineage or 46-asset preservation differs');
   const gateSourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
   if(execFileSync('git',['branch','--show-current'],{encoding:'utf8'}).trim()!=='feature/udisc-glow-standings-prototype')throw new Error('executor is not on the approved existing feature branch');
 
@@ -116,7 +117,7 @@ async function main(){
     },
     async verifyDeployed({versionId,candidateSha256,expectedAssets}){
       const state=await this.read();if(state.versionId!==versionId||state.trafficPercent!==100||candidateSha256!==WEEKLY_RELEASE.candidate||expectedAssets!==46||!state.requiredSecretPresent||state.approvalVariable!=='true'||state.cron.length!==1||state.cron[0]!=='* * * * *'||!state.glowRouteCovered||!state.cartRoutesUnchanged)throw new Error('deployed Cloudflare version, vars, secret, Cron or routes failed readback');
-      const manifest=packageManifest.assetLineage||{};const entries=Object.entries(manifest).filter(([f])=>f.startsWith('public/'));if(entries.length!==46)throw new Error('candidate package does not enumerate all 46 website assets');
+      const entries=publicAssetEntries.map(row=>[row.path,row]);if(entries.length!==46)throw new Error('candidate package does not enumerate all 46 website assets');
       let served=0,external=0;const errors=[];
       for(const [file,row] of entries){if(assetIsExternal(file,state.routeOwners,state.customDomainEnabled)){external++;continue;}try{const url=`https://hbnightflyers.com/${file.replace(/^public\//,'')}`;const response=await fetch(url,{cache:'no-store',redirect:'follow',headers:{'Cache-Control':'no-cache'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);let content=Buffer.from(await response.arrayBuffer());if(file.toLowerCase().endsWith('.html'))content=normalizeCloudflareInjectedHtml(content);if(sha256(content)!==row.sha256)throw new Error('public-byte SHA-256 mismatch');served++;}catch(e){errors.push(`${file}: ${String(e.message||e)}`);}}
       if(errors.length)throw new Error(`deployed public asset readback failed ${errors.length}/${entries.length}: ${errors.slice(0,3).join('; ')}`);
