@@ -1229,10 +1229,12 @@ def owner_pwa_v121_artifact_errors(paths):
     for drive_id,want in ((OWNER_PWA_V121_CANDIDATE_DRIVE_ID,OWNER_PWA_V121_CANDIDATE_SHA256),
         ("1AmY2DSCtFrmDqyRKS3_XKrXntQII54tI",OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256),
         ("1Q1zshwz8hTWo_g5SXlILvrWs2FODL44J",OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256),
-        (OWNER_PWA_V121_ROUTE_DRIVE_ID,OWNER_PWA_V121_ROUTE_SHA256)):
+        (OWNER_PWA_V121_ROUTE_DRIVE_ID,OWNER_PWA_V121_ROUTE_SHA256),
+        (OWNER_PWA_V121_BASELINE_DRIVE_ID,OWNER_PWA_V121_BASELINE_SHA256)):
         item=receipt_objects.get(drive_id,{})
         if item.get("sha256")!=want or item.get("readback")!="PASS_BYTE_LENGTH_AND_SHA256":
-            errors.append("v1.0.21 Drive download-back evidence missing or mismatched: "+drive_id)
+            label="v1.0.20 rollback" if drive_id==OWNER_PWA_V121_BASELINE_DRIVE_ID else "v1.0.21 artifact"
+            errors.append(label+" Drive download-back evidence missing or mismatched: "+drive_id)
     return errors
 
 def owner_pwa_v121_admission_errors(paths,target_evidence,authorization,transaction_id,used_transaction_ids=(),manifest=None,closeout=None,now=None):

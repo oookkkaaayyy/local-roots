@@ -8,7 +8,7 @@ test_historical_profiles_remain_the_same_objects_and_values (test_owner_pwa_v121
 test_target_freshness_identity_replay_authorization_and_review_only_block (test_owner_pwa_v121_review_gate.OwnerPwaV121ReviewGate) ... ok
 
 ----------------------------------------------------------------------
-Ran 8 tests in 0.070s
+Ran 8 tests in 0.068s
 
 OK
 
@@ -77,7 +77,7 @@ Traceback (most recent call last):
 ValueError: v1.0.8 successor package artifacts do not match their exact reviewed hashes
 
 ----------------------------------------------------------------------
-Ran 15 tests in 0.319s
+Ran 15 tests in 0.329s
 
 FAILED (errors=4)
 

@@ -5,21 +5,22 @@
     "log": "focused-tests.log",
     "summary": "8 passed"
   },
-  "focused_log_sha256": "b513db5fb7b8c9d4e8668e7f31a2282e4be4005c0590c06ed7712efdc63e6aba",
+  "focused_log_sha256": "7e6e51f8b4300d0b09531101b6a43f4878fd1f4c58291c566eb5c6e2ab62135d",
   "historical_admission_tests": {
-    "baseline_exit_code": 1,
+    "baseline_parent": "5809910b015eb478c5b71493fd805d563f289949",
     "exit_code": 1,
     "same_four_errors_on_untouched_parent": true,
-    "summary": "11 passed, 4 errors: unavailable pinned v1.0.8 package fixture"
+    "summary": "11 passed, 4 reproducible setup errors: required pinned v1.0.8 fixture absent"
   },
   "release_gate": {
     "baseline_target_hashes": "PASS against exact snapshot manifest",
-    "historical_profiles": "PASS unchanged constants; legacy v1.0.8 fixture unavailable as above",
+    "historical_profiles": "profile identities unchanged; v1.0.8 fixture setup errors reproduce on untouched parent",
     "isolated_rollback_fixture": "PASS 21/21 regular file SHA and modes",
-    "live_admission": "REVIEW_ONLY; shared admission entry point refuses v1.0.21",
+    "live_admission": "REVIEW_ONLY; issue and check paths refuse v1.0.21",
     "offline_candidate_and_rollback_hashes": "PASS",
-    "pending_route": "BLOCKED: A4 route manifest SHA 8e7684d609d4a5e6d0fc7f100789835b45172703994742a7f8a2437b1e1c62bd differs from actual snapshot manifest SHA 8e7684d609a4d5e6d0fc7f100789835b45172703994742a7f8a2437b1e1c62bd",
-    "production_mutation": false
+    "pending_route": "BLOCKED: route baseline manifest SHA 8e7684d609d4a5e6d0fc7f100789835b45172703994742a7f8a2437b1e1c62bd differs from actual snapshot manifest SHA 8e7684d609a4d5e6d0fc7f100789835b45172703994742a7f8a2437b1e1c62bd",
+    "production_mutation": false,
+    "rollback_downloadback": "BLOCKED: A4 Drive receipt does not contain byte/size download-back entry for rollback Drive ID 1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB; snapshot bytes match locally but gate refuses missing receipt proof"
   },
   "rollback_archive_sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
   "schema": "cart116-a4-v121-release-gate-evidence-v1",
