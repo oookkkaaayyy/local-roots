@@ -98,7 +98,21 @@ export function createGlowSaveCoordinator({storage, onStatus = () => {}, now = (
           if (pending?.generation === submitted.generation) persist(submitted);
           const retry = await compareAndSwap(current.updatedAt, {...clone(current.root),glow:clone(submitted.branchState)});
           const retryRows = Array.isArray(retry?.rows) ? retry.rows : (retry?.row ? [retry.row] : []);
-          if (!retry || retry.error || retryRows.length !== 1) { status('conflict'); return {status:'conflict',current:await readCurrent()}; }
+          if (!retry || retry.error || retryRows.length !== 1) {
+            current = await readCurrent();
+            if (current?.root && same(current.root.glow, submitted.branchState)) {
+              if (pending?.generation === submitted.generation) clear();
+              else status('pending');
+              return {status: pending?.generation === submitted.generation ? 'saved' : 'pending', current};
+            }
+            if (current?.root && submitted.baseBranchState && same(current.root.glow, submitted.baseBranchState)) {
+              if (pending) persist({...pending, baseUpdatedAt: current.updatedAt, baseBranchState: clone(current.root.glow)});
+              status('failed');
+              return {status: 'failed', current};
+            }
+            status('conflict');
+            return {status: 'conflict', current};
+          }
         } else {
           status('conflict');
           return {status: 'conflict', current};
