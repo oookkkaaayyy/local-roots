@@ -85,7 +85,7 @@ export function createPinnedWranglerRunner({binary,exec=execFile,env=process.env
 
 // GitHub's create-file API is the atomic one-time primitive: it creates this
 // deterministic path without an update SHA, and rejects a replayed path.
-export function createGitHubExecutionLockAdapter({createFile,fetchFile,repository='oookkkaaayyy/local-roots',branch='feature/udisc-glow-standings-prototype',claimPath=`release-claims/${RELEASE_ID}.execution-claim.json`}={}){
+export function createGitHubExecutionLockAdapter({createFile,fetchFile,repository='oookkkaaayyy/local-roots',branch='feature/udisc-glow-standings-prototype',releaseId=RELEASE_ID,claimPath=`release-claims/${releaseId}.execution-claim.json`}={}){
  assert(typeof createFile==='function'&&typeof fetchFile==='function','GitHub create/read functions are required');
  assert(typeof claimPath==='string'&&/^release-claims\/[A-Za-z0-9._-]+\.json$/.test(claimPath),'GitHub immutable claim path is invalid');
  const filename=claimPath;
@@ -94,14 +94,14 @@ export function createGitHubExecutionLockAdapter({createFile,fetchFile,repositor
   async createExclusive(_name,bytes){
    const body=Buffer.from(bytes).toString('utf8');
    try{
-    const created=await createFile({repository_full_name:repository,branch,path:filename,content:body,message:`Claim one-time HBNF Glow execution ${RELEASE_ID}`});
+    const created=await createFile({repository_full_name:repository,branch,path:filename,content:body,message:`Claim one-time HBNF Glow execution ${releaseId}`});
     if(created?.isError===true)throw new Error(text(created));
     const commit=created?.structuredContent?.commit_sha||created?.structuredContent?.sha||text(created).match(/\b[0-9a-f]{40}\b/i)?.[0]||'';
     if(!commit)throw new Error('GitHub create-file did not confirm a new commit; refusing claim');
     claimCommit=commit;
     const remote=await fetchFile({repository_full_name:repository,path:filename,ref:commit,encoding:'base64'});
     if(!githubB64(remote).equals(Buffer.from(bytes)))throw new Error('GitHub execution claim readback mismatch');
-    return {created:true,id:`${repository}@${commit}:${filename}`,commit};
+    return {created:true,id:`${repository}@${commit}:${filename}`,commit,ref:`${repository}@${commit}:${filename}`};
    }catch(error){
     const m=`${error?.message||''} ${text(error)}`.toLowerCase();
     if(/already exists|sha wasn't supplied|422|conflict|duplicate/.test(m))return {created:false};

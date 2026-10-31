@@ -17,6 +17,8 @@ export const WEEKLY_RELEASE = Object.freeze({
   migration: '20261031054752_hbnf_udisc_glow_event_bindings.sql',
   migrationSha256: 'dbcf993694c054f3ea45de721258b5822c1c45042415309437a94ae583deaf8c',
   migrationBytes: 2269,
+  migrationRollback: 'DROP TABLE public.hbnf_udisc_glow_event_bindings;',
+  migrationRollbackSha256: '30359675987363ed48a8377b6fd88be9e65b5cf81bbb1d6cbf3c42469f13950c',
   assets: 46,
   bindings: Object.freeze([
     {date:'2026-11-03',id:'hb-glow-doubles-tAP8Y5',start:'2026-11-04T01:30:00Z',end:'2026-11-04T07:30:00Z'},
@@ -55,14 +57,14 @@ export async function admitWeeklyGlowRelease({manifest,manifestBytes,downloadedM
   const manifestSha256=digest(Buffer.from(manifestBytes));
   if(durableManifest?.driveFileId==null||durableManifest.sha256!==manifestSha256||durableManifest.bytes!==manifestBytes.length||durableManifest.downloadBackVerified!==true) fail('parent manifest has not been durably stored and independently verified');
   if(priorClaims.some(x=>x.releaseId===WEEKLY_RELEASE.id)) fail('one-time admission/execution claim already exists; refusing replay');
-  if(manifest.runtimeSourceCommit!==WEEKLY_RELEASE.runtimeSource||manifest.workerTarget!==WEEKLY_RELEASE.worker||manifest.supabaseProject!==WEEKLY_RELEASE.project) fail('source or provider target mismatch');
+  if(manifest.runtimeSourceCommit!==WEEKLY_RELEASE.runtimeSource||!/^[0-9a-f]{40}$/.test(manifest.gateSourceCommit||'')||manifest.workerTarget!==WEEKLY_RELEASE.worker||manifest.supabaseProject!==WEEKLY_RELEASE.project) fail('source or provider target mismatch');
   exactBytes(artifactBytes?.candidate,WEEKLY_RELEASE.candidate,WEEKLY_RELEASE.candidateBytes,'candidate');
   exactBytes(artifactBytes?.rollback,WEEKLY_RELEASE.rollback,WEEKLY_RELEASE.rollbackBytes,'v086 rollback');
   exactBytes(artifactBytes?.migration,WEEKLY_RELEASE.migrationSha256,WEEKLY_RELEASE.migrationBytes,'event-binding migration');
-  if(manifest.candidate?.sha256!==WEEKLY_RELEASE.candidate||manifest.rollback?.versionId!==WEEKLY_RELEASE.rollbackVersion||manifest.rollback?.sha256!==WEEKLY_RELEASE.rollback||manifest.migration?.name!==WEEKLY_RELEASE.migration||manifest.migration?.sha256!==WEEKLY_RELEASE.migrationSha256||manifest.migration?.order!==1||manifest.assetCount!==46||manifest.assetDelta?.unchanged!==46||manifest.assetDelta?.modified?.length!==0||manifest.assetDelta?.added?.length!==0) fail('manifest candidate, rollback, single migration, or 46-asset preservation binding mismatch');
+  if(manifest.candidate?.sha256!==WEEKLY_RELEASE.candidate||manifest.rollback?.versionId!==WEEKLY_RELEASE.rollbackVersion||manifest.rollback?.sha256!==WEEKLY_RELEASE.rollback||manifest.migration?.name!==WEEKLY_RELEASE.migration||manifest.migration?.sha256!==WEEKLY_RELEASE.migrationSha256||manifest.migration?.rollbackSha256!==WEEKLY_RELEASE.migrationRollbackSha256||manifest.migration?.order!==1||manifest.assetCount!==46||manifest.assetDelta?.unchanged!==46||manifest.assetDelta?.modified?.length!==0||manifest.assetDelta?.added?.length!==0) fail('manifest candidate, rollback, exact migration/rollback, or 46-asset preservation binding mismatch');
   const cf=readbacks?.cloudflare,sb=readbacks?.supabase;fresh(cf,'Cloudflare',now,maxAgeMs);fresh(sb,'Supabase',now,maxAgeMs);verifyWorkerBaseline(cf);verifyDatabaseBaseline(sb,manifest.supabaseBaseline);
   if(!Array.isArray(manifest.acceptanceCriteria)||manifest.acceptanceCriteria.length<5||manifest.acceptanceCriteria.some(c=>c.status!=='PENDING'||!c.scope||!c.description||!c.method||!c.expectedOutcome)) fail('admission acceptance criteria are incomplete or not PENDING');
-  return Object.freeze({status:'ADMISSION_PASS',releaseId:WEEKLY_RELEASE.id,manifestSha256,manifestDriveFileId:durableManifest.driveFileId,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollbackSha256:WEEKLY_RELEASE.rollback,migrationSha256:WEEKLY_RELEASE.migrationSha256,cloudflareVersion:cf.versionId,supabaseProject:sb.projectId,supabaseBaseline:Object.freeze({...manifest.supabaseBaseline}),admittedAt:new Date(now).toISOString()});
+  return Object.freeze({status:'ADMISSION_PASS',releaseId:WEEKLY_RELEASE.id,manifestSha256,manifestDriveFileId:durableManifest.driveFileId,gateSourceCommit:manifest.gateSourceCommit,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollbackSha256:WEEKLY_RELEASE.rollback,migrationSha256:WEEKLY_RELEASE.migrationSha256,cloudflareVersion:cf.versionId,supabaseProject:sb.projectId,supabaseBaseline:Object.freeze({...manifest.supabaseBaseline}),admittedAt:new Date(now).toISOString()});
 }
 
 function assertTargetUnchanged(cf,sb,admission) {
@@ -74,18 +76,21 @@ function verifyPostMigration(s, baseline) {
   if(s?.projectId!==WEEKLY_RELEASE.project||s.bindingTableExists!==true||s.migrationPresent!==true||s.migrationName!=='hbnf_udisc_glow_event_bindings'||s.rlsEnabled!==true||s.serviceRoleOnly!==true||s.stateFingerprint!==baseline?.stateFingerprint||s.activeWeek!==baseline?.activeWeek||s.nov3WeekExists!==baseline?.nov3WeekExists||s.legacyAnonWriteGrants!==true||s.matrixAndTagTriggersPreserved!==true) fail('post-migration Supabase readback failed its schema/data/grant checks');
   const bindings=s.bindings||[];
   if(JSON.stringify(bindings)!==JSON.stringify(WEEKLY_RELEASE.bindings)) fail('post-migration event IDs, dates, or windows differ from admitted values');
-  if(!s.migrationLedger?.some(m=>m.name==='hbnf_udisc_glow_event_bindings')) fail('provider migration ledger did not record the new migration');
+  const migrationRows=(s.migrationLedger||[]).filter(m=>m.name==='hbnf_udisc_glow_event_bindings');
+  if(migrationRows.length!==1||!/^\d{14}$/.test(String(migrationRows[0].version||''))) fail('provider migration ledger did not record exactly one provider-versioned migration');
 }
 
 /** One executor owns the actual API migration call and Worker stage/deploy. */
-export async function runWeeklyGlowRelease({admission,manifest,artifactBytes,providers,storage,ledger,clock=()=>new Date().toISOString()}) {
-  if(admission?.status!=='ADMISSION_PASS'||admission.releaseId!==WEEKLY_RELEASE.id||admission.manifestSha256!==digest(jsonBytes(manifest))) fail('valid candidate-specific ADMISSION_PASS is required');
+export async function runWeeklyGlowRelease({admission,admissionDecision,manifest,artifactBytes,providers,storage,ledger,clock=()=>new Date().toISOString()}) {
+  if(admission?.status!=='ADMISSION_PASS'||admission.releaseId!==WEEKLY_RELEASE.id||admission.manifestSha256!==digest(jsonBytes(manifest))||admission.gateSourceCommit!==manifest.gateSourceCommit) fail('valid candidate-specific ADMISSION_PASS is required');
   for(const [name,obj,methods] of [['Supabase',providers?.supabase,['read','applyExactMigration']],['Cloudflare',providers?.cloudflare,['read','stageExact','deployStaged','verifyDeployed','restoreBaseline']],['Drive',storage,['putOnce','download']],['one-time claim',ledger,['createExclusive','read']]]) for(const method of methods) if(typeof obj?.[method]!=='function') fail(`${name} execution adapter missing ${method}`);
   exactBytes(artifactBytes?.candidate,WEEKLY_RELEASE.candidate,WEEKLY_RELEASE.candidateBytes,'candidate');exactBytes(artifactBytes?.rollback,WEEKLY_RELEASE.rollback,WEEKLY_RELEASE.rollbackBytes,'rollback');exactBytes(artifactBytes?.migration,WEEKLY_RELEASE.migrationSha256,WEEKLY_RELEASE.migrationBytes,'migration');
   const manifestBytes=jsonBytes(manifest),manifestSha256=digest(manifestBytes);
   if(manifestSha256!==admission.manifestSha256) fail('execution parent manifest differs from admitted bytes');
   if(admission.manifestDriveFileId==null||!Buffer.from(await storage.download(admission.manifestDriveFileId)).equals(manifestBytes)) fail('admitted parent manifest is not independently retrievable byte-for-byte at execution time');
-  const claim=Buffer.from(`${JSON.stringify({format:'hbnf-weekly-glow-execution-claim-v1',releaseId:WEEKLY_RELEASE.id,manifestSha256,candidateSha256:WEEKLY_RELEASE.candidate,baselineVersion:WEEKLY_RELEASE.rollbackVersion,claimedAt:clock()},null,2)}\n`);
+  const decisionRecord=admissionDecision?.record,decisionBytes=Buffer.from(admissionDecision?.bytes||[]);
+  if(!decisionRecord||decisionRecord.format!=='hbnf-weekly-glow-admission-decision-v1'||decisionRecord.releaseId!==WEEKLY_RELEASE.id||decisionRecord.status!=='ADMISSION_PASS'||decisionRecord.manifestSha256!==manifestSha256||!admissionDecision.driveFileId||digest(decisionBytes)!==admissionDecision.sha256||!Buffer.from(await storage.download(admissionDecision.driveFileId)).equals(decisionBytes)) fail('durable admission decision is missing, mismatched, or not independently retrievable');
+  const claim=Buffer.from(`${JSON.stringify({format:'hbnf-weekly-glow-execution-claim-v1',releaseId:WEEKLY_RELEASE.id,manifestSha256,admissionDecisionDriveId:admissionDecision.driveFileId,admissionDecisionSha256:admissionDecision.sha256,candidateSha256:WEEKLY_RELEASE.candidate,baselineVersion:WEEKLY_RELEASE.rollbackVersion,claimedAt:clock()},null,2)}\n`);
   const lock=await ledger.createExclusive(`${WEEKLY_RELEASE.id}.execution-claim`,claim);
   if(lock?.created!==true||!lock.id||!Buffer.from(await ledger.read(lock.id)).equals(claim)) fail('unique execution claim is unavailable/replayed or its independent readback differs');
   const stored=await storage.putOnce(`${WEEKLY_RELEASE.id}.execution-claim.json`,claim);
@@ -94,7 +99,7 @@ export async function runWeeklyGlowRelease({admission,manifest,artifactBytes,pro
   const receipts=[];
   try {
     const [cf0,sb0]=await Promise.all([providers.cloudflare.read(),providers.supabase.read()]);assertTargetUnchanged(cf0,sb0,admission);
-    const migrationResult=await providers.supabase.applyExactMigration({projectId:WEEKLY_RELEASE.project,name:WEEKLY_RELEASE.migration,sha256:WEEKLY_RELEASE.migrationSha256,query:artifactBytes.migration.toString('utf8'),rollback:'DROP TABLE public.hbnf_udisc_glow_event_bindings;'});
+    const migrationResult=await providers.supabase.applyExactMigration({projectId:WEEKLY_RELEASE.project,name:WEEKLY_RELEASE.migration,sha256:WEEKLY_RELEASE.migrationSha256,query:artifactBytes.migration.toString('utf8'),rollback:WEEKLY_RELEASE.migrationRollback,rollbackSha256:WEEKLY_RELEASE.migrationRollbackSha256});
     if(migrationResult?.applied!==true) fail('Supabase Management API did not confirm the exact migration');migrationApplied=true;
     const sb1=await providers.supabase.read();verifyPostMigration(sb1,admission.supabaseBaseline);
     const cf1=await providers.cloudflare.read();
@@ -110,7 +115,7 @@ export async function runWeeklyGlowRelease({admission,manifest,artifactBytes,pro
     verifyPostMigration(sb3,admission.supabaseBaseline);
     const routeVerification=await providers.cloudflare.verifyDeployed({versionId:stage.versionId,candidateSha256:WEEKLY_RELEASE.candidate,expectedAssets:46});
     if(routeVerification?.passed!==true||routeVerification?.versionId!==stage.versionId||routeVerification?.assetCount!==46||routeVerification?.glowRouteCovered!==true||routeVerification?.cartRoutesUnchanged!==true) fail('deployed version, 46 assets, or route ownership verification failed');
-    const receipt={format:'hbnf-weekly-glow-two-target-closeout-v1',releaseId:WEEKLY_RELEASE.id,manifestSha256,executionClaimDriveId:stored.id,executionClaimGithubRef:lock.ref||null,sourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollback:{workerVersion:WEEKLY_RELEASE.rollbackVersion,sha256:WEEKLY_RELEASE.rollback},cloudflare:{worker:WEEKLY_RELEASE.worker,versionId:cf3.versionId,trafficPercent:100,rollbackRetained:cf3.rollbackRetained,assetCount:cf3.assetCount,assetsUnchanged:cf3.assetsUnchanged,cron:cf3.cron,pollingGuardsVerified:true},supabase:{projectId:sb3.projectId,migration:sb3.migrationLedger.find(m=>m.name==='hbnf_udisc_glow_event_bindings'),bindingRows:sb3.bindings,stateFingerprint:sb3.stateFingerprint,activeWeek:sb3.activeWeek,nov3WeekExists:sb3.nov3WeekExists,legacyAnonWriteGrants:sb3.legacyAnonWriteGrants},acceptance:manifest.acceptanceCriteria.map(c=>({id:c.id,status:'PASS',evidence:c.evidenceRef||`provider-readback:${clock()}`})),status:'INSTALLED_CLOSEOUT_PASS',closedAt:clock()};
+    const receipt={format:'hbnf-weekly-glow-two-target-closeout-v1',releaseId:WEEKLY_RELEASE.id,manifestSha256,manifestDriveId:admission.manifestDriveFileId,admissionDecisionDriveId:admissionDecision.driveFileId,admissionDecisionSha256:admissionDecision.sha256,executionClaimDriveId:stored.id,executionClaimGithubRef:lock.ref||null,gateSourceCommit:WEEKLY_RELEASE.gateSourceCommit||manifest.gateSourceCommit,sourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollback:{workerVersion:WEEKLY_RELEASE.rollbackVersion,sha256:WEEKLY_RELEASE.rollback},cloudflare:{worker:WEEKLY_RELEASE.worker,versionId:cf3.versionId,trafficPercent:100,rollbackRetained:cf3.rollbackRetained,assetCount:cf3.assetCount,assetsUnchanged:cf3.assetsUnchanged,cron:cf3.cron,pollingGuardsVerified:true},supabase:{projectId:sb3.projectId,migration:sb3.migrationLedger.find(m=>m.name==='hbnf_udisc_glow_event_bindings'),bindingRows:sb3.bindings,stateFingerprint:sb3.stateFingerprint,activeWeek:sb3.activeWeek,nov3WeekExists:sb3.nov3WeekExists,legacyAnonWriteGrants:sb3.legacyAnonWriteGrants},acceptance:manifest.acceptanceCriteria.map(c=>({id:c.id,status:'PASS',evidence:c.evidenceRef||`provider-readback:${clock()}`})),status:'INSTALLED_CLOSEOUT_PASS',closedAt:clock()};
     const bytes=jsonBytes(receipt),file=await storage.putOnce(`${WEEKLY_RELEASE.id}.closeout.json`,bytes);
     if(!file?.id||!Buffer.from(await storage.download(file.id)).equals(bytes)) fail('same-manifest closeout was not durably stored and independently downloaded byte-identically');
     return {status:receipt.status,receiptDriveId:file.id,receiptSha256:digest(bytes),receiptBytes:bytes.length,workerVersion:cf3.versionId,migrationLedger:receipt.supabase.migration};
@@ -130,12 +135,51 @@ export async function runWeeklyGlowRelease({admission,manifest,artifactBytes,pro
 /** Real Management API adapter. Credential is read only inside the process and never logged. */
 export function createSupabaseManagementAdapter({token=process.env.SUPABASE_ACCESS_TOKEN,fetchImpl=fetch,readBaseline,readInstalled}={}) {
   if(typeof token!=='string'||!token.trim()) fail('SUPABASE_ACCESS_TOKEN with database:write/database_migrations_write permission is unavailable');
+  async function readSnapshot(){
+    async function querySql(query){
+      const response=await fetchImpl(`https://api.supabase.com/v1/projects/${WEEKLY_RELEASE.project}/database/query/read-only`,{method:'POST',headers:{Authorization:`Bearer ${token}`,Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({query})});
+      if(!response.ok){const e=await response.json().catch(()=>({}));fail(`Supabase read-only baseline query returned HTTP ${response.status}${e?.message?`: ${String(e.message).slice(0,240)}`:''}`);}
+      const body=await response.json();const rows=Array.isArray(body)?body:body?.result;const row=Array.isArray(rows)?(rows[0]?.readback||rows[0]):(body?.readback||null);
+      if(!row||typeof row!=='object')fail('Supabase read-only query response omitted state evidence');return row;
+    }
+    const tableCheck=await querySql("select to_regclass('public.hbnf_udisc_glow_event_bindings') is not null as exists");
+    const tableExists=tableCheck.exists===true;
+    const rlsExpr=tableExists?"(select c.relrowsecurity from pg_catalog.pg_class c where c.oid=to_regclass('public.hbnf_udisc_glow_event_bindings'))":"false";
+    const roleExpr=tableExists?`has_table_privilege('service_role','public.hbnf_udisc_glow_event_bindings','SELECT') and has_table_privilege('service_role','public.hbnf_udisc_glow_event_bindings','INSERT') and has_table_privilege('service_role','public.hbnf_udisc_glow_event_bindings','UPDATE') and has_table_privilege('service_role','public.hbnf_udisc_glow_event_bindings','DELETE') and not has_table_privilege('anon','public.hbnf_udisc_glow_event_bindings','SELECT') and not has_table_privilege('anon','public.hbnf_udisc_glow_event_bindings','INSERT') and not has_table_privilege('anon','public.hbnf_udisc_glow_event_bindings','UPDATE') and not has_table_privilege('anon','public.hbnf_udisc_glow_event_bindings','DELETE') and not has_table_privilege('authenticated','public.hbnf_udisc_glow_event_bindings','SELECT') and not has_table_privilege('authenticated','public.hbnf_udisc_glow_event_bindings','INSERT') and not has_table_privilege('authenticated','public.hbnf_udisc_glow_event_bindings','UPDATE') and not has_table_privilege('authenticated','public.hbnf_udisc_glow_event_bindings','DELETE')`:"false";
+    const bindingsExpr=tableExists?`coalesce((select jsonb_agg(jsonb_build_object('date',event_date::text,'id',event_id,'start',to_char(window_start at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"'),'end',to_char(window_end at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"')) order by event_date) from public.hbnf_udisc_glow_event_bindings),'[]'::jsonb)`:"'[]'::jsonb";
+    const snapshotSql=`select jsonb_build_object(
+      'projectId','${WEEKLY_RELEASE.project}',
+      'bindingTableExists',${tableExists},
+      'rlsEnabled',${rlsExpr},
+      'serviceRoleOnly',${roleExpr},
+      'stateFingerprint',(select md5(to_jsonb(ls)::text) from public.league_state ls where ls.id=1),
+      'activeWeek',(select state_json #>> '{glow,activeWeek}' from public.league_state where id=1),
+      'nov3WeekExists',coalesce((select coalesce(state_json #> '{glow,weeks}','{}'::jsonb) ? '2026-11-03' from public.league_state where id=1),false),
+      'functions',coalesce((select jsonb_agg(p.proname order by p.proname) from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('hbnf_apply_udisc_glow_week','hbnf_record_udisc_glow_sync_status')),'[]'::jsonb),
+      'legacyAnonWriteGrants',has_table_privilege('anon','public.league_state','INSERT') and has_table_privilege('anon','public.league_state','UPDATE') and has_table_privilege('authenticated','public.league_state','INSERT') and has_table_privilege('authenticated','public.league_state','UPDATE'),
+      'matrixAndTagTriggersPreserved',(select count(distinct t.tgname)=3 from pg_catalog.pg_trigger t join pg_catalog.pg_class c on c.oid=t.tgrelid join pg_catalog.pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='league_state' and t.tgname in ('hbnf_matrix_vnext_capture_after_state_change','hbnf_project_current_tags_into_league_state','trg_hbnf_matrix_sync')),
+      'bindings',${bindingsExpr}
+    ) as readback`;
+    const [state,migrationResponse]=await Promise.all([
+      querySql(snapshotSql),
+      fetchImpl(`https://api.supabase.com/v1/projects/${WEEKLY_RELEASE.project}/database/migrations`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'}}),
+    ]);
+    if(!migrationResponse.ok){const e=await migrationResponse.json().catch(()=>({}));fail(`Supabase migration-ledger read returned HTTP ${migrationResponse.status}${e?.message?`: ${String(e.message).slice(0,240)}`:''}`);}
+    const ledgerBody=await migrationResponse.json();const ledger=Array.isArray(ledgerBody)?ledgerBody:ledgerBody?.migrations;
+    if(!Array.isArray(ledger))fail('Supabase Management API migration ledger response is malformed');
+    const migrationLedger=ledger.map(m=>({version:String(m.version||''),name:String(m.name||'')}));
+    const targetRows=migrationLedger.filter(m=>m.name==='hbnf_udisc_glow_event_bindings');
+    return {...state,migrationLedger,migrationPresent:targetRows.length>0,migrationName:targetRows[0]?.name||null,capturedAt:new Date().toISOString()};
+  }
+  readBaseline??=readSnapshot;readInstalled??=readSnapshot;
   if(typeof readBaseline!=='function'||typeof readInstalled!=='function') fail('Supabase authenticated readback adapters are required');
   return {
     read:readBaseline,
     async applyExactMigration({projectId,name,sha256:expected,query,rollback}) {
       if(projectId!==WEEKLY_RELEASE.project||name!==WEEKLY_RELEASE.migration||digest(Buffer.from(query))!==expected||expected!==WEEKLY_RELEASE.migrationSha256) fail('Management API migration request is outside exact admitted scope');
-      const response=await fetchImpl(`https://api.supabase.com/v1/projects/${WEEKLY_RELEASE.project}/database/migrations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({name:name.replace(/\.sql$/,''),query,rollback})});
+      if(rollback!==WEEKLY_RELEASE.migrationRollback||digest(Buffer.from(rollback))!==WEEKLY_RELEASE.migrationRollbackSha256) fail('Management API rollback SQL differs from the exact admitted table removal');
+      const migrationName=name.replace(/^\d{14}_/,'').replace(/\.sql$/,'');
+      const response=await fetchImpl(`https://api.supabase.com/v1/projects/${WEEKLY_RELEASE.project}/database/migrations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({name:migrationName,query,rollback})});
       if(!response.ok) fail(`Supabase Management API migration returned HTTP ${response.status}`);
       return {applied:true,status:response.status};
     },
