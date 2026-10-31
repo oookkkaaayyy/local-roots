@@ -27,7 +27,7 @@ test('Weather keeps its Safari and installable scope with the approved Local Roo
   assert.match(app, /if\(touchIcon\)touchIcon\.href=isDuAdmin\|\|isDyeStudio\|\|isDuPublic\?DU_TOUCH_ICON:LR_TOUCH_ICON/);
 });
 
-test('Weather mobile course rows stay compact and hourly details remain scrollable', async () => {
+test('Weather mobile course rows stay compact and hourly details remain accessible', async () => {
   const css = await read('../src/weather.css');
   assert.match(css, /@media\(max-width:620px\)/);
   assert.match(css, /\.weather-course-list\{display:block/);
@@ -129,4 +129,44 @@ test('Weather heading keeps Events typography and rolling detail does not alter 
   assert.doesNotMatch(weather,/@media\(max-width:700px\)\{\.weather-heading h1\{/);
   assert.match(page,/buildRolling24HourRows/);assert.match(page,/No forecast for these hours/);assert.match(page,/Forecast covers \{Math\.round\(hourly\.coverage\*100\)\}% of these hours/);assert.match(page,/formatHourlyTimeLabel/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
   assert.match(page,/view\.error\?\<p className="weather-error">Forecast unavailable\.<\/p>/);assert.match(page,/view\.flags\.length\?<div className="weather-flag-list"/);
+});
+
+test('mobile hourly detail keeps time, rain, and conditions together without sideways scrolling',async()=>{
+  const css=await read('../src/weather.css');
+  const page=await read('../src/pages/WeatherPage.tsx');
+  assert.match(css,/\.weather-hourly-scroll\{overflow-x:hidden/);
+  assert.match(css,/\.weather-hourly\{display:block;width:100%;min-width:0/);
+  assert.match(css,/\.weather-hourly tbody tr\{display:grid/);
+  assert.match(css,/\.weather-hourly tbody td:nth-child\(5\)\{grid-column:3;grid-row:1\}/);
+  assert.match(css,/\.weather-hourly tbody td:nth-child\(6\)\{grid-column:1\/-1;grid-row:3\}/);
+  for(const label of ['Temp','Wind','Gust','Rain','Conditions'])assert.ok(page.includes('data-label="'+label+'"'));
+  assert.match(page,/role="table"/);
+});
+
+test('expanded detail respects selected date or time, otherwise retains rolling today',async()=>{
+  const page=await read('../src/pages/WeatherPage.tsx');
+  assert.match(page,/const rolling=preferences\.date===dateInPacific\(new Date\(referenceTime\)\)&&preferences\.allDay/);
+  assert.match(page,/rolling\?extractRollingHourRows\(view\.raw,view\.course,referenceTime\):extractHourRows\(view\.raw,view\.course,preferences\)/);
+  assert.match(page,/periodLabel=rolling\?'Next 24 hours'/);
+  assert.match(page,/summarizeHourly\(extracted\.rows\)/);
+  assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);
+  assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
+});
+
+test('course locations expose source-verified ZIPs and coordinate-based NWS links',async()=>{
+  const page=await read('../src/pages/WeatherPage.tsx');
+  const courses=JSON.parse(await read('../src/data/weather-courses.json'));
+  const postals=courses.filter(course=>course.postalCode);
+  assert.equal(courses.length,35);
+  assert.equal(postals.length,12);
+  for(const course of postals){
+    assert.match(course.postalCode,/^\d{5}$/);
+    assert.match(course.postalCodeSource,/^https:\/\//);
+  }
+  assert.equal(courses.find(course=>course.id==='oak-grove').postalCode,'91103');
+  assert.equal(courses.find(course=>course.id==='huntington-central').postalCode,'92647');
+  assert.match(page,/course\.postalCode\|\|course\.coordinates\.map/);
+  assert.match(page,/Copy location/);
+  assert.match(page,/https:\/\/forecast\.weather\.gov\/MapClick\.php\?lat=/);
+  assert.match(page,/NWS forecast/);
 });
