@@ -53,7 +53,8 @@ export async function createTimeoutMigrationRoute({token,fetchImpl=fetch,receipt
   if(!rollbackBytes.equals(Buffer.from(TIMEOUT_RELEASE.rollback)))fail('rollback bytes are not the admitted exact inverse SQL');
   const admission=await validateReleaseReceipt(receipt,root,{phase:'admission'});
   const manifestBytes=await readFile(path.join(root,receipt.admission.path));
-  if(sha(manifestBytes)!==admission.admissionManifestSha256)fail('admission manifest hash mismatch');
+  const admissionManifestSha256=receipt.admission.sha256;
+  if(sha(manifestBytes)!==admissionManifestSha256)fail('admission manifest hash mismatch');
   const manifestDownload=await readFile(path.join(root,receipt.admission.downloadBack.path));
   if(!manifestDownload.equals(manifestBytes))fail('admission manifest download-back mismatch');
 
@@ -129,7 +130,7 @@ export async function createTimeoutMigrationRoute({token,fetchImpl=fetch,receipt
     return {tag:name,remoteObject:hash,claim};
   }
   return {
-    admissionManifestSha256:admission.admissionManifestSha256,
+    admissionManifestSha256,
     async claim(){
       const before=await readProvider();assertTimeoutBaseline(before,expectedBaseline);
       if(before.functionMd5!==receipt.functionBaselineMd5)fail('baseline CAS function body changed');
