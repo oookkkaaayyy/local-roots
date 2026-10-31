@@ -21,7 +21,7 @@ const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-
 const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_package.py");
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
-assert.match(html, /hbnf-cart2-owner-control-home-r6-20261024/);
+assert.match(html, /hbnf-cart2-owner-control-home-r6-20261031-v1\.0\.21-a3/);
 assert.doesNotMatch(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html"/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");

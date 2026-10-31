@@ -98,11 +98,11 @@ test("changed Owner PWA assets use a fresh matching cache revision", () => {
   assert.match(serviceWorker, /hbnf-faded-phosphor\.png\?v=20261024-hbnf-faded-phosphor-r1/);
   assert.match(serviceWorker, /v19-cart-uv-controls-20261026/);
   assert.match(serviceWorker, /20261026-cart-uv-controls-r1/);
-  assert.match(html, /hbnf-cart\.js\?v=20261024-cart-control-home-r5/);
+  assert.match(html, /hbnf-cart\.js\?v=20261031-cart116-v121-a3-r1/);
   assert.match(html, /hbnf-cart-ui-v6\.mjs\?v=20261026-cart-uv-controls-r1/);
-  assert.match(html, /hbnf-cart-features\.mjs\?v=20261026-cart-uv-levels-r1/);
+  assert.match(html, /hbnf-cart-features\.mjs\?v=20261031-cart116-v121-a3-r1/);
   assert.match(html, /hbnf-cart-skins-score\.mjs\?v=20261024-cart-control-home-r5/);
-  assert.match(html, /hbnf-cart2-owner-control-home-r6-20261024/);
+  assert.match(html, /hbnf-cart2-owner-control-home-r6-20261031-v1\.0\.21-a3/);
   for (const source of [js, readFileSync(new URL("../hbnf-final-controller/hbnf-cart-features.mjs", import.meta.url), "utf8")]) {
     assert.match(source, /hbnf-cart-readiness\.mjs\?v=20261024-cart-control-home-r4/);
   }
