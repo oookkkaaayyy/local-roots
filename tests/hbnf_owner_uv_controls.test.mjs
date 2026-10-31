@@ -103,7 +103,7 @@ assert.match(features, /async function checkUvReadiness\(updateStatus = true\)[\
 const uvReadiness = features.match(/async function checkUvReadiness\(updateStatus = true\)[\s\S]*?\n}\n\nasync function sendUv/)?.[0];
 assert.ok(uvReadiness, "UV readiness handler remains inspectable");
 assert.doesNotMatch(uvReadiness, /sendUv\(\s*["']OFF["']\s*\)/, "status/link failure must never issue implicit UV OFF");
-assert.match(uvReadiness, /Cart status is unavailable\. \$\{uvLevelSavedMessage\(\)\} No command was sent\./);
+assert.match(uvReadiness, /Cart status is unavailable\. \$\{uvLevelSavedMessage\(\)\} A bounded Cart\/Bar test is available below\./);
 assert.match(uvReadiness, /UV commands are locked until safety checks pass\. \$\{uvLevelSavedMessage\(\)\} No command was sent\./);
 assert.doesNotMatch(uvReadiness, /(?:output|UV)\s+(?:is|was)\s+(?:confirmed\s+)?off/i, "readiness failure must not claim output is confirmed off");
 const uvSend = features.match(/async function sendUv\(mode\)[\s\S]*?\n}\n\n\["uvMainBrightness"/)?.[0];

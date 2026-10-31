@@ -422,7 +422,7 @@ test("Owner PWA keeps the isolated HTTPS gateway and adds the accepted Opal-loca
   assert.match(local, /owner-http-transport\.js/);
   assert.match(local, /if \(this\.opalDirect\) return this\.connectOpalDirect\(\)/);
   assert.match(local, /ws:\/\/" \+ LOCAL_MATRIX_IP \+ "\/ws/);
-  assert.match(local, /waitForFreshState\(this\.transport, beforeVersion\)/);
+  assert.match(local, /waitForFreshState\(this\.transport, beforeVersion, this\.matrixReadyTimeoutMs\)/);
 });
 
 test("the test-installed Opal Mission Control WebSocket transport remains supported by the updated package", async () => {

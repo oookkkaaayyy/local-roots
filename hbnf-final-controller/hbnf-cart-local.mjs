@@ -10,6 +10,7 @@ export const LOCAL_AUX_IP = "192.168.77.11";
 export const LOCAL_MATRIX_MAC = "704bca5b345c";
 export const LOCAL_AUX_MAC = "8c94df55c34c";
 export const LOCAL_MATRIX_RELEASE = "hbnf-cart2-phase2-r6-skins-readable-20261014";
+const LOCAL_TUNE_FIELDS = new Set(["matrixBrightness", "auxBrightness", "motion", "audioResponse"]);
 
 function validToken(value) {
   return typeof value === "string" && /^[a-f0-9]{64}$/i.test(value);
@@ -22,7 +23,8 @@ function jsonHeaders(token) {
 export class LocalOwnerControl {
   constructor(options = {}) {
     this.origin = String(options.origin || LOCAL_CONTROL_ORIGIN).replace(/\/$/, "");
-    this.pageOrigin = String(options.pageOrigin || globalThis.location?.origin || "");
+    const defaultPageOrigin = typeof location !== "undefined" && location ? location.origin : "";
+    this.pageOrigin = String(options.pageOrigin || defaultPageOrigin || "");
     this.opalDirect = options.opalDirect === true;
     this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js"));
     this.directStorage = options.storage || (typeof localStorage !== "undefined" ? localStorage : null);
@@ -37,6 +39,8 @@ export class LocalOwnerControl {
     this.auxInfo = null;
     this.auxState = null;
     this.auxStateAt = 0;
+    this.componentStatus = { matrix: { available: false, error: "not_checked" }, aux: { available: false, error: "not_checked" } };
+    this.matrixReadyTimeoutMs = Number.isSafeInteger(options.matrixReadyTimeoutMs) ? Math.max(50, options.matrixReadyTimeoutMs) : 3500;
     this.commandQueue = Promise.resolve();
     this.localRevalidateMs = Number.isSafeInteger(options.localRevalidateMs) ? Math.max(1, options.localRevalidateMs) : 60000;
     this.localRevalidationTimer = null;
@@ -329,11 +333,13 @@ export class LocalOwnerControl {
     if (Number.isSafeInteger(expiresAtEpoch)) this.expiresAtEpoch = expiresAtEpoch;
     const module = this.module || await this.transportLoader();
     this.module = module;
+    if (this.token && this.token !== token) this.disconnectTransport();
+    this.token = token;
+    this.componentStatus = { matrix: { available: false, error: "unavailable" }, aux: { available: false, error: "unavailable" } };
     try {
       const matrixInfo = await this.request(token, "/api/matrix/json/info");
       if (String(matrixInfo.mac || "").toLowerCase() !== LOCAL_MATRIX_MAC) throw new Error("Unexpected Matrix identity.");
-      if (this.token !== token || !this.transport) {
-        this.disconnectTransport();
+      if (!this.transport) {
         this.transport = new module.LocalMatrixTransport({
           readState: () => this.request(token, "/api/matrix/json/state"),
           sendCommand: patch => this.request(token, "/api/matrix/control", "POST", { HBNF: patch }),
@@ -345,17 +351,27 @@ export class LocalOwnerControl {
       }
       if (!this.transport.verifyIdentity(matrixInfo)) throw new Error("Matrix identity verification failed.");
       this.transport.connect();
-      const matrixState = await this.waitForState(this.transport);
+      const matrixState = await this.waitForState(this.transport, this.matrixReadyTimeoutMs);
       const candidate = matrixState && matrixState.HBNF && matrixState.HBNF.candidate;
       if (candidate !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
-      await this.readAux(token);
       this.matrixInfo = matrixInfo;
-      this.scheduleLocalRevalidation(token);
-      return this.snapshot();
+      this.componentStatus.matrix = { available: true, error: null };
     } catch (error) {
-      this.disconnectTransport();
-      throw error;
+      if (/Unexpected Matrix identity|Matrix identity verification failed|firmware is not the locally approved release/.test(String(error && error.message || error))) throw error;
+      if (this.transport) this.transport.disconnect();
+      this.transport = null;
+      this.matrixInfo = null;
+      this.componentStatus.matrix = { available: false, error: String(error && error.message || "Matrix unavailable") };
     }
+    try {
+      await this.readAux(token);
+      this.componentStatus.aux = { available: true, error: null };
+    } catch (error) {
+      this.auxInfo = null; this.auxState = null; this.auxStateAt = 0;
+      this.componentStatus.aux = { available: false, error: String(error && error.message || "AUX unavailable") };
+    }
+    this.scheduleLocalRevalidation(token);
+    return this.snapshot();
   }
 
   async connectOpalDirect() {
@@ -368,28 +384,45 @@ export class LocalOwnerControl {
         this.auxInfo && this.auxState && this.auxStateAt && Date.now() - this.auxStateAt <= 15000) return this.snapshot();
     const module = this.module || await this.directTransportLoader();
     this.module = module;
-    const matrixInfo = await module.getJson("http://" + LOCAL_MATRIX_IP + "/json/info");
-    if (String(matrixInfo.mac || "").toLowerCase().replace(/:/g, "") !== LOCAL_MATRIX_MAC) throw new Error("Unexpected Matrix identity.");
-    if (!this.transport) {
-      this.transport = new module.LocalMatrixTransport({ url: "ws://" + LOCAL_MATRIX_IP + "/ws" });
-      this.token = "__opal_direct__";
+    this.token = "__opal_direct__";
+    this.componentStatus = { matrix: { available: false, error: "unavailable" }, aux: { available: false, error: "unavailable" } };
+    try {
+      const matrixInfo = await module.getJson("http://" + LOCAL_MATRIX_IP + "/json/info");
+      if (String(matrixInfo.mac || "").toLowerCase().replace(/:/g, "") !== LOCAL_MATRIX_MAC) throw new Error("Unexpected Matrix identity.");
+      if (!this.transport) this.transport = new module.LocalMatrixTransport({ url: "ws://" + LOCAL_MATRIX_IP + "/ws" });
+      if (!this.transport.verifyIdentity(matrixInfo)) throw new Error("Matrix identity verification failed.");
+      const beforeVersion = this.transport.snapshotVersion;
+      if (this.transport.socket && this.transport.socket.readyState === 1) this.transport.requestState();
+      else this.transport.connect();
+      const matrixState = await this.waitForFreshState(this.transport, beforeVersion, this.matrixReadyTimeoutMs);
+      const candidate = matrixState && matrixState.HBNF && matrixState.HBNF.candidate;
+      if (candidate !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
+      this.matrixInfo = matrixInfo;
+      this.componentStatus.matrix = { available: true, error: null };
+    } catch (error) {
+      if (/Unexpected Matrix identity|Matrix identity verification failed|firmware is not the locally approved release/.test(String(error && error.message || error))) throw error;
+      if (this.transport) this.transport.disconnect();
+      this.transport = null; this.matrixInfo = null;
+      this.componentStatus.matrix = { available: false, error: String(error && error.message || "Matrix unavailable") };
     }
-    if (!this.transport.verifyIdentity(matrixInfo)) throw new Error("Matrix identity verification failed.");
-    const beforeVersion = this.transport.snapshotVersion;
-    if (this.transport.socket && this.transport.socket.readyState === 1) this.transport.requestState();
-    else this.transport.connect();
-    const matrixState = await this.waitForFreshState(this.transport, beforeVersion);
-    const candidate = matrixState && matrixState.HBNF && matrixState.HBNF.candidate;
-    if (candidate !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
-    this.matrixInfo = matrixInfo;
-    await this.readAux("");
+    try {
+      await this.readAux("");
+      this.componentStatus.aux = { available: true, error: null };
+    } catch (error) {
+      this.auxInfo = null; this.auxState = null; this.auxStateAt = 0;
+      this.componentStatus.aux = { available: false, error: String(error && error.message || "AUX unavailable") };
+    }
     return this.snapshot();
   }
 
   snapshot() {
     const local = this.transport && this.transport.snapshot;
     const h = local && local.HBNF;
-    if (!h || !this.auxState || !this.transport.controlReady()) throw new Error("Fresh local Matrix/AUX state is unavailable.");
+    const matrixAvailable = !!(h && this.transport && this.transport.controlReady() && this.componentStatus.matrix.available);
+    const auxAvailable = !!(this.auxState && this.auxInfo && this.componentStatus.aux.available && Date.now() - this.auxStateAt <= 15000);
+    if (!matrixAvailable && !auxAvailable) return this.partialSnapshot(null, false);
+    if (!matrixAvailable) return this.partialSnapshot(null, auxAvailable);
+    if (!auxAvailable) return this.partialSnapshot(h, false);
     const isRange = (value, minimum, maximum) => Number.isInteger(Number(value)) && Number(value) >= minimum && Number(value) <= maximum;
     if (!isRange(h.matrixBrightness, 0, 255) || !isRange(h.auxBrightness, 0, 255) ||
         !isRange(h.vibe, 0, 5) || !isRange(h.motion, 0, 100) || !isRange(h.audioResponse, 0, 100)) {
@@ -406,6 +439,8 @@ export class LocalOwnerControl {
     const auxObserved = { device_id: "aux", desired_revision: revision, status: this.auxState.on ? "online" : "off", observed_at: new Date().toISOString(), reported: { confirmed: true, brightness: Number(this.auxState.bri), matrixTargetBrightness: auxBrightness, appliedProjection: { brightness: auxBrightness }, ddp: auxDdpConfirmed, physical: "unverified" } };
     return {
       local: true,
+      componentStatus: this.copyComponentStatus(),
+      componentMessage: "Matrix and AUX readbacks are available; DDP status is reported separately.",
       desired: { revision, state: {
         sceneId: scene,
         paletteId: h.palette && h.palette.mode === "wled" ? "wled-" + String(h.palette.index) :
@@ -430,7 +465,7 @@ export class LocalOwnerControl {
         attempts: this.localSyncAttempts,
         physical: "unverified",
       },
-      capabilities: Object.assign({ phase2VibeRuntimeV1: true, localOwnerControlV1: true }, this.opalDirect ? {
+      capabilities: Object.assign({ phase2VibeRuntimeV1: true, localOwnerControlV1: true, pairedAuxBrightnessAtomicV1: !this.opalDirect }, this.opalDirect ? {
         canonicalPaletteIntentV1: true,
         canonicalOverlayIntentV1: true,
         opalDirectOwnerPwaV1: true,
@@ -439,15 +474,67 @@ export class LocalOwnerControl {
     };
   }
 
+  partialSnapshot(h, auxAvailable) {
+    const revision = this.transport && this.transport.snapshotVersion || 0;
+    const observedAt = new Date().toISOString();
+    const matrixAvailable = !!h;
+    const auxDdpConfirmed = !!(matrixAvailable && auxAvailable && this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === LOCAL_MATRIX_IP);
+    const observed = [matrixAvailable
+      ? { device_id: "matrix", desired_revision: revision, status: "online", observed_at: observedAt, reported: { confirmed: true, brightness: Number(h.matrixBrightness), appliedProjection: { brightness: Number(h.matrixBrightness) } } }
+      : { device_id: "matrix", desired_revision: revision, status: "failed", observed_at: observedAt, online: false, reported: { confirmed: false, error: String(this.componentStatus.matrix.error || "Matrix unavailable") } }];
+    observed.push(auxAvailable
+      ? { device_id: "aux", desired_revision: revision, status: this.auxState.on ? "online" : "off", observed_at: observedAt, reported: { confirmed: true, brightness: Number(this.auxState.bri), independentBrightness: true, ddp: auxDdpConfirmed, physical: "unverified" } }
+      : { device_id: "aux", desired_revision: revision, status: "failed", observed_at: observedAt, online: false, reported: { confirmed: false, error: String(this.componentStatus.aux.error || "AUX unavailable"), ddp: false } });
+    const devices = {
+      matrix: matrixAvailable ? { confirmed: true, confirmedRevision: revision, mac: LOCAL_MATRIX_MAC, firmware: h.candidate } : { confirmed: false, mac: LOCAL_MATRIX_MAC },
+      aux: auxAvailable ? { confirmed: true, confirmedRevision: revision, mac: LOCAL_AUX_MAC, ddp: auxDdpConfirmed, physical: "unverified", independentBrightness: true } : { confirmed: false, mac: LOCAL_AUX_MAC, ddp: false },
+    };
+    return {
+      local: true,
+      componentStatus: this.copyComponentStatus(),
+      componentMessage: matrixAvailable
+        ? "Matrix is reachable; AUX readback is unavailable. Matrix-only controls remain usable; AUX and DDP are unconfirmed."
+        : auxAvailable
+          ? "Matrix is unavailable; AUX readback is available, but Matrix-derived DDP projection is unconfirmed."
+          : "Matrix and AUX are unavailable; no local controls are confirmed.",
+      desired: { revision, state: matrixAvailable ? { tuning: { motion: Number(h.motion), audioResponse: Number(h.audioResponse) }, devices: { matrix: { brightness: Number(h.matrixBrightness) }, aux: { brightness: Number(h.auxBrightness) } } } : { devices: auxAvailable ? { aux: { actualWledBrightness: Number(this.auxState.bri) } } : {} } },
+      observed,
+      devices,
+      capabilities: Object.assign({ phase2VibeRuntimeV1: matrixAvailable, localOwnerControlV1: true, pairedAuxBrightnessAtomicV1: !this.opalDirect, independentAuxBrightnessReadbackV1: auxAvailable, independentAuxBrightnessWriteV1: auxAvailable && !this.opalDirect }, this.opalDirect ? { opalDirectOwnerPwaV1: matrixAvailable } : {}),
+      localState: this.transport && this.transport.snapshot || null,
+    };
+  }
+
+  copyComponentStatus() {
+    return {
+      matrix: Object.assign({}, this.componentStatus.matrix),
+      aux: Object.assign({}, this.componentStatus.aux),
+    };
+  }
+
   supports(type, payload, changedFields) {
     if (!this.module || !this.module.buildPatch) return false;
     if (this.opalDirect && type === "OFF") return true;
     if (this.opalDirect && type === "ON") return !!this.directPowerRecord();
-    if (this.opalDirect && type === "TUNE" && Array.isArray(changedFields) && changedFields.length) {
-      const supported = new Set(["matrixBrightness", "auxBrightness", "motion", "audioResponse"]);
-      return changedFields.every(key => supported.has(key));
+    if (type === "TUNE") {
+      if (changedFields === undefined) {
+        const supplied = payload && typeof payload === "object" && !Array.isArray(payload) ? Object.keys(payload) : [];
+        return supplied.length > 0 && supplied.every(key => LOCAL_TUNE_FIELDS.has(key)) && this.hasSupportedTuneValue(payload);
+      }
+      if (!Array.isArray(changedFields) || !changedFields.length) return false;
+      if (!changedFields.every(key => LOCAL_TUNE_FIELDS.has(key) && Object.prototype.hasOwnProperty.call(payload || {}, key))) return false;
+      const requested = {};
+      for (const key of changedFields) requested[key] = payload[key];
+      try { this.module.buildPatch(type, requested); return true; }
+      catch (_) { return false; }
     }
     try { this.module.buildPatch(type, payload || {}); return true; }
+    catch (_) { return false; }
+  }
+
+  hasSupportedTuneValue(payload) {
+    if (!this.module || !this.module.buildPatch) return false;
+    try { this.module.buildPatch("TUNE", payload || {}); return true; }
     catch (_) { return false; }
   }
 
@@ -475,23 +562,38 @@ export class LocalOwnerControl {
 
   async commandNow(token, type, payload, changedFields) {
     if (this.opalDirect) return this.commandOpalDirect(type, payload || {}, changedFields);
-    if (token !== this.token || !this.transport) throw new Error("Fresh paired local session and Matrix identity are required.");
+    if (token !== this.token) throw new Error("Fresh paired local session is required.");
     await this.ensureSession(token);
-    if (!this.transport.controlReady()) await this.connect(token, this.expiresAtEpoch);
-    if (!this.transport.controlReady()) throw new Error("Fresh paired local session and Matrix identity are required.");
-    if (!this.supports(type, payload)) throw new Error(`This command is not yet available through offline local control: ${type}`);
+    if (!this.transport || !this.transport.controlReady()) {
+      if (type === "TUNE" && this.isAuxBrightnessOnly(payload, changedFields) && this.supports(type, payload, changedFields)) return this.commandPairedAuxBrightness(token, Number(payload.auxBrightness));
+      await this.connect(token, this.expiresAtEpoch);
+      if (!this.transport || !this.transport.controlReady()) throw new Error("Fresh Matrix identity and state are required; no Matrix command was sent.");
+    }
+    const commandPayload = type === "TUNE" && Array.isArray(changedFields)
+      ? changedFields.reduce((requested, key) => {
+        if (Object.prototype.hasOwnProperty.call(payload || {}, key)) requested[key] = payload[key];
+        return requested;
+      }, {})
+      : payload || {};
+    if (!this.supports(type, payload, changedFields)) throw new Error(`This command is not yet available through offline local control: ${type}`);
     // Keep a stable pre-command record for cross-device compensation; test
     // adapters and callers may otherwise retain a live reference to readback.
     const beforeMatrix = { ...(this.transport.snapshot && this.transport.snapshot.HBNF || {}) };
-    const patch = this.module.buildPatch(type, payload || {});
-    if (Object.prototype.hasOwnProperty.call(patch, "auxBrightness")) await this.readAux(token);
-    const beforeAux = { bri: Number(this.auxState.bri), on: this.auxState.on === true };
-    const state = await this.transport.command(type, payload || {});
+    const patch = this.module.buildPatch(type, commandPayload);
+    let beforeAux = null;
+    let beforeAuxError = null;
     if (Object.prototype.hasOwnProperty.call(patch, "auxBrightness")) {
+      try { await this.readAux(token); beforeAux = { bri: Number(this.auxState.bri), on: this.auxState.on === true }; this.componentStatus.aux = { available: true, error: null }; }
+      catch (error) { beforeAuxError = error; this.auxInfo = null; this.auxState = null; this.auxStateAt = 0; this.componentStatus.aux = { available: false, error: String(error && error.message || "AUX unavailable") }; }
+      if (!beforeAux) throw beforeAuxError || new Error("Fresh AUX readback is required before a paired Matrix/AUX brightness command; no command was sent.");
+    }
+    const state = await this.transport.command(type, commandPayload);
+    if (Object.prototype.hasOwnProperty.call(patch, "auxBrightness") && beforeAux) {
       try {
         await this.request(token, "/api/aux/control", "POST", { bri: Number(patch.auxBrightness) });
         const aux = await this.readAux(token);
         if (Number(aux.state.bri) !== Number(patch.auxBrightness)) throw new Error("AUX brightness readback did not match the requested value.");
+        this.componentStatus.aux = { available: true, error: null };
       } catch (error) {
         const restoreFailed = [];
         try {
@@ -509,10 +611,13 @@ export class LocalOwnerControl {
           catch (_) { restoreFailed.push("Matrix AUX target"); }
         }
         if (restoreFailed.length) throw new Error(`AUX command failed; bounded restoration could not be confirmed for ${restoreFailed.join(" and ")}.`);
+        this.auxInfo = null; this.auxState = null; this.auxStateAt = 0;
+        this.componentStatus.aux = { available: false, error: String(error && error.message || "AUX readback failed") };
         throw error;
       }
     } else {
-      await this.readAux(token);
+      try { await this.readAux(token); this.componentStatus.aux = { available: true, error: null }; }
+      catch (error) { this.auxInfo = null; this.auxState = null; this.auxStateAt = 0; this.componentStatus.aux = { available: false, error: String(error && error.message || "AUX unavailable") }; }
     }
     if (state && state.HBNF && Number.isInteger(Number(state.HBNF.matrixBrightness)) &&
         Number.isInteger(Number(state.HBNF.auxBrightness)) && this.auxState &&
@@ -530,17 +635,47 @@ export class LocalOwnerControl {
       accepted: true,
       local: true,
       revision: this.transport.snapshotVersion,
+      componentStatus: this.copyComponentStatus(),
+      snapshot: this.snapshot(),
       acknowledgments: {
         matrix: { confirmed: true, mac: LOCAL_MATRIX_MAC, release: LOCAL_MATRIX_RELEASE, stateVersion: this.transport.snapshotVersion },
-        aux: { confirmed: true, mac: LOCAL_AUX_MAC, reachable: true, brightness: Number(this.auxState.bri), ddp: this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === "192.168.77.10", physical: "unverified", matrixProjection: Object.prototype.hasOwnProperty.call(patch, "auxBrightness") ? Number(state.HBNF.auxBrightness) : null },
+        aux: { confirmed: !!(this.auxState && this.auxInfo), mac: LOCAL_AUX_MAC, reachable: !!(this.auxState && this.auxInfo), brightness: this.auxState ? Number(this.auxState.bri) : null, ddp: !!(this.auxInfo && this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === LOCAL_MATRIX_IP), physical: "unverified", matrixProjection: Object.prototype.hasOwnProperty.call(patch, "auxBrightness") ? Number(state.HBNF.auxBrightness) : null },
       },
       state,
     };
   }
 
+  isAuxBrightnessOnly(payload, changedFields) {
+    const keys = changedFields === undefined
+      ? (payload && typeof payload === "object" && !Array.isArray(payload) ? Object.keys(payload) : [])
+      : changedFields;
+    return Array.isArray(keys) && keys.length === 1 && keys[0] === "auxBrightness" &&
+      Number.isInteger(Number(payload && payload.auxBrightness)) && Number(payload.auxBrightness) >= 0 && Number(payload.auxBrightness) <= 255;
+  }
+
+  async commandPairedAuxBrightness(token, brightness) {
+    await this.readAux(token);
+    this.componentStatus.aux = { available: true, error: null };
+    await this.request(token, "/api/aux/control", "POST", { bri: brightness });
+    const aux = await this.readAux(token);
+    if (Number(aux.state.bri) !== brightness) {
+      this.componentStatus.aux = { available: false, error: "AUX brightness readback did not match the requested value" };
+      throw new Error("AUX brightness readback did not match the requested value.");
+    }
+    this.componentStatus.aux = { available: true, error: null };
+    return {
+      accepted: true, local: true, revision: 0, componentStatus: this.copyComponentStatus(), snapshot: this.snapshot(),
+      acknowledgments: {
+        matrix: { confirmed: false, mac: LOCAL_MATRIX_MAC, error: String(this.componentStatus.matrix.error || "Matrix unavailable"), stateVersion: null },
+        aux: { confirmed: true, mac: LOCAL_AUX_MAC, reachable: true, brightness: Number(aux.state.bri), ddp: false, matrixProjection: null, independent: true, physical: "unverified" },
+      },
+      state: null,
+    };
+  }
+
   async commandOpalDirect(type, payload, changedFields) {
     await this.connectOpalDirect();
-    if (!this.transport.controlReady()) throw new Error("Fresh Matrix identity and readback are required; no control was sent.");
+    if (!this.transport || !this.transport.controlReady()) throw new Error("Fresh Matrix identity and readback are required; no control was sent.");
     if (!this.supports(type, payload, changedFields)) throw new Error("This Owner PWA control is not available on the offline local transport.");
     let commandType = type;
     let commandPayload = payload;
@@ -568,17 +703,19 @@ export class LocalOwnerControl {
       commandPayload = { matrixBrightness: saved.matrixBrightness, auxBrightness: saved.auxBrightness };
     }
     const state = await this.transport.command(commandType, commandPayload);
-    await this.readAux("");
+    try { await this.readAux(""); this.componentStatus.aux = { available: true, error: null }; }
+    catch (error) { this.auxInfo = null; this.auxState = null; this.auxStateAt = 0; this.componentStatus.aux = { available: false, error: String(error && error.message || "AUX unavailable") }; }
     const snapshot = this.snapshot();
     if (type === "ON" && this.directStorage) this.directStorage.removeItem(this.directPowerKey);
     return {
       accepted: true,
       local: true,
       revision: this.transport.snapshotVersion,
+      componentStatus: this.copyComponentStatus(),
       acknowledgments: {
         matrix: { confirmed: true, mac: LOCAL_MATRIX_MAC, release: LOCAL_MATRIX_RELEASE, stateVersion: this.transport.snapshotVersion },
         aux: {
-          confirmed: !!(this.auxState && this.auxInfo && this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === LOCAL_MATRIX_IP),
+          confirmed: !!(this.auxState && this.auxInfo),
           mac: LOCAL_AUX_MAC,
           reachable: !!(this.auxState && this.auxInfo),
           brightness: this.auxState ? Number(this.auxState.bri) : null,

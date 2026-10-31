@@ -254,8 +254,8 @@ function hydrateLocalControls(state) {
     const tuning = valueOr(state.tuning, {});
     if (Number.isFinite(Number(tuning.audioResponse))) setRange("audioResponse", "audioResponseValue", Number(tuning.audioResponse));
     if (Number.isFinite(Number(tuning.motion))) setRange("motion", "motionValue", Number(tuning.motion));
-    setRange("matrixBrightness", "matrixValue", Number(pathValue(state, ["devices","matrix","brightness"], NaN)));
-    setRange("auxBrightness", "auxValue", Number(pathValue(state, ["devices","aux","brightness"], NaN)));
+    setRange("matrixBrightness", "matrixValue", Number(pathValue(state, ["devices","matrix","brightness"], NaN)), undefined, false);
+    setRange("auxBrightness", "auxValue", Number(pathValue(state, ["devices","aux","brightness"], NaN)), undefined, false);
   } finally {
     hydrating = false;
   }
@@ -307,12 +307,12 @@ async function call(body) {
         localPathStatus = local && local.local === true ? "reachable" : "not_checked";
         return local;
       }
-      if (localControlActive && localOwnerControl.supports(body.type, body.payload)) {
-        return localOwnerControl.command(token, body.type, body.payload);
+      if (localControlActive && localOwnerControl.supports(body.type, body.payload, body.changedFields)) {
+        return localOwnerControl.command(token, body.type, body.payload, body.changedFields);
       }
     } catch (localError) {
       if (body.action === "status") localPathStatus = "unavailable";
-      if (body.action === "command" && localControlActive && localOwnerControl.supports(body.type, body.payload)) {
+      if (body.action === "command" && localControlActive && localOwnerControl.supports(body.type, body.payload, body.changedFields)) {
         throw localError;
       }
       localControlActive = false;
@@ -437,10 +437,62 @@ function updateVibeSelection(_state) {
   }
 }
 
-function setRange(id, outputId, value, formatter = v => String(v)) {
+function setRange(id, outputId, value, formatter = v => String(v), renderOutput = true) {
   if (!Number.isFinite(Number(value))) return;
   $(id).value = String(value);
-  $(outputId).value = formatter(Number(value));
+  if (renderOutput) $(outputId).value = formatter(Number(value));
+}
+
+function renderBrightnessTruth(snapshot, nowMs = Date.now()) {
+  const checks = deviceReadinessChecks(snapshot, nowMs);
+  for (const id of ["matrix", "aux"]) {
+    const label = id === "matrix" ? "Matrix" : "AUX";
+    const check = checks.find(value => value.startsWith(`${label} device `)) || "";
+    let value = check.includes("STALE") ? "Stale" : "Unconfirmed";
+    const report = (Array.isArray(snapshot && snapshot.observed) ? snapshot.observed : [])
+      .find(item => item && item.device_id === id);
+    if (id === "aux" && report && report.reported && report.reported.independentBrightness === true && Number.isInteger(Number(report.reported.brightness))) {
+      value = String(Number(report.reported.brightness));
+    }
+    if (check.includes("PASS")) {
+      const brightnessCandidates = id === "aux"
+        ? [pathValue(report, ["reported", "appliedProjection", "brightness"], NaN), pathValue(report, ["reported", "matrixTargetBrightness"], NaN)]
+        : [pathValue(report, ["reported", "appliedProjection", "brightness"], NaN), pathValue(report, ["reported", "brightness"], NaN)];
+      const numeric = brightnessCandidates
+        .map(candidate => typeof candidate === "number" || (typeof candidate === "string" && candidate.trim() !== "") ? Number(candidate) : NaN)
+        .find(candidate => Number.isInteger(candidate) && candidate >= 0 && candidate <= 255);
+      if (numeric !== undefined) value = String(numeric);
+    }
+    const output = $(`${id}Value`);
+    if (output) output.value = value;
+  }
+}
+
+function renderLocalComponentControls(snapshot) {
+  const matrixReady = !snapshot || !snapshot.componentStatus || snapshot.componentStatus.matrix.available === true;
+  const auxReady = !!(snapshot && snapshot.componentStatus && snapshot.componentStatus.aux.available === true);
+  const independentAuxRead = !!(snapshot && snapshot.capabilities && snapshot.capabilities.independentAuxBrightnessReadbackV1 === true && !matrixReady);
+  const pairedAuxWrite = !!(snapshot && snapshot.capabilities && snapshot.capabilities.independentAuxBrightnessWriteV1 === true && !matrixReady);
+  const pairedAuxAtomic = !!(snapshot && snapshot.capabilities && snapshot.capabilities.pairedAuxBrightnessAtomicV1 === true);
+  const label = $("auxBrightnessLabel"), slider = $("auxBrightness"), output = $("auxValue"), matrixSlider = $("matrixBrightness");
+  if (matrixSlider) matrixSlider.disabled = !matrixReady;
+  if (!label || !slider || !output) return;
+  if (!matrixReady && independentAuxRead) {
+    label.textContent = pairedAuxWrite ? "Underglow · AUX WLED global" : "Underglow · AUX WLED read-only";
+    slider.setAttribute("aria-label", pairedAuxWrite ? "Set independent AUX WLED global brightness" : "AUX WLED global brightness control unavailable");
+    output.setAttribute("aria-label", "AUX WLED global brightness readback");
+    slider.disabled = !pairedAuxWrite || !auxReady;
+    const value = Number(pathValue(snapshot, ["desired", "state", "devices", "aux", "actualWledBrightness"], NaN));
+    if (Number.isInteger(value) && value >= 0 && value <= 255) setRange("auxBrightness", "auxValue", value);
+    else output.value = "Unconfirmed";
+    return;
+  }
+  label.textContent = matrixReady ? "Underglow · Matrix AUX target" : "Underglow · Matrix AUX target unavailable";
+  slider.setAttribute("aria-label", "Set Matrix AUX target brightness");
+  output.setAttribute("aria-label", "Matrix AUX target brightness readback");
+  slider.disabled = !matrixReady || (pairedAuxAtomic && !auxReady);
+  if (pairedAuxAtomic && !auxReady) slider.setAttribute("aria-label", "Matrix AUX target control unavailable while AUX readback is unavailable");
+  if (!matrixReady) output.value = "Unconfirmed";
 }
 
 function hydrateControls(state) {
@@ -460,8 +512,8 @@ function hydrateControls(state) {
     setRange("audioResponse", "audioResponseValue", Math.max(0, Math.min(100, audioResponse)));
     setRange("motion", "motionValue", Math.max(0, Math.min(100, motion)));
     setRange("variation", "variationValue", Math.max(0, Math.min(100, variation)));
-    setRange("matrixBrightness", "matrixValue", Number(pathValue(state, ["devices","matrix","brightness"], 8)));
-    setRange("auxBrightness", "auxValue", Number(pathValue(state, ["devices","aux","brightness"], 64)));
+    setRange("matrixBrightness", "matrixValue", Number(pathValue(state, ["devices","matrix","brightness"], 8)), undefined, false);
+    setRange("auxBrightness", "auxValue", Number(pathValue(state, ["devices","aux","brightness"], 64)), undefined, false);
     setRange("micSensitivity", "micSensitivityValue", Number(valueOr(tuning.micSensitivity, 255)));
     $("#audioProfile").value = valueOr(tuning.audioProfile, "scene");
     $("#audioStyle").value = valueOr(tuning.audioStyle, "scene");
@@ -532,6 +584,7 @@ async function refresh({ hydrate = true } = {}) {
   try {
     out = await call({ action: "status" });
   } catch (error) {
+    renderBrightnessTruth(null);
     if (backendHealth) backendHealth.textContent = "Unavailable";
     renderLocalLinkStatus(null);
     if (matrixHealth) matrixHealth.textContent = "Not confirmed";
@@ -549,7 +602,9 @@ async function refresh({ hydrate = true } = {}) {
   try { window.dispatchEvent(new CustomEvent("hbnf-canonical-capabilities",{detail:canonicalCapabilities})); } catch (_) {}
 
   if (out && out.local === true) {
+    renderLocalComponentControls(out);
     revalidateLocalPairOnline();
+    renderBrightnessTruth(out);
     if (out.desired) {
       revision = out.desired.revision;
       if (hydrate && !tuneInFlight && !tuneDirty) hydrateLocalControls(out.desired.state);
@@ -559,10 +614,12 @@ async function refresh({ hydrate = true } = {}) {
     const localChecks = deviceReadinessChecks(out);
     statusNode.textContent = localChecks.every(value => value.indexOf("PASS") >= 0)
       ? "Cart is reachable. Matrix and underglow responded; check the display to confirm what’s showing."
-      : "Cart is reachable, but Matrix or underglow has not confirmed its status.";
+      : (out.componentMessage || "Cart is reachable, but Matrix or underglow has not confirmed its status.");
     return out;
   }
 
+  renderLocalComponentControls(null);
+  renderBrightnessTruth(out);
   if (out.desired) {
     revision = out.desired.revision;
     if (hydrate && !tuneInFlight && !tuneDirty) hydrateControls(out.desired.state);
@@ -655,7 +712,7 @@ async function flushTune(options = {}) {
             commandId: newCommandId(),
             type: "TUNE",
             payload,
-            changedFields: OPAL_LOCAL_PWA ? changedFields : undefined,
+            changedFields,
             expectedRevision: revision,
           });
           revision = result.revision;
@@ -906,9 +963,11 @@ for (const [inputId, outputId] of [
   ["auxBrightness", "auxValue"],
   ["micSensitivity", "micSensitivityValue"],
 ]) {
-  $(inputId).addEventListener("input", event => {
-    $(outputId).value = event.target.value;
-  });
+  if (inputId === "micSensitivity") {
+    $(inputId).addEventListener("input", event => {
+      $(outputId).value = event.target.value;
+    });
+  }
   $(inputId).addEventListener("change", () => queueTune(0, inputId));
 }
 

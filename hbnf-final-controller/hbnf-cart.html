@@ -80,8 +80,8 @@
     <div class="light-group quick-brightness" aria-label="Brightness">
       <h3>Brightness</h3>
       <div class="quick-brightness-grid">
-        <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
-        <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
+        <label class="device"><span class="range-head" style="flex-wrap:wrap"><strong>Matrix</strong><output id="matrixValue" style="margin-left:auto" aria-label="Matrix brightness readback" aria-live="polite">Unconfirmed</output></span><input aria-label="Set Matrix brightness target" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
+        <label class="device"><span class="range-head" style="flex-wrap:wrap"><strong id="auxBrightnessLabel">Underglow · Matrix AUX target</strong><output id="auxValue" style="margin-left:auto" aria-label="Matrix AUX target brightness readback" aria-live="polite">Unconfirmed</output></span><input aria-label="Set Matrix AUX target brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
         <label class="device"><span class="range-head"><strong>UV brightness</strong><output id="uvSharedValue">64</output></span><input aria-label="Both UV channels brightness" aria-describedby="uvLevelHelp" id="uvSharedBrightness" type="range" min="0" max="255" value="64" disabled></label>
       </div>
       <p id="uvLevelHelp" class="apply-note">Saved on this iPad. Applying still requires Cart safety readiness.</p>
