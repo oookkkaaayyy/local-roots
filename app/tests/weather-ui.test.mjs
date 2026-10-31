@@ -182,7 +182,7 @@ test('mobile filter grid gives native iPhone date control its own full-width row
   const page=await read('../src/pages/WeatherPage.tsx');
   assert.match(css,/grid-template-areas:"zip radius" "date date" "start end" "allDay search"/);
   assert.match(css,/\.weather-controls \.weather-field-date\{grid-area:date\}/);
-  assert.match(css,/\.weather-controls input\[type="date"\]\{[^}]*width:100%;min-width:0;max-width:100%;box-sizing:border-box/);
+  assert.match(css,/\.weather-controls input\[type="date"\]\{[^}]*width:calc\(100% - 16px\);min-width:0;max-width:calc\(100% - 16px\);box-sizing:border-box/);
   for(const field of ['zip','radius','date','start','end'])assert.match(page,new RegExp('className="weather-field-'+field+'"'));
   assert.match(page,/type="date" min=\{selectDateMin\} max=\{selectDateMax\}/);
 });
