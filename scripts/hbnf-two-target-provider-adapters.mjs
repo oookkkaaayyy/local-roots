@@ -74,10 +74,10 @@ export async function resolvePinnedWrangler({home=process.env.HOME||tmpdir(),exp
 
 export function createPinnedWranglerRunner({binary,exec=execFile,env=process.env}={}){
  assert(typeof binary==='string'&&binary,'pinned Wrangler path is required');
- return async args=>{
+ return async (args,options={})=>{
   const childEnv={...env,CLOUDFLARE_ACCOUNT_ID:'e3bc6b78f1104fa0c2a01245084594cf'};
   try{
-   const {stdout,stderr}=await exec(process.execPath,[binary,...args],{env:childEnv,encoding:'utf8',maxBuffer:12*1024*1024});
+   const {stdout,stderr}=await exec(process.execPath,[binary,...args],{...options,env:childEnv,encoding:'utf8',maxBuffer:12*1024*1024});
    return {code:0,stdout,stderr};
   }catch(e){return {code:e.code||1,stdout:e.stdout||'',stderr:e.stderr||e.message||String(e)};}
  };

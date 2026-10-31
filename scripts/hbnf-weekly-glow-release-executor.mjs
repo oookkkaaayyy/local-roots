@@ -52,7 +52,7 @@ async function main(){
   const wranglerBinary=await resolvePinnedWrangler({expected:'4.152.0'});
   const cfEnv={...process.env};delete cfEnv.SUPABASE_ACCESS_TOKEN;delete cfEnv.SUPABASE_SERVICE_ROLE_KEY;
   const wrangler=createPinnedWranglerRunner({binary:wranglerBinary,env:cfEnv});
-  async function runWrangler(args){const r=await wrangler(args);if(r.code!==0)throw new Error(`pinned Wrangler failed (${r.code}): ${(r.stderr||r.stdout||'').slice(0,350)}`);return r.stdout;}
+  async function runWrangler(args,options){const r=await wrangler(args,options);if(r.code!==0)throw new Error(`pinned Wrangler failed (${r.code}): ${(r.stderr||r.stdout||'').slice(0,350)}`);return r.stdout;}
   let cloudflareToken;
   async function api(pathname){
     if(!cloudflareToken){const raw=await runWrangler(['auth','token']);cloudflareToken=raw.trim().split(/\s+/).find(x=>/^[A-Za-z0-9._~+/=-]{40,}$/.test(x));if(!cloudflareToken)throw new Error('Wrangler OAuth token unavailable');}
@@ -99,7 +99,7 @@ async function main(){
         const secret=(await readFile(SERVICE_KEY_FILE,'utf8')).trim();const parts=secret.split('.');if(parts.length!==3)throw new Error('saved server credential is not a JWT');
         const payload=JSON.parse(Buffer.from(parts[1],'base64url').toString('utf8'));if(payload.role!=='service_role'||(payload.exp&&payload.exp*1000<Date.now()+60_000))throw new Error('saved server credential is not a currently valid service-role JWT');
         await writeFile(secretsPath,JSON.stringify({SUPABASE_SERVICE_ROLE_KEY:secret}),{mode:0o600,flag:'wx'});
-        const output=await runWrangler(['versions','upload',packageRoot,'--config',path.join(packageRoot,'wrangler.jsonc'),'--name','hbnf','--keep-vars','--strict','--secrets-file',secretsPath,'--message',`${WEEKLY_RELEASE.id} ${expected}`]);
+        const output=await runWrangler(['versions','upload','--config','wrangler.jsonc','--name','hbnf','--keep-vars','--strict','--secrets-file',secretsPath,'--message',`${WEEKLY_RELEASE.id} ${expected}`],{cwd:packageRoot});
         const match=output.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);if(!match)throw new Error('Wrangler did not report the staged version UUID');
         const versionId=match[0];const stagedInfo=JSON.parse(await runWrangler(['versions','view',versionId,'--name','hbnf','--json']));
         const binds=stagedInfo?.resources?.bindings||[];if(!binds.some(b=>b.name===requireSecret&&/secret/i.test(b.type||'')))throw new Error('staged Worker version did not read back the server-side secret binding');
@@ -141,7 +141,7 @@ async function main(){
     assetCount:46,assetDelta:{unchanged:46,modified:[],added:[]},
     cloudflareBaseline:{versionId:cloudflareRead.versionId,trafficPercent:cloudflareRead.trafficPercent,rollbackRetained:cloudflareRead.rollbackRetained,cron:cloudflareRead.cron,domainEnabled:cloudflareRead.customDomainEnabled,glowRouteCovered:cloudflareRead.glowRouteCovered,routeOwners:cloudflareRead.routeOwners},
     supabaseBaseline:{stateFingerprint:supabaseRead.stateFingerprint,activeWeek:supabaseRead.activeWeek,nov3WeekExists:supabaseRead.nov3WeekExists,bindingTableExists:true,migrationPresent:true,migrationVersion:alreadyAppliedRows[0].version,bindings:supabaseRead.bindings,rlsEnabled:supabaseRead.rlsEnabled,serviceRoleOnly:supabaseRead.serviceRoleOnly,legacyAnonWriteGrants:supabaseRead.legacyAnonWriteGrants},
-    supersedes:{previousReleaseId:'hbnf-glow-weekly-20261030-44612c09677f',previousManifestDriveId:'1EdKCakECFK8BqRQ-wJLvPJVfV_sAAGva',previousManifestSha256:'f62698bfb6f0d7b8395cd5cdb76b80b6a51effe3bb15bb4afa39861a7bd44bf4',previousAdmissionDecisionDriveId:'1dWOWkg0AmTZAgblZ0bUzY3RrCdS8qpS3',previousExecutionClaimDriveId:'1Ap3S34eOn_Cu0ql4mQQ9zd_2sNkwDC5V',previousFailureReceiptDriveId:'1WpoOd7HOH8y6wbNUwJA8Q3YdvETuITDB'},
+    supersedes:{previousReleaseId:'hbnf-glow-weekly-20261030-44612c09677f-partial-20261031',previousManifestDriveId:'1OAk_oQuFsghx-FojxU0e4Og0H5-Nz5ii',previousManifestSha256:'5592addad875500475e73a87fb6f5144db35867e1cf52d2d49296b031525b88e',previousAdmissionDecisionDriveId:'1b1fcqJpJ9DxQlavNyqg94XejbuA2t82x',previousAdmissionDecisionSha256:'032b8576f8af62118ec634d36405bbcac8fb12b2222eb2ea47d8c4034550a9a7',previousExecutionClaimDriveId:'1NlFd4EFhFjB7sUr4sfTVVgByYJ9xfZq6',previousExecutionClaimSha256:'5f672173fb86840bcaf6bee2c0e95da3790038735635a08275a00146e62d044e',previousFailureReceiptDriveId:'1SG1fgdTi1VHxzTUkOTGkshBRtwzOQnt-',previousFailureReceiptSha256:'3ace1d33ce606f407a0955b50fa9b5344b92bc08465dec87cfa5e8c567c2dff6'},
     sourceBundleDriveId:DRIVE_FILES.source,evidenceFolderDriveId:DRIVE_FOLDER,serverCredentialName:'SUPABASE_SERVICE_ROLE_KEY',runtimeAccessApproved:true,
     eventBindings:WEEKLY_RELEASE.bindings,
     acceptanceCriteria:[
