@@ -72,9 +72,13 @@ def main() -> None:
         if len(data) != item["bytes"] or sha(data) != item["sha256"]:
             raise SystemExit(f"rollback asset witness mismatch: {name}")
 
-    source_assets = source_files(source, "public")
-    if set(source_assets) != set(baseline_assets):
-        raise SystemExit("candidate source does not contain exactly the current 46 public assets")
+    source_assets_all = source_files(source, "public")
+    if not set(baseline_assets).issubset(source_assets_all):
+        raise SystemExit("candidate source is missing one or more assets from the current installed 46-asset set")
+    # The historical source snapshot contains review/rehearsal files that were
+    # never installed. Preserve the complete live baseline and select only
+    # paths that existed in that baseline; never import snapshot-only assets.
+    source_assets = {name: source_assets_all[name] for name in baseline_assets}
     changed = [name for name in sorted(baseline_assets)
                if sha(source_assets[name]) != sha(baseline_assets[name])]
     if changed != EXPECTED_MODIFIED_ASSETS:
