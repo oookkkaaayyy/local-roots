@@ -229,7 +229,7 @@ export function WeatherPage() {
         const referenceTime=Date.now();
         const rolling=preferences.date===dateInPacific(new Date(referenceTime))&&preferences.allDay;
         const hourly=open?(rolling?extractRollingHourRows(view.raw,view.course,referenceTime):extractHourRows(view.raw,view.course,preferences)):null;
-        const periodLabel=rolling?'Next 24 hours':`${preferences.date} · ${preferences.allDay?'All day':`${labelHour(preferences.start)}–${labelHour(preferences.end)}`}`;
+        const periodLabel=rolling?'Next 24 hours':`${new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric'}).format(new Date(`${preferences.date}T12:00:00Z`))} · ${preferences.allDay?'All day':`${labelHour(preferences.start)}–${labelHour(preferences.end)}`}`;
         const [courseLat,courseLon]=view.course.coordinates;
         const timeZone=view.course.timezone||TIME_ZONE;
         return <article className={`weather-course ${open?'is-expanded':''}`} key={view.course.id}>
