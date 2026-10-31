@@ -58,7 +58,7 @@ function extractRollingHourRows(raw:CourseForecast|undefined,course:WeatherCours
 function hourlyTimeParts(value:string,rows:HourRow[],timeZone:string,referenceTime:number) {
   const label=formatHourlyTimeLabel(value,rows,timeZone,referenceTime);
   const split=label.lastIndexOf(', ');
-  return split<0?{day:'',time:label}:{day:label.slice(0,split),time:label.slice(split+2)};
+  return split<0?{day:'',time:label.replace(/:00 (?=AM|PM)/,' ')}:{day:label.slice(0,split),time:label.slice(split+2).replace(/:00 (?=AM|PM)/,' ')};
 }
 function sortedCourses(views:CourseView[],sort:Preferences['sort']) {
   const copy=[...views];
