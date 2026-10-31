@@ -422,9 +422,9 @@ def main() -> None:
     if args.installed_pwa_manifest:
         installed_manifest = args.installed_pwa_manifest if args.installed_pwa_manifest.is_absolute() else root / args.installed_pwa_manifest
         installed_manifest = installed_manifest.resolve()
-        if not baseline.is_file():
+        if not baseline_manifest.is_file():
             raise SystemExit("preserving an installed PWA manifest requires the exact installed baseline manifest")
-        expected_manifest = next((line.split("  ", 1)[0] for line in baseline.read_text().splitlines()
+        expected_manifest = next((line.split("  ", 1)[0] for line in baseline_manifest.read_text().splitlines()
                                   if line.endswith("  hbnf-cart-manifest.webmanifest")), None)
         if not expected_manifest or digest(installed_manifest.read_bytes()) != expected_manifest:
             raise SystemExit("installed PWA manifest bytes do not match the exact rollback baseline")
