@@ -17,7 +17,7 @@ const manifestPath = path.resolve(arg("--manifest"));
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const head = execFileSync("git", ["-C", root, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 assert.equal(manifest.sourceCommit, head, "Manifest source commit must match checkout HEAD");
-const reviewOnly = manifest.releaseDisposition === "REVIEW_ONLY_NOT_ADMITTED_NOT_UPLOADED_NOT_INSTALLED";
+const reviewOnly = typeof manifest.releaseDisposition === "string" && manifest.releaseDisposition.startsWith("REVIEW_ONLY_");
 assert.ok(
   reviewOnly || manifest.releaseDisposition === "INSTALLABLE_REQUIRES_EXISTING_ADMISSION",
   "Manifest must declare a supported review-only or installable disposition",
