@@ -144,6 +144,7 @@ test('mobile hourly detail keeps time, rain, and conditions together without sid
   assert.match(page,/function hourlyTimeParts\(/);
   assert.match(page,/className="weather-hourly-clock"/);
   assert.match(page,/className="weather-hourly-day"/);
+  assert.ok(page.includes("time:label.replace(/:00 (?=AM|PM)/,' ')"));
   for(const label of ['Temp','Wind','Gust','Rain','Conditions'])assert.ok(page.includes('data-label="'+label+'"'));
   assert.match(page,/role="table"/);
 });
