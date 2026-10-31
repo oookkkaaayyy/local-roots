@@ -15,6 +15,7 @@ def paths():
         "rollback_zip":CHECKPOINT/"current-installed-owner-pwa-2026-10-31.tar.gz",
         "baseline_manifest":CHECKPOINT/"current-installed-owner-pwa-2026-10-31.manifest.json",
         "route":ARTIFACT_ROOT/"a4-candidate-to-v120-route.pending.json",
+        "rollback_receipt":ARTIFACT_ROOT/"a4-v120-rollback-downloadback-receipt.json",
         "readback_receipt":ARTIFACT_ROOT/"a4-drive-readback-receipt.json"}
 
 @unittest.skipUnless((BUILD/"hbnf-owner-pwa-local-v1.0.21.zip").is_file(),"provide preserved A4 artifacts via CART116_V121_ARTIFACT_ROOT")
@@ -25,8 +26,7 @@ class OwnerPwaV121ReviewGate(unittest.TestCase):
         self.assertEqual(control.OWNER_PWA_V121_BASELINE_SHA256,control.sha256_file(artifact_paths["rollback_zip"]))
         self.assertEqual(control.OWNER_PWA_V121_BASELINE_MANIFEST_SHA256,control.sha256_file(artifact_paths["baseline_manifest"]))
         blocked=control.owner_pwa_v121_artifact_errors(artifact_paths)
-        self.assertIn("pending A4 route baseline manifest hash differs from the independently hashed v1.0.20 snapshot manifest",blocked)
-        self.assertIn("v1.0.20 rollback Drive download-back evidence missing or mismatched: "+control.OWNER_PWA_V121_BASELINE_DRIVE_ID,blocked)
+        self.assertEqual([],blocked)
         profile=control._owner_pwa_profile({"candidate_profile":control.OWNER_PWA_V121_PROFILE})
         self.assertTrue(profile["review_only"])
         self.assertEqual(control.OWNER_PWA_V121_TRANSACTION_ID,profile["transaction_id"])
@@ -47,6 +47,8 @@ class OwnerPwaV121ReviewGate(unittest.TestCase):
             self.assertTrue(any("hash mismatch: candidate_zip" in e for e in control.owner_pwa_v121_artifact_errors(altered)))
             missing=paths(); missing["rollback_zip"]=temp/"missing.tar.gz"
             self.assertTrue(any("artifact hash mismatch: rollback_zip" in e for e in control.owner_pwa_v121_artifact_errors(missing)))
+            missing_receipt=paths(); missing_receipt["rollback_receipt"]=temp/"missing-receipt.json"
+            self.assertTrue(any("artifact hash mismatch: rollback_receipt" in e for e in control.owner_pwa_v121_artifact_errors(missing_receipt)))
             wrong=paths(); wrong["route"]=temp/"route.json"
             doc=json.loads(paths()["route"].read_text()); doc["target"]["ip"]="192.0.2.1"
             wrong["route"].write_text(json.dumps(doc))
@@ -99,7 +101,7 @@ class OwnerPwaV121ReviewGate(unittest.TestCase):
             "issued_unix":now,"expires_unix":now+600,"scope":[control.OWNER_PWA_STEP,"rollback_if_required"]}
         errs=control.owner_pwa_v121_admission_errors(paths(),target,auth,control.OWNER_PWA_V121_TRANSACTION_ID,now=now)
         self.assertTrue(any("REVIEW_ONLY" in e for e in errs),errs)
-        self.assertTrue(any("pending A4 route baseline manifest hash differs" in e for e in errs),errs)
+        self.assertFalse(any("pending A4 route baseline manifest hash differs" in e for e in errs),errs)
         cases=[
             (None,auth,(),"fresh exact Opal target evidence missing"),
             ({**target,"captured_unix":now-301},auth,(),"missing or stale"),

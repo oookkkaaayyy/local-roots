@@ -664,14 +664,18 @@ OWNER_PWA_V114_ARTIFACTS={
 # install transaction. Historical profile constants remain untouched.
 OWNER_PWA_V121_PROFILE="owner-a3-brightness-v1.0.21-review-only"
 OWNER_PWA_V121_SOURCE_COMMIT="5809910b015eb478c5b71493fd805d563f289949"
-OWNER_PWA_V121_TRANSACTION_ID="CART116-OWNER-PWA-A4-CANDIDATE-TO-V120-20261031-01"
+OWNER_PWA_V121_TRANSACTION_ID="CART116-OWNER-PWA-A4-20261031-A3B12D52-688E-4C7A-9D21-6AF709DC5AB4"
 OWNER_PWA_V121_CANDIDATE_DRIVE_ID="1MzNaAdjR7geXyiMEjYa_6NcuvURNcrKM"
 OWNER_PWA_V121_CANDIDATE_SHA256="223bfb24766ef5c728870f2b54103cc208e18bbdad398a52a9061cff61373f2c"
 OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256="d5d37564f727aa097839c5758f0ddf7d6dd7e701781c06c7955acfc0e1e96501"
 OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256="25f20d79127d19c33a5fc1861ef438b96db830ca160aa2c07af054352c824d98"
-OWNER_PWA_V121_ROUTE_DRIVE_ID="1U2OOeaDv_APaK50uUEEFGCmQZNYLZiyi"
-OWNER_PWA_V121_ROUTE_SHA256="0d913c3841da49d0d9453502378e67356348b79a4cf7b7c0d33b52adc30be4c6"
-OWNER_PWA_V121_READBACK_SHA256="15ea598883c5d90f0abc314dfcc8857a7a3e376279e4e2dbcc21f3c71869ef3e"
+OWNER_PWA_V121_ROUTE_DRIVE_ID="1-5NxUvoH9PIAqBU6_Y1SC4ng4zmLGpDy"
+OWNER_PWA_V121_ROUTE_SHA256="7a61620f10fd71e5157be0501a70397773b01b0d2ecacd5c7e3a3a80d6cb71ea"
+OWNER_PWA_V121_READBACK_SHA256="70312eb16986a5a7179cd0ed3377e7475308559ebd4fea46f875e99f0bf1a389"
+OWNER_PWA_V121_ROLLBACK_RECEIPT_DRIVE_ID="1fMiAn4N_Sc8T4JcyHkTCrGyWSfxdXf7n"
+OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256="1a04556088657d84611f76f222d30f5434d4192f8f295133736f49195dae7f91"
+OWNER_PWA_V121_BASELINE_MANIFEST_DRIVE_ID="11Il6HdniVnEOfwxf1NymTsdfdHQ-gp9t"
+OWNER_PWA_V121_READBACK_DRIVE_ID="1uUBug8wZamwsZaVjdz6mw8NpjuSlcfV7"
 OWNER_PWA_V121_BASELINE_DRIVE_ID="1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB"
 OWNER_PWA_V121_BASELINE_SHA256="d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9"
 OWNER_PWA_V121_BASELINE_MANIFEST_SHA256="8e7684d609a4d5e6d0fc7f100789835b45172703994742a7f8a2437b1e1c62bd"
@@ -707,6 +711,7 @@ OWNER_PWA_V121_ARTIFACTS={
     "baseline_manifest":OWNER_PWA_V121_BASELINE_MANIFEST_SHA256,
     "route":OWNER_PWA_V121_ROUTE_SHA256,
     "downloadback_receipt":OWNER_PWA_V121_READBACK_SHA256,
+    "rollback_downloadback_receipt":OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256,
 }
 OWNER_PWA_V121_TARGETS=(
     "owner-pwa/hbnf-cart.html", "owner-pwa/hbnf-cart.js",
@@ -1169,7 +1174,7 @@ def _owner_pwa_profile(manifest):
 
 def owner_pwa_v121_artifact_errors(paths):
     """Verify pinned v1.0.21/installed-v1.0.20 bytes without creating authority."""
-    required=("candidate_zip","package_json","payload_sums","rollback_zip","baseline_manifest","route","readback_receipt")
+    required=("candidate_zip","package_json","payload_sums","rollback_zip","baseline_manifest","route","rollback_receipt","readback_receipt")
     errors=[]
     if not isinstance(paths,dict): return ["v1.0.21 artifact paths are missing"]
     for key in required:
@@ -1178,7 +1183,7 @@ def owner_pwa_v121_artifact_errors(paths):
     expected={"candidate_zip":OWNER_PWA_V121_CANDIDATE_SHA256,"package_json":OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256,
         "payload_sums":OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256,"rollback_zip":OWNER_PWA_V121_BASELINE_SHA256,
         "baseline_manifest":OWNER_PWA_V121_BASELINE_MANIFEST_SHA256,"route":OWNER_PWA_V121_ROUTE_SHA256,
-        "readback_receipt":OWNER_PWA_V121_READBACK_SHA256}
+        "rollback_receipt":OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256,"readback_receipt":OWNER_PWA_V121_READBACK_SHA256}
     loaded={}
     for key,want in expected.items():
         try:
@@ -1186,10 +1191,10 @@ def owner_pwa_v121_artifact_errors(paths):
             if not path.is_file(): errors.append("v1.0.21 artifact hash mismatch: "+key)
             else:
                 if sha256_file(path)!=want: errors.append("v1.0.21 artifact hash mismatch: "+key)
-                if key in ("package_json","baseline_manifest","route","readback_receipt"):
+                if key in ("package_json","baseline_manifest","route","rollback_receipt","readback_receipt"):
                     loaded[key]=json.loads(path.read_text())
         except (OSError,ValueError,TypeError): errors.append("v1.0.21 artifact unreadable: "+key)
-    for key in ("package_json","baseline_manifest","route","readback_receipt"):
+    for key in ("package_json","baseline_manifest","route","rollback_receipt","readback_receipt"):
         if key not in loaded: return errors+["v1.0.21 required identity document unreadable: "+key]
     package=loaded["package_json"]
     if (package.get("package")!="hbnf-owner-pwa-local-v1.0.21" or package.get("sourceCommit")!=OWNER_PWA_V121_SOURCE_COMMIT
@@ -1217,6 +1222,20 @@ def owner_pwa_v121_artifact_errors(paths):
         errors.append("v1.0.20 rollback identity or manifest differs from the exact installed baseline")
     if loaded["route"].get("installed_baseline",{}).get("manifest_sha256")!=OWNER_PWA_V121_BASELINE_MANIFEST_SHA256:
         errors.append("pending A4 route baseline manifest hash differs from the independently hashed v1.0.20 snapshot manifest")
+    rb=loaded["rollback_receipt"]
+    if (rb.get("transaction_id")!=OWNER_PWA_V121_TRANSACTION_ID or rb.get("status")!="PASS_BYTES_VERIFIED_REVIEW_ONLY_NO_ADMISSION"
+        or rb.get("drive_downloadback",{}).get("drive_id")!=OWNER_PWA_V121_BASELINE_DRIVE_ID
+        or rb.get("drive_downloadback",{}).get("downloaded_sha256")!=OWNER_PWA_V121_BASELINE_SHA256
+        or rb.get("manifest_downloadback",{}).get("drive_id")!=OWNER_PWA_V121_BASELINE_MANIFEST_DRIVE_ID
+        or rb.get("manifest_downloadback",{}).get("downloaded_sha256")!=OWNER_PWA_V121_BASELINE_MANIFEST_SHA256
+        or rb.get("snapshot",{}).get("entry_count")!=21 or rb.get("snapshot",{}).get("mismatched_entries") not in ([],0)
+        or rb.get("verification",{}).get("all_21_file_hash_size_mode_checks_pass") is not True):
+        errors.append("v1.0.20 complete rollback download-back receipt is incomplete or mismatched")
+    rb_ref=loaded["route"].get("installed_baseline",{}).get("rollback_readback_receipt",{})
+    if (rb_ref.get("drive_file_id")!=OWNER_PWA_V121_ROLLBACK_RECEIPT_DRIVE_ID
+        or rb_ref.get("sha256")!=OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256
+        or rb_ref.get("status")!="INDEPENDENT_DOWNLOADBACK_PASS"):
+        errors.append("pending A4 route does not bind the exact rollback download-back receipt")
     route=loaded["route"]
     candidate=route.get("candidate",{}); source=route.get("source",{})
     if (route.get("disposition")!="PENDING_REVIEW_ONLY_NOT_ADMITTED_NOT_EXECUTABLE" or route.get("one_time") is not True
@@ -1230,11 +1249,16 @@ def owner_pwa_v121_artifact_errors(paths):
         ("1AmY2DSCtFrmDqyRKS3_XKrXntQII54tI",OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256),
         ("1Q1zshwz8hTWo_g5SXlILvrWs2FODL44J",OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256),
         (OWNER_PWA_V121_ROUTE_DRIVE_ID,OWNER_PWA_V121_ROUTE_SHA256),
-        (OWNER_PWA_V121_BASELINE_DRIVE_ID,OWNER_PWA_V121_BASELINE_SHA256)):
+        (OWNER_PWA_V121_BASELINE_DRIVE_ID,OWNER_PWA_V121_BASELINE_SHA256),
+        (OWNER_PWA_V121_ROLLBACK_RECEIPT_DRIVE_ID,OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256),
+        (OWNER_PWA_V121_BASELINE_MANIFEST_DRIVE_ID,OWNER_PWA_V121_BASELINE_MANIFEST_SHA256)):
         item=receipt_objects.get(drive_id,{})
         if item.get("sha256")!=want or item.get("readback")!="PASS_BYTE_LENGTH_AND_SHA256":
             label="v1.0.20 rollback" if drive_id==OWNER_PWA_V121_BASELINE_DRIVE_ID else "v1.0.21 artifact"
             errors.append(label+" Drive download-back evidence missing or mismatched: "+drive_id)
+    receipt=loaded["readback_receipt"]
+    if receipt.get("transaction_id")!=OWNER_PWA_V121_TRANSACTION_ID or receipt.get("status")!="PENDING_REVIEW_ONLY_NOT_ADMITTED":
+        errors.append("v1.0.21 download-back receipt transaction or pending status mismatch")
     return errors
 
 def owner_pwa_v121_admission_errors(paths,target_evidence,authorization,transaction_id,used_transaction_ids=(),manifest=None,closeout=None,now=None):
