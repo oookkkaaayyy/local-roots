@@ -1,0 +1,10 @@
+{
+  "format": "hbnf-weekly-glow-execution-claim-v1",
+  "releaseId": "hbnf-glow-weekly-20261030-44612c09677f-partial-20261031-assets-rootfix",
+  "manifestSha256": "9b0b570b6a3abba755db60405fd4448d409be06e0b2c2713701a16b8b0f0d297",
+  "admissionDecisionDriveId": "1pOgg4SuBQesjhoQ9kEaKoNlq2cKMw3ua",
+  "admissionDecisionSha256": "a25ea50eaf1bc91c0ca015c1b5f4af4e9ed6d9f766d7f63ef1bbc06b298931b3",
+  "candidateSha256": "0b51b7ecdfeced01cc73bee96dff8085f2f1f9529df48223fa4f7185c7d15b4c",
+  "baselineVersion": "08633e43-dbaa-4421-a072-5af56f75d4b7",
+  "claimedAt": "2026-10-31T08:40:28.599Z"
+}
