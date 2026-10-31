@@ -221,9 +221,10 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   }
   const rollbackFile = await verifyFile(root, receipt.rollback?.artifact, 'rollback.artifact');
   if (rollbackFile.sha256 === packageFile.sha256) throw new Error('rollback artifact must differ from the candidate package');
-  if (rollbackFile.sha256 !== baselineRollback.sha256 || rollbackFile.bytes !== baselineRollback.bytes) {
-    throw new Error('rollback artifact must match the recovered current baseline rollback');
-  }
+  // The installed baseline/readback and the executable recovery action are
+  // different artifacts for database migrations: e.g. preserve the exact
+  // current database snapshot, but recover a function setting with inverse
+  // SQL. Both are independently hashed, durably recovered, and bound below.
   requireString(receipt.rollback?.restoreProcedure, 'rollback.restoreProcedure');
   const rollbackRecovery = receipt.rollback?.recovery;
   requireString(rollbackRecovery?.driveFileId, 'rollback.recovery.driveFileId');

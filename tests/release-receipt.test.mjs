@@ -99,6 +99,34 @@ test('admits a candidate only with a recovered exact baseline and rollback befor
   } finally { await f.cleanup(); }
 });
 
+test('admits inverse-SQL database rollback distinct from the captured baseline artifact', async () => {
+  const f = await fixture();
+  try {
+    const inverse = Buffer.from('ALTER FUNCTION public.example() RESET statement_timeout;\n');
+    const downloadBack = Buffer.from(inverse);
+    await writeFile(path.join(f.root, 'evidence/database-inverse.sql'), inverse);
+    await writeFile(path.join(f.root, 'evidence/database-inverse-download.sql'), downloadBack);
+    const entry = bytes => ({path:'evidence/database-inverse.sql',bytes:bytes.length,sha256:hash(bytes)});
+    f.receipt.rollback.artifact = entry(inverse);
+    f.receipt.rollback.recovery = {
+      driveFileId:'database-inverse-drive-id',driveUrl:'https://drive.google.com/file/d/database-inverse-drive-id/view',
+      downloadBackVerified:true,
+      downloadBack:{path:'evidence/database-inverse-download.sql',bytes:downloadBack.length,sha256:hash(downloadBack)},
+    };
+    const preflight = structuredClone(f.receipt);
+    preflight.deployment = {provider:'example',target:'production',plannedRoute:'Apply only the admitted inverse-safe database migration.',restoreProcedure:'Apply the exact inverse SQL stored in rollback.artifact.'};
+    preflight.rollback.restoreProcedure = preflight.deployment.restoreProcedure;
+    preflight.acceptance.criteria[0].status = 'PENDING';
+    delete preflight.acceptance.criteria[0].evidence;
+    delete preflight.admission;
+    const result = await validateReleaseReceipt(preflight, f.root, {phase:'admission'});
+    assert.equal(result.phase,'admission');
+    assert.equal(result.admissionManifest.baseline.rollbackSha256, hash(inverse));
+    assert.equal(result.admissionManifest.package.sha256, f.receipt.package.sha256);
+    assert.notEqual(result.admissionManifest.baseline.rollbackSha256, f.receipt.baseline.rollback.sha256);
+  } finally { await f.cleanup(); }
+});
+
 test('admission CLI writes one immutable manifest and refuses overwrite', async () => {
   const f = await fixture();
   try {
@@ -303,7 +331,7 @@ test('rejects identity evidence that does not bind the current artifact bytes', 
   } finally { await f.cleanup(); }
 });
 
-test('rejects a rollback that is not byte-identical to the recovered current baseline', async () => {
+test('rejects a closeout rollback that differs from its admitted artifact', async () => {
   const f = await fixture();
   try {
     const rollbackPath = path.join(f.root, f.receipt.rollback.artifact.path);
@@ -316,7 +344,7 @@ test('rejects a rollback that is not byte-identical to the recovered current bas
     f.receipt.rollback.recovery.downloadBack.bytes = bytes.length;
     f.receipt.rollback.recovery.downloadBack.sha256 = hash(bytes);
 
-    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /rollback artifact must match the recovered current baseline rollback/);
+    await assert.rejects(validateReleaseReceipt(f.receipt, f.root), /receipt does not match the pre-mutation admission manifest/);
   } finally { await f.cleanup(); }
 });
 
