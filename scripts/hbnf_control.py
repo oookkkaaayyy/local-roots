@@ -659,6 +659,87 @@ OWNER_PWA_V114_ARTIFACTS={
     "rollback_checksum":OWNER_PWA_V114_ROLLBACK_CHECKSUM_SHA256,
 }
 
+# v1.0.21 is deliberately pinned as a review-only profile. The artifact
+# verifier below can establish offline byte identity; it cannot admit an
+# install transaction. Historical profile constants remain untouched.
+OWNER_PWA_V121_PROFILE="owner-a3-brightness-v1.0.21-review-only"
+OWNER_PWA_V121_SOURCE_COMMIT="5809910b015eb478c5b71493fd805d563f289949"
+OWNER_PWA_V121_TRANSACTION_ID="CART116-OWNER-PWA-A4-CANDIDATE-TO-V120-20261031-01"
+OWNER_PWA_V121_CANDIDATE_DRIVE_ID="1MzNaAdjR7geXyiMEjYa_6NcuvURNcrKM"
+OWNER_PWA_V121_CANDIDATE_SHA256="223bfb24766ef5c728870f2b54103cc208e18bbdad398a52a9061cff61373f2c"
+OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256="d5d37564f727aa097839c5758f0ddf7d6dd7e701781c06c7955acfc0e1e96501"
+OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256="25f20d79127d19c33a5fc1861ef438b96db830ca160aa2c07af054352c824d98"
+OWNER_PWA_V121_ROUTE_DRIVE_ID="1U2OOeaDv_APaK50uUEEFGCmQZNYLZiyi"
+OWNER_PWA_V121_ROUTE_SHA256="0d913c3841da49d0d9453502378e67356348b79a4cf7b7c0d33b52adc30be4c6"
+OWNER_PWA_V121_READBACK_SHA256="15ea598883c5d90f0abc314dfcc8857a7a3e376279e4e2dbcc21f3c71869ef3e"
+OWNER_PWA_V121_BASELINE_DRIVE_ID="1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB"
+OWNER_PWA_V121_BASELINE_SHA256="d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9"
+OWNER_PWA_V121_BASELINE_MANIFEST_SHA256="8e7684d609a4d5e6d0fc7f100789835b45172703994742a7f8a2437b1e1c62bd"
+OWNER_PWA_V121_BASELINE_FILESYSTEM_HASHES={
+    "owner-pwa/hbnf-cart-icon-192.png":"f45ae7df9d4f00ebfbb1a28ba0cfb405dff06e1a5f6ebcf7cf213f517ba226f1",
+    "owner-pwa/hbnf-faded-phosphor.png":"043f68e0b44d7c658051a996ec276906c834edbb1f3f19fae7726e93ecf7fbdf",
+    "owner-pwa/hbnf-cart-semantic.js":"af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "owner-pwa/.hbnf-payload.sha256":"dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
+    "owner-pwa/hbnf-cart-readiness.js":"d814d4c167da4705ce97939adc1805b9d44c8347a81df737191a27660e4dfe88",
+    "owner-pwa/hbnf-cart-skins-score.js":"642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+    "owner-pwa/.hbnf-package-version":"975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191",
+    "owner-pwa/hbnf-cart-ui-v6.js":"23b41e2113a11dfb070fabaa0ff6701647c18a533f6742b2ada0c01369620217",
+    "owner-pwa/hbnf-guest-qr.png":"f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
+    "owner-pwa/.hbnf-rollback.sh":"33a80fa207f05220a73275e763062a89a6f70fa3799b4529857ef76c374cd30e",
+    "owner-pwa/hbnf-cart-net.js":"0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-live-display.js":"54021b2f28492096931294419f1a7776cf54e1ff1b6e67642e1c8af6661437e4",
+    "owner-pwa/.hbnf-package-marker":"003a9c00323ad683733a028ef4c36d244c91ea3f3ffc39936d3d68d239ef216c",
+    "owner-pwa/hbnf-cart.html":"20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f",
+    "owner-pwa/hbnf-cart-local.js":"9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
+    "owner-pwa/hbnf-cart-features.js":"db591fec335897c8448a5571799b4a6ce2b59889b1afeff8a08206532b470d4c",
+    "owner-pwa/hbnf-cart.js":"9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba",
+    "owner-pwa/hbnf-cart-manifest.webmanifest":"94e689e226c8997408fe7bf9e7990fe7a853021fe353b5e13f20d1419de19749",
+    "owner-pwa/hbnf-cart-icon-512.png":"3088b88b82ac601cf32b3902e70de7bdc0ffb7236a7533d7a71775fcc3fb6d27",
+    "owner-pwa/hbnf-cart-ui-v6.css":"48f6dc589747199bfc1bc6511c44f7b82a599ed0058047233bca8a74cd9a929c",
+    "owner-pwa/hbnf-cart-icon-180.png":"2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e",
+}
+OWNER_PWA_V121_SERVED_BASELINE_HASHES={k:v for k,v in OWNER_PWA_V121_BASELINE_FILESYSTEM_HASHES.items() if not pathlib.PurePosixPath(k).name.startswith(".")}
+OWNER_PWA_V121_ARTIFACTS={
+    "candidate_zip":OWNER_PWA_V121_CANDIDATE_SHA256,
+    "candidate_manifest":OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256,
+    "payload_manifest":OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256,
+    "baseline_archive":OWNER_PWA_V121_BASELINE_SHA256,
+    "baseline_manifest":OWNER_PWA_V121_BASELINE_MANIFEST_SHA256,
+    "route":OWNER_PWA_V121_ROUTE_SHA256,
+    "downloadback_receipt":OWNER_PWA_V121_READBACK_SHA256,
+}
+OWNER_PWA_V121_TARGETS=(
+    "owner-pwa/hbnf-cart.html", "owner-pwa/hbnf-cart.js",
+    "owner-pwa/hbnf-cart-local.js", "owner-pwa/hbnf-cart-features.js",
+    "owner-pwa/hbnf-cart-live-display.js", "owner-pwa/hbnf-cart-readiness.js",
+    "owner-pwa/hbnf-cart-ui-v6.css", "owner-pwa/hbnf-cart-ui-v6.js",
+    "owner-pwa/hbnf-cart-semantic.js", "owner-pwa/hbnf-cart-skins-score.js",
+    "owner-pwa/hbnf-cart-net.js", "owner-pwa/hbnf-cart-manifest.webmanifest",
+    "owner-pwa/hbnf-cart-icon-180.png", "owner-pwa/hbnf-cart-icon-192.png",
+    "owner-pwa/hbnf-cart-icon-512.png", "owner-pwa/hbnf-faded-phosphor.png",
+    "owner-pwa/hbnf-guest-qr.png", "mission-control-local/local-transport.js",
+)
+OWNER_PWA_V121_CANDIDATE_HASHES={
+    "owner-pwa/hbnf-cart-features.js":"98e9471c46c6ef0f6d72615f151bb473afc562b5327c7f7c418cd9a8a9e4dab0",
+    "owner-pwa/hbnf-cart-icon-180.png":"2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e",
+    "owner-pwa/hbnf-cart-icon-192.png":"f45ae7df9d4f00ebfbb1a28ba0cfb405dff06e1a5f6ebcf7cf213f517ba226f1",
+    "owner-pwa/hbnf-cart-icon-512.png":"3088b88b82ac601cf32b3902e70de7bdc0ffb7236a7533d7a71775fcc3fb6d27",
+    "owner-pwa/hbnf-cart-live-display.js":"54021b2f28492096931294419f1a7776cf54e1ff1b6e67642e1c8af6661437e4",
+    "owner-pwa/hbnf-cart-local.js":"20b09145ac11a1fa3d9aca1f59b272139e4124bde6b91548b2c3d066faf2a0bc",
+    "owner-pwa/hbnf-cart-manifest.webmanifest":"94e689e226c8997408fe7bf9e7990fe7a853021fe353b5e13f20d1419de19749",
+    "owner-pwa/hbnf-cart-net.js":"0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-readiness.js":"d814d4c167da4705ce97939adc1805b9d44c8347a81df737191a27660e4dfe88",
+    "owner-pwa/hbnf-cart-semantic.js":"af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "owner-pwa/hbnf-cart-skins-score.js":"642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+    "owner-pwa/hbnf-cart-ui-v6.css":"48f6dc589747199bfc1bc6511c44f7b82a599ed0058047233bca8a74cd9a929c",
+    "owner-pwa/hbnf-cart-ui-v6.js":"23b41e2113a11dfb070fabaa0ff6701647c18a533f6742b2ada0c01369620217",
+    "owner-pwa/hbnf-cart.html":"4cc0b1d1e818de1d63cb154d7c6cf44710d38bcc49e2443d0fcf22897a767f9a",
+    "owner-pwa/hbnf-cart.js":"7de97b82bf2ec79c816de8a7206aab140e3d81a067aa393fcda2d8ff3f9d643a",
+    "owner-pwa/hbnf-faded-phosphor.png":"043f68e0b44d7c658051a996ec276906c834edbb1f3f19fae7726e93ecf7fbdf",
+    "owner-pwa/hbnf-guest-qr.png":"f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
+    "mission-control-local/local-transport.js":"2d6e064bb54839d9562c3ff180681d7b918bb92f2fdb43f00c2821053e145e37",
+}
+
 def _owner_pwa_v112_profile():
     """Pin the integrated v1.0.12 candidate and exact installed v1.0.11 rollback baseline."""
     global OWNER_PWA_V112_PROFILE_CACHE
@@ -1064,8 +1145,13 @@ def _owner_pwa_v108_candidate_hashes():
 
 def _owner_pwa_profile(manifest):
     selected=manifest.get("candidate_profile") if isinstance(manifest,dict) else None
-    if selected not in (None,OWNER_PWA_V108_PROFILE,OWNER_PWA_V109_PROFILE,OWNER_PWA_V110_PROFILE,OWNER_PWA_V111_PROFILE,OWNER_PWA_V112_PROFILE,OWNER_PWA_V113_PROFILE,OWNER_PWA_V114_PROFILE):
+    if selected not in (None,OWNER_PWA_V108_PROFILE,OWNER_PWA_V109_PROFILE,OWNER_PWA_V110_PROFILE,OWNER_PWA_V111_PROFILE,OWNER_PWA_V112_PROFILE,OWNER_PWA_V113_PROFILE,OWNER_PWA_V114_PROFILE,OWNER_PWA_V121_PROFILE):
         raise ValueError("unknown Owner PWA candidate profile")
+    if selected==OWNER_PWA_V121_PROFILE:
+        return {"artifacts":OWNER_PWA_V121_ARTIFACTS,"targets":OWNER_PWA_V121_TARGETS,
+            "candidate_hashes":OWNER_PWA_V121_CANDIDATE_HASHES,"candidate_commit":OWNER_PWA_V121_SOURCE_COMMIT,
+            "transaction_id":OWNER_PWA_V121_TRANSACTION_ID,"candidate_sha256":OWNER_PWA_V121_CANDIDATE_SHA256,
+            "review_only":True}
     if selected==OWNER_PWA_V114_PROFILE: return _owner_pwa_v114_profile()
     if selected==OWNER_PWA_V113_PROFILE: return _owner_pwa_v113_profile()
     if selected==OWNER_PWA_V112_PROFILE: return _owner_pwa_v112_profile()
@@ -1080,6 +1166,115 @@ def _owner_pwa_profile(manifest):
     return {"artifacts":OWNER_PWA_ARTIFACTS,"targets":tuple(OWNER_PWA_TARGETS),
         "candidate_hashes":OWNER_PWA_CANDIDATE_HASHES,"candidate_commit":OWNER_PWA_CANDIDATE_COMMIT,
         "transaction_id":None,"candidate_sha256":OWNER_PWA_ARTIFACTS["candidate_zip"]}
+
+def owner_pwa_v121_artifact_errors(paths):
+    """Verify pinned v1.0.21/installed-v1.0.20 bytes without creating authority."""
+    required=("candidate_zip","package_json","payload_sums","rollback_zip","baseline_manifest","route","readback_receipt")
+    errors=[]
+    if not isinstance(paths,dict): return ["v1.0.21 artifact paths are missing"]
+    for key in required:
+        if not paths.get(key): errors.append("v1.0.21 required artifact missing: "+key)
+    if errors: return errors
+    expected={"candidate_zip":OWNER_PWA_V121_CANDIDATE_SHA256,"package_json":OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256,
+        "payload_sums":OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256,"rollback_zip":OWNER_PWA_V121_BASELINE_SHA256,
+        "baseline_manifest":OWNER_PWA_V121_BASELINE_MANIFEST_SHA256,"route":OWNER_PWA_V121_ROUTE_SHA256,
+        "readback_receipt":OWNER_PWA_V121_READBACK_SHA256}
+    loaded={}
+    for key,want in expected.items():
+        try:
+            path=pathlib.Path(paths[key])
+            if not path.is_file(): errors.append("v1.0.21 artifact hash mismatch: "+key)
+            else:
+                if sha256_file(path)!=want: errors.append("v1.0.21 artifact hash mismatch: "+key)
+                if key in ("package_json","baseline_manifest","route","readback_receipt"):
+                    loaded[key]=json.loads(path.read_text())
+        except (OSError,ValueError,TypeError): errors.append("v1.0.21 artifact unreadable: "+key)
+    for key in ("package_json","baseline_manifest","route","readback_receipt"):
+        if key not in loaded: return errors+["v1.0.21 required identity document unreadable: "+key]
+    package=loaded["package_json"]
+    if (package.get("package")!="hbnf-owner-pwa-local-v1.0.21" or package.get("sourceCommit")!=OWNER_PWA_V121_SOURCE_COMMIT
+        or package.get("releaseDisposition")!="REVIEW_ONLY_NOT_ADMITTED_NOT_INSTALLED"):
+        errors.append("v1.0.21 package identity or REVIEW_ONLY disposition mismatch")
+    assets={"owner-pwa/"+item.get("path",""):item.get("sha256") for item in package.get("assets",[]) if isinstance(item,dict)}
+    if assets!={k:v for k,v in OWNER_PWA_V121_CANDIDATE_HASHES.items() if k.startswith("owner-pwa/")}:
+        errors.append("v1.0.21 package asset allowlist or hashes differ from pinned profile")
+    try:
+        with zipfile.ZipFile(paths["candidate_zip"]) as archive:
+            names=set(archive.namelist())
+            expected_names={"BASELINE.SHA256SUMS","PACKAGE.json","PAYLOAD.SHA256SUMS","REVIEW_ONLY.txt","install.sh","rollback.sh"}|set(assets)
+            if names!=expected_names: errors.append("v1.0.21 ZIP entry set differs from the pinned package inventory")
+            if archive.read("PACKAGE.json")!=pathlib.Path(paths["package_json"]).read_bytes(): errors.append("embedded v1.0.21 PACKAGE.json differs")
+            if archive.read("PAYLOAD.SHA256SUMS")!=pathlib.Path(paths["payload_sums"]).read_bytes(): errors.append("embedded v1.0.21 payload manifest differs")
+            for name,want in assets.items():
+                if hashlib.sha256(archive.read(name)).hexdigest()!=want: errors.append("v1.0.21 payload byte mismatch: "+name)
+    except (OSError,ValueError,KeyError,zipfile.BadZipFile): errors.append("v1.0.21 candidate ZIP is unreadable or malformed")
+    baseline=loaded["baseline_manifest"]
+    baseline_entries={item.get("path"):item.get("sha256") for item in baseline.get("entries",[]) if isinstance(item,dict) and item.get("type")=="regular"}
+    if baseline_entries!=OWNER_PWA_V121_BASELINE_FILESYSTEM_HASHES:
+        errors.append("v1.0.20 filesystem manifest entries differ from the pinned complete installed baseline")
+    if (baseline.get("archive_sha256")!=OWNER_PWA_V121_BASELINE_SHA256 or baseline.get("file_count")!=21
+        or loaded["route"].get("installed_baseline",{}).get("drive_file_id")!=OWNER_PWA_V121_BASELINE_DRIVE_ID):
+        errors.append("v1.0.20 rollback identity or manifest differs from the exact installed baseline")
+    if loaded["route"].get("installed_baseline",{}).get("manifest_sha256")!=OWNER_PWA_V121_BASELINE_MANIFEST_SHA256:
+        errors.append("pending A4 route baseline manifest hash differs from the independently hashed v1.0.20 snapshot manifest")
+    route=loaded["route"]
+    candidate=route.get("candidate",{}); source=route.get("source",{})
+    if (route.get("disposition")!="PENDING_REVIEW_ONLY_NOT_ADMITTED_NOT_EXECUTABLE" or route.get("one_time") is not True
+        or route.get("transaction_id")!=OWNER_PWA_V121_TRANSACTION_ID
+        or candidate.get("archive_sha256")!=OWNER_PWA_V121_CANDIDATE_SHA256
+        or candidate.get("source_commit")!=OWNER_PWA_V121_SOURCE_COMMIT
+        or source.get("candidate_source_commit")!=OWNER_PWA_V121_SOURCE_COMMIT):
+        errors.append("v1.0.21 route identity, one-time transaction, or pending disposition mismatch")
+    receipt_objects={item.get("driveId"):item for item in loaded["readback_receipt"].get("objects",[]) if isinstance(item,dict)}
+    for drive_id,want in ((OWNER_PWA_V121_CANDIDATE_DRIVE_ID,OWNER_PWA_V121_CANDIDATE_SHA256),
+        ("1AmY2DSCtFrmDqyRKS3_XKrXntQII54tI",OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256),
+        ("1Q1zshwz8hTWo_g5SXlILvrWs2FODL44J",OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256),
+        (OWNER_PWA_V121_ROUTE_DRIVE_ID,OWNER_PWA_V121_ROUTE_SHA256)):
+        item=receipt_objects.get(drive_id,{})
+        if item.get("sha256")!=want or item.get("readback")!="PASS_BYTE_LENGTH_AND_SHA256":
+            errors.append("v1.0.21 Drive download-back evidence missing or mismatched: "+drive_id)
+    return errors
+
+def owner_pwa_v121_admission_errors(paths,target_evidence,authorization,transaction_id,used_transaction_ids=(),manifest=None,closeout=None,now=None):
+    """Fail-closed future-gate preflight. This candidate is never admissible in this pass."""
+    errors=owner_pwa_v121_artifact_errors(paths); current=time.time() if now is None else now
+    if not isinstance(target_evidence,dict): errors.append("fresh exact Opal target evidence missing")
+    else:
+        captured=target_evidence.get("captured_unix")
+        if not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5:
+            errors.append("Opal target evidence is missing or stale")
+        if (target_evidence.get("model")!="GL-SFT1200" or target_evidence.get("ip")!="192.168.77.1"
+            or target_evidence.get("base")!="/www/mission-control-local" or target_evidence.get("owner_dir")!="/www/mission-control-local/owner-pwa"):
+            errors.append("Opal target identity or exact target paths mismatch")
+        if target_evidence.get("installed_archive_sha256")!=OWNER_PWA_V121_BASELINE_SHA256 or target_evidence.get("installed_manifest_sha256")!=OWNER_PWA_V121_BASELINE_MANIFEST_SHA256:
+            errors.append("current installed baseline does not match exact v1.0.20 rollback")
+        if target_evidence.get("filesystem_sha256_by_path")!=OWNER_PWA_V121_BASELINE_FILESYSTEM_HASHES:
+            errors.append("current Opal filesystem readback does not match all 21 exact v1.0.20 files")
+        if target_evidence.get("served_sha256_by_path")!=OWNER_PWA_V121_SERVED_BASELINE_HASHES:
+            errors.append("current Owner PWA HTTP readback does not match all 17 served v1.0.20 assets")
+        if target_evidence.get("http_status_by_path")!={path:200 for path in OWNER_PWA_V121_SERVED_BASELINE_HASHES}:
+            errors.append("current Owner PWA HTTP readback is incomplete or not all 200")
+        if target_evidence.get("mission_control_transport_sha256")!=OWNER_PWA_V121_CANDIDATE_HASHES["mission-control-local/local-transport.js"]:
+            errors.append("current Mission Control transport differs from its pinned preserved bytes")
+    if transaction_id!=OWNER_PWA_V121_TRANSACTION_ID or transaction_id in set(used_transaction_ids or ()):
+        errors.append("v1.0.21 transaction identity is wrong or replayed")
+    if not isinstance(authorization,dict) or authorization.get("authorized") is not True:
+        errors.append("fresh action-specific Owner authorization missing")
+    else:
+        for key,want in (("transaction_id",OWNER_PWA_V121_TRANSACTION_ID),("candidate_sha256",OWNER_PWA_V121_CANDIDATE_SHA256),
+            ("rollback_sha256",OWNER_PWA_V121_BASELINE_SHA256),("target_ip","192.168.77.1")):
+            if authorization.get(key)!=want: errors.append("Owner authorization binding mismatch: "+key)
+        issued=authorization.get("issued_unix"); expires=authorization.get("expires_unix")
+        if (not isinstance(issued,(int,float)) or not isinstance(expires,(int,float)) or issued>current+5
+            or current-issued>300 or expires<=current or expires-issued>20*60):
+            errors.append("Owner authorization is missing, stale, expired, or exceeds the 20-minute limit")
+        if authorization.get("scope")!=[OWNER_PWA_STEP,"rollback_if_required"]:
+            errors.append("Owner authorization scope is not the exact install and rollback scope")
+    if closeout is not None:
+        if not isinstance(manifest,dict) or not isinstance(closeout,dict) or closeout.get("manifest_sha256")!=owner_pwa_admission_digest(manifest):
+            errors.append("post-mutation closeout is not bound to the same manifest")
+    errors.append("v1.0.21 remains REVIEW_ONLY; live admission is intentionally disabled")
+    return errors
 
 OWNER_PWA_RECOVERY_CLOUD_SOURCE_HASHES={
     "deno.json":"d4235a1ddf7735bdd0a73ae15e3b596b706c8b910d65d6b2f3c3b4583b902d29",
@@ -1283,6 +1478,8 @@ def issue_owner_pwa_admission(state,manifest,owner_authorization,now=None):
     if not isinstance(manifest,dict) or not isinstance(owner_authorization,dict): raise ValueError("Owner PWA issue rejected: manifest and owner authorization must be objects")
     try: profile=_owner_pwa_profile(manifest)
     except (OSError,ValueError,TypeError) as exc: raise ValueError("Owner PWA issue rejected: "+str(exc))
+    if profile.get("review_only"):
+        raise ValueError("Owner PWA issue rejected: v1.0.21 is pinned for offline review only; live admission remains disabled")
     if any(isinstance(item,dict) and item.get("recovery_supersession") is not None
         for item in cursor.get("owner_pwa_transaction_history",[])) and manifest.get("candidate_profile")!=OWNER_PWA_V108_PROFILE:
         completed_successor=(isinstance(cursor.get("owner_pwa_transaction"),dict)
@@ -1381,6 +1578,8 @@ def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,a
         return ["wrong Owner PWA admission schema"]
     try: profile=_owner_pwa_profile(manifest)
     except (OSError,ValueError,TypeError) as exc: return ["invalid Owner PWA candidate profile: "+str(exc)]
+    if profile.get("review_only"):
+        errors.append("v1.0.21 profile is REVIEW_ONLY and cannot pass live Owner PWA admission")
     if manifest.get("stage")!="OWNER_PWA_LIVE_APPROVED" or manifest.get("outcome")!="PASS": errors.append("Owner PWA admission is not an approved PASS")
     if state.get("lifecycle_state")!="PHASE2_INTEGRATING": errors.append("Owner PWA install requires PHASE2_INTEGRATING")
     if state.get("phase2_implementation_authorized") is not True: errors.append("Phase 2 software authority is not active")
