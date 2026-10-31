@@ -217,7 +217,10 @@ export function WeatherPage() {
         const currentConditions=[...new Set(view.rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
         const rowFlags=view.flags.filter(flag=>flag.kind!=='alerts-unavailable');
         const referenceTime=Date.now();
-        const hourly=open?extractRollingHourRows(view.raw,view.course,referenceTime):null;
+        const rolling=preferences.date===dateInPacific(new Date(referenceTime))&&preferences.allDay;
+        const hourly=open?(rolling?extractRollingHourRows(view.raw,view.course,referenceTime):extractHourRows(view.raw,view.course,preferences)):null;
+        const periodLabel=rolling?'Next 24 hours':`${preferences.date} · ${preferences.allDay?'All day':`${labelHour(preferences.start)}–${labelHour(preferences.end)}`}`;
+        const [courseLat,courseLon]=view.course.coordinates;
         const timeZone=view.course.timezone||TIME_ZONE;
         return <article className={`weather-course ${open?'is-expanded':''}`} key={view.course.id}>
           <button className="weather-course-toggle" type="button" aria-expanded={open} aria-controls={`weather-details-${view.course.id}`} onClick={()=>setExpanded(open?null:view.course.id)}>
