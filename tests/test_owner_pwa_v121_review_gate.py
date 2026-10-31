@@ -6,17 +6,18 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("control",ROOT/"scripts/hbnf_control.py")
 control=importlib.util.module_from_spec(spec); spec.loader.exec_module(control)
 ARTIFACT_ROOT=pathlib.Path(os.environ.get("CART116_V121_ARTIFACT_ROOT",ROOT.parents[1]/"outputs"))
-BUILD=ARTIFACT_ROOT/"a4-qualified-build-1"
+BUILD=ARTIFACT_ROOT/"a4-v121-cachefix-build-1"
 CHECKPOINT=ARTIFACT_ROOT/"checkpoints"
 
 def paths():
     return {"candidate_zip":BUILD/"hbnf-owner-pwa-local-v1.0.21.zip",
         "package_json":BUILD/"PACKAGE.json","payload_sums":BUILD/"PAYLOAD.SHA256SUMS",
+        "package_sha_file":BUILD/"PACKAGE.SHA256",
         "rollback_zip":CHECKPOINT/"current-installed-owner-pwa-2026-10-31.tar.gz",
         "baseline_manifest":CHECKPOINT/"current-installed-owner-pwa-2026-10-31.manifest.json",
-        "route":ARTIFACT_ROOT/"a4-candidate-to-v120-route.pending.json",
-        "rollback_receipt":ARTIFACT_ROOT/"a4-v120-rollback-downloadback-receipt.json",
-        "readback_receipt":ARTIFACT_ROOT/"a4-drive-readback-receipt.json"}
+        "route":ARTIFACT_ROOT/"a4-v121-cachefix-candidate-to-v120-route-PENDING.json",
+        "rollback_receipt":ARTIFACT_ROOT/"a4-v121-cachefix-v120-rollback-downloadback-receipt-PENDING.json",
+        "readback_receipt":ARTIFACT_ROOT/"a4-v121-cachefix-independent-downloadback-receipt-PENDING.json"}
 
 @unittest.skipUnless((BUILD/"hbnf-owner-pwa-local-v1.0.21.zip").is_file(),"provide preserved A4 artifacts via CART116_V121_ARTIFACT_ROOT")
 class OwnerPwaV121ReviewGate(unittest.TestCase):
@@ -45,6 +46,10 @@ class OwnerPwaV121ReviewGate(unittest.TestCase):
             shutil.copyfile(paths()["candidate_zip"],altered["candidate_zip"])
             altered["candidate_zip"].write_bytes(altered["candidate_zip"].read_bytes()+b"x")
             self.assertTrue(any("hash mismatch: candidate_zip" in e for e in control.owner_pwa_v121_artifact_errors(altered)))
+            bad_checksum=paths(); bad_checksum["package_sha_file"]=temp/"PACKAGE.SHA256"
+            shutil.copyfile(paths()["package_sha_file"],bad_checksum["package_sha_file"])
+            bad_checksum["package_sha_file"].write_text("0"*64+"\n")
+            self.assertTrue(any("hash mismatch: package_sha_file" in e for e in control.owner_pwa_v121_artifact_errors(bad_checksum)))
             missing=paths(); missing["rollback_zip"]=temp/"missing.tar.gz"
             self.assertTrue(any("artifact hash mismatch: rollback_zip" in e for e in control.owner_pwa_v121_artifact_errors(missing)))
             missing_receipt=paths(); missing_receipt["rollback_receipt"]=temp/"missing-receipt.json"

@@ -663,19 +663,19 @@ OWNER_PWA_V114_ARTIFACTS={
 # verifier below can establish offline byte identity; it cannot admit an
 # install transaction. Historical profile constants remain untouched.
 OWNER_PWA_V121_PROFILE="owner-a3-brightness-v1.0.21-review-only"
-OWNER_PWA_V121_SOURCE_COMMIT="5809910b015eb478c5b71493fd805d563f289949"
-OWNER_PWA_V121_TRANSACTION_ID="CART116-OWNER-PWA-A4-20261031-A3B12D52-688E-4C7A-9D21-6AF709DC5AB4"
-OWNER_PWA_V121_CANDIDATE_DRIVE_ID="1MzNaAdjR7geXyiMEjYa_6NcuvURNcrKM"
-OWNER_PWA_V121_CANDIDATE_SHA256="223bfb24766ef5c728870f2b54103cc208e18bbdad398a52a9061cff61373f2c"
-OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256="d5d37564f727aa097839c5758f0ddf7d6dd7e701781c06c7955acfc0e1e96501"
-OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256="25f20d79127d19c33a5fc1861ef438b96db830ca160aa2c07af054352c824d98"
-OWNER_PWA_V121_ROUTE_DRIVE_ID="1-5NxUvoH9PIAqBU6_Y1SC4ng4zmLGpDy"
-OWNER_PWA_V121_ROUTE_SHA256="7a61620f10fd71e5157be0501a70397773b01b0d2ecacd5c7e3a3a80d6cb71ea"
-OWNER_PWA_V121_READBACK_SHA256="70312eb16986a5a7179cd0ed3377e7475308559ebd4fea46f875e99f0bf1a389"
-OWNER_PWA_V121_ROLLBACK_RECEIPT_DRIVE_ID="1fMiAn4N_Sc8T4JcyHkTCrGyWSfxdXf7n"
-OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256="1a04556088657d84611f76f222d30f5434d4192f8f295133736f49195dae7f91"
+OWNER_PWA_V121_SOURCE_COMMIT="a559395e38a91ab087bb18daf07d2d3b896f1762"
+OWNER_PWA_V121_TRANSACTION_ID="CART116-OWNER-PWA-A4-20261031-CACHEFIX-6B5F00FB-B253-40CE-97BA-0AA8BE22FC68"
+OWNER_PWA_V121_CANDIDATE_DRIVE_ID="1sF_WziNEYBF-CEu9gBY2_D_MRjbamte6"
+OWNER_PWA_V121_CANDIDATE_SHA256="719bbba621b710b9be9ac2eaa82bdae5a448782b6459f14f35a88afadb0ac5bb"
+OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256="1f1631aee46d73d8fbd5a6fa4b947114e36c900f42c27075b92eb570980bd04d"
+OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256="4a7b80580ea2a87995fdca961d3a3f67143552268ea5c7910b22693e0ad9fe18"
+OWNER_PWA_V121_ROUTE_DRIVE_ID="1a7_lmAH1PnKioRK7ZmfGnoGTejaQyIjx"
+OWNER_PWA_V121_ROUTE_SHA256="1735ad5e9e519b34e76226b6ce44d149fee7cfc1cc6eba48f8697ade77760121"
+OWNER_PWA_V121_READBACK_SHA256="afcf3d29fc5cc35f1d3fa6bfba9290dc81f953d6d8f6873317671bf2f768843a"
+OWNER_PWA_V121_ROLLBACK_RECEIPT_DRIVE_ID="1YYNja80X9Pydha4swT2kcO2qeS327Rbf"
+OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256="f7be00975aa0acdfeffbbf684e5e565b8a19adabf0700e52e2cfd700392af47f"
 OWNER_PWA_V121_BASELINE_MANIFEST_DRIVE_ID="11Il6HdniVnEOfwxf1NymTsdfdHQ-gp9t"
-OWNER_PWA_V121_READBACK_DRIVE_ID="1uUBug8wZamwsZaVjdz6mw8NpjuSlcfV7"
+OWNER_PWA_V121_READBACK_DRIVE_ID="1j_GSi9w5CAcfBIg1MdCsWPZyILt8DUXj"
 OWNER_PWA_V121_BASELINE_DRIVE_ID="1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB"
 OWNER_PWA_V121_BASELINE_SHA256="d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9"
 OWNER_PWA_V121_BASELINE_MANIFEST_SHA256="8e7684d609a4d5e6d0fc7f100789835b45172703994742a7f8a2437b1e1c62bd"
@@ -738,8 +738,8 @@ OWNER_PWA_V121_CANDIDATE_HASHES={
     "owner-pwa/hbnf-cart-skins-score.js":"642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
     "owner-pwa/hbnf-cart-ui-v6.css":"48f6dc589747199bfc1bc6511c44f7b82a599ed0058047233bca8a74cd9a929c",
     "owner-pwa/hbnf-cart-ui-v6.js":"23b41e2113a11dfb070fabaa0ff6701647c18a533f6742b2ada0c01369620217",
-    "owner-pwa/hbnf-cart.html":"4cc0b1d1e818de1d63cb154d7c6cf44710d38bcc49e2443d0fcf22897a767f9a",
-    "owner-pwa/hbnf-cart.js":"7de97b82bf2ec79c816de8a7206aab140e3d81a067aa393fcda2d8ff3f9d643a",
+    "owner-pwa/hbnf-cart.html":"8849fbd9ac9d8a310bebdfd5b295a35d553bfa5302389ecc671cffca1592f2fa",
+    "owner-pwa/hbnf-cart.js":"36fb6ec62bd458d51960aed636c01a00a0ffdeaaeb892bc2f795894160340b9b",
     "owner-pwa/hbnf-faded-phosphor.png":"043f68e0b44d7c658051a996ec276906c834edbb1f3f19fae7726e93ecf7fbdf",
     "owner-pwa/hbnf-guest-qr.png":"f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
     "mission-control-local/local-transport.js":"2d6e064bb54839d9562c3ff180681d7b918bb92f2fdb43f00c2821053e145e37",
@@ -1174,14 +1174,14 @@ def _owner_pwa_profile(manifest):
 
 def owner_pwa_v121_artifact_errors(paths):
     """Verify pinned v1.0.21/installed-v1.0.20 bytes without creating authority."""
-    required=("candidate_zip","package_json","payload_sums","rollback_zip","baseline_manifest","route","rollback_receipt","readback_receipt")
+    required=("candidate_zip","package_json","payload_sums","package_sha_file","rollback_zip","baseline_manifest","route","rollback_receipt","readback_receipt")
     errors=[]
     if not isinstance(paths,dict): return ["v1.0.21 artifact paths are missing"]
     for key in required:
         if not paths.get(key): errors.append("v1.0.21 required artifact missing: "+key)
     if errors: return errors
     expected={"candidate_zip":OWNER_PWA_V121_CANDIDATE_SHA256,"package_json":OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256,
-        "payload_sums":OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256,"rollback_zip":OWNER_PWA_V121_BASELINE_SHA256,
+        "payload_sums":OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256,"package_sha_file":"6a32ec3c08b236c2f05c6afdbcb175b575f4e6d092dce30c0610ad2a688c7462","rollback_zip":OWNER_PWA_V121_BASELINE_SHA256,
         "baseline_manifest":OWNER_PWA_V121_BASELINE_MANIFEST_SHA256,"route":OWNER_PWA_V121_ROUTE_SHA256,
         "rollback_receipt":OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256,"readback_receipt":OWNER_PWA_V121_READBACK_SHA256}
     loaded={}
@@ -1246,8 +1246,9 @@ def owner_pwa_v121_artifact_errors(paths):
         errors.append("v1.0.21 route identity, one-time transaction, or pending disposition mismatch")
     receipt_objects={item.get("driveId"):item for item in loaded["readback_receipt"].get("objects",[]) if isinstance(item,dict)}
     for drive_id,want in ((OWNER_PWA_V121_CANDIDATE_DRIVE_ID,OWNER_PWA_V121_CANDIDATE_SHA256),
-        ("1AmY2DSCtFrmDqyRKS3_XKrXntQII54tI",OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256),
-        ("1Q1zshwz8hTWo_g5SXlILvrWs2FODL44J",OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256),
+        ("19Zft77tohJV8JXWUeBtSA_zsw4mBCjEO",OWNER_PWA_V121_PACKAGE_MANIFEST_SHA256),
+        ("1n4UV_Dk902u4A1V2M6NhkoKMLHMC_phR",OWNER_PWA_V121_PAYLOAD_MANIFEST_SHA256),
+        ("16DN47eRFr7m9Jfee7d6t2DB2rPWAMU1U","6a32ec3c08b236c2f05c6afdbcb175b575f4e6d092dce30c0610ad2a688c7462"),
         (OWNER_PWA_V121_ROUTE_DRIVE_ID,OWNER_PWA_V121_ROUTE_SHA256),
         (OWNER_PWA_V121_BASELINE_DRIVE_ID,OWNER_PWA_V121_BASELINE_SHA256),
         (OWNER_PWA_V121_ROLLBACK_RECEIPT_DRIVE_ID,OWNER_PWA_V121_ROLLBACK_RECEIPT_SHA256),
