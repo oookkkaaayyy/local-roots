@@ -118,18 +118,60 @@ export function createGitHubExecutionLockAdapter({createFile,fetchFile,repositor
 
 // The exclusive GitHub claim serializes execution; Drive stores each receipt
 // and verifies its actual provider bytes by fetching the uploaded file ID.
-export function createGoogleDriveEvidenceStore({uploadFile,fetchFile,writeLocal,cleanupLocal=async()=>{},folderId='1mZWMyzLIKnSjBTP82-EfGOqktld17X84'}={}){
+export function createGoogleDriveEvidenceStore({uploadFile,fetchFile,listFiles,writeLocal,cleanupLocal=async()=>{},folderId='1mZWMyzLIKnSjBTP82-EfGOqktld17X84',attempts=3,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
  assert(typeof uploadFile==='function'&&typeof fetchFile==='function'&&typeof writeLocal==='function','Drive upload/fetch/local-file adapters are required');
+ const transient=e=>/timeout|timed out|temporar|unavailable|network|reset|econn|429|5\d\d|gateway/i.test(String(e?.message||e));
+ async function fetchWithRetry(id){
+  let last;
+  for(let i=0;i<attempts;i++){
+   try{const response=await fetchFile(id);if(response?.isError===true)throw new Error(text(response)||'Drive fetch failed');return driveBytes(response);}
+   catch(error){last=error;if(!transient(error)&&!(/omitted bytes|HTTP 404/i.test(String(error?.message||error))))throw error;if(i+1<attempts)await wait(250*(2**i));}
+  }
+  throw new Error(`Drive remote download failed after ${attempts} bounded attempts: ${String(last?.message||last)}`);
+ }
+ async function namedFiles(name){
+  if(typeof listFiles!=='function')return [];
+  let last;
+  for(let i=0;i<attempts;i++){
+   try{
+    const response=await listFiles({folderId});if(response?.isError===true)throw new Error(text(response)||'Drive folder listing failed');
+    const files=response?.structuredContent?.files;if(!Array.isArray(files)||files.length>=100)throw new Error('Drive folder listing is incomplete or malformed; refusing possible duplicate upload');
+    return files.filter(file=>(file.title||file.name)===name);
+   }catch(error){last=error;if(!transient(error)||i+1===attempts)throw error;await wait(250*(2**i));}
+  }
+  throw last;
+ }
+ async function recoverAmbiguousUpload(name,expected){
+  if(typeof listFiles!=='function')return null;
+  let lastSeen=[];
+  for(let i=0;i<attempts;i++){
+   lastSeen=await namedFiles(name);
+   if(lastSeen.length){
+    const matches=[];
+    for(const file of lastSeen){const id=file.id;if(!id)continue;const bytes=await fetchWithRetry(id);if(bytes.equals(expected))matches.push(file);else throw new Error(`Drive existing file has unexpected bytes: ${name}`);}
+    if(matches.length!==1)throw new Error(`Drive upload outcome is ambiguous: ${matches.length} byte-identical files named ${name}`);
+    return matches[0];
+   }
+   if(i+1<attempts)await wait(250*(2**i));
+  }
+  return null;
+ }
  return {
   async putOnce(name,bytes){
-   const local=await writeLocal(name,bytes);
+   const expected=Buffer.from(bytes);let found=await namedFiles(name);
+   if(found.length){if(found.length!==1)throw new Error(`Drive has ${found.length} files with immutable evidence name ${name}`);const remote=await fetchWithRetry(found[0].id);if(!remote.equals(expected))throw new Error(`Drive immutable evidence name already contains different bytes: ${name}`);return{id:found[0].id,durable:true,reused:true};}
+   const local=await writeLocal(name,expected);
    try{
-    const uploaded=await uploadFile({file_uri:local,file_name:name,mime_type:'application/json',parent_folder_id:folderId});
-    const id=driveId(uploaded);if(!driveBytes(await fetchFile(id)).equals(Buffer.from(bytes)))throw new Error(`Drive independent download-back failed: ${name}`);
-    return {id,durable:true};
+    let uploaded;
+    try{uploaded=await uploadFile({file_uri:local,file_name:name,mime_type:'application/json',parent_folder_id:folderId});}
+    catch(error){const recovered=await recoverAmbiguousUpload(name,expected);if(recovered)return{id:recovered.id,durable:true,recoveredAfterAmbiguousUpload:true};throw new Error(`Drive upload result is ambiguous; no duplicate retry was attempted (${String(error?.message||error)})`);}
+    if(uploaded?.isError===true){const recovered=await recoverAmbiguousUpload(name,expected);if(recovered)return{id:recovered.id,durable:true,recoveredAfterAmbiguousUpload:true};throw new Error(`Drive upload failed and no exact remote file was found: ${text(uploaded)}`);}
+    let id;try{id=driveId(uploaded);}catch(error){const recovered=await recoverAmbiguousUpload(name,expected);if(recovered)return{id:recovered.id,durable:true,recoveredAfterAmbiguousUpload:true};throw new Error(`Drive upload returned no provider ID and no matching remote file was found; refusing duplicate upload (${String(error?.message||error)})`);}
+    const remote=await fetchWithRetry(id);if(!remote.equals(expected))throw new Error(`Drive independent download-back was not byte-identical: ${name}`);
+    return{id,durable:true};
    }finally{await cleanupLocal(local);}
   },
-  async download(id){return driveBytes(await fetchFile(id));},
+  async download(id){return fetchWithRetry(id);},
  };
 }
 
@@ -336,6 +378,7 @@ export function createMcpReleaseAdapters({github,drive,supabase,runWrangler,cand
  const driveFns={
   uploadFile:a=>drive.upload_file(a),
   fetchFile:id=>drive.fetch({url:`https://drive.google.com/file/d/${id}/view`,download_raw_file:true,include_base64:true}),
+  ...(drive.list_folder?{listFiles:a=>drive.list_folder({url:`https://drive.google.com/drive/folders/${a.folderId}`,top_k:100})}:{}),
   writeLocal:async(name,bytes)=>{
    const dir=await mkdtemp(path.join(tmpdir(),'hbnf-release-evidence-'));
    const file=path.join(dir,name.replace(/[^A-Za-z0-9._-]/g,'_'));

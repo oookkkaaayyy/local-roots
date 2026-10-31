@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
-import {mkdtemp, mkdir, rm, writeFile} from 'node:fs/promises';
+import {mkdtemp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {createGitHubExecutionLockAdapter,createGoogleDriveEvidenceStore,createHbnfPublicAssetVerifier,createSupabaseMcpAdapter,SUPABASE_READ_SQL,createWranglerAdapter,normalizeCloudflareInjectedHtml,resolvePinnedWrangler,verifyWritableCapacity} from '../scripts/hbnf-two-target-provider-adapters.mjs';
@@ -28,12 +28,42 @@ test('Drive evidence store requires provider-download byte equality',async()=>{
  let stored;const store=createGoogleDriveEvidenceStore({
   writeLocal:async(name,bytes)=>{stored={name,bytes:Buffer.from(bytes)};return'/tmp/receipt.json'},
   uploadFile:async args=>{assert.equal(args.parent_folder_id,'1mZWMyzLIKnSjBTP82-EfGOqktld17X84');return{structuredContent:{id:'drive1'}}},
+  listFiles:async()=>({structuredContent:{files:[]}}),
   fetchFile:async id=>({structuredContent:{b64_string:Buffer.from(id==='drive1'?stored.bytes:Buffer.from('bad')).toString('base64')}}),
  });
  const receipt=Buffer.from('receipt');const result=await store.putOnce('one.json',receipt);
  assert.equal(result.id,'drive1');assert.deepEqual(await store.download('drive1'),receipt);
- const corrupt=createGoogleDriveEvidenceStore({writeLocal:async()=>'/tmp/receipt.json',uploadFile:async()=>({structuredContent:{id:'drive2'}}),fetchFile:async()=>({structuredContent:{b64_string:Buffer.from('bad').toString('base64')}})});
- await assert.rejects(()=>corrupt.putOnce('bad.json',receipt),/download-back failed/);
+ const corrupt=createGoogleDriveEvidenceStore({writeLocal:async()=>'/tmp/receipt.json',uploadFile:async()=>({structuredContent:{id:'drive2'}}),listFiles:async()=>({structuredContent:{files:[]}}),fetchFile:async()=>({structuredContent:{b64_string:Buffer.from('bad').toString('base64')}})});
+ await assert.rejects(()=>corrupt.putOnce('bad.json',receipt),/download-back was not byte-identical/);
+});
+
+test('Drive transient read failures retry; ambiguous upload is recovered by exact remote bytes without reupload',async()=>{
+ const bytes=Buffer.from('manifest-bytes');let uploadCalls=0,fetchCalls=0,remote=null;
+ const store=createGoogleDriveEvidenceStore({attempts:3,wait:async()=>{},writeLocal:async()=>'/tmp/manifest.json',
+  listFiles:async()=>({structuredContent:{files:remote?[{id:'drive-timeout',title:'manifest.json'}]:[]}}),
+  uploadFile:async()=>{uploadCalls++;remote=Buffer.from(bytes);throw new Error('provider request timed out after upload');},
+  fetchFile:async()=>{fetchCalls++;if(fetchCalls===1)return{isError:true,content:[{type:'text',text:'HTTP 503 temporarily unavailable'}]};return{structuredContent:{b64_string:remote.toString('base64')}};},
+ });
+ const result=await store.putOnce('manifest.json',bytes);
+ assert.equal(result.id,'drive-timeout');assert.equal(result.recoveredAfterAmbiguousUpload,true);assert.equal(uploadCalls,1);assert.equal(fetchCalls,2);
+});
+
+test('Drive unresolved ambiguous upload fails closed without duplicate upload retry',async()=>{
+ let uploadCalls=0,listingCalls=0;
+ const store=createGoogleDriveEvidenceStore({attempts:2,wait:async()=>{},writeLocal:async()=>'/tmp/manifest.json',listFiles:async()=>{listingCalls++;return{structuredContent:{files:[]}};},uploadFile:async()=>{uploadCalls++;throw new Error('timeout');},fetchFile:async()=>({})});
+ await assert.rejects(()=>store.putOnce('unknown.json',Buffer.from('bytes')),/ambiguous; no duplicate retry/);
+ assert.equal(uploadCalls,1);assert.equal(listingCalls,3);
+});
+
+test('Drive retries reuse an existing immutable file only after byte-identical download-back',async()=>{
+ let uploads=0;const bytes=Buffer.from('same');
+ const store=createGoogleDriveEvidenceStore({writeLocal:async()=>'/tmp/unused',uploadFile:async()=>{uploads++;},listFiles:async()=>({structuredContent:{files:[{id:'prior',title:'prior.json'}]}}),fetchFile:async()=>({structuredContent:{b64_string:bytes.toString('base64')}})});
+ const result=await store.putOnce('prior.json',bytes);assert.equal(result.reused,true);assert.equal(result.id,'prior');assert.equal(uploads,0);
+});
+
+test('weekly release process preserves the reusable scoped Management API token',async()=>{
+ const source=await readFile(new URL('../scripts/hbnf-weekly-glow-release-executor.mjs',import.meta.url),'utf8');
+ assert.match(source,/SUPABASE_ACCESS_TOKEN=pat/);assert.doesNotMatch(source,/secureRemove\(PAT_FILE\)|unlink\(PAT_FILE\)|rm\(PAT_FILE/);
 });
 
 test('Supabase MCP reader is fixed to the admitted project and interprets exact evidence',async()=>{

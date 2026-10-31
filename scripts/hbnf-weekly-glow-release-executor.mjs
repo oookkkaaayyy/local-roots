@@ -20,11 +20,11 @@ const PAT_FILE=path.join(os.homedir(),'.hbnf-private','supabase-management.pat')
 const SERVICE_KEY_FILE=path.join(os.homedir(),'.hbnf-private','legacy-service-role.jwt');
 const DRIVE_FOLDER='1mZWMyzLIKnSjBTP82-EfGOqktld17X84';
 const DRIVE_FILES={candidate:'1UUDgrd5udbV7ZX0BG-GwSAT6FRLpd69v',rollback:'1PJuaxzp0oLRhcH3R72IKu4rvV2J2x30Q',source:'11L_1CzY0Mz7oofSvqSYnp695DfwszdVh'};
-const TOOL_TIMEOUT=120_000;
+const TOOL_TIMEOUT=30_000;
 const pending=new Map();let nextToolId=1;
 const input=createInterface({input:process.stdin,crlfDelay:Infinity});
-input.on('line',line=>{try{const msg=JSON.parse(line);const p=pending.get(msg.id);if(p){pending.delete(msg.id);p.resolve(msg.result);}}catch{}});
-function tool(method,args){const id=nextToolId++;return new Promise((resolve,reject)=>{pending.set(id,{resolve,reject});process.stdout.write(`${JSON.stringify({type:'tool',id,method,args})}\n`);setTimeout(()=>{const p=pending.get(id);if(p){pending.delete(id);reject(new Error(`provider tool timed out: ${method}`));}},TOOL_TIMEOUT);});}
+input.on('line',line=>{try{const msg=JSON.parse(line);const p=pending.get(msg.id);if(p){pending.delete(msg.id);clearTimeout(p.timer);p.resolve(msg.result);}}catch{}});
+function tool(method,args){const id=nextToolId++;return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{pending.delete(id);reject(new Error(`provider tool timed out: ${method}`));},TOOL_TIMEOUT);pending.set(id,{resolve,reject,timer});process.stdout.write(`${JSON.stringify({type:'tool',id,method,args})}\n`);});}
 const text=r=>typeof r==='string'?r:(r?.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n');
 function resultBytes(r){const b=r?.structuredContent?.b64_string;if(typeof b!=='string')throw new Error('Drive remote download omitted bytes');return Buffer.from(b,'base64');}
 function routeMatches(pattern,url){const src=pattern.includes('://')?pattern:`https://${pattern}`;const re='^'+src.replace(/[.+?^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*')+'$';return new RegExp(re).test(url);}
@@ -33,8 +33,6 @@ function activeVersion(deployments){if(!Array.isArray(deployments)||!deployments
 async function secureRemove(file){try{const n=(await stat(file)).size;const h=await open(file,'r+');try{const zeros=Buffer.alloc(Math.min(Math.max(n,1),1024*1024));let pos=0;while(pos<n){const len=Math.min(zeros.length,n-pos);await h.write(zeros,0,len,pos);pos+=len;}await h.sync();}finally{await h.close();}await unlink(file);return true;}catch(e){if(e.code==='ENOENT')return true;return false;}}
 
 async function main(){
-  let patLoaded=false,supabaseForCleanup=null,cloudflareForCleanup=null;
-  try {
   if(process.env.HBNF_WEEKLY_RELEASE_EXECUTE!=='1')throw new Error('Set HBNF_WEEKLY_RELEASE_EXECUTE=1 only for the admitted execution process.');
   await verifyWritableCapacity({minimumBytes:96*1024*1024});
   const [candidate,rollback]=await Promise.all([readFile(path.join(ARTIFACTS,'HBNF-weekly-glow-candidate.zip')),readFile(path.join(ARTIFACTS,'HBNF-weekly-glow-rollback-086.zip'))]);
@@ -48,9 +46,7 @@ async function main(){
 
   const pat=(await readFile(PAT_FILE,'utf8')).trim();if(!pat)throw new Error('Supabase Management API token file is empty');
   process.env.SUPABASE_ACCESS_TOKEN=pat;
-  patLoaded=true;
   const supabase=createSupabaseManagementAdapter({token:process.env.SUPABASE_ACCESS_TOKEN});
-  supabaseForCleanup=supabase;
   const wranglerBinary=await resolvePinnedWrangler({expected:'4.152.0'});
   const cfEnv={...process.env};delete cfEnv.SUPABASE_ACCESS_TOKEN;delete cfEnv.SUPABASE_SERVICE_ROLE_KEY;
   const wrangler=createPinnedWranglerRunner({binary:wranglerBinary,env:cfEnv});
@@ -130,7 +126,6 @@ async function main(){
       const after=await this.read();if(after.versionId!==versionId||after.trafficPercent!==100||after.cron?.[0]!=='* * * * *')throw new Error('v086 or original minute Cron failed recovery readback');return after;
     },
   };
-  cloudflareForCleanup=cf;
   const supabaseRead=await supabase.read();const cloudflareRead=await cf.read();
   if(cloudflareRead.versionId!==WEEKLY_RELEASE.rollbackVersion||cloudflareRead.trafficPercent!==100||!cloudflareRead.rollbackRetained||cloudflareRead.approvalVariable==='true'||!cloudflareRead.customDomainEnabled||!cloudflareRead.glowRouteCovered||!cloudflareRead.cartRoutesUnchanged||cloudflareRead.cron.length!==1||cloudflareRead.cron[0]!=='* * * * *')throw new Error('fresh Cloudflare installed baseline, rollback, disabled polling, domain, routes or Cron failed');
   if(supabaseRead.projectId!==WEEKLY_RELEASE.project||supabaseRead.bindingTableExists||supabaseRead.migrationPresent)throw new Error('fresh Supabase baseline already contains the candidate table/migration; admission cannot proceed');
@@ -154,37 +149,21 @@ async function main(){
     ],
   };
   const manifestBytes=canonicalManifestBytes(manifest);
-  const drive={upload_file:a=>tool('google_drive_upload_file',a),fetch:id=>tool('google_drive_fetch',{url:`https://drive.google.com/file/d/${id}/view`,download_raw_file:true,include_base64:true})};
-  const storage=createGoogleDriveEvidenceStore({uploadFile:drive.upload_file,fetchFile:drive.fetch,folderId:DRIVE_FOLDER,writeLocal:async(name,bytes)=>{const d=await mkdtemp(path.join(os.tmpdir(),'hbnf-weekly-evidence-'));const f=path.join(d,name.replace(/[^A-Za-z0-9._-]/g,'_'));await writeFile(f,bytes,{mode:0o600,flag:'wx'});return f;},cleanupLocal:async f=>rm(path.dirname(f),{recursive:true,force:true})});
-  const manifestStored=await storage.putOnce(`${WEEKLY_RELEASE.id}.admission.json`,manifestBytes);
+  const drive={upload_file:a=>tool('google_drive_upload_file',a),fetch:id=>tool('google_drive_fetch',{url:`https://drive.google.com/file/d/${id}/view`,download_raw_file:true,include_base64:true}),list:a=>tool('google_drive_list_folder',{url:`https://drive.google.com/drive/folders/${a.folderId}`,top_k:100})};
+  const storage=createGoogleDriveEvidenceStore({uploadFile:drive.upload_file,fetchFile:drive.fetch,listFiles:drive.list,folderId:DRIVE_FOLDER,writeLocal:async(name,bytes)=>{const d=await mkdtemp(path.join(os.tmpdir(),'hbnf-weekly-evidence-'));const f=path.join(d,name.replace(/[^A-Za-z0-9._-]/g,'_'));await writeFile(f,bytes,{mode:0o600,flag:'wx'});return f;},cleanupLocal:async f=>rm(path.dirname(f),{recursive:true,force:true})});
+  const manifestSha256=sha256(manifestBytes);
+  const manifestStored=await storage.putOnce(`${WEEKLY_RELEASE.id}.admission.${manifestSha256.slice(0,16)}.json`,manifestBytes);
   const durableManifest={driveFileId:manifestStored.id,sha256:sha256(manifestBytes),bytes:manifestBytes.length,downloadBackVerified:true};
   const readbacks={cloudflare:cloudflareRead,supabase:supabaseRead};
   const admission=await admitWeeklyGlowRelease({manifest,manifestBytes,downloadedManifestBytes:await storage.download(manifestStored.id),durableManifest,artifactBytes:{candidate,rollback,migration},readbacks,priorClaims:[]});
   const decisionRecord={format:'hbnf-weekly-glow-admission-decision-v1',releaseId:WEEKLY_RELEASE.id,status:'ADMISSION_PASS',manifestDriveFileId:manifestStored.id,manifestSha256:admission.manifestSha256,gateSourceCommit,sourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,rollbackSha256:WEEKLY_RELEASE.rollback,migrationSha256:WEEKLY_RELEASE.migrationSha256,cloudflareBaseline:cloudflareRead.versionId,supabaseBaseline:supabaseRead.stateFingerprint,admittedAt:new Date().toISOString()};
-  const decisionBytes=canonicalManifestBytes(decisionRecord);const decisionStored=await storage.putOnce(`${WEEKLY_RELEASE.id}.admission-decision.json`,decisionBytes);
+  const decisionBytes=canonicalManifestBytes(decisionRecord);const decisionStored=await storage.putOnce(`${WEEKLY_RELEASE.id}.admission-decision.${admission.manifestSha256.slice(0,16)}.json`,decisionBytes);
   const admissionDecision={record:decisionRecord,bytes:decisionBytes,driveFileId:decisionStored.id,sha256:sha256(decisionBytes)};
   const github={create_file:a=>tool('github_create_file',a),fetch_file:a=>tool('github_fetch_file',a)};
-    const ledger=createGitHubExecutionLockAdapter({createFile:github.create_file,fetchFile:github.fetch_file,releaseId:WEEKLY_RELEASE.id,claimPath:`release-claims/${WEEKLY_RELEASE.id}.execution-claim.json`});
+  const ledger=createGitHubExecutionLockAdapter({createFile:github.create_file,fetchFile:github.fetch_file,releaseId:WEEKLY_RELEASE.id,claimPath:`release-claims/${WEEKLY_RELEASE.id}.execution-claim.json`});
   const providers={supabase,cloudflare:cf};const artifactBytes={candidate,rollback,migration};
-  let executionClaimMayExist=false;
-  try{
-    executionClaimMayExist=true;
-    const outcome=await runWeeklyGlowRelease({admission,admissionDecision,manifest,artifactBytes,providers,storage,ledger});
-    const patRemoved=await secureRemove(PAT_FILE);if(!patRemoved)throw new Error('release closed but the local temporary Management API token file could not be removed');
-    process.stdout.write(`${JSON.stringify({type:'result',status:outcome.status,releaseId:WEEKLY_RELEASE.id,gateSourceCommit,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,manifestDriveId:manifestStored.id,manifestSha256:durableManifest.sha256,decisionDriveId:decisionStored.id,decisionSha256:admissionDecision.sha256,executionClaimGithubRef:outcome.executionClaimGithubRef||null,closeoutDriveId:outcome.receiptDriveId,closeoutSha256:outcome.receiptSha256,closeoutBytes:outcome.receiptBytes,workerVersion:outcome.workerVersion,migrationLedger:outcome.migrationLedger,tokenFileRemoved:patRemoved})}\n`);
-  }catch(error){
-    if(executionClaimMayExist){try{await secureRemove(PAT_FILE);}catch{}}
-    throw error;
-  }
-  } catch(error) {
-    if(patLoaded&&supabaseForCleanup&&cloudflareForCleanup){
-      try{
-        const [db,worker]=await Promise.all([supabaseForCleanup.read(),cloudflareForCleanup.read()]);
-        if(!db.migrationPresent&&worker.versionId===WEEKLY_RELEASE.rollbackVersion&&worker.trafficPercent===100)await secureRemove(PAT_FILE);
-      }catch{}
-    }
-    throw error;
-  }
+  const outcome=await runWeeklyGlowRelease({admission,admissionDecision,manifest,artifactBytes,providers,storage,ledger});
+  process.stdout.write(`${JSON.stringify({type:'result',status:outcome.status,releaseId:WEEKLY_RELEASE.id,gateSourceCommit,runtimeSourceCommit:WEEKLY_RELEASE.runtimeSource,candidateSha256:WEEKLY_RELEASE.candidate,manifestDriveId:manifestStored.id,manifestSha256:durableManifest.sha256,decisionDriveId:decisionStored.id,decisionSha256:admissionDecision.sha256,executionClaimGithubRef:outcome.executionClaimGithubRef||null,closeoutDriveId:outcome.receiptDriveId,closeoutSha256:outcome.receiptSha256,closeoutBytes:outcome.receiptBytes,workerVersion:outcome.workerVersion,migrationLedger:outcome.migrationLedger,managementTokenFilePreserved:true})}\n`);
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))main().catch(error=>{process.stdout.write(`${JSON.stringify({type:'result',status:'BLOCKED_OR_FAILED',message:String(error?.message||error)})}\n`);process.exitCode=2;});
