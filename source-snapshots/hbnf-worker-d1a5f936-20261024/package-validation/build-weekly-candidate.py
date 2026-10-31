@@ -13,7 +13,7 @@ ACCOUNT = "e3bc6b78f1104fa0c2a01245084594cf"
 BASELINE_VERSION = "08633e43-dbaa-4421-a072-5af56f75d4b7"
 BASELINE_SHA256 = "a3ef09676caf0a39d53cc269ed8863cf2705708c528641cf94cd47dd49d58dc7"
 EVENT_MIGRATION = "20261031054752_hbnf_udisc_glow_event_bindings.sql"
-EXPECTED_MODIFIED_ASSETS = ["public/udisc-glow-live-source.mjs"]
+EXPECTED_MODIFIED_ASSETS = []
 
 
 def sha(data: bytes) -> str:
@@ -140,7 +140,7 @@ def main() -> None:
         "baseline": {"worker": WORKER, "activeVersionId": BASELINE_VERSION, "activePercentage": 100,
                      "rollbackPackageSha256": BASELINE_SHA256, "rollbackPackageBytes": len(baseline_bytes), "assetCount": 46},
         "assetChanges": modifications,
-        "assetCounts": {"unchanged": 45, "modified": changed, "added": []},
+        "assetCounts": {"unchanged": 46, "modified": changed, "added": []},
         "snapshotOnlyAssetDeltasExcluded": ["public/admin.html", "public/random.html", "public/skills.html", "public/skins.html"],
         "databaseMigration": {"path": "database/" + EVENT_MIGRATION, "sha256": sha(migration_bytes), "bytes": len(migration_bytes), "order": 1},
         "runtimeAccess": {"sourceMethod": "event-specific /leaderboard/export XLSX", "approvalFlag": "UDISC_GLOW_ACCESS_APPROVED=true",
