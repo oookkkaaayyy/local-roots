@@ -314,6 +314,8 @@ def main() -> None:
     parser.add_argument("--rollback-baseline-owner-pwa-version", default="1.0.8")
     parser.add_argument("--rollback-baseline-manifest", type=Path,
         help="explicit existing installed-tree manifest; defaults to the version-local manifest")
+    parser.add_argument("--installed-pwa-manifest",
+        type=Path, help="exact installed web manifest to preserve for this PWA's installation identity")
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.package_version):
         raise SystemExit("--package-version must be a semantic x.y.z version")
@@ -339,6 +341,14 @@ def main() -> None:
             except ValueError as exc:
                 raise SystemExit("strict source binding requires the explicit rollback manifest inside the checkout") from exc
             source_paths.append(baseline_manifest)
+        if args.installed_pwa_manifest:
+            installed_manifest = args.installed_pwa_manifest if args.installed_pwa_manifest.is_absolute() else root / args.installed_pwa_manifest
+            installed_manifest = installed_manifest.resolve()
+            try:
+                installed_manifest.relative_to(root)
+            except ValueError as exc:
+                raise SystemExit("strict source binding requires the installed PWA manifest inside the checkout") from exc
+            source_paths.append(installed_manifest)
         if args.rollback_baseline_readback_receipt:
             source_paths.append((root / args.rollback_baseline_readback_receipt).resolve())
         if args.rollback_baseline_package_dir:
@@ -409,15 +419,26 @@ def main() -> None:
     if args.strict_source_binding:
         verify_javascript(payload)
 
-    manifest_source = json.loads((source / "hbnf-cart-manifest.webmanifest").read_text())
-    manifest_source["id"] = "./hbnf-cart.html"
-    manifest_source["start_url"] = "./hbnf-cart.html?local-owner=" + args.source_commit[:12]
-    manifest_source["scope"] = "./"
-    manifest_source["icons"] = [
-        {"src": "./hbnf-cart-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-        {"src": "./hbnf-cart-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    ]
-    (payload / "hbnf-cart-manifest.webmanifest").write_text(json.dumps(manifest_source, indent=2) + "\n")
+    if args.installed_pwa_manifest:
+        installed_manifest = args.installed_pwa_manifest if args.installed_pwa_manifest.is_absolute() else root / args.installed_pwa_manifest
+        installed_manifest = installed_manifest.resolve()
+        if not baseline.is_file():
+            raise SystemExit("preserving an installed PWA manifest requires the exact installed baseline manifest")
+        expected_manifest = next((line.split("  ", 1)[0] for line in baseline.read_text().splitlines()
+                                  if line.endswith("  hbnf-cart-manifest.webmanifest")), None)
+        if not expected_manifest or digest(installed_manifest.read_bytes()) != expected_manifest:
+            raise SystemExit("installed PWA manifest bytes do not match the exact rollback baseline")
+        (payload / "hbnf-cart-manifest.webmanifest").write_bytes(installed_manifest.read_bytes())
+    else:
+        manifest_source = json.loads((source / "hbnf-cart-manifest.webmanifest").read_text())
+        manifest_source["id"] = "./hbnf-cart.html"
+        manifest_source["start_url"] = "./hbnf-cart.html?local-owner=" + args.source_commit[:12]
+        manifest_source["scope"] = "./"
+        manifest_source["icons"] = [
+            {"src": "./hbnf-cart-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+            {"src": "./hbnf-cart-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+        ]
+        (payload / "hbnf-cart-manifest.webmanifest").write_text(json.dumps(manifest_source, indent=2) + "\n")
     if args.strict_source_binding:
         verify_payload_references(payload)
 
