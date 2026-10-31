@@ -98,7 +98,7 @@
   .weather-course-toggle{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;gap:8px 12px;padding:14px 38px 14px 2px;min-height:100px}
   .weather-course-name{grid-column:1/-1;grid-row:1;display:flex;align-items:baseline;flex-wrap:wrap;gap:3px 8px}
   .weather-course-name strong{font-size:.9rem;line-height:1.18}
-  .weather-course-name small{font-size:.7rem;white-space:nowrap}
+  .weather-course-name small{font-size:.7rem;white-space:normal;overflow-wrap:anywhere}
   .weather-metric{grid-row:2;display:flex;align-items:baseline;flex-wrap:wrap;gap:3px}
   .weather-metric strong{font-size:.84rem;line-height:1.2}
   .weather-metric small{font-size:.67rem;line-height:1.2;white-space:nowrap}
