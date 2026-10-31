@@ -1,0 +1,30 @@
+{
+  "format": "hbnf-supabase-operation-execution-claim-v1",
+  "releaseId": "hbnf-glow-week-init-20261103-20261031-fbd15227",
+  "oneTime": true,
+  "sourceCommit": "fbd152270cb58180d4f950d61e12d2745ddb90c3",
+  "runtimeCommit": "44612c09677f59b84bece7de655af7bb011b51e7",
+  "target": {
+    "provider": "Supabase",
+    "project": "phcpbvuqibyarpfrftgx",
+    "relation": "public.league_state",
+    "rowId": 1
+  },
+  "baseline": {
+    "updatedAt": "2026-10-31T00:17:05.159339+00:00",
+    "stateJsonBytes": 2552524,
+    "stateJsonMd5": "d94723da1bcc95921c6bf413568ebdb2",
+    "backupDriveId": "13NHe8yWnKpiiCB1F7coDVXM8ryR22IX9",
+    "backupSha256": "2c2e16d62a9b368fb586e50b739901d6fe8d6a2bf38f261149d5e6673bc3be02"
+  },
+  "operationPlan": {
+    "driveId": "1QMqMjnQ-_Cn69JLt37wHhzo8FYYyKPvV",
+    "sha256": "b881cb7fb8a40502505644f1b79a27c1c377a9b4f125f4a8c81fb043e2a779c9"
+  },
+  "admission": {
+    "driveId": "1V47b0VYUAwHXXWQ0Gtr-uR-BMcNLfxo1",
+    "sha256": "fb0d72ce7f96ce9cccb856706a02fcc2039c28ad78b806999d497ac6e21ef670"
+  },
+  "claimCreatedAt": "2026-10-31T09:09:50.169Z",
+  "uniqueness": "GitHub feature-branch ref update is atomic; competing update causes non-fast-forward rejection."
+}
