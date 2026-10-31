@@ -48,7 +48,7 @@ def main() -> None:
     repo, source, baseline, output = (p.resolve() for p in (args.repo_root, args.source_root, args.baseline_archive, args.output_dir))
     if len(args.source_commit) != 40:
         raise SystemExit("source commit must be a full 40-character SHA")
-    subprocess.check_call(["git", "-C", str(repo), "cat-file", "-e", f"{args.source_commit}^{{commit}"])
+    subprocess.check_call(["git", "-C", str(repo), "cat-file", "-e", f"{args.source_commit}^{{commit}}"])
     baseline_bytes = baseline.read_bytes()
     if sha(baseline_bytes) != BASELINE_SHA256:
         raise SystemExit("current installed Worker rollback bytes do not match the verified 086 candidate")
