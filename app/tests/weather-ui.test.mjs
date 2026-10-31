@@ -138,7 +138,12 @@ test('mobile hourly detail keeps time, rain, and conditions together without sid
   assert.match(css,/\.weather-hourly\{display:block;width:100%;min-width:0/);
   assert.match(css,/\.weather-hourly tbody tr\{display:grid/);
   assert.match(css,/\.weather-hourly tbody td:nth-child\(5\)\{grid-column:3;grid-row:1\}/);
-  assert.match(css,/\.weather-hourly tbody td:nth-child\(6\)\{grid-column:1\/-1;grid-row:3\}/);
+  assert.match(css,/\.weather-hourly tbody th\{grid-column:1;grid-row:1\/4;/);
+  assert.match(css,/\.weather-hourly tbody td:nth-child\(6\)\{grid-column:2\/4;grid-row:3\}/);
+  assert.match(css,/\.weather-hourly-clock\{display:block;color:var\(--root\);font-size:1\.03rem;font-weight:850/);
+  assert.match(page,/function hourlyTimeParts\(/);
+  assert.match(page,/className="weather-hourly-clock"/);
+  assert.match(page,/className="weather-hourly-day"/);
   for(const label of ['Temp','Wind','Gust','Rain','Conditions'])assert.ok(page.includes('data-label="'+label+'"'));
   assert.match(page,/role="table"/);
 });
@@ -169,4 +174,14 @@ test('course locations expose source-verified ZIPs and coordinate-based NWS link
   assert.match(page,/Copy location/);
   assert.match(page,/https:\/\/forecast\.weather\.gov\/MapClick\.php\?lat=/);
   assert.match(page,/NWS forecast/);
+});
+
+test('mobile filter grid gives native iPhone date control its own full-width row',async()=>{
+  const css=await read('../src/weather.css');
+  const page=await read('../src/pages/WeatherPage.tsx');
+  assert.match(css,/grid-template-areas:"zip radius" "date date" "start end" "allDay search"/);
+  assert.match(css,/\.weather-controls \.weather-field-date\{grid-area:date\}/);
+  assert.match(css,/\.weather-controls input\[type="date"\]\{[^}]*width:100%;min-width:0;max-width:100%;box-sizing:border-box/);
+  for(const field of ['zip','radius','date','start','end'])assert.match(page,new RegExp('className="weather-field-'+field+'"'));
+  assert.match(page,/type="date" min=\{selectDateMin\} max=\{selectDateMax\}/);
 });
