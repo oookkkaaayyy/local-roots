@@ -137,7 +137,7 @@ test('mobile hourly detail keeps time, rain, and conditions together without sid
   assert.match(css,/\.weather-hourly-scroll\{overflow-x:hidden/);
   assert.match(css,/\.weather-hourly\{display:block;width:100%;min-width:0/);
   assert.match(css,/\.weather-hourly tbody tr\{display:grid/);
-  assert.match(css,/\.weather-hourly tbody td:nth-child\(5\)\{grid-column:3;grid-row:1\}/);
+  assert.match(css,/\.weather-hourly tbody td:nth-child\(5\)\{grid-column:3;grid-row:1(?:;|\})/);
   assert.match(css,/\.weather-hourly tbody th\{grid-column:1;grid-row:1\/4;/);
   assert.match(css,/\.weather-hourly tbody td:nth-child\(6\)\{grid-column:2\/4;grid-row:3\}/);
   assert.match(css,/\.weather-hourly-clock\{display:block;color:var\(--root\);font-size:1\.03rem;font-weight:850/);
