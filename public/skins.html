@@ -1283,7 +1283,7 @@ function makeSyncHelpers(ctx){return{
   ctx.syncBaselineReady=false;
   ctx.syncBaselinePromise=this.pullRoot();
   await ctx.syncBaselinePromise;
-  ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live').on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
+  ctx.realtimeChannel=ctx.supabaseClient.channel(ctx.branch+'-live',{config:{broadcast:{replication_ready:true},postgres_changes_options:{wait:true}}}).on('system',{},payload=>{if(payload?.extension==='system'&&payload?.message==='Replication connection established'&&payload?.status==='ok')ctx.requestAuthoritativeCatchup()}).on('postgres_changes',{event:'*',schema:'public',table:'league_state'},payload=>{
    // Realtime delivery can lag the HTTP ACK/GET. Ignore an older or already
    // confirmed revision so a delayed echo cannot mark this page conflicted.
    const incomingRevision=String(payload.new&&payload.new.updated_at||'');
