@@ -91,6 +91,18 @@ test("event detail migration runs in PostgreSQL and keeps patch, validation, and
     event = (await db.query("select entry_fee_amount from public.lr_events where id=$1", [eventId])).rows[0];
     assert.equal(Number(event.entry_fee_amount), 10);
     assert.equal((await db.query("select verification_status from public.lr_event_field_status where event_id=$1 and field_name='format'", [eventId])).rows.length, 1);
+
+    const placeholderId = "22222222-2222-4222-8222-222222222222";
+    await db.query(`
+      insert into public.lr_events(id,slug,name,start_date,end_date,county,city,event_type,status,sanctioned,last_verified_at)
+      values($1,'pglite-schedule-placeholder','Unobserved schedule placeholder',date '2026-11-10',date '2026-11-10','Orange','Huntington Beach','other','upcoming',false,now())
+    `, [placeholderId]);
+    await db.query(`
+      insert into public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,source_payload)
+      values($1,$2,'placeholder','https://hbnightflyers.com/','organizer_confirmed',$3::jsonb)
+    `, [placeholderId, sourceId, JSON.stringify({ origin: "club_schedule_rule", observed_in_league_state: false, schedule_rule: "tuesday" })]);
+    await db.query("update public.lr_events set published=true where id=$1", [placeholderId]);
+    assert.equal((await db.query("select published from public.lr_events where id=$1", [placeholderId])).rows[0].published, false);
   } finally {
     await db.close();
   }
