@@ -71,6 +71,37 @@ jobs:
           fi
           echo "OVERALL=SERVE_BYTE_PARITY_PASS (not browser cache or scoring runtime acceptance)" | tee -a "$report"
 
+      - name: Render actual public Glow UI in headless Chrome
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _hbnf_verify
+          report="_hbnf_verify/report.txt"
+          touch "$report"
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || true)"
+          if [ -z "$chrome" ]; then
+            echo "BROWSER_ROUTE=UNAVAILABLE (no preinstalled Chrome)" | tee -a "$report"
+            exit 1
+          fi
+          if timeout 65s "$chrome" --headless --no-sandbox --disable-gpu \
+             --disable-dev-shm-usage --virtual-time-budget=7000 --dump-dom \
+             "https://hbnightflyers.com/glow.html" \
+             > _hbnf_verify/served-ui-dom.html 2> _hbnf_verify/chrome-stderr.txt; then
+            if grep -Fq 'Fast End-of-Round Import' _hbnf_verify/served-ui-dom.html \
+               && grep -Fq 'UDisc' _hbnf_verify/served-ui-dom.html \
+               && grep -Fq 'Glow Doubles' _hbnf_verify/served-ui-dom.html; then
+              echo "BROWSER_RENDERED_UDISC_UI=PASS (server DOM only; not installed iPhone cache or end-to-end sync)" | tee -a "$report"
+              sha256sum _hbnf_verify/served-ui-dom.html | tee -a "$report"
+            else
+              echo "BROWSER_RENDERED_UDISC_UI=FAIL (unrecognized/challenge/blocked HTML)" | tee -a "$report"
+              exit 1
+            fi
+          else
+            echo "BROWSER_RENDERED_UDISC_UI=FAIL (Chrome could not render public page)" | tee -a "$report"
+            exit 1
+          fi
+
       - name: Save limited read-only receipt for review
         if: always()
         uses: actions/upload-artifact@v4
