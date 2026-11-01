@@ -4,7 +4,6 @@ import { readZipMember } from './zip-member.mjs';
 const ACCOUNT = 'e3bc6b78f1104fa0c2a01245084594cf';
 const ZONE = 'f126298df13dcb1d8b58b62b47f52a20';
 const PROJECT = 'phcpbvuqibyarpfrftgx';
-const RETAINED_WORKER_ROLLBACK = '3b019c24-0288-4c0d-bcc2-46cb6028d0f6';
 const EDGE_SLUGS = Object.freeze({ 'edge-tag-editor': 'hbnf-tag-editor', 'edge-tags-live': 'hbnf-tags-live', 'edge-watch-score': 'hbnf-watch-score' });
 const sha = value => createHash('sha256').update(typeof value === 'string' || Buffer.isBuffer(value) || value instanceof Uint8Array ? value : JSON.stringify(value)).digest('hex');
 const STABLE_STATE_SQL = `select jsonb_build_object(
@@ -32,7 +31,9 @@ export function createAuthenticatedReadAdapters({ env = process.env, fetchImpl =
   const json = async response => response.json();
   return Object.freeze({
     readOnly: true,
-    async readAllTargets() {
+    async readAllTargets(transaction) {
+      const workerRollbackVersionId = transaction?.targets?.find(t => t.id === 'cloudflare-worker')?.rollback?.providerVersionId;
+      if (!workerRollbackVersionId) throw new Error('WORKER_ROLLBACK_VERSION_ID_REQUIRED');
       const [deployment, versions, routes, project, functions, query] = await Promise.all([
         cf(`/accounts/${ACCOUNT}/workers/scripts/hbnf/deployments`).then(json),
         cf(`/accounts/${ACCOUNT}/workers/scripts/hbnf/versions`).then(json),
@@ -47,7 +48,7 @@ export function createAuthenticatedReadAdapters({ env = process.env, fetchImpl =
       const versionItems = versions.result?.items;
       if (!Array.isArray(versionItems)) throw new Error('WORKER_VERSION_LIST_MISSING');
       const version = versionItems.find(v => v.id === active.version_id);
-      const retainedRollback = versionItems.find(v => v.id === RETAINED_WORKER_ROLLBACK);
+      const retainedRollback = versionItems.find(v => v.id === workerRollbackVersionId);
       const route = (routes.result || []).find(r => r.pattern === 'hbnightflyers.com' && r.script === 'hbnf');
       if (!version || !route || !retainedRollback) throw new Error('WORKER_VERSION_ROUTE_OR_RETAINED_ROLLBACK_NOT_FOUND');
       const rows = query.result || query;

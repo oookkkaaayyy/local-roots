@@ -14,7 +14,7 @@ export function validateTransaction(tx) {
   if (!tx?.acceptanceCriteria?.length || tx.acceptanceCriteria.some(c=>!c.id||!c.description||!c.method||!c.expected)) errors.push('complete acceptance criteria missing');
   const targets = tx?.targets || [];
   if (targets.length !== REQUIRED_TARGETS.length || new Set(targets.map(t => t.id)).size !== targets.length || REQUIRED_TARGETS.some(id => !targets.some(t => t.id === id))) errors.push('exact five target baseline set required');
-  for (const t of targets) if (!t.baselineIdentity || !/^[a-f0-9]{64}$/i.test(t.baselineSha256 || '') || !/^[a-f0-9]{64}$/i.test(t.rollback?.sha256 || '') || !t.rollback?.driveFileId || !Number.isSafeInteger(t.rollback?.bytes) || t.rollback.bytes<1 || t.rollback.downloadBackVerified!==true) errors.push(`target ${t.id}: baseline and rollback binding incomplete`);
+  for (const t of targets) if (!t.baselineIdentity || !/^[a-f0-9]{64}$/i.test(t.baselineSha256 || '') || !/^[a-f0-9]{64}$/i.test(t.rollback?.sha256 || '') || !t.rollback?.driveFileId || !Number.isSafeInteger(t.rollback?.bytes) || t.rollback.bytes<1 || t.rollback.downloadBackVerified!==true || (t.id === 'cloudflare-worker' && !/^[0-9a-f-]{36}$/i.test(t.rollback?.providerVersionId || ''))) errors.push(`target ${t.id}: baseline and rollback binding incomplete`);
   const operations = tx?.operations || [];
   if (operations.length !== REQUIRED_STAGES.length) errors.push('exact seven ordered stages required');
   for (let i = 0; i < REQUIRED_STAGES.length; i++) {
@@ -36,7 +36,7 @@ export async function providerBoundPreflight(tx, provider, evidenceStore) {
   if (errors.length) return { status: 'PENDING', errors, admission: 'NOT_ADMITTED' };
   if (!provider?.readOnly || typeof provider.readAllTargets !== 'function') return { status: 'PENDING', errors: ['authenticated read-only provider adapter required'], admission: 'NOT_ADMITTED' };
   if(typeof evidenceStore?.readAndVerifyDriveArtifact!=='function') return { status:'PENDING',errors:['independent artifact download verifier required'],admission:'NOT_ADMITTED' };
-  const observed = await provider.readAllTargets();
+  const observed = await provider.readAllTargets(tx);
   const expectedIds = REQUIRED_TARGETS.slice().sort();
   if (Object.keys(observed).sort().join('|') !== expectedIds.join('|')) return { status: 'PENDING', errors: ['provider target set mismatch'], admission: 'NOT_ADMITTED' };
   const mismatches = [];
@@ -47,7 +47,7 @@ export async function providerBoundPreflight(tx, provider, evidenceStore) {
     try { const check=await evidenceStore.readAndVerifyDriveArtifact(artifact); artifacts.push(check); if(!check.verified) mismatches.push(`artifact:${artifact.driveFileId}`); }
     catch { mismatches.push(`artifact:${artifact.driveFileId}`); }
   }
-  const finalObserved=await provider.readAllTargets();
+  const finalObserved=await provider.readAllTargets(tx);
   for(const target of tx.targets) if(digest(finalObserved[target.id])!==digest(observed[target.id])) mismatches.push(`provider-drift:${target.id}`);
   const manifest = { schemaVersion: 1, transactionId: tx.transactionId, transactionSha256: digest(tx), transaction:tx, status: 'PENDING', preflightStatus: mismatches.length ? 'FAIL' : 'PASS', targetReadbacks: finalObserved, verifiedArtifacts:artifacts, mismatches, admission: 'NOT_ADMITTED', capturedAt: new Date().toISOString() };
   const bytes = Buffer.from(canonical(manifest));

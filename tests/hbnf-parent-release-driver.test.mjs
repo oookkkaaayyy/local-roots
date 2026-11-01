@@ -13,7 +13,7 @@ const targetIds = ['supabase-schema','edge-tag-editor','edge-tags-live','edge-wa
 const initial = Object.fromEntries(targetIds.map(id => [id, { id, revision: 0 }]));
 const makeTx = () => {
   const states = structuredClone(initial);
-  const targets = targetIds.map(id => ({ id, provider: id.startsWith('edge-') ? 'Supabase' : id === 'cloudflare-worker' ? 'Cloudflare' : 'Supabase', target: id, baselineIdentity: digest(states[id]), baselineSha256: digest(states[id]), rollback: { driveFileId: `rollback-${id}`, sha256: 'a'.repeat(64), bytes: 1, downloadBackVerified: true } }));
+  const targets = targetIds.map(id => ({ id, provider: id.startsWith('edge-') ? 'Supabase' : id === 'cloudflare-worker' ? 'Cloudflare' : 'Supabase', target: id, baselineIdentity: digest(states[id]), baselineSha256: digest(states[id]), rollback: { driveFileId: `rollback-${id}`, sha256: 'a'.repeat(64), bytes: 1, downloadBackVerified: true, ...(id === 'cloudflare-worker' ? { providerVersionId: '08633e43-dbaa-4421-a072-5af56f75d4b7' } : {}) } }));
   const operations = REQUIRED_STAGES.map(([id, targetId], index) => {
     const beforeState = structuredClone(states[targetId]);
     const afterState = { ...beforeState, revision: beforeState.revision + 1, applied: id };
@@ -138,25 +138,35 @@ test('provider reads require credentials and mutations are absent from authentic
 test('authenticated provider adapter reads the five exact production target types without mutation endpoints',async()=>{
   const calls=[];
   const functionRows=['hbnf-tag-editor','hbnf-tags-live','hbnf-watch-score'].map((slug,i)=>({slug,status:'ACTIVE',version:[5,4,14][i],ezbr_sha256:`sha-${i}`,verify_jwt:false,updated_at:'2026-10-30T00:00:00Z'}));
+  const workerCurrent='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6', workerRollback='08633e43-dbaa-4421-a072-5af56f75d4b7';
   const replies=[
-    {result:{deployments:[{id:'dep',versions:[{version_id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',percentage:100}]}]}},
-    {result:{items:[{id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',number:343,metadata:{source:'wrangler'}}]}},
+    {result:{deployments:[{id:'dep',versions:[{version_id:workerCurrent,percentage:100}]}]}},
+    {result:{items:[{id:workerCurrent,number:348,metadata:{source:'wrangler'}},{id:workerRollback,number:347,metadata:{source:'wrangler'}},{id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',number:343,metadata:{source:'wrangler'}}]}},
     {result:[{pattern:'hbnightflyers.com',script:'hbnf'}]},
     {id:'phcpbvuqibyarpfrftgx',status:'ACTIVE_HEALTHY',region:'us-west-2'},
     functionRows,
     [{snapshot:{league_state:{id:1,sha256:'state'},triggers:[],functions:[],grants:[]}}],
   ];
   const adapter=createAuthenticatedReadAdapters({env:{CLOUDFLARE_API_TOKEN:'cf-test',SUPABASE_ACCESS_TOKEN:'sb-test',GOOGLE_DRIVE_ACCESS_TOKEN:'drive-test'},fetchImpl:async(url,init={})=>{calls.push({url,method:init.method||'GET',auth:init.headers?.authorization,body:init.body});return new Response(JSON.stringify(replies[calls.length-1]),{status:200})}});
-  const targets=await adapter.readAllTargets();
+  const targets=await adapter.readAllTargets(makeTx());
   assert.deepEqual(Object.keys(targets).sort(),targetIds.slice().sort());
-  assert.equal(targets['cloudflare-worker'].activeVersionId,'3b019c24-0288-4c0d-bcc2-46cb6028d0f6');
+  assert.equal(targets['cloudflare-worker'].activeVersionId,workerCurrent);
   assert.equal(targets['cloudflare-worker'].deploymentId,'dep');
   assert(calls.some(c=>c.url.endsWith('/workers/scripts/hbnf/deployments')));
   assert(calls.some(c=>c.url.endsWith('/workers/scripts/hbnf/versions')));
-  assert.equal(targets['cloudflare-worker'].retainedRollbackVersionId,'3b019c24-0288-4c0d-bcc2-46cb6028d0f6');
+  assert.equal(targets['cloudflare-worker'].versionNumber,348);
+  assert.equal(targets['cloudflare-worker'].retainedRollbackVersionId,workerRollback);
+  assert.equal(targets['cloudflare-worker'].retainedRollbackVersionNumber,347);
   assert.equal(targets['edge-watch-score'].version,14);
   assert(calls.every(c=>c.auth?.startsWith('Bearer ')));
   const queryCall=calls.find(c=>c.url.includes('/database/query'));
   assert.equal(queryCall.method,'POST'); assert.match(JSON.parse(queryCall.body).query,/^select jsonb_build_object/i);
   assert(calls.filter(c=>c.url.includes('workers/')||c.url.includes('/functions')).every(c=>c.method==='GET'));
+});
+
+test('provider preflight refuses to guess a rollback version from repository history', async()=>{
+  const adapter=createAuthenticatedReadAdapters({env:{CLOUDFLARE_API_TOKEN:'x',SUPABASE_ACCESS_TOKEN:'y',GOOGLE_DRIVE_ACCESS_TOKEN:'z'},fetchImpl:async()=>new Response('{}',{status:200})});
+  await assert.rejects(()=>adapter.readAllTargets({targets:[{id:'cloudflare-worker',rollback:{}}]}),/WORKER_ROLLBACK_VERSION_ID_REQUIRED/);
+  const tx=makeTx(); delete tx.targets.find(t=>t.id==='cloudflare-worker').rollback.providerVersionId;
+  assert(validateTransaction(tx).some(e=>e==='target cloudflare-worker: baseline and rollback binding incomplete'));
 });
