@@ -51,7 +51,7 @@ test('final cutover revokes direct writes only in a separately gated SQL artifac
 });
 
 test('cutover preserves the installed eight-second server-side CAS timeout', () => {
-  assert.match(migration, /create\s+or\s+replace\s+function\s+public\.hbnf_save_league_state_v1[\s\S]*?set\s+statement_timeout\s*=\s*'8s'/i);
+  assert.match(migration, /create\s+or\s+replace\s+function\s+public\.hbnf_save_league_state_v1[\s\S]*?set\s+statement_timeout\s*(?:=|TO)\s*'8s'/i);
 });
 
 test('RPC preserves installed guarded-write semantics and fails closed on stale revision', () => {
