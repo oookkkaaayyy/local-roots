@@ -21,3 +21,17 @@ jobs:
           node-version: '22'
       - name: Verify review-only parent gate and cutover source invariants (no secrets)
         run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs
+      - name: Fetch exact installed v48 source (read only)
+        run: git fetch --no-tags --depth=1 origin 44612c09677f59b84bece7de655af7bb011b51e7
+      - name: Assemble reproducible REVIEW_ONLY site asset package
+        run: node scripts/hbnf-parent-release/build-review-only-assets.mjs
+      - name: Attach unadmitted candidate (not a deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-P0-public-assets-REVIEW_ONLY
+          path: |
+            build/HBNF-P0-public-assets-REVIEW_ONLY.zip
+            build/HBNF-P0-public-assets-review-result.json
+          if-no-files-found: error
+          retention-days: 14
+
