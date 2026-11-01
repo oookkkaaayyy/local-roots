@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const migration = await readFile(new URL('../supabase/migrations/20261029204700_hbnf_league_state_guarded_rpc_cutover.sql', import.meta.url), 'utf8');
+const contract = await readFile(new URL('../scripts/hbnf-parent-release/sql/db-revoke-old-writes.sql', import.meta.url), 'utf8');
 const sync = await readFile(new URL('../public/hbnf-league-state-sync.js', import.meta.url), 'utf8');
 const skins = await readFile(new URL('../public/skins.html', import.meta.url), 'utf8');
 const tagRevision = await readFile(new URL('../supabase/migrations/20261030230000_hbnf_verify_round_tag_revision_enforcement.sql', import.meta.url), 'utf8');
@@ -33,12 +34,18 @@ test('Skins recovery matches the persisted pending draft base before the origina
   assert.match(skins, /pendingEditBaseHash===hbnfSemanticHash\(remoteBranch\)\|\|pendingEditBaseHash===hbnfSyncHash\(remoteBranch\)/);
 });
 
-test('cutover revokes public direct insert/update and keeps anonymous RPC execution', () => {
-  assert.match(migration, /revoke insert, update on table public\.league_state from public, anon, authenticated/i);
-  assert.match(migration, /grant select on table public\.league_state to anon, authenticated/i);
+test('RPC expansion is additive and leaves legacy table writers available until final cutover', () => {
   assert.match(migration, /grant execute on function public\.hbnf_save_league_state_v1\(timestamptz, jsonb\)\s+to anon, authenticated/i);
-  assert.match(migration, /drop policy if exists "Public can update league_state"/i);
-  assert.match(migration, /drop policy if exists "Public can write league_state"/i);
+  assert.doesNotMatch(migration, /revoke\s+(?:insert\s*,\s*update|update\s*,\s*insert)\s+on\s+(?:table\s+)?public\.league_state/i);
+  assert.doesNotMatch(migration, /drop policy if exists "Public can (?:update|write) league_state"/i);
+});
+
+test('final cutover revokes direct writes only in a separately gated SQL artifact', () => {
+  assert.match(contract, /revoke insert, update on table public\.league_state from public, anon, authenticated/i);
+  assert.match(contract, /grant select on table public\.league_state to anon, authenticated/i);
+  assert.match(contract, /drop policy if exists "Public can update league_state"/i);
+  assert.match(contract, /drop policy if exists "Public can write league_state"/i);
+  assert.doesNotMatch(contract, /create\s+or\s+replace\s+function\s+public\.hbnf_save_league_state_v1/i);
 });
 
 test('cutover preserves the installed eight-second server-side CAS timeout', () => {
