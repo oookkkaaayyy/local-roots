@@ -41,6 +41,10 @@ test('cutover revokes public direct insert/update and keeps anonymous RPC execut
   assert.match(migration, /drop policy if exists "Public can write league_state"/i);
 });
 
+test('cutover preserves the installed eight-second server-side CAS timeout', () => {
+  assert.match(migration, /create\s+or\s+replace\s+function\s+public\.hbnf_save_league_state_v1[\s\S]*?set\s+statement_timeout\s*=\s*'8s'/i);
+});
+
 test('RPC rejects missing revisions and returns zero rows for stale CAS', () => {
   assert.match(migration, /p_expected_updated_at is null[\s\S]*?errcode = '22023'/i);
   assert.match(migration, /where ls\.id = 1\s+and ls\.updated_at = p_expected_updated_at/i);
