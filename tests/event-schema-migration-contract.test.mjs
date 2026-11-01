@@ -24,6 +24,17 @@ test("candidate promotion retains authority, override precedence and null-safe m
   assert.match(migration, /lr_event_field_evidence/);
   assert.match(migration, /source_field_conflict/);
   assert.match(migration, /authoritative source conflicts with an active manual event override/);
+  assert.match(migration, /coalesce\(\(ev->>'clear_value'\)::boolean,false\)/);
+  assert.match(migration, /evidence_status in \('not_announced','not_applicable'\)/);
+  assert.ok(migration.includes("evidence_verified_at:=(ev->>'verified_at')::timestamptz"));
+  assert.match(migration, /evidence_verified_at\+evidence_ttl<now\(\) then evidence_status:='stale'/);
+  assert.match(migration, /identity\/control field %/);
+  assert.match(migration, /verification_ttl interval not null default interval '14 days'/);
+  assert.match(migration, /evidence_verified_at\+evidence_ttl/);
+  assert.match(migration, /s\.field_name=any\(authorized_source\.authoritative_fields\)/);
+  assert.match(migration, /'authorized_sources'/);
+  assert.match(migration, /where key='oak_grove_disc_golf_club_direct'/);
+  assert.match(migration, /where key='crpd_rabbit_flats_direct'/);
   assert.match(migration, /with original as materialized[\s\S]*?jsonb_populate_record\(o::public\.lr_events,v_patch\)[\s\S]*?from patched p where e\.id=p\.id returning e\.\* into v_event/i);
 });
 
@@ -95,4 +106,5 @@ test("freshness monitor is bounded, upcoming-only, deduplicated and does not cla
   assert.match(migration, /q\.issue_type='event_field_verification'[\s\S]*?q\.details->>'field'=r\.field_name/);
   assert.match(migration, /'unverified'/);
   assert.match(migration, /Clearing a value is not evidence that the organizer has not announced it/);
+  assert.match(migration, /with resolved_fields as materialized[\s\S]*?verification_status in \('verified','not_applicable','not_announced'\)[\s\S]*?e\.status in \('canceled','completed'\) or not e\.published or s\.start_date<v_today[\s\S]*?from resolved_fields rf/);
 });

@@ -1,0 +1,131 @@
+{
+  "as_of": "2026-11-01T05:58:03.279745+00:00",
+  "unpublished_events": [
+    {
+      "id": "40caa5aa-0f65-45a2-bbfd-d01ab846ff50",
+      "slug": "hbnf-glow-2026-07-25",
+      "name": "HB Night Flyers Glow Doubles",
+      "start_date": "2026-07-25",
+      "end_date": "2026-07-25",
+      "status": "completed",
+      "event_type": "doubles",
+      "source_keys": [
+        "hbnf_internal_schedule"
+      ]
+    },
+    {
+      "id": "737480f1-bb67-471e-bf75-5458b4570d0b",
+      "slug": "hbnf-glow-2026-08-23",
+      "name": "HB Night Flyers Glow Doubles",
+      "start_date": "2026-08-23",
+      "end_date": "2026-08-23",
+      "status": "completed",
+      "event_type": "doubles",
+      "source_keys": [
+        "hbnf_internal_schedule"
+      ]
+    },
+    {
+      "id": "8b5c9012-2c08-48ba-8301-727667b6dec5",
+      "slug": "hbnf-glow-2026-09-16",
+      "name": "HB Night Flyers Glow Doubles",
+      "start_date": "2026-09-16",
+      "end_date": "2026-09-16",
+      "status": "completed",
+      "event_type": "doubles",
+      "source_keys": [
+        "hbnf_internal_schedule"
+      ]
+    },
+    {
+      "id": "3e2bea4e-bbb2-461f-8dd1-10b6ccbe42e1",
+      "slug": "hbnf-glow-2026-09-19",
+      "name": "HB Night Flyers Glow Doubles",
+      "start_date": "2026-09-19",
+      "end_date": "2026-09-19",
+      "status": "completed",
+      "event_type": "doubles",
+      "source_keys": [
+        "hbnf_internal_schedule"
+      ]
+    },
+    {
+      "id": "de6409c8-9312-450d-862e-0d44c87bd356",
+      "slug": "hbnf-glow-2026-09-21",
+      "name": "HB Night Flyers Glow Doubles",
+      "start_date": "2026-09-21",
+      "end_date": "2026-09-21",
+      "status": "completed",
+      "event_type": "doubles",
+      "source_keys": [
+        "hbnf_internal_schedule"
+      ]
+    },
+    {
+      "id": "c8c2f0ad-a931-4b40-9503-636508c72648",
+      "slug": "hbnf-glow-2026-10-14",
+      "name": "HB Night Flyers Glow Doubles",
+      "start_date": "2026-10-14",
+      "end_date": "2026-10-14",
+      "status": "completed",
+      "event_type": "doubles",
+      "source_keys": [
+        "hbnf_internal_schedule"
+      ]
+    },
+    {
+      "id": "9a16049f-5753-4f35-a813-d2fa38c6dca3",
+      "slug": "hbnf-glow-2026-10-18",
+      "name": "HB Night Flyers Glow Doubles",
+      "start_date": "2026-10-18",
+      "end_date": "2026-10-18",
+      "status": "completed",
+      "event_type": "doubles",
+      "source_keys": [
+        "hbnf_internal_schedule"
+      ]
+    },
+    {
+      "id": "fcf5b947-ec41-448d-ab49-47acdbaccf79",
+      "slug": "oak-grove-cancer-awareness-tournament-2026",
+      "name": "Cancer Awareness Tournament",
+      "start_date": "2026-10-18",
+      "end_date": "2026-10-18",
+      "status": "upcoming",
+      "event_type": "tournament",
+      "source_keys": [
+        "oak_grove_disc_golf_club_direct"
+      ]
+    },
+    {
+      "id": "ffaad4a7-3684-44d6-80da-6f9223fda97f",
+      "slug": "hbnf-glow-2026-10-28",
+      "name": "HB Night Flyers Glow Doubles",
+      "start_date": "2026-10-28",
+      "end_date": "2026-10-28",
+      "status": "completed",
+      "event_type": "doubles",
+      "source_keys": [
+        "hbnf_internal_schedule"
+      ]
+    }
+  ],
+  "candidate_status_counts": [
+    {
+      "source_key": "hbnf_internal_schedule",
+      "validation_status": "valid",
+      "scope_status": "in_scope",
+      "promotion_status": "promoted",
+      "count": 2656
+    },
+    {
+      "source_key": "hbnf_internal_schedule",
+      "validation_status": "valid",
+      "scope_status": "in_scope",
+      "promotion_status": "superseded",
+      "count": 1
+    }
+  ],
+  "unpublished_event_count": 9,
+  "candidate_count": 2657
+}

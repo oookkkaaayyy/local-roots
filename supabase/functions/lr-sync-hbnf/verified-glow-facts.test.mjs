@@ -46,3 +46,11 @@ test("individual registration is asserted only for the three verified listings",
   }
   assert.equal(Object.hasOwn(verifiedGlowFacts("2026-11-24"), "format_details"), false);
 });
+
+test("manual listing evidence is anchored to its verification record and is not refreshed by sync", () => {
+  const evidence = verifiedGlowFacts("2026-11-10").field_evidence;
+  assert.equal(evidence.format.verified_at, "2026-11-01T03:25:36Z");
+  assert.equal(evidence.format.refresh_on_sync, false);
+  assert.match(evidence.format.notes, /issue #161/);
+  assert.equal(evidence.registration_url, undefined);
+});

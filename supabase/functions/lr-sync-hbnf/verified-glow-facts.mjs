@@ -7,13 +7,18 @@ const VERIFIED_NOVEMBER_GLOW = Object.freeze({
 });
 
 const COURSE_URL = "https://udisc.com/courses/huntington-beach-central-park-A9Fe";
+// Issue #161 records the independent verification of these organizer listings.
+// Use that dated evidence boundary so a later sync cannot renew manual facts.
+const VERIFIED_AT = "2026-11-01T03:25:36Z";
 
 function evidenceFor(fields, eventUrl) {
   return Object.fromEntries(fields.map((field) => [field, {
     status: "verified",
     source_key: "hbnf_udisc_manual",
     source_url: field === "course_url" ? COURSE_URL : eventUrl,
+    verified_at: VERIFIED_AT,
     refresh_on_sync: false,
+    notes: "Individually verified organizer listing documented in issue #161; sync does not refresh this manual evidence.",
   }]));
 }
 

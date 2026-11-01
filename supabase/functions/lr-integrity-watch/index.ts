@@ -53,19 +53,19 @@ Deno.serve(async (req) => {
   const verified = await service.rpc("lr_verify_integrity_sync_secret", { p_token: token });
   if (verified.error || verified.data !== true) return json({ error: "unauthorized" }, 401);
 
-  const readiness = await service.rpc("lr_launch_readiness");
-  if (readiness.error || !readiness.data) {
-    console.error("lr-integrity-watch readiness", readiness.error?.message);
-    return json({ error: "readiness_failed" }, 500);
-  }
-
   // Add the same durable, deduplicated event-field checks used by the admin
-  // review queue. A failure is visible to the scheduler instead of silently
-  // reporting a healthy integrity run with completeness checks skipped.
+  // review queue before launch readiness can fail. This keeps completeness
+  // findings actionable even while another readiness check blocks launch.
   const fieldReviews = await service.rpc("lr_enqueue_event_field_reviews", { p_horizon_days: 60 });
   if (fieldReviews.error) {
     console.error("lr-integrity-watch event-field-review", fieldReviews.error.message);
     return json({ error: "event_field_review_failed" }, 500);
+  }
+
+  const readiness = await service.rpc("lr_launch_readiness");
+  if (readiness.error || !readiness.data) {
+    console.error("lr-integrity-watch readiness", readiness.error?.message);
+    return json({ error: "readiness_failed" }, 500);
   }
 
   let stagingStatus: number | null = null;

@@ -50,4 +50,5 @@ test("scheduled integrity watch enqueues deduplicated field reviews and fails vi
   assert.ok(watch.includes('service.rpc("lr_enqueue_event_field_reviews", { p_horizon_days: 60 })'));
   assert.ok(watch.includes('return json({ error: "event_field_review_failed" }, 500)'));
   assert.ok(watch.includes('event_field_reviews_created: Number(fieldReviews.data ?? 0)'));
+  assert.ok(watch.indexOf('service.rpc("lr_enqueue_event_field_reviews"') < watch.indexOf('service.rpc("lr_launch_readiness")'));
 });

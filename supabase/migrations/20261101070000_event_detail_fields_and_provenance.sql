@@ -2,6 +2,12 @@
 -- Additive only. No event, result, source, override, or review rows are deleted.
 begin;
 
+-- Verification windows belong to the source, not a global hard-coded cadence.
+alter table public.lr_sources
+  add column if not exists verification_ttl interval not null default interval '14 days',
+  add constraint lr_sources_verification_ttl_check
+    check (verification_ttl > interval '0 days' and verification_ttl <= interval '365 days');
+
 alter table public.lr_events
   add column if not exists venue_address text,
   add column if not exists course_id text,
@@ -361,6 +367,9 @@ declare
   newv jsonb;
   ev jsonb;
   evidence_source_id uuid;
+  evidence_status text;
+  evidence_verified_at timestamptz;
+  evidence_ttl interval;
   fields text[]:=array[
     'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','checkin_time_local','end_time_local','start_time_note',
     'rounds_text','event_type','format','format_details','sanctioned','tier','status','registration_status','registration_url',
@@ -386,13 +395,50 @@ begin
         raise exception 'Field evidence source is not registered and authorized for %',f using errcode='22023';
       end if;
     end if;
-    if coalesce(ev->>'status','verified') in ('not_applicable','not_announced','missing_despite_available_evidence','unverified','stale','conflicting') then
+    evidence_ttl:=coalesce((select verification_ttl from public.lr_sources where id=evidence_source_id),interval '14 days');
+    evidence_verified_at:=now();
+    if nullif(ev->>'verified_at','') is not null then
+      begin evidence_verified_at:=(ev->>'verified_at')::timestamptz;
+      exception when others then raise exception 'Field evidence verified_at must be an ISO timestamp for %',f using errcode='22023'; end;
+      if evidence_verified_at>now()+interval '5 minutes' then raise exception 'Field evidence verified_at cannot be in the future for %',f using errcode='22023'; end if;
+    end if;
+    evidence_status:=coalesce(nullif(ev->>'status',''),'verified');
+    if evidence_verified_at+evidence_ttl<now() then evidence_status:='stale'; end if;
+    if evidence_status in ('not_applicable','not_announced','missing_despite_available_evidence','unverified','stale','conflicting') then
       if public.lr_source_authoritative_for(evidence_source_id,f) then
+        -- Explicit source-backed null is distinct from an omitted/null candidate
+        -- field. It can clear only when the candidate opts in and no active
+        -- manual override owns the field; ordinary sync nulls remain non-erasing.
+        if jsonb_typeof(newv)='null' and coalesce((ev->>'clear_value')::boolean,false)
+          and evidence_status in ('not_announced','not_applicable') then
+          if f <> all(array[
+            'venue_name','venue_address','course_name','course_id','course_url','rounds_text','format','format_details',
+            'tier','registration_status','registration_url','registration_opens_at','registration_closes_at',
+            'registration_capacity','registration_available','start_time_local','checkin_time_local','end_time_local',
+            'start_time_note','entry_fee_amount','entry_fee_currency','entry_fee_unit','fee_breakdown',
+            'additional_fees_note','official_url','results_url','td_names'
+          ]::text[]) then
+            raise exception 'Explicit source-backed clearing is not allowed for identity/control field %',f using errcode='22023';
+          elsif exists(select 1 from public.lr_manual_overrides mo where mo.event_id=e.id and mo.field_name=f and mo.active) then
+            evidence_status:='conflicting';
+            if not exists(select 1 from public.lr_review_queue q where q.issue_type='source_field_conflict' and q.event_id=e.id and q.status in ('open','in_review') and q.details->>'field'=f and q.details->>'source_id'=evidence_source_id::text) then
+              insert into public.lr_review_queue(issue_type,severity,event_id,source_candidate_id,summary,details)
+              values('source_field_conflict','high',e.id,c.id,'An authoritative source classifies a field with an active manual override',jsonb_build_object('field',f,'current',oldv,'candidate',newv,'source_id',evidence_source_id,'active_override',true));
+            end if;
+          else
+            if oldv is distinct from 'null'::jsonb then
+              patch:=patch||jsonb_build_object(f,null);
+              insert into public.lr_event_change_log(event_id,source_id,source_candidate_id,field_name,old_value,new_value,change_type)
+              values(e.id,evidence_source_id,c.id,f,oldv,'null'::jsonb,'source_update');
+            end if;
+          end if;
+        end if;
         insert into public.lr_event_field_evidence(event_id,field_name,source_id,source_candidate_id,source_url,status,observed_value,verified_at,expires_at,notes)
-        values(e.id,f,evidence_source_id,c.id,coalesce(nullif(ev->>'source_url',''),c.source_url),ev->>'status',newv,now(),null,nullif(ev->>'notes',''))
+        values(e.id,f,evidence_source_id,c.id,coalesce(nullif(ev->>'source_url',''),c.source_url),evidence_status,newv,evidence_verified_at,
+          case when evidence_status='not_announced' then evidence_verified_at+evidence_ttl else null end,nullif(ev->>'notes',''))
         on conflict (event_id,field_name,source_id) where source_id is not null do update set
           source_candidate_id=excluded.source_candidate_id,source_url=excluded.source_url,status=excluded.status,
-          observed_value=excluded.observed_value,verified_at=excluded.verified_at,expires_at=null,notes=excluded.notes,updated_at=now();
+          observed_value=excluded.observed_value,verified_at=excluded.verified_at,expires_at=excluded.expires_at,notes=excluded.notes,updated_at=now();
       end if;
       continue;
     end if;
@@ -419,7 +465,7 @@ begin
             values('source_field_conflict','high',e.id,c.id,'An authoritative source conflicts with an active manual event override',jsonb_build_object('field',f,'current',oldv,'candidate',newv,'source_id',evidence_source_id,'active_override',true));
           end if;
           insert into public.lr_event_field_evidence(event_id,field_name,source_id,source_candidate_id,source_url,status,observed_value,verified_at,notes)
-          values(e.id,f,evidence_source_id,c.id,coalesce(nullif(ev->>'source_url',''),c.source_url),'conflicting',newv,now(),'Authoritative source differs from an active manual override')
+          values(e.id,f,evidence_source_id,c.id,coalesce(nullif(ev->>'source_url',''),c.source_url),'conflicting',newv,evidence_verified_at,'Authoritative source differs from an active manual override')
           on conflict (event_id,field_name,source_id) where source_id is not null do update set status='conflicting',source_candidate_id=excluded.source_candidate_id,source_url=excluded.source_url,observed_value=excluded.observed_value,verified_at=excluded.verified_at,notes=excluded.notes,updated_at=now();
           continue;
         end if;
@@ -431,7 +477,7 @@ begin
       end if;
       refresh_field:=coalesce((ev->>'refresh_on_sync')::boolean,true);
       insert into public.lr_event_field_evidence(event_id,field_name,source_id,source_candidate_id,source_url,status,observed_value,verified_at,expires_at,notes)
-      values(e.id,f,evidence_source_id,c.id,coalesce(nullif(ev->>'source_url',''),c.source_url),'verified',newv,now(),now()+interval '14 days',nullif(ev->>'notes',''))
+      values(e.id,f,evidence_source_id,c.id,coalesce(nullif(ev->>'source_url',''),c.source_url),'verified',newv,evidence_verified_at,evidence_verified_at+evidence_ttl,nullif(ev->>'notes',''))
       on conflict (event_id,field_name,source_id) where source_id is not null do update set
         source_candidate_id=excluded.source_candidate_id,
         source_url=excluded.source_url,
@@ -452,7 +498,7 @@ begin
         values('source_field_conflict','medium',e.id,c.id,'A non-authoritative source disagrees on an event field',jsonb_build_object('field',f,'current',oldv,'candidate',newv,'source_id',evidence_source_id));
       end if;
       insert into public.lr_event_field_evidence(event_id,field_name,source_id,source_candidate_id,source_url,status,observed_value,verified_at,notes)
-      values(e.id,f,evidence_source_id,c.id,coalesce(nullif(ev->>'source_url',''),c.source_url),'conflicting',newv,now(),'Candidate value differs from the current field-authoritative value')
+      values(e.id,f,evidence_source_id,c.id,coalesce(nullif(ev->>'source_url',''),c.source_url),'conflicting',newv,evidence_verified_at,'Candidate value differs from the current field-authoritative value')
       on conflict (event_id,field_name,source_id) where source_id is not null do update set status='conflicting',source_candidate_id=excluded.source_candidate_id,source_url=excluded.source_url,observed_value=excluded.observed_value,verified_at=excluded.verified_at,notes=excluded.notes,updated_at=now();
     end if;
   end loop;
@@ -499,17 +545,16 @@ select e.id as event_id,e.slug,e.name,e.start_date,e.event_type,
                     or (count(ev.id) filter(where ev.status='verified')>0 and bool_or(ev.status in ('not_announced','not_applicable','missing_despite_available_evidence'))) then 'conflicting'
               when bool_or(ev.status='missing_despite_available_evidence') then 'missing_despite_available_evidence'
               when count(ev.id) filter(where ev.status='verified')>0 and public.lr_event_field_value(e.id,f.field_name)='null'::jsonb then 'missing_despite_available_evidence'
-              when bool_or(ev.status='not_announced') then 'not_announced'
+              when bool_or(ev.status='not_announced' and (ev.expires_at is null or ev.expires_at>=now())) then 'not_announced'
               when bool_or(ev.status='not_applicable') then 'not_applicable'
-              when bool_or(ev.status='stale') then 'stale'
+              when bool_or(ev.status='stale' or (ev.status='not_announced' and ev.expires_at<now())) then 'stale'
               when count(ev.id) filter(where ev.status='verified' and (ev.expires_at is null or ev.expires_at>=now()))>0 then 'verified'
               when bool_or(ev.status='verified') then 'stale'
               else null end,
          'unverified') as verification_status,
        count(distinct ev.source_id) filter(where ev.status='verified') as verifying_sources,
        max(ev.verified_at) as last_verified_at,
-       min(ev.expires_at) filter(where ev.status='verified') as next_expiry,
-       coalesce(jsonb_agg(jsonb_build_object('source_url',ev.source_url,'status',ev.status,'notes',ev.notes,'verified_at',ev.verified_at,'expires_at',ev.expires_at) order by ev.updated_at desc) filter(where ev.id is not null),'[]'::jsonb) as evidence_sources
+       min(ev.expires_at) filter(where ev.status in ('verified','not_announced')) as next_expiry,coalesce(jsonb_agg(jsonb_build_object('source_url',ev.source_url,'status',ev.status,'notes',ev.notes,'verified_at',ev.verified_at,'expires_at',ev.expires_at) order by ev.updated_at desc) filter(where ev.id is not null),'[]'::jsonb) as evidence_sources
 from public.lr_events e
 cross join lateral unnest(array[
   'start_date','end_date','start_time_local','checkin_time_local','end_time_local','start_time_note','timezone','venue_name','venue_address','city','county',
@@ -547,6 +592,32 @@ set authoritative_fields=array(
   ]::text[]) as f order by f
 ),updated_at=now()
 where key='hbnf_internal_schedule';
+
+-- Verified first-party recurrence facts are allowed only for the concrete
+-- fields these source pages publish. This does not grant any crawler access.
+update public.lr_sources
+set authoritative_fields=array(
+  select distinct f from unnest(authoritative_fields || array[
+    'start_time_local','checkin_time_local','start_time_note','event_type','timezone','format_details'
+  ]::text[]) as f order by f
+),verification_ttl=interval '14 days',updated_at=now()
+where key='oak_grove_disc_golf_club_direct';
+
+update public.lr_sources
+set authoritative_fields=array(
+  select distinct f from unnest(authoritative_fields || array[
+    'start_time_local','timezone'
+  ]::text[]) as f order by f
+),verification_ttl=interval '30 days',updated_at=now()
+where key='crpd_rabbit_flats_direct';
+
+update public.lr_sources
+set verification_ttl=interval '7 days',updated_at=now()
+where key='hbnf_internal_schedule';
+
+update public.lr_sources
+set verification_ttl=interval '7 days',updated_at=now()
+where key='hbnf_udisc_manual';
 
 drop function if exists public.lr_public_event_detail(text);
 drop function if exists public.lr_public_events();
@@ -679,13 +750,19 @@ create or replace function public.lr_enqueue_event_field_reviews(p_horizon_days 
 returns integer language plpgsql security definer set search_path=pg_catalog,public as $$
 declare v_today date:=(now() at time zone 'America/Los_Angeles')::date; v_horizon integer:=least(greatest(coalesce(p_horizon_days,60),1),90); v_inserted integer:=0; r record;
 begin
-  update public.lr_review_queue q set status='resolved',resolved_at=now(),resolution='Field now has a current evidence classification'
+  with resolved_fields as materialized (
+    select s.event_id,s.field_name,case
+      when e.status in ('canceled','completed') or not e.published then 'Event is no longer published as an upcoming item'
+      when s.start_date<v_today then 'Event date passed; upcoming verification review closed'
+      else 'Field now has a current evidence classification' end as resolution
+    from public.lr_event_field_status s join public.lr_events e on e.id=s.event_id
+    where s.verification_status in ('verified','not_applicable','not_announced')
+      or e.status in ('canceled','completed') or not e.published or s.start_date<v_today
+  )
+  update public.lr_review_queue q set status='resolved',resolved_at=now(),resolution=rf.resolution
+  from resolved_fields rf
   where q.issue_type='event_field_verification' and q.status in ('open','in_review')
-    and not exists(
-      select 1 from public.lr_event_field_status s where s.event_id=q.event_id and s.field_name=q.details->>'field'
-        and s.start_date between v_today and v_today+v_horizon
-        and s.verification_status in ('unverified','stale','missing_despite_available_evidence','conflicting')
-    );
+    and q.event_id=rf.event_id and q.details->>'field'=rf.field_name;
 
   for r in
     select s.event_id,s.slug,s.name,s.start_date,s.field_name,s.verification_status,s.last_verified_at,s.next_expiry
@@ -698,6 +775,14 @@ begin
             array['start_date','timezone','course_name','event_type','format']::text[]
           else array['start_date','event_type']::text[] end)
         or s.verification_status in ('stale','missing_despite_available_evidence','conflicting')
+        -- A source-authorized blank also deserves an explicit classification
+        -- (not announced / not applicable / verified), not silent omission.
+        or exists(
+          select 1 from public.lr_event_sources es
+          join public.lr_sources authorized_source on authorized_source.id=es.source_id
+          where es.event_id=s.event_id and authorized_source.enabled
+            and s.field_name=any(authorized_source.authoritative_fields)
+        )
       )
       -- Course, venue, or a street address can each provide a useful precise
       -- destination. Do not emit multiple empty location alerts or treat a
@@ -715,11 +800,13 @@ begin
     if not exists(select 1 from public.lr_review_queue q where q.issue_type='event_field_verification' and q.event_id=r.event_id and q.status in ('open','in_review') and q.details->>'field'=r.field_name) then
       insert into public.lr_review_queue(issue_type,severity,event_id,summary,details)
       values('event_field_verification',case when r.start_date<=v_today+7 or r.verification_status in ('conflicting','missing_despite_available_evidence') then 'high' when r.start_date<=v_today+30 then 'medium' else 'low' end,
-        r.event_id,'Upcoming event detail needs evidence review',jsonb_build_object('field',r.field_name,'verification_status',r.verification_status,'start_date',r.start_date,'slug',r.slug,'last_verified_at',r.last_verified_at,'expires_at',r.next_expiry));
+        r.event_id,'Upcoming event detail needs evidence review',jsonb_build_object('field',r.field_name,'verification_status',r.verification_status,'start_date',r.start_date,'slug',r.slug,'last_verified_at',r.last_verified_at,'expires_at',r.next_expiry,
+          'authorized_sources',(select coalesce(jsonb_agg(distinct src.key order by src.key),'[]'::jsonb) from public.lr_event_sources es join public.lr_sources src on src.id=es.source_id where es.event_id=r.event_id and src.enabled and r.field_name=any(src.authoritative_fields))));
       v_inserted:=v_inserted+1;
     else
       update public.lr_review_queue q set severity=case when r.start_date<=v_today+7 or r.verification_status in ('conflicting','missing_despite_available_evidence') then 'high' when r.start_date<=v_today+30 then 'medium' else 'low' end,
-        summary='Upcoming event detail needs evidence review',details=coalesce(q.details,'{}'::jsonb)||jsonb_build_object('verification_status',r.verification_status,'start_date',r.start_date,'last_verified_at',r.last_verified_at,'expires_at',r.next_expiry)
+        summary='Upcoming event detail needs evidence review',details=coalesce(q.details,'{}'::jsonb)||jsonb_build_object('verification_status',r.verification_status,'start_date',r.start_date,'last_verified_at',r.last_verified_at,'expires_at',r.next_expiry,
+          'authorized_sources',(select coalesce(jsonb_agg(distinct src.key order by src.key),'[]'::jsonb) from public.lr_event_sources es join public.lr_sources src on src.id=es.source_id where es.event_id=r.event_id and src.enabled and r.field_name=any(src.authoritative_fields)))
       where q.issue_type='event_field_verification' and q.event_id=r.event_id and q.status in ('open','in_review') and q.details->>'field'=r.field_name;
     end if;
   end loop;
