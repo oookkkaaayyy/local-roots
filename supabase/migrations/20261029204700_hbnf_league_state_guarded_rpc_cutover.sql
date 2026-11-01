@@ -1,7 +1,7 @@
 -- Keep scoring anonymous but make every browser write revision-guarded.
--- Existing table INSERT/UPDATE grants let previously loaded clients issue an
--- unconditional whole-root upsert; the revision trigger cannot detect staleness
--- in that request. The replacement RPC and grant cutover are atomic.
+-- Additive RPC expansion only. Existing table writes remain until the new Worker,
+-- pages, and Edge writers are verified. The final grant cutover is deliberately
+-- outside supabase/migrations/ so a bulk migration cannot revoke early.
 
 create or replace function public.hbnf_save_league_state_v1(
   p_expected_updated_at timestamptz,
@@ -40,10 +40,3 @@ revoke all on function public.hbnf_save_league_state_v1(timestamptz, jsonb)
 grant execute on function public.hbnf_save_league_state_v1(timestamptz, jsonb)
   to anon, authenticated;
 
--- Preserve public reads and service-role server writes. Anonymous/authenticated
--- callers must use the conditional RPC. Old loaded pages fail closed rather
--- than replacing a score written after their last read.
-revoke insert, update on table public.league_state from public, anon, authenticated;
-grant select on table public.league_state to anon, authenticated;
-drop policy if exists "Public can update league_state" on public.league_state;
-drop policy if exists "Public can write league_state" on public.league_state;
