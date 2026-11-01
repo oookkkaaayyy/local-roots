@@ -226,7 +226,10 @@ begin
   with original as materialized (
     select e.* from public.lr_events e where e.id=p_event_id for update
   ), patched as (
-    select p.* from original o cross join lateral jsonb_populate_record(o,v_patch) as p
+    -- The CTE row is exposed as anonymous `record`; cast it back to the
+    -- canonical composite so PostgreSQL can type jsonb_populate_record and
+    -- preserve every field not present in the patch.
+    select p.* from original o cross join lateral jsonb_populate_record(o::public.lr_events,v_patch) as p
   )
   update public.lr_events e set
     (name,start_date,end_date,timezone,county,city,venue_name,venue_address,course_name,course_id,course_url,start_time_local,end_time_local,

@@ -20,7 +20,7 @@ test("candidate promotion retains authority, override precedence and null-safe m
   assert.match(migration, /lr_event_field_evidence/);
   assert.match(migration, /source_field_conflict/);
   assert.match(migration, /authoritative source conflicts with an active manual event override/);
-  assert.match(migration, /with original as materialized[\s\S]*?jsonb_populate_record\(o,v_patch\)[\s\S]*?from patched p where e\.id=p\.id returning e\.\* into v_event/i);
+  assert.match(migration, /with original as materialized[\s\S]*?jsonb_populate_record\(o::public\.lr_events,v_patch\)[\s\S]*?from patched p where e\.id=p\.id returning e\.\* into v_event/i);
 });
 
 test("database-bound time, fee, and structured-field contracts reject invalid combinations", () => {
