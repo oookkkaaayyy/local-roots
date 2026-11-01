@@ -1,4 +1,7 @@
 import type { PublicEvent, PublicResult } from '../types';
+import { buildCalendarFile } from './eventCalendar.mjs';
+
+export { buildCalendarFile };
 
 const PUBLIC_ORIGIN = 'https://localrootsdg.com';
 const CALENDAR_ENCODER = new TextEncoder();
@@ -60,60 +63,36 @@ export function eventDetailPath(event: Pick<PublicEvent,'slug'>) {
   return `/events/${encodeURIComponent(event.slug)}`;
 }
 
-function calendarDate(value: string) {
-  return value.replaceAll('-','');
-}
-
-function calendarTimestamp(value = new Date()) {
-  return value.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
-}
-
-function addDays(value: string, days: number) {
-  const date = new Date(`${value}T12:00:00Z`);
-  date.setUTCDate(date.getUTCDate()+days);
-  return date.toISOString().slice(0,10);
-}
-
-function escapeCalendarText(value: string) {
-  return value.replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
-}
-
-function foldCalendarLine(line: string) {
-  const segments:string[]=[];
-  let current='', bytes=0;
-  for(const char of line){
-    const charBytes=CALENDAR_ENCODER.encode(char).length;
-    const limit=segments.length?74:75;
-    if(current&&bytes+charBytes>limit){segments.push(current);current=char;bytes=charBytes;}
-    else {current+=char;bytes+=charBytes;}
+export function eventTimeLabel(event: Pick<PublicEvent,'start_date'|'start_time_local'|'end_time_local'|'timezone'>) {
+  if (!event.start_time_local) return null;
+  const format = (value: string) => {
+    const [hourText, minuteText] = value.split(':');
+    const hour = Number(hourText);
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minuteText}${suffix}`;
+  };
+  const dateAnchor = new Date(`${event.start_date}T12:00:00Z`);
+  let zone = '';
+  try {
+    zone = new Intl.DateTimeFormat('en-US', { timeZone: event.timezone, timeZoneName: 'short' })
+      .formatToParts(dateAnchor).find((part) => part.type === 'timeZoneName')?.value ?? '';
+  } catch {
+    return null;
   }
-  if(current||!segments.length)segments.push(current);
-  return segments.map((segment,index)=>index?` ${segment}`:segment).join('\r\n');
+  const range = event.end_time_local
+    ? `${format(event.start_time_local)}–${format(event.end_time_local)}`
+    : format(event.start_time_local);
+  return zone ? `${range} ${zone}` : range;
 }
 
-export function buildCalendarFile(event: PublicEvent) {
-  const detailUrl=`${PUBLIC_ORIGIN}${eventDetailPath(event)}`;
-  const location=[event.course_name||event.venue_name,event.city,event.county?`${event.county} County`:null].filter(Boolean).join(', ');
-  const description=[event.club_host?`Hosted by ${event.club_host}`:null,event.td_names?.length?`TD: ${event.td_names.join(', ')}`:null,`Event details: ${detailUrl}`].filter(Boolean).join('\n');
-  return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Local Roots//Disc Golf Events//EN',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    'BEGIN:VEVENT',
-    `UID:${event.id}@localrootsdg.com`,
-    `DTSTAMP:${calendarTimestamp()}`,
-    `DTSTART;VALUE=DATE:${calendarDate(event.start_date)}`,
-    `DTEND;VALUE=DATE:${calendarDate(addDays(event.end_date,1))}`,
-    `SUMMARY:${escapeCalendarText(event.name)}`,
-    location?`LOCATION:${escapeCalendarText(location)}`:null,
-    `DESCRIPTION:${escapeCalendarText(description)}`,
-    `URL:${detailUrl}`,
-    'END:VEVENT',
-    'END:VCALENDAR',
-    '',
-  ].filter(line=>line!=null).map(line=>foldCalendarLine(line)).join('\r\n');
+export function eventFeeLabel(event: Pick<PublicEvent,'entry_fee_amount'|'entry_fee_currency'|'entry_fee_unit'|'additional_fees_note'>) {
+  if (event.entry_fee_amount == null) return null;
+  const amount = new Intl.NumberFormat('en-US', {
+    style: 'currency', currency: event.entry_fee_currency || 'USD', maximumFractionDigits: 2,
+  }).format(event.entry_fee_amount);
+  const unit = event.entry_fee_unit ? ` / ${event.entry_fee_unit}` : '';
+  return `${amount}${unit}${event.additional_fees_note ? ` · ${event.additional_fees_note}` : ''}`;
 }
 
 export function downloadEventCalendar(event: PublicEvent) {

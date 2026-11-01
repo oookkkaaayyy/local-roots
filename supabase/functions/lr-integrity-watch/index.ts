@@ -59,6 +59,15 @@ Deno.serve(async (req) => {
     return json({ error: "readiness_failed" }, 500);
   }
 
+  // Add the same durable, deduplicated event-field checks used by the admin
+  // review queue. A failure is visible to the scheduler instead of silently
+  // reporting a healthy integrity run with completeness checks skipped.
+  const fieldReviews = await service.rpc("lr_enqueue_event_field_reviews", { p_horizon_days: 60 });
+  if (fieldReviews.error) {
+    console.error("lr-integrity-watch event-field-review", fieldReviews.error.message);
+    return json({ error: "event_field_review_failed" }, 500);
+  }
+
   let stagingStatus: number | null = null;
   let shellOk = false;
   let stagingNoindexOk = false;
@@ -75,7 +84,7 @@ Deno.serve(async (req) => {
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
@@ -97,7 +106,7 @@ Deno.serve(async (req) => {
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
@@ -111,7 +120,7 @@ Deno.serve(async (req) => {
     if (shellOk && cssMatch?.[1]) {
       cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
       const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
         redirect: "follow",
       });
       if (cssResponse.ok) {
@@ -154,6 +163,7 @@ Deno.serve(async (req) => {
     css_bundle_url: cssBundleUrl,
     missing_css_markers: missingCssMarkers,
     staging_ok: stagingOk,
+    event_field_reviews_created: Number(fieldReviews.data ?? 0),
     integrity: recorded.data,
   });
 });

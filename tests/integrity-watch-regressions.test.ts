@@ -42,6 +42,12 @@ test("integrity watch verifies upgraded event-page styles", () => {
 });
 
 test("integrity watch version advances with its deployed contract", () => {
-  assert.ok(watch.includes('LocalRootsIntegrityWatch/10.0'));
-  assert.equal(watch.includes('LocalRootsIntegrityWatch/9.0'), false);
+  assert.ok(watch.includes('LocalRootsIntegrityWatch/11.0'));
+  assert.equal(watch.includes('LocalRootsIntegrityWatch/10.0'), false);
+});
+
+test("scheduled integrity watch enqueues deduplicated field reviews and fails visibly if the gate errors", () => {
+  assert.ok(watch.includes('service.rpc("lr_enqueue_event_field_reviews", { p_horizon_days: 60 })'));
+  assert.ok(watch.includes('return json({ error: "event_field_review_failed" }, 500)'));
+  assert.ok(watch.includes('event_field_reviews_created: Number(fieldReviews.data ?? 0)'));
 });

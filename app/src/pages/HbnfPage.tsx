@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Shell } from '../components/Shell';
-import { eventDateRange, eventDetailPath, isHbnfEvent, pacificToday } from '../lib/eventPresentation';
+import { eventDateRange, eventDetailPath, eventFeeLabel, eventTimeLabel, isHbnfEvent, pacificToday } from '../lib/eventPresentation';
 import { supabase } from '../lib/supabase';
 import type { PublicEvent } from '../types';
 
@@ -54,11 +54,16 @@ export function HbnfPage() {
       {!loading && !error && upcomingEvents.length > 0 ? <ul className="hbnf-event-list">
         {upcomingEvents.map((event) => {
           const venue = [event.course_name || event.venue_name, event.city].filter(Boolean).join(' · ');
+          const time = eventTimeLabel(event);
+          const fee = eventFeeLabel(event);
           return <li className="hbnf-event-row" key={event.id}>
-            <time className="hbnf-event-date" dateTime={event.start_date}>{eventDateRange(event.start_date, event.end_date)}</time>
+            <div className="hbnf-event-date"><time dateTime={event.start_date}>{eventDateRange(event.start_date, event.end_date)}</time>{time?<span>{time}</span>:null}</div>
             <div className="hbnf-event-copy">
               <h3><a href={eventDetailPath(event)}>{event.name}</a></h3>
               {venue ? <p>{venue}</p> : null}
+              {event.format?<p>{event.format}</p>:null}
+              {fee?<p>{fee}</p>:null}
+              {event.official_url?<p><a href={event.official_url} target="_blank" rel="noreferrer">Event info (opens in a new tab)</a></p>:null}
             </div>
           </li>;
         })}

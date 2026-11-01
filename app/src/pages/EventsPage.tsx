@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { callFunction, supabase } from '../lib/supabase';
-import { downloadEventCalendar, eventDateRange, eventDetailPath, eventTitle, HBNF_EVENT_LINKS, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
+import { downloadEventCalendar, eventDateRange, eventDetailPath, eventFeeLabel, eventTimeLabel, eventTitle, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
 import { Shell } from '../components/Shell';
 import type { PublicEvent } from '../types';
+import { localDateTimeToIso } from '../lib/eventCalendar.mjs';
 
 const COUNTIES = ['Ventura', 'Los Angeles', 'Orange', 'Riverside', 'San Bernardino', 'San Diego'];
 const EVENT_TYPES = [
@@ -61,18 +62,20 @@ function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const resultLabel = event.results_url ? resultsLinkLabel(event.results_url) : '';
   const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`;
   const hbnfEvent=isHbnfEvent(event);
-  const canShowOfficialInfo=Boolean(event.official_url&&!hbnfEvent&&event.official_url!==event.registration_url&&event.official_url!==event.results_url);
+  const canShowOfficialInfo=Boolean(event.official_url&&event.official_url!==event.registration_url&&event.official_url!==event.results_url);
+  const canShowSource=Boolean(event.source_url&&event.source_url!==event.registration_url&&event.source_url!==event.results_url&&event.source_url!==event.official_url&&!hbnfEvent);
+  const timeLabel=eventTimeLabel(event);
+  const feeLabel=eventFeeLabel(event);
   return <article className={`event-card ${effectiveStatus==='canceled'?'is-canceled':''}`}>
-    <div className="event-date-block"><strong>{eventDateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span></div>
+    <div className="event-date-block"><strong>{eventDateRange(event.start_date,event.end_date)}</strong>{event.county?<span>{event.county} County</span>:null}{timeLabel?<span>{timeLabel}</span>:null}</div>
     <div className="event-main">
-      <div className="event-heading-row"><div><h3><a className="event-title-link" href={detailHref}>{event.name}</a></h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span></div>
-      <div className="event-tags"><span>{eventTitle(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
+      <div className="event-heading-row"><div><h3><a className="event-title-link" href={detailHref}>{event.name}</a></h3>{[event.city,event.course_name||event.venue_name].filter(Boolean).length?<p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')}</p>:null}</div><span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span></div>
+      <div className="event-tags">{event.event_type?<span>{eventTitle(event.event_type)}</span>:null}{event.sanctioned===true?<span>{event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'}</span>:event.sanctioned===false?<span>Unsanctioned</span>:null}{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}{feeLabel?<span>{feeLabel}</span>:null}</div>
       {event.club_host?<p className="event-organizer">Hosted by {event.club_host}{tdNames.length?` · TD: ${tdNames.join(', ')}`:''}</p>:tdNames.length?<p className="event-organizer">TD: {tdNames.join(', ')}</p>:null}
-      {hbnfEvent?<nav className="event-resource-links" aria-label={`HB Night Flyers links for ${event.name}`}>{HBNF_EVENT_LINKS.map(link=><a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={`${link.label} for ${event.name} (opens in new tab)`}>{link.label}</a>)}</nav>:null}
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
       {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {eventTitle(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{resultValue(r)}</strong></li>)}</ol></div>:null}
     </div>
-    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{canShowOfficialInfo?<a className="button ghost" href={event.official_url!} target="_blank" rel="noreferrer" aria-label={`Official info for ${event.name} (opens in new tab)`}>Official Info</a>:null}<a className="button ghost" href={detailHref} aria-label={`View details for ${event.name}`}>Details</a>{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)} aria-label={`Add ${event.name} to calendar`}>Add to Calendar</button>:null}{event.top_results?.length?<a className="button ghost" href={`${detailHref}#results`}>Full Results</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
+    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{canShowOfficialInfo?<a className="button ghost" href={event.official_url!} target="_blank" rel="noreferrer" aria-label={`Official event information for ${event.name} (opens in a new tab)`}>Event info</a>:null}{canShowSource?<a className="button ghost" href={event.source_url!} target="_blank" rel="noreferrer" aria-label={`Organizer source for ${event.name} (opens in a new tab)`}>Source</a>:null}<a className="button ghost" href={detailHref} aria-label={`View details for ${event.name}`}>Details</a>{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)} aria-label={`Add ${event.name} to calendar`}>Add to Calendar</button>:null}{event.top_results?.length?<a className="button ghost" href={`${detailHref}#results`}>Full Results</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
   </article>;
 }
 
@@ -84,9 +87,16 @@ function SubmissionForm() {
     const form=e.currentTarget;
     const fd=new FormData(form), s=fd.get('sanctioned');
     try {
+      const timezone=String(fd.get('timezone')||'America/Los_Angeles');
+      const parseJsonField=(name:string,fallback:unknown)=>{const raw=String(fd.get(name)??'').trim();return raw?JSON.parse(raw):fallback;};
+      const localInstant=(name:string)=>{const raw=String(fd.get(name)??'');return raw?localDateTimeToIso(raw.slice(0,10),raw.slice(11,16),timezone):undefined;};
+      const numberField=(name:string)=>String(fd.get(name)??'').trim()===''?undefined:Number(fd.get(name));
       await callFunction('lr-submit-event',{
-        name:fd.get('name'),start_date:fd.get('start_date'),end_date:fd.get('end_date'),county:fd.get('county'),city:fd.get('city'),course_name:fd.get('course_name'),event_type:fd.get('event_type'),
-        sanctioned:s==='yes'?true:s==='no'?false:undefined,tier:fd.get('tier'),registration_url:fd.get('registration_url'),source_url:fd.get('source_url'),club_host:fd.get('club_host'),
+        name:fd.get('name'),start_date:fd.get('start_date'),end_date:fd.get('end_date'),timezone,county:fd.get('county'),city:fd.get('city'),venue_name:fd.get('venue_name'),venue_address:fd.get('venue_address'),course_name:fd.get('course_name'),course_id:fd.get('course_id'),course_url:fd.get('course_url'),event_type:fd.get('event_type'),
+        format:fd.get('format'),format_details:parseJsonField('format_details',{}),start_time_local:fd.get('start_time_local'),end_time_local:fd.get('end_time_local'),
+        entry_fee_amount:numberField('entry_fee_amount'),entry_fee_currency:fd.get('entry_fee_currency'),entry_fee_unit:fd.get('entry_fee_unit'),fee_breakdown:parseJsonField('fee_breakdown',[]),additional_fees_note:fd.get('additional_fees_note'),
+        registration_url:fd.get('registration_url'),registration_opens_at:localInstant('registration_opens_at'),registration_closes_at:localInstant('registration_closes_at'),registration_capacity:numberField('registration_capacity'),registration_available:numberField('registration_available'),official_url:fd.get('official_url'),source_url:fd.get('source_url'),
+        sanctioned:s==='yes'?true:s==='no'?false:undefined,tier:fd.get('tier'),club_host:fd.get('club_host'),
         td_names:String(fd.get('td_names')??'').split(',').map(v=>v.trim()).filter(Boolean),submitter_name:fd.get('submitter_name'),submitter_email:fd.get('submitter_email'),notes:fd.get('notes'),website:fd.get('website'),
       });
       setState('sent'); setMessage('Submitted for review.'); form.reset();
@@ -97,10 +107,22 @@ function SubmissionForm() {
       <div className="honeypot" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off"/></label></div>
       <label className="span-2">Event name<input name="name" required maxLength={200}/></label><label>Start date<input type="date" name="start_date" required/></label><label>End date<input type="date" name="end_date"/></label>
       <label>County<select name="county" required defaultValue="Orange">{COUNTIES.map(c=><option key={c}>{c}</option>)}</select></label><label>City<input name="city" maxLength={120}/></label>
-      <label className="span-2">Course / venue<input name="course_name" maxLength={200}/></label><label>Event type<select name="event_type" defaultValue="tournament">{EVENT_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
+      <label>Venue<input name="venue_name" maxLength={200}/></label><label>Address<input name="venue_address" maxLength={300}/></label>
+      <label>Course<input name="course_name" maxLength={200}/></label><label>Course ID<input name="course_id" maxLength={120}/></label>
+      <label className="span-2">Course map link<input type="url" name="course_url" placeholder="https://…"/></label>
+      <label>Event type<select name="event_type" defaultValue="tournament">{EVENT_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label>Format<input name="format" maxLength={160} placeholder="Singles, doubles, team…"/></label>
+      <label>Start time<input type="time" name="start_time_local"/></label><label>End time<input type="time" name="end_time_local"/></label>
+      <label>Time zone<input name="timezone" defaultValue="America/Los_Angeles" maxLength={80}/></label><label>Rounds<input name="rounds_text" maxLength={160}/></label>
+      <label className="span-2">Format details (JSON)<textarea name="format_details" rows={2} placeholder={'{"divisions":["Open","Recreational"]}'}/></label>
       <label>Sanctioned?<select name="sanctioned" defaultValue="unknown"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></label><label>Tier<input name="tier" maxLength={80} placeholder="C-Tier, B-Tier…"/></label>
+      <label>Entry fee<input type="number" name="entry_fee_amount" min="0" step="0.01"/></label><label>Currency<input name="entry_fee_currency" maxLength={3} defaultValue="USD"/></label><label>Fee unit<input name="entry_fee_unit" maxLength={40} placeholder="person, team, event"/></label>
+      <label className="span-2">Fee breakdown (JSON)<textarea name="fee_breakdown" rows={2} placeholder={'[{"label":"Play","amount":7,"currency":"USD"}]'}/></label>
+      <label className="span-2">Additional fee details<input name="additional_fees_note" maxLength={500}/></label>
       <label>Host / club<input name="club_host" maxLength={200}/></label><label className="span-2">TD name(s)<input name="td_names" placeholder="Separate names with commas"/></label>
+      <label>Registration opens<input type="datetime-local" name="registration_opens_at"/></label><label>Registration closes<input type="datetime-local" name="registration_closes_at"/></label>
+      <label>Capacity<input type="number" name="registration_capacity" min="0" step="1"/></label><label>Available spots<input type="number" name="registration_available" min="0" step="1"/></label>
       <label className="span-2">Registration link<input type="url" name="registration_url" placeholder="https://…"/></label><label className="span-2">Official/source link<input type="url" name="source_url" placeholder="https://…"/></label>
+      <label className="span-2">Event information link<input type="url" name="official_url" placeholder="https://…"/></label>
       <label>Your name<input name="submitter_name" maxLength={160} autoComplete="name"/></label><label>Your email<input type="email" name="submitter_email" maxLength={320} autoComplete="email"/></label><label className="span-2">Notes<textarea name="notes" rows={3} maxLength={4000}/></label>
       <div className="form-footer span-2"><button type="submit" className="button primary" disabled={state==='sending'}>{state==='sending'?'Submitting…':'Submit event'}</button>{message?<span role={state==='error'?'alert':'status'} aria-live={state==='error'?'assertive':'polite'} aria-atomic="true" className={state==='error'?'form-error':'form-success'}>{message}</span>:null}</div>
     </form></div></details>;

@@ -6,6 +6,21 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+async function readFieldStatus(service: any) {
+  const rows: Record<string, unknown>[] = [];
+  const pageSize = 1000;
+  for (let offset = 0; offset < 50000; offset += pageSize) {
+    const page = await service.from("lr_event_field_status")
+      .select("event_id,slug,name,start_date,event_type,field_name,verification_status,verifying_sources,last_verified_at,next_expiry,evidence_sources")
+      .order("start_date", { ascending: true }).order("name", { ascending: true }).order("field_name", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (page.error) return { data: null, error: page.error };
+    rows.push(...(page.data ?? []));
+    if ((page.data ?? []).length < pageSize) return { data: rows, error: null };
+  }
+  return { data: null, error: new Error("field status row safety cap exceeded") };
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -53,15 +68,16 @@ Deno.serve(async (req) => {
   const action = String(body.action ?? "dashboard");
 
   if (action === "dashboard") {
-    const [submissions, resultSubmissions, reviews, sources, runs, events] = await Promise.all([
-      service.from("lr_event_submissions").select("id,name,start_date,end_date,county,city,course_name,event_type,sanctioned,tier,registration_url,source_url,club_host,td_names,submitter_name,submitter_email,notes,validation_status,validation_errors,scope_status,status,candidate_id,matched_event_id,created_at").eq("status","pending").order("created_at",{ascending:true}).limit(100),
+    const [submissions, resultSubmissions, reviews, sources, runs, events, fieldStatus] = await Promise.all([
+      service.from("lr_event_submissions").select("id,name,start_date,end_date,timezone,county,city,venue_name,venue_address,course_name,course_id,course_url,event_type,format,format_details,start_time_local,end_time_local,entry_fee_amount,entry_fee_currency,entry_fee_unit,fee_breakdown,additional_fees_note,registration_url,registration_opens_at,registration_closes_at,registration_capacity,registration_available,official_url,source_url,club_host,td_names,submitter_name,submitter_email,notes,validation_status,validation_errors,scope_status,status,candidate_id,matched_event_id,created_at").eq("status","pending").order("created_at",{ascending:true}).limit(100),
       service.from("lr_result_submissions").select("id,event_id,score_type,featured_division,results,submitter_name,submitter_email,submitter_role,organization,source_notes,attestation_version,attested,status,created_at").eq("status","pending").order("created_at",{ascending:true}).limit(100),
       service.from("lr_review_queue").select("id,issue_type,severity,event_id,source_candidate_id,summary,details,status,created_at").in("status",["open","in_review"]).order("severity",{ascending:false}).order("created_at",{ascending:true}).limit(150),
       service.from("lr_sources").select("id,key,name,source_type,enabled,refresh_schedule,expected_min_records,expected_max_records,updated_at").order("name"),
       service.from("lr_source_runs").select("id,source_id,started_at,finished_at,fetch_status,parse_status,validation_status,health_status,records_seen,records_valid,records_new,records_changed,records_rejected,records_missing,error_code,error_message,metrics,parser_version").order("started_at",{ascending:false}).limit(100),
-      service.from("lr_events").select("id,slug,name,start_date,end_date,county,city,course_name,event_type,sanctioned,tier,status,published,last_verified_at,last_changed_at").order("start_date",{ascending:true}).limit(300),
+      service.from("lr_events").select("id,slug,name,start_date,end_date,timezone,county,city,venue_name,venue_address,course_name,course_id,course_url,rounds_text,start_time_local,end_time_local,format,format_details,registration_url,registration_status,registration_opens_at,registration_closes_at,registration_capacity,registration_available,entry_fee_amount,entry_fee_currency,entry_fee_unit,fee_breakdown,additional_fees_note,official_url,results_url,club_host,td_names,event_type,sanctioned,tier,status,published,last_verified_at,last_changed_at").order("start_date",{ascending:true}).limit(300),
+      readFieldStatus(service),
     ]);
-    const firstError = submissions.error ?? resultSubmissions.error ?? reviews.error ?? sources.error ?? runs.error ?? events.error;
+    const firstError = submissions.error ?? resultSubmissions.error ?? reviews.error ?? sources.error ?? runs.error ?? events.error ?? fieldStatus.error;
     if (firstError) {
       console.error("lr-admin dashboard", firstError.message);
       return json({ error: "dashboard_failed" }, 500);
@@ -74,6 +90,7 @@ Deno.serve(async (req) => {
       sources: sources.data ?? [],
       runs: runs.data ?? [],
       events: events.data ?? [],
+      field_status: fieldStatus.data ?? [],
     });
   }
 
@@ -133,6 +150,25 @@ Deno.serve(async (req) => {
     });
     if (error) return json({ error: "override_failed", detail: error.message }, 400);
     return json({ ok: true, override_id: data });
+  }
+
+  if (action === "set_field_status") {
+    const eventId = String(body.event_id ?? "");
+    const fieldName = String(body.field_name ?? "");
+    const status = String(body.status ?? "");
+    const sourceUrl = body.source_url ? String(body.source_url).slice(0, 1000) : null;
+    const reason = String(body.reason ?? "").trim().slice(0, 2000);
+    if (!eventId || !fieldName || !status || !reason) return json({ error: "invalid_field_status" }, 400);
+    const { error } = await service.rpc("lr_set_manual_event_field_status", {
+      p_event_id: eventId,
+      p_field_name: fieldName,
+      p_status: status,
+      p_source_url: sourceUrl,
+      p_observed_value: body.observed_value ?? null,
+      p_reason: reason,
+    });
+    if (error) return json({ error: "field_status_failed", detail: error.message }, 400);
+    return json({ ok: true });
   }
 
   if (action === "release_override") {
