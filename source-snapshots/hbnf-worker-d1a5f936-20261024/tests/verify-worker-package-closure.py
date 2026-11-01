@@ -5,6 +5,7 @@ import tempfile
 import unittest
 import zipfile
 from types import SimpleNamespace
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILDER_PATH = ROOT / "package-validation" / "build-release-packages.py"
@@ -40,24 +41,53 @@ class WorkerPackageClosureTests(unittest.TestCase):
         manifest = root / "package-validation/LOCAL_ASSET_SHA256SUMS"
         manifest.parent.mkdir(parents=True, exist_ok=True)
         manifest.write_text("".join(f"{'0'*64}  {name}\n" for name in paths))
-        repo = Path(tempfile.mkdtemp(prefix="hbnf-package-fixture-"))
+        repo = root.parents[1]
         migration_dir = repo / "supabase" / "migrations"
-        migration_dir.mkdir(parents=True)
+        migration_dir.mkdir(parents=True, exist_ok=True)
         canonical = migration_dir / "20261029200450_hbnf_glow_atomic_week_sync.sql"
         canonical.write_text((ROOT / "database" / "20261028_udisc_glow_atomic_week_sync.sql").read_text())
         revision = migration_dir / "20261029203741_hbnf_league_state_server_revision_guard.sql"
         revision.write_text((ROOT / "database" / "20261029203741_hbnf_league_state_server_revision_guard.sql").read_text())
         rpc = migration_dir / "20261030021038_hbnf_league_state_anon_cas_rpc.sql"
         rpc.write_text((ROOT / "database" / "20261030021038_hbnf_league_state_anon_cas_rpc.sql").read_text())
-        return SimpleNamespace(candidate_root=root, active_version="baseline-test", repo_root=repo)
+        (repo / "package-validation").mkdir(parents=True, exist_ok=True)
+        (repo / "package-validation/LOCAL_ASSET_SHA256SUMS").write_text(
+            "".join(f"{'0'*64}  {name}\n" for name in paths)
+        )
+        baseline_archive = repo / "baseline.zip"
+        baseline_archive.write_bytes(b"test baseline archive")
+        return SimpleNamespace(
+            candidate_root=repo,
+            active_version="baseline-test",
+            repo_root=repo,
+            baseline_version=BUILDER.EXPECTED_BASELINE_VERSION,
+            baseline_sha256=BUILDER.EXPECTED_BASELINE_SHA256,
+            baseline_archive=baseline_archive,
+            rollback_sha256=BUILDER.EXPECTED_BASELINE_SHA256,
+            rollback_bytes=baseline_archive.stat().st_size,
+            toolchain_root=repo,
+        )
+
+    def build_fixture(self, args, source: Path, output: Path) -> None:
+        paths = [
+            line.split(maxsplit=1)[1].strip().lstrip("*")
+            for line in (ROOT / "package-validation" / "LOCAL_ASSET_SHA256SUMS").read_text().splitlines()
+        ]
+        assets = {name: b"baseline asset\n" for name in paths}
+        assets.update({"public/glow-save-sync.mjs": b"helper\n", "public/league-state-cas.mjs": b"helper\n"})
+        lineage = {name: {"source": "test", "sha256": BUILDER.sha256(data)} for name, data in assets.items()}
+        with patch.object(BUILDER, "assert_commit_file"), \
+             patch.object(BUILDER, "asset_files", return_value=(assets, lineage)), \
+             patch.object(BUILDER.subprocess, "check_output", return_value="test-builder-commit\n"):
+            BUILDER.build(args, "candidate", source, "e089-test", output, args.repo_root)
 
     def test_success_package_contains_private_import_closure_not_public_review_modules(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "source"
-            root.mkdir()
+            root = Path(tmp) / "repo" / "source-snapshots" / "snapshot"
+            root.mkdir(parents=True)
             args = self.fixture(root)
             package = Path(tmp) / "candidate.zip"
-            BUILDER.build(args, "candidate", root, "e089-test", package, args.repo_root)
+            self.build_fixture(args, root, package)
             with zipfile.ZipFile(package) as archive:
                 names = set(archive.namelist())
                 manifest = json.loads(archive.read("PACKAGE_MANIFEST.json"))
@@ -80,7 +110,7 @@ class WorkerPackageClosureTests(unittest.TestCase):
             root = repo / "source-snapshots" / "snapshot"
             migration_dir = repo / "supabase" / "migrations"
             root.mkdir(parents=True)
-            migration_dir.mkdir(parents=True)
+            migration_dir.mkdir(parents=True, exist_ok=True)
             args = self.fixture(root)
             args.repo_root = repo
             canonical = migration_dir / "20261029200450_hbnf_glow_atomic_week_sync.sql"
@@ -89,17 +119,27 @@ class WorkerPackageClosureTests(unittest.TestCase):
             revision.write_text((ROOT / "database" / "20261029203741_hbnf_league_state_server_revision_guard.sql").read_text())
             rpc = migration_dir / "20261030021038_hbnf_league_state_anon_cas_rpc.sql"
             rpc.write_text((ROOT / "database" / "20261030021038_hbnf_league_state_anon_cas_rpc.sql").read_text())
-            with self.assertRaisesRegex(SystemExit, "differs from the reviewed snapshot"):
+            paths = [
+                line.split(maxsplit=1)[1].strip().lstrip("*")
+                for line in (ROOT / "package-validation" / "LOCAL_ASSET_SHA256SUMS").read_text().splitlines()
+            ]
+            assets = {name: b"baseline asset\n" for name in paths}
+            assets.update({"public/glow-save-sync.mjs": b"helper\n", "public/league-state-cas.mjs": b"helper\n"})
+            lineage = {name: {"source": "test", "sha256": BUILDER.sha256(data)} for name, data in assets.items()}
+            with patch.object(BUILDER, "assert_commit_file"), \
+                 patch.object(BUILDER, "asset_files", return_value=(assets, lineage)), \
+                 patch.object(BUILDER.subprocess, "check_output", return_value="test-builder-commit\n"), \
+                 self.assertRaisesRegex(SystemExit, "differs from the reviewed snapshot"):
                 BUILDER.build(args, "candidate", root, "e089-test", Path(tmp) / "candidate.zip", args.repo_root)
 
     def test_missing_transitive_worker_import_fails_instead_of_false_pass(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "source"
-            root.mkdir()
+            root = Path(tmp) / "repo" / "source-snapshots" / "snapshot"
+            root.mkdir(parents=True)
             args = self.fixture(root)
             (root / "worker-private/parser.mjs").unlink()
             with self.assertRaisesRegex(SystemExit, "unresolved relative imports"):
-                BUILDER.build(args, "candidate", root, "e089-test", Path(tmp) / "candidate.zip", args.repo_root)
+                self.build_fixture(args, root, Path(tmp) / "candidate.zip")
 
     def test_worker_private_logic_matches_browser_review_helpers(self):
         for name in ("udisc-glow-preview.mjs", "udisc-glow-reconcile.mjs"):
