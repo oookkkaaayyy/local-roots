@@ -11,7 +11,8 @@ local current, reason = runtime.read_state()
 local profile_ready, profile_reason = runtime.profile_ready()
 local response = {
   available = current ~= nil,
-  commissioningTestAvailable = current ~= nil and profile_ready ~= true,
+  commissioningTestAvailable = false,
+  commissioningBlockedReason = "uv_electrical_qualification_not_admitted",
   uvControlEnabled = current ~= nil and profile_ready == true,
   mutationIssued = false,
   reason = reason or profile_reason,
