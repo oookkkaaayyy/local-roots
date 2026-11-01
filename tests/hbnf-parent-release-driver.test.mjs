@@ -130,6 +130,20 @@ test('artifact hash mismatch fails preflight and cannot admit',async()=>{
   assert.equal(out.preflightStatus,'FAIL'); assert.equal(out.admission,'NOT_ADMITTED'); assert(out.manifest.mismatches.some(x=>x.startsWith('artifact:')));
 });
 
+test('preflight rejects changed Postgres function definition identities',async()=>{
+  const tx=makeTx(), schemaTarget=tx.targets.find(t=>t.id==='supabase-schema');
+  const expected={...initial['supabase-schema'],snapshot:{functions:[{name:'hbnf_verify_round_tag_v1',definitionSha256:'a'.repeat(64)}]}};
+  schemaTarget.baselineSha256=digest(expected); schemaTarget.baselineIdentity=digest(expected);
+  const parentTarget=tx.parentContract.targets.find(t=>t.id==='supabase-schema');
+  parentTarget.baselineReadbackSha256=digest(expected); parentTarget.baselineIdentity=digest(expected);
+  const observed=Object.fromEntries(tx.targets.map(t=>[t.id,structuredClone(initial[t.id])]));
+  observed['supabase-schema']={...initial['supabase-schema'],snapshot:{functions:[{name:'hbnf_verify_round_tag_v1',definitionSha256:'b'.repeat(64)}]}};
+  const store={async readAndVerifyDriveArtifact(a){return {driveFileId:a.driveFileId,sha256:a.sha256,bytes:a.bytes,verified:true}},async persistAndDownloadBack(_n,b){return {downloadBackVerified:true,sha256:digest(b)}}};
+  const out=await providerBoundPreflight(tx,{readOnly:true,async readAllTargets(){return observed}},store);
+  assert.equal(out.preflightStatus,'FAIL');
+  assert(out.manifest.mismatches.includes('supabase-schema'));
+});
+
 test('provider reads require credentials and mutations are absent from authenticated adapter',async()=>{
   assert.throws(()=>createAuthenticatedReadAdapters({env:{},fetchImpl:async()=>{throw Error('should not fetch')}}),/AUTH_CONFIGURATION_MISSING/);
   const adapter=createAuthenticatedReadAdapters({env:{CLOUDFLARE_API_TOKEN:'x',SUPABASE_ACCESS_TOKEN:'y',GOOGLE_DRIVE_ACCESS_TOKEN:'z'},fetchImpl:async()=>new Response('{}',{status:200})});
@@ -147,7 +161,7 @@ test('authenticated provider adapter reads the five exact production target type
     {result:[{pattern:'hbnightflyers.com',script:'hbnf'}]},
     {id:'phcpbvuqibyarpfrftgx',status:'ACTIVE_HEALTHY',region:'us-west-2'},
     functionRows,
-    [{snapshot:{league_state:{id:1,sha256:'state'},triggers:[],functions:[],grants:[]}}],
+    [{snapshot:{league_state:{id:1,sha256:'state'},triggers:[{name:'zzz_hbnf_enforce_league_state_revision',definitionSha256:'trigger-hash'}],functions:[{name:'hbnf_enforce_league_state_revision',definitionSha256:'revision-hash'},{name:'hbnf_save_league_state_v1',definitionSha256:'rpc-hash'},{name:'hbnf_verify_round_tag_v1',definitionSha256:'tag-hash'}],grants:[{grantee:'anon',privilege:'UPDATE'}],policies:[{name:'Public can update league_state',cmd:'UPDATE'}]}}],
   ];
   const adapter=createAuthenticatedReadAdapters({env:{CLOUDFLARE_API_TOKEN:'cf-test',SUPABASE_ACCESS_TOKEN:'sb-test',GOOGLE_DRIVE_ACCESS_TOKEN:'drive-test'},fetchImpl:async(url,init={})=>{calls.push({url,method:init.method||'GET',auth:init.headers?.authorization,body:init.body});return new Response(JSON.stringify(replies[calls.length-1]),{status:200})}});
   const targets=await adapter.readAllTargets(makeTx());
@@ -163,6 +177,9 @@ test('authenticated provider adapter reads the five exact production target type
   assert(calls.every(c=>c.auth?.startsWith('Bearer ')));
   const queryCall=calls.find(c=>c.url.includes('/database/query'));
   assert.equal(queryCall.method,'POST'); assert.match(JSON.parse(queryCall.body).query,/^select jsonb_build_object/i);
+  assert.match(JSON.parse(queryCall.body).query,/definitionSha256/);
+  for(const name of ['hbnf_enforce_league_state_revision','hbnf_save_league_state_v1','hbnf_verify_round_tag_v1']) assert.match(JSON.parse(queryCall.body).query,new RegExp(name));
+  assert.deepEqual(targets['supabase-schema'].snapshot.functions.map(f=>f.definitionSha256),['revision-hash','rpc-hash','tag-hash']);
   assert(calls.filter(c=>c.url.includes('workers/')||c.url.includes('/functions')).every(c=>c.method==='GET'));
 });
 
