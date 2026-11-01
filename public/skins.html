@@ -1393,11 +1393,12 @@ function makeSyncHelpers(ctx){return{
     }
     ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return
    }
-   const localBagTags=ctx.rootState&&ctx.rootState.bagTags,remoteBagTags=currentRoot&&currentRoot.bagTags,localBackups=ctx.rootState&&ctx.rootState.__backups;
-   const localBagTagStamp=Date.parse(localBagTags&&localBagTags.lastManualSaveAt||''),remoteBagTagStamp=Date.parse(remoteBagTags&&remoteBagTags.lastManualSaveAt||'');
+   const localBagTags=ctx.rootState&&ctx.rootState.bagTags,remoteBagTags=currentRoot&&currentRoot.bagTags,baseBagTags=ctx.baselineBagTags,localBackups=ctx.rootState&&ctx.rootState.__backups;
+   const {mergeLeagueValue}=await import('./league-state-cas.mjs');
+   const bagMerge=mergeLeagueValue(baseBagTags,localBagTags,remoteBagTags);
+   if(bagMerge.status==='conflict'){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — bag tags changed on another device; your edits are kept here.');return}
    ctx.rootState=Object.assign({},ctx.rootState||{},currentRoot);
-   if(localBagTags&&(!remoteBagTags||(Number.isFinite(localBagTagStamp)?localBagTagStamp:0)>(Number.isFinite(remoteBagTagStamp)?remoteBagTagStamp:0)))ctx.rootState.bagTags=localBagTags;
-   if(Array.isArray(localBackups))ctx.rootState.__backups=localBackups;
+   if(bagMerge.value!==undefined)ctx.rootState.bagTags=bagMerge.value;
    const remoteBranch=currentRoot&&currentRoot[ctx.branch];
    const saveSnapshot=hbnfSyncClone(ctx.state),saveSnapshotHash=hbnfSemanticHash(saveSnapshot);
    ctx.rootState[ctx.branch]=saveSnapshot;
