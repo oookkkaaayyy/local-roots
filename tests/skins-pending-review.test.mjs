@@ -59,3 +59,16 @@ test('independent readback preserves an unrelated back card and history fields',
  assert.equal(b.row.state_json.skins.weeks['2099-01-06'].back.cards[0].teamsText,'C / D');
  assert.equal(b.row.state_json.bagTags.manual.Existing,4);assert.equal(s.getItem(PENDING),null);
 });
+
+
+test('installed v48 pending scorecard is retained across the PR151 draft format change',async()=>{
+ const b=backend(),s=storage();const unsent=state('card_1_p_0');
+ const old={version:1,branch:'skins',baseBranchHash:'unverified-v48-base',baseRevision:'rev-1',baseBranchState:state(),branchState:unsent,savedAt:'2026-10-31T00:00:00Z'};
+ s.setItem(PENDING,JSON.stringify(old));
+ const app=open(b,s);await app.init();
+ assert.equal(app.get("ctx.state.weeks['2099-01-06'].front.cards[0].winners['1']"),'card_1_p_0');
+ assert.equal(app.get('ctx.localDirty'),true);assert.equal(app.get('ctx.remoteConflictPending'),true);
+ assert.equal(app.get('ctx.pendingBaseHash'),'unverified-v48-base');
+ await app.exec('ctx.pushRoot()');assert.equal(b.writes,0);
+ assert.equal(JSON.parse(s.getItem(PENDING)).branchState.weeks['2099-01-06'].front.cards[0].winners['1'],'card_1_p_0');
+});
