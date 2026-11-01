@@ -33,6 +33,10 @@ test("unadmitted UV commissioning refuses before ANY Opal WLED command", async (
     "ordinary UV ON and FOLLOW still require all profile gates");
   assert.match(policy, /local applied = ngx\.location\.capture\("\/__aux_uv_apply"[\s\S]*?local readback, readback_error = runtime\.read_state\(\)/,
     "ordinary profile-qualified writes still require independent WLED readback");
+  assert.doesNotMatch(policy, /runtime\.decode_state\(applied\.body\)/,
+    "do not decode WLED's POST acknowledgement as a full device state");
+  assert.doesNotMatch(policy, /pcall\(ngx\.location\.capture/,
+    "a yielding WLED subrequest must not be wrapped in pcall on the Opal LuaJIT runtime");
   assert.match(runtime, /segments\[1\]\.start\) ~= 22[\s\S]*segments\[2\]\.stop\) ~= 24/);
   assert.match(pwaInstall, /One-time pre-mutation admission manifest is required/);
   assert.match(pwaInstall, /candidate\.package_sha256/);
