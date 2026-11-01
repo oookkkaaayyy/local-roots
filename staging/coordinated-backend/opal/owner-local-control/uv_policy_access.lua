@@ -26,90 +26,14 @@ local input = cjson.decode(body)
 if type(input) ~= "table" then return respond(400, { error = "invalid_request", mutationIssued = false }) end
 local mode = string.upper(tostring(input.mode or ""))
 
--- A paired Owner can verify one output before the full commissioning profile
--- is accepted. The pulse is auto-cleared after three seconds; normal UV writes
--- below continue to require every profile and acceptance gate.
+-- The Cart's UV electrical commissioning evidence is NOT admitted. A paired
+-- Owner and WLED state readback do not prove protected wiring, boot/OFF safety
+-- or direct-WLED access restrictions. No ON pulse may be issued on this route.
+-- Keep commissioning hard-disabled until a distinct, trusted electrical
+-- qualification mechanism is reviewed and independently verified.
 if mode == "COMMISSIONING_TEST" then
-  for key in pairs(input) do
-    if key ~= "mode" and key ~= "channel" and key ~= "brightness" then
-      return respond(400, { error = "unsupported_field", mutationIssued = false })
-    end
-  end
-  local channel, brightness = input.channel, input.brightness
-  if (channel ~= "main" and channel ~= "short") or type(brightness) ~= "number"
-      or brightness % 1 ~= 0 or brightness < 1 or brightness > 255 then
-    return respond(400, { error = "invalid_commissioning_test", mutationIssued = false })
-  end
-  local current, readiness_error = runtime.read_state()
-  if not current then return respond(503, { error = readiness_error, mutationIssued = false }) end
-  -- Keep output serialization separate from short-lived Owner auth rate keys.
-  local rate = ngx.shared.hbnf_uv_policy_lock
-  if not rate then
-    return respond(503, { error = "uv_policy_lock_storage_unavailable", mutationIssued = false })
-  end
-  local acquired, lock_error = rate:add("uv_policy_lock", 1, 15)
-  if not acquired then
-    if lock_error ~= "exists" then
-      return respond(503, { error = "uv_policy_lock_storage_failed", mutationIssued = false })
-    end
-    return respond(429, { error = "uv_commissioning_test_in_progress", mutationIssued = false })
-  end
-  local function unlock() rate:delete("uv_policy_lock") end
-  local selected = channel == "main" and 1 or 2
-  local function segment(id, on, bri)
-    if not on then return { id = id, on = false, bri = 0, fx = 0, ix = 0 } end
-    return { id = id, on = true, bri = bri, fx = 0, ix = bri, col = {{0, 0, 0, 255}} }
-  end
-  local function apply_and_read(segments)
-    local result = ngx.location.capture("/__aux_uv_apply", { method = ngx.HTTP_POST,
-      body = cjson.encode({ seg = segments }) })
-    if not result then return nil, "wled_apply_no_response" end
-    if result.status ~= 200 then return nil, "wled_apply_http_" .. tostring(result.status) end
-    -- WLED's POST reply is an acknowledgement, not the full /json/state
-    -- document. Confirm the write with the separate internal GET route.
-    local state, state_error = runtime.read_state()
-    if not state then return nil, "wled_state_" .. tostring(state_error or "unavailable") end
-    return state
-  end
-  local pulse = {
-    segment(1, selected == 1, selected == 1 and brightness or 0),
-    segment(2, selected == 2, selected == 2 and brightness or 0),
-  }
-  -- ngx.location.capture can yield while the internal WLED request runs;
-  -- wrapping it in pcall fails on this OpenWrt LuaJIT runtime with
-  -- "attempt to yield across metamethod/C-call boundary".
-  local applied, on_error = apply_and_read(pulse)
-  local on_confirmed = false
-  if applied then
-    local match_ok, selected_matches = pcall(runtime.segment_matches, applied.segments[selected], {
-      on = true, bri = brightness, fx = 0, ix = brightness, col = {0, 0, 0, 255} })
-    local other = applied.segments[selected == 1 and 2 or 1]
-    on_confirmed = match_ok and selected_matches and other ~= nil and other.on ~= true
-    if not match_ok then on_error = "wled_state_match_error" end
-    if match_ok and not selected_matches then on_error = "wled_selected_segment_mismatch" end
-    if not other then on_error = "wled_other_segment_missing" end
-    if other and other.on == true then on_error = "wled_other_segment_on" end
-  end
-  if on_confirmed then ngx.sleep(3) end
-  -- Always issue a best-effort OFF after any attempted pulse, including an
-  -- ambiguous ON acknowledgement. Never leave the lock held on Lua errors.
-  local off, off_error = apply_and_read({ segment(1, false, 0), segment(2, false, 0) })
-  unlock()
-  local off_confirmed = off ~= nil and off.segments[1] ~= nil and off.segments[2] ~= nil
-    and off.segments[1].on ~= true and off.segments[2].on ~= true
-  if not on_confirmed then
-    return respond(502, { error = "uv_commissioning_test_on_unconfirmed",
-      mutationIssued = "unknown", outputOffConfirmed = off_confirmed,
-      diagnosis = { on = on_error or "wled_state_unconfirmed",
-        off = off_error or "wled_state_unconfirmed" } })
-  end
-  if not off_confirmed then
-    return respond(502, { error = "uv_commissioning_test_off_unconfirmed", mutationIssued = true,
-      diagnosis = { off = off_error or "wled_state_unconfirmed" } })
-  end
-  return respond(200, { ok = true, action = "uv_commissioning_test", channel = channel,
-    requestedBrightness = brightness, pulseSeconds = 3, mutationIssued = true,
-    outputOffConfirmed = true, deviceReadback = true })
+  return respond(503, { error = "uv_electrical_qualification_not_admitted",
+    mutationIssued = false })
 end
 
 for key in pairs(input) do
