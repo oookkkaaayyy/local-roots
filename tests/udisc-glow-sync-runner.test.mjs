@@ -344,5 +344,5 @@ test('source-pinned Cart v35 chooseLive projects three cached UDisc teams and 3�
   await assert.rejects(()=>blockedContext.actualShowScoreboard(),/No active Skins or Glow scores/);
 
   console.log('CHOOSE_LIVE_CHAIN=PASS cached anonymized 3-team XLSX→real UDisc handler→3→4 isolated readback→exact archived Cart v35 chooseLive→real Cart showScoreboard→fake overlay');
-  console.log('CHOOSE_LIVE_LIMITS=historic Cart v35 source; not authenticated current deployed Edge bytes, physical output, or Nov3 owner import receipt');
+  console.log('CHOOSE_LIVE_LIMITS=Cart v35 source byte-equal to authenticated installed Edge v35 readback (Nov1); production handler invocation, Cart relay/device output, and owner confirmation NOT TESTED');
 });
