@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { validateCutoverSql } from '../scripts/hbnf-parent-release/parent-gate.mjs';
 
 const migration = await readFile(new URL('../supabase/migrations/20261029204700_hbnf_league_state_guarded_rpc_cutover.sql', import.meta.url), 'utf8');
 const contract = await readFile(new URL('../scripts/hbnf-parent-release/sql/db-revoke-old-writes.sql', import.meta.url), 'utf8');
 const sync = await readFile(new URL('../public/hbnf-league-state-sync.js', import.meta.url), 'utf8');
 const skins = await readFile(new URL('../public/skins.html', import.meta.url), 'utf8');
 const tagRevision = await readFile(new URL('../supabase/migrations/20261030230000_hbnf_verify_round_tag_revision_enforcement.sql', import.meta.url), 'utf8');
+const revisionGuard = await readFile(new URL('../supabase/migrations/20261029203741_hbnf_league_state_server_revision_guard.sql', import.meta.url), 'utf8');
 
 test('login-free browser saves use mandatory revision-guarded RPC', () => {
   assert.match(sync, /client\.rpc\('hbnf_save_league_state_v1'/);
@@ -63,4 +65,10 @@ test('round-tag verification enforces both revisions after idempotent retry chec
   assert.match(tagRevision, /p_expected_entry_revision\s+is null or p_expected_entry_revision<>v_entry\.revision/i);
   assert.match(tagRevision, /elsif p_expected_entry_revision is distinct from 0/i);
   assert.match(tagRevision, /edit_id_reused/);
+});
+
+
+test('parent-release cutover validator accepts separated real SQL stages, not a combined auto-migration', () => {
+  assert.deepEqual(validateCutoverSql({ expandSql: migration, contractSql: contract, revisionSql: revisionGuard, tagSql: tagRevision }), []);
+  assert.notEqual(migration, contract);
 });
