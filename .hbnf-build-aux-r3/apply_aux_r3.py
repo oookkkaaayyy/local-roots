@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import pathlib,re,sys
+from guard_uv_gpio_admission import apply as apply_uv_gpio_admission
 
 if len(sys.argv)!=2:
     raise SystemExit("usage: apply_aux_r3.py <wled-root>")
@@ -333,4 +334,5 @@ if "hbnf-wow-r3-max-2026-09-21-v3" in p.read_text():
     raise RuntimeError("matrix release identity leaked into aux source")
 if "hbnfProjectionTx.tick();" in p.read_text() or "hbnfGenV4.tick();" in p.read_text():
     raise RuntimeError("AUX must not run Matrix projection sender or generative owner")
+apply_uv_gpio_admission(root)
 print("HBNF_AUX_V4_PROJECTION_RECEIVER_SOURCE_PATCH_PASS")

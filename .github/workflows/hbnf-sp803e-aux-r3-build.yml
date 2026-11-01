@@ -184,6 +184,7 @@ jobs:
           cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_projection_link_v1.h" /tmp/wled/usermods/usermod_v2_animartrix/
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/apply_aux_r3.py" /tmp/wled
+          python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/test_uv_gpio_admission.py" /tmp/wled
           grep -q 'hbnf-wow-aux-r3-2026-10-25-uv-follow-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'registry28-tempo-lock-1d-v7-network-no-starve-uv-follow' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'uvFollowEffectId.*248' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
