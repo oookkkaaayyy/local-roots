@@ -8,4 +8,12 @@ The transaction must include the exact PR source commit, downloaded-back source 
 
 The file journal uses exclusive local one-time lock creation and fsync for every event. The Drive journal writes each event as a separate verified artifact but refuses to claim a run unless an atomic shared `claimOnce` provider is supplied; ordinary Drive file creation alone is not a replay-safe lock. An interrupted/replayed or mismatched run fails closed and requires review; it is not resumed automatically. No provider mutation or deployment admission is implemented or qualified by mock tests.
 
+## Final revocation SQL staging (source only)
+
+`supabase/migrations/20261029204700_hbnf_league_state_guarded_rpc_cutover.sql` is now **additive-only**: it defines and grants the guarded CAS RPC while leaving existing table UPDATE permissions intact, and preserves the installed `SET statement_timeout='8s'` on that function. Do not interpret its historical filename as authorization to revoke legacy clients early.
+
+`scripts/hbnf-parent-release/sql/db-revoke-old-writes.sql` carries the final table-grant and policy revocation. It is deliberately **outside Supabase's automatic migrations directory**. Apply it only at the last stage of a separately admitted, readback-verified, coordinated five-target release; ensure the inverse restore of exact grants/policies is the first rollback stage, ahead of reverting the Worker. The current driver is read-only/mocked and cannot apply this SQL. Keeping these files separate is a source-safety improvement, **not** proof that a live multi-provider executor exists.
+
+The source regression `tests/hbnf-write-authority-cutover.test.mjs` checks the real additive SQL and final contract artifact with `validateCutoverSql`. The review-only CI workflow runs this and the mocked release-driver tests. Full v48 integration, native replay against the combined package, old-client disposition, and admission remain pending.
+
 Focused checks: `node --test tests/hbnf-parent-release-driver.test.mjs`.
