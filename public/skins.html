@@ -1424,7 +1424,7 @@ function makeSyncHelpers(ctx){return{
    if(readback.error||!readback.data||!readback.data.updated_at||
       hbnfSemanticHash(ctx.normalize(hbnfSyncClone(readback.data.state_json&&readback.data.state_json[ctx.branch])))!==hbnfSemanticHash(saveSnapshot))
     throw new Error('Cloud save not independently confirmed; local draft retained.');
-   ctx.rootState=readback.data.state_json;
+   ctx.rootState=readback.data.state_json;ctx.baselineBagTags=hbnfSyncClone(readback.data.state_json&&readback.data.state_json.bagTags);
    ctx.lastRemoteRootHash=hbnfSemanticHash(readback.data.state_json);
    ctx.lastRemoteBranchHash=hbnfSemanticHash(readback.data.state_json[ctx.branch]);
    ctx.lastRemoteRevision=readback.data.updated_at;
