@@ -1161,12 +1161,17 @@ test('photo color workspace keeps sampling and adjustment as an uncommitted draf
  assert.match(studioHtml,/id="photoSampleMarker" class="photo-sample-target"/);
  assert.doesNotMatch(studioHtml,/id="photoDraftColorPicker"/);
  assert.match(studioHtml,/id="photoUseSample"/);
- for(const channel of ['Red','Green','Blue']){
-  assert.ok(studioHtml.includes(`for="photo${channel}">${channel}</label>`));
-  assert.match(studioHtml,new RegExp(`id="photo${channel}" type="range" min="0" max="255" step="1"`));
-  assert.match(studioHtml,new RegExp(`id="photo${channel}Value" type="number" min="0" max="255" step="1"`));
+ assert.match(studioHtml,/id="photoColorModel"[^>]*>[\s\S]*?HSB Sliders[\s\S]*?RGB Sliders/);
+ for(const [model,channels] of Object.entries({RGB:['Red','Green','Blue'],HSB:['Hue','Saturation','Brightness']})){
+  const controlId=model==='RGB'?'photoRgbControls':'photoHsbControls';
+  assert.match(studioHtml,new RegExp(`id="${controlId}"[^>]*aria-label="${model} sliders"`));
+  for(const channel of channels){
+   assert.ok(studioHtml.includes(`for="photo${channel}">${channel}</label>`));
+   assert.match(studioHtml,new RegExp(`id="photo${channel}" type="range"`));
+   assert.match(studioHtml,new RegExp(`id="photo${channel}Value" type="number"`));
+  }
  }
- assert.doesNotMatch(studioHtml,/Colorfulness|photoHue|photoSaturation|photoLightness/);
+ assert.doesNotMatch(studioHtml,/Colorfulness|Lightness|photoLightness/);
  assert.match(studioHtml,/id="applyPhotoSuggestion"/);
  assert.match(studioHtml,/id="keepPhotoCurrent"/);
  assert.match(photo,/window\.DUPhotoColor\?\.preview/);
@@ -1188,7 +1193,8 @@ test('RGB sliders and numeric channel values edit the sampled draft directly',()
   if(!elements.has(id))elements.set(id,{id,value:'',textContent:'',className:'',hidden:false,checked:false,files:[],style:{setProperty(name,value){this[name]=value}},listeners:{},addEventListener(type,fn){this.listeners[type]=fn},fire(type){this.listeners[type]?.({target:this,currentTarget:this,preventDefault(){}})}});
   return elements.get(id);
  };
- for(const id of ['takeDiscPhoto','chooseDiscPhoto','discCameraInput','discPhotoInput','photoColorStatus','photoRed','photoGreen','photoBlue','photoRedValue','photoGreenValue','photoBlueValue','photoDraftHexInput','photoDraftDisc','photoDraftHex'])element(id);
+ for(const id of ['takeDiscPhoto','chooseDiscPhoto','discCameraInput','discPhotoInput','photoColorStatus','photoColorModel','photoRgbControls','photoHsbControls','photoRed','photoGreen','photoBlue','photoRedValue','photoGreenValue','photoBlueValue','photoHue','photoSaturation','photoBrightness','photoHueValue','photoSaturationValue','photoBrightnessValue','photoDraftHexInput','photoDraftDisc','photoDraftHex'])element(id);
+ element('photoColorModel').value='hsb';
  let applied=0;
  const win={DUPhotoColor:{preview:hex=>updates.push(hex),apply(){applied++;return true},cancel(){}},addEventListener(){}};
  const doc={readyState:'complete',getElementById:id=>elements.get(id)||null};
@@ -1197,6 +1203,23 @@ test('RGB sliders and numeric channel values edit the sampled draft directly',()
  const hexInput=element('photoDraftHexInput');hexInput.value='#A3A3A3';hexInput.fire('input');
  assert.deepEqual(['photoRed','photoGreen','photoBlue'].map(id=>element(id).value),['163','163','163']);
  assert.deepEqual(['photoRedValue','photoGreenValue','photoBlueValue'].map(id=>element(id).value),['163','163','163']);
+ assert.deepEqual(['photoHue','photoSaturation','photoBrightness'].map(id=>element(id).value),['0','0','64']);
+ assert.equal(element('photoHsbControls').hidden,false);
+ assert.equal(element('photoRgbControls').hidden,true);
+
+ element('photoHue').value='240';element('photoHue').fire('input');
+ element('photoSaturation').value='100';element('photoSaturation').fire('input');
+ assert.equal(element('photoDraftHex').textContent,'#0000A3','HSB Saturation increases intensity along the selected blue Hue');
+ element('photoBrightness').value='50';element('photoBrightness').fire('input');
+ assert.equal(element('photoDraftHex').textContent,'#000080','HSB Brightness changes the selected color without changing Hue or Saturation');
+ element('photoColorModel').value='rgb';element('photoColorModel').fire('change');
+ assert.equal(element('photoRgbControls').hidden,false);
+ assert.equal(element('photoHsbControls').hidden,true);
+ element('photoColorModel').value='hsb';element('photoColorModel').fire('change');
+ assert.equal(element('photoHsbControls').hidden,false);
+ assert.equal(element('photoRgbControls').hidden,true);
+
+ hexInput.value='#A3A3A3';hexInput.fire('input');
 
  element('photoBlue').value='200';element('photoBlue').fire('input');
  assert.equal(element('photoDraftHex').textContent,'#A3A3C8');
