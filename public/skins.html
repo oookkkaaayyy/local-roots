@@ -1272,6 +1272,7 @@ function hbnfSemanticHash(value){const sorted=v=>Array.isArray(v)?v.map(sorted):
 function hbnfSetSyncStatus(text){const el=document.querySelector('#syncStatus');if(el)el.textContent=text;const alert=document.querySelector('#syncAlert');if(alert){const show=!['Saved to cloud','Local only'].includes(text);alert.hidden=!show;if(show)alert.textContent=text}}
 function makeSyncHelpers(ctx){return{
  queuePush(delay=140){clearTimeout(ctx.pushDebounceTimer);ctx.pushDebounceTimer=setTimeout(()=>{ctx.pushDebounceTimer=null;ctx.pushRoot()},delay)},
+ requestAuthoritativeCatchup(){if(!ctx.supabaseClient)return Promise.resolve();if(ctx.catchupPromise)return ctx.catchupPromise;ctx.catchupPromise=this.pullRoot().finally(()=>{ctx.catchupPromise=null});return ctx.catchupPromise},
  async initSync(){
   const cfg=getConfiguredSupabase();
   if(!cfg){hbnfSetSyncStatus(ctx.localDirty?'Pending — offline; edits retained on this device.':'Local only');return}
@@ -1317,7 +1318,7 @@ function makeSyncHelpers(ctx){return{
    ctx.remoteSyncing=true;saveLocal();ctx.remoteSyncing=false;
    renderAll();
   }).subscribe(status=>{
-   if(status==='SUBSCRIBED'){ctx.pullRoot();if(ctx.lastSyncError)hbnfSetSyncStatus('Cloud unavailable — pending local draft retained.');else if(ctx.remoteConflictPending)hbnfSetSyncStatus(ctx.legacyUnconfirmed?'Review needed — older scorecard data preserved on this device, not uploaded.':'Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');}
+   if(status==='SUBSCRIBED'){ctx.requestAuthoritativeCatchup();if(ctx.lastSyncError)hbnfSetSyncStatus('Cloud unavailable — pending local draft retained.');else if(ctx.remoteConflictPending)hbnfSetSyncStatus(ctx.legacyUnconfirmed?'Review needed — older scorecard data preserved on this device, not uploaded.':'Conflict — newer cloud data found; your edits are kept on this device.');else if(ctx.localDirty)hbnfSetSyncStatus('Pending — saved edits are waiting for cloud confirmation.');else hbnfSetSyncStatus(ctx.syncBaselineReady?'Saved to cloud':'Cloud baseline unavailable; local copy retained.');}
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')hbnfSetSyncStatus('Sync reconnecting…');
   });
   window.addEventListener('online',()=>{if(ctx.supabaseClient)ctx.syncBaselinePromise=ctx.pullRoot()});
@@ -1438,7 +1439,7 @@ function makeSyncHelpers(ctx){return{
  }
 }}
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s)), esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',lastRemoteRevision:'',localDirty:false,localDraftStored:true,pendingMarkerStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,legacyUnconfirmed:false,lastSyncError:false,pendingBaseHash:null,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
+const ctx={branch:'skins',localKey:'hbnf-sync-skins',state:null,rootState:{},supabaseClient:null,realtimeChannel:null,catchupPromise:null,baselineBagTags:null,syncing:false,pendingPush:false,pushDebounceTimer:null,lastRemoteRootHash:'',lastRemoteBranchHash:'',lastRemoteRevision:'',localDirty:false,localDraftStored:true,pendingMarkerStored:true,localSyncNeedsConfirmation:false,localSyncConfirmed:false,syncDeclined:false,remoteConflictPending:false,legacyUnconfirmed:false,lastSyncError:false,pendingBaseHash:null,syncBaselineReady:false,syncBaselinePromise:null,startupBranchHash:'',localEditedBeforeBaseline:false};Object.assign(ctx,makeSyncHelpers(ctx));const SKINS_ENTRY_FEE=10;
 // A redundant write-ahead draft survives app termination and a stale startup GET.
 // Never treat a device-only draft as a cloud save. The original cache is left intact.
 const HBNF_PENDING_DRAFT_KEY='hbnf-sync-skins-pending-v1';
