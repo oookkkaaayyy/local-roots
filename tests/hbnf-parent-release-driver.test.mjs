@@ -10,10 +10,12 @@ import { join } from 'node:path';
 import { createAuthenticatedReadAdapters } from '../scripts/hbnf-parent-release/providers.mjs';
 
 const targetIds = ['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score','cloudflare-worker'];
+const workerBaselineVersion = '48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
+const olderWorkerVersion = '08633e43-dbaa-4421-a072-5af56f75d4b7';
 const initial = Object.fromEntries(targetIds.map(id => [id, { id, revision: 0 }]));
 const makeTx = () => {
   const states = structuredClone(initial);
-  const targets = targetIds.map(id => ({ id, provider: id.startsWith('edge-') ? 'Supabase' : id === 'cloudflare-worker' ? 'Cloudflare' : 'Supabase', target: id, baselineIdentity: digest(states[id]), baselineSha256: digest(states[id]), rollback: { driveFileId: `rollback-${id}`, sha256: 'a'.repeat(64), bytes: 1, downloadBackVerified: true, ...(id === 'cloudflare-worker' ? { providerVersionId: '08633e43-dbaa-4421-a072-5af56f75d4b7' } : {}) } }));
+  const targets = targetIds.map(id => ({ id, provider: id.startsWith('edge-') ? 'Supabase' : id === 'cloudflare-worker' ? 'Cloudflare' : 'Supabase', target: id, baselineIdentity: digest(states[id]), baselineSha256: digest(states[id]), rollback: { driveFileId: `rollback-${id}`, sha256: 'a'.repeat(64), bytes: 1, downloadBackVerified: true, ...(id === 'cloudflare-worker' ? { providerVersionId: workerBaselineVersion } : {}) }, ...(id === 'cloudflare-worker' ? { baselineProviderVersionId: workerBaselineVersion } : {}) }));
   const operations = REQUIRED_STAGES.map(([id, targetId], index) => {
     const beforeState = structuredClone(states[targetId]);
     const afterState = { ...beforeState, revision: beforeState.revision + 1, applied: id };
@@ -117,7 +119,7 @@ test('authenticated provider preflight binds five exact targets but remains PEND
   const tx=makeTx();
   const observed=Object.fromEntries(tx.targets.map(t=>[t.id,initial[t.id]]));
   const store={async readAndVerifyDriveArtifact(a){return {driveFileId:a.driveFileId,sha256:a.sha256,bytes:a.bytes,verified:true}},async persistAndDownloadBack(_n,bytes){return {downloadBackVerified:true,sha256:digest(bytes),id:'drive-id'}}};
-  const out=await providerBoundPreflight(tx,{readOnly:true,async readAllTargets(received){assert.equal(received.transactionId,tx.transactionId);assert.equal(received.targets.find(t=>t.id==='cloudflare-worker').rollback.providerVersionId,'08633e43-dbaa-4421-a072-5af56f75d4b7');return observed}},store);
+  const out=await providerBoundPreflight(tx,{readOnly:true,async readAllTargets(received){assert.equal(received.transactionId,tx.transactionId);assert.equal(received.targets.find(t=>t.id==='cloudflare-worker').rollback.providerVersionId,workerBaselineVersion);return observed}},store);
   assert.equal(out.preflightStatus,'PASS'); assert.equal(out.status,'PENDING'); assert.equal(out.admission,'NOT_ADMITTED');
 });
 
@@ -138,10 +140,10 @@ test('provider reads require credentials and mutations are absent from authentic
 test('authenticated provider adapter reads the five exact production target types without mutation endpoints',async()=>{
   const calls=[];
   const functionRows=['hbnf-tag-editor','hbnf-tags-live','hbnf-watch-score'].map((slug,i)=>({slug,status:'ACTIVE',version:[5,4,14][i],ezbr_sha256:`sha-${i}`,verify_jwt:false,updated_at:'2026-10-30T00:00:00Z'}));
-  const workerCurrent='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6', workerRollback='08633e43-dbaa-4421-a072-5af56f75d4b7';
+  const workerCurrent=workerBaselineVersion, workerRollback=workerBaselineVersion;
   const replies=[
     {result:{deployments:[{id:'dep',versions:[{version_id:workerCurrent,percentage:100}]}]}},
-    {result:{items:[{id:workerCurrent,number:348,metadata:{source:'wrangler'}},{id:workerRollback,number:347,metadata:{source:'wrangler'}},{id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',number:343,metadata:{source:'wrangler'}}]}},
+    {result:{items:[{id:workerCurrent,number:348,metadata:{source:'wrangler'}},{id:olderWorkerVersion,number:347,metadata:{source:'wrangler'}},{id:'3b019c24-0288-4c0d-bcc2-46cb6028d0f6',number:343,metadata:{source:'wrangler'}}]}},
     {result:[{pattern:'hbnightflyers.com',script:'hbnf'}]},
     {id:'phcpbvuqibyarpfrftgx',status:'ACTIVE_HEALTHY',region:'us-west-2'},
     functionRows,
@@ -156,7 +158,7 @@ test('authenticated provider adapter reads the five exact production target type
   assert(calls.some(c=>c.url.endsWith('/workers/scripts/hbnf/versions')));
   assert.equal(targets['cloudflare-worker'].versionNumber,348);
   assert.equal(targets['cloudflare-worker'].retainedRollbackVersionId,workerRollback);
-  assert.equal(targets['cloudflare-worker'].retainedRollbackVersionNumber,347);
+  assert.equal(targets['cloudflare-worker'].retainedRollbackVersionNumber,348);
   assert.equal(targets['edge-watch-score'].version,14);
   assert(calls.every(c=>c.auth?.startsWith('Bearer ')));
   const queryCall=calls.find(c=>c.url.includes('/database/query'));
@@ -169,4 +171,10 @@ test('provider preflight refuses to guess a rollback version from repository his
   await assert.rejects(()=>adapter.readAllTargets({targets:[{id:'cloudflare-worker',rollback:{}}]}),/WORKER_ROLLBACK_VERSION_ID_REQUIRED/);
   const tx=makeTx(); delete tx.targets.find(t=>t.id==='cloudflare-worker').rollback.providerVersionId;
   assert(validateTransaction(tx).some(e=>e==='target cloudflare-worker: baseline and rollback binding incomplete'));
+});
+
+test('transaction rejects an older Worker rollback than the installed baseline',()=>{
+  const tx=makeTx();
+  tx.targets.find(t=>t.id==='cloudflare-worker').rollback.providerVersionId=olderWorkerVersion;
+  assert(validateTransaction(tx).includes('target cloudflare-worker: baseline and rollback binding incomplete'));
 });

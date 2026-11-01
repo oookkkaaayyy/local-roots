@@ -14,7 +14,7 @@ export function validateTransaction(tx) {
   if (!tx?.acceptanceCriteria?.length || tx.acceptanceCriteria.some(c=>!c.id||!c.description||!c.method||!c.expected)) errors.push('complete acceptance criteria missing');
   const targets = tx?.targets || [];
   if (targets.length !== REQUIRED_TARGETS.length || new Set(targets.map(t => t.id)).size !== targets.length || REQUIRED_TARGETS.some(id => !targets.some(t => t.id === id))) errors.push('exact five target baseline set required');
-  for (const t of targets) if (!t.baselineIdentity || !/^[a-f0-9]{64}$/i.test(t.baselineSha256 || '') || !/^[a-f0-9]{64}$/i.test(t.rollback?.sha256 || '') || !t.rollback?.driveFileId || !Number.isSafeInteger(t.rollback?.bytes) || t.rollback.bytes<1 || t.rollback.downloadBackVerified!==true || (t.id === 'cloudflare-worker' && !/^[0-9a-f-]{36}$/i.test(t.rollback?.providerVersionId || ''))) errors.push(`target ${t.id}: baseline and rollback binding incomplete`);
+  for (const t of targets) if (!t.baselineIdentity || !/^[a-f0-9]{64}$/i.test(t.baselineSha256 || '') || !/^[a-f0-9]{64}$/i.test(t.rollback?.sha256 || '') || !t.rollback?.driveFileId || !Number.isSafeInteger(t.rollback?.bytes) || t.rollback.bytes<1 || t.rollback.downloadBackVerified!==true || (t.id === 'cloudflare-worker' && (!/^[0-9a-f-]{36}$/i.test(t.baselineProviderVersionId || '') || !/^[0-9a-f-]{36}$/i.test(t.rollback?.providerVersionId || '') || t.rollback.providerVersionId !== t.baselineProviderVersionId))) errors.push(`target ${t.id}: baseline and rollback binding incomplete`);
   const operations = tx?.operations || [];
   if (operations.length !== REQUIRED_STAGES.length) errors.push('exact seven ordered stages required');
   for (let i = 0; i < REQUIRED_STAGES.length; i++) {
