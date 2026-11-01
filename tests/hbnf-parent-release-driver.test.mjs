@@ -117,7 +117,7 @@ test('authenticated provider preflight binds five exact targets but remains PEND
   const tx=makeTx();
   const observed=Object.fromEntries(tx.targets.map(t=>[t.id,initial[t.id]]));
   const store={async readAndVerifyDriveArtifact(a){return {driveFileId:a.driveFileId,sha256:a.sha256,bytes:a.bytes,verified:true}},async persistAndDownloadBack(_n,bytes){return {downloadBackVerified:true,sha256:digest(bytes),id:'drive-id'}}};
-  const out=await providerBoundPreflight(tx,{readOnly:true,async readAllTargets(){return observed}},store);
+  const out=await providerBoundPreflight(tx,{readOnly:true,async readAllTargets(received){assert.equal(received.transactionId,tx.transactionId);assert.equal(received.targets.find(t=>t.id==='cloudflare-worker').rollback.providerVersionId,'08633e43-dbaa-4421-a072-5af56f75d4b7');return observed}},store);
   assert.equal(out.preflightStatus,'PASS'); assert.equal(out.status,'PENDING'); assert.equal(out.admission,'NOT_ADMITTED');
 });
 
