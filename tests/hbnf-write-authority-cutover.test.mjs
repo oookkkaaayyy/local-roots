@@ -9,6 +9,7 @@ const sync = await readFile(new URL('../public/hbnf-league-state-sync.js', impor
 const skins = await readFile(new URL('../public/skins.html', import.meta.url), 'utf8');
 const tagRevision = await readFile(new URL('../supabase/migrations/20261030230000_hbnf_verify_round_tag_revision_enforcement.sql', import.meta.url), 'utf8');
 const revisionGuard = await readFile(new URL('../supabase/migrations/20261029203741_hbnf_league_state_server_revision_guard.sql', import.meta.url), 'utf8');
+const revisionForward = await readFile(new URL('../supabase/migrations/20261101160000_hbnf_revision_trigger_forward_alignment.sql', import.meta.url), 'utf8');
 
 test('login-free browser saves use mandatory revision-guarded RPC', () => {
   assert.match(sync, /client\.rpc\('hbnf_save_league_state_v1'/);
@@ -71,7 +72,8 @@ test('round-tag verification enforces both revisions after idempotent retry chec
 });
 
 
-test('parent-release cutover validator accepts separated real SQL stages, not a combined auto-migration', () => {
-  assert.deepEqual(validateCutoverSql({ expandSql: migration, contractSql: contract, revisionSql: revisionGuard, tagSql: tagRevision }), []);
+test('parent-release cutover validator requires the forward revision alignment as well as initial trigger creation', () => {
+  assert.deepEqual(validateCutoverSql({ expandSql: migration, contractSql: contract, revisionSql: revisionGuard, revisionForwardSql: revisionForward, tagSql: tagRevision }), []);
+  assert.ok(validateCutoverSql({ expandSql: migration, contractSql: contract, revisionSql: revisionGuard, tagSql: tagRevision }).some(error => error.includes('forward function-alignment')));
   assert.notEqual(migration, contract);
 });

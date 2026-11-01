@@ -14,6 +14,12 @@ The file journal uses exclusive local one-time lock creation and fsync for every
 
 `scripts/hbnf-parent-release/sql/db-revoke-old-writes.sql` carries the final table-grant and policy revocation. It is deliberately **outside Supabase's automatic migrations directory**. Apply it only at the last stage of a separately admitted, readback-verified, coordinated five-target release; ensure the inverse restore of exact grants/policies is the first rollback stage, ahead of reverting the Worker. The current driver is read-only/mocked and cannot apply this SQL. Keeping these files separate is a source-safety improvement, **not** proof that a live multi-provider executor exists.
 
+## Provider-function reconciliation (read-only 2026-11-01)
+
+The live migration ledger already records `20261029203741_hbnf_league_state_server_revision_guard`, but its installed function body still advances `updated_at` on no-op updates and lacks the candidate's explicit `infinity` failure. Editing that historical migration would not be executed on the installed database. `20261101160000_hbnf_revision_trigger_forward_alignment.sql` is the required new forward migration; it changes only that function body and leaves triggers, grants, policies, and row data alone. The staged database artifact must include this new migration and verify its function-definition hash after applying it.
+
+The live `hbnf_verify_round_tag_v1` body accepts the revision arguments but does not enforce them. The candidate migration `20261030230000_hbnf_verify_round_tag_revision_enforcement.sql` contains the stale authority/entry checks and is not present in the current production migration ledger, so it remains a required explicit database stage. Apply staged SQL individually; a bulk `supabase db push` would consume all pending migrations together and cannot honor the parent transaction's seven-stage ordering. The release plan and expected-after function hashes must be refreshed from the exact updated source before admission.
+
 The source regression `tests/hbnf-write-authority-cutover.test.mjs` checks the real additive SQL and final contract artifact with `validateCutoverSql`. The review-only CI workflow runs this and the mocked release-driver tests. Full v48 integration, native replay against the combined package, old-client disposition, and admission remain pending.
 
 Focused checks: `node --test tests/hbnf-parent-release-driver.test.mjs`.

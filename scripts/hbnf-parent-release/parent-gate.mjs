@@ -20,13 +20,16 @@ const json=v=>JSON.stringify(v,(_k,x)=>x&&typeof x==='object'&&!Array.isArray(x)
 const present=v=>typeof v==='string'&&v.length>0;
 const digest=v=>typeof v==='string'&&DIGEST.test(v);
 
-export function validateCutoverSql({expandSql,contractSql,revisionSql,tagSql}){
+export function validateCutoverSql({expandSql,contractSql,revisionSql,revisionForwardSql,tagSql}){
  const errors=[];
  if(!/create\s+or\s+replace\s+function\s+public\.hbnf_save_league_state_v1\s*\(/i.test(expandSql||'')) errors.push('RPC must be installed in additive DB-expand stage');
  if(/revoke\s+(?:insert\s*,\s*update|update\s*,\s*insert|insert|update)\s+on\s+(?:table\s+)?public\.league_state/i.test(expandSql||'')) errors.push('DB-expand stage revokes legacy write privileges before new pages are active');
  if(!/revoke\s+(?:insert\s*,\s*update|update\s*,\s*insert)\s+on\s+(?:table\s+)?public\.league_state/i.test(contractSql||'')) errors.push('Separate final DB-contract stage must revoke legacy table writes');
  if(/create\s+or\s+replace\s+function\s+public\.hbnf_save_league_state_v1/i.test(contractSql||'')) errors.push('Do not introduce RPC only at final permission revocation');
  if(!/create\s+trigger\s+zzz_hbnf_enforce_league_state_revision/i.test(revisionSql||'')) errors.push('DB revision trigger must precede RPC');
+ if(!/create\s+or\s+replace\s+function\s+public\.hbnf_enforce_league_state_revision/i.test(revisionForwardSql||'')) errors.push('Applied revision migration needs a separate forward function-alignment migration');
+ if(!/new\.state_json\s+is\s+not\s+distinct\s+from\s+old\.state_json/i.test(revisionForwardSql||'')) errors.push('Forward revision alignment must preserve no-op revisions');
+ if(!/old\.updated_at\s*=\s*'infinity'::timestamptz/i.test(revisionForwardSql||'')) errors.push('Forward revision alignment must fail closed at infinity');
  if(!/hbnf_verify_round_tag_v1/i.test(tagSql||'')) errors.push('Tag verification migration missing');
  return errors;
 }
