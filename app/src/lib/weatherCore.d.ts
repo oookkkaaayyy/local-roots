@@ -1,4 +1,4 @@
-export type WeatherCourse = { id: string; name: string; city:string; state:string; county?:string; coordinates: [number, number]; coordinateNote?:string; holes: number; kind: string; access: string; status: string; college?: boolean; privateOnly?: boolean; timezone?:string; verifiedOn?:string; sources: Array<{label:string;url:string;supports?:string[]}> };
+export type WeatherCourse = { id: string; name: string; city:string; state:string; county?:string; coordinates: [number, number]; coordinateNote?:string; postalCode?:string; postalCodeSource?:string; holes: number; kind: string; access: string; status: string; college?: boolean; privateOnly?: boolean; timezone?:string; verifiedOn?:string; sources: Array<{label:string;url:string;supports?:string[]}> };
 export type HourRow = { startTime:string; endTime:string; temperatureF:number|null; windMinMph:number|null; windMaxMph:number|null; windDirection:string|null; gustMph:number|null; precipitationProbability:number|null; conditions:string|null };
 export function distanceMiles(a:[number,number],b:[number,number]):number;
 export function isEligibleCourse(course:WeatherCourse):boolean;

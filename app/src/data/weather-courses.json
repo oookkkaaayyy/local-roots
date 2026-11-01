@@ -114,6 +114,8 @@
     "name": "Huntington Beach Central Park Disc Golf Course",
     "city": "Huntington Beach",
     "state": "CA",
+    "postalCode": "92647",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/huntington-beach-central-park",
     "county": "Orange",
     "coordinates": [
       33.7004,
@@ -158,6 +160,8 @@
     "name": "Oak Grove / Hahamongna Watershed Park",
     "city": "Pasadena",
     "state": "CA",
+    "postalCode": "91103",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/oak-grove-hahamongna-park",
     "county": "Los Angeles",
     "coordinates": [
       34.1932203,
@@ -202,6 +206,8 @@
     "name": "El Dorado Park Disc Golf Course",
     "city": "Long Beach",
     "state": "CA",
+    "postalCode": "90815",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/el-dorado-park-disc-golf-course",
     "county": "Los Angeles",
     "coordinates": [
       33.801,
@@ -224,6 +230,8 @@
     "name": "Prado Regional Park",
     "city": "Chino",
     "state": "CA",
+    "postalCode": "91708",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/prado-regional-park-disc-golf-course",
     "county": "San Bernardino",
     "coordinates": [
       33.9502,
@@ -312,6 +320,8 @@
     "name": "Sylmar / Veterans Park Disc Golf Course",
     "city": "Sylmar",
     "state": "CA",
+    "postalCode": "91342",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/sylmar-veterans-park",
     "county": "Los Angeles",
     "coordinates": [
       34.3246973,
@@ -334,6 +344,8 @@
     "name": "La Mirada Lakeside (Front)",
     "city": "La Mirada",
     "state": "CA",
+    "postalCode": "90638",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/la-mirada-regional-park-lake-18",
     "county": "Los Angeles",
     "coordinates": [
       33.902,
@@ -356,6 +368,8 @@
     "name": "La Mirada Backside (Back)",
     "city": "La Mirada",
     "state": "CA",
+    "postalCode": "90638",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/la-mirada-regional-park-back-18",
     "county": "Los Angeles",
     "coordinates": [
       33.9,
@@ -378,6 +392,8 @@
     "name": "Whittier Narrows Disc Golf Course",
     "city": "South El Monte",
     "state": "CA",
+    "postalCode": "91733",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/whittier-narrows-park/",
     "county": "Los Angeles",
     "coordinates": [
       34.02,
@@ -488,6 +504,8 @@
     "name": "Morley Field Disc Golf Course",
     "city": "San Diego",
     "state": "CA",
+    "postalCode": "92104",
+    "postalCodeSource": "https://www.morleyfield.com/contact",
     "county": "San Diego",
     "coordinates": [
       32.7376156,
@@ -576,6 +594,8 @@
     "name": "Franklin Field",
     "city": "Taft",
     "state": "CA",
+    "postalCode": "93268",
+    "postalCodeSource": "https://www.pdga.com/course-directory/advanced/search?field_course_location_administrative_area=CA&location_title=California&order=title&page=4&sort=desc",
     "county": "Kern",
     "coordinates": [
       35.153823,
@@ -639,6 +659,8 @@
     "name": "Evergreen Open Space",
     "city": "Goleta",
     "state": "CA",
+    "postalCode": "93117",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/evergreen-open-space",
     "county": "Santa Barbara",
     "coordinates": [
       34.4394,
@@ -683,6 +705,8 @@
     "name": "Ken Malloy Harbor Regional Park",
     "city": "Harbor City",
     "state": "CA",
+    "postalCode": "90710",
+    "postalCodeSource": "https://www.pdga.com/course-directory/course/ken-malloy-harbor-regional-park",
     "county": "Los Angeles",
     "coordinates": [
       33.77989706386455,

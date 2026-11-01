@@ -55,6 +55,11 @@ function extractRollingHourRows(raw:CourseForecast|undefined,course:WeatherCours
   try { const result=buildRolling24HourRows(raw.periods,raw.gusts,{now,timeZone:course.timezone||TIME_ZONE,gustUnit:raw.gustUnit,precipitationSeries:raw.precipitation,precipitationUnit:raw.precipitationUnit}); return {rows:result.rows,coverage:result.coverage}; }
   catch { return {rows:[] as HourRow[],coverage:0}; }
 }
+function hourlyTimeParts(value:string,rows:HourRow[],timeZone:string,referenceTime:number) {
+  const label=formatHourlyTimeLabel(value,rows,timeZone,referenceTime);
+  const split=label.lastIndexOf(', ');
+  return split<0?{day:'',time:label.replace(/:00 (?=AM|PM)/,' ')}:{day:label.slice(0,split),time:label.slice(split+2).replace(/:00 (?=AM|PM)/,' ')};
+}
 function sortedCourses(views:CourseView[],sort:Preferences['sort']) {
   const copy=[...views];
   const value=(v:CourseView)=>sort==='temperature'?v.summary.temperatureMinF:sort==='wind'?v.summary.windMaxMph:sort==='gust'?v.summary.peakGustMph:v.course.distanceMiles;
@@ -73,6 +78,7 @@ export function WeatherPage() {
   const [shareMessage,setShareMessage]=useState('');
   const [refreshKey,setRefreshKey]=useState(0);
   const [filtersOpen,setFiltersOpen]=useState(false);
+  const [copyFeedback,setCopyFeedback]=useState<{id:string;message:string}|null>(null);
 
   useEffect(()=>{try{localStorage.setItem(PREF_KEY,JSON.stringify(preferences));}catch{/* optional */}},[preferences]);
   useEffect(()=>{
@@ -164,6 +170,15 @@ export function WeatherPage() {
     setPreferences({...draft,location:draft.location.trim()});setExpanded(null);setFiltersOpen(false);
     syncWeatherUrl({...draft,location:draft.location.trim()});
   }
+  async function copyCourseLocation(course:WeatherCourse) {
+    const location=course.postalCode||course.coordinates.map(value=>value.toFixed(6)).join(', ');
+    try {
+      await navigator.clipboard.writeText(location);
+      setCopyFeedback({id:course.id,message:'Copied'});
+    } catch {
+      setCopyFeedback({id:course.id,message:'Copy unavailable'});
+    }
+  }
   async function share() {
     const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0'}).toString();
     try {if(navigator.share){await navigator.share({title:'Disc Golf Weather · Local Roots',url:url.toString()});return;}}catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
@@ -189,11 +204,11 @@ export function WeatherPage() {
       </button>
       <div id="weather-filters-panel" className="weather-filter-panel" hidden={!filtersOpen}>
       <form className="weather-controls" onSubmit={submit}>
-      <label>ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
-      <label>Miles<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option><option value={80}>80</option><option value={100}>100</option><option value={125}>125</option><option value={150}>150</option></select></label>
-      <label>Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
-      <label>Start<select disabled={draft.allDay} value={draft.start} onChange={e=>updateDraft('start',Number(e.target.value))}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
-      <label>End<select disabled={draft.allDay} value={draft.end} onChange={e=>updateDraft('end',Number(e.target.value))}>{HOUR_OPTIONS.slice(1).filter(h=>h>draft.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
+      <label className="weather-field-zip">ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
+      <label className="weather-field-radius">Miles<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option><option value={80}>80</option><option value={100}>100</option><option value={125}>125</option><option value={150}>150</option></select></label>
+      <label className="weather-field-date">Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
+      <label className="weather-field-start">Start<select disabled={draft.allDay} value={draft.start} onChange={e=>updateDraft('start',Number(e.target.value))}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
+      <label className="weather-field-end">End<select disabled={draft.allDay} value={draft.end} onChange={e=>updateDraft('end',Number(e.target.value))}>{HOUR_OPTIONS.slice(1).filter(h=>h>draft.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
       <label className="weather-all-day"><input type="checkbox" checked={draft.allDay} onChange={e=>updateDraft('allDay',e.target.checked)} /> All Day</label>
       <button className="button primary weather-search" type="submit" disabled={loading}>Search</button>
     </form>
@@ -217,11 +232,14 @@ export function WeatherPage() {
         const currentConditions=[...new Set(view.rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
         const rowFlags=view.flags.filter(flag=>flag.kind!=='alerts-unavailable');
         const referenceTime=Date.now();
-        const hourly=open?extractRollingHourRows(view.raw,view.course,referenceTime):null;
+        const rolling=preferences.date===dateInPacific(new Date(referenceTime))&&preferences.allDay;
+        const hourly=open?(rolling?extractRollingHourRows(view.raw,view.course,referenceTime):extractHourRows(view.raw,view.course,preferences)):null;
+        const periodLabel=rolling?'Next 24 hours':`${new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric'}).format(new Date(`${preferences.date}T12:00:00Z`))} · ${preferences.allDay?'All day':`${labelHour(preferences.start)}–${labelHour(preferences.end)}`}`;
+        const [courseLat,courseLon]=view.course.coordinates;
         const timeZone=view.course.timezone||TIME_ZONE;
         return <article className={`weather-course ${open?'is-expanded':''}`} key={view.course.id}>
           <button className="weather-course-toggle" type="button" aria-expanded={open} aria-controls={`weather-details-${view.course.id}`} onClick={()=>setExpanded(open?null:view.course.id)}>
-            <span className="weather-course-name"><strong>{view.course.name}</strong><small>{view.course.city}, {view.course.state} · {view.course.distanceMiles.toFixed(1)} mi</small></span>
+            <span className="weather-course-name"><strong>{view.course.name}</strong><small>{view.course.city}, {view.course.state}{view.course.postalCode?` · ZIP ${view.course.postalCode}`:''} · {view.course.distanceMiles.toFixed(1)} mi</small></span>
             <span className="weather-metric" data-label="Temp"><strong>{view.error||!view.rows.length?'—':temps}</strong></span>
             <span className="weather-metric weather-wind-metric" data-label="Wind"><strong>{view.error||!view.rows.length?'—':winds}</strong><small>{view.summary.peakGustMph===null?'Gust —':`Gust ${Math.round(view.summary.peakGustMph)} mph`}</small></span>
             <span className="weather-condition-cell" data-label="Conditions">
@@ -233,10 +251,18 @@ export function WeatherPage() {
           {open?<section className="weather-details" id={`weather-details-${view.course.id}`} aria-label={`Hourly forecast for ${view.course.name}`}>
             {view.error?<p className="weather-error">Forecast unavailable.</p>:null}
             {view.partialError?<p className="weather-stale">Some data unavailable.</p>:null}
-            {view.stale?<p className="weather-stale">Cached forecast · Issued {formatForecastIssued(view.lastUpdatedAt)||'time unavailable'}</p>:view.lastUpdatedAt?<p className="weather-updated">Forecast issued {formatForecastIssued(view.lastUpdatedAt)}</p>:null}
+            {view.stale?<p className="weather-stale">Cached forecast · Issued {formatForecastIssued(view.lastUpdatedAt)||'time unavailable'}</p>:null}
             {!view.error&&hourly?.rows.length===0?<p className="weather-muted">No forecast for these hours.</p>:null}
             {hourly&&hourly.coverage>0&&hourly.coverage<0.999?<p className="weather-stale">Forecast covers {Math.round(hourly.coverage*100)}% of these hours.</p>:null}
-            <div className="weather-hourly-scroll"><table className="weather-hourly"><thead><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain</th><th>Conditions</th></tr></thead><tbody>{(hourly?.rows||[]).map((row,i)=><tr key={`${row.startTime}-${i}`}><th scope="row">{formatHourlyTimeLabel(row.startTime,hourly?.rows||[],timeZone,referenceTime)}</th><td>{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td>{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td>{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td>{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td>{row.conditions||'—'}</td></tr>)}</tbody></table></div>
+            <p className="weather-hourly-period">{periodLabel}</p>
+            <div className="weather-location-actions">
+              <span>{view.course.postalCode?`ZIP ${view.course.postalCode}`:`${courseLat.toFixed(5)}, ${courseLon.toFixed(5)}`}</span>
+              <button type="button" onClick={()=>void copyCourseLocation(view.course)}>Copy location</button>
+              <a href={`https://forecast.weather.gov/MapClick.php?lat=${courseLat.toFixed(6)}&lon=${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`NWS forecast for ${view.course.name}`}>NWS forecast</a>
+              {copyFeedback?.id===view.course.id?<small role="status">{copyFeedback.message}</small>:null}
+            </div>
+            <div className="weather-hourly-scroll"><table className="weather-hourly" role="table"><thead role="rowgroup"><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain</th><th>Conditions</th></tr></thead><tbody role="rowgroup">{(hourly?.rows||[]).map((row,i)=>{const time=hourlyTimeParts(row.startTime,hourly?.rows||[],timeZone,referenceTime);return <tr role="row" key={`${row.startTime}-${i}`}><th scope="row" role="rowheader"><span className="weather-hourly-clock">{time.time}</span>{time.day?<span className="weather-hourly-day">{time.day}</span>:null}</th><td role="cell" data-label="Temp">{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td role="cell" data-label="Wind">{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td role="cell" data-label="Gust">{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td role="cell" data-label="Rain">{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td role="cell" data-label="Conditions">{row.conditions||'—'}</td></tr>})}</tbody></table></div>
+            {!view.stale&&view.lastUpdatedAt?<p className="weather-updated">Forecast issued {formatForecastIssued(view.lastUpdatedAt)}</p>:null}
             {view.flags.length?<div className="weather-flag-list"><strong>Alerts</strong>{view.flags.map((flag,i)=><p key={`${flag.kind}-${i}`}><span className={`weather-flag flag-${flag.kind}`}>{flag.source==='official'?'NWS alert':flag.label}</span>{flag.detail?<span>{flag.detail}</span>:null}</p>)}</div>:null}
             {!view.alertsAvailable?<p className="weather-stale">Alert status unavailable.</p>:null}
           </section>:null}
