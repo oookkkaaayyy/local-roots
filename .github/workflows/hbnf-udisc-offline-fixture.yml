@@ -1,0 +1,30 @@
+name: HBNF UDisc-to-Glow-to-Cart isolated fixture
+on:
+  push:
+    branches:
+      - review/hbnf-udisc-glow-cart-fixture-20261101
+permissions:
+  contents: read
+jobs:
+  offline-test:
+    name: Source-bound synthetic XLSX to Glow and Cart seam
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Execute local-only integration fixtures
+        env:
+          NODE_OPTIONS: '--no-network-family-autoselection'
+        run: |
+          set -euo pipefail
+          node --test tests/udisc-glow-sync-runner.test.mjs
+      - name: Confirm review-only source identity
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          test -f tests/udisc-glow-sync-runner.test.mjs
