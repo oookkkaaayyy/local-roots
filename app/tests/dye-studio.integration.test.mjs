@@ -1161,9 +1161,12 @@ test('photo color workspace keeps sampling and adjustment as an uncommitted draf
  assert.match(studioHtml,/id="photoSampleMarker" class="photo-sample-target"/);
  assert.doesNotMatch(studioHtml,/id="photoDraftColorPicker"/);
  assert.match(studioHtml,/id="photoUseSample"/);
- assert.match(studioHtml,/id="photoHue" type="range"/);
- assert.match(studioHtml,/id="photoSaturation" type="range"/);
- assert.match(studioHtml,/id="photoLightness" type="range"/);
+ for(const channel of ['Red','Green','Blue']){
+  assert.ok(studioHtml.includes(`for="photo${channel}">${channel}</label>`));
+  assert.match(studioHtml,new RegExp(`id="photo${channel}" type="range" min="0" max="255" step="1"`));
+  assert.match(studioHtml,new RegExp(`id="photo${channel}Value" type="number" min="0" max="255" step="1"`));
+ }
+ assert.doesNotMatch(studioHtml,/Colorfulness|photoHue|photoSaturation|photoLightness/);
  assert.match(studioHtml,/id="applyPhotoSuggestion"/);
  assert.match(studioHtml,/id="keepPhotoCurrent"/);
  assert.match(photo,/window\.DUPhotoColor\?\.preview/);
@@ -1176,6 +1179,38 @@ test('photo color workspace keeps sampling and adjustment as an uncommitted draf
  assert.match(studioScript,/commitHistory\(\);return true/);
  assert.match(studioScript,/photoDraftBaseHex\)return/,'save/export shortcuts are blocked during an unaccepted draft');
  assert.doesNotMatch(photo,/photoSuggestedColor/,'the obsolete native picker is removed');
+});
+
+test('RGB sliders and numeric channel values edit the sampled draft directly',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const elements=new Map(),updates=[];
+ const element=id=>{
+  if(!elements.has(id))elements.set(id,{id,value:'',textContent:'',className:'',hidden:false,checked:false,files:[],style:{setProperty(name,value){this[name]=value}},listeners:{},addEventListener(type,fn){this.listeners[type]=fn},fire(type){this.listeners[type]?.({target:this,currentTarget:this,preventDefault(){}})}});
+  return elements.get(id);
+ };
+ for(const id of ['takeDiscPhoto','chooseDiscPhoto','discCameraInput','discPhotoInput','photoColorStatus','photoRed','photoGreen','photoBlue','photoRedValue','photoGreenValue','photoBlueValue','photoDraftHexInput','photoDraftDisc','photoDraftHex'])element(id);
+ let applied=0;
+ const win={DUPhotoColor:{preview:hex=>updates.push(hex),apply(){applied++;return true},cancel(){}},addEventListener(){}};
+ const doc={readyState:'complete',getElementById:id=>elements.get(id)||null};
+ Function('window','document',photo)(win,doc);
+
+ const hexInput=element('photoDraftHexInput');hexInput.value='#A3A3A3';hexInput.fire('input');
+ assert.deepEqual(['photoRed','photoGreen','photoBlue'].map(id=>element(id).value),['163','163','163']);
+ assert.deepEqual(['photoRedValue','photoGreenValue','photoBlueValue'].map(id=>element(id).value),['163','163','163']);
+
+ element('photoBlue').value='200';element('photoBlue').fire('input');
+ assert.equal(element('photoDraftHex').textContent,'#A3A3C8');
+ assert.deepEqual(['photoRedValue','photoGreenValue','photoBlueValue'].map(id=>element(id).value),['163','163','200']);
+ assert.match(element('photoBlue').style['--channel-gradient'],/linear-gradient\(90deg, #A3A300 0%, #A3A3FF 100%\)/);
+
+ element('photoRedValue').value='20';element('photoRedValue').fire('input');
+ assert.equal(element('photoRed').value,'20');
+ assert.equal(element('photoDraftHex').textContent,'#14A3C8');
+ element('photoGreenValue').value='999';element('photoGreenValue').fire('input');
+ assert.equal(element('photoGreen').value,'255');
+ assert.equal(element('photoDraftHex').textContent,'#14FFC8');
+ assert.ok(updates.includes('#A3A3C8')&&updates.includes('#14A3C8')&&updates.includes('#14FFC8'));
+ assert.equal(applied,0,'slider changes do not apply the draft');
 });
 test('photo confidence abstains when a stable plate has no recoverable hue',()=>{
  const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');

@@ -225,8 +225,7 @@ function samplePhotoPatch(imageData,x,y,disc,overall,radius=8){
  if(Math.min(...rgb)>247&&Math.max(...base)<225)throw Error("That spot may be glare. Tap a softly lit plastic area.");
  return{rgb,hex:hex(rgb),pixelCount:pixels.length,normalized:{x:x/width,y:y/height}};
 }
-function rgbToHsl(rgb){let[r,g,b]=rgb.map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,h=0,s=0,l=(mx+mn)/2;if(d){s=d/(1-Math.abs(2*l-1));if(mx===r)h=60*(((g-b)/d)%6);else if(mx===g)h=60*((b-r)/d+2);else h=60*((r-g)/d+4)}if(h<0)h+=360;return[h,s,l]}
-function hslHex(h,s,l){h=((h%360)+360)%360;s=clamp(s,0,1);l=clamp(l,0,1);const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;let r=0,g=0,b=0;if(h<60)[r,g,b]=[c,x,0];else if(h<120)[r,g,b]=[x,c,0];else if(h<180)[r,g,b]=[0,c,x];else if(h<240)[r,g,b]=[0,x,c];else if(h<300)[r,g,b]=[x,0,c];else[r,g,b]=[c,0,x];return hex([(r+m)*255,(g+m)*255,(b+m)*255])}
+function rgbFromHex(value){return[1,3,5].map(i=>parseInt(value.slice(i,i+2),16))}
 function bind(){
  const camera=document.getElementById("discCameraInput"),library=document.getElementById("discPhotoInput"),
        status=document.getElementById("photoColorStatus");
@@ -240,7 +239,8 @@ function bind(){
   sampleReadout=document.getElementById("photoSampleReadout"),sampleHelp=document.getElementById("photoSampleHelp"),
   sampleButton=document.getElementById("photoUseSample"),draftDisc=document.getElementById("photoDraftDisc"),draftHex=document.getElementById("photoDraftHex"),
   draftHexInput=document.getElementById("photoDraftHexInput"),
-  hueInput=document.getElementById("photoHue"),satInput=document.getElementById("photoSaturation"),lightInput=document.getElementById("photoLightness");
+  redInput=document.getElementById("photoRed"),greenInput=document.getElementById("photoGreen"),blueInput=document.getElementById("photoBlue"),
+  redValue=document.getElementById("photoRedValue"),greenValue=document.getElementById("photoGreenValue"),blueValue=document.getElementById("photoBlueValue");
  const byId=id=>document.getElementById(id),chip=byId("photoColorChip");
  for(const [button,input] of [["takeDiscPhoto",camera],["chooseDiscPhoto",library]]){
    document.getElementById(button).addEventListener("click",()=>input.click());
@@ -279,16 +279,19 @@ function bind(){
   const size=Math.max(10,Math.round(Math.min(session.width,session.height)*.035)),sx=clamp(Math.round(x-size/2),0,session.width-size),sy=clamp(Math.round(y-size/2),0,session.height-size);
   c.clearRect(0,0,loupe.width,loupe.height);c.imageSmoothingEnabled=false;c.drawImage(session.sampleCanvas,sx,sy,size,size,0,0,loupe.width,loupe.height);
  }
- function setHslControls(hexColor){
-  const rgb=[parseInt(hexColor.slice(1,3),16),parseInt(hexColor.slice(3,5),16),parseInt(hexColor.slice(5,7),16)],hsl=rgbToHsl(rgb);
-  hueInput.value=String(Math.round(hsl[0]));satInput.value=String(Math.round(hsl[1]*100));lightInput.value=String(Math.round(hsl[2]*100));
-  byId("photoHueValue").textContent=hueInput.value+"°";byId("photoSaturationValue").textContent=satInput.value+"%";byId("photoLightnessValue").textContent=lightInput.value+"%";
+ function setRgbControls(hexColor){
+  const rgb=rgbFromHex(hexColor),ranges=[redInput,greenInput,blueInput],values=[redValue,greenValue,blueValue];
+  for(let i=0;i<3;i++){
+   const channel=rgb[i];if(ranges[i])ranges[i].value=String(channel);if(values[i])values[i].value=String(channel);
+   const low=[...rgb],high=[...rgb];low[i]=0;high[i]=255;
+   if(ranges[i])ranges[i].style.setProperty("--channel-gradient",`linear-gradient(90deg, ${hex(low)} 0%, ${hex(high)} 100%)`);
+  }
  }
- function setDraftColor(hexColor,{syncSliders=true,source="adjustment"}={}){
+ function setDraftColor(hexColor,{syncRgbControls=true,source="adjustment"}={}){
   if(!/^#[0-9a-f]{6}$/i.test(hexColor||""))return;
   draftHexValue=hexColor.toUpperCase();
   if(draftHexInput)draftHexInput.value=draftHexValue;
-  if(syncSliders)setHslControls(draftHexValue);
+  if(syncRgbControls)setRgbControls(draftHexValue);
   if(chip){chip.hidden=false;chip.style.backgroundColor=draftHexValue}
   syncBlankMockup();window.DUPhotoColor?.preview?.(draftHexValue);
   if(pending&&source!=="sample")status.textContent=(pending.result.colorStatus==="uncertain"?"Photo hue is uncertain. ":"Photo colors are not calibrated. ")+"Draft "+draftHexValue+" is previewed; current project stays unchanged until Apply.";
@@ -337,10 +340,22 @@ function bind(){
   photoImage.addEventListener("keydown",event=>{if(!session)return;const step=event.shiftKey?0.05:0.01;let moved=false;if(event.key==="ArrowLeft"){target.x-=step;moved=true}else if(event.key==="ArrowRight"){target.x+=step;moved=true}else if(event.key==="ArrowUp"){target.y-=step;moved=true}else if(event.key==="ArrowDown"){target.y+=step;moved=true}else if(event.key==="Enter"){sampleTarget();event.preventDefault();return}if(moved){event.preventDefault();setTarget(target.x,target.y);updateLoupe(target.x*session.width,target.y*session.height)}});
  }
  sampleButton?.addEventListener("click",sampleTarget);
- for(const [input,output,suffix] of [[hueInput,"photoHueValue","°"],[satInput,"photoSaturationValue","%"],[lightInput,"photoLightnessValue","%"]])input?.addEventListener("input",()=>{
-  byId(output).textContent=input.value+suffix;
-  setDraftColor(hslHex(+hueInput.value,+satInput.value/100,+lightInput.value/100),{syncSliders:false});
- });
+ const rgbRanges=[redInput,greenInput,blueInput],rgbValues=[redValue,greenValue,blueValue];
+ function draftFromRgbControls(){setDraftColor(hex(rgbRanges.map(input=>clamp(Math.round(+input.value||0),0,255))),{syncRgbControls:false})}
+ for(let channel=0;channel<3;channel++){
+  const range=rgbRanges[channel],value=rgbValues[channel];
+  range?.addEventListener("input",()=>{if(value)value.value=range.value;setRgbControls(hex(rgbRanges.map(input=>+input.value)));draftFromRgbControls()});
+  value?.addEventListener("input",()=>{
+   if(value.value==="")return;
+   const next=clamp(Math.round(+value.value),0,255);value.value=String(next);if(range)range.value=String(next);
+   setRgbControls(hex(rgbRanges.map(input=>+input.value)));draftFromRgbControls();
+  });
+  value?.addEventListener("change",()=>{
+   if(value.value==="")value.value=range?.value||"0";
+   const next=clamp(Math.round(+value.value||0),0,255);value.value=String(next);if(range)range.value=String(next);
+   setRgbControls(hex(rgbRanges.map(input=>+input.value)));draftFromRgbControls();
+  });
+ }
  draftHexInput?.addEventListener("input",()=>{const value=draftHexInput.value.trim();if(/^#[0-9a-f]{6}$/i.test(value))setDraftColor(value,{source:"hex"})});
  keepSuggestion?.addEventListener("click",()=>{
   resetPhotoSession();if(chip){chip.hidden=false;chip.style.backgroundColor=byId("baseHex").value}status.textContent="Canceled photo color draft. Your accepted color and project edits were kept.";status.className="photo-status";

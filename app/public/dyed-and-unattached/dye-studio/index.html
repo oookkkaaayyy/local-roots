@@ -421,10 +421,10 @@ body.calibration-mode #du-lighting{display:none!important}
      </div>
      <p id="photoSampleHelp" class="photo-workspace-help">Tap or drag on clean, unstamped plastic. The color is a local photo sample, not calibrated physical color. Your current project stays unchanged until Apply.</p>
      <button id="photoUseSample" type="button" class="photo-sample-button">Use marked spot</button>
-     <div class="photo-adjustments" aria-label="Adjust proposed color">
-       <label>Hue <input id="photoHue" type="range" min="0" max="359" value="210"><output id="photoHueValue">210°</output></label>
-       <label>Colorfulness <input id="photoSaturation" type="range" min="0" max="100" value="15"><output id="photoSaturationValue">15%</output></label>
-       <label>Lightness <input id="photoLightness" type="range" min="0" max="100" value="70"><output id="photoLightnessValue">70%</output></label>
+     <div class="photo-adjustments" role="group" aria-label="RGB color controls">
+       <div class="photo-adjustment-row"><label for="photoRed">Red</label><input id="photoRed" type="range" min="0" max="255" step="1" value="255"><input id="photoRedValue" type="number" min="0" max="255" step="1" value="255" aria-label="Red value, 0 to 255"></div>
+       <div class="photo-adjustment-row"><label for="photoGreen">Green</label><input id="photoGreen" type="range" min="0" max="255" step="1" value="255"><input id="photoGreenValue" type="number" min="0" max="255" step="1" value="255" aria-label="Green value, 0 to 255"></div>
+       <div class="photo-adjustment-row"><label for="photoBlue">Blue</label><input id="photoBlue" type="range" min="0" max="255" step="1" value="255"><input id="photoBlueValue" type="number" min="0" max="255" step="1" value="255" aria-label="Blue value, 0 to 255"></div>
      </div>
      <details class="photo-advanced-color"><summary>Precise color (optional)</summary><label>HEX <input id="photoDraftHexInput" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="#FFFFFF" aria-label="Draft color HEX"></label></details>
      <p id="photoDraftWarning" class="photo-draft-warning">Changing the draft updates the disc preview immediately. Apply accepts it; Cancel keeps your previous color and edits.</p>
