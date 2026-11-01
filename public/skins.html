@@ -1293,6 +1293,10 @@ function makeSyncHelpers(ctx){return{
    if(incomingRootHash&&incomingRootHash===ctx.lastRemoteRootHash)return;
    const incomingBranchHash=hbnfSemanticHash(incoming&&incoming[ctx.branch]);
    const remoteBranch=incoming&&incoming[ctx.branch];
+   const localBagTags=ctx.rootState&&ctx.rootState.bagTags,baseBagTags=ctx.baselineBagTags;
+   const localBagTagsChanged=hbnfSemanticHash(localBagTags)!==hbnfSemanticHash(baseBagTags);
+   const remoteBagTagsChanged=hbnfSemanticHash(incoming&&incoming.bagTags)!==hbnfSemanticHash(baseBagTags);
+   if(localBagTagsChanged&&remoteBagTagsChanged&&hbnfSemanticHash(localBagTags)!==hbnfSemanticHash(incoming&&incoming.bagTags)){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — bag tags changed on another device; your edits are kept here.');return}
    if(ctx.localDirty){
     if(ctx.syncing&&incomingBranchHash&&incomingBranchHash===ctx.inFlightBranchHash){
      ctx.rootState=incoming;ctx.lastRemoteRootHash=incomingRootHash;ctx.lastRemoteBranchHash=incomingBranchHash;ctx.lastRemoteRevision=incomingRevision;
