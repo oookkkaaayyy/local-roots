@@ -1,0 +1,83 @@
+name: HBNF Glow served-asset parity (READ ONLY)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/hbnf-glow-readonly-site-parity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-served-glow:
+    name: Independent live HTTP byte readback
+    if: github.head_ref == 'review/hbnf-glow-live-site-parity-20261101'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout non-production QA branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Fetch exact pinned released-source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _hbnf_verify/expected _hbnf_verify/served _hbnf_verify/headers
+          git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_FETCH_TOKEN" | base64 -w0)" fetch --no-tags --depth=1 origin 44612c09677f59b84bece7de655af7bb011b51e7
+          for f in glow.html glow-save-sync.mjs league-state-cas.mjs; do
+            git show "44612c09677f59b84bece7de655af7bb011b51e7:source-snapshots/hbnf-worker-d1a5f936-20261024/public/$f" > "_hbnf_verify/expected/$f"
+          done
+        env:
+          GH_FETCH_TOKEN: ${{ github.token }}
+
+      - name: Read public website bytes and compare with pinned source
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="_hbnf_verify/report.txt"
+          {
+            echo "READ_ONLY=true"
+            echo "SOURCE_COMMIT=44612c09677f59b84bece7de655af7bb011b51e7"
+            echo "CHECKED_HOST=hbnightflyers.com"
+            echo "RELEASE_MUTATION=false"
+          } > "$report"
+          any_error=0
+          for f in glow.html glow-save-sync.mjs league-state-cas.mjs; do
+            echo "==== $f ====" | tee -a "$report"
+            if curl -sS -L --fail --connect-timeout 12 --max-time 45 --retry 0 --max-redirs 6 \
+                -H 'Cache-Control: no-cache' \
+                -D "_hbnf_verify/headers/${f}.txt" \
+                -o "_hbnf_verify/served/$f" \
+                "https://hbnightflyers.com/$f"; then
+              echo "HTTP_FETCH=PASS" | tee -a "$report"
+              sha256sum "_hbnf_verify/expected/$f" "_hbnf_verify/served/$f" | tee -a "$report"
+              if cmp -s "_hbnf_verify/expected/$f" "_hbnf_verify/served/$f"; then
+                echo "PINNED_SOURCE_BYTE_PARITY=PASS" | tee -a "$report"
+              else
+                echo "PINNED_SOURCE_BYTE_PARITY=FAIL" | tee -a "$report"
+                any_error=1
+              fi
+            else
+              echo "HTTP_FETCH=FAIL" | tee -a "$report"
+              any_error=1
+            fi
+          done
+          if [ "$any_error" -ne 0 ]; then
+            echo "OVERALL=NOT_VERIFIED" | tee -a "$report"
+            exit 1
+          fi
+          echo "OVERALL=SERVE_BYTE_PARITY_PASS (not browser cache or scoring runtime acceptance)" | tee -a "$report"
+
+      - name: Save limited read-only receipt for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbnf-served-byte-parity-evidence
+          path: |
+            _hbnf_verify/report.txt
+            _hbnf_verify/headers/*.txt
+          if-no-files-found: warn
+          retention-days: 7
