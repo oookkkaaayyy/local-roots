@@ -7,7 +7,9 @@ alter table public.lr_events
   add column if not exists course_id text,
   add column if not exists course_url text,
   add column if not exists start_time_local time without time zone,
+  add column if not exists checkin_time_local time without time zone,
   add column if not exists end_time_local time without time zone,
+  add column if not exists start_time_note text,
   add column if not exists format_details jsonb not null default '{}'::jsonb,
   add column if not exists entry_fee_amount numeric(10,2),
   add column if not exists entry_fee_currency text,
@@ -31,6 +33,9 @@ alter table public.lr_events
     entry_fee_amount is null or (entry_fee_currency is not null and nullif(btrim(entry_fee_unit),'') is not null)
   ),
   add constraint lr_events_end_time_requires_start_check check (end_time_local is null or start_time_local is not null),
+  add constraint lr_events_start_note_exclusive_check check (start_time_note is null or start_time_local is null),
+  add constraint lr_events_start_note_length_check check (start_time_note is null or length(start_time_note) <= 160),
+  add constraint lr_events_checkin_before_start_check check (checkin_time_local is null or start_time_local is null or coalesce(end_date,start_date) is distinct from start_date or checkin_time_local <= start_time_local),
   add constraint lr_events_same_day_time_order_check check (
     coalesce(end_date,start_date) is distinct from start_date or start_time_local is null or end_time_local is null or end_time_local > start_time_local
   ),
@@ -48,7 +53,9 @@ alter table public.lr_event_submissions
   add column if not exists course_id text,
   add column if not exists course_url text,
   add column if not exists start_time_local time without time zone,
+  add column if not exists checkin_time_local time without time zone,
   add column if not exists end_time_local time without time zone,
+  add column if not exists start_time_note text,
   add column if not exists timezone text,
   add column if not exists format_details jsonb not null default '{}'::jsonb,
   add column if not exists entry_fee_amount numeric(10,2),
@@ -79,7 +86,7 @@ create table if not exists public.lr_event_field_evidence (
   updated_at timestamptz not null default now(),
   constraint lr_event_field_evidence_source_url_check check (source_url is null or public.lr_is_http_url(source_url)),
   constraint lr_event_field_evidence_name_check check (field_name = any(array[
-    'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','end_time_local',
+    'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','checkin_time_local','end_time_local','start_time_note',
     'rounds_text','event_type','format','format_details','sanctioned','tier','status','registration_status','registration_url',
     'registration_opens_at','registration_closes_at','registration_capacity','registration_available','entry_fee_amount',
     'entry_fee_currency','entry_fee_unit','fee_breakdown','additional_fees_note','official_url','results_url','club_host','td_names'
@@ -129,7 +136,7 @@ on conflict (event_id,field_name,source_id) where source_id is not null do updat
 create or replace function public.lr_is_overridable_event_field(p_field text)
 returns boolean language sql immutable strict set search_path=pg_catalog as $$
   select p_field = any(array[
-    'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','end_time_local',
+    'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','checkin_time_local','end_time_local','start_time_note',
     'rounds_text','event_type','format','format_details','sanctioned','tier','status','registration_status','registration_url',
     'registration_opens_at','registration_closes_at','registration_capacity','registration_available','entry_fee_amount',
     'entry_fee_currency','entry_fee_unit','fee_breakdown','additional_fees_note','official_url','results_url','club_host','td_names'
@@ -148,7 +155,8 @@ begin
     when 'timezone' then to_jsonb(e.timezone) when 'county' then to_jsonb(e.county) when 'city' then to_jsonb(e.city)
     when 'venue_name' then to_jsonb(e.venue_name) when 'venue_address' then to_jsonb(e.venue_address)
     when 'course_name' then to_jsonb(e.course_name) when 'course_id' then to_jsonb(e.course_id) when 'course_url' then to_jsonb(e.course_url)
-    when 'start_time_local' then to_jsonb(e.start_time_local) when 'end_time_local' then to_jsonb(e.end_time_local)
+    when 'start_time_local' then to_jsonb(e.start_time_local) when 'checkin_time_local' then to_jsonb(e.checkin_time_local)
+    when 'end_time_local' then to_jsonb(e.end_time_local) when 'start_time_note' then to_jsonb(e.start_time_note)
     when 'rounds_text' then to_jsonb(e.rounds_text) when 'event_type' then to_jsonb(e.event_type) when 'format' then to_jsonb(e.format)
     when 'format_details' then to_jsonb(e.format_details) when 'sanctioned' then to_jsonb(e.sanctioned) when 'tier' then to_jsonb(e.tier)
     when 'status' then to_jsonb(e.status) when 'registration_status' then to_jsonb(e.registration_status)
@@ -187,7 +195,9 @@ begin
     course_id=case when p_field_name='course_id' then p_value#>>'{}' else e.course_id end,
     course_url=case when p_field_name='course_url' then p_value#>>'{}' else e.course_url end,
     start_time_local=case when p_field_name='start_time_local' then (p_value#>>'{}')::time else e.start_time_local end,
+    checkin_time_local=case when p_field_name='checkin_time_local' then (p_value#>>'{}')::time else e.checkin_time_local end,
     end_time_local=case when p_field_name='end_time_local' then (p_value#>>'{}')::time else e.end_time_local end,
+    start_time_note=case when p_field_name='start_time_note' then nullif(btrim(p_value#>>'{}'),'') else e.start_time_note end,
     rounds_text=case when p_field_name='rounds_text' then p_value#>>'{}' else e.rounds_text end,
     event_type=case when p_field_name='event_type' then p_value#>>'{}' else e.event_type end,
     format=case when p_field_name='format' then p_value#>>'{}' else e.format end,
@@ -246,11 +256,11 @@ begin
     select p.* from original o cross join lateral jsonb_populate_record(o::public.lr_events,v_patch) as p
   )
   update public.lr_events e set
-    (name,start_date,end_date,timezone,county,city,venue_name,venue_address,course_name,course_id,course_url,start_time_local,end_time_local,
+    (name,start_date,end_date,timezone,county,city,venue_name,venue_address,course_name,course_id,course_url,start_time_local,checkin_time_local,end_time_local,start_time_note,
       rounds_text,event_type,format,format_details,sanctioned,tier,status,registration_status,registration_url,registration_opens_at,registration_closes_at,
       registration_capacity,registration_available,entry_fee_amount,entry_fee_currency,entry_fee_unit,fee_breakdown,additional_fees_note,official_url,
       results_url,club_host,td_names,last_changed_at,updated_at)
-    =(p.name,p.start_date,p.end_date,p.timezone,p.county,p.city,p.venue_name,p.venue_address,p.course_name,p.course_id,p.course_url,p.start_time_local,p.end_time_local,
+    =(p.name,p.start_date,p.end_date,p.timezone,p.county,p.city,p.venue_name,p.venue_address,p.course_name,p.course_id,p.course_url,p.start_time_local,p.checkin_time_local,p.end_time_local,p.start_time_note,
       p.rounds_text,p.event_type,p.format,p.format_details,p.sanctioned,p.tier,p.status,p.registration_status,p.registration_url,p.registration_opens_at,p.registration_closes_at,
       p.registration_capacity,p.registration_available,p.entry_fee_amount,p.entry_fee_currency,p.entry_fee_unit,p.fee_breakdown,p.additional_fees_note,p.official_url,
       p.results_url,p.club_host,p.td_names,now(),now())
@@ -278,14 +288,22 @@ begin
   foreach v in array array['registration_url','results_url','official_url','course_url','source_url'] loop
     if p_payload ? v and nullif(btrim(p_payload->>v),'') is not null and not public.lr_is_http_url(p_payload->>v) then errs:=errs||to_jsonb('invalid_'||v); end if;
   end loop;
-  foreach v in array array['start_time_local','end_time_local'] loop
+  foreach v in array array['start_time_local','checkin_time_local','end_time_local'] loop
     if p_payload ? v and nullif(p_payload->>v,'') is not null then
       begin perform (p_payload->>v)::time; exception when others then errs:=errs||to_jsonb('invalid_'||v); end;
     end if;
   end loop;
   if nullif(p_payload->>'end_time_local','') is not null and nullif(p_payload->>'start_time_local','') is null then errs:=errs||'"end_time_without_start_time"'::jsonb; end if;
-  if (nullif(p_payload->>'start_time_local','') is not null or nullif(p_payload->>'end_time_local','') is not null)
+  if (nullif(p_payload->>'start_time_local','') is not null or nullif(p_payload->>'checkin_time_local','') is not null
+    or nullif(p_payload->>'end_time_local','') is not null or nullif(p_payload->>'start_time_note','') is not null)
     and nullif(p_payload->>'timezone','') is null then errs:=errs||'"timezone_required_for_timed_event"'::jsonb; end if;
+  if length(coalesce(p_payload->>'start_time_note',''))>160 then errs:=errs||'"start_time_note_too_long"'::jsonb; end if;
+  if nullif(p_payload->>'start_time_note','') is not null and nullif(p_payload->>'start_time_local','') is not null then errs:=errs||'"start_time_note_conflicts_with_exact_start"'::jsonb; end if;
+  begin
+    if nullif(p_payload->>'checkin_time_local','') is not null and nullif(p_payload->>'start_time_local','') is not null
+      and coalesce(nullif(p_payload->>'end_date','')::date,nullif(p_payload->>'start_date','')::date)=nullif(p_payload->>'start_date','')::date
+      and (p_payload->>'checkin_time_local')::time > (p_payload->>'start_time_local')::time then errs:=errs||'"checkin_after_start_time"'::jsonb; end if;
+  exception when others then null; end;
   if p_payload ? 'entry_fee_amount' and p_payload->'entry_fee_amount'<>'null'::jsonb then
     begin fee:=(p_payload->>'entry_fee_amount')::numeric; if fee<0 then errs:=errs||'"negative_entry_fee"'::jsonb; end if;
     exception when others then errs:=errs||'"invalid_entry_fee_amount"'::jsonb; end;
@@ -344,7 +362,7 @@ declare
   ev jsonb;
   evidence_source_id uuid;
   fields text[]:=array[
-    'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','end_time_local',
+    'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','checkin_time_local','end_time_local','start_time_note',
     'rounds_text','event_type','format','format_details','sanctioned','tier','status','registration_status','registration_url',
     'registration_opens_at','registration_closes_at','registration_capacity','registration_available','entry_fee_amount',
     'entry_fee_currency','entry_fee_unit','fee_breakdown','additional_fees_note','official_url','results_url','club_host','td_names'
@@ -494,7 +512,7 @@ select e.id as event_id,e.slug,e.name,e.start_date,e.event_type,
        coalesce(jsonb_agg(jsonb_build_object('source_url',ev.source_url,'status',ev.status,'notes',ev.notes,'verified_at',ev.verified_at,'expires_at',ev.expires_at) order by ev.updated_at desc) filter(where ev.id is not null),'[]'::jsonb) as evidence_sources
 from public.lr_events e
 cross join lateral unnest(array[
-  'start_date','end_date','start_time_local','end_time_local','timezone','venue_name','venue_address','city','county',
+  'start_date','end_date','start_time_local','checkin_time_local','end_time_local','start_time_note','timezone','venue_name','venue_address','city','county',
   'course_name','course_id','course_url','event_type','format','format_details','rounds_text','entry_fee_amount',
   'entry_fee_currency','entry_fee_unit','fee_breakdown','additional_fees_note','registration_status','registration_url',
   'registration_opens_at','registration_closes_at','registration_capacity','registration_available','official_url','results_url',
@@ -510,7 +528,7 @@ grant select on public.lr_event_field_status to service_role;
 update public.lr_sources
 set authoritative_fields=array(
   select distinct f from unnest(authoritative_fields || array[
-    'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','end_time_local',
+    'name','start_date','end_date','timezone','county','city','venue_name','venue_address','course_name','course_id','course_url','start_time_local','checkin_time_local','end_time_local','start_time_note',
     'rounds_text','event_type','format','format_details','sanctioned','tier','status','registration_status','registration_url',
     'registration_opens_at','registration_closes_at','registration_capacity','registration_available','entry_fee_amount',
     'entry_fee_currency','entry_fee_unit','fee_breakdown','additional_fees_note','official_url','results_url','club_host','td_names'
@@ -523,7 +541,7 @@ where key='local_roots_submissions';
 update public.lr_sources
 set authoritative_fields=array(
   select distinct f from unnest(authoritative_fields || array[
-    'venue_address','course_id','course_url','start_time_local','end_time_local','format_details','entry_fee_amount',
+    'venue_address','course_id','course_url','start_time_local','checkin_time_local','end_time_local','start_time_note','format_details','entry_fee_amount',
     'entry_fee_currency','entry_fee_unit','fee_breakdown','additional_fees_note','registration_opens_at','registration_closes_at',
     'registration_capacity','registration_available','official_url'
   ]::text[]) as f order by f
@@ -537,7 +555,7 @@ create function public.lr_public_events()
 returns table(
   id uuid,slug text,name text,start_date date,end_date date,timezone text,county text,city text,venue_name text,
   venue_address text,course_name text,course_id text,course_url text,rounds_text text,event_type text,format text,
-  format_details jsonb,start_time_local time without time zone,end_time_local time without time zone,
+  format_details jsonb,start_time_local time without time zone,checkin_time_local time without time zone,end_time_local time without time zone,start_time_note text,
   entry_fee_amount numeric,entry_fee_currency text,entry_fee_unit text,fee_breakdown jsonb,additional_fees_note text,
   sanctioned boolean,tier text,status text,registration_status text,registration_url text,
   registration_opens_at timestamptz,registration_closes_at timestamptz,registration_capacity integer,registration_available integer,
@@ -546,7 +564,7 @@ returns table(
 language sql stable security definer set search_path=pg_catalog,public as $$
   select e.id,e.slug,e.name,e.start_date,e.end_date,e.timezone,e.county,e.city,e.venue_name,e.venue_address,
     e.course_name,e.course_id,e.course_url,e.rounds_text,e.event_type,e.format,e.format_details,
-    e.start_time_local,e.end_time_local,e.entry_fee_amount,e.entry_fee_currency,e.entry_fee_unit,e.fee_breakdown,e.additional_fees_note,
+    e.start_time_local,e.checkin_time_local,e.end_time_local,e.start_time_note,e.entry_fee_amount,e.entry_fee_currency,e.entry_fee_unit,e.fee_breakdown,e.additional_fees_note,
     e.sanctioned,e.tier,
     case when e.end_date < (current_timestamp at time zone 'America/Los_Angeles')::date
       and e.status in ('announced','upcoming','registration_open','full','waitlist') then 'completed'::text else e.status end,
@@ -570,7 +588,7 @@ create function public.lr_public_event_detail(p_slug text)
 returns table(
   id uuid,slug text,name text,start_date date,end_date date,timezone text,county text,city text,venue_name text,
   venue_address text,course_name text,course_id text,course_url text,rounds_text text,event_type text,format text,
-  format_details jsonb,start_time_local time without time zone,end_time_local time without time zone,
+  format_details jsonb,start_time_local time without time zone,checkin_time_local time without time zone,end_time_local time without time zone,start_time_note text,
   entry_fee_amount numeric,entry_fee_currency text,entry_fee_unit text,fee_breakdown jsonb,additional_fees_note text,
   sanctioned boolean,tier text,status text,registration_status text,registration_url text,
   registration_opens_at timestamptz,registration_closes_at timestamptz,registration_capacity integer,registration_available integer,
@@ -735,7 +753,8 @@ begin
     'course_name',nullif(btrim(p_submission->>'course_name'),''),'course_id',nullif(btrim(p_submission->>'course_id'),''),'course_url',nullif(btrim(p_submission->>'course_url'),''),
     'rounds_text',nullif(btrim(p_submission->>'rounds_text'),''),'event_type',coalesce(nullif(btrim(p_submission->>'event_type'),''),'other'),
     'format',nullif(btrim(p_submission->>'format'),''),'format_details',case when p_submission ? 'format_details' then p_submission->'format_details' else '{}'::jsonb end,
-    'start_time_local',nullif(btrim(p_submission->>'start_time_local'),''),'end_time_local',nullif(btrim(p_submission->>'end_time_local'),''),
+    'start_time_local',nullif(btrim(p_submission->>'start_time_local'),''),'checkin_time_local',nullif(btrim(p_submission->>'checkin_time_local'),''),
+    'end_time_local',nullif(btrim(p_submission->>'end_time_local'),''),'start_time_note',nullif(btrim(p_submission->>'start_time_note'),''),
     'sanctioned',case when p_submission?'sanctioned' and p_submission->'sanctioned'<>'null'::jsonb then p_submission->'sanctioned' else null end,
     'tier',nullif(btrim(p_submission->>'tier'),''),'status','upcoming','registration_status',nullif(btrim(p_submission->>'registration_status'),''),
     'registration_url',nullif(btrim(p_submission->>'registration_url'),''),'registration_opens_at',nullif(btrim(p_submission->>'registration_opens_at'),''),
@@ -756,7 +775,7 @@ begin
 
   insert into public.lr_event_submissions(
     id,name,start_date,end_date,timezone,county,city,venue_name,venue_address,course_name,course_id,course_url,event_type,format,format_details,
-    start_time_local,end_time_local,rounds_text,sanctioned,tier,registration_url,registration_opens_at,registration_closes_at,
+    start_time_local,checkin_time_local,end_time_local,start_time_note,rounds_text,sanctioned,tier,registration_url,registration_opens_at,registration_closes_at,
     registration_capacity,registration_available,entry_fee_amount,entry_fee_currency,entry_fee_unit,fee_breakdown,additional_fees_note,
     official_url,results_url,source_url,club_host,td_names,submitter_name,submitter_email,notes,
     normalized_payload,validation_status,validation_errors,scope_status
@@ -766,7 +785,8 @@ begin
     nullif(btrim(p_submission->>'course_name'),''),nullif(btrim(p_submission->>'course_id'),''),nullif(btrim(p_submission->>'course_url'),''),
     coalesce(nullif(btrim(p_submission->>'event_type'),''),'other'),nullif(btrim(p_submission->>'format'),''),
     case when jsonb_typeof(p_submission->'format_details')='object' then p_submission->'format_details' else '{}'::jsonb end,
-    public.lr_safe_time(p_submission->>'start_time_local'),public.lr_safe_time(p_submission->>'end_time_local'),nullif(btrim(p_submission->>'rounds_text'),''),
+    public.lr_safe_time(p_submission->>'start_time_local'),public.lr_safe_time(p_submission->>'checkin_time_local'),public.lr_safe_time(p_submission->>'end_time_local'),
+    nullif(btrim(p_submission->>'start_time_note'),''),nullif(btrim(p_submission->>'rounds_text'),''),
     case when p_submission?'sanctioned' and p_submission->'sanctioned'<>'null'::jsonb then (p_submission->>'sanctioned')::boolean else null end,
     nullif(btrim(p_submission->>'tier'),''),nullif(btrim(p_submission->>'registration_url'),''),public.lr_safe_timestamptz(p_submission->>'registration_opens_at'),
     public.lr_safe_timestamptz(p_submission->>'registration_closes_at'),public.lr_safe_integer(p_submission->>'registration_capacity'),
@@ -849,11 +869,11 @@ begin
     v_base_slug:=trim(both '-' from regexp_replace(lower(s.name),'[^a-z0-9]+','-','g')); if v_base_slug='' then v_base_slug:='event'; end if;
     v_slug:=v_base_slug||'-'||to_char(s.start_date,'YYYY-MM-DD'); if exists(select 1 from public.lr_events where slug=v_slug) then v_slug:=v_slug||'-'||left(replace(s.id::text,'-',''),8); end if;
     insert into public.lr_events(slug,name,start_date,end_date,timezone,county,city,venue_name,venue_address,course_name,course_id,course_url,rounds_text,
-      start_time_local,end_time_local,event_type,format,format_details,entry_fee_amount,entry_fee_currency,entry_fee_unit,fee_breakdown,additional_fees_note,
+      start_time_local,checkin_time_local,end_time_local,start_time_note,event_type,format,format_details,entry_fee_amount,entry_fee_currency,entry_fee_unit,fee_breakdown,additional_fees_note,
       sanctioned,tier,status,registration_status,registration_url,registration_opens_at,registration_closes_at,registration_capacity,registration_available,
       official_url,results_url,club_host,td_names,published,confidence,last_verified_at)
     values(v_slug,s.name,s.start_date,coalesce(s.end_date,s.start_date),coalesce(s.timezone,'America/Los_Angeles'),s.county,s.city,s.venue_name,s.venue_address,s.course_name,s.course_id,s.course_url,s.rounds_text,
-      s.start_time_local,s.end_time_local,s.event_type,s.format,coalesce(s.format_details,'{}'::jsonb),s.entry_fee_amount,s.entry_fee_currency,s.entry_fee_unit,coalesce(s.fee_breakdown,'[]'::jsonb),s.additional_fees_note,
+      s.start_time_local,s.checkin_time_local,s.end_time_local,s.start_time_note,s.event_type,s.format,coalesce(s.format_details,'{}'::jsonb),s.entry_fee_amount,s.entry_fee_currency,s.entry_fee_unit,coalesce(s.fee_breakdown,'[]'::jsonb),s.additional_fees_note,
       s.sanctioned,s.tier,'upcoming',null,s.registration_url,s.registration_opens_at,s.registration_closes_at,s.registration_capacity,s.registration_available,
       s.official_url,s.results_url,s.club_host,s.td_names,false,0.85,now()) returning id into v_event_id;
     insert into public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,is_sanction_basis,source_payload,confidence,last_fetched_at)

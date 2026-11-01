@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const migration = await readFile(new URL("../supabase/migrations/20261101070000_event_detail_fields_and_provenance.sql", import.meta.url), "utf8");
+const adminFunction = await readFile(new URL("../supabase/functions/lr-admin/index.ts", import.meta.url), "utf8");
+const submitFunction = await readFile(new URL("../supabase/functions/lr-submit-event/index.ts", import.meta.url), "utf8");
+const appTypes = await readFile(new URL("../app/src/types.ts", import.meta.url), "utf8");
+const eventsPage = await readFile(new URL("../app/src/pages/EventsPage.tsx", import.meta.url), "utf8");
 
 test("event details migration is one additive transaction and does not reset event history", () => {
   assert.match(migration, /^--[\s\S]*?begin;[\s\S]*commit;\s*$/i);
@@ -31,6 +35,23 @@ test("database-bound time, fee, and structured-field contracts reject invalid co
   assert.match(migration, /fee_breakdown_total_mismatch/);
   assert.match(migration, /lr_events_same_day_time_order_check/);
   assert.match(migration, /invalid_format_details/);
+  assert.match(migration, /checkin_after_start_time/);
+  assert.match(migration, /start_time_note_conflicts_with_exact_start/);
+  assert.match(migration, /timezone_required_for_timed_event/);
+});
+
+test("check-in and approximate start facts flow through public, intake, admin, and sync contracts", () => {
+  for (const field of ["checkin_time_local", "start_time_note"]) {
+    assert.match(migration, new RegExp(`add column if not exists ${field}`));
+    assert.match(migration, new RegExp(`e\\.${field}`));
+    assert.match(migration, new RegExp(`s\\.${field}`));
+    assert.match(appTypes, new RegExp(`${field}\\?: string \\| null`));
+    assert.ok(eventsPage.includes(`${field}`));
+    assert.ok(submitFunction.includes(`${field}: text(input.${field}`));
+    assert.ok(adminFunction.includes(field));
+  }
+  assert.match(adminFunction, /lr_event_submissions\"\)\.select\([\s\S]*?checkin_time_local[\s\S]*?start_time_note/);
+  assert.match(adminFunction, /lr_events\"\)\.select\([\s\S]*?checkin_time_local[\s\S]*?start_time_note/);
 });
 
 test("event field reads have no setter-only dependencies and setters validate timezone values", () => {

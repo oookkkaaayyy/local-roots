@@ -82,6 +82,7 @@ test("event detail migration runs in PostgreSQL and keeps patch, validation, and
 
     const patch = {
       start_time_local: "17:30",
+      checkin_time_local: "17:00",
       end_time_local: "21:00",
       format: "Doubles",
       format_details: { registration_mode: "Individual" },
@@ -96,17 +97,40 @@ test("event detail migration runs in PostgreSQL and keeps patch, validation, and
     };
     await db.query("select public.lr_apply_event_patch($1,$2::jsonb)", [eventId, JSON.stringify(patch)]);
     let event = (await db.query(`
-      select name,start_date::text,start_time_local::text,end_time_local::text,format,format_details,entry_fee_amount,fee_breakdown
+      select name,start_date::text,start_time_local::text,checkin_time_local::text,end_time_local::text,format,format_details,entry_fee_amount,fee_breakdown
       from public.lr_events where id=$1
     `, [eventId])).rows[0];
     assert.equal(event.name, "PGlite test");
     assert.equal(event.start_date, "2026-11-03");
     assert.equal(event.start_time_local, "17:30:00");
+    assert.equal(event.checkin_time_local, "17:00:00");
     assert.equal(event.end_time_local, "21:00:00");
     assert.equal(event.format, "Doubles");
     assert.deepEqual(event.format_details, { registration_mode: "Individual" });
     assert.equal(Number(event.entry_fee_amount), 10);
     assert.equal(event.fee_breakdown.length, 2);
+
+    const validTimeFields = {
+      name: "Time contract fixture", start_date: "2026-11-03", end_date: "2026-11-03",
+      timezone: "America/Los_Angeles", checkin_time_local: "17:00", start_time_local: "17:30",
+    };
+    assert.deepEqual((await db.query("select public.lr_candidate_validation_errors($1::jsonb) as errors", [JSON.stringify(validTimeFields)])).rows[0].errors, []);
+    const missingTimezoneErrors = (await db.query("select public.lr_candidate_validation_errors($1::jsonb) as errors", [JSON.stringify({ ...validTimeFields, timezone: null })])).rows[0].errors;
+    assert.ok(missingTimezoneErrors.includes("timezone_required_for_timed_event"));
+    const lateCheckinErrors = (await db.query("select public.lr_candidate_validation_errors($1::jsonb) as errors", [JSON.stringify({ ...validTimeFields, checkin_time_local: "18:00" })])).rows[0].errors;
+    assert.ok(lateCheckinErrors.includes("checkin_after_start_time"));
+    const conflictingStartErrors = (await db.query("select public.lr_candidate_validation_errors($1::jsonb) as errors", [JSON.stringify({ ...validTimeFields, start_time_note: "around 5 PM" })])).rows[0].errors;
+    assert.ok(conflictingStartErrors.includes("start_time_note_conflicts_with_exact_start"));
+
+    await db.query("select public.lr_apply_event_patch($1,$2::jsonb)", [billyGoatId, JSON.stringify({ checkin_time_local: "13:00", start_time_local: "14:00" })]);
+    const publicRow = (await db.query("select checkin_time_local::text,start_time_note from public.lr_public_events() where id=$1", [billyGoatId])).rows[0];
+    assert.equal(publicRow.checkin_time_local, "13:00:00");
+    assert.equal(publicRow.start_time_note, null);
+    await db.query("select public.lr_apply_event_patch($1,$2::jsonb)", [billyGoatId, JSON.stringify({ start_time_local: null, start_time_note: "Around 5 PM" })]);
+    const publicNoteRow = (await db.query("select checkin_time_local::text,start_time_local::text,start_time_note from public.lr_public_event_detail('billy-goat-fallen-disc-golfers-memorial-2026')")).rows[0];
+    assert.equal(publicNoteRow.checkin_time_local, "13:00:00");
+    assert.equal(publicNoteRow.start_time_local, null);
+    assert.equal(publicNoteRow.start_time_note, "Around 5 PM");
 
     await assert.rejects(
       db.query("select public.lr_apply_event_patch($1,$2::jsonb)", [eventId, JSON.stringify({ entry_fee_amount: -1 })]),

@@ -30,7 +30,9 @@ export type PublicEvent = {
   format: string | null;
   format_details: Record<string, unknown>;
   start_time_local: string | null;
+  checkin_time_local?: string | null;
   end_time_local: string | null;
+  start_time_note?: string | null;
   entry_fee_amount: number | null;
   entry_fee_currency: string | null;
   entry_fee_unit: string | null;
@@ -76,7 +78,9 @@ export type Submission = {
   format: string | null;
   format_details: Record<string, unknown>;
   start_time_local: string | null;
+  checkin_time_local?: string | null;
   end_time_local: string | null;
+  start_time_note?: string | null;
   timezone: string;
   sanctioned: boolean | null;
   tier: string | null;
@@ -205,7 +209,9 @@ export type AdminEvent = {
   course_url: string | null;
   rounds_text: string | null;
   start_time_local: string | null;
+  checkin_time_local?: string | null;
   end_time_local: string | null;
+  start_time_note?: string | null;
   format: string | null;
   format_details: Record<string, unknown>;
   registration_url: string | null;

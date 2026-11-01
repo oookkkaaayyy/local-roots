@@ -63,8 +63,8 @@ export function eventDetailPath(event: Pick<PublicEvent,'slug'>) {
   return `/events/${encodeURIComponent(event.slug)}`;
 }
 
-export function eventTimeLabel(event: Pick<PublicEvent,'start_date'|'start_time_local'|'end_time_local'|'timezone'>) {
-  if (!event.start_time_local) return null;
+export function eventTimeLabel(event: Pick<PublicEvent,'start_date'|'start_time_local'|'checkin_time_local'|'end_time_local'|'start_time_note'|'timezone'>) {
+  if (!event.start_time_local && !event.checkin_time_local && !event.start_time_note) return null;
   const format = (value: string) => {
     const [hourText, minuteText] = value.split(':');
     const hour = Number(hourText);
@@ -80,10 +80,11 @@ export function eventTimeLabel(event: Pick<PublicEvent,'start_date'|'start_time_
   } catch {
     return null;
   }
-  const range = event.end_time_local
+  const range = event.start_time_local && event.end_time_local
     ? `${format(event.start_time_local)}–${format(event.end_time_local)}`
-    : format(event.start_time_local);
-  return zone ? `${range} ${zone}` : range;
+    : event.start_time_local ? format(event.start_time_local) : event.start_time_note ?? '';
+  const label = [event.checkin_time_local ? `Check-in ${format(event.checkin_time_local)}` : '', range ? `Start ${range}` : ''].filter(Boolean).join(' · ');
+  return zone ? `${label} ${zone}` : label;
 }
 
 export function eventFeeLabel(event: Pick<PublicEvent,'entry_fee_amount'|'entry_fee_currency'|'entry_fee_unit'|'additional_fees_note'>) {

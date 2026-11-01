@@ -93,7 +93,7 @@ function SubmissionForm() {
       const numberField=(name:string)=>String(fd.get(name)??'').trim()===''?undefined:Number(fd.get(name));
       await callFunction('lr-submit-event',{
         name:fd.get('name'),start_date:fd.get('start_date'),end_date:fd.get('end_date'),timezone,county:fd.get('county'),city:fd.get('city'),venue_name:fd.get('venue_name'),venue_address:fd.get('venue_address'),course_name:fd.get('course_name'),course_id:fd.get('course_id'),course_url:fd.get('course_url'),event_type:fd.get('event_type'),
-        format:fd.get('format'),format_details:parseJsonField('format_details',{}),start_time_local:fd.get('start_time_local'),end_time_local:fd.get('end_time_local'),
+        format:fd.get('format'),format_details:parseJsonField('format_details',{}),start_time_local:fd.get('start_time_local'),checkin_time_local:fd.get('checkin_time_local'),end_time_local:fd.get('end_time_local'),start_time_note:fd.get('start_time_note'),
         entry_fee_amount:numberField('entry_fee_amount'),entry_fee_currency:fd.get('entry_fee_currency'),entry_fee_unit:fd.get('entry_fee_unit'),fee_breakdown:parseJsonField('fee_breakdown',[]),additional_fees_note:fd.get('additional_fees_note'),
         registration_url:fd.get('registration_url'),registration_opens_at:localInstant('registration_opens_at'),registration_closes_at:localInstant('registration_closes_at'),registration_capacity:numberField('registration_capacity'),registration_available:numberField('registration_available'),official_url:fd.get('official_url'),source_url:fd.get('source_url'),
         sanctioned:s==='yes'?true:s==='no'?false:undefined,tier:fd.get('tier'),club_host:fd.get('club_host'),
@@ -111,7 +111,7 @@ function SubmissionForm() {
       <label>Course<input name="course_name" maxLength={200}/></label><label>Course ID<input name="course_id" maxLength={120}/></label>
       <label className="span-2">Course map link<input type="url" name="course_url" placeholder="https://…"/></label>
       <label>Event type<select name="event_type" defaultValue="tournament">{EVENT_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label>Format<input name="format" maxLength={160} placeholder="Singles, doubles, team…"/></label>
-      <label>Start time<input type="time" name="start_time_local"/></label><label>End time<input type="time" name="end_time_local"/></label>
+      <label>Check-in time<input type="time" name="checkin_time_local"/></label><label>Start time<input type="time" name="start_time_local"/></label><label>End time<input type="time" name="end_time_local"/></label><label>Start-time note<input name="start_time_note" maxLength={160} placeholder="For example, around 5 PM"/></label>
       <label>Time zone<input name="timezone" defaultValue="America/Los_Angeles" maxLength={80}/></label><label>Rounds<input name="rounds_text" maxLength={160}/></label>
       <label className="span-2">Format details (JSON)<textarea name="format_details" rows={2} placeholder={'{"divisions":["Open","Recreational"]}'}/></label>
       <label>Sanctioned?<select name="sanctioned" defaultValue="unknown"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></label><label>Tier<input name="tier" maxLength={80} placeholder="C-Tier, B-Tier…"/></label>
