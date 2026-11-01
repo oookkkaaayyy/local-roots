@@ -54,9 +54,12 @@ test('cutover preserves the installed eight-second server-side CAS timeout', () 
   assert.match(migration, /create\s+or\s+replace\s+function\s+public\.hbnf_save_league_state_v1[\s\S]*?set\s+statement_timeout\s*=\s*'8s'/i);
 });
 
-test('RPC rejects missing revisions and returns zero rows for stale CAS', () => {
-  assert.match(migration, /p_expected_updated_at is null[\s\S]*?errcode = '22023'/i);
-  assert.match(migration, /where ls\.id = 1\s+and ls\.updated_at = p_expected_updated_at/i);
+test('RPC preserves installed guarded-write semantics and fails closed on stale revision', () => {
+  assert.match(migration, /if p_expected_updated_at is null then\s+raise exception 'expected_revision_required'/i);
+  assert.match(migration, /where state\.id = 1\s+for update/i);
+  assert.match(migration, /if not found then\s+raise exception 'league_state_row_missing'/i);
+  assert.match(migration, /if v_current_updated_at is distinct from p_expected_updated_at then\s+return;/i);
+  assert.match(migration, /where state\.id = 1\s+and state\.updated_at = p_expected_updated_at/i);
   assert.match(migration, /returns setof public\.league_state/i);
 });
 
