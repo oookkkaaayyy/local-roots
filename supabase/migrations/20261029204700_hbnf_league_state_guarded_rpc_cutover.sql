@@ -11,7 +11,9 @@ returns setof public.league_state
 language plpgsql
 security definer
 set search_path = ''
-as $$
+-- Preserve the installed 8-second RPC timeout (Oct 31 production repair).
+set statement_timeout = '8s'
+as $
 begin
   if p_expected_updated_at is null then
     raise exception 'Expected league_state revision is required'
