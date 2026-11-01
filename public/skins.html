@@ -1351,7 +1351,7 @@ function makeSyncHelpers(ctx){return{
    // never silently replace it or auto-push it over someone else's round.
    const legacyUnconfirmed=cachedDiffers&&!editedWhileBaselinePending&&hbnfHasCloudMissingLocalScores(cached,authoritative);
    if(cachedDiffers&&ctx.preserveLocalDraft)ctx.preserveLocalDraft(cached,res.data.updated_at);
-   ctx.rootState=incoming||{};
+   ctx.rootState=incoming||{};ctx.baselineBagTags=hbnfSyncClone(incoming&&incoming.bagTags);
    ctx.syncBaselineReady=true;ctx.lastSyncError=false;
    ctx.lastRemoteRootHash=hbnfSemanticHash(incoming);
    ctx.lastRemoteBranchHash=hbnfSemanticHash(remoteBranch);
