@@ -19,5 +19,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify parent release driver (mock only, no secrets)
-        run: node --test tests/hbnf-parent-release-driver.test.mjs
+      - name: Verify review-only parent gate and cutover source invariants (no secrets)
+        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-write-authority-cutover.test.mjs
