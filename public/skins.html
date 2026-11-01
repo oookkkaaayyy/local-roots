@@ -1449,8 +1449,10 @@ function hbnfHasCloudMissingLocalScores(local,cloud){
 }
 function hbnfReadPendingDraft(){
  try{const row=JSON.parse(localStorage.getItem(HBNF_PENDING_DRAFT_KEY)||'null');
-  if(!row||!row.branchState||row.signature!==hbnfSyncHash(row.branchState))return null;
-  return row;
+  if(!row||!row.branchState||typeof row.branchState!=='object')return null;
+  if(row.signature===hbnfSyncHash(row.branchState))return row;
+  if(row.version===1&&row.branch==='skins'&&row.signature===undefined){return {...row,signature:hbnfSyncHash(row.branchState),baseHash:row.baseBranchHash||'LEGACY-UNVERIFIED',legacyPendingFormat:true}}
+  return null;
  }catch(e){return null}
 }
 function hbnfWritePendingDraft(){
