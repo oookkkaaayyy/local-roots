@@ -13,15 +13,25 @@ const digest=b=>createHash('sha256').update(b).digest('hex');
 const git=(...args)=>execFileSync('git',args,{maxBuffer:16*1024*1024});
 const sourceHead=git('rev-parse','HEAD').toString().trim();
 if(!/^[0-9a-f]{40}$/.test(sourceHead)||sourceHead===installedSource)throw Error('Candidate source identity invalid');
-const sourcePaths=git('ls-tree','-r','--name-only',installedSource,prefix).toString().trim().split('\n').filter(Boolean);
-if(sourcePaths.length!==46)throw Error('Exact installed snapshot asset list is not 46: '+JSON.stringify(sourcePaths));
+// Use the verified 46-asset installed-package manifest, not every path in
+// the 55-file historical source snapshot (which includes uninstalled fixtures).
+const witnessPath='source-snapshots/hbnf-worker-d1a5f936-20261024/package-validation/INSTALLED_086_BASELINE.json';
+const witness=JSON.parse(git('show',installedSource+':'+witnessPath).toString('utf8'));
+if(witness.assetCount!==46||!Array.isArray(witness.assets)||witness.assets.length!==46)throw Error('Installed asset witness invalid');
 const byPath=new Map();
-for(const absolute of sourcePaths){
- if(!absolute.startsWith(prefix))throw Error('Unexpected source path');
- const rel=absolute.slice(prefix.length);
- if(!rel||rel.startsWith('/')||rel.includes('..')||path.isAbsolute(rel))throw Error('Unsafe source path');
- byPath.set(rel,{bytes:git('show',installedSource+':'+absolute),origin:'installed-v48'});
+const uninstalledVariantPaths=[];
+for(const expected of witness.assets){
+ const name=expected.path;
+ if(!name.startsWith('public/'))throw Error('Unexpected witness path '+name);
+ const rel=name.slice(7);
+ if(!rel||rel.includes('..')||path.isAbsolute(rel)||byPath.has(rel))throw Error('Invalid or duplicate witness entry '+name);
+ const bytes=git('show',installedSource+':'+prefix+rel);
+ if(!overlays.includes(rel)&&(digest(bytes)!==expected.sha256||bytes.length!==expected.bytes)){
+  uninstalledVariantPaths.push(rel);
+ }
+ byPath.set(rel,{bytes,origin:'installed-source-snapshot',witnessSha256:expected.sha256});
 }
+if(uninstalledVariantPaths.length)throw Error('Unapproved snapshot-only differences: '+JSON.stringify(uninstalledVariantPaths));
 for(const rel of overlays){
  const p=path.join('public',rel);
  if(!existsSync(p))throw Error('Missing required candidate overlay: '+rel);
