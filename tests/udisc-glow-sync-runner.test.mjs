@@ -157,3 +157,92 @@ test('identity ambiguity fails before score write and records verified error sta
   assert.equal(fake.calls.writes,0);assert.equal(fake.calls.failures,1);
   assert.equal(fake.root.glow.weeks[eventDate].udiscSync.status.state,'failed');
 });
+
+
+test('offline full-chain boundary: real XLSX sync to actual Glow standings renderer then Cart overlay interface',async()=>{
+  // All traffic is a local fake fetch. No Cloudflare, Supabase, UDisc, Cart, or owner device access.
+  const vm=(await import('node:vm')).default;
+  const localPublicRoot=new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/public/',import.meta.url);
+  const glowHtml=await readFile(new URL('glow.html',localPublicRoot),'utf8');
+  const cartJs=await readFile(new URL('hbnf-cart-features.mjs',localPublicRoot),'utf8');
+  const block=(source,start,end)=>{
+    const a=source.indexOf(start), b=source.indexOf(end,a+start.length);
+    assert.ok(a>=0 && b>a, 'cannot isolate ACTUAL source block: '+start);
+    return source.slice(a,b);
+  };
+  const workbook={value:workbookBytes()};
+  const fake=makeFetch(glowWithWeek(),workbook);
+  const imported=await runGlowSync(env,{fetch:fake.fetch,now});
+  assert.equal(imported.disposition,'updated');
+  assert.equal(fake.calls.writes,1);
+  assert.equal(fake.calls.udisc,1);
+  assert.equal(fake.root.skins.unchanged,true);
+  const week=fake.root.glow.weeks[eventDate];
+  assert.equal(week.players.length,fixture.teamCount);
+  const standingsNode={innerHTML:''};
+  const glowContext={
+    console, window:{},
+    qs:selector=>selector==='#weekStandings'?standingsNode:null,
+    canonicalGlowName:name=>String(name??'').trim(),
+    getWeek:()=>week,
+    bagTagFor:()=> '—',
+    escapeHtml:name=>String(name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),
+    renderLegacyPanels:()=>{},renderBagTagsPanel:()=>{},
+    hbnfRenderBackupPanel:()=>{},makeStandingTablesScrollable:()=>{}
+  };
+  const actualGlowFunctions=[
+    block(glowHtml,'function hbnfFlatMap(items,fn)','const fmtMoney='),
+    block(glowHtml,'const teamParts=','const GLOW_ENTRY_FEE'),
+    block(glowHtml,'const totalForPlayer=','const getPlayerById='),
+    block(glowHtml,'function standingsForWeek(w)','function winterSummaryRows()'),
+    block(glowHtml,'function renderStandings()','window.HBNFGlowRoundTagAdapter=')
+  ].join('\n');
+  vm.runInNewContext(actualGlowFunctions+
+    '\nthis.renderActualGlow=renderStandings;this.getActualGlowRows=()=>standingsForWeek(getWeek());',
+    glowContext,{timeout:1000});
+  glowContext.renderActualGlow();
+  const rows=Array.from(glowContext.getActualGlowRows());
+  assert.ok(rows.length>0,'actual Glow standings did not derive any rows');
+  assert.match(standingsNode.innerHTML,/<table>/);
+  assert.match(standingsNode.innerHTML,/#1/);
+  assert.doesNotMatch(standingsNode.innerHTML,/No scores yet/);
+  for(const row of rows)assert.ok(standingsNode.innerHTML.includes(glowContext.escapeHtml(row.name)),
+    'actual Glow-rendered table is missing '+row.name);
+  // Cart currently asks an independent canonical live_status adapter for entries.
+  // Supplying that adapter here is an EXPLICIT fixture seam, NOT proof of the
+  // real upstream projection or automatic Cloudflare/Opal/Matrix delivery.
+  const captured=[],reads=[];
+  const fakeLive={active:true,label:'GLOW',entries:rows.map(r=>r.name+' '+r.total)};
+  const cartContext={
+    console,
+    setFeatureStatus:()=>{},renderScoreActionStatus:()=>{},
+    canonicalRead:async(action)=>{reads.push(action);return {updated_at:'fixture-rev',live:fakeLive}},
+    updateScoreNetworkTruth:()=>{},updateDisplayedLiveSnapshot:()=> 'Fixture revision',
+    canonicalOverlayBridge:()=>({overlay:async(type,payload,ttl)=>{
+      captured.push({type,payload,ttl});return {accepted:true,acknowledged:false};
+    }}),
+    matrixLiveSourceRevisionStatus:async()=> 'Not device verified',
+    renderScorePathStatus:()=>{}
+  };
+  vm.runInNewContext(block(cartJs,'async function showScoreboard()','async function showManualScoreboard()')+
+    '\nthis.sendActualCartScoreboard=showScoreboard;',cartContext,{timeout:1000});
+  await cartContext.sendActualCartScoreboard();
+  assert.deepEqual(reads,['live_status']);
+  assert.equal(captured.length,1);
+  assert.equal(captured[0].type,'scoreboard');
+  assert.equal(captured[0].payload.label,'GLOW');
+  assert.deepEqual(Array.from(captured[0].payload.entries),fakeLive.entries.slice(0,12));
+  assert.ok(captured[0].ttl>=8000&&captured[0].ttl<=30000);
+  // Fail-closed: unproven root -> canonical live_status adapter must NOT be
+  // mistaken for real automatic Cart integration.
+  let unsafeOverlay=0;
+  const missingAdapter={...cartContext,
+    canonicalRead:async()=>({updated_at:'fixture-rev',live:null}),
+    canonicalOverlayBridge:()=>({overlay:async()=>{unsafeOverlay++;return {accepted:true}}})};
+  vm.runInNewContext(block(cartJs,'async function showScoreboard()','async function showManualScoreboard()')+
+    '\nthis.sendActualCartScoreboard=showScoreboard;',missingAdapter,{timeout:1000});
+  await assert.rejects(()=>missingAdapter.sendActualCartScoreboard(),/No active Skins or Glow scores/);
+  assert.equal(unsafeOverlay,0);
+  console.log('OFFLINE_CHAIN=PASS XLSX→scheduled sync→Glow real standings HTML→Cart overlay with test-only live_status injection');
+  console.log('UNPROVEN_LINK=real root→canonical live_status projection, Cart relay/device receipt and physical display NOT TESTED');
+});
