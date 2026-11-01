@@ -20,4 +20,4 @@ jobs:
         with:
           node-version: '22'
       - name: Verify review-only parent gate and cutover source invariants (no secrets)
-        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-write-authority-cutover.test.mjs
+        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs
