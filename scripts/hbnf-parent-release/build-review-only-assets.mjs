@@ -14,7 +14,7 @@ const git=(...args)=>execFileSync('git',args,{maxBuffer:16*1024*1024});
 const sourceHead=git('rev-parse','HEAD').toString().trim();
 if(!/^[0-9a-f]{40}$/.test(sourceHead)||sourceHead===installedSource)throw Error('Candidate source identity invalid');
 const sourcePaths=git('ls-tree','-r','--name-only',installedSource,prefix).toString().trim().split('\n').filter(Boolean);
-if(sourcePaths.length!==46)throw Error('Exact installed snapshot must contain 46 public assets; observed '+sourcePaths.length);
+if(sourcePaths.length!==46)throw Error('Exact installed snapshot asset list is not 46: '+JSON.stringify(sourcePaths));
 const byPath=new Map();
 for(const absolute of sourcePaths){
  if(!absolute.startsWith(prefix))throw Error('Unexpected source path');
