@@ -246,3 +246,103 @@ test('offline full-chain boundary: real XLSX sync to actual Glow standings rende
   console.log('OFFLINE_CHAIN=PASS XLSX→scheduled sync→Glow real standings HTML→Cart overlay with test-only live_status injection');
   console.log('UNPROVEN_LINK=real root→canonical live_status projection, Cart relay/device receipt and physical display NOT TESTED');
 });
+
+
+test('source-pinned Cart v35 chooseLive projects three cached UDisc teams and 3→4 hole-two correction into actual Cart showScoreboard',async()=>{
+  // Cached 2026-04-18 published anonymized UDisc fixture, not owner Oct30 XLSX.
+  // Exact archived Cart v35 live.ts is copied without byte modification from
+  // PR130 source SHA 6457ab65..., blob b5f72cc38269bfdad3feea8446ea32e389eea345.
+  // No network, device, Supabase project, or active Nov3 week is read or mutated.
+  const {chooseLive,laDate}=await import('./fixtures/hbnf-cart-control-v35-live.ts');
+  const vm=(await import('node:vm')).default;
+  const actualCart=await readFile(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/public/hbnf-cart-features.mjs',import.meta.url),'utf8');
+  const start=actualCart.indexOf('async function showScoreboard()');
+  const end=actualCart.indexOf('async function showManualScoreboard()',start);
+  assert.ok(start>=0&&end>start,'missing source-bound Cart scoreboard implementation');
+  const cartSource=actualCart.slice(start,end);
+  const three=fixture.rows.slice(0,3).map(row=>({...row}));
+  assert.equal(three.length,3);
+  assert.equal(Number(three[0].hole_2),3,'fixture must start at original hole two 3');
+
+  const workbook={value:workbookBytes(three)};
+  const fake=makeFetch(glowWithWeek(),workbook);
+  const first=await runGlowSync(env,{fetch:fake.fetch,now});
+  assert.equal(first.disposition,'updated');
+  assert.equal(fake.root.glow.weeks[eventDate].players.length,3);
+  assert.equal(fake.calls.udisc,1);
+  assert.equal(fake.calls.writes,1);
+
+  // Actual Cart chooses the local-calendar-day week, so remap ONLY the isolated
+  // fixture week's key. This does not alter a real calendar, event, or user week.
+  const selectedDate=laDate();
+  const makeProjection=()=>({
+    glow:{activeWeek:selectedDate,weeks:{[selectedDate]:structuredClone(fake.root.glow.weeks[eventDate])}},
+    skins:{...fake.root.skins}
+  });
+  const before=chooseLive(makeProjection());
+  assert.equal(before.active,true);
+  assert.equal(before.label,'GLOW');
+  assert.equal(before.event,'glow');
+  assert.equal(before.entries.length,3);
+  assert.ok(before.entries.every(x=>typeof x==='string'&&x.length>0));
+
+  // Apply the retained "hole 2 = 4" scenario, but via local workbookBytes,
+  // not by requesting the external UDisc export (which previously hung).
+  const corrected=three.map((row,i)=>i===0
+    ?{...row,hole_2:4,event_total_score:Number(row.event_total_score)+1,
+      round_total_score:Number(row.round_total_score)+1}
+    :row);
+  workbook.value=workbookBytes(corrected);
+  const updated=await runGlowSync(env,{fetch:fake.fetch,now});
+  assert.equal(updated.disposition,'updated');
+  assert.equal(fake.calls.udisc,2);
+  assert.equal(fake.calls.writes,2);
+  const persisted=fake.root.glow.weeks[eventDate];
+  assert.equal(persisted.players.length,3);
+  assert.equal(persisted.players[0].scores[1],'4','isolated score readback must show hole two 4');
+  assert.equal(fake.root.skins.unchanged,true,'Skins must remain unchanged');
+  const after=chooseLive(makeProjection());
+  assert.equal(after.active,true);
+  assert.equal(after.label,'GLOW');
+  assert.equal(after.entries.length,3);
+  assert.notEqual(after.entries[0],before.entries[0],'hole two correction must change projected score');
+  assert.deepEqual(after.entries.slice(1),before.entries.slice(1),'unaffected team projections stable');
+
+  const seen=[],readActions=[];
+  const context={
+    console,setFeatureStatus:()=>{},renderScoreActionStatus:()=>{},
+    canonicalRead:async(action)=>{
+      readActions.push(action);
+      assert.equal(action,'live_status');
+      return {updated_at:'local-fixture-only',live:after};
+    },
+    updateScoreNetworkTruth:()=>{},
+    updateDisplayedLiveSnapshot:()=> 'Local fixture revision only',
+    canonicalOverlayBridge:()=>({overlay:async(type,payload,ttl)=>{
+      seen.push({type,payload,ttl});
+      return {accepted:true,acknowledged:false};
+    }}),
+    matrixLiveSourceRevisionStatus:async()=> 'Not physically verified',
+    renderScorePathStatus:()=>{}
+  };
+  vm.runInNewContext(cartSource+'\nthis.actualShowScoreboard=showScoreboard;',context,{timeout:1000});
+  await context.actualShowScoreboard();
+  assert.deepEqual(readActions,['live_status']);
+  assert.equal(seen.length,1);
+  assert.equal(seen[0].type,'scoreboard');
+  assert.equal(seen[0].payload.label,'GLOW');
+  assert.deepEqual(Array.from(seen[0].payload.entries),after.entries.slice(0,12));
+  assert.ok(seen[0].ttl>=8000&&seen[0].ttl<=30000);
+  assert.notDeepEqual(seen[0].payload.entries,before.entries);
+
+  // A 3-team parsed preview or "Saved" text is not automatically a Cart feed.
+  // Missing/suppressed live data must not cause a bogus overlay.
+  const blockedContext={...context,
+    canonicalRead:async()=>({updated_at:'local-fixture-only',live:chooseLive({glow:{weeks:{}},skins:{}})}),
+    canonicalOverlayBridge:()=>({overlay:async()=>{throw Error('unconfirmed feed sent to Cart')}})};
+  vm.runInNewContext(cartSource+'\nthis.actualShowScoreboard=showScoreboard;',blockedContext,{timeout:1000});
+  await assert.rejects(()=>blockedContext.actualShowScoreboard(),/No active Skins or Glow scores/);
+
+  console.log('CHOOSE_LIVE_CHAIN=PASS cached anonymized 3-team XLSX→real UDisc handler→3→4 isolated readback→exact archived Cart v35 chooseLive→real Cart showScoreboard→fake overlay');
+  console.log('CHOOSE_LIVE_LIMITS=historic Cart v35 source; not authenticated current deployed Edge bytes, physical output, or Nov3 owner import receipt');
+});
