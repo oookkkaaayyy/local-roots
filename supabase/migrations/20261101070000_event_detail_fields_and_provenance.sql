@@ -112,6 +112,20 @@ on conflict(key) do update set
   notes=excluded.notes,
   updated_at=now();
 
+-- Preserve a source conflict already visible on the organizer's manually
+-- reviewed calendar. The canonical date remains unchanged until clarified.
+insert into public.lr_event_field_evidence(event_id,field_name,source_id,source_url,status,observed_value,verified_at,notes)
+select e.id,'start_date',s.id,'https://socaldiscgolfclub.com/upcoming-events/','conflicting',
+  to_jsonb(date '2026-11-23'),now(),
+  'The current calendar lists this event as 11/23 (Sat) under the 2026 series and 11/28 (Sat) as the 2027 series opener. November 23, 2026 is Monday. Canonical date remains 2026-11-28 pending organizer clarification.'
+from public.lr_events e
+join public.lr_sources s on s.key='socal_dgc_manual_calendar'
+where e.slug='billy-goat-fallen-disc-golfers-memorial-2026'
+  and e.start_date=date '2026-11-28'
+on conflict (event_id,field_name,source_id) where source_id is not null do update set
+  source_url=excluded.source_url,status=excluded.status,observed_value=excluded.observed_value,
+  verified_at=excluded.verified_at,notes=excluded.notes,updated_at=now();
+
 create or replace function public.lr_is_overridable_event_field(p_field text)
 returns boolean language sql immutable strict set search_path=pg_catalog as $$
   select p_field = any(array[

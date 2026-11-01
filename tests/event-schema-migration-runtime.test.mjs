@@ -39,7 +39,36 @@ test("event detail migration runs in PostgreSQL and keeps patch, validation, and
       await db.exec(sql);
     }
 
+    // Reproduce the already-published organizer-calendar conflict that the
+    // candidate migration must surface without rewriting its canonical date.
+    const billyGoatId = "33333333-3333-4333-8333-333333333333";
+    const socalSourceId = (await db.query("select id from public.lr_sources where key='socal_dgc_manual_calendar'")).rows[0].id;
+    await db.query(`
+      insert into public.lr_events(id,slug,name,start_date,end_date,county,city,venue_name,event_type,status,sanctioned,last_verified_at)
+      values($1,'billy-goat-fallen-disc-golfers-memorial-2026','Billy Goat ~ Fallen Disc Golfers Memorial',date '2026-11-28',date '2026-11-28','San Bernardino','Yucaipa','Yucaipa Regional Park','tournament','upcoming',true,now())
+    `, [billyGoatId]);
+    await db.query(`
+      insert into public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,is_sanction_basis)
+      values($1,$2,'socal:2026:billy-goat','https://socaldiscgolfclub.com/upcoming-events/','organizer_confirmed',true)
+    `, [billyGoatId, socalSourceId]);
+    await db.query("update public.lr_events set published=true where id=$1", [billyGoatId]);
+
     await db.exec(await readFile(new URL(candidateMigration, migrationDir), "utf8"));
+    let dateEvidence = (await db.query(`
+      select verification_status,public.lr_event_field_value(event_id,'start_date') as canonical_value
+      from public.lr_event_field_status where event_id=$1 and field_name='start_date'
+    `, [billyGoatId])).rows[0];
+    assert.equal(dateEvidence.verification_status, "conflicting");
+    assert.equal(dateEvidence.canonical_value, "2026-11-28");
+    const observedConflict = (await db.query("select observed_value,notes from public.lr_event_field_evidence where event_id=$1 and field_name='start_date' and status='conflicting'", [billyGoatId])).rows[0];
+    assert.equal(observedConflict.observed_value, "2026-11-23");
+    assert.ok(observedConflict.notes.includes("November 23, 2026 is Monday"));
+    assert.ok((await db.query("select public.lr_enqueue_event_field_reviews(90) as inserted")).rows[0].inserted >= 1);
+    assert.equal((await db.query(`select count(*)::int as n from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='start_date' and status in ('open','in_review')`, [billyGoatId])).rows[0].n, 1);
+    assert.equal((await db.query("select start_date::text from public.lr_events where id=$1", [billyGoatId])).rows[0].start_date, "2026-11-28");
+    await db.query("select public.lr_enqueue_event_field_reviews(90)");
+    assert.equal((await db.query(`select count(*)::int as n from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='start_date' and status in ('open','in_review')`, [billyGoatId])).rows[0].n, 1);
+
     const eventId = "11111111-1111-4111-8111-111111111111";
     const sourceId = (await db.query("select id from public.lr_sources where key='hbnf_internal_schedule'")).rows[0].id;
     await db.query(`
