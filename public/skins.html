@@ -1398,8 +1398,7 @@ function makeSyncHelpers(ctx){return{
     ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — newer cloud data found; your edits are kept on this device.');return
    }
    const localBagTags=ctx.rootState&&ctx.rootState.bagTags,remoteBagTags=currentRoot&&currentRoot.bagTags,baseBagTags=ctx.baselineBagTags,localBackups=ctx.rootState&&ctx.rootState.__backups;
-   const {mergeLeagueValue}=await import('./league-state-cas.mjs');
-   const bagMerge=mergeLeagueValue(baseBagTags,localBagTags,remoteBagTags);
+   const bagMerge=hbnfSemanticHash(localBagTags)===hbnfSemanticHash(remoteBagTags)?{status:'merged',value:remoteBagTags}:await import('./league-state-cas.mjs').then(({mergeLeagueValue})=>mergeLeagueValue(baseBagTags,localBagTags,remoteBagTags));
    if(bagMerge.status==='conflict'){ctx.remoteConflictPending=true;hbnfSetSyncStatus('Conflict — bag tags changed on another device; your edits are kept here.');return}
    ctx.rootState=Object.assign({},ctx.rootState||{},currentRoot);
    if(bagMerge.value!==undefined)ctx.rootState.bagTags=bagMerge.value;
