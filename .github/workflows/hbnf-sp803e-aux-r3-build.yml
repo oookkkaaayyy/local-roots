@@ -488,10 +488,11 @@ jobs:
           echo "HBNF_AUX_PACKAGE_PUBLISHED branch=${branch}"
 
       - name: Upload artifacts for other workflow refs
-        if: env.HBNF_UV_BUILD_FLAG == '0' && github.ref != 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
+        # UV review builds must retain a REVIEW_ONLY artifact, without a git push.
+        if: github.ref != 'refs/heads/codex/cart-uv-local-policy-scaffold-20261026'
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-SP803E-AUX-R3
+          name: ${{ env.HBNF_UV_BUILD_FLAG == '1' && 'HBNF-SP803E-AUX-R3-REVIEW-ONLY' || 'HBNF-SP803E-AUX-R3' }}
           path: /tmp/artifacts
           if-no-files-found: error
           retention-days: 30
