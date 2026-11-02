@@ -10,7 +10,7 @@ const REQUIRED_FRONTEND_MARKERS = [
   "Past events & results",
   "Upcoming events",
   "Add to Calendar",
-  "PDGA Results ↗",
+  "PDGA Results",
   "On Local Roots",
   "Official link",
   "Full Results",
