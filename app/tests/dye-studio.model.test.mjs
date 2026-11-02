@@ -177,12 +177,12 @@ test('real-world source matching prioritizes actual direct-acetone process over 
     '\nglobalThis.fieldAudit={EVIDENCE_OBSERVATIONS,FIELD_CASES,ALL_DYE_EVIDENCE,evidenceScore,classifyObservedProcess,materialClass};',
     realm, {timeout:10000});
   const evidence=realm.fieldAudit;
-  assert.equal(evidence.FIELD_CASES.length,27);
-  assert.equal(evidence.ALL_DYE_EVIDENCE.length,85);
+  assert.equal(evidence.FIELD_CASES.length,28);
+  assert.equal(evidence.ALL_DYE_EVIDENCE.length,86);
   const byId=id=>evidence.FIELD_CASES.find(x=>x.id===id);
   const expectedProcesses = [
     ['FIELD-AC-01','acetone-direct'],['FIELD-AC-02','acetone-direct'],
-    ['FIELD-AC-03','acetone-direct'],['FIELD-AC-04','mixed-or-compound-process'],
+    ['FIELD-AC-03','acetone-direct'],['FIELD-AC-04','mixed-or-compound-process'],['OWNER-MATCHED-01','acetone-direct'],
     ['FIELD-AC-05','acetone-direct'],['FIELD-ANALOG-01','acetone-spin'],
     ['FIELD-GLUE-01','acetone-glue-bed'],['FIELD-GLUE-02','acetone-glue-bed'],
     ['FIELD-FLO-01','floetrol-bed'],['FIELD-FLO-02','floetrol-bed'],
