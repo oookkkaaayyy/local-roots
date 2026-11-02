@@ -80,12 +80,21 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     // A concurrent edit to an unrelated field must be rejected even when
     // last_changed_at remains at the reconciliation timestamp. This previously
     // bypassed the reverse guard and would have been silently overwritten.
-    const noteOnly=(await db.query("select id,internal_notes from public.lr_events where slug='oak-grove-howards-weekly-2026-11-03'")).rows[0];
+    const noteOnly=(await db.query("select id,internal_notes,updated_at,last_changed_at from public.lr_events where slug='oak-grove-howards-weekly-2026-11-03'")).rows[0];
     await db.query("update public.lr_events set internal_notes='concurrent note-only edit' where id=$1",[noteOnly.id]);
     await assert.rejects(db.exec(reverse),/affected event changed after reconciliation/);
     await db.exec("rollback").catch(()=>{});
     assert.equal((await db.query("select internal_notes from public.lr_events where id=$1",[noteOnly.id])).rows[0].internal_notes,"concurrent note-only edit");
-    await db.query("update public.lr_events set internal_notes=$2 where id=$1",[noteOnly.id,noteOnly.internal_notes]);
+    await db.query("update public.lr_events set internal_notes=$2,updated_at=$3,last_changed_at=$4 where id=$1",[noteOnly.id,noteOnly.internal_notes,noteOnly.updated_at,noteOnly.last_changed_at]);
+
+    // Fields intentionally touched by the migration (format/timezone) also
+    // require a timestamp drift veto; excluding them from baseline equality
+    // must never permit a later source or operator edit to be clobbered.
+    const changedFormat=(await db.query("select id,format,updated_at,last_changed_at from public.lr_events where slug='oak-grove-howards-weekly-2026-11-03'")).rows[0];
+    await db.query("update public.lr_events set format='concurrent format edit' where id=$1",[changedFormat.id]);
+    await assert.rejects(db.exec(reverse),/affected event changed after reconciliation/);
+    await db.exec("rollback").catch(()=>{});
+    await db.query("update public.lr_events set format=$2,updated_at=$3,last_changed_at=$4 where id=$1",[changedFormat.id,changedFormat.format,changedFormat.updated_at,changedFormat.last_changed_at]);
 
     const event=(await db.query("select id,internal_notes,updated_at from public.lr_events where slug='oak-grove-howards-weekly-2026-11-03'")).rows[0];
     await db.query("update public.lr_events set internal_notes='post-migration concurrent edit',updated_at=updated_at+interval '1 second',last_changed_at=last_changed_at+interval '1 second' where id=$1",[event.id]);
