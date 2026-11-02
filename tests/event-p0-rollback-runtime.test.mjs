@@ -109,6 +109,19 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     await db.query("update public.lr_events set internal_notes=$2,updated_at=$3,last_changed_at=(select created_at from public.lr_source_runs where parser_version='schedule-field-reconciliation-v1' limit 1) where id=$1",[event.id,event.internal_notes,event.updated_at]);
     await db.exec("alter table public.lr_events enable trigger lr_events_touch_updated_at;");
 
+    // Reconciliation only edits two OG Disc Swap source links, but the
+    // generated reverse restores all 37 links. Refuse to clobber a later
+    // CRPD source-only edit even when its canonical event is untouched.
+    const crpdLink=(await db.query("select es.id,es.source_url,es.updated_at from public.lr_event_sources es join public.lr_sources s on s.id=es.source_id where s.key='crpd_rabbit_flats_direct' order by es.id limit 1")).rows[0];
+    assert.ok(crpdLink,"CRPD source-link fixture must exist");
+    await db.query("update public.lr_event_sources set source_url='https://example.org/concurrent-source-update' where id=$1",[crpdLink.id]);
+    await assert.rejects(db.exec(reverse),/scoped source link changed after reconciliation/);
+    await db.exec("rollback").catch(()=>{});
+    assert.equal((await db.query("select source_url from public.lr_event_sources where id=$1",[crpdLink.id])).rows[0].source_url,"https://example.org/concurrent-source-update");
+    await db.exec("alter table public.lr_event_sources disable trigger lr_event_sources_touch_updated_at;");
+    await db.query("update public.lr_event_sources set source_url=$2,updated_at=$3 where id=$1",[crpdLink.id,crpdLink.source_url,crpdLink.updated_at]);
+    await db.exec("alter table public.lr_event_sources enable trigger lr_event_sources_touch_updated_at;");
+
     const currentEvents=(await db.query("select * from public.lr_events")).rows;
     const oldById=new Map(snapshot.tables.lr_events.map(x=>[x.id,x]));
     const allowed=new Set(["timezone","format","updated_at","last_changed_at","last_verified_at","venue_address","course_id","course_url","start_time_local","checkin_time_local","end_time_local","start_time_note","format_details","entry_fee_amount","entry_fee_currency","entry_fee_unit","fee_breakdown","additional_fees_note","registration_opens_at","registration_closes_at","registration_capacity","registration_available","official_url"]);
