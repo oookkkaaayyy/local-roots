@@ -1,0 +1,51 @@
+name: HBNF Glow isolated PostgreSQL cleanup qualification
+on:
+  push:
+    branches:
+      - review/hbnf-glow-cleanup-native-qual-20261102
+permissions:
+  contents: read
+jobs:
+  isolated-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: offline_fixture_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 4s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Configure disposable database from authenticated source-defined trigger fixture
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: offline_fixture_only
+          PGDATABASE: postgres
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/fixtures/hbnf-glow-cleanup-native-schema.sql
+      - name: Execute focused existing and native PostgreSQL cleanup regressions
+        run: |
+          set -euo pipefail
+          node --test tests/hbnf-glow-week-cleanup.test.mjs tests/hbnf-glow-week-cleanup-native.test.mjs
+      - name: Confirm review source and absence of any release call
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          git diff --check HEAD^ HEAD
