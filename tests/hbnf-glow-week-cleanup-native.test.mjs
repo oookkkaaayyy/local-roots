@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {createHash} from 'node:crypto';
-import {buildCleanupCandidate,canonicalJson,createSupabaseGlowCleanupProvider} from '../scripts/hbnf-glow-week-cleanup.mjs';
+import {buildCleanupCandidate,canonicalJson,canonicalBytes,createHbnfGlowCleanupGate,createSupabaseGlowCleanupProvider} from '../scripts/hbnf-glow-week-cleanup.mjs';
 
 const exec=promisify(execFile);
 const digest=(alg,value)=>createHash(alg).update(value).digest('hex');
@@ -132,4 +132,77 @@ test('native PG17: exact installed CAS/revision/tag/queue trigger and fingerprin
   assert.equal(final.matrix.queueStateUpdatedAt,final.row.updatedAt);
   console.log('NATIVE_PG17_CLEANUP=PASS exact schema-trigger family, CAS, stale replay, 2-client concurrency, queue, tag projection, conditional restore');
   console.log('PRODUCTION_WRITES=ZERO PRIVATE_LIVE_DATA=NONE');
+});
+
+
+test('native PostgreSQL full cleanup admission→one-time claim→CAS→queue/tag readback→durable closeout, then controlled restore (CI ONLY)',async()=>{
+  const provider=createSupabaseGlowCleanupProvider({executeSql:sqlAdapter()});
+  const base=await provider.read();
+  const root=JSON.parse(await sql('SELECT state_json::text FROM public.league_state WHERE id=1'));
+  const op=operation(root);
+  const plan=buildCleanupCandidate(root,op);
+  op.cleanedStateMd5=await provider.hashState(plan.stateJson);
+  const snapshot=Buffer.from(JSON.stringify({id:1,updated_at:base.row.updatedAt,state_json:root}));
+  const releaseId='hbnf-native-pg17-fixture-only-20261102';
+  const manifest={format:'hbnf-glow-week-cleanup-v1',releaseId,phase:'PENDING',oneTime:true,
+    sourceCommit:'33ff65caeb609533b0a4eea634100a78fb34ec08',
+    ownerAuthorization:{confirmed:true,evidence:'CI synthetic authorization; NOT a real owner instruction',
+      scope:'remove only the verified rehearsal rows and aliases from the Nov 3 Glow week'},
+    target:{projectId:'phcpbvuqibyarpfrftgx',table:'public.league_state',rowId:1,weekDate:'2026-11-03'},
+    baseline:{updatedAt:base.row.updatedAt,rowFingerprint:base.row.rowFingerprint,
+      stateJsonMd5:base.row.stateJsonMd5,testAliasKeysMd5:op.testAliasKeysMd5,
+      matrixAutoLive:false,queueFingerprint:base.matrix.queueFingerprint,
+      queueStateUpdatedAt:base.matrix.queueStateUpdatedAt,
+      cinematicEventCount:base.matrix.cinematicEventCount,tagProjectionMatches:true},
+    backup:{driveFileId:'ci-only-snapshot',bytes:snapshot.length,
+      sha256:digest('sha256',snapshot),downloadBackVerified:true},
+    operation:op,
+    claims:{
+      admission:'release-claims/'+releaseId+'.admission-claim.json',
+      execution:'release-claims/'+releaseId+'.execution-claim.json',
+      restore:'release-claims/'+releaseId+'.restore-claim.json'}};
+  const files=new Map([['ci-only-snapshot',snapshot]]);
+  let next=0;
+  const store={
+    async putOnce(name,bytes){const id='ci-drive-'+(++next);files.set(id,Buffer.from(bytes));return {id};},
+    async download(id){if(!files.has(id))throw Error('missing CI fake artifact');return Buffer.from(files.get(id));}
+  };
+  const claimStore=new Map();
+  const ledger=Object.fromEntries(['Admission','Execution','Restore'].flatMap(kind=>[
+    ['claim'+kind,async (_claim,bytes)=>{
+      if(claimStore.has(kind))return {created:false};
+      const id='ci-claim-'+kind;
+      claimStore.set(kind,{id,bytes:Buffer.from(bytes)});
+      return {created:true,id};}],
+    ['read'+kind,async id=>{const v=claimStore.get(kind);
+      if(v?.id!==id)throw Error('missing fake claim');return Buffer.from(v.bytes);}]
+  ]));
+  const gate=createHbnfGlowCleanupGate({
+    provider,storage:store,ledger,sourceCommit:manifest.sourceCommit,
+    clock:()=> '2026-11-02T17:00:00.000Z'});
+  const admitted=await gate.admit({manifest,manifestBytes:canonicalBytes(manifest)});
+  assert.equal(admitted.status,'ADMISSION_PASS');
+  assert.equal(claimStore.has('Admission'),true);
+  const native=await gate.execute(admitted);
+  assert.equal(native.status,'CLEANUP_PASS');
+  assert.equal(claimStore.has('Execution'),true);
+  assert.ok(files.has(native.receiptDriveId));
+  assert.equal(digest('sha256',files.get(native.receiptDriveId)),native.receiptSha256);
+  const after=await provider.read();
+  assert.equal(after.row.cards,0);
+  assert.equal(after.row.teams,0);
+  assert.equal(after.row.playerRows,0);
+  assert.equal(after.row.stateJsonMd5,manifest.operation.cleanedStateMd5);
+  assert.equal(after.matrix.queueFingerprint,after.row.stateJsonMd5);
+  assert.equal(after.matrix.queueStateUpdatedAt,after.row.updatedAt);
+  assert.equal(after.tagProjectionMatches,true);
+  await assert.rejects(gate.execute(admitted),/already consumed/);
+  // The isolated DB is returned to its initial synthetic state after acceptance.
+  assert.equal((await provider.compareAndSwap(after.row.updatedAt,root)).saved,true);
+  const restored=await provider.read();
+  assert.equal(restored.row.stateJsonMd5,base.row.stateJsonMd5);
+  assert.equal(restored.matrix.queueFingerprint,restored.row.stateJsonMd5);
+  assert.equal(restored.matrix.queueStateUpdatedAt,restored.row.updatedAt);
+  console.log('NATIVE_PG17_FULL_GATE=PASS real source gate with CI-only mock approval/claims/Drive, actual PG CAS and trigger readback');
+  console.log('NO_REAL_ADMISSION=TRUE NO_OWNER_AUTHORIZATION_IMPLIED=TRUE');
 });
