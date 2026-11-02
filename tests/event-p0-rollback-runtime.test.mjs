@@ -77,6 +77,16 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     const reverse=await readFile(reversePath,"utf8");
     assert.match(JSON.parse(await readFile(reportPath,"utf8")).rollback_sql.disposition,/GENERATED_FAIL_CLOSED/);
 
+    // A concurrent edit to an unrelated field must be rejected even when
+    // last_changed_at remains at the reconciliation timestamp. This previously
+    // bypassed the reverse guard and would have been silently overwritten.
+    const noteOnly=(await db.query("select id,internal_notes from public.lr_events where slug='oak-grove-howards-weekly-2026-11-03'")).rows[0];
+    await db.query("update public.lr_events set internal_notes='concurrent note-only edit' where id=$1",[noteOnly.id]);
+    await assert.rejects(db.exec(reverse),/affected event changed after reconciliation/);
+    await db.exec("rollback").catch(()=>{});
+    assert.equal((await db.query("select internal_notes from public.lr_events where id=$1",[noteOnly.id])).rows[0].internal_notes,"concurrent note-only edit");
+    await db.query("update public.lr_events set internal_notes=$2 where id=$1",[noteOnly.id,noteOnly.internal_notes]);
+
     const event=(await db.query("select id,internal_notes,updated_at from public.lr_events where slug='oak-grove-howards-weekly-2026-11-03'")).rows[0];
     await db.query("update public.lr_events set internal_notes='post-migration concurrent edit',updated_at=updated_at+interval '1 second',last_changed_at=last_changed_at+interval '1 second' where id=$1",[event.id]);
     await assert.rejects(db.exec(reverse),/affected event changed after reconciliation/);
