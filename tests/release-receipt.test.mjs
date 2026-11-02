@@ -1016,6 +1016,15 @@ test('Events P0 admission refuses combined Edge/runtime rollback and binds migra
     const accepted = await validateReleaseReceipt(receipt, f.root, { phase: 'admission' });
     assert.deepEqual(accepted.admissionManifest.releaseScope, receipt.releaseScope,
       'same-manifest closeout must bind the exact mutation boundary');
+    // A matching SHA is not independent download-back when the source file is reused.
+    for (const [mutate, expected] of [
+      [r => { r.recovery.downloadBack.path = r.package.path; }, /Events P0 candidate download-back must be a separate recovered file/],
+      [r => { r.rollback.recovery.downloadBack.path = r.rollback.artifact.path; }, /Events P0 rollback download-back must be a separate recovered file/],
+    ]) {
+      const invalid = structuredClone(receipt);
+      mutate(invalid);
+      await assert.rejects(validateReleaseReceipt(invalid, f.root, { phase: 'admission' }), expected);
+    }
     for (const mutation of [
       r => { r.releaseScope.edgeFunctionDeployment = true; },
       r => { r.releaseScope.runtimeSync = true; },

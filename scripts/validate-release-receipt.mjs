@@ -652,6 +652,11 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     if (recoveredRollback.sha256 !== rollbackFile.sha256 || recoveredRollback.bytes !== rollbackFile.bytes) {
       throw new Error('rollback.recovery.downloadBack must byte-match the rollback artifact');
     }
+    if (EVENTS_P0_RELEASE_ID.test(receipt.releaseId) &&
+        await realpath(path.resolve(root, rollbackRecovery.downloadBack.path)) ===
+          await realpath(path.resolve(root, receipt.rollback.artifact.path))) {
+      throw new Error('Events P0 rollback download-back must be a separate recovered file');
+    }
   }
 
   const deployment = receipt.deployment;
@@ -725,6 +730,11 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   const recovered = await verifyFile(root, recovery?.downloadBack, 'recovery.downloadBack');
   if (recovered.sha256 !== packageFile.sha256 || recovered.bytes !== packageFile.bytes) {
     throw new Error('recovery.downloadBack must byte-match the release package');
+  }
+  if (EVENTS_P0_RELEASE_ID.test(receipt.releaseId) &&
+      await realpath(path.resolve(root, recovery.downloadBack.path)) ===
+        await realpath(path.resolve(root, receipt.package.path))) {
+    throw new Error('Events P0 candidate download-back must be a separate recovered file');
   }
   if (nativeRollback && path.resolve(root, recovery.downloadBack.path) === path.resolve(root, receipt.package.path)) {
     throw new Error('candidate package recovery must be a separate downloaded-back file');
