@@ -171,9 +171,12 @@ async function kit({faultCloseout=false,changeBeforeWrite=false,concurrentCloseo
   uploadFile:args=>call('mcp__codex_apps__google_drive_upload_file',args),
   fetchFile:id=>call('mcp__codex_apps__google_drive_fetch',
     {url:'https://drive.google.com/file/d/'+id+'/view',download_raw_file:true,include_base64:true}),
-  listFiles:args=>call('mcp__codex_apps__google_drive_search',
-    {query:'HBNF Glow cleanup evidence',topn:100,
-    special_filter_query_str:"'"+FOLDER+"' in parents and trashed = false"})
+  listFiles:async args=>{
+   const r=await call('mcp__codex_apps__google_drive_search',
+     {query:'HBNF Glow cleanup evidence',topn:100,
+      special_filter_query_str:"'"+FOLDER+"' in parents and trashed = false"});
+   return {structuredContent:{files:r.structuredContent.results.map(x=>({id:x.id,title:x.title}))}};
+  }
  });
  const ledger=createHbnfGlowCleanupLedger({
   releaseId:ID,branch:BRANCH,
