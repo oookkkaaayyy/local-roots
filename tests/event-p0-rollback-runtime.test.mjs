@@ -85,7 +85,9 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     await assert.rejects(db.exec(reverse),/affected event changed after reconciliation/);
     await db.exec("rollback").catch(()=>{});
     assert.equal((await db.query("select internal_notes from public.lr_events where id=$1",[noteOnly.id])).rows[0].internal_notes,"concurrent note-only edit");
+    await db.exec("alter table public.lr_events disable trigger lr_events_touch_updated_at;");
     await db.query("update public.lr_events set internal_notes=$2,updated_at=$3,last_changed_at=$4 where id=$1",[noteOnly.id,noteOnly.internal_notes,noteOnly.updated_at,noteOnly.last_changed_at]);
+    await db.exec("alter table public.lr_events enable trigger lr_events_touch_updated_at;");
 
     // Fields intentionally touched by the migration (format/timezone) also
     // require a timestamp drift veto; excluding them from baseline equality
@@ -94,14 +96,18 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     await db.query("update public.lr_events set format='concurrent format edit' where id=$1",[changedFormat.id]);
     await assert.rejects(db.exec(reverse),/affected event changed after reconciliation/);
     await db.exec("rollback").catch(()=>{});
+    await db.exec("alter table public.lr_events disable trigger lr_events_touch_updated_at;");
     await db.query("update public.lr_events set format=$2,updated_at=$3,last_changed_at=$4 where id=$1",[changedFormat.id,changedFormat.format,changedFormat.updated_at,changedFormat.last_changed_at]);
+    await db.exec("alter table public.lr_events enable trigger lr_events_touch_updated_at;");
 
     const event=(await db.query("select id,internal_notes,updated_at from public.lr_events where slug='oak-grove-howards-weekly-2026-11-03'")).rows[0];
     await db.query("update public.lr_events set internal_notes='post-migration concurrent edit',updated_at=updated_at+interval '1 second',last_changed_at=last_changed_at+interval '1 second' where id=$1",[event.id]);
     await assert.rejects(db.exec(reverse),/affected event changed after reconciliation/);
     await db.exec("rollback").catch(()=>{});
     assert.equal((await db.query("select internal_notes from public.lr_events where id=$1",[event.id])).rows[0].internal_notes,"post-migration concurrent edit");
+    await db.exec("alter table public.lr_events disable trigger lr_events_touch_updated_at;");
     await db.query("update public.lr_events set internal_notes=$2,updated_at=$3,last_changed_at=(select created_at from public.lr_source_runs where parser_version='schedule-field-reconciliation-v1' limit 1) where id=$1",[event.id,event.internal_notes,event.updated_at]);
+    await db.exec("alter table public.lr_events enable trigger lr_events_touch_updated_at;");
 
     const currentEvents=(await db.query("select * from public.lr_events")).rows;
     const oldById=new Map(snapshot.tables.lr_events.map(x=>[x.id,x]));
