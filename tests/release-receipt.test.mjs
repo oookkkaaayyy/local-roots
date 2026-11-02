@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { link, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -1024,6 +1024,23 @@ test('Events P0 admission refuses combined Edge/runtime rollback and binds migra
       const invalid = structuredClone(receipt);
       mutate(invalid);
       await assert.rejects(validateReleaseReceipt(invalid, f.root, { phase: 'admission' }), expected);
+    }
+    // Hard links have different realpaths but the same inode; they are not
+    // independent download-back artifacts and must fail the same gate.
+    for (const [original, recovered, expected] of [
+      [receipt.package.path, receipt.recovery.downloadBack.path, /Events P0 candidate download-back must be a separate recovered file/],
+      [receipt.rollback.artifact.path, receipt.rollback.recovery.downloadBack.path, /Events P0 rollback download-back must be a separate recovered file/],
+    ]) {
+      const originalPath = path.join(f.root, original);
+      const recoveredPath = path.join(f.root, recovered);
+      await rm(recoveredPath);
+      await link(originalPath, recoveredPath);
+      try {
+        await assert.rejects(validateReleaseReceipt(receipt, f.root, { phase: 'admission' }), expected);
+      } finally {
+        await rm(recoveredPath);
+        await writeFile(recoveredPath, await readFile(originalPath));
+      }
     }
     for (const mutation of [
       r => { r.releaseScope.edgeFunctionDeployment = true; },
