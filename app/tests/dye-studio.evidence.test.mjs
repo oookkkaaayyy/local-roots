@@ -49,7 +49,7 @@ test('same source cannot be counted as separate creator groups',()=>{
 
 test('private same-frame owner overlap is included as qualitative evidence only',()=>{
  const studio=readFileSync(new URL('../public/dyed-and-unattached/dye-studio/studio.js',import.meta.url),'utf8');
- const marker='"id":"FIELD-OWNER-OVERLAP-01"';
+ const marker='"id":"OWNER-MATCHED-01"';
  const idAt=studio.indexOf(marker);
  assert.notEqual(idAt,-1,'owner-matched evidence remains in the app corpus');
  const start=studio.lastIndexOf('{',idAt),end=studio.indexOf('}',idAt)+1;
@@ -58,6 +58,8 @@ test('private same-frame owner overlap is included as qualitative evidence only'
  assert.match(record.result,/purple\/plum.*distinct from blue-only/);
  assert.match(record.limitations,/no calibrated color target or independent replicate/);
  assert.match(record.limitations,/photos remain private and are not included/);
+ assert.equal(record.shadeMappingCertain,false,'unknown shades cannot count as an exact dye match');
+ assert.equal(record.plasticVerified,false,'owner-reported plastic identity is not maker-verified');
  assert.doesNotMatch(JSON.stringify(record),/#(?:[0-9A-F]{6})/i,'no photo-derived RGB target is claimed');
  assert.doesNotMatch(JSON.stringify(record),/1eJhbGO3RFWs9y9h8NX4o_Wu6YvBe78Dg|13lkztnOO-xAY7WdVRLRyHyTHCFo7dlZi/,'private Drive photo identities are not published');
 });
