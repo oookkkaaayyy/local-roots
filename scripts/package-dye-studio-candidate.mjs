@@ -29,7 +29,7 @@ async function listFiles(root, current = root) {
 }
 
 export function releaseIdFor(pullRequest, sourceCommit, archiveSha256) {
-  if (!/^\\d+$/.test(String(pullRequest)) || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '') ||
+  if (!/^\d+$/.test(String(pullRequest)) || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '') ||
       !/^[a-f0-9]{64}$/i.test(archiveSha256 ?? '')) {
     throw new Error('release identity requires a numeric PR, full source commit, and candidate archive SHA-256');
   }
@@ -39,7 +39,7 @@ export function releaseIdFor(pullRequest, sourceCommit, archiveSha256) {
 
 async function main() {
   const [distArg, outputArg, sourceCommit, pullRequest] = process.argv.slice(2);
-  if (!distArg || !outputArg || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '') || !/^\\d+$/.test(pullRequest ?? '')) {
+  if (!distArg || !outputArg || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '') || !/^\d+$/.test(pullRequest ?? '')) {
     throw new Error('usage: package-dye-studio-candidate.mjs <dist-directory> <output-directory> <full-source-commit> <pull-request-number>');
   }
   const dist = path.resolve(distArg);
