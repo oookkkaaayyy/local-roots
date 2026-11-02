@@ -862,6 +862,7 @@ test('published evidence counts match actual entries and distinct source URLs', 
   assert.equal(distinctUrls.size, 66);
   assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
   assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
+  assert.match(studioHtml,/These are not one independent study per record or measured RGB targets/);
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
   assert.match(studioScript, /ALL_DYE_EVIDENCE\.filter\(o=>selected\.some\(d=>evidenceDyeFamilyMatches/);
   assert.doesNotMatch(studioHtml, /includes the user-provided before\/after photos/);
