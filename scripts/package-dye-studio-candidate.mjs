@@ -73,7 +73,9 @@ async function main() {
   process.stdout.write(`Packaged ${files.length} build files; candidate.zip sha256=${manifest.archiveSha256} bytes=${manifest.archiveBytes}\n`);
 }
 
-main().catch(error => {
-  process.stderr.write(`${error.stack ?? error}\n`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch(error => {
+    process.stderr.write(`${error.stack ?? error}\\n`);
+    process.exitCode = 1;
+  });
+}
