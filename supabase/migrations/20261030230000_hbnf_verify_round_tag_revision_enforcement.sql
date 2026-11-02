@@ -72,5 +72,5 @@ begin
   return jsonb_build_object('status','saved','row',to_jsonb(v_saved),'entry',(select to_jsonb(e) from public.hbnf_round_tag_entries e where e.round_date=p_round_date and e.event_type=p_event_type and e.player_key=v_key),'entry_revision',(select revision from public.hbnf_round_tag_entries where round_date=p_round_date and event_type=p_event_type and player_key=v_key),
     'current_revision',v_authority.revision,'bag_tags',v_bag,'displaced_player_keys',coalesce(to_jsonb(v_displaced),'[]'::jsonb));
 end;
-$function$
+$function$;
 

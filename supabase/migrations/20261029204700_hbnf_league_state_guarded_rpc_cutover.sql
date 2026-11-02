@@ -43,7 +43,7 @@ begin
        and state.updated_at = p_expected_updated_at
     returning state.*;
 end;
-$function$
+$function$;
 
 
 revoke all on function public.hbnf_save_league_state_v1(timestamptz, jsonb)

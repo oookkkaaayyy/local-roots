@@ -5,6 +5,7 @@ import test from 'node:test';
 const dir = new URL('../supabase/migrations/', import.meta.url);
 const forward = await readFile(new URL('20261101160000_hbnf_revision_trigger_forward_alignment.sql', dir), 'utf8');
 const original = await readFile(new URL('20261029203741_hbnf_league_state_server_revision_guard.sql', dir), 'utf8');
+const guarded = await readFile(new URL('20261029204700_hbnf_league_state_guarded_rpc_cutover.sql', dir), 'utf8');
 const tag = await readFile(new URL('20261030230000_hbnf_verify_round_tag_revision_enforcement.sql', dir), 'utf8');
 
 function functionBody(sql, name) {
@@ -33,4 +34,10 @@ test('the pending tag migration installs the missing stale authority and entry r
   assert.match(tag, /if p_expected_authority_revision is null or p_expected_authority_revision<>v_authority\.revision then/i);
   assert.match(tag, /if p_expected_entry_revision is null or p_expected_entry_revision<>v_entry\.revision then/i);
   assert.match(tag, /elsif p_expected_entry_revision is distinct from 0 then/i);
+});
+
+test('candidate function definitions are terminated as complete SQL statements', () => {
+  assert.match(guarded, /\$function\$;\s*revoke\s+all\s+on\s+function/i);
+  assert.match(tag.trimEnd(), /\$function\$;$/i);
+  assert.match(forward.trimEnd(), /\$function\$;$/i);
 });
