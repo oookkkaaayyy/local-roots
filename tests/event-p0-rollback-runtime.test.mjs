@@ -122,14 +122,6 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     await db.query("update public.lr_event_sources set source_url=$2,updated_at=$3 where id=$1",[crpdLink.id,crpdLink.source_url,crpdLink.updated_at]);
     await db.exec("alter table public.lr_event_sources enable trigger lr_event_sources_touch_updated_at;");
 
-    const linkBefore=new Map(snapshot.tables.lr_event_sources.map(x=>[x.id,x]));
-    const linkNow=(await db.query("select * from public.lr_event_sources")).rows;
-    const changedLinks=linkNow.flatMap(x=>{
-      const p=linkBefore.get(x.id); if(!p)return [];
-      const fields=Object.keys(p).filter(k=>JSON.stringify(p[k])!==JSON.stringify(x[k]));
-      return fields.length?[{id:x.id,fields,oldPayload:p.source_payload,newPayload:x.source_payload,oldUpdated:p.updated_at,newUpdated:x.updated_at}]:[];
-    });
-    console.log("PGLITE_LINK_DELTA",JSON.stringify(changedLinks.slice(0,6)));
     const currentEvents=(await db.query("select * from public.lr_events")).rows;
     const oldById=new Map(snapshot.tables.lr_events.map(x=>[x.id,x]));
     const allowed=new Set(["timezone","format","updated_at","last_changed_at","last_verified_at","venue_address","course_id","course_url","start_time_local","checkin_time_local","end_time_local","start_time_note","format_details","entry_fee_amount","entry_fee_currency","entry_fee_unit","fee_breakdown","additional_fees_note","registration_opens_at","registration_closes_at","registration_capacity","registration_available","official_url"]);
