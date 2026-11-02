@@ -29,7 +29,7 @@ const DYE_STUDIO_PR156_RELEASE_ID = 'local-roots-dye-studio-pr-156-2026-10-30-r1
 // would incorrectly claim recovery of the Sep 2 synthetic Glow quarantine.
 // Only a separately scoped migration-only release is admissible here; the Edge
 // sync needs its own target-bounded recovery/admission before deployment.
-const EVENTS_P0_RELEASE_ID = /^local-roots-events-pr163-production-events-p0-\\d{4}-\\d{2}-\\d{2}-r\\d+$/;
+const EVENTS_P0_RELEASE_ID = /^local-roots-events-pr163-production-events-p0-\d{4}-\d{2}-\d{2}-r\d+$/;
 const EVENTS_P0_MIGRATIONS = Object.freeze([
   '20261101070000_event_detail_fields_and_provenance.sql',
   '20261101080000_reconcile_verified_schedule_fields.sql',
