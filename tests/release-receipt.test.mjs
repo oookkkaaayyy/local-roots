@@ -742,7 +742,7 @@ test('candidate manifest structured toolchain matches its serialized receipt val
     const manifestPath = path.join(f.root, f.receipt.packageManifest.path);
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
     manifest.toolchain = { node: 'v24.18.0', npm: '11.16.0' };
-    const bytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\\n');
+    const bytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\n');
     await writeFile(manifestPath, bytes);
     await writeFile(path.join(f.root, f.receipt.packageManifest.downloadBack.path), bytes);
     Object.assign(f.receipt.packageManifest, { bytes: bytes.length, sha256: hash(bytes) });
