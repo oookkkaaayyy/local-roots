@@ -377,7 +377,7 @@ async function verifySquashMergeIdentity(receipt, root, readback) {
       Date.parse(proof.retrievedAt) > Date.now() + 5 * 60 * 1000) {
     throw new Error('GitHub identity evidence must identify this repository, PR, exact candidate and retrieval time');
   }
-  if (receipt.source.repository !== repository || receipt.source.pullRequestHeadCommit !== receipt.source.commit ||
+  if (receipt.source.repository !== repository ||
       pr?.number !== prNumber || pr.state !== 'closed' || pr.merged !== true ||
       pr.head?.repo?.full_name !== repository || pr.head.sha !== receipt.source.commit ||
       pr.base?.repo?.full_name !== repository || !pr.merged_at || !/^[a-f0-9]{40}$/i.test(pr.merge_commit_sha ?? '') ||

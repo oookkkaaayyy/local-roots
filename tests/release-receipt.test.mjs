@@ -866,6 +866,19 @@ test('standing Cloudflare closeout verifies the actual PR head, squash tree, pro
   } finally { await f.cleanup(); }
 });
 
+test('standing Cloudflare closeout derives the admitted PR head from authenticated proof when optional duplicate field is absent', async () => {
+  const f = await standingCloudflarePRFixture(166);
+  try {
+    f.receipt.source.treeSha = 'e'.repeat(40);
+    await attachAdmissionManifest(f);
+    await attachSquashIdentityProof(f);
+    delete f.receipt.source.pullRequestHeadCommit;
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'closeout' });
+    assert.equal(result.phase, 'closeout');
+    assert.equal(result.admissionSha256, f.receipt.admission.sha256);
+  } finally { await f.cleanup(); }
+});
+
 test('standing Cloudflare closeout rejects forged PR head, tree and provider source identity', async () => {
   for (const mutation of ['head', 'tree', 'provider']) {
     const f = await standingCloudflarePRFixture(247);
