@@ -5,12 +5,13 @@ import {
   manifestSha256, restorePoller, validatePollerManifest,
 } from '../scripts/hbnf-udisc-poller-config-gate.mjs';
 
-const manifest = createPollerManifest();
+const manifest = createPollerManifest({ releaseId: 'hbnf-udisc-unit-release-20261102-unique', gateSourceCommit: 'df08de4853a9ffb4c3ee87709c4d274efc7e01e6' });
 const bytes = manifestBytes(manifest);
 const digest = manifestSha256(manifest);
 const decision = {
   status: 'ADMISSION_PASS', releaseId: manifest.releaseId, manifestSha256: digest,
   candidateSha256: manifest.candidate.sha256, rollbackSha256: manifest.rollback.packageSha256,
+  gateSourceCommit: manifest.gateSourceCommit,
   baselineWorkerVersion: manifest.baseline.workerVersion,
   supabaseStateFingerprint: manifest.baseline.supabase.stateFingerprint,
   downloadBackVerified: true,
@@ -92,7 +93,9 @@ function fixture({ mutateOnRead = 0, failCloseout = false } = {}) {
           vars: { ...state.target.vars, [POLLER_RELEASE.approvalBinding]: 'false' },
         };
       } else if (versionId === POLLER_RELEASE.workerVersion) {
+        const supabase = structuredClone(state.target.supabase);
         state.target = baseTarget();
+        state.target.supabase = supabase;
         state.target.serverTime = '2026-11-04T08:00:00.000Z';
       }
       return { versionId };
@@ -113,6 +116,14 @@ test('manifest binds exact current Worker backup, Supabase fingerprint, config d
   });
   assert.equal(manifest.operations[1].notBefore, POLLER_RELEASE.windowEnd);
   assert.equal(validatePollerManifest(manifest, bytes).manifestSha256, digest);
+  const fresh = createPollerManifest({ releaseId: 'hbnf-udisc-native-fixture-20261102-unique', gateSourceCommit: 'df08de4853a9ffb4c3ee87709c4d274efc7e01e6', supabaseBaseline: {
+    projectId: POLLER_RELEASE.supabaseProject, updatedAt: '2026-11-02T16:00:00.000001Z',
+    stateFingerprint: 'a'.repeat(32), stateBytes: 212, evidenceDriveFileId: 'native-fixture-snapshot',
+    evidenceSha256: 'b'.repeat(64),
+  } });
+  assert.equal(fresh.baseline.supabase.updatedAt, '2026-11-02T16:00:00.000001Z');
+  assert.equal(validatePollerManifest(fresh, manifestBytes(fresh)).manifestSha256, manifestSha256(fresh));
+  assert.throws(() => createPollerManifest({ releaseId: 'hbnf-udisc-native-fixture-20261102-bad', gateSourceCommit: 'df08de4853a9ffb4c3ee87709c4d274efc7e01e6', supabaseBaseline: { ...fresh.baseline.supabase, stateFingerprint: 'not-a-fingerprint' } }), /Supabase baseline/);
 });
 
 test('stale Worker baseline fails before a claim, upload, or deployment', async () => {
@@ -136,7 +147,14 @@ test('old or mismatched admission is rejected before provider access', async () 
   const f = fixture();
   const oldDecision = { ...decision, releaseId: 'hbnf-glow-oct30-acceptance-20261030' };
   await assert.rejects(() => disablePoller({ manifest, bytes, decision: oldDecision, ...f, downloadBack }), /ADMISSION_PASS/);
+  const wrongGateSource = { ...decision, gateSourceCommit: 'a'.repeat(40) };
+  await assert.rejects(() => disablePoller({ manifest, bytes, decision: wrongGateSource, ...f, downloadBack }), /ADMISSION_PASS/);
   assert.equal(f.state.reads, 0);
+});
+
+test('superseded v1 manifest format cannot be replayed under the revision-bound v2 gate', () => {
+  const old = { ...manifest, format: 'hbnf-udisc-poller-disable-restore-v1', schemaVersion: 1 };
+  assert.throws(() => validatePollerManifest(old, manifestBytes(old)), /manifest is missing/);
 });
 
 test('replayed disable claim is rejected and never deploys twice', async () => {
@@ -151,10 +169,16 @@ test('replayed disable claim is rejected and never deploys twice', async () => {
   assert.deepEqual(f.state.deployments, ['c103a44e-a113-4d8c-a216-01f38dcd28d1']);
 });
 
-test('disable then restore returns exact original Worker/config/route/Cron and preserves DB snapshot', async () => {
+test('disable then restore preserves newer Supabase scoring state', async () => {
   const f = fixture();
   const disabled = await disablePoller({ manifest, bytes, decision, ...f, downloadBack });
   const disabledTarget = structuredClone(f.state.target);
+  // Scoring can legitimately advance while the UDisc test-week flag is off.
+  f.state.target.supabase = {
+    ...f.state.target.supabase,
+    updatedAt: '2026-11-04T04:12:00.000001Z',
+    stateFingerprint: 'e'.repeat(32),
+  };
   f.state.target.serverTime = '2026-11-04T08:00:00.000Z';
   const restored = await restorePoller({ manifest, bytes, decision, disableReceipt: disabled, ...f, downloadBack });
   assert.equal(restored.status, 'EXACT_RESTORE_READBACK_PASS');
@@ -165,7 +189,9 @@ test('disable then restore returns exact original Worker/config/route/Cron and p
   assert.deepEqual(f.state.target.cron, ['* * * * *']);
   assert.equal(f.state.target.route, 'hbnightflyers.com');
   assert.deepEqual(f.state.deployments, ['c103a44e-a113-4d8c-a216-01f38dcd28d1', POLLER_RELEASE.workerVersion]);
-  assert.equal(f.state.target.supabase.stateFingerprint, POLLER_RELEASE.supabaseStateFingerprint);
+  assert.equal(f.state.target.supabase.stateFingerprint, 'e'.repeat(32));
+  assert.equal(restored.supabaseStateAdvancedDuringEvent, true);
+  assert.equal(restored.supabaseUpdatedAt, '2026-11-04T04:12:00.000001Z');
   assert.equal(f.state.records.size, 2);
   f.state.target = { ...disabledTarget, serverTime: '2026-11-04T08:00:00.000Z' };
   await assert.rejects(() => restorePoller({ manifest, bytes, decision, disableReceipt: disabled, ...f, downloadBack }), /restore manifest claim was already consumed/);

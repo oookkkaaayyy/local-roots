@@ -38,12 +38,27 @@ function canonical(value) {
 const jsonBytes = value => Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
 const byteEqual = (a, b) => Buffer.from(a).equals(Buffer.from(b));
 
-export function createPollerManifest({ releaseId = POLLER_RELEASE.releaseId } = {}) {
+export function createPollerManifest({ releaseId, gateSourceCommit, supabaseBaseline } = {}) {
   if (!/^[a-z0-9][a-z0-9._-]{20,90}$/.test(releaseId)) fail('releaseId must be a unique, non-replayable identifier');
+  if (!/^[a-f0-9]{40}$/.test(gateSourceCommit || '')) fail('exact release-gate source commit is required');
+  const db = supabaseBaseline ?? {
+    projectId: POLLER_RELEASE.supabaseProject,
+    updatedAt: POLLER_RELEASE.supabaseUpdatedAt,
+    stateFingerprint: POLLER_RELEASE.supabaseStateFingerprint,
+    stateBytes: POLLER_RELEASE.supabaseStateBytes,
+    evidenceDriveFileId: POLLER_RELEASE.supabaseEvidenceDriveId,
+    evidenceSha256: POLLER_RELEASE.supabaseEvidenceSha256,
+  };
+  if (db.projectId !== POLLER_RELEASE.supabaseProject || typeof db.updatedAt !== 'string' || !Number.isFinite(Date.parse(db.updatedAt)) ||
+      !/^[a-f0-9]{32}$/.test(db.stateFingerprint || '') || !Number.isSafeInteger(db.stateBytes) || db.stateBytes < 1 ||
+      typeof db.evidenceDriveFileId !== 'string' || !db.evidenceDriveFileId || !isSha(db.evidenceSha256)) {
+    fail('Supabase baseline must include the exact project, revision, state fingerprint, byte count, and durable evidence identity');
+  }
   return {
-    schemaVersion: 1,
-    format: 'hbnf-udisc-poller-disable-restore-v1',
+    schemaVersion: 2,
+    format: 'hbnf-udisc-poller-disable-restore-v2',
     releaseId,
+    gateSourceCommit,
     status: 'PENDING',
     oneTime: true,
     source: { repository: 'oookkkaaayyy/local-roots', commit: POLLER_RELEASE.sourceCommit },
@@ -58,12 +73,7 @@ export function createPollerManifest({ releaseId = POLLER_RELEASE.releaseId } = 
       publicAssetsSha256: POLLER_RELEASE.publicAssetsSha256,
       approvalValue: 'true', cron: ['* * * * *'], secretNamePresent: 'SUPABASE_SERVICE_ROLE_KEY',
       supabase: {
-        projectId: POLLER_RELEASE.supabaseProject,
-        updatedAt: POLLER_RELEASE.supabaseUpdatedAt,
-        stateFingerprint: POLLER_RELEASE.supabaseStateFingerprint,
-        stateBytes: POLLER_RELEASE.supabaseStateBytes,
-        evidenceDriveFileId: POLLER_RELEASE.supabaseEvidenceDriveId,
-        evidenceSha256: POLLER_RELEASE.supabaseEvidenceSha256,
+        ...db,
         eventDate: POLLER_RELEASE.eventDate,
         eventId: POLLER_RELEASE.eventId,
         windowStart: POLLER_RELEASE.windowStart,
@@ -91,9 +101,9 @@ export function createPollerManifest({ releaseId = POLLER_RELEASE.releaseId } = 
         id: 'restore',
         order: 2,
         notBefore: POLLER_RELEASE.windowEnd,
-        precondition: 'Fresh readback shows exactly the version installed by disable, false approval, unchanged Cron/routes/assets, and unchanged Supabase fingerprint.',
+        precondition: 'Fresh readback shows exactly the version installed by disable, false approval, unchanged Cron/routes/assets, and the same readable Supabase project; newer scoring revisions are allowed.',
         route: `wrangler versions deploy ${POLLER_RELEASE.workerVersion}@100% --name hbnf --yes`,
-        expected: 'Exact original Worker version/package at 100%; approval true; original Cron/routes/assets/secrets and Supabase state restored byte/identity exactly.',
+        expected: 'Exact original Worker version/package at 100%; approval true; original Cron/routes/assets/secrets restored, with the current Supabase scoring state left untouched.',
       },
     ],
     rollback: {
@@ -118,7 +128,7 @@ export function createPollerManifest({ releaseId = POLLER_RELEASE.releaseId } = 
       'Cloudflare deployment version ID and 100% traffic independently read back.',
       'Exact approval binding value independently read back; secret value is never read or recorded.',
       'All 46 public asset hashes, domain route, and one-minute Cron match the manifest.',
-      'Supabase project ID, league_state updated_at and state fingerprint match baseline; no DB mutation.',
+      'At disable, Supabase project ID, league_state updated_at and state fingerprint match baseline; Worker restore leaves the then-current scoring state untouched.',
       'Same-manifest closeout and exact rollback identities are stored and independently downloaded back byte-for-byte.',
     ],
   };
@@ -128,7 +138,8 @@ export function manifestBytes(manifest) { return jsonBytes(manifest); }
 export function manifestSha256(manifest) { return sha(manifestBytes(manifest)); }
 
 export function validatePollerManifest(manifest, bytes, { candidateBytes, rollbackBytes } = {}) {
-  if (!manifest || manifest.format !== 'hbnf-udisc-poller-disable-restore-v1' || manifest.schemaVersion !== 1 || manifest.status !== 'PENDING' || manifest.oneTime !== true) {
+  if (!manifest || manifest.format !== 'hbnf-udisc-poller-disable-restore-v2' || manifest.schemaVersion !== 2 ||
+      !/^[a-f0-9]{40}$/.test(manifest.gateSourceCommit || '') || manifest.status !== 'PENDING' || manifest.oneTime !== true) {
     fail('manifest is missing, non-pending, or not one-time');
   }
   if (!Buffer.isBuffer(bytes) || !byteEqual(bytes, manifestBytes(manifest))) fail('manifest bytes are not the canonical manifest');
@@ -142,10 +153,11 @@ export function validatePollerManifest(manifest, bytes, { candidateBytes, rollba
       manifest.rollback.packageBytes !== POLLER_RELEASE.workerBytes || manifest.rollback.artifactDriveFileId !== POLLER_RELEASE.workerDriveId ||
       manifest.target?.accountId !== POLLER_RELEASE.accountId || manifest.target?.worker !== POLLER_RELEASE.worker ||
       manifest.baseline?.supabase?.projectId !== POLLER_RELEASE.supabaseProject ||
-      manifest.baseline?.supabase?.updatedAt !== POLLER_RELEASE.supabaseUpdatedAt ||
-      manifest.baseline?.supabase?.stateFingerprint !== POLLER_RELEASE.supabaseStateFingerprint ||
-      manifest.baseline?.supabase?.evidenceDriveFileId !== POLLER_RELEASE.supabaseEvidenceDriveId ||
-      manifest.baseline?.supabase?.evidenceSha256 !== POLLER_RELEASE.supabaseEvidenceSha256 ||
+      !Number.isFinite(Date.parse(manifest.baseline?.supabase?.updatedAt || '')) ||
+      !/^[a-f0-9]{32}$/.test(manifest.baseline?.supabase?.stateFingerprint || '') ||
+      !Number.isSafeInteger(manifest.baseline?.supabase?.stateBytes) || manifest.baseline.supabase.stateBytes < 1 ||
+      typeof manifest.baseline?.supabase?.evidenceDriveFileId !== 'string' || !manifest.baseline.supabase.evidenceDriveFileId ||
+      !isSha(manifest.baseline?.supabase?.evidenceSha256) ||
       manifest.baseline?.publicAssetsSha256 !== POLLER_RELEASE.publicAssetsSha256 ||
       manifest.candidate?.publicAssetsSha256 !== POLLER_RELEASE.publicAssetsSha256 ||
       manifest.candidate?.applicationAssetsUnchanged !== 46) fail('manifest baseline or durable artifact binding is stale or internally inconsistent');
@@ -157,6 +169,7 @@ export function validatePollerManifest(manifest, bytes, { candidateBytes, rollba
 function assertAdmitted(manifest, bytes, decision, { manifestDownloadedBack, candidateDownloadedBack, rollbackDownloadedBack }) {
   const digest = sha(bytes);
   if (decision?.status !== 'ADMISSION_PASS' || decision.releaseId !== manifest.releaseId || decision.manifestSha256 !== digest ||
+      decision.gateSourceCommit !== manifest.gateSourceCommit ||
       decision.candidateSha256 !== manifest.candidate.sha256 || decision.rollbackSha256 !== manifest.rollback.packageSha256 ||
       decision.baselineWorkerVersion !== manifest.baseline.workerVersion ||
       decision.supabaseStateFingerprint !== manifest.baseline.supabase.stateFingerprint ||
@@ -169,6 +182,13 @@ function assertSupabaseBaseline(observed, manifest) {
   const expected = manifest.baseline.supabase;
   if (!observed || observed.projectId !== expected.projectId || observed.updatedAt !== expected.updatedAt || observed.stateFingerprint !== expected.stateFingerprint) {
     fail('Supabase revision/state fingerprint is stale or changed');
+  }
+}
+
+function assertSupabaseIdentity(observed, manifest) {
+  if (!observed || observed.projectId !== manifest.baseline.supabase.projectId ||
+      !Number.isFinite(Date.parse(observed.updatedAt || '')) || !/^[a-f0-9]{32}$/.test(observed.stateFingerprint || '')) {
+    fail('current Supabase project or revision readback is invalid');
   }
 }
 
@@ -209,6 +229,18 @@ function assertDisabledReadback(observed, manifest, installedVersionId) {
   assertSupabaseBaseline(observed.supabase, manifest);
 }
 
+function assertDisabledWorkerReadback(observed, manifest, installedVersionId) {
+  if (!observed || observed.versionId !== installedVersionId || observed.trafficPercent !== 100 ||
+      observed.packageSha256 !== manifest.candidate.sha256 || observed.packageBytes !== manifest.candidate.bytes ||
+      observed.vars?.[POLLER_RELEASE.approvalBinding] !== 'false' ||
+      observed.cron?.join('\0') !== '* * * * *' || observed.route !== manifest.target.route ||
+      observed.secretNamePresent !== 'SUPABASE_SERVICE_ROLE_KEY' || observed.publicAssetCount !== 46 ||
+      observed.publicAssetsSha256 !== manifest.candidate.publicAssetsSha256) fail('disabled Worker readback does not match exact candidate and preserved service configuration');
+  // Scoring may advance during the event. Restoring this configuration-only
+  // Worker change must not be blocked by a legitimate newer league_state row.
+  assertSupabaseIdentity(observed.supabase, manifest);
+}
+
 async function durable(store, key, bytes) {
   const stored = await store.putOnce(key, Buffer.from(bytes));
   if (!stored?.id) fail(`durable ${key} upload returned no stable identity`);
@@ -244,7 +276,7 @@ export async function disablePoller({ manifest, bytes, decision, provider, store
   if (deploy?.versionId !== stage.versionId) fail('deployment acknowledgement did not match staged version');
   const receipt = {
     format: 'hbnf-udisc-poller-disable-closeout-v1', releaseId: manifest.releaseId,
-    manifestSha256: hash, installedVersionId: stage.versionId, candidateSha256: manifest.candidate.sha256,
+    manifestSha256: hash, gateSourceCommit: manifest.gateSourceCommit, installedVersionId: stage.versionId, candidateSha256: manifest.candidate.sha256,
     baselineVersionId: manifest.baseline.workerVersion, supabaseStateFingerprint: manifest.baseline.supabase.stateFingerprint,
     status: 'DISABLED_READBACK_PASS',
   };
@@ -261,11 +293,11 @@ export async function restorePoller({ manifest, bytes, decision, disableReceipt,
   if (!provider?.readTarget || !provider?.deployVersion || !store?.putOnce || !store?.download || !claims?.claimOnce) fail('authenticated provider, durable store, or one-time restore claim adapter is missing');
   const current = await provider.readTarget();
   assertAfterEventWindow(current);
-  assertDisabledReadback(current, manifest, disableReceipt.installedVersionId);
+  assertDisabledWorkerReadback(current, manifest, disableReceipt.installedVersionId);
   if (!await claims.claimOnce(manifest.releaseId, 'restore', sha(bytes))) fail('restore manifest claim was already consumed');
   const again = await provider.readTarget();
   assertAfterEventWindow(again);
-  assertDisabledReadback(again, manifest, disableReceipt.installedVersionId);
+  assertDisabledWorkerReadback(again, manifest, disableReceipt.installedVersionId);
   const deploy = await provider.deployVersion({ versionId: manifest.rollback.workerVersion, trafficPercent: 100 });
   const restored = await provider.readTarget();
   if (deploy?.versionId !== manifest.rollback.workerVersion || restored?.versionId !== manifest.rollback.workerVersion ||
@@ -274,11 +306,14 @@ export async function restorePoller({ manifest, bytes, decision, disableReceipt,
       restored?.cron?.join('\0') !== '* * * * *' || restored?.route !== manifest.target.route ||
       restored?.secretNamePresent !== 'SUPABASE_SERVICE_ROLE_KEY' || restored?.publicAssetCount !== 46 ||
       restored?.publicAssetsSha256 !== manifest.candidate.publicAssetsSha256) fail('exact original Worker configuration and package were not independently restored');
-  assertSupabaseBaseline(restored.supabase, manifest);
+  assertSupabaseIdentity(restored.supabase, manifest);
   const receipt = {
     format: 'hbnf-udisc-poller-restore-closeout-v1', releaseId: manifest.releaseId,
-    manifestSha256: sha(bytes), restoredVersionId: restored.versionId,
-    rollbackSha256: manifest.rollback.packageSha256, supabaseStateFingerprint: manifest.baseline.supabase.stateFingerprint,
+    manifestSha256: sha(bytes), gateSourceCommit: manifest.gateSourceCommit, restoredVersionId: restored.versionId,
+    rollbackSha256: manifest.rollback.packageSha256, supabaseStateFingerprint: restored.supabase.stateFingerprint,
+    supabaseUpdatedAt: restored.supabase.updatedAt,
+    supabaseStateAdvancedDuringEvent: restored.supabase.stateFingerprint !== manifest.baseline.supabase.stateFingerprint ||
+      restored.supabase.updatedAt !== manifest.baseline.supabase.updatedAt,
     status: 'EXACT_RESTORE_READBACK_PASS',
   };
   const receiptDurability = await durable(store, `${manifest.releaseId}.restore-closeout.json`, jsonBytes(receipt));
