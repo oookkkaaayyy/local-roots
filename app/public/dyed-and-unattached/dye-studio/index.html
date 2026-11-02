@@ -421,10 +421,17 @@ body.calibration-mode #du-lighting{display:none!important}
      </div>
      <p id="photoSampleHelp" class="photo-workspace-help">Tap or drag on clean, unstamped plastic. The color is a local photo sample, not calibrated physical color. Your current project stays unchanged until Apply.</p>
      <button id="photoUseSample" type="button" class="photo-sample-button">Use marked spot</button>
-     <div class="photo-adjustments" aria-label="Adjust proposed color">
-       <label>Hue <input id="photoHue" type="range" min="0" max="359" value="210"><output id="photoHueValue">210°</output></label>
-       <label>Colorfulness <input id="photoSaturation" type="range" min="0" max="100" value="15"><output id="photoSaturationValue">15%</output></label>
-       <label>Lightness <input id="photoLightness" type="range" min="0" max="100" value="70"><output id="photoLightnessValue">70%</output></label>
+     <label class="photo-color-model-label" for="photoColorModel">Color model</label>
+     <select id="photoColorModel" class="photo-color-model"><option value="hsb" selected>HSB Sliders</option><option value="rgb">RGB Sliders</option></select>
+     <div id="photoRgbControls" class="photo-adjustments" role="group" aria-label="RGB sliders" hidden>
+       <div class="photo-adjustment-row"><label for="photoRed">Red</label><input id="photoRed" type="range" min="0" max="255" step="1" value="255"><input id="photoRedValue" type="number" min="0" max="255" step="1" value="255" aria-label="Red value, 0 to 255"></div>
+       <div class="photo-adjustment-row"><label for="photoGreen">Green</label><input id="photoGreen" type="range" min="0" max="255" step="1" value="255"><input id="photoGreenValue" type="number" min="0" max="255" step="1" value="255" aria-label="Green value, 0 to 255"></div>
+       <div class="photo-adjustment-row"><label for="photoBlue">Blue</label><input id="photoBlue" type="range" min="0" max="255" step="1" value="255"><input id="photoBlueValue" type="number" min="0" max="255" step="1" value="255" aria-label="Blue value, 0 to 255"></div>
+     </div>
+     <div id="photoHsbControls" class="photo-adjustments" role="group" aria-label="HSB sliders">
+       <div class="photo-adjustment-row"><label for="photoHue">Hue</label><input id="photoHue" type="range" min="0" max="360" step="1" value="0"><input id="photoHueValue" type="number" min="0" max="360" step="1" value="0" aria-label="Hue value in degrees, 0 to 360"></div>
+       <div class="photo-adjustment-row"><label for="photoSaturation">Saturation</label><input id="photoSaturation" type="range" min="0" max="100" step="1" value="0"><input id="photoSaturationValue" type="number" min="0" max="100" step="1" value="0" aria-label="Saturation percentage, 0 to 100"></div>
+       <div class="photo-adjustment-row"><label for="photoBrightness">Brightness</label><input id="photoBrightness" type="range" min="0" max="100" step="1" value="64"><input id="photoBrightnessValue" type="number" min="0" max="100" step="1" value="64" aria-label="Brightness percentage, 0 to 100"></div>
      </div>
      <details class="photo-advanced-color"><summary>Precise color (optional)</summary><label>HEX <input id="photoDraftHexInput" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="#FFFFFF" aria-label="Draft color HEX"></label></details>
      <p id="photoDraftWarning" class="photo-draft-warning">Changing the draft updates the disc preview immediately. Apply accepts it; Cancel keeps your previous color and edits.</p>
@@ -680,8 +687,8 @@ body.calibration-mode #du-lighting{display:none!important}
 
   <details id="researchDrawer" class="consumer-research"><summary>Evidence & limitations</summary><div class="research-drawer-body">
 <details id="evidencePanel" class="evidence-panel client-only">
-    <summary>Real-world evidence and dyeing cautions — 85 provisional observations</summary>
-    <div class="evidence-info">Provisional source-linked evidence: 85 records across 65 source URLs, including repeated authors and overlapping reports. Many lack controlled photographs, exact recipes or quantified outcomes. These are not 85 independent studies or measured RGB targets. Links open the original sources.</div>
+    <summary>Real-world evidence and dyeing cautions — 86 provisional observations</summary>
+    <div class="evidence-info">Provisional source-linked evidence: 86 records across 66 source URLs, including repeated authors and overlapping reports. Many lack controlled photographs, exact recipes or quantified outcomes. These are not one independent study per record or measured RGB targets. Links open the original sources.</div>
     <div id="evidenceWarnings"></div>
     <div id="evidenceLinks"></div>
   </details>

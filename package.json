@@ -10,7 +10,7 @@
     "release:admit": "node scripts/validate-release-receipt.mjs",
     "release:verify": "node scripts/validate-release-receipt.mjs",
     "test:m2": "rm -rf dist && tsc && mkdir -p dist/tests/fixtures dist/app/src/lib && cp tests/fixtures/events.json dist/tests/fixtures/events.json && cp app/src/lib/eventCalendar.mjs dist/app/src/lib/eventCalendar.mjs && node --test dist/tests/*.test.js",
-    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && npm run test:events-adapters && npm run test:events-sql && npm run test:events-preimage",
+    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && npm run test:events-adapters && npm run test:events-sql && npm run test:events-preimage && node --test tests/package-dye-studio-candidate.test.mjs",
     "test:events-sql": "node --test tests/event-schema-migration-runtime.test.mjs tests/event-p0-rollback-runtime.test.mjs",
     "release:audit-workflows": "node scripts/audit-release-workflows.mjs"
   },
