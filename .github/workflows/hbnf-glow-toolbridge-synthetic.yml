@@ -1,0 +1,27 @@
+name: HBNF Glow cleanup connector-bridge synthetic-only qualification
+on:
+  push:
+    branches:
+      - review/hbnf-glow-cleanup-toolbridge-20261102
+permissions:
+  contents: read
+jobs:
+  bridge-synthetic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Execute ONLY connector bridge synthetic-contract tests
+        env:
+          HBNF_GLOW_CLEANUP_EXECUTE: '0'
+        run: |
+          set -euo pipefail
+          node --test tests/hbnf-glow-cleanup-connected-toolbridge.test.mjs
+          git diff --check HEAD^ HEAD
+          git rev-parse HEAD
