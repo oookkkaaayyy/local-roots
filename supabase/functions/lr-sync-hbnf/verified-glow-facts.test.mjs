@@ -29,7 +29,7 @@ test("verified listings expose only confirmed doubles, course, time, and fee fac
   assert.equal(Object.hasOwn(event, "rounds_text"), false);
 });
 
-test("each individually listed future occurrence retains its own UDisc evidence URL and verified facts", () => {
+test("each individually verified occurrence retains its own UDisc evidence URL and verified facts", () => {
   assert.deepEqual(knownVerifiedGlowDates(), [
     "2026-11-03", "2026-11-10", "2026-11-17", "2026-11-24", "2026-12-01", "2026-12-08", "2026-12-15", "2026-12-22",
   ]);
@@ -44,6 +44,9 @@ test("each individually listed future occurrence retains its own UDisc evidence 
     assert.equal(event.entry_fee_amount, 10);
     assert.deepEqual(event.fee_breakdown.map(({ label, amount }) => [label, amount]), [["Play", 7], ["Ace contribution", 3]]);
     assert.match(event.official_url, /^https:\/\/udisc\.com\/events\/hb-glow-doubles-[A-Za-z0-9]+\/about$/);
+    assert.equal(event.field_evidence.official_url.status, "verified");
+    assert.equal(event.field_evidence.official_url.source_url, event.official_url);
+    assert.equal(event.field_evidence.start_time_local.verified_at, "2026-11-02T06:55:00Z");
     assert.equal(event.registration_url, undefined);
   }
   const later = verifiedGlowFacts("2026-12-29");
