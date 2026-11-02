@@ -1,0 +1,25 @@
+name: HBNF poller Cloudflare adapter mock qualification
+on:
+  push:
+    branches:
+      - review/hbnf-udisc-poller-cloudflare-adapter-20261102
+permissions:
+  contents: read
+jobs:
+  offline-cloudflare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Qualify exact poller gate plus authenticated-adapter simulation
+        run: |
+          set -euo pipefail
+          node --test tests/hbnf-udisc-poller-config-gate.test.mjs tests/hbnf-udisc-poller-cloudflare-adapter.test.mjs
+          git diff --check HEAD^ HEAD
+          git rev-parse HEAD
