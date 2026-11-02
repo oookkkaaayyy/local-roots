@@ -6,24 +6,41 @@ const VERIFIED_NOVEMBER_GLOW = Object.freeze({
   "2026-11-17": "https://udisc.com/events/hb-glow-doubles-C1mFl8/about",
 });
 
+// The organizer-managed UDisc league schedule exposes these occurrence pages.
+// Their public listing states the occurrence time, course, doubles format,
+// individual sign-up, and the $10 breakdown. Keep each occurrence URL explicit
+// so the sync never manufactures event links from a pattern.
+const VERIFIED_FUTURE_GLOW = Object.freeze({
+  "2026-11-24": "https://udisc.com/events/hb-glow-doubles-wHLqmp/about",
+  "2026-12-01": "https://udisc.com/events/hb-glow-doubles-1ff5RM/about",
+  "2026-12-08": "https://udisc.com/events/hb-glow-doubles-Jxxe98/about",
+  "2026-12-15": "https://udisc.com/events/hb-glow-doubles-ZhDgeK/about",
+  "2026-12-22": "https://udisc.com/events/hb-glow-doubles-fFa7Lz/about",
+});
+
+// The earlier issue's permission record limited the first implementation to
+// three listings. These five new organizer-managed pages were independently
+// opened and checked on 2026-11-02; keep their evidence date separate.
+const FUTURE_VERIFIED_AT = "2026-11-02T06:55:00Z";
+
 const COURSE_URL = "https://udisc.com/courses/huntington-beach-central-park-A9Fe";
 // Issue #161 records the independent verification of these organizer listings.
 // Use that dated evidence boundary so a later sync cannot renew manual facts.
 const VERIFIED_AT = "2026-11-01T03:25:36Z";
 
-function evidenceFor(fields, eventUrl) {
+function evidenceFor(fields, eventUrl, verifiedAt, notes) {
   return Object.fromEntries(fields.map((field) => [field, {
     status: "verified",
     source_key: "hbnf_udisc_manual",
     source_url: field === "course_url" ? COURSE_URL : eventUrl,
-    verified_at: VERIFIED_AT,
+    verified_at: verifiedAt,
     refresh_on_sync: false,
-    notes: "Individually verified organizer listing documented in issue #161; sync does not refresh this manual evidence.",
+    notes,
   }]));
 }
 
 export function verifiedGlowFacts(date) {
-  const evidenceUrl = VERIFIED_NOVEMBER_GLOW[date];
+  const evidenceUrl = VERIFIED_NOVEMBER_GLOW[date] ?? VERIFIED_FUTURE_GLOW[date];
   if (!evidenceUrl) {
     return {
       name: "HB Night Flyers Glow",
@@ -59,10 +76,17 @@ export function verifiedGlowFacts(date) {
       "name", "event_type", "format", "format_details", "county", "city", "course_name", "course_id", "course_url",
       "start_time_local", "end_time_local", "timezone", "entry_fee_amount", "entry_fee_currency",
     "entry_fee_unit", "fee_breakdown", "additional_fees_note", "official_url",
-    ], evidenceUrl),
+    ], evidenceUrl, VERIFIED_NOVEMBER_GLOW[date] ? VERIFIED_AT : FUTURE_VERIFIED_AT,
+      VERIFIED_NOVEMBER_GLOW[date]
+        ? "Individually verified organizer listing documented in issue #161; sync does not refresh this manual evidence."
+        : "Individually verified organizer-managed UDisc event page on 2026-11-02; sync does not refresh this manual evidence."),
   };
 }
 
 export function knownNovemberGlowDates() {
   return Object.keys(VERIFIED_NOVEMBER_GLOW);
+}
+
+export function knownVerifiedGlowDates() {
+  return [...Object.keys(VERIFIED_NOVEMBER_GLOW), ...Object.keys(VERIFIED_FUTURE_GLOW)];
 }
