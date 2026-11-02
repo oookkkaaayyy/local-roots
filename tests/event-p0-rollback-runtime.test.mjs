@@ -133,6 +133,27 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     assert.equal((await db.query("select notes from public.lr_event_field_evidence where id=$1",[conflict.id])).rows[0].notes,"concurrent organizer clarification");
     await db.query("update public.lr_event_field_evidence set notes=$2,updated_at=$3 where id=$1",[conflict.id,conflict.notes,conflict.updated_at]);
 
+    // A later evidence-field edit must advance updated_at even if the SQL
+    // writer does not include that column. The reverse must refuse to erase it.
+    const evidence=(await db.query("select id,notes,updated_at from public.lr_event_field_evidence where source_candidate_id is not null order by id limit 1")).rows[0];
+    assert.ok(evidence,"reconciliation must create source-linked evidence");
+    await db.query("update public.lr_event_field_evidence set notes='concurrent source evidence clarification',updated_at='2000-01-01'::timestamptz where id=$1",[evidence.id]);
+    const changedEvidence=(await db.query("select notes,updated_at from public.lr_event_field_evidence where id=$1",[evidence.id])).rows[0];
+    assert.notEqual(new Date(changedEvidence.updated_at).getUTCFullYear(),2000,"trigger must replace supplied stale timestamp");
+    await assert.rejects(db.exec(reverse),/field evidence changed after reconciliation/);
+    await db.exec("rollback").catch(()=>{});
+    assert.equal((await db.query("select notes from public.lr_event_field_evidence where id=$1",[evidence.id])).rows[0].notes,"concurrent source evidence clarification");
+    await db.exec("alter table public.lr_event_field_evidence disable trigger lr_event_field_evidence_touch_updated_at;");
+    await db.query("update public.lr_event_field_evidence set notes=$2,updated_at=$3 where id=$1",[evidence.id,evidence.notes,evidence.updated_at]);
+    await db.exec("alter table public.lr_event_field_evidence enable trigger lr_event_field_evidence_touch_updated_at;");
+
+    // A disabled audit trigger invalidates the rollback proof, even without
+    // a visible edit. It cannot silently be treated as an intact baseline.
+    await db.exec("alter table public.lr_event_field_evidence disable trigger lr_event_field_evidence_touch_updated_at;");
+    await assert.rejects(db.exec(reverse),/field evidence timestamp trigger missing or disabled/);
+    await db.exec("rollback").catch(()=>{});
+    await db.exec("alter table public.lr_event_field_evidence enable trigger lr_event_field_evidence_touch_updated_at;");
+
     const currentEvents=(await db.query("select * from public.lr_events")).rows;
     const oldById=new Map(snapshot.tables.lr_events.map(x=>[x.id,x]));
     const allowed=new Set(["timezone","format","updated_at","last_changed_at","last_verified_at","venue_address","course_id","course_url","start_time_local","checkin_time_local","end_time_local","start_time_note","format_details","entry_fee_amount","entry_fee_currency","entry_fee_unit","fee_breakdown","additional_fees_note","registration_opens_at","registration_closes_at","registration_capacity","registration_available","official_url"]);

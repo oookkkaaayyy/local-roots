@@ -109,6 +109,13 @@ alter table public.lr_event_field_evidence enable row level security;
 revoke all on public.lr_event_field_evidence from public,anon,authenticated;
 grant all on public.lr_event_field_evidence to service_role;
 
+-- All evidence updates must advance the timestamp used by the fail-closed
+-- source-reconciliation rollback. Without this trigger, changing notes or
+-- status directly can evade the reverse's updated_at drift check.
+create trigger lr_event_field_evidence_touch_updated_at
+  before update on public.lr_event_field_evidence
+  for each row execute function public.lr_touch_updated_at();
+
 insert into public.lr_sources(key,name,source_type,base_url,access_method,permission_basis,enabled,authoritative_fields,notes)
 values(
   'hbnf_udisc_manual','HBNF organizer listings (manual verification)','manual','https://udisc.com',

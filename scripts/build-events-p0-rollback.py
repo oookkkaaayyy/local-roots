@@ -106,6 +106,7 @@ def make_rollback_sql(snapshot: dict, definitions: dict, migration_700: str, mig
         "'source_rechecked_at','2026-11-01T05:58:03Z'::timestamptz,'source_section','EVENTS'))) "
         "else to_jsonb(es) is distinct from to_jsonb(jsonb_populate_record(null::public.lr_event_sources,p.row_data)) end)) "
         "then raise exception 'rollback refused: a scoped source link changed after reconciliation'; end if;",
+        "if not exists(select 1 from pg_catalog.pg_trigger t join pg_catalog.pg_class c on c.oid=t.tgrelid join pg_catalog.pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='lr_event_field_evidence' and t.tgname='lr_event_field_evidence_touch_updated_at' and t.tgenabled='O' and not t.tgisinternal) then raise exception 'rollback refused: field evidence timestamp trigger missing or disabled'; end if;",
         "if exists(select 1 from public.lr_event_field_evidence ev join public.lr_source_candidates c on c.id=ev.source_candidate_id join public.lr_source_runs r on r.id=c.source_run_id where r.parser_version='schedule-field-reconciliation-v1' and ev.updated_at<>r.created_at) then raise exception 'rollback refused: field evidence changed after reconciliation'; end if;",
         "if exists(select 1 from public.lr_event_sources es join public.lr_sources s on s.id=es.source_id where s.key='hbnf_udisc_manual') or exists(select 1 from public.lr_source_runs r join public.lr_sources s on s.id=r.source_id where s.key='hbnf_udisc_manual') or exists(select 1 from public.lr_source_candidates c join public.lr_sources s on s.id=c.source_id where s.key='hbnf_udisc_manual') then raise exception 'rollback refused: new HBNF source has acquired dependent records'; end if;",
         "if (select count(*) from public.lr_event_field_evidence) <> (select count(*) from public.lr_event_field_evidence ev where ev.source_candidate_id in (select c.id from public.lr_source_candidates c join public.lr_source_runs r on r.id=c.source_run_id where r.parser_version='schedule-field-reconciliation-v1')) + 1 then raise exception 'rollback refused: evidence table contains rows outside this release'; end if;",
@@ -261,6 +262,8 @@ def make_inventory(snapshot: dict, migration_700: str, migration_800: str, defin
     require(len(selected) == len(selected_ids) == len(event_preimages), "schedule source/event preimages not one-to-one")
     require(Counter(r["source_id"] for r in selected) == {oak: 34, crpd: 3},
             "37-row schedule reconciliation source split does not match tested candidate")
+    require("create trigger lr_event_field_evidence_touch_updated_at" in migration_700.lower(),
+            "evidence rollback timestamp trigger missing from migration")
     require("schedule-field-reconciliation-v1" in migration_800,
             "reconciliation provenance marker absent")
     require("lr_process_candidate" in migration_800 and "lr_apply_authoritative_candidate" in migration_800,
@@ -278,6 +281,7 @@ def make_inventory(snapshot: dict, migration_700: str, migration_800: str, defin
             "overwritten_functions_with_exact_old_definitions": overwritten,
             "new_functions_to_remove": new_functions,
             "new_event_evidence_table": "lr_event_field_evidence",
+            "new_triggers": ["lr_event_field_evidence_touch_updated_at"],
             "new_event_field_view": "lr_event_field_status",
             "new_indexes": ["lr_event_field_evidence_source_key", "lr_event_field_evidence_manual_key",
                             "lr_event_field_evidence_expiry_idx", "lr_event_field_review_dedupe_idx"],

@@ -104,6 +104,12 @@ class RecoveryInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "already existed in baseline"):
             module.make_inventory(snapshot, M700, M800, definitions)
 
+    def test_requires_evidence_update_guard_trigger(self):
+        snapshot, definitions = fixture()
+        altered = M700.replace("create trigger lr_event_field_evidence_touch_updated_at", "-- timestamp guard missing")
+        with self.assertRaisesRegex(ValueError, "evidence rollback timestamp trigger missing"):
+            module.make_inventory(snapshot, altered, M800, definitions)
+
     def test_fails_if_future_migration_scope_unknown(self):
         snapshot, definitions = fixture()
         altered = M700 + "\nalter table public.lr_unsupported add column if not exists mystery text;\n"
