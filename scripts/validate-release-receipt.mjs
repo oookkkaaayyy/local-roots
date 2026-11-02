@@ -295,10 +295,13 @@ async function verifyPR156CandidateManifest(receipt, root, packageFile) {
   let manifest;
   try { manifest = JSON.parse(await readFile(path.resolve(root, manifestRef.path), 'utf8')); }
   catch { throw new Error('candidate manifest must be valid JSON'); }
+  let receiptToolchain;
+  try { receiptToolchain = JSON.parse(receipt.build.toolchain); }
+  catch { receiptToolchain = receipt.build.toolchain; }
   if (manifest.releaseId !== receipt.releaseId || manifest.repository !== receipt.source.repository ||
       manifest.sourceCommit !== receipt.source.commit || manifest.archiveSha256 !== packageFile.sha256 ||
       manifest.archiveBytes !== packageFile.bytes || manifest.command !== receipt.build.command ||
-      manifest.toolchain !== receipt.build.toolchain || manifest.lockfileSha256 !== receipt.build.lockfileSha256 ||
+      !sameCanonical(manifest.toolchain, receiptToolchain) || manifest.lockfileSha256 !== receipt.build.lockfileSha256 ||
       !Array.isArray(manifest.files) || manifest.files.length === 0 || manifest.fileCount !== manifest.files.length) {
     throw new Error('candidate manifest must bind the exact release, source, build and archived candidate bytes');
   }
