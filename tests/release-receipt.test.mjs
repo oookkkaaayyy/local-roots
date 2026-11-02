@@ -735,6 +735,23 @@ test('PR #156 cannot skip same-manifest post-deployment release verification', a
   } finally { await f.cleanup(); }
 });
 
+test('candidate manifest structured toolchain matches its serialized receipt value', async () => {
+  const f = await standingCloudflarePRFixture(247);
+  try {
+    f.receipt.build.toolchain = JSON.stringify({ node: 'v24.18.0', npm: '11.16.0' });
+    const manifestPath = path.join(f.root, f.receipt.packageManifest.path);
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    manifest.toolchain = { node: 'v24.18.0', npm: '11.16.0' };
+    const bytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\\n');
+    await writeFile(manifestPath, bytes);
+    await writeFile(path.join(f.root, f.receipt.packageManifest.downloadBack.path), bytes);
+    Object.assign(f.receipt.packageManifest, { bytes: bytes.length, sha256: hash(bytes) });
+    Object.assign(f.receipt.packageManifest.downloadBack, { bytes: bytes.length, sha256: hash(bytes) });
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(result.phase, 'admission');
+  } finally { await f.cleanup(); }
+});
+
 test('standing Cloudflare production authorization admits PR #159 and a differently numbered future eligible PR', async () => {
   for (const pr of [159, 247]) {
     const f = await standingCloudflarePRFixture(pr);
