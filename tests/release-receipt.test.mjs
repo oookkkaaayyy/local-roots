@@ -81,7 +81,7 @@ test('candidate packager hashes every build file into the exact archived ZIP', a
     const html = Buffer.from('<main>candidate</main>');
     await writeFile(path.join(dist, 'index.html'), html);
     const script = path.resolve('scripts/package-dye-studio-candidate.mjs');
-    const run = spawnSync(process.execPath, [script, dist, output, 'a'.repeat(40)], { encoding: 'utf8' });
+    const run = spawnSync(process.execPath, [script, dist, output, 'a'.repeat(40), '156'], { encoding: 'utf8' });
     assert.equal(run.status, 0, run.stderr);
     const manifest = JSON.parse(await readFile(path.join(output, 'manifest.json'), 'utf8'));
     const archive = await readFile(path.join(output, 'candidate.zip'));
@@ -97,25 +97,36 @@ test('candidate packager hashes every build file into the exact archived ZIP', a
     const pr159Manifest = JSON.parse(await readFile(path.join(pr159Output, 'manifest.json'), 'utf8'));
     assert.equal(pr159Manifest.releaseId, 'local-roots-dye-photo-pr-159-2026-10-30-r1');
     assert.equal(pr159Manifest.sourceCommit, 'b'.repeat(40));
-    const rejectedOutput = path.join(root, 'capsule-pr157');
-    const rejected = spawnSync(process.execPath, [script, dist, rejectedOutput, 'c'.repeat(40), '157'], { encoding: 'utf8' });
-    assert.notEqual(rejected.status, 0, 'unapproved PR cannot receive a release identity');
+
+    for (const [prNumber, sourceCommit] of [['166', 'c'.repeat(40)], ['907', 'd'.repeat(40)]]) {
+      const candidateOutput = path.join(root, `capsule-pr${prNumber}`);
+      const candidate = spawnSync(process.execPath, [script, dist, candidateOutput, sourceCommit, prNumber], { encoding: 'utf8' });
+      assert.equal(candidate.status, 0, candidate.stderr);
+      const candidateManifest = JSON.parse(await readFile(path.join(candidateOutput, 'manifest.json'), 'utf8'));
+      assert.ok(candidateManifest.releaseId.startsWith(`local-roots-dye-studio-pr-${prNumber}-`));
+      assert.equal(candidateManifest.sourceCommit, sourceCommit);
+    }
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
-test('PR #159 candidate packaging binds the manifest and artifact name to the exact PR head', async () => {
+test('Dye Studio candidate packaging is generic and binds the exact PR head', async () => {
   const workflow = await readFile(path.resolve('.github/workflows/ci.yml'), 'utf8');
-  const start = workflow.indexOf('name: Package exact PR #159 photo workflow build for release evidence');
-  const end = workflow.indexOf('\n      - name:', start + 1);
-  assert.ok(start >= 0 && end > start);
-  const packaging = workflow.slice(start, end);
-  assert.match(packaging, /\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
-  assert.doesNotMatch(packaging, /\$GITHUB_SHA|\$\{\{ github\.sha \}\}/,
+  assert.ok(workflow.includes("startsWith(github.head_ref, 'dye-studio/')"));
+  assert.ok(workflow.includes('dye-studio-candidate-package:'));
+  assert.ok(workflow.includes('needs: [release-evidence, test]'));
+  assert.ok(workflow.includes('name: Checkout exact PR head'));
+  assert.ok(workflow.includes('ref: ${{ github.event.pull_request.head.sha }}'));
+  assert.ok(workflow.includes('name: Build exact PR head'));
+  assert.ok(workflow.includes('PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}'));
+  assert.ok(workflow.includes('PR_NUMBER: ${{ github.event.pull_request.number }}'));
+  assert.ok(workflow.includes('node scripts/package-dye-studio-candidate.mjs app/dist release-capsule "$PR_HEAD_SHA" "$PR_NUMBER"'));
+  assert.ok(workflow.includes('dye-studio-candidate-pr${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}'));
+  assert.doesNotMatch(workflow, /Verify merge tree matches the exact Dye Studio PR head/,
+    'a synthetic merge commit must not be compared with or packaged as the PR head');
+  assert.doesNotMatch(workflow, /pull_request\\.number == (156|159)/,
+    'candidate packaging must not require per-PR workflow conditions');
+  assert.doesNotMatch(workflow, /\\$GITHUB_SHA|\\$\\{\\{ github\\.sha \\}\\}/,
     'synthetic pull-request merge SHA must not be recorded as the candidate source');
-  const artifactStart = workflow.indexOf('name: Retain PR #159 candidate archive and manifest');
-  const artifactEnd = workflow.indexOf('\n      - name:', artifactStart + 1);
-  const artifact = workflow.slice(artifactStart, artifactEnd < 0 ? workflow.length : artifactEnd);
-  assert.match(artifact, /dye-photo-pr159-candidate-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
 });
 
 async function nativeRollbackFixture() {
@@ -276,9 +287,10 @@ async function nativeRollbackPR156Fixture() {
   return f;
 }
 
-async function standingCloudflarePRFixture(prNumber, releaseId = `local-roots-dye-photo-pr-${prNumber}-2026-10-30-r1`) {
+async function standingCloudflarePRFixture(prNumber, releaseId = null) {
   const f = await nativeRollbackPR156Fixture();
   const sourceCommit = f.receipt.source.commit;
+  releaseId ??= `local-roots-dye-studio-pr-${prNumber}-${sourceCommit.slice(0, 12)}-${f.receipt.package.sha256.slice(0, 12)}-r1`;
   f.receipt.releaseId = releaseId;
   f.receipt.source.pullRequest = prNumber;
   f.receipt.source.ref = `refs/pull/${prNumber}/head`;
@@ -708,6 +720,30 @@ test('PR #156 candidate manifest and provider configuration evidence cannot over
   } finally { await f.cleanup(); }
 });
 
+test('native rollback admission accepts a complete baseline inventory with truthful candidate asset mismatches', async () => {
+  const f = await nativeRollbackPR156Fixture();
+  try {
+    const evidence = f.receipt.baseline.publicAssetEvidence;
+    const recordPath = path.join(f.root, evidence.path);
+    const record = JSON.parse(await readFile(recordPath, 'utf8'));
+    record.publicAssetCount = 3;
+    record.matchedCandidateAssetCount = 2;
+    record.publicAssets.push(
+      { path: 'assets/app.js.map', bytes: 12, sha256: 'a'.repeat(64) },
+      { path: 'assets/routes.js.map', bytes: 14, sha256: 'b'.repeat(64) },
+    );
+    const bytes = Buffer.from(JSON.stringify(record, null, 2) + '\n');
+    await writeFile(recordPath, bytes);
+    await writeFile(path.join(f.root, evidence.downloadBack.path), bytes);
+    Object.assign(evidence, { bytes: bytes.length, sha256: hash(bytes), publicAssetCount: 3 });
+    Object.assign(evidence.downloadBack, { bytes: bytes.length, sha256: hash(bytes) });
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(result.phase, 'admission');
+    assert.equal(result.admissionManifest.baseline.publicAssetCount, 3);
+    assert.match(result.admissionManifest.baseline.publicAssetEvidenceSha256, /^[a-f0-9]{64}$/);
+  } finally { await f.cleanup(); }
+});
+
 test('PR #156 admission manifest cannot be replayed for a changed candidate and closeout is mandatory', async () => {
   const f = await nativeRollbackPR156Fixture();
   try {
@@ -796,6 +832,25 @@ test('standing Cloudflare authorization requires fresh authenticated eligible ba
     try { mutate(f.receipt); await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' })); }
     finally { await f.cleanup(); }
   }
+});
+
+test('standing Cloudflare candidate release IDs bind PR, source SHA, and package SHA', async () => {
+  const f = await standingCloudflarePRFixture(166);
+  try {
+    const accepted = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(accepted.releaseId, f.receipt.releaseId);
+    for (const releaseId of [
+      f.receipt.releaseId.replace('-pr-166-', '-pr-167-'),
+      f.receipt.releaseId.replace(/-[a-f0-9]{12}-r1$/, '-ffffffffffff-r1'),
+      'local-roots-dye-studio-pr-166-ffffffffffff-eeeeeeeeeeee-r1',
+    ]) {
+      const invalid = structuredClone(f.receipt);
+      invalid.releaseId = releaseId;
+      invalid.recoveryMode.scope.releaseId = releaseId;
+      invalid.packageManifest.path = f.receipt.packageManifest.path;
+      await assert.rejects(validateReleaseReceipt(invalid, f.root, { phase: 'admission' }), /release ID bound to its PR, candidate commit, and package|packageManifest must bind/);
+    }
+  } finally { await f.cleanup(); }
 });
 
 test('standing Cloudflare closeout verifies the actual PR head, squash tree, provider source and same admission', async () => {

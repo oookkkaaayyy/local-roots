@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPOSITORY = 'oookkkaaayyy/local-roots';
-const RELEASE_IDS = new Map([
+const LEGACY_RELEASE_IDS = new Map([
   ['156', 'local-roots-dye-studio-pr-156-2026-10-30-r1'],
   ['159', 'local-roots-dye-photo-pr-159-2026-10-30-r1'],
 ]);
@@ -28,11 +28,19 @@ async function listFiles(root, current = root) {
   return result;
 }
 
+export function releaseIdFor(pullRequest, sourceCommit, archiveSha256) {
+  if (!/^\d+$/.test(String(pullRequest)) || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '') ||
+      !/^[a-f0-9]{64}$/i.test(archiveSha256 ?? '')) {
+    throw new Error('release identity requires a numeric PR, full source commit, and candidate archive SHA-256');
+  }
+  const legacy = LEGACY_RELEASE_IDS.get(String(pullRequest));
+  return legacy ?? `local-roots-dye-studio-pr-${pullRequest}-${sourceCommit.slice(0, 12).toLowerCase()}-${archiveSha256.slice(0, 12).toLowerCase()}-r1`;
+}
+
 async function main() {
-  const [distArg, outputArg, sourceCommit, pullRequest = '156'] = process.argv.slice(2);
-  const releaseId = RELEASE_IDS.get(pullRequest);
-  if (!distArg || !outputArg || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '') || !releaseId) {
-    throw new Error('usage: package-dye-studio-candidate.mjs <dist-directory> <output-directory> <full-source-commit> [approved-pr: 156|159]');
+  const [distArg, outputArg, sourceCommit, pullRequest] = process.argv.slice(2);
+  if (!distArg || !outputArg || !/^[a-f0-9]{40}$/i.test(sourceCommit ?? '') || !/^\d+$/.test(pullRequest ?? '')) {
+    throw new Error('usage: package-dye-studio-candidate.mjs <dist-directory> <output-directory> <full-source-commit> <pull-request-number>');
   }
   const dist = path.resolve(distArg);
   const output = path.resolve(outputArg);
@@ -47,6 +55,8 @@ async function main() {
   const archive = await readFile(archivePath);
   const lockfile = await readFile(path.resolve(dist, '../package-lock.json')).catch(async () =>
     readFile(path.resolve(dist, '../../app/package-lock.json')));
+  const archiveSha256 = sha256(archive);
+  const releaseId = releaseIdFor(pullRequest, sourceCommit, archiveSha256);
   const manifest = {
     releaseId,
     repository: REPOSITORY,
@@ -54,7 +64,7 @@ async function main() {
     command: 'npm run build (working-directory: app)',
     toolchain: `GitHub Actions ${os.platform()} ${os.release()}; Node ${process.version}; npm ${execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim()}`,
     lockfileSha256: sha256(lockfile),
-    archiveSha256: sha256(archive),
+    archiveSha256,
     archiveBytes: archive.length,
     fileCount: files.length,
     files,
@@ -63,7 +73,9 @@ async function main() {
   process.stdout.write(`Packaged ${files.length} build files; candidate.zip sha256=${manifest.archiveSha256} bytes=${manifest.archiveBytes}\n`);
 }
 
-main().catch(error => {
-  process.stderr.write(`${error.stack ?? error}\n`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch(error => {
+    process.stderr.write(`${error.stack ?? error}\n`);
+    process.exitCode = 1;
+  });
+}

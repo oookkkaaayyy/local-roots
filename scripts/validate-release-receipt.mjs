@@ -125,9 +125,17 @@ function requireDyeStudioNativeRollbackScope(receipt) {
     maxProviderEvidenceAgeMs: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.maxProviderEvidenceAgeMs,
   } : null);
   if (!expected) throw new Error('Cloudflare native rollback is not authorized for this release identity and scope');
-  if (standing && (!/^local-roots-dye-[a-z0-9-]+-pr-\d+-\d{4}-\d{2}-\d{2}-r\d+$/i.test(receipt.releaseId) ||
-      !Number.isInteger(receipt.source?.pullRequest) || receipt.source.pullRequest < 1)) {
-    throw new Error('standing Cloudflare authorization requires a unique Local Roots release ID bound to a positive PR number');
+  if (standing) {
+    const datedId = /^local-roots-dye-[a-z0-9-]+-pr-(\d+)-\d{4}-\d{2}-\d{2}-r\d+$/i.exec(receipt.releaseId);
+    const candidateId = /^local-roots-dye-studio-pr-(\d+)-([a-f0-9]{12})-([a-f0-9]{12})-r1$/i.exec(receipt.releaseId);
+    if (!Number.isInteger(receipt.source?.pullRequest) || receipt.source.pullRequest < 1 ||
+        (!datedId && !candidateId) ||
+        (datedId && Number(datedId[1]) !== receipt.source.pullRequest) ||
+        (candidateId && (Number(candidateId[1]) !== receipt.source.pullRequest ||
+          candidateId[2].toLowerCase() !== receipt.source.commit?.slice(0, 12).toLowerCase() ||
+          candidateId[3].toLowerCase() !== receipt.package?.sha256?.slice(0, 12).toLowerCase()))) {
+      throw new Error('standing Cloudflare authorization requires a unique Local Roots release ID bound to its PR, candidate commit, and package');
+    }
   }
   const checks = [
     [receipt.releaseId, expected.releaseId, 'releaseId'],
@@ -263,11 +271,13 @@ async function verifyPR156PublicAssetEvidence(receipt, root, baseline) {
   if (record.provider !== 'cloudflare-pages' || record.project !== 'local-roots' || record.target !== 'production' ||
       record.deploymentId !== baseline.identity || record.sourceCommit !== baseline.sourceCommit ||
       !Number.isInteger(record.publicAssetCount) || record.publicAssetCount <= 0 ||
-      !Number.isInteger(record.matchedPublicAssetCount) || record.matchedPublicAssetCount !== record.publicAssetCount ||
+      !Number.isInteger(record.matchedCandidateAssetCount ?? record.matchedPublicAssetCount) ||
+      (record.matchedCandidateAssetCount ?? record.matchedPublicAssetCount) < 0 ||
+      (record.matchedCandidateAssetCount ?? record.matchedPublicAssetCount) > record.publicAssetCount ||
       evidence.publicAssetCount !== record.publicAssetCount ||
       !Array.isArray(record.publicAssets) || record.publicAssets.length !== record.publicAssetCount ||
       record.publicAssets.some(asset => !asset.path || !Number.isInteger(asset.bytes) || asset.bytes <= 0 || !SHA256.test(asset.sha256))) {
-    throw new Error('public asset readback must bind the baseline deployment and prove every listed public asset hash and size');
+    throw new Error('public asset readback must bind the baseline deployment, report candidate matches truthfully, and prove every listed public asset hash and size');
   }
   if (!configuration || configuration.disposition !== 'provider-managed-not-public' || configuration.publicByteIdentity !== 'unavailable' ||
       configuration.publiclyReadable !== false || !Array.isArray(configuration.paths) ||

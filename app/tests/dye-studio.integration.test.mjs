@@ -858,10 +858,11 @@ test('published evidence counts match actual entries and distinct source URLs', 
   };
   const entries = [...records('EVIDENCE_OBSERVATIONS'), ...records('FIELD_CASES')];
   const distinctUrls = new Set(entries.map(row => row.sourceUrl));
-  assert.equal(entries.length, 85);
-  assert.equal(distinctUrls.size, 65);
+  assert.equal(entries.length, 86);
+  assert.equal(distinctUrls.size, 66);
   assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
   assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
+  assert.match(studioHtml,/These are not one independent study per record or measured RGB targets/);
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
   assert.match(studioScript, /ALL_DYE_EVIDENCE\.filter\(o=>selected\.some\(d=>evidenceDyeFamilyMatches/);
   assert.doesNotMatch(studioHtml, /includes the user-provided before\/after photos/);
@@ -974,7 +975,7 @@ test('source quality matrix agrees with the live physical-method classifier and 
  const end=studioScript.indexOf('function evidenceScore(',start);
  const classify=Function(studioScript.slice(start,end)+';return classifyObservedProcess')();
  assert.equal(rows.length,85);
- assert.equal(observations.length,85);
+ assert.equal(observations.length,86);
  const byId=new Map(rows.map(x=>[x.id,x]));
  let joined=0;
  for(const obs of observations){
@@ -988,7 +989,7 @@ test('source quality matrix agrees with the live physical-method classifier and 
   assert.match(source.numeric_holdout_eligible,/^NO/,
     'uncontrolled practitioner report cannot become a measured holdout');
  }
- assert.equal(joined,82,'source aliases remain related URL observations, not phantom duplicates');
+ assert.equal(joined,83,'source aliases remain related URL observations, not phantom duplicates');
  const aliased=[
   ['FIELD-AC-01','ISSUE-ACETONE-2022'],
   ['FIELD-AC-05','QA-AC-06'],
@@ -1002,7 +1003,8 @@ test('source quality matrix agrees with the live physical-method classifier and 
  const newOriginals=[
   ['FIELD-CHAMPION-LOTION-01','lotion','Innova Champion Roc3'],
   ['FIELD-STAR-CARIBBEAN-GLUE-01','acetone-glue-bed','White Innova Star'],
-  ['FIELD-MEADOW-UVLOTION-01','mixed-or-compound-process','Death Star stencil']
+  ['FIELD-MEADOW-UVLOTION-01','mixed-or-compound-process','Death Star stencil'],
+  ['OWNER-MATCHED-01','acetone-direct','Innova Proto Glow Champion']
  ];
  for(const [id,method,plastic] of newOriginals){
   const record=observations.find(o=>o.id===id),matrix=byId.get(id);
@@ -1017,6 +1019,7 @@ test('source quality matrix agrees with the live physical-method classifier and 
  assert.equal(observations.find(o=>o.id==='FIELD-CHAMPION-LOTION-01').plasticVerified,true);
  assert.equal(observations.find(o=>o.id==='FIELD-STAR-CARIBBEAN-GLUE-01').plasticVerified,true);
  assert.equal(observations.find(o=>o.id==='FIELD-MEADOW-UVLOTION-01').plasticVerified,false);
+ assert.equal(observations.find(o=>o.id==='OWNER-MATCHED-01').plasticVerified,false);
  // An acetone dissolution step is not itself a direct-acetone application.
  assert.equal(classify('ProChem powder dissolved in an acetone splash, then mixed with lotion in a lotion bed'),'lotion');
  assert.equal(classify('Direct acetone paint brush on Star'), 'acetone-direct');
