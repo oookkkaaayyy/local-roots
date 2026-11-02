@@ -109,7 +109,22 @@ def make_rollback_sql(snapshot: dict, definitions: dict, migration_700: str, mig
         "if exists(select 1 from public.lr_event_field_evidence ev join public.lr_source_candidates c on c.id=ev.source_candidate_id join public.lr_source_runs r on r.id=c.source_run_id where r.parser_version='schedule-field-reconciliation-v1' and ev.updated_at<>r.created_at) then raise exception 'rollback refused: field evidence changed after reconciliation'; end if;",
         "if exists(select 1 from public.lr_event_sources es join public.lr_sources s on s.id=es.source_id where s.key='hbnf_udisc_manual') or exists(select 1 from public.lr_source_runs r join public.lr_sources s on s.id=r.source_id where s.key='hbnf_udisc_manual') or exists(select 1 from public.lr_source_candidates c join public.lr_sources s on s.id=c.source_id where s.key='hbnf_udisc_manual') then raise exception 'rollback refused: new HBNF source has acquired dependent records'; end if;",
         "if (select count(*) from public.lr_event_field_evidence) <> (select count(*) from public.lr_event_field_evidence ev where ev.source_candidate_id in (select c.id from public.lr_source_candidates c join public.lr_source_runs r on r.id=c.source_run_id where r.parser_version='schedule-field-reconciliation-v1')) + 1 then raise exception 'rollback refused: evidence table contains rows outside this release'; end if;",
-        "if not exists(select 1 from public.lr_event_field_evidence ev join public.lr_events e on e.id=ev.event_id where ev.source_candidate_id is null and ev.status='conflicting' and e.slug='billy-goat-fallen-disc-golfers-memorial-2026') then raise exception 'rollback refused: expected baseline conflict evidence row is missing'; end if;",
+        # Migration 700 inserts exactly one Billy Goat conflict-evidence row.
+        # This entire new table is dropped on reverse. An existence-only guard
+        # would silently erase a later organizer/operator edit to that row.
+        # Require its exact migration-authored payload and transaction timestamps.
+        "if (select count(*) from public.lr_event_field_evidence ev "
+        "join public.lr_events e on e.id=ev.event_id "
+        "join public.lr_sources s on s.id=ev.source_id "
+        "where e.slug='billy-goat-fallen-disc-golfers-memorial-2026' "
+        "and s.key='socal_dgc_manual_calendar' and ev.field_name='start_date' "
+        "and ev.source_candidate_id is null and ev.status='conflicting' "
+        "and ev.source_url='https://socaldiscgolfclub.com/upcoming-events/' "
+        "and ev.observed_value=to_jsonb(date '2026-11-23') "
+        "and ev.expires_at is null "
+        "and ev.notes='The current calendar lists this event as 11/23 (Sat) under the 2026 series and 11/28 (Sat) as the 2027 series opener. November 23, 2026 is Monday. Canonical date remains 2026-11-28 pending organizer clarification.' "
+        "and ev.created_at=ev.updated_at and ev.verified_at=ev.created_at)<>1 "
+        "then raise exception 'rollback refused: baseline conflict evidence changed after migration'; end if;",
         "if exists(select 1 from public.lr_sources s where s.key in ('local_roots_submissions','hbnf_internal_schedule','oak_grove_disc_golf_club_direct','crpd_rabbit_flats_direct') and s.updated_at is distinct from (select min(created_at) from public.lr_event_field_evidence where source_candidate_id is null)) then raise exception 'rollback refused: modified source metadata changed after migration'; end if;",
         "end $rollback$;",
     ]
