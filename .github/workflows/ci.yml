@@ -63,22 +63,38 @@ jobs:
         working-directory: app
         run: npm run build
 
-      # D&U candidate packaging is data-driven by the branch convention, not a PR-number exception.
-      - name: Verify merge tree matches the exact Dye Studio PR head
-        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'dye-studio/')
-        env:
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: test "$(git rev-parse HEAD^{tree})" = "$(git rev-parse "$PR_HEAD_SHA^{tree}")"
+  dye-studio-candidate-package:
+    name: Exact Dye Studio candidate archive
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'dye-studio/')
+    needs: [release-evidence, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web dependencies
+        working-directory: app
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build exact PR head
+        working-directory: app
+        run: npm run build
 
       - name: Package exact Dye Studio PR candidate
-        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'dye-studio/')
         env:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: node scripts/package-dye-studio-candidate.mjs app/dist release-capsule "$PR_HEAD_SHA" "$PR_NUMBER"
 
       - name: Retain exact Dye Studio PR candidate archive and manifest
-        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'dye-studio/')
         uses: actions/upload-artifact@v4
         with:
           name: dye-studio-candidate-pr${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}

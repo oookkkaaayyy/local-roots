@@ -112,11 +112,17 @@ test('candidate packager hashes every build file into the exact archived ZIP', a
 test('Dye Studio candidate packaging is generic and binds the exact PR head', async () => {
   const workflow = await readFile(path.resolve('.github/workflows/ci.yml'), 'utf8');
   assert.ok(workflow.includes("startsWith(github.head_ref, 'dye-studio/')"));
-  assert.ok(workflow.includes('name: Verify merge tree matches the exact Dye Studio PR head'));
+  assert.ok(workflow.includes('dye-studio-candidate-package:'));
+  assert.ok(workflow.includes('needs: [release-evidence, test]'));
+  assert.ok(workflow.includes('name: Checkout exact PR head'));
+  assert.ok(workflow.includes('ref: ${{ github.event.pull_request.head.sha }}'));
+  assert.ok(workflow.includes('name: Build exact PR head'));
   assert.ok(workflow.includes('PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}'));
   assert.ok(workflow.includes('PR_NUMBER: ${{ github.event.pull_request.number }}'));
   assert.ok(workflow.includes('node scripts/package-dye-studio-candidate.mjs app/dist release-capsule "$PR_HEAD_SHA" "$PR_NUMBER"'));
   assert.ok(workflow.includes('dye-studio-candidate-pr${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}'));
+  assert.doesNotMatch(workflow, /Verify merge tree matches the exact Dye Studio PR head/,
+    'a synthetic merge commit must not be compared with or packaged as the PR head');
   assert.doesNotMatch(workflow, /pull_request\\.number == (156|159)/,
     'candidate packaging must not require per-PR workflow conditions');
   assert.doesNotMatch(workflow, /\\$GITHUB_SHA|\\$\\{\\{ github\\.sha \\}\\}/,
