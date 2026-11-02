@@ -131,7 +131,12 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     await assert.rejects(db.exec(reverse),/baseline conflict evidence changed after migration/);
     await db.exec("rollback").catch(()=>{});
     assert.equal((await db.query("select notes from public.lr_event_field_evidence where id=$1",[conflict.id])).rows[0].notes,"concurrent organizer clarification");
+    // The migration now enforces updated_at on every evidence write. Restore
+    // this synthetic fixture's exact preimage with its trigger disabled, then
+    // re-enable protection before exercising the rest of the rollback.
+    await db.exec("alter table public.lr_event_field_evidence disable trigger lr_event_field_evidence_touch_updated_at;");
     await db.query("update public.lr_event_field_evidence set notes=$2,updated_at=$3 where id=$1",[conflict.id,conflict.notes,conflict.updated_at]);
+    await db.exec("alter table public.lr_event_field_evidence enable trigger lr_event_field_evidence_touch_updated_at;");
 
     // A later evidence-field edit must advance updated_at even if the SQL
     // writer does not include that column. The reverse must refuse to erase it.
