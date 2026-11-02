@@ -719,6 +719,30 @@ test('PR #156 candidate manifest and provider configuration evidence cannot over
   } finally { await f.cleanup(); }
 });
 
+test('native rollback admission accepts a complete baseline inventory with truthful candidate asset mismatches', async () => {
+  const f = await nativeRollbackPR156Fixture();
+  try {
+    const evidence = f.receipt.baseline.publicAssetEvidence;
+    const recordPath = path.join(f.root, evidence.path);
+    const record = JSON.parse(await readFile(recordPath, 'utf8'));
+    record.publicAssetCount = 3;
+    record.matchedCandidateAssetCount = 2;
+    record.publicAssets.push(
+      { path: 'assets/app.js.map', bytes: 12, sha256: 'a'.repeat(64) },
+      { path: 'assets/routes.js.map', bytes: 14, sha256: 'b'.repeat(64) },
+    );
+    const bytes = Buffer.from(JSON.stringify(record, null, 2) + '\n');
+    await writeFile(recordPath, bytes);
+    await writeFile(path.join(f.root, evidence.downloadBack.path), bytes);
+    Object.assign(evidence, { bytes: bytes.length, sha256: hash(bytes), publicAssetCount: 3 });
+    Object.assign(evidence.downloadBack, { bytes: bytes.length, sha256: hash(bytes) });
+    const result = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(result.phase, 'admission');
+    assert.equal(result.admissionManifest.baseline.publicAssetCount, 3);
+    assert.match(result.admissionManifest.baseline.publicAssetEvidenceSha256, /^[a-f0-9]{64}$/);
+  } finally { await f.cleanup(); }
+});
+
 test('PR #156 admission manifest cannot be replayed for a changed candidate and closeout is mandatory', async () => {
   const f = await nativeRollbackPR156Fixture();
   try {

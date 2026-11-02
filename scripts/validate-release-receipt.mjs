@@ -263,11 +263,13 @@ async function verifyPR156PublicAssetEvidence(receipt, root, baseline) {
   if (record.provider !== 'cloudflare-pages' || record.project !== 'local-roots' || record.target !== 'production' ||
       record.deploymentId !== baseline.identity || record.sourceCommit !== baseline.sourceCommit ||
       !Number.isInteger(record.publicAssetCount) || record.publicAssetCount <= 0 ||
-      !Number.isInteger(record.matchedPublicAssetCount) || record.matchedPublicAssetCount !== record.publicAssetCount ||
+      !Number.isInteger(record.matchedCandidateAssetCount ?? record.matchedPublicAssetCount) ||
+      (record.matchedCandidateAssetCount ?? record.matchedPublicAssetCount) < 0 ||
+      (record.matchedCandidateAssetCount ?? record.matchedPublicAssetCount) > record.publicAssetCount ||
       evidence.publicAssetCount !== record.publicAssetCount ||
       !Array.isArray(record.publicAssets) || record.publicAssets.length !== record.publicAssetCount ||
       record.publicAssets.some(asset => !asset.path || !Number.isInteger(asset.bytes) || asset.bytes <= 0 || !SHA256.test(asset.sha256))) {
-    throw new Error('public asset readback must bind the baseline deployment and prove every listed public asset hash and size');
+    throw new Error('public asset readback must bind the baseline deployment, report candidate matches truthfully, and prove every listed public asset hash and size');
   }
   if (!configuration || configuration.disposition !== 'provider-managed-not-public' || configuration.publicByteIdentity !== 'unavailable' ||
       configuration.publiclyReadable !== false || !Array.isArray(configuration.paths) ||
