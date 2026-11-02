@@ -287,9 +287,10 @@ async function nativeRollbackPR156Fixture() {
   return f;
 }
 
-async function standingCloudflarePRFixture(prNumber, releaseId = `local-roots-dye-photo-pr-${prNumber}-2026-10-30-r1`) {
+async function standingCloudflarePRFixture(prNumber, releaseId = null) {
   const f = await nativeRollbackPR156Fixture();
   const sourceCommit = f.receipt.source.commit;
+  releaseId ??= `local-roots-dye-studio-pr-${prNumber}-${sourceCommit.slice(0, 12)}-${f.receipt.package.sha256.slice(0, 12)}-r1`;
   f.receipt.releaseId = releaseId;
   f.receipt.source.pullRequest = prNumber;
   f.receipt.source.ref = `refs/pull/${prNumber}/head`;
@@ -831,6 +832,25 @@ test('standing Cloudflare authorization requires fresh authenticated eligible ba
     try { mutate(f.receipt); await assert.rejects(validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' })); }
     finally { await f.cleanup(); }
   }
+});
+
+test('standing Cloudflare candidate release IDs bind PR, source SHA, and package SHA', async () => {
+  const f = await standingCloudflarePRFixture(166);
+  try {
+    const accepted = await validateReleaseReceipt(f.receipt, f.root, { phase: 'admission' });
+    assert.equal(accepted.releaseId, f.receipt.releaseId);
+    for (const releaseId of [
+      f.receipt.releaseId.replace('-pr-166-', '-pr-167-'),
+      f.receipt.releaseId.replace(/-[a-f0-9]{12}-r1$/, '-ffffffffffff-r1'),
+      'local-roots-dye-studio-pr-166-ffffffffffff-eeeeeeeeeeee-r1',
+    ]) {
+      const invalid = structuredClone(f.receipt);
+      invalid.releaseId = releaseId;
+      invalid.recoveryMode.scope.releaseId = releaseId;
+      invalid.packageManifest.path = f.receipt.packageManifest.path;
+      await assert.rejects(validateReleaseReceipt(invalid, f.root, { phase: 'admission' }), /release ID bound to its PR, candidate commit, and package|packageManifest must bind/);
+    }
+  } finally { await f.cleanup(); }
 });
 
 test('standing Cloudflare closeout verifies the actual PR head, squash tree, provider source and same admission', async () => {

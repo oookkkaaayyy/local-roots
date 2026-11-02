@@ -125,9 +125,17 @@ function requireDyeStudioNativeRollbackScope(receipt) {
     maxProviderEvidenceAgeMs: STANDING_CLOUDFLARE_PAGES_AUTHORIZATION.maxProviderEvidenceAgeMs,
   } : null);
   if (!expected) throw new Error('Cloudflare native rollback is not authorized for this release identity and scope');
-  if (standing && (!/^local-roots-dye-[a-z0-9-]+-pr-\d+-\d{4}-\d{2}-\d{2}-r\d+$/i.test(receipt.releaseId) ||
-      !Number.isInteger(receipt.source?.pullRequest) || receipt.source.pullRequest < 1)) {
-    throw new Error('standing Cloudflare authorization requires a unique Local Roots release ID bound to a positive PR number');
+  if (standing) {
+    const datedId = /^local-roots-dye-[a-z0-9-]+-pr-(\d+)-\d{4}-\d{2}-\d{2}-r\d+$/i.exec(receipt.releaseId);
+    const candidateId = /^local-roots-dye-studio-pr-(\d+)-([a-f0-9]{12})-([a-f0-9]{12})-r1$/i.exec(receipt.releaseId);
+    if (!Number.isInteger(receipt.source?.pullRequest) || receipt.source.pullRequest < 1 ||
+        (!datedId && !candidateId) ||
+        (datedId && Number(datedId[1]) !== receipt.source.pullRequest) ||
+        (candidateId && (Number(candidateId[1]) !== receipt.source.pullRequest ||
+          candidateId[2].toLowerCase() !== receipt.source.commit?.slice(0, 12).toLowerCase() ||
+          candidateId[3].toLowerCase() !== receipt.package?.sha256?.slice(0, 12).toLowerCase()))) {
+      throw new Error('standing Cloudflare authorization requires a unique Local Roots release ID bound to its PR, candidate commit, and package');
+    }
   }
   const checks = [
     [receipt.releaseId, expected.releaseId, 'releaseId'],
