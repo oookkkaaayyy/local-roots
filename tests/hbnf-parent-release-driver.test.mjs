@@ -53,6 +53,25 @@ test('successful mocked sequencing is ordered, independently read back, and neve
   assert.deepEqual(journal.events.filter(e=>e.event==='OBSERVED_APPLIED').map(e=>e.stage),tx.operations.map(o=>o.id));
 });
 
+test('transaction rejects parent contract source or five-target baseline drift',()=>{
+  const sourceMismatch=makeTx();
+  sourceMismatch.parentContract.sourceCommit='f'.repeat(40);
+  assert(validateTransaction(sourceMismatch).includes('parent contract source commit differs from transaction source'));
+
+  const baselineMismatch=makeTx();
+  baselineMismatch.parentContract.targets.find(t=>t.id==='supabase-schema').baselineReadbackSha256='f'.repeat(64);
+  assert(validateTransaction(baselineMismatch).includes('parent contract target binding differs:supabase-schema'));
+
+  const rollbackMismatch=structuredClone(makeTx());
+  const rollbackTarget=rollbackMismatch.parentContract.targets.find(t=>t.id==='cloudflare-worker');
+  rollbackTarget.rollback={...rollbackTarget.rollback,sha256:'f'.repeat(64)};
+  assert(validateTransaction(rollbackMismatch).includes('parent contract target binding differs:cloudflare-worker'));
+
+  const extraTarget=makeTx();
+  extraTarget.parentContract.targets.push({...extraTarget.parentContract.targets[0],id:'unbound-target'});
+  assert(validateTransaction(extraTarget).includes('parent contract must bind the exact five transaction targets'));
+});
+
 test('stale provider identity aborts before the first mutation',async()=>{
   const tx=makeTx(),p=fakeProvider(tx,{staleFirstRead:true});
   const out=await executeMockableSaga(tx,p.adapter,new MemoryJournal());

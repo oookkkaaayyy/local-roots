@@ -27,6 +27,28 @@ export function validateTransaction(tx) {
   if (tx?.rollbackOrder?.join(',') !== [...operations].reverse().map(o => o.id).join(',')) errors.push('rollback order must reverse stages (legacy grants before Worker rollback)');
   if (operations.at(-1)?.id !== 'db-revoke-old-writes' || operations.at(-1)?.restore?.effect !== 'restore-legacy-grants') errors.push('reverse cutover must restore legacy permissions before Worker rollback');
   if (validatePlan(tx?.parentContract || {}).length) errors.push(...validatePlan(tx?.parentContract || {}).map(x => `parent contract: ${x}`));
+  const contract = tx?.parentContract || {};
+  if (contract.sourceCommit !== tx?.sourceCommit) errors.push('parent contract source commit differs from transaction source');
+  const contractTargets = contract.targets || [];
+  if (contractTargets.length !== REQUIRED_TARGETS.length || new Set(contractTargets.map(t => t.id)).size !== contractTargets.length || REQUIRED_TARGETS.some(id => !contractTargets.some(t => t.id === id))) {
+    errors.push('parent contract must bind the exact five transaction targets');
+  }
+  for (const target of targets) {
+    const contractTarget = contractTargets.find(t => t.id === target.id);
+    if (!contractTarget) continue;
+    const baselineMatches = contractTarget.provider === target.provider
+      && contractTarget.target === target.target
+      && contractTarget.baselineIdentity === target.baselineIdentity
+      && contractTarget.baselineReadbackSha256 === target.baselineSha256;
+    const rollbackMatches = contractTarget.rollback?.driveFileId === target.rollback?.driveFileId
+      && contractTarget.rollback?.sha256 === target.rollback?.sha256
+      && contractTarget.rollback?.bytes === target.rollback?.bytes
+      && contractTarget.rollback?.downloadBackVerified === target.rollback?.downloadBackVerified;
+    const versionMatches = target.id !== 'cloudflare-worker'
+      || (contractTarget.baselineProviderVersionId === target.baselineProviderVersionId
+        && contractTarget.rollback?.providerVersionId === target.rollback?.providerVersionId);
+    if (!baselineMatches || !rollbackMatches || !versionMatches) errors.push(`parent contract target binding differs:${target.id}`);
+  }
   return errors;
 }
 
