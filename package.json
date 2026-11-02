@@ -5,7 +5,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test:release-receipt": "node --test tests/release-receipt.test.mjs",
-    "test:events-adapters": "node --test supabase/functions/lr-sync-hbnf/*.test.mjs tests/event-calendar-timing-regressions.test.mjs tests/event-schema-migration-contract.test.mjs tests/events-p0-rollback-scope.test.mjs",
+    "test:events-adapters": "node --test supabase/functions/lr-sync-hbnf/*.test.mjs tests/event-calendar-timing-regressions.test.mjs tests/event-schema-migration-contract.test.mjs tests/events-p0-rollback-scope.test.mjs tests/hbnf-confirmed-glow-schedule.test.mjs",
     "test:events-preimage": "python3 -m unittest discover -s tests -p test_events_p0_rollback_preimages.py",
     "release:admit": "node scripts/validate-release-receipt.mjs",
     "release:verify": "node scripts/validate-release-receipt.mjs",
