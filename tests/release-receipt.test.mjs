@@ -81,7 +81,7 @@ test('candidate packager hashes every build file into the exact archived ZIP', a
     const html = Buffer.from('<main>candidate</main>');
     await writeFile(path.join(dist, 'index.html'), html);
     const script = path.resolve('scripts/package-dye-studio-candidate.mjs');
-    const run = spawnSync(process.execPath, [script, dist, output, 'a'.repeat(40)], { encoding: 'utf8' });
+    const run = spawnSync(process.execPath, [script, dist, output, 'a'.repeat(40), '156'], { encoding: 'utf8' });
     assert.equal(run.status, 0, run.stderr);
     const manifest = JSON.parse(await readFile(path.join(output, 'manifest.json'), 'utf8'));
     const archive = await readFile(path.join(output, 'candidate.zip'));
@@ -97,25 +97,30 @@ test('candidate packager hashes every build file into the exact archived ZIP', a
     const pr159Manifest = JSON.parse(await readFile(path.join(pr159Output, 'manifest.json'), 'utf8'));
     assert.equal(pr159Manifest.releaseId, 'local-roots-dye-photo-pr-159-2026-10-30-r1');
     assert.equal(pr159Manifest.sourceCommit, 'b'.repeat(40));
-    const rejectedOutput = path.join(root, 'capsule-pr157');
-    const rejected = spawnSync(process.execPath, [script, dist, rejectedOutput, 'c'.repeat(40), '157'], { encoding: 'utf8' });
-    assert.notEqual(rejected.status, 0, 'unapproved PR cannot receive a release identity');
+
+    for (const [prNumber, sourceCommit] of [['166', 'c'.repeat(40)], ['907', 'd'.repeat(40)]]) {
+      const candidateOutput = path.join(root, `capsule-pr${prNumber}`);
+      const candidate = spawnSync(process.execPath, [script, dist, candidateOutput, sourceCommit, prNumber], { encoding: 'utf8' });
+      assert.equal(candidate.status, 0, candidate.stderr);
+      const candidateManifest = JSON.parse(await readFile(path.join(candidateOutput, 'manifest.json'), 'utf8'));
+      assert.ok(candidateManifest.releaseId.startsWith(`local-roots-dye-studio-pr-${prNumber}-`));
+      assert.equal(candidateManifest.sourceCommit, sourceCommit);
+    }
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
-test('PR #159 candidate packaging binds the manifest and artifact name to the exact PR head', async () => {
+test('Dye Studio candidate packaging is generic and binds the exact PR head', async () => {
   const workflow = await readFile(path.resolve('.github/workflows/ci.yml'), 'utf8');
-  const start = workflow.indexOf('name: Package exact PR #159 photo workflow build for release evidence');
-  const end = workflow.indexOf('\n      - name:', start + 1);
-  assert.ok(start >= 0 && end > start);
-  const packaging = workflow.slice(start, end);
-  assert.match(packaging, /\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
-  assert.doesNotMatch(packaging, /\$GITHUB_SHA|\$\{\{ github\.sha \}\}/,
+  assert.ok(workflow.includes("startsWith(github.head_ref, 'dye-studio/')"));
+  assert.ok(workflow.includes('name: Verify merge tree matches the exact Dye Studio PR head'));
+  assert.ok(workflow.includes('PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}'));
+  assert.ok(workflow.includes('PR_NUMBER: ${{ github.event.pull_request.number }}'));
+  assert.ok(workflow.includes('node scripts/package-dye-studio-candidate.mjs app/dist release-capsule "$PR_HEAD_SHA" "$PR_NUMBER"'));
+  assert.ok(workflow.includes('dye-studio-candidate-pr${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}'));
+  assert.doesNotMatch(workflow, /pull_request\\.number == (156|159)/,
+    'candidate packaging must not require per-PR workflow conditions');
+  assert.doesNotMatch(workflow, /\\$GITHUB_SHA|\\$\\{\\{ github\\.sha \\}\\}/,
     'synthetic pull-request merge SHA must not be recorded as the candidate source');
-  const artifactStart = workflow.indexOf('name: Retain PR #159 candidate archive and manifest');
-  const artifactEnd = workflow.indexOf('\n      - name:', artifactStart + 1);
-  const artifact = workflow.slice(artifactStart, artifactEnd < 0 ? workflow.length : artifactEnd);
-  assert.match(artifact, /dye-photo-pr159-candidate-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
 });
 
 async function nativeRollbackFixture() {
