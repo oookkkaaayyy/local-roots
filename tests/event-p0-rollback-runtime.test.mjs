@@ -94,6 +94,11 @@ test("generated Events P0 reverse restores exact scoped preimages and refuses po
     assert.equal((await db.query("select internal_notes from public.lr_events where id=$1",[event.id])).rows[0].internal_notes,"post-migration concurrent edit");
     await db.query("update public.lr_events set internal_notes=$2,updated_at=$3,last_changed_at=(select created_at from public.lr_source_runs where parser_version='schedule-field-reconciliation-v1' limit 1) where id=$1",[event.id,event.internal_notes,event.updated_at]);
 
+    const currentEvents=(await db.query("select * from public.lr_events")).rows;
+    const oldById=new Map(snapshot.tables.lr_events.map(x=>[x.id,x]));
+    const allowed=new Set(["timezone","format","updated_at","last_changed_at","last_verified_at","venue_address","course_id","course_url","start_time_local","checkin_time_local","end_time_local","start_time_note","format_details","entry_fee_amount","entry_fee_currency","entry_fee_unit","fee_breakdown","additional_fees_note","registration_opens_at","registration_closes_at","registration_capacity","registration_available","official_url"]);
+    const unexpected=currentEvents.flatMap(x=>{const old=oldById.get(x.id);return old?[{slug:x.slug,fields:Object.keys(old).filter(k=>!allowed.has(k)&&JSON.stringify(old[k])!==JSON.stringify(x[k]))}]:[]}).filter(x=>x.fields.length).slice(0,10);
+    if(unexpected.length) console.log("PREIMAGE_UNEXPECTED_FIELDS",JSON.stringify(unexpected));
     await db.exec(reverse);
     for (const table of ["lr_sources","lr_events","lr_event_sources","lr_source_runs","lr_source_candidates","lr_event_change_log","lr_review_queue"]) {
       const rows=(await db.query(`select * from public.${table}`)).rows;
