@@ -61,7 +61,8 @@ export function prepareGlowCleanupReview({
    report.blockers.push('Fresh authenticated current league_state/Matrix/tag readback and server-side cleanedStateMd5 missing');
  }else{
    const row=readback.row||{},matrix=readback.matrix||{};
-   const sameInstant=(a,b)=>Date.parse(a)===Date.parse(b)&&Number.isFinite(Date.parse(a));
+   const micros=v=>{const ms=Date.parse(v);const frac=String(v||'').match(/\\.(\\d{1,6})/)?.[1]||'';return Number.isFinite(ms)?ms*1000+Number((frac+'000000').slice(3,6)):null};
+   const sameInstant=(a,b)=>micros(a)!==null&&micros(a)===micros(b);
    if(readback.projectId!==HBNF_GLOW_CLEANUP.projectId||row.id!==1||
       !sameInstant(row.updatedAt,snapshot.updated_at)||row.activeWeek!==HBNF_GLOW_CLEANUP.weekDate||
       row.cards!==counts.cards||row.teams!==counts.teams||
