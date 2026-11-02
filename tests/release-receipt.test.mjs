@@ -68,7 +68,7 @@ async function fixture() {
     downloadBackVerified: true,
     downloadBack: { path: 'evidence/admission-download.json', bytes: manifestBytes.length, sha256: hash(manifestBytes) },
   };
-  return { root, receipt, cleanup: () => rm(root, { recursive: true, force: true }) };
+  return { root, receipt, preflight, cleanup: () => rm(root, { recursive: true, force: true }) };
 }
 
 test('candidate packager hashes every build file into the exact archived ZIP', async () => {
@@ -981,4 +981,52 @@ test('rejects baseline artifact size or hash metadata that differs from its byte
       await assert.rejects(validateReleaseReceipt(f.receipt, f.root), expected);
     } finally { await f.cleanup(); }
   }
+});
+
+
+// This regression is deliberately specific to Events PR #163. The migration
+// reverse does not capture the HBNF Sep 2 fixture publication transition.
+// A generic hash-valid receipt must never admit that combined runtime scope.
+test('Events P0 admission refuses combined Edge/runtime rollback and binds migration-only scope', async () => {
+  const f = await fixture();
+  try {
+    const receipt = structuredClone(f.preflight);
+    receipt.releaseId = 'local-roots-events-pr163-production-events-p0-2026-11-02-r6';
+    receipt.source.repository = 'oookkkaaayyy/local-roots';
+    receipt.source.ref = 'refs/pull/163/head';
+    receipt.baseline.provider = 'supabase';
+    receipt.baseline.target = 'wtymjxscneufjlkkywyg';
+    receipt.deployment.provider = 'supabase';
+    receipt.deployment.target = 'wtymjxscneufjlkkywyg';
+    receipt.deployment.plannedRoute = 'EVENTS_P0_MIGRATIONS_ONLY_NO_EDGE_SYNC';
+    receipt.acceptance.criteria = ['pre-migration-guard', 'rollback'].map(id => ({
+      id, status: 'PENDING', description: 'Scoped migration recovery',
+      method: 'Exact target-bound readback', expectedOutcome: 'No uncovered mutation',
+    }));
+    await assert.rejects(validateReleaseReceipt(receipt, f.root, { phase: 'admission' }),
+      /exact migration-only recovery scope/);
+    receipt.releaseScope = {
+      mode: 'migration-only', projectId: 'wtymjxscneufjlkkywyg',
+      migrations: [
+        '20261101070000_event_detail_fields_and_provenance.sql',
+        '20261101080000_reconcile_verified_schedule_fields.sql',
+      ],
+      edgeFunctionDeployment: false, runtimeSync: false,
+    };
+    const accepted = await validateReleaseReceipt(receipt, f.root, { phase: 'admission' });
+    assert.deepEqual(accepted.admissionManifest.releaseScope, receipt.releaseScope,
+      'same-manifest closeout must bind the exact mutation boundary');
+    for (const mutation of [
+      r => { r.releaseScope.edgeFunctionDeployment = true; },
+      r => { r.releaseScope.runtimeSync = true; },
+      r => { r.releaseScope.migrations.pop(); },
+      r => { r.deployment.plannedRoute = 'Deploy lr-sync-hbnf after migrations'; },
+      r => { r.acceptance.criteria.push({ id: 'edge-sync', status: 'PENDING' }); },
+    ]) {
+      const invalid = structuredClone(receipt);
+      mutation(invalid);
+      await assert.rejects(validateReleaseReceipt(invalid, f.root, { phase: 'admission' }),
+        /Events P0/);
+    }
+  } finally { await f.cleanup(); }
 });
