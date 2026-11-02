@@ -480,6 +480,18 @@ async function verifyAdmissionEvidence(root, receipt, expectedManifest, { requir
   return admission;
 }
 
+// A different path is not an independent recovered file if it is a hard link
+// to the original artifact. realpath alone detects symlinks but not hard links.
+async function sameFileIdentity(root, first, second) {
+  const [a, b] = await Promise.all([
+    realpath(path.resolve(root, first)),
+    realpath(path.resolve(root, second)),
+  ]);
+  if (a === b) return true;
+  const [aStat, bStat] = await Promise.all([stat(a), stat(b)]);
+  return aStat.dev === bStat.dev && aStat.ino === bStat.ino;
+}
+
 async function checkedFile(root, relativePath, label) {
   requireString(relativePath, `${label}.path`);
   if (path.isAbsolute(relativePath)) throw new Error(`${label}.path must be relative to the receipt root`);
@@ -653,8 +665,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
       throw new Error('rollback.recovery.downloadBack must byte-match the rollback artifact');
     }
     if (EVENTS_P0_RELEASE_ID.test(receipt.releaseId) &&
-        await realpath(path.resolve(root, rollbackRecovery.downloadBack.path)) ===
-          await realpath(path.resolve(root, receipt.rollback.artifact.path))) {
+        await sameFileIdentity(root, rollbackRecovery.downloadBack.path, receipt.rollback.artifact.path)) {
       throw new Error('Events P0 rollback download-back must be a separate recovered file');
     }
   }
@@ -732,8 +743,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     throw new Error('recovery.downloadBack must byte-match the release package');
   }
   if (EVENTS_P0_RELEASE_ID.test(receipt.releaseId) &&
-      await realpath(path.resolve(root, recovery.downloadBack.path)) ===
-        await realpath(path.resolve(root, receipt.package.path))) {
+      await sameFileIdentity(root, recovery.downloadBack.path, receipt.package.path)) {
     throw new Error('Events P0 candidate download-back must be a separate recovered file');
   }
   if (nativeRollback && path.resolve(root, recovery.downloadBack.path) === path.resolve(root, receipt.package.path)) {
