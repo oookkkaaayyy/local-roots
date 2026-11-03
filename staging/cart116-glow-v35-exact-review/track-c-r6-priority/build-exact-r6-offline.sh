@@ -36,7 +36,11 @@ git show "$R6:evidence/hbnf-phase2-integration-20261007/r5-offline-qualification
 # dependency graph already links framework SPI 2.0.0 and Wire 2.0.0; make their
 # discovery explicit without replacing their Arduino 2.0.18 implementations.
 sed -i '/^lib_deps =$/a\  SPI\n  Wire' "$W/platformio_override.ini"
-# Match the successful October 14 R6 build: include FastLED HEADERS from an external\n# pinned source checkout, not from WLED/vendor (a PlatformIO lib_extra_dirs).\n# Putting FastLED under WLED/vendor causes a second libFastLED.a and duplicate\n# global symbols when the usermod already compiles FastLED .cpp.hpp headers.\nmkdir -p "$WORK/FastLED"
+# Match the successful October 14 R6 build: include FastLED HEADERS from an external
+# pinned source checkout, not from WLED/vendor (a PlatformIO lib_extra_dirs).
+# Putting FastLED under WLED/vendor causes a second libFastLED.a and duplicate
+# global symbols when the usermod already compiles FastLED .cpp.hpp headers.
+mkdir -p "$WORK/FastLED"
 git -C "$WORK/FastLED" init -q
 git -C "$WORK/FastLED" fetch --quiet --depth 1 https://github.com/FastLED/FastLED.git "$FASTLED"
 git -C "$WORK/FastLED" checkout --quiet --detach FETCH_HEAD
