@@ -17,7 +17,7 @@ function aoa(f){
 }
 function proposal(rows,stamp){
  const model=publishSnapshot(null,parseUdiscAoA(rows,{eventId,observedAtLocal:stamp})).model;
- return buildGlowProposal(model,{aliases:{},historicalNames:[],tagEvidence:[]});
+ return buildGlowProposal(model,{aliases:{},historicalNames:[],tagEvidence:[]},{},{weekDate:date});
 }
 const base=()=>({
  date,scoresLocked:false,cards:[{id:'C1',finalized:false,players:[]}],players:[],
