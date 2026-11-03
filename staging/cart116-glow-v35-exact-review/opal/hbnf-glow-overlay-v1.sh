@@ -1,0 +1,95 @@
+#!/bin/ash
+# REVIEW_ONLY: source candidate for the existing Opal, NEVER an install launcher.
+# Do not run unless same-manifest admission has replaced the hard false gate.
+set -eu
+[ "${HBNF_NATIVE_OVERLAY_V1_ADMITTED:-false}" = "true" ] || exit 0
+# The installed release gate must replace the above development guard only in a
+# separately reviewed, signed candidate. Environment flags alone are NOT admission.
+[ -r /etc/hbnf-matrix-relay.conf ] || exit 1
+CONF=/etc/hbnf-matrix-relay.conf
+[ ! -L "$CONF" ] && [ "$(stat -c %a "$CONF")" = 600 ] &&
+ [ "$(stat -c %u "$CONF")" = 0 ] || exit 1
+. "$CONF"
+[ "${RELAY_ID:-}" = 'opal-hbnf-cart' ] || exit 1
+[ "${SUPABASE_RELAY_URL:-}" = 'https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control' ] || exit 1
+command -v curl >/dev/null && command -v jsonfilter >/dev/null && command -v sha256sum >/dev/null || exit 1
+M=http://192.168.77.10; A=http://192.168.77.11
+TMP=/tmp/hbnf-glow-overlay-v1
+LOCKOUT=/etc/hbnf-glow-overlay-v1.partial-failure
+[ ! -e "$LOCKOUT" ] || exit 1
+umask 077; mkdir -p "$TMP"; chmod 700 "$TMP"
+# One process per unit: no independent uncoordinated auto-polling / cron.
+mkdir "$TMP/active" 2>/dev/null || exit 1
+trap 'rmdir "$TMP/active" 2>/dev/null || :' EXIT
+printf 'header = "Authorization: Bearer %s"\nheader = "apikey: %s"\nheader = "X-HBNF-Relay-ID: %s"\n' "$RELAY_TOKEN" "$RELAY_API_KEY" "$RELAY_ID" > "$TMP/auth.conf"
+chmod 600 "$TMP/auth.conf"; unset RELAY_TOKEN RELAY_API_KEY
+snapshot() {
+ curl -fsS --connect-timeout 2 --max-time 4 "$M/json/si" -o "$TMP/m-si.json" || return 1
+ curl -fsS --connect-timeout 2 --max-time 4 "$M/hbnf/build.json" -o "$TMP/build.json" || return 1
+ curl -fsS --connect-timeout 2 --max-time 4 "$A/json/si" -o "$TMP/a-si.json" || return 1
+ curl -fsS --connect-timeout 2 --max-time 4 "$A/json/cfg" -o "$TMP/auxConfig.json" || return 1
+ jsonfilter -i "$TMP/m-si.json" -e '@.info' > "$TMP/info.json" || return 1
+ jsonfilter -i "$TMP/m-si.json" -e '@.state' > "$TMP/state.json" || return 1
+ jsonfilter -i "$TMP/a-si.json" -e '@.info' > "$TMP/auxInfo.json" || return 1
+ jsonfilter -i "$TMP/a-si.json" -e '@.state' > "$TMP/auxState.json" || return 1
+ [ "$(jsonfilter -i "$TMP/info.json" -e '@.mac' | tr -d : | tr 'A-F' 'a-f')" = 704bca5b345c ] || return 1
+ [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.mac' | tr -d : | tr 'A-F' 'a-f')" = 8c94df55c34c ] || return 1
+ [ "$(jsonfilter -i "$TMP/build.json" -e '@.release_id')" = 'hbnf-cart2-phase2-r6-skins-readable-20261014' ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.ps')" = 60 ] || return 1
+ [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.live')" = true ] || return 1
+ [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.lm')" = DDP ] || return 1
+ [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.lip')" = 192.168.77.10 ] || return 1
+ # The known installed 24-configured/22-active conflict blocks physical apply.
+ [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.leds.count')" = 22 ] || return 1
+ [ "$(jsonfilter -i "$TMP/auxConfig.json" -e '@.if.live.maxbri')" = false ] || return 1
+}
+post() {
+ op="$1"
+ curl -sS --connect-timeout 3 --max-time 12 --config "$TMP/auth.conf" \
+  -F "op=$op" -F 'relayId=opal-hbnf-cart' \
+  -F "challengeId=${challenge:-}" -F "overlayId=${overlay:-}" \
+  -F "info=@$TMP/info.json;type=application/json" \
+  -F "state=@$TMP/state.json;type=application/json" \
+  -F "build=@$TMP/build.json;type=application/json" \
+  -F "auxInfo=@$TMP/auxInfo.json;type=application/json" \
+  -F "auxState=@$TMP/auxState.json;type=application/json" \
+  -F "auxConfig=@$TMP/auxConfig.json;type=application/json" \
+  "$SUPABASE_RELAY_URL" -o "$TMP/$op.json" -w '%{http_code}'
+}
+# Foreground, one attempt only. No automatic install, cron, or background execution.
+snapshot || exit 1
+code="$(post overlay_v1_next)" || exit 1
+[ "$code" = 200 ] || exit 0
+challenge="$(jsonfilter -i "$TMP/overlay_v1_next.json" -e '@.challengeId')"
+overlay="$(jsonfilter -i "$TMP/overlay_v1_next.json" -e '@.overlayId')"
+echo "$challenge" | grep -Eq '^[0-9a-f-]{36}$' || exit 1
+echo "$overlay" | grep -Eq '^hbnf-[a-f0-9]{32}$' || exit 1
+snapshot || exit 1
+code="$(post overlay_v1_authorize)" || exit 1
+[ "$code" = 200 ] &&
+ [ "$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.status')" = apply_once ] &&
+ [ "$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.overlayId')" = "$overlay" ] &&
+ [ "$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.auxWriteRequired')" = false ] || exit 1
+# JSON is reconstructed with ONLY the native HBNF.overlay root key. No seg/fx/
+# brightness/preset/AUX JSON can be written by this candidate shell.
+overlay_json="$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.matrixPayload.HBNF.overlay')" || exit 1
+[ -n "$overlay_json" ] && [ "${#overlay_json}" -lt 3000 ] || exit 1
+printf '{"HBNF":{"overlay":%s}}\n' "$overlay_json" > "$TMP/glow-overlay-only.json"
+# One-use authorized apply may be indeterminate if HTTP transport fails; do not
+# replay or force the old fx142/bri255 full-state projection as a fallback.
+(umask 077; : > "$LOCKOUT") || exit 1
+curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' \
+ --data-binary @"$TMP/glow-overlay-only.json" "$M/json/state" -o /dev/null || exit 1
+snapshot || exit 1
+code="$(post overlay_v1_ack)" || exit 1
+[ "$code" = 200 ] &&
+ [ "$(jsonfilter -i "$TMP/overlay_v1_ack.json" -e '@.matrixOverlayIdConfirmed')" = true ] || exit 1
+# Never send global state or overlay clear: native compositor must autoexpire.
+# Keep a separate lockout until the exact preimage is confirmed after TTL.
+sleep 21
+snapshot || exit 1
+code="$(post overlay_v1_restored)" || exit 1
+[ "$code" = 200 ] &&
+ [ "$(jsonfilter -i "$TMP/overlay_v1_restored.json" -e '@.matrixOriginalProfileConfirmed')" = true ] || exit 1
+rm -f "$LOCKOUT"
+exit 0
