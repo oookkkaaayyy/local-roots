@@ -1074,11 +1074,21 @@ function cloneAceState(st){return{main:Number(st.main||0),reserve:Number(st.rese
 function advanceAceRoute(st){if(st.mode==='reserve'){st.mode='main';st.mainTarget=Number(st.main||0)+GLOW_ACE_MAIN_STEP}else{st.mode='reserve';st.reserveTarget=Number(st.reserve||0)+GLOW_ACE_RESERVE_STEP}}
 function routeAceMoney(st,amount){let left=Math.max(0,Number(amount)||0),toMain=0,toReserve=0,guard=0;while(left>0&&guard++<20){if(st.mode==='reserve'){let need=Number(st.reserveTarget||0)-Number(st.reserve||0);if(need<=0){advanceAceRoute(st);continue}const add=Math.min(left,need);st.reserve+=add;toReserve+=add;left-=add}else{let need=Number(st.mainTarget||0)-Number(st.main||0);if(need<=0){advanceAceRoute(st);continue}const add=Math.min(left,need);st.main+=add;toMain+=add;left-=add}}return{toMain,toReserve}}
 function aceStateBeforeWeek(targetKey){const st=aceStateBase();Object.keys(ctx.state.weeks).sort().forEach(key=>{if(String(key)>=String(targetKey)||String(key)<=GLOW_ACE_RULE_BASE_AFTER)return;const w=ctx.state.weeks[key];if(!weekHasScores(w))return;applyAceWeekToState(st,w,key,true)});return st}
-function applyAceWeekToState(st,w,key,settlementOnly=false){const count=settlementOnly&&isSept02FixtureWeek(w,key)?0:playerCountForWeek(w),teams=settlementOnly?settledTeamsForWeek(w,key):scoredTeamsForWeek(w),hasScores=teams.length>0,before=cloneAceState(st),routesAceMoney=(!key||String(key)>GLOW_ACE_RULE_BASE_AFTER),addedToAcePot=hasScores&&routesAceMoney?count*GLOW_ACE_SHARE:0,route=routeAceMoney(st,addedToAcePot),afterContribution=cloneAceState(st),aceWinners=hasScores?aceWinnersForWeek(w):[];let acePayout=0,acePayoutEach=0;if(aceWinners.length){acePayout=Number(st.main||0);acePayoutEach=acePayout/aceWinners.length;st.main=Number(st.reserve||0);st.reserve=0;st.mode='reserve';st.mainTarget=Number(st.main||0);st.reserveTarget=GLOW_ACE_FIRST_RESERVE_TARGET}return{count,availableBefore:before.main,reserveBefore:before.reserve,addedToAcePot,addedToMain:route.toMain,addedToReserve:route.toReserve,availableAfterContribution:afterContribution.main,reserveAfterContribution:afterContribution.reserve,aceWinners,aceWinner:aceWinners.join(', '),acePayout,acePayoutEach,availableEnd:st.main,reserveEnd:st.reserve,routeModeEnd:st.mode}}
+function applyAceWeekToState(st,w,key,settlementOnly=false){const synthetic=isSept02FixtureWeek(w,key),count=synthetic?0:playerCountForWeek(w),teams=synthetic?[]:(settlementOnly?settledTeamsForWeek(w,key):scoredTeamsForWeek(w)),hasScores=teams.length>0,before=cloneAceState(st),routesAceMoney=(!key||String(key)>GLOW_ACE_RULE_BASE_AFTER),addedToAcePot=hasScores&&routesAceMoney?count*GLOW_ACE_SHARE:0,route=routeAceMoney(st,addedToAcePot),afterContribution=cloneAceState(st),aceWinners=hasScores?aceWinnersForWeek(w):[];let acePayout=0,acePayoutEach=0;if(aceWinners.length){acePayout=Number(st.main||0);acePayoutEach=acePayout/aceWinners.length;st.main=Number(st.reserve||0);st.reserve=0;st.mode='reserve';st.mainTarget=Number(st.main||0);st.reserveTarget=GLOW_ACE_FIRST_RESERVE_TARGET}return{count,availableBefore:before.main,reserveBefore:before.reserve,addedToAcePot,addedToMain:route.toMain,addedToReserve:route.toReserve,availableAfterContribution:afterContribution.main,reserveAfterContribution:afterContribution.reserve,aceWinners,aceWinner:aceWinners.join(', '),acePayout,acePayoutEach,availableEnd:st.main,reserveEnd:st.reserve,routeModeEnd:st.mode}}
 function acePreviewForWeek(w,targetKey){const st=aceStateBeforeWeek(targetKey);return applyAceWeekToState(st,w,targetKey)}
 function acePotAvailableBeforeWeek(targetKey){return aceStateBeforeWeek(targetKey).main}
 function renderPayout(){
- const w=getWeek();buildPlayersFromCards(w);const count=playerCountForWeek(w);
+ const w=getWeek();buildPlayersFromCards(w);
+ if(isSept02FixtureWeek(w,ctx.state.activeWeek)){
+  const countEl=qs('#payoutPlayersInput'),box=qs('#payoutOutputBox');
+  if(countEl)countEl.value=0;
+  if(box)box.innerHTML='<div class="helper">September 2 synthetic Fixture data is retained for audit only; no official player contributions, standings wins, or payouts are earned.</div>';
+  const aceInput=qs('#aceWinnerSelect'),aceOptions=qs('#aceWinnerOptions');
+  if(aceInput)aceInput.value='';
+  if(aceOptions)aceOptions.innerHTML='';
+  return;
+ }
+ const count=playerCountForWeek(w);
  qs('#payoutPlayersInput').value=count;
  const individualNames=[...new Set(hbnfFlatMap((w.players||[]),p=>teamParts(p)))].sort((a,b)=>a.localeCompare(b));
  const aceInput=qs('#aceWinnerSelect'),aceOptions=qs('#aceWinnerOptions');

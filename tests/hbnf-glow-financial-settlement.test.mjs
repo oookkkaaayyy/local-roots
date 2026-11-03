@@ -89,7 +89,12 @@ test('synthetic Fixture ace contributions and cash winner entries are zero on ac
  assert.equal(result.acePayout,0);
  assert.equal(result.availableEnd,500);
  assert.equal(result.reserveEnd,79);
+ const preview=vm.runInContext('applyAceWeekToState',state)({...a},fake,'2026-09-02',false);
+ assert.equal(preview.count,0,'historical UI ace preview also excludes synthetic entrants');
+ assert.equal(preview.addedToAcePot,0,'historical UI preview cannot reintroduce fake $3 entries');
+ assert.equal(preview.availableEnd,500);
  assert.match(html,/const teams=settledTeamsForWeek\(w,key\)/);
+ assert.match(html,/September 2 synthetic Fixture data is retained for audit only/);
 });
 test('glow 2026 PAR standings exclude September 2 Fixture trophy, while retaining historic audit',()=>{
  const fixture=week([complete(18)]);fixture.date='2026-09-02';
