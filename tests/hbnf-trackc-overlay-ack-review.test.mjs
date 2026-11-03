@@ -43,7 +43,7 @@ function cycle(phase,modify=()=>{},additional={}){
  phase,now:2000,owner:{higherPriorityActive:false},...additional});
 }
 test('current Controls review source head is identified explicitly',()=>{
- assert.equal(REVIEW_CONTROL_HEAD,'e6f1306780e18086a07abb586dcc5288ec4928e2');
+ assert.equal(REVIEW_CONTROL_HEAD,'1f38a99240d77077ad5fd772aea83aaf41164357');
 });
 test('real current v35 protective guard rejects full-state Glow projection',()=>{
  const old={matrix:{bri:255,seg:[{id:0,fx:142},{id:1,fx:142}],
