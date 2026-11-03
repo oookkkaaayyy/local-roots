@@ -1,0 +1,42 @@
+name: cart116 managed outbound Glow bridge source-only qualification
+on:
+  push:
+    branches: [review/cart116-glow-canonical-intent-20261103]
+    paths:
+      - .github/workflows/cart116-managed-bridge.yml
+      - staging/cart116-glow-v35-exact-review/opal/new-service/**
+      - staging/cart116-glow-v35-exact-review/opal/hbnf-glow-overlay-v1.sh
+      - staging/cart116-glow-v35-exact-review/release/**
+      - staging/cart116-glow-v35-exact-review/tests/new_bridge_ci_contract.test.mjs
+permissions:
+  contents: read
+concurrency:
+  group: cart116-managed-bridge-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  changed_service_only:
+    if: contains(github.event.head_commit.message, '[trackA-new-service]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Changed-only single-service source, candidate hash and backup contracts
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          node --test tests/new_bridge_ci_contract.test.mjs
+      - name: Native BusyBox ash syntax, five changed shell files
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          for src in \
+            opal/new-service/usr/libexec/hbnf-cart-glow-bridge \
+            opal/new-service/usr/libexec/hbnf-cart-glow-provision \
+            opal/new-service/etc/init.d/hbnf-cart-glow-bridge \
+            opal/hbnf-glow-overlay-v1.sh \
+            release/cart116-opal-transaction.sh; do
+            docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n "/src/$src"
+          done
+      # No PostgreSQL/Deno/native old 35/35 or 26/26 suites, no live devices,
+      # no CI artifact upload, no deployment or any owner secrets.

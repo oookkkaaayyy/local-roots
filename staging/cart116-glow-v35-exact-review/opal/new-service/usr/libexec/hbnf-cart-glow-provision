@@ -1,0 +1,31 @@
+#!/bin/ash
+# Read two lines from owner-authenticated SSH STDIN ONLY. Never print secrets,
+# pass them in argv/env, save them in a package, or include in any backup.
+# The device must retain a root-only 0600 config for autonomous outbound auth.
+set -eu
+umask 077
+[ "$(id -u)" = 0 ] && [ "$#" -eq 0 ] || exit 1
+CONF=/etc/hbnf-cart-glow-bridge.conf
+TMP=/etc/.hbnf-cart-glow-bridge.conf.new
+[ ! -e "$CONF" ] && [ ! -L "$CONF" ] && [ ! -e "$TMP" ] && [ ! -L "$TMP" ] || exit 1
+IFS= read -r token || exit 1
+IFS= read -r api_key || exit 1
+# No single quotes, shell metacharacters, CR/LF or whitespace can enter the
+# fixed-format shell config sourced by the native single-shot helper.
+case "$token" in ''|*[!A-Za-z0-9_-]*) exit 1;; esac
+[ "${#token}" -ge 43 ] && [ "${#token}" -le 128 ] || exit 1
+case "$api_key" in ''|*[!A-Za-z0-9._-]*) exit 1;; esac
+[ "${#api_key}" -ge 30 ] && [ "${#api_key}" -le 2048 ] || exit 1
+# Avoid log/stdout and never replace a preexisting config.
+{
+ printf '%s\n' "SUPABASE_RELAY_URL='https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control'"
+ printf '%s\n' "RELAY_ID='opal-hbnf-cart'"
+ printf "RELAY_TOKEN='%s'\n" "$token"
+ printf "RELAY_API_KEY='%s'\n" "$api_key"
+} > "$TMP" || exit 1
+chmod 600 "$TMP" && chown 0:0 "$TMP" || exit 1
+[ ! -e "$CONF" ] && [ ! -L "$CONF" ] || exit 1
+mv -n "$TMP" "$CONF" || exit 1
+[ -f "$CONF" ] && [ ! -L "$CONF" ] &&
+ [ "$(stat -c %u:%a "$CONF")" = '0:600' ] || exit 1
+exit 0

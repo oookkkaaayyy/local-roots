@@ -1,5 +1,5 @@
 #!/bin/ash
-# REVIEW_ONLY: source candidate for the existing Opal, NEVER an install launcher.
+# Controls #116: native overlay helper for NEW outbound-only Opal bridge.
 # Do not run unless same-manifest admission has replaced the hard false gate.
 set -eu
 # Hard-coded build gate. No environment variable or remote setting can enable
@@ -7,10 +7,10 @@ set -eu
 # change this value after all recovery and owner authorization checks.
 HBNF_OVERLAY_V1_SOURCE_ADMITTED=false
 [ "$HBNF_OVERLAY_V1_SOURCE_ADMITTED" = true ] || exit 0
-# The Owner relay owns the execution loop. This is invoked once, in-process,
-# only when the legacy relay has no pending paired challenge. No second daemon.
-[ -r /etc/hbnf-matrix-relay.conf ] || exit 1
-CONF=/etc/hbnf-matrix-relay.conf
+# The NEW outbound bridge owns the sole service loop; the Owner websocket
+# is separate and must remain responsive. No second Glow poller/daemon.
+[ -r /etc/hbnf-cart-glow-bridge.conf ] || exit 1
+CONF=/etc/hbnf-cart-glow-bridge.conf
 [ ! -L "$CONF" ] && [ "$(stat -c %a "$CONF")" = 600 ] &&
  [ "$(stat -c %u "$CONF")" = 0 ] || exit 1
 . "$CONF"
@@ -95,10 +95,12 @@ post() {
   -F "auxConfig=@$TMP/auxConfig.json;type=application/json" \
   "$SUPABASE_RELAY_URL" -o "$TMP/$op.json" -w '%{http_code}'
 }
-# The same foreground relay loop calls this helper once per cycle. After ACK,
-# return immediately to Owner service; later cycles check native TTL restoration.
+# The NEW bridge loop calls this helper once per cycle. After ACK, return
+# immediately; later cycles check native TTL restoration without new writes.
 # No background process, secondary polling daemon, actuator retry or sleep(21).
-PENDING="$TMP/overlay-v1-pending"
+# Root-only, non-secret cursor survives a reboot; an unresolved backend
+# challenge stays fail-closed if it can no longer be confirmed.
+PENDING=/etc/hbnf-glow-overlay-v1.pending
 [ ! -L "$PENDING" ] || exit 1
 if [ -e "$LOCKOUT" ]; then
  [ -f "$PENDING" ] && [ -r "$PENDING" ] || exit 1
@@ -156,6 +158,12 @@ case "$payload_ttl" in *[!0-9]*|'') exit 1;; esac
 overlay_json="$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.matrixPayload.HBNF.overlay')" || exit 1
 [ -n "$overlay_json" ] && [ "${#overlay_json}" -lt 3000 ] || exit 1
 printf '{"HBNF":{"overlay":%s}}\n' "$overlay_json" > "$TMP/glow-overlay-only.json"
+# Final non-mutating readback AFTER SQL one-use authorization, immediately
+# before the sole Matrix write. An Owner text or profile change refuses it and
+# retains the persistent lockout; no AUX, preset, brightness or legacy apply.
+snapshot || exit 1
+owner_overlay_id="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.overlayId' 2>/dev/null || true)"
+case "$owner_overlay_id" in ''|'null') :;; *) exit 1;; esac
 # One-use authorized apply may be indeterminate if HTTP transport fails; do not
 # replay or force the old fx142/bri255 full-state projection as a fallback.
 curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' \

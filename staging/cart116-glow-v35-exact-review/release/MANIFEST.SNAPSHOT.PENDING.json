@@ -1,0 +1,496 @@
+{
+  "backend_or_opal_mutated": false,
+  "candidate_archive": {
+    "bytes": null,
+    "file_name": "CART116-Controls-Managed-Glow-Bridge-REVIEW_ONLY-20261103.zip",
+    "independent_download_back_verified": false,
+    "installable": false,
+    "note": "detached controlling GitHub manifest binds final SHA after private upload; embedded snapshot deliberately has no archive self hash",
+    "sha256": null
+  },
+  "edge": {
+    "candidate_source": {
+      "compiled_provider_candidate_sha256": null,
+      "deno_check": "PASS_GITHUB_RUN_41694531461",
+      "entrypoint": "staging/cart116-glow-v35-exact-review/candidate-source/index.ts",
+      "independent_candidate_download_back": false
+    },
+    "provider_preimage": {
+      "compiled_bundle_download_back": false,
+      "exact_github_rollback_source_parity": "10/10",
+      "ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+      "fresh_readback_source_count": 10,
+      "version": 35
+    },
+    "rollback": "restore verified provider v35 source bytes with same-manifest bundle; check provider version and sha on next readback",
+    "slug": "hbnf-cart-control",
+    "target_project_id": "phcpbvuqibyarpfrftgx"
+  },
+  "exact_source": {
+    "branch": "review/cart116-glow-canonical-intent-20261103",
+    "edge_provider_original_source_tree": "74dd1d687de44eacb20eff8e3960d9129948ef88",
+    "head_nonblocking_candidate": "6d63724d9fd30325a1cdc6427fd3466b6abf4b95",
+    "head_qualified_native": "51d9d50ec8bda9d8f59dd4f55d2d9173158afb5a",
+    "matrix_track_c_head": "e2e0288e8d5db271a01fd0d4881456178fdac5bf",
+    "networking_final_head": "ebff085103ed847328dc7ed06b0f69d8f63c6606",
+    "repo": "oookkkaaayyy/local-roots"
+  },
+  "failure_recovery": [
+    {
+      "action": "STOP no mutation; preserve existing working Owner v1.0.20 and v35",
+      "at": "preflight any step"
+    },
+    {
+      "action": "rollback SQL only when no unresolved challenge; restore Edge provider v35 from exact readback and verify hash",
+      "at": "SQL before actuation"
+    },
+    {
+      "action": "stop one relay, reapply exact captured live preimages in reverse order, verify all 9 hashes + 21 unrelated Owner files/HTTP responses, use original service state; persist lockout if uncertain",
+      "at": "Opal any apply failure"
+    },
+    {
+      "action": "never force global Matrix/AUX restore over Owner priority; preserve lockout and stop automatic Glow; use owner-directed same-manifest recovery after readback; protect UV off",
+      "at": "Matrix/AUX postactuation/field failure"
+    }
+  ],
+  "firmware": {
+    "auto_live": false,
+    "aux_flash": false,
+    "matrix_flash": false,
+    "uv_switch": false
+  },
+  "hard_gates": {
+    "active_relay_startup_and_preimage": "UNKNOWN: source init calls /usr/libexec/hbnf-matrix-relay; no current procd or bytes for that path",
+    "aux_24_configured_vs_22_ddp": "SOURCE_GEOMETRY_GUARD_22_RGB_GPIO16_PLUS_TWO_OFF_TYPE41_PWM_GPIO25_26; NO_PACKET_OR_ELECTRICAL_PROOF",
+    "compiled_edge_candidate_and_rollback_offprovider_downloadback": "MISSING",
+    "exact_current_opal_main_and_all_other_eight_preimages": "7/9 VERIFIED LAST CAPTURE; 1 HELPER ABSENT; CORRECT MAIN PATH UNVERIFIED",
+    "expected_actual_opal_main_path": "/usr/libexec/hbnf-matrix-relay HISTORICAL PROCD SOURCE; CURRENT DEVICE NOT CAPTURED",
+    "fresh_device_matrix_ps60_effect_id_and_aux_parity": "ps=-1 effectId142 both fx142 VERIFIED; PS60 NOT OBSERVED; NATIVE RENDERER FAIL_CLOSED",
+    "fresh_installed_current_Opal_main": "NOT_IN_CAPTURE CORRECT MAIN PATH; HISTORICAL INIT /etc/init.d/hbnf-matrix-relay REPORTED ABSENT",
+    "fresh_owner_priority_cloud_preemption_latency": "NONBLOCKING_SOURCE_10_OF_10_NATIVE_PASS_DEVICE_NOT_CHECKED",
+    "independent_device_preimage_backup_downloadback": "MISSING",
+    "native_opal_nonblocking": "10/10_FOCUSED_BUSYBOX_ASH_PASSED_NO_DEVICE_CONTACT",
+    "native_pg_and_deno": "PASS_SEPARATE_EXACT_SOURCE_RUNS",
+    "one_time_owner_manifest_bound_authorization": "MISSING; DO NOT REQUEST BEFORE SOURCE AND ROLLBACK ACCEPTANCE",
+    "owner_preemption_field_timing": "UNVERIFIED",
+    "physical_owner_safari12_matrix_aux_acceptance": "NOT_CHECKED",
+    "single_unchanged_manifest_phase1_phase2_closeout": "PENDING"
+  },
+  "installer_included": true,
+  "legacy_nine_target_opal_status": "SUPERSEDED_HISTORY_ONLY",
+  "managed_service": {
+    "aux_ddp_rgb_pixels": 22,
+    "aux_pwm_gpio_25_26": "OFF readback only; not electrically accepted",
+    "aux_total_configured": 24,
+    "credential_provisioning": "owner-authenticated SSH stdin, root-only 0600 on device; no secrets in artifact",
+    "install_transaction_actions": [
+      "preflight",
+      "backup",
+      "apply",
+      "rollback",
+      "closeout"
+    ],
+    "legacy_relay_executable_absent": true,
+    "legacy_relay_init_absent": true,
+    "matrix_current_fx": [
+      142,
+      142
+    ],
+    "matrix_current_ps": -1,
+    "name": "hbnf-cart-glow-bridge",
+    "native_overlay_ps_minus_one_admission": false,
+    "no_cloud_full_state_writer": true,
+    "owner_direct_websocket_independent": true,
+    "reboot_pending_state": "persistent root 0600 challenge cursor; fail closed if unresolved",
+    "source_gates": {
+      "edge": false,
+      "helper": false,
+      "score_auto_live": false,
+      "service": false
+    },
+    "test_only_install_rehearsal": true,
+    "type": "NEW one-procd-service outbound only"
+  },
+  "managed_targets": [
+    {
+      "candidate": "candidate/opal/usr/libexec/hbnf-cart-glow-bridge",
+      "candidate_bytes": 2372,
+      "candidate_sha256": "97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c",
+      "mode": "755",
+      "preimage_evidence": "PENDING_TARGET_CAPTURE",
+      "preimage_expected_sha256_or_status": "UNKNOWN",
+      "target": "/usr/libexec/hbnf-cart-glow-bridge"
+    },
+    {
+      "candidate": "candidate/opal/etc/init.d/hbnf-cart-glow-bridge",
+      "candidate_bytes": 1002,
+      "candidate_sha256": "392c3c4a0ab00c456b30d4841e38625d4745e2de840eb93cdd07541519ffdb9d",
+      "mode": "755",
+      "preimage_evidence": "PENDING_TARGET_CAPTURE",
+      "preimage_expected_sha256_or_status": "UNKNOWN",
+      "target": "/etc/init.d/hbnf-cart-glow-bridge"
+    },
+    {
+      "candidate": "candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh",
+      "candidate_bytes": 11274,
+      "candidate_sha256": "89426f278020abb2913b8cd8ffd48e80b0f31f013aed52a11b1f4b3d4e5a07c6",
+      "mode": "700",
+      "preimage_evidence": "6614401763",
+      "preimage_expected_sha256_or_status": "ABSENT",
+      "target": "/usr/lib/hbnf-glow-overlay-v1.sh"
+    },
+    {
+      "candidate": "candidate/opal/usr/libexec/hbnf-cart-glow-provision",
+      "candidate_bytes": 1447,
+      "candidate_sha256": "fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20",
+      "mode": "700",
+      "preimage_evidence": "PENDING_TARGET_CAPTURE",
+      "preimage_expected_sha256_or_status": "UNKNOWN",
+      "target": "/usr/libexec/hbnf-cart-glow-provision"
+    },
+    {
+      "candidate": "candidate/opal/www/mission-control-local/local-transport.js",
+      "candidate_bytes": 9632,
+      "candidate_sha256": "ae6fc45f833bce652aa4844501df4d79ed19c135fcf22507995ee772b29930d7",
+      "mode": "644",
+      "preimage_evidence": "6613457326",
+      "preimage_expected_sha256_or_status": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+      "target": "/www/mission-control-local/local-transport.js"
+    },
+    {
+      "candidate": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-package-version",
+      "candidate_bytes": 15,
+      "candidate_sha256": "767396e1dbae2926bfa90c9683774e679507c999c77b0c139f488ec0d5334df2",
+      "mode": "644",
+      "preimage_evidence": "6613457326",
+      "preimage_expected_sha256_or_status": "975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191",
+      "target": "/www/mission-control-local/owner-pwa/.hbnf-package-version"
+    },
+    {
+      "candidate": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
+      "candidate_bytes": 1485,
+      "candidate_sha256": "c689729e41dd1c4004ded7e1daf69ae05cd595eaa441cb93288b742d017e264d",
+      "mode": "644",
+      "preimage_evidence": "6613457326",
+      "preimage_expected_sha256_or_status": "dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
+      "target": "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256"
+    },
+    {
+      "candidate": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-features.js",
+      "candidate_bytes": 53760,
+      "candidate_sha256": "6dba73caea3046217ee2d44ccabd04b7f601fa3b33bc924f686743cb175169cb",
+      "mode": "644",
+      "preimage_evidence": "6613457326",
+      "preimage_expected_sha256_or_status": "db591fec335897c8448a5571799b4a6ce2b59889b1afeff8a08206532b470d4c",
+      "target": "/www/mission-control-local/owner-pwa/hbnf-cart-features.js"
+    },
+    {
+      "candidate": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
+      "candidate_bytes": 31585,
+      "candidate_sha256": "1c055c510aaa1cbfa6a645b465a4639a78320ddbac030b79ceefccb08262b1da",
+      "mode": "644",
+      "preimage_evidence": "6613457326",
+      "preimage_expected_sha256_or_status": "9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
+      "target": "/www/mission-control-local/owner-pwa/hbnf-cart-local.js"
+    },
+    {
+      "candidate": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.html",
+      "candidate_bytes": 19237,
+      "candidate_sha256": "8eef477b1b692778ddc17c5f1279fdc9b8b08251ee1fe38145e411d3c4b1ab0c",
+      "mode": "644",
+      "preimage_evidence": "6613457326",
+      "preimage_expected_sha256_or_status": "20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f",
+      "target": "/www/mission-control-local/owner-pwa/hbnf-cart.html"
+    },
+    {
+      "candidate": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.js",
+      "candidate_bytes": 40437,
+      "candidate_sha256": "e3517d8221fc911c62b5f972f823eb2586efc7cae0109f0932dcd8763c4bd5af",
+      "mode": "644",
+      "preimage_evidence": "6613457326",
+      "preimage_expected_sha256_or_status": "9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba",
+      "target": "/www/mission-control-local/owner-pwa/hbnf-cart.js"
+    },
+    {
+      "candidate": "NOT_IN_ARCHIVE",
+      "preimage_expected_sha256_or_status": "UNKNOWN",
+      "produced_only_after_owner_approved_transaction": true,
+      "rollback": "remove if confirmed originally absent and owned by transaction; never save secret in backup",
+      "root_only_mode": "0600",
+      "target": "/etc/hbnf-cart-glow-bridge.conf"
+    }
+  ],
+  "nine_target_opal": [
+    {
+      "archived_v120_preimage_bytes": null,
+      "archived_v120_preimage_sha256": null,
+      "candidate_bytes": 10743,
+      "candidate_sha256": "0015c32baaf105c478ded3a99fc4f24cc64a455b2691d51c7e111ab86da5695f",
+      "candidate_zip_member": "candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "ABSENT according to 19:21 owner Mac capture; off-device archive download-back incomplete",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "prove path absent before installation; otherwise independent backup required",
+      "rollback_mode": "remove ONLY when verified absent in fresh preimage",
+      "target": "/usr/lib/hbnf-glow-overlay-v1.sh"
+    },
+    {
+      "archived_v120_preimage_bytes": null,
+      "archived_v120_preimage_sha256": null,
+      "candidate_bytes": 13994,
+      "candidate_sha256": "e5a8ee13a9044ddb35697efc548731d4099480437f60d8600d7451baf0a65f96",
+      "candidate_zip_member": "candidate/opal/usr/libexec/hbnf-matrix-relay",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "NOT_IN_CAPTURE; historical init source is NOT current installed byte identity",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "UNKNOWN current correct-path installed preimage; archived source NOT installed evidence",
+      "rollback_mode": "restore exact existing live file from transaction-specific readback",
+      "target": "/usr/libexec/hbnf-matrix-relay"
+    },
+    {
+      "archived_v120_preimage_bytes": 8993,
+      "archived_v120_preimage_sha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+      "candidate_bytes": 9632,
+      "candidate_sha256": "ae6fc45f833bce652aa4844501df4d79ed19c135fcf22507995ee772b29930d7",
+      "candidate_zip_member": "candidate/opal/www/mission-control-local/local-transport.js",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "rollback/external-local-transport-original.js",
+      "rollback_mode": "restore exact existing live file from transaction-specific readback",
+      "target": "/www/mission-control-local/local-transport.js"
+    },
+    {
+      "archived_v120_preimage_bytes": 7,
+      "archived_v120_preimage_sha256": "975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191",
+      "candidate_bytes": 15,
+      "candidate_sha256": "767396e1dbae2926bfa90c9683774e679507c999c77b0c139f488ec0d5334df2",
+      "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-package-version",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
+      "rollback_mode": "restore exact existing live file from transaction-specific readback",
+      "target": "/www/mission-control-local/owner-pwa/.hbnf-package-version"
+    },
+    {
+      "archived_v120_preimage_bytes": 1485,
+      "archived_v120_preimage_sha256": "dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
+      "candidate_bytes": 1485,
+      "candidate_sha256": "c689729e41dd1c4004ded7e1daf69ae05cd595eaa441cb93288b742d017e264d",
+      "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
+      "rollback_mode": "restore exact existing live file from transaction-specific readback",
+      "target": "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256"
+    },
+    {
+      "archived_v120_preimage_bytes": 53719,
+      "archived_v120_preimage_sha256": "db591fec335897c8448a5571799b4a6ce2b59889b1afeff8a08206532b470d4c",
+      "candidate_bytes": 53760,
+      "candidate_sha256": "6dba73caea3046217ee2d44ccabd04b7f601fa3b33bc924f686743cb175169cb",
+      "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-features.js",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
+      "rollback_mode": "restore exact existing live file from transaction-specific readback",
+      "target": "/www/mission-control-local/owner-pwa/hbnf-cart-features.js"
+    },
+    {
+      "archived_v120_preimage_bytes": 31497,
+      "archived_v120_preimage_sha256": "9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
+      "candidate_bytes": 31585,
+      "candidate_sha256": "1c055c510aaa1cbfa6a645b465a4639a78320ddbac030b79ceefccb08262b1da",
+      "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
+      "rollback_mode": "restore exact existing live file from transaction-specific readback",
+      "target": "/www/mission-control-local/owner-pwa/hbnf-cart-local.js"
+    },
+    {
+      "archived_v120_preimage_bytes": 19242,
+      "archived_v120_preimage_sha256": "20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f",
+      "candidate_bytes": 19237,
+      "candidate_sha256": "8eef477b1b692778ddc17c5f1279fdc9b8b08251ee1fe38145e411d3c4b1ab0c",
+      "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.html",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
+      "rollback_mode": "restore exact existing live file from transaction-specific readback",
+      "target": "/www/mission-control-local/owner-pwa/hbnf-cart.html"
+    },
+    {
+      "archived_v120_preimage_bytes": 40445,
+      "archived_v120_preimage_sha256": "9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba",
+      "candidate_bytes": 40437,
+      "candidate_sha256": "e3517d8221fc911c62b5f972f823eb2586efc7cae0109f0932dcd8763c4bd5af",
+      "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.js",
+      "fresh_authenticated_installed_mode_owner": null,
+      "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
+      "preimage_download_back_verified": false,
+      "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
+      "rollback_mode": "restore exact existing live file from transaction-specific readback",
+      "target": "/www/mission-control-local/owner-pwa/hbnf-cart.js"
+    }
+  ],
+  "ordered_release": [
+    {
+      "action": "Authenticate exact real procd main /usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay (not the absent /usr/lib mispath), existing process/daemon/config dependencies, helper absent, 7 original matched target hashes; require current Matrix ps-1/FX142 and AUX RGB22 plus OFF PWM geometry without resetting them. Fail closed until actual service origin and native renderer proven.",
+      "order": 1,
+      "phase": "0_readback"
+    },
+    {
+      "action": "back up exact live Opal 9 preimages including symlink/absence state, all 21 Owner files, current enabled service config redacted; independent durable upload then download-back sha; preserve provider v35 source AND compiled release bytes",
+      "order": 2,
+      "phase": "0_backup"
+    },
+    {
+      "action": "pin all candidate 9 hashes, compiled Edge bundle and inverse SQL hashes; verify no drift, no live Cart pending overlay, recovery space and same-filesystem atomic staging; obtain one-time non-replayable approval binding frozen whole manifest",
+      "order": 3,
+      "phase": "0_build"
+    },
+    {
+      "action": "stage SQL up + Edge candidate in recoverable transaction only if native/admission and rollback validated; preserve existing legacy Owner handlers; KEEP both native overlay hard gates FALSE",
+      "order": 4,
+      "phase": "1_prepare"
+    },
+    {
+      "action": "Only after a SAME approved manifest with current procd executable preimage and init/service state: install one existing relay loop to /usr/libexec/hbnf-matrix-relay, never add a second service, verify all nine target bytes and roll back exact original or absent state.",
+      "order": 5,
+      "phase": "1_opal"
+    },
+    {
+      "action": "only if SAME approved manifest includes separately tested exact source gate true and compiled Edge bytes, admit one-use GLOW path; never set auto_live or re-enable destructive fx142/brightness full-state writer; fail closed otherwise",
+      "order": 6,
+      "phase": "2_admit"
+    },
+    {
+      "action": "in ONE owner-observed session: iPad Mini 2 Safari12 start/reconnect, live GLOW visibility, Owner preempt during TTL without >accepted latency, id-specific ACK and expiry, exact WOWMAX preset/fx/energy/variation/motion/audio/brightness/Vibe/AUX DDP equality, preserved UV off",
+      "order": 7,
+      "phase": "2_accept"
+    },
+    {
+      "action": "independent actual served and provider hash readback, SQL challenge settled, archive receipt off-device and independently download back; mark success only on all criteria",
+      "order": 8,
+      "phase": "2_closeout"
+    }
+  ],
+  "physical_capture_20261103": {
+    "aux": {
+      "configured_count": 24,
+      "pwm_gpio": [
+        25,
+        26
+      ],
+      "pwm_on": [
+        false,
+        false
+      ],
+      "pwm_render_or_packet_safety": "NOT_PROVEN",
+      "rgb_ddp_count": 22,
+      "rgb_gpio": 16
+    },
+    "correct_historical_main_path": "/usr/libexec/hbnf-matrix-relay",
+    "correct_main_path_status": "NOT_IN_CAPTURE",
+    "github_comment": 6613457326,
+    "glow_helper_status": "ABSENT",
+    "matrix": {
+      "auxBrightness": 0,
+      "effectId": 142,
+      "global_bri": 255,
+      "matrixBrightness": 0,
+      "native_overlay_renderer": "UNPROVEN",
+      "ps": -1,
+      "seg0_fx": 142,
+      "seg1_fx": 142
+    },
+    "observed_utc": "2026-11-03T19:21:40Z/2026-11-03T19:21:53Z",
+    "original_private_tar_sha256": "7922d1a5526c8f901316b368ffaf3a3d9caad84a6032aa7e110085b6562e61a6",
+    "private_archive_off_device_downloadback": false,
+    "private_archive_sha256": "ee458c62b35d22c7f24214c1d782e8173f836484fc6e58f41b4e9a89c448ab3a",
+    "seven_of_original_nine_regular_match_archived": true,
+    "wrong_main_path_status": "ABSENT",
+    "wrong_proposed_main_path": "/usr/lib/hbnf-matrix-relay"
+  },
+  "physical_capture_source": "#116 comments 6613457326, 6614401763, 6614414732, 6614692694",
+  "readback_acceptance": {
+    "device": [
+      "Matrix ps=-1 active FX142 both segments and native overlay independent renderer must be proved without forcing preset60",
+      "AUX configured 24: 22 RGB DDP GPIO16, PWM1 GPIO25 and GPIO26 both segment OFF; no AUX/PWM writes",
+      "WLED matrix brightness/auxBrightness and audio/energy/variation/motion may be zero and must be restored exactly",
+      "Matrix exact MAC 704bca5b345c and R6 build",
+      "no AUX write or UV change",
+      "Owner overlay immediate precedence",
+      "GLOW visible with saved scores",
+      "native TTL autoexpires and restores exact baseline energy/variation/motion/audio/brightness/Vibe/palette"
+    ],
+    "physical_checked": false,
+    "software": [
+      "21/21 Owner installed unchanged except approved six",
+      "9/9 exact changed target hashes",
+      "17/17 locally served HTTP assets",
+      "no stale queued command after reconnect",
+      "provider Edge candidate exact provider hash",
+      "v1 SQL challenge one-use and restorable",
+      "rollback exact byte equality and independent durable receipts"
+    ]
+  },
+  "release_gates": {
+    "actual_matrix_aux_owner_field_acceptance": "NOT_CHECKED",
+    "actual_private_installed_preimage_download_back": "MISSING",
+    "compiled_edge_candidate_and_restore": "MISSING",
+    "native_overlay_ps_minus_one_renderer": "NOT_PROVED_FAIL_CLOSED",
+    "new_transaction_specific_backup_download_back": "MISSING",
+    "old_cloud_named_relay_absent": "PASS at 2026-11-03T20:12Z time scoped",
+    "one_time_manifest_owner_approval": "MISSING",
+    "seven_owner_preimages": "MATCHED at 2026-11-03T19:21Z capture, independent durable backup not yet verified",
+    "single_service_startup_device": "NOT_CHECKED",
+    "three_new_named_paths_and_dynamic_config": "UNVERIFIED"
+  },
+  "schema": "hbnf-cart116-controls-single-managed-outbound-bridge-v2-source-pending",
+  "source_corrections_20261103": {
+    "candidate_main_install_path_corrected": "/usr/libexec/hbnf-matrix-relay",
+    "changed_only_tests": "PENDING CI",
+    "historical_init_source_blob": "fb562b848ca071e6c3d0caffb0d21a5675b39db1",
+    "parent_verified_head": "506b911365885ed13ee82b9eb4194ecbc7276441",
+    "source_module_paths": [
+      "staging/cart116-glow-v35-exact-review/candidate-source/matrix-overlay-safe-review.mjs",
+      "staging/cart116-glow-v35-exact-review/candidate-source/glow-overlay-v1-handler.mjs",
+      "staging/cart116-glow-v35-exact-review/opal/hbnf-glow-overlay-v1.sh",
+      "staging/cart116-glow-v35-exact-review/opal/relay-startup-origin.mjs"
+    ],
+    "source_only_no_live_mutation": true
+  },
+  "sql": {
+    "down_member": "candidate/backend/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql",
+    "production_preimage": "four_legacy_rpc_functions_overlay_v1_absent",
+    "restore_guard": "abort inverse if any new overlay challenge not confirmed restored",
+    "test": "PostgreSQL 17.11 native role/revision/fence/TTL/race/guarded-rollback PASS run 41694282141",
+    "up_member": "candidate/backend/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql",
+    "writes_league_state": false
+  },
+  "state": "NO_GO_NEW_SERVICE_SOURCE_NOT_ADMITTED",
+  "superseded_nine_target_install_contract": "OLD nine-target main relay replacement is invalid; now NEW service. Preserve only as provenance.",
+  "transaction": {
+    "closeout": null,
+    "manifest_specific_one_time_id": null,
+    "owner_approval_for_this_exact_postimage": null,
+    "phase1": false,
+    "phase2": false
+  }
+}

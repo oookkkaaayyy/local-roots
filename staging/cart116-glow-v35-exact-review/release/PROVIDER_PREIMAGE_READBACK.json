@@ -1,0 +1,16 @@
+{
+  "source": "supabase.get_edge_function + independent GitHub fetch_file at Controls HEAD ecd434ec7dde67c8608e514ce5001785cc24831c",
+  "project": "phcpbvuqibyarpfrftgx",
+  "edge_slug": "hbnf-cart-control",
+  "deployed_status": "ACTIVE",
+  "deployed_version": 35,
+  "deployed_ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+  "deployed_all_10_file_sources_identical_to_GitHub_rollback": true,
+  "compiled_candidate_sha256": null,
+  "compiled_provider_rollback_download_back": false,
+  "sql_overlay_v1_rpcs": 0,
+  "sql_legacy_rpc_count": 4,
+  "sql_overlay_challenge_table_exists": false,
+  "physical_acceptance": false,
+  "live_mutation": false
+}

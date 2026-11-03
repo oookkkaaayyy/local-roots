@@ -1,0 +1,50 @@
+#!/bin/ash
+# Controls #116: NEW outbound-only native Glow bridge, independent of Owner WS.
+# Source/release gate is deliberately compile-time FALSE until SAME approved
+# release manifest pins a separately reviewed, enabled source revision.
+set -eu
+umask 077
+HBNF_CART_GLOW_SOURCE_ADMITTED=false
+[ "$HBNF_CART_GLOW_SOURCE_ADMITTED" = true ] || exit 0
+
+SERVICE=hbnf-cart-glow-bridge
+HELPER=/usr/lib/hbnf-glow-overlay-v1.sh
+CONF=/etc/hbnf-cart-glow-bridge.conf
+RUN=/tmp/hbnf-cart-glow-bridge
+LOCK=/etc/hbnf-glow-overlay-v1.partial-failure
+OLD_LOCK=/etc/hbnf-matrix-relay.partial-failure
+log(){ logger -t "$SERVICE" "$1" 2>/dev/null || :; }
+[ "$#" -eq 0 ] || exit 2
+[ -x /bin/ash ] && [ -f "$HELPER" ] && [ ! -L "$HELPER" ] &&
+ [ -f "$CONF" ] && [ ! -L "$CONF" ] || exit 1
+[ "$(stat -c %u:%a "$CONF" 2>/dev/null)" = '0:600' ] || exit 1
+[ "$(stat -c %u "$HELPER" 2>/dev/null)" = 0 ] || exit 1
+command -v curl >/dev/null && command -v jsonfilter >/dev/null &&
+ command -v sha256sum >/dev/null && command -v ps >/dev/null || exit 1
+# Reject either known historical poller. The local Owner direct Matrix WS is
+# deliberately unrelated, never inspected/killed or rewritten by this script.
+conflict(){
+ ps w 2>/dev/null | grep -E '[/]usr/libexec/hbnf-(matrix-relay|skins-relay)( |$)' >/dev/null
+}
+conflict && { log 'old relay process conflict; no Glow commands'; exit 1; }
+[ ! -e "$OLD_LOCK" ] && [ ! -L "$OLD_LOCK" ] || exit 1
+[ ! -L "$LOCK" ] && [ ! -L "$RUN" ] || exit 1
+mkdir -p "$RUN" && chmod 700 "$RUN" || exit 1
+mkdir "$RUN/one-process" 2>/dev/null || { log 'second process denied'; exit 1; }
+trap 'rmdir "$RUN/one-process" 2>/dev/null || :' EXIT HUP INT TERM
+# No source-compatible legacy op=next/check, paired Matrix/AUX rewrite,
+# MQTT, second daemon, port listener or privileged local WebSocket endpoint.
+while :; do
+ conflict && { log 'legacy relay appeared; stopped'; exit 1; }
+ [ ! -e "$OLD_LOCK" ] && [ ! -L "$OLD_LOCK" ] || exit 1
+ if /bin/ash "$HELPER"; then
+  # Native helper only performs GET/challenge/ACK and HBNF.overlay-only apply.
+  # On active TTL it returns to this bounded service loop immediately.
+  sleep 4
+ else
+  # Ambiguous one-use apply is persistently locked by helper; never retry it.
+  if [ -e "$LOCK" ]; then log 'native Glow locked for readback recovery'; exit 1; fi
+  log 'native Glow deferred; bounded reconnect backoff'
+  sleep 15
+ fi
+done

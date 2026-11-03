@@ -1,0 +1,24 @@
+#!/bin/sh /etc/rc.common
+# NEW Controls-owned procd service, does not replace local Owner WS service.
+START=96
+STOP=09
+USE_PROCD=1
+BIN=/usr/libexec/hbnf-cart-glow-bridge
+CONF=/etc/hbnf-cart-glow-bridge.conf
+HELPER=/usr/lib/hbnf-glow-overlay-v1.sh
+start_service() {
+  # No auto-start, even if installed, until separately authorized compiled
+  # source *and* credential provisioning are present and valid.
+  [ -f "$BIN" ] && [ -x "$BIN" ] && [ ! -L "$BIN" ] || return 1
+  [ -f "$HELPER" ] && [ ! -L "$HELPER" ] || return 1
+  [ -f "$CONF" ] && [ ! -L "$CONF" ] || return 1
+  [ "$(stat -c %u:%a "$CONF" 2>/dev/null)" = '0:600' ] || return 1
+  grep -qx 'HBNF_CART_GLOW_SOURCE_ADMITTED=true' "$BIN" || return 1
+  grep -qx 'HBNF_OVERLAY_V1_SOURCE_ADMITTED=true' "$HELPER" || return 1
+  [ ! -e /etc/hbnf-matrix-relay.partial-failure ] || return 1
+  procd_open_instance
+  procd_set_param command "$BIN"
+  procd_set_param file "$BIN" "$HELPER" "$CONF"
+  procd_set_param respawn 3600 5 5
+  procd_close_instance
+}
