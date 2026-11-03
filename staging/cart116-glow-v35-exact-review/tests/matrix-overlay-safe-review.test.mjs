@@ -31,6 +31,7 @@ for(const [name,modify,reason] of [
   ['unknown owner priority',v=>delete v.ownerPriorityClear,'owner_priority_not_cleared'],
   ['wrong matrix MAC',v=>v.matrixInfo.mac='00:00:00:00:00:00','target_or_topology_mismatch'],
   ['wrong AUX address',v=>v.auxInfo.ip='192.168.77.82','target_or_topology_mismatch'],
+  ['reported AUX count 24 is not silently reclassified as 22',v=>v.auxInfo.leds.count=24,'target_or_topology_mismatch'],
   ['stale R6 identity',v=>v.matrixBuild.release_id='unverified','installed_release_not_verified'],
   ['not WOW MAX 60',v=>v.matrixState.ps=12,'wow_max_runtime_unproven'],
   ['not native HBNF effect',v=>v.matrixState.seg[0].fx=142,'active_foundation_effect_unproven'],
