@@ -246,6 +246,15 @@ export async function runApprovedGlowSync(env, deps = {}) {
     const model = {eventId:binding.eventId,snapshots:[snapshot]};
     const decisions = source.exactAliasDecisions(model,evidence);
     const proposal = source.buildGlowProposal(model,evidence,decisions,{weekDate:binding.weekDate});
+    // A card/roster can exist before anyone finishes hole 1. Even if a
+    // spreadsheet includes valid participant rows, do not create scores,
+    // teams or tag-related state based only on zero scored holes.
+    const anyScoredHole=proposal.sourceProvenance?.rowEvidence?.some(row=>
+      Array.isArray(row?.holeScores) && row.holeScores.some(score=>score!==null&&score!==''&&score!==undefined));
+    if(!anyScoredHole) {
+      captureBoundary(deps,'source_no_scores',{date:binding.weekDate,scoreWrite:false,cartIntent:false});
+      return {disposition:'no_scores_yet',date:binding.weekDate,cartIntent:'NOT_REQUESTED'};
+    }
     if (proposal.issues?.unresolvedIdentityCount || proposal.issues?.duplicateCanonicalTeamRows) {
       throw Object.assign(Error('Player names need a one-time review before scores can be applied.'),{code:'IDENTITY_REVIEW_REQUIRED'});
     }
@@ -304,6 +313,13 @@ export async function runApprovedGlowSync(env, deps = {}) {
     return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at,cartIntent};
   } catch (error) {
     const code=String(error?.code||'SYNC_FAILED');
+    // UDisc's official first Nov3 event export is an empty A1 sheet. Do not
+    // log a scoring failure to league_state or offer Cart for an ordinary
+    // no-score event. This is not evidence that organizer setup failed.
+    if(code==='EMPTY_EXPORT_NO_SCORES') {
+      captureBoundary(deps,'source_no_scores',{date:binding.weekDate,scoreWrite:false,cartIntent:false});
+      return {disposition:'empty_export_no_scores',date:binding.weekDate,cartIntent:'NOT_REQUESTED'};
+    }
     // The CAS may have rejected a concurrent writer, or succeeded but its
     // readback disagreed. A second status-write RPC would race that writer
     // and can mask a real successful score save; never issue it in either case.
