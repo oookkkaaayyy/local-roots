@@ -1,6 +1,6 @@
 // REVIEW_ONLY native overlay v1 protocol for the authenticated v35 Opal relay.
 // No generic WLED projection, device I/O, score mutations, or admission switch.
-import { proposeNativeOverlayOnly } from './matrix-overlay-safe-review.mjs';
+import { proposeNativeOverlayOnly, inspectAux22DdpWithOffPwm } from './matrix-overlay-safe-review.mjs';
 
 export const GLOW_V1_OPS = ['overlay_v1_next','overlay_v1_authorize','overlay_v1_ack','overlay_v1_restored'];
 const bad = (error, status=409) => ({status,body:{error}});
@@ -17,6 +17,8 @@ export function captureOverlayProfile(snapshot) {
     !Array.isArray(state.seg)||!Array.isArray(auxState.seg)||!state.HBNF||
     !int(state.bri)||!int(auxState.bri)||!int(info.leds?.count)||!int(auxInfo.leds?.count))
       throw Error('paired_overlay_readback_incomplete');
+  const ddp=inspectAux22DdpWithOffPwm({auxInfo,auxState,auxConfig});
+  if(!ddp.compatible) throw Error(ddp.reason);
   const profile = {
     matrix:{mac:mac(info.mac),version:String(info.ver??''),leds:info.leds.count,
       buildRelease:build.release_id,global:picked(state,['on','ps','bri']),
@@ -27,7 +29,9 @@ export function captureOverlayProfile(snapshot) {
       ddp:picked(auxInfo,['live','lm','lip']),
       global:picked(auxState,['on','bri','lor']),
       segments:auxState.seg.map(s=>picked(s,segKeys)),
-      forceMaxBrightness:auxConfig?.if?.live?.maxbri}
+      forceMaxBrightness:auxConfig?.if?.live?.maxbri,
+      buses:auxConfig.hw.led.ins.map(x=>picked(x,['start','len','pin','type'])),
+      ddpRgbPixels:ddp.ddpRgbPixels,pwmOffPins:ddp.pwmOffPins}
   };
   return profile;
 }
@@ -59,7 +63,7 @@ export async function proposeCanonicalOverlay(context,snapshot,now) {
   const content={kind:'scoreboard',ttlMs:intent.ttlMs,label:'GLOW',entries:intent.entries};
   const id='hbnf-'+(await digestText(JSON.stringify({rev:intent.revision,fence:intent.fence.epoch,sourceId:intent.canonicalId,entries:intent.entries}))).slice(0,32);
   const proposal=proposeNativeOverlayOnly({matrixInfo:snapshot.info,matrixState:snapshot.state,
-    matrixBuild:snapshot.build,auxInfo:snapshot.auxInfo,auxState:snapshot.auxState,
+    matrixBuild:snapshot.build,auxInfo:snapshot.auxInfo,auxState:snapshot.auxState,auxConfig:snapshot.auxConfig,
     ownerPriorityClear:true,overlay:{id,...content}});
   if(!proposal.eligible)throw Error(proposal.reason);
   if(snapshot.auxConfig?.if?.live?.maxbri!==false)throw Error('aux_receiver_brightness_override');

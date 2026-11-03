@@ -47,12 +47,39 @@ snapshot() {
  [ "$(jsonfilter -i "$TMP/info.json" -e '@.mac' | tr -d : | tr 'A-F' 'a-f')" = 704bca5b345c ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.mac' | tr -d : | tr 'A-F' 'a-f')" = 8c94df55c34c ] || return 1
  [ "$(jsonfilter -i "$TMP/build.json" -e '@.release_id')" = 'hbnf-cart2-phase2-r6-skins-readable-20261014' ] || return 1
- [ "$(jsonfilter -i "$TMP/state.json" -e '@.ps')" = 60 ] || return 1
+ ps="$(jsonfilter -i "$TMP/state.json" -e '@.ps')" || return 1
+ case "$ps" in
+   60) : ;;
+   -1) # Current physical profile: effect 142 without an active preset.
+       # No source/installed renderer parity proof. Still fail closed.
+       return 1 ;;
+   *) return 1 ;;
+ esac
+ fx="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.effectId')" || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[0].fx')" = "$fx" ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[1].fx')" = "$fx" ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.live')" = true ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.lm')" = DDP ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.lip')" = 192.168.77.10 ] || return 1
- # The known installed 24-configured/22-active conflict blocks physical apply.
- [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.leds.count')" = 22 ] || return 1
+ # Exactly 24 configured: 22 RGB DDP on GPIO16, plus two PWM outputs
+ # GPIO25/26 whose segments MUST remain OFF. Never write AUX config/state.
+ [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.leds.count')" = 24 ] || return 1
+ for spec in '0:0:22:22:16:0:0:22:1' '1:22:1:41:25:1:22:23:0' '2:23:1:41:26:2:23:24:0'; do
+  oldifs="$IFS"; IFS=:; set -- $spec; IFS="$oldifs"
+  i="$1"; start="$2"; length="$3"; typ="$4"; pin="$5"; seg="$6"; lo="$7"; hi="$8"; on="$9"
+  [ "$(jsonfilter -i "$TMP/auxConfig.json" -e "@.hw.led.ins[$i].start")" = "$start" ] || return 1
+  [ "$(jsonfilter -i "$TMP/auxConfig.json" -e "@.hw.led.ins[$i].len")" = "$length" ] || return 1
+  [ "$(jsonfilter -i "$TMP/auxConfig.json" -e "@.hw.led.ins[$i].type")" = "$typ" ] || return 1
+  [ "$(jsonfilter -i "$TMP/auxConfig.json" -e "@.hw.led.ins[$i].pin[0]")" = "$pin" ] || return 1
+  [ "$(jsonfilter -i "$TMP/auxState.json" -e "@.seg[$seg].start")" = "$lo" ] || return 1
+  [ "$(jsonfilter -i "$TMP/auxState.json" -e "@.seg[$seg].stop")" = "$hi" ] || return 1
+  v="$(jsonfilter -i "$TMP/auxState.json" -e "@.seg[$seg].on")"
+  if [ "$on" = 1 ]; then [ "$v" = true ] || return 1;
+  else [ "$v" = false ] || return 1; fi
+  [ -z "$(jsonfilter -i "$TMP/auxConfig.json" -e "@.hw.led.ins[$i].pin[1]" 2>/dev/null || true)" ] || return 1
+ done
+ # Reject any fourth bus. This is 24 logical outputs, not 24 DDP RGB pixels.
+ [ -z "$(jsonfilter -i "$TMP/auxConfig.json" -e '@.hw.led.ins[3].type' 2>/dev/null || true)" ] || return 1
  [ "$(jsonfilter -i "$TMP/auxConfig.json" -e '@.if.live.maxbri')" = false ] || return 1
 }
 post() {

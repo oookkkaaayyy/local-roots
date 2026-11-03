@@ -1,14 +1,15 @@
 {
   "backend_or_opal_mutated": false,
   "candidate_archive": {
-    "bytes": 943043,
+    "bytes": 953643,
     "download_back_previously_verified": true,
-    "durable_drive_id": "1cmuKOefdzkDl_BphqIUBfXI1xxR8Kzb0",
-    "file_name": "CART116-Controls-OverlayV1-Combined-nonblocking-REVIEW_ONLY-20261103.zip",
+    "durable_drive_id": "1qkc7h8Vh92rNdcnStdIHFd_JRyucvqSn",
+    "embedded_manifest_has_no_self_sha_due_to_nonrecursive_archive": true,
+    "file_name": "CART116-Controls-PhysicalGuard-REVIEW_ONLY-20261103.zip",
     "hard_edge_admitted": false,
     "hard_opal_admitted": false,
     "installable": false,
-    "sha256": "71e6331f16d69c9379a932da6d3bd07bc1f497408d5508d8d82d8dc94b256af4"
+    "sha256": "a9ceea5442a2dac558638f2fde1ba3d40b3eacfc5ca6d5bbd415deb344eb2c49"
   },
   "edge": {
     "candidate_source": {
@@ -62,17 +63,18 @@
     "uv_switch": false
   },
   "hard_gates": {
-    "aux_24_configured_vs_22_ddp": "UNRESOLVED_FAIL_CLOSED",
+    "active_relay_startup_and_preimage": "UNKNOWN: source init calls /usr/libexec/hbnf-matrix-relay; no current procd or bytes for that path",
+    "aux_24_configured_vs_22_ddp": "SOURCE_GEOMETRY_GUARD_22_RGB_GPIO16_PLUS_TWO_OFF_TYPE41_PWM_GPIO25_26; NO_PACKET_OR_ELECTRICAL_PROOF",
     "compiled_edge_candidate_and_rollback_offprovider_downloadback": "MISSING",
-    "exact_current_opal_main_and_all_other_eight_preimages": "MISSING",
-    "expected_actual_opal_main_path": "UNVERIFIED",
-    "fresh_device_matrix_ps60_effect_id_and_aux_parity": "MISSING",
-    "fresh_installed_current_Opal_main": "UNKNOWN",
+    "exact_current_opal_main_and_all_other_eight_preimages": "7/9 VERIFIED LAST CAPTURE; 1 HELPER ABSENT; CORRECT MAIN PATH UNVERIFIED",
+    "expected_actual_opal_main_path": "/usr/libexec/hbnf-matrix-relay HISTORICAL PROCD SOURCE; CURRENT DEVICE NOT CAPTURED",
+    "fresh_device_matrix_ps60_effect_id_and_aux_parity": "ps=-1 effectId142 both fx142 VERIFIED; PS60 NOT OBSERVED; NATIVE RENDERER FAIL_CLOSED",
+    "fresh_installed_current_Opal_main": "NOT_IN_CAPTURE CORRECT MAIN PATH; HISTORICAL INIT /etc/init.d/hbnf-matrix-relay REPORTED ABSENT",
     "fresh_owner_priority_cloud_preemption_latency": "NONBLOCKING_SOURCE_10_OF_10_NATIVE_PASS_DEVICE_NOT_CHECKED",
     "independent_device_preimage_backup_downloadback": "MISSING",
     "native_opal_nonblocking": "10/10_FOCUSED_BUSYBOX_ASH_PASSED_NO_DEVICE_CONTACT",
     "native_pg_and_deno": "PASS_SEPARATE_EXACT_SOURCE_RUNS",
-    "one_time_owner_manifest_bound_authorization": "MISSING",
+    "one_time_owner_manifest_bound_authorization": "MISSING; DO NOT REQUEST BEFORE SOURCE AND ROLLBACK ACCEPTANCE",
     "owner_preemption_field_timing": "UNVERIFIED",
     "physical_owner_safari12_matrix_aux_acceptance": "NOT_CHECKED",
     "single_unchanged_manifest_phase1_phase2_closeout": "PENDING"
@@ -82,11 +84,12 @@
     {
       "archived_v120_preimage_bytes": null,
       "archived_v120_preimage_sha256": null,
-      "candidate_bytes": 8982,
-      "candidate_sha256": "03c936a1affb74dda502011da61ce0a9cd9197e1b6e551ccab9b404bff14a8a4",
+      "candidate_bytes": 10743,
+      "candidate_sha256": "0015c32baaf105c478ded3a99fc4f24cc64a455b2691d51c7e111ab86da5695f",
       "candidate_zip_member": "candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "ABSENT according to 19:21 owner Mac capture; off-device archive download-back incomplete",
       "preimage_download_back_verified": false,
       "restore_byte_source": "prove path absent before installation; otherwise independent backup required",
       "rollback_mode": "remove ONLY when verified absent in fresh preimage",
@@ -97,13 +100,14 @@
       "archived_v120_preimage_sha256": null,
       "candidate_bytes": 13994,
       "candidate_sha256": "e5a8ee13a9044ddb35697efc548731d4099480437f60d8600d7451baf0a65f96",
-      "candidate_zip_member": "candidate/opal/usr/lib/hbnf-matrix-relay",
+      "candidate_zip_member": "candidate/opal/usr/libexec/hbnf-matrix-relay",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "NOT_IN_CAPTURE; historical init source is NOT current installed byte identity",
       "preimage_download_back_verified": false,
-      "restore_byte_source": "rollback/opal-original-relay-source (NOT installed identity)",
+      "restore_byte_source": "UNKNOWN current correct-path installed preimage; archived source NOT installed evidence",
       "rollback_mode": "restore exact existing live file from transaction-specific readback",
-      "target": "/usr/lib/hbnf-matrix-relay"
+      "target": "/usr/libexec/hbnf-matrix-relay"
     },
     {
       "archived_v120_preimage_bytes": 8993,
@@ -113,6 +117,7 @@
       "candidate_zip_member": "candidate/opal/www/mission-control-local/local-transport.js",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
       "preimage_download_back_verified": false,
       "restore_byte_source": "rollback/external-local-transport-original.js",
       "rollback_mode": "restore exact existing live file from transaction-specific readback",
@@ -126,6 +131,7 @@
       "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-package-version",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
       "preimage_download_back_verified": false,
       "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
       "rollback_mode": "restore exact existing live file from transaction-specific readback",
@@ -139,6 +145,7 @@
       "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
       "preimage_download_back_verified": false,
       "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
       "rollback_mode": "restore exact existing live file from transaction-specific readback",
@@ -152,6 +159,7 @@
       "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-features.js",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
       "preimage_download_back_verified": false,
       "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
       "rollback_mode": "restore exact existing live file from transaction-specific readback",
@@ -165,6 +173,7 @@
       "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
       "preimage_download_back_verified": false,
       "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
       "rollback_mode": "restore exact existing live file from transaction-specific readback",
@@ -178,6 +187,7 @@
       "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.html",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
       "preimage_download_back_verified": false,
       "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
       "rollback_mode": "restore exact existing live file from transaction-specific readback",
@@ -191,6 +201,7 @@
       "candidate_zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.js",
       "fresh_authenticated_installed_mode_owner": null,
       "fresh_authenticated_installed_preimage_sha256": null,
+      "fresh_target_status": "REGULAR; comment 6613457326 confirms matches original 7/9 preimage; private bytes not in this repo",
       "preimage_download_back_verified": false,
       "restore_byte_source": "rollback/owner-v120-exact.tar.gz",
       "rollback_mode": "restore exact existing live file from transaction-specific readback",
@@ -199,7 +210,7 @@
   ],
   "ordered_release": [
     {
-      "action": "authenticate Opal target, list exact 9 paths and installed bytes/ownership, served 17 assets and current relay process; capture Matrix .10 and AUX .11 actual JSON state/info/config/build, ps60/fx and canonical Owner fence; abort on missing/mismatch/lockout",
+      "action": "Authenticate exact real procd main /usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay (not the absent /usr/lib mispath), existing process/daemon/config dependencies, helper absent, 7 original matched target hashes; require current Matrix ps-1/FX142 and AUX RGB22 plus OFF PWM geometry without resetting them. Fail closed until actual service origin and native renderer proven.",
       "order": 1,
       "phase": "0_readback"
     },
@@ -219,7 +230,7 @@
       "phase": "1_prepare"
     },
     {
-      "action": "drain one relay loop, record its PID and previous service state; atomically stage exact nine target files with expected permissions, backups and independent disk readback; verify all expected old hashes immediately before swap",
+      "action": "Only after a SAME approved manifest with current procd executable preimage and init/service state: install one existing relay loop to /usr/libexec/hbnf-matrix-relay, never add a second service, verify all nine target bytes and roll back exact original or absent state.",
       "order": 5,
       "phase": "1_opal"
     },
@@ -239,11 +250,49 @@
       "phase": "2_closeout"
     }
   ],
+  "physical_capture_20261103": {
+    "aux": {
+      "configured_count": 24,
+      "pwm_gpio": [
+        25,
+        26
+      ],
+      "pwm_on": [
+        false,
+        false
+      ],
+      "pwm_render_or_packet_safety": "NOT_PROVEN",
+      "rgb_ddp_count": 22,
+      "rgb_gpio": 16
+    },
+    "correct_historical_main_path": "/usr/libexec/hbnf-matrix-relay",
+    "correct_main_path_status": "NOT_IN_CAPTURE",
+    "github_comment": 6613457326,
+    "glow_helper_status": "ABSENT",
+    "matrix": {
+      "auxBrightness": 0,
+      "effectId": 142,
+      "global_bri": 255,
+      "matrixBrightness": 0,
+      "native_overlay_renderer": "UNPROVEN",
+      "ps": -1,
+      "seg0_fx": 142,
+      "seg1_fx": 142
+    },
+    "observed_utc": "2026-11-03T19:21:40Z/2026-11-03T19:21:53Z",
+    "original_private_tar_sha256": "7922d1a5526c8f901316b368ffaf3a3d9caad84a6032aa7e110085b6562e61a6",
+    "private_archive_off_device_downloadback": false,
+    "private_archive_sha256": "ee458c62b35d22c7f24214c1d782e8173f836484fc6e58f41b4e9a89c448ab3a",
+    "seven_of_original_nine_regular_match_archived": true,
+    "wrong_main_path_status": "ABSENT",
+    "wrong_proposed_main_path": "/usr/lib/hbnf-matrix-relay"
+  },
   "readback_acceptance": {
     "device": [
+      "Matrix ps=-1 active FX142 both segments and native overlay independent renderer must be proved without forcing preset60",
+      "AUX configured 24: 22 RGB DDP GPIO16, PWM1 GPIO25 and GPIO26 both segment OFF; no AUX/PWM writes",
+      "WLED matrix brightness/auxBrightness and audio/energy/variation/motion may be zero and must be restored exactly",
       "Matrix exact MAC 704bca5b345c and R6 build",
-      "WOWMAX ps60 and both effect IDs equal foundation native effect",
-      "Matrix 534/2 segments AUX accepted DDP 22-active with resolved configured geometry",
       "no AUX write or UV change",
       "Owner overlay immediate precedence",
       "GLOW visible with saved scores",
@@ -261,6 +310,19 @@
     ]
   },
   "schema": "hbnf-cart116-controls-track-a-two-phase-admission-v1",
+  "source_corrections_20261103": {
+    "candidate_main_install_path_corrected": "/usr/libexec/hbnf-matrix-relay",
+    "changed_only_tests": "10/10 native Node PASS, BusyBox ash -n three changed/new scripts PASS; CI PENDING",
+    "historical_init_source_blob": "fb562b848ca071e6c3d0caffb0d21a5675b39db1",
+    "parent_verified_head": "506b911365885ed13ee82b9eb4194ecbc7276441",
+    "source_module_paths": [
+      "staging/cart116-glow-v35-exact-review/candidate-source/matrix-overlay-safe-review.mjs",
+      "staging/cart116-glow-v35-exact-review/candidate-source/glow-overlay-v1-handler.mjs",
+      "staging/cart116-glow-v35-exact-review/opal/hbnf-glow-overlay-v1.sh",
+      "staging/cart116-glow-v35-exact-review/opal/relay-startup-origin.mjs"
+    ],
+    "source_only_no_live_mutation": true
+  },
   "sql": {
     "down_member": "candidate/backend/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql",
     "production_preimage": "four_legacy_rpc_functions_overlay_v1_absent",

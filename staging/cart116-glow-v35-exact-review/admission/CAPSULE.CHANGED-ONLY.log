@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: observed 24 configured = 22 GPIO16 RGB + two OFF one-channel PWM on GPIO25/26
+ok 1 - observed 24 configured = 22 GPIO16 RGB + two OFF one-channel PWM on GPIO25/26
+  ---
+  duration_ms: 1.481439
+  type: 'test'
+  ...
+# Subtest: unknown bus count, pin, kind, overlap and the 24->22 normalization are rejected
+ok 2 - unknown bus count, pin, kind, overlap and the 24->22 normalization are rejected
+  ---
+  duration_ms: 0.27783
+  type: 'test'
+  ...
+# Subtest: PWM segment on, missing segment, wrong extent, or DDP source rejected
+ok 3 - PWM segment on, missing segment, wrong extent, or DDP source rejected
+  ---
+  duration_ms: 0.355848
+  type: 'test'
+  ...
+# Subtest: current actual ps=-1, fx142 both matching: no forced preset, no mutation, still not eligible
+ok 4 - current actual ps=-1, fx142 both matching: no forced preset, no mutation, still not eligible
+  ---
+  duration_ms: 0.30401
+  type: 'test'
+  ...
+# Subtest: preset60 supported source path also omits all AUX/FX/brightness writes
+ok 5 - preset60 supported source path also omits all AUX/FX/brightness writes
+  ---
+  duration_ms: 0.21842
+  type: 'test'
+  ...
+# Subtest: effect mismatch/Owner priority both deny even when native support and DDP exact
+ok 6 - effect mismatch/Owner priority both deny even when native support and DDP exact
+  ---
+  duration_ms: 0.139161
+  type: 'test'
+  ...
+# Subtest: preimage fingerprint includes independent PWM bus and segment state, never zeros out brightness
+ok 7 - preimage fingerprint includes independent PWM bus and segment state, never zeros out brightness
+  ---
+  duration_ms: 9.638396
+  type: 'test'
+  ...
+# Subtest: unverified historical procd path does not assert no running relay or grant a substitute Skins service
+ok 8 - unverified historical procd path does not assert no running relay or grant a substitute Skins service
+  ---
+  duration_ms: 0.605194
+  type: 'test'
+  ...
+# Subtest: incomplete process or file inventory fails closed; historical procd alone cannot authorize
+ok 9 - incomplete process or file inventory fails closed; historical procd alone cannot authorize
+  ---
+  duration_ms: 0.445573
+  type: 'test'
+  ...
+# Subtest: existing procd START95 points to libexec, never proposed absent /usr/lib executable
+ok 10 - existing procd START95 points to libexec, never proposed absent /usr/lib executable
+  ---
+  duration_ms: 0.499445
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 73.072375

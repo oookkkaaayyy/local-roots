@@ -1,0 +1,24 @@
+name: cart116 changed-only physical profile guard
+on:
+  push:
+    branches: [review/cart116-glow-canonical-intent-20261103]
+jobs:
+  physical_profile_only:
+    if: contains(github.event.head_commit.message, '[trackA-source-only]')
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Exact Nov 3 AUX 22+2 PWM / Matrix -1 / relay startup source tests only
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          node --test tests/trackA-physical-geometry-change.test.mjs
+      - name: BusyBox ash syntax of changed helper, historical main and procd reference only
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n /src/opal/hbnf-glow-overlay-v1.sh
+          docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n /src/opal/hbnf-matrix-relay
+          docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n /src/opal/hbnf-matrix-relay.init.REVIEW_ONLY
