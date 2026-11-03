@@ -35,7 +35,7 @@ export function qualifiedGlowScorePars(week) {
   const pars=week.scorecardText?.holePars;
   const missing=[...scored].filter(h=>{
     const raw=String(pars?.[String(h)]??'').trim();
-    return !/^[2-8]$/.test(raw);
+    return !/^[1-9]$/.test(raw);
   });
   if(missing.length)return {ready:false,reason:'hole_pars_not_verified',missingCount:missing.length,scoredHoles:scored.size};
   return {ready:true,scoredHoles:scored.size};
