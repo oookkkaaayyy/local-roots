@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {enforcePreservedGlowRelay,hasGlowIntent,hasGlowActuatorPayload,GLOW_PROJECTION_BLOCK_REASON} from '../staging/cart116-glow-v35-exact-review/candidate-source/glow-relay-preservation.mjs';
+const device={matrix:{on:true,bri:255,seg:[{id:0,fx:142},{id:1,fx:142,start:512,stop:534}],HBNF:{overlay:{kind:'scoreboard',label:'GLOW',entries:['A -2']},vibe:3,motion:60}},aux:{on:true,bri:27}};
+const state=(overlays=[],cursor)=>({desired:{state:{power:'on',selectedVibe:'psychedelic',overlays,devices:{matrix:{brightness:255},aux:{brightness:27}},...(cursor?{glowScoreIntentCursor:cursor}:{})}}});
+const glow={kind:'scoreboard',priority:20,payload:{label:'GLOW',entries:['A -2']},expiresAt:Date.now()+10000};
+const other={kind:'text',priority:60,payload:{text:'OWNER'},expiresAt:Date.now()+10000};
+test('active canonical GLOW refuses old full-state next projection',()=>{assert.equal(hasGlowIntent(state([glow])),true);assert.throws(()=>enforcePreservedGlowRelay({context:state([glow]),wledPayload:device}),{message:GLOW_PROJECTION_BLOCK_REASON});});
+test('in-flight GLOW challenge cannot authorize old full-state apply',()=>{assert.equal(hasGlowActuatorPayload(device),true);assert.throws(()=>enforcePreservedGlowRelay({wledPayload:device}),{message:GLOW_PROJECTION_BLOCK_REASON});});
+test('expired Glow and active Owner text cannot force reset',()=>{assert.throws(()=>enforcePreservedGlowRelay({context:state([{...glow,expiresAt:0},other]),wledPayload:{matrix:{HBNF:{overlay:null}},aux:{on:true,bri:27}}}),{message:GLOW_PROJECTION_BLOCK_REASON});});
+test('reconnect and pruned overlays retain protection using canonical cursor',()=>{assert.throws(()=>enforcePreservedGlowRelay({context:state([], {key:'glow-20261103-aaa-100',sourceRevision:'revision'}),wledPayload:{matrix:{HBNF:{overlay:null}},aux:{}}}),{message:GLOW_PROJECTION_BLOCK_REASON});});
+test('ordinary owner text remains unchanged absent Glow',()=>{assert.equal(enforcePreservedGlowRelay({context:state([other]),wledPayload:{matrix:{HBNF:{overlay:{kind:'text',text:'OWNER'}}},aux:{on:true,bri:27}}}),true);});
+test('unrelated scene/brightness remains unchanged absent Glow',()=>{assert.equal(enforcePreservedGlowRelay({context:state(),wledPayload:{matrix:{seg:[{fx:142}],bri:255},aux:{bri:27}}}),true);});
+test('invalid unrelated overlay cannot imply admission',()=>{assert.equal(hasGlowIntent(state([{},null,other])),false);assert.equal(hasGlowActuatorPayload({matrix:{HBNF:{overlay:{kind:'scoreboard',label:'F9'}}}}),false);});
+test('malformed or null projected overlay does not override canonical Glow fence',()=>{assert.throws(()=>enforcePreservedGlowRelay({context:state([glow]),wledPayload:{matrix:{HBNF:{overlay:null}},aux:{}}}),{message:GLOW_PROJECTION_BLOCK_REASON});});

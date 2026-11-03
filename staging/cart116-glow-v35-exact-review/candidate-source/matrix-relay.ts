@@ -1,6 +1,7 @@
 import {createClient} from "npm:@supabase/supabase-js@2.57.0";
 import {buildWledProjection,checkDecision,MATRIX_CANDIDATE,MATRIX_MAC,MATRIX_RECORDED_SHA256,normalizeReadback} from "./matrix-relay-projection.ts";
 import {relayTokenAuthorized} from "./matrix-relay-auth.ts";
+import {enforcePreservedGlowRelay,GLOW_PROJECTION_BLOCK_REASON} from "./glow-relay-preservation.mjs";
 const reply=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 function auth(req:Request){const relayId=Deno.env.get("HBNF_MATRIX_RELAY_ID")??"";return req.headers.get("X-HBNF-Relay-ID")===relayId&&relayTokenAuthorized(req.headers.get("Authorization"),Deno.env.get("HBNF_MATRIX_RELAY_TOKEN")??"",relayId);}
 function db(){const u=Deno.env.get("SUPABASE_URL"),k=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");if(!u||!k)throw Error("relay_backend_not_configured");return createClient(u,k,{auth:{persistSession:false,autoRefreshToken:false}});}
@@ -14,6 +15,7 @@ export async function handleMatrixRelay(req:Request){
   const {data:c,error:e}=await client.rpc("hbnf_cart_get_context",{p_cart_id:"hbnf-cart"}),d=c?.desired,f=c?.fence;
   if(e||!d||!f?.active||!Number.isSafeInteger(d.revision)||!Number.isSafeInteger(f.epoch)||typeof f.release_id!=="string")return reply({error:"canonical_state_or_fence_unavailable"},503);
   let built;try{built=await buildWledProjection(c,d.revision,f.epoch);}catch(err){return reply({error:(err as Error).message||"projection_invalid"},422);}
+  try{enforcePreservedGlowRelay({context:c,wledPayload:built.wledPayload});}catch{return reply({error:GLOW_PROJECTION_BLOCK_REASON},422);}
   const {data:id,error:ie}=await client.rpc("hbnf_cart_matrix_relay_issue",{p_relay_id:relayId,p_cart_id:"hbnf-cart",
    p_desired_revision:d.revision,p_fence_epoch:f.epoch,p_release_id:f.release_id,p_matrix_mac:MATRIX_MAC,
    p_candidate:MATRIX_CANDIDATE,p_expected_state:built.expectedState,p_wled_payload:built.wledPayload,p_ttl_seconds:20});
@@ -51,6 +53,7 @@ export async function handleMatrixRelay(req:Request){
  if(actual.candidate!==MATRIX_CANDIDATE||actual.hbnf.candidate!==MATRIX_CANDIDATE)return reply({error:"candidate_identity_mismatch"},409);
  const {data:challenge,error:ge}=await client.rpc("hbnf_cart_matrix_relay_get",{p_challenge_id:id,p_relay_id:relayId});
  if(ge||!challenge)return reply({error:"challenge_expired_or_consumed"},409);
+ try{enforcePreservedGlowRelay({wledPayload:challenge.wled_payload});}catch{return reply({error:GLOW_PROJECTION_BLOCK_REASON},409);}
  const decision=checkDecision(challenge,actual,Date.now());
  if(decision==="stale")return reply({error:"challenge_expired_or_consumed"},409);
  if(decision==="confirm"){
