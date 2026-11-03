@@ -7,18 +7,28 @@ set -eu
 # change this value after all recovery and owner authorization checks.
 HBNF_OVERLAY_V1_SOURCE_ADMITTED=false
 [ "$HBNF_OVERLAY_V1_SOURCE_ADMITTED" = true ] || exit 0
+# The Owner relay owns the execution loop. This is invoked once, in-process,
+# only when the legacy relay has no pending paired challenge. No second daemon.
 [ -r /etc/hbnf-matrix-relay.conf ] || exit 1
 CONF=/etc/hbnf-matrix-relay.conf
 [ ! -L "$CONF" ] && [ "$(stat -c %a "$CONF")" = 600 ] &&
  [ "$(stat -c %u "$CONF")" = 0 ] || exit 1
 . "$CONF"
 [ "${RELAY_ID:-}" = 'opal-hbnf-cart' ] || exit 1
+: "${RELAY_TOKEN:?missing relay token}"
+: "${RELAY_API_KEY:?missing relay API key}"
+[ "${#RELAY_TOKEN}" -ge 43 ] || exit 1
+case "$RELAY_TOKEN" in *[!A-Za-z0-9_-]*|'') exit 1;; esac
+case "$RELAY_API_KEY" in *[!A-Za-z0-9._-]*|'') exit 1;; esac
 [ "${SUPABASE_RELAY_URL:-}" = 'https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control' ] || exit 1
 command -v curl >/dev/null && command -v jsonfilter >/dev/null && command -v sha256sum >/dev/null || exit 1
 M=http://192.168.77.10; A=http://192.168.77.11
 TMP=/tmp/hbnf-glow-overlay-v1
 LOCKOUT=/etc/hbnf-glow-overlay-v1.partial-failure
-[ ! -e "$LOCKOUT" ] || exit 1
+LEGACY_LOCKOUT=/etc/hbnf-matrix-relay.partial-failure
+[ ! -e "$LEGACY_LOCKOUT" ] && [ ! -L "$LEGACY_LOCKOUT" ] || exit 1
+[ ! -e "$LOCKOUT" ] && [ ! -L "$LOCKOUT" ] || exit 1
+[ ! -L "$TMP" ] || exit 1
 umask 077; mkdir -p "$TMP"; chmod 700 "$TMP"
 # One process per unit: no independent uncoordinated auto-polling / cron.
 mkdir "$TMP/active" 2>/dev/null || exit 1
@@ -67,6 +77,8 @@ overlay="$(jsonfilter -i "$TMP/overlay_v1_next.json" -e '@.overlayId')"
 echo "$challenge" | grep -Eq '^[0-9a-f-]{36}$' || exit 1
 echo "$overlay" | grep -Eq '^hbnf-[a-f0-9]{32}$' || exit 1
 snapshot || exit 1
+# Recheck the shared legacy lockout after the remote network call.
+[ ! -e "$LEGACY_LOCKOUT" ] && [ ! -L "$LEGACY_LOCKOUT" ] || exit 1
 code="$(post overlay_v1_authorize)" || exit 1
 [ "$code" = 200 ] &&
  [ "$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.status')" = apply_once ] &&
@@ -74,12 +86,20 @@ code="$(post overlay_v1_authorize)" || exit 1
  [ "$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.auxWriteRequired')" = false ] || exit 1
 # JSON is reconstructed with ONLY the native HBNF.overlay root key. No seg/fx/
 # brightness/preset/AUX JSON can be written by this candidate shell.
+# The one-use SQL capability was consumed. Every failure from this point
+# stays locked out until the same-manifest, owner-controlled recovery.
+(umask 077; : > "$LOCKOUT") || exit 1
+[ "$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.matrixPayload.HBNF.overlay.id')" = "$overlay" ] || exit 1
+[ "$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.matrixPayload.HBNF.overlay.kind')" = scoreboard ] || exit 1
+[ "$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.matrixPayload.HBNF.overlay.label')" = GLOW ] || exit 1
+payload_ttl="$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.matrixPayload.HBNF.overlay.ttlMs')" || exit 1
+case "$payload_ttl" in *[!0-9]*|'') exit 1;; esac
+[ "$payload_ttl" -ge 1000 ] && [ "$payload_ttl" -le 20000 ] || exit 1
 overlay_json="$(jsonfilter -i "$TMP/overlay_v1_authorize.json" -e '@.matrixPayload.HBNF.overlay')" || exit 1
 [ -n "$overlay_json" ] && [ "${#overlay_json}" -lt 3000 ] || exit 1
 printf '{"HBNF":{"overlay":%s}}\n' "$overlay_json" > "$TMP/glow-overlay-only.json"
 # One-use authorized apply may be indeterminate if HTTP transport fails; do not
 # replay or force the old fx142/bri255 full-state projection as a fallback.
-(umask 077; : > "$LOCKOUT") || exit 1
 curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' \
  --data-binary @"$TMP/glow-overlay-only.json" "$M/json/state" -o /dev/null || exit 1
 snapshot || exit 1
@@ -93,5 +113,6 @@ snapshot || exit 1
 code="$(post overlay_v1_restored)" || exit 1
 [ "$code" = 200 ] &&
  [ "$(jsonfilter -i "$TMP/overlay_v1_restored.json" -e '@.matrixOriginalProfileConfirmed')" = true ] || exit 1
+# The marker is only cleared on an ID-free, exact-profile server readback.
 rm -f "$LOCKOUT"
 exit 0

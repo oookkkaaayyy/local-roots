@@ -2,6 +2,13 @@
 -- NEVER touch existing hbnf_cart_matrix_relay_* functions, Cart desired,
 -- Owner observed state, firmware, or league_state. Apply solely under same manifest.
 BEGIN;
+DO $rollback_guard$
+BEGIN
+ IF EXISTS (SELECT 1 FROM hbnf_internal.cart_glow_overlay_challenges_v1
+             WHERE restored_at IS NULL)
+ THEN RAISE EXCEPTION 'unresolved_overlay_v1_challenge_requires_device_recovery' USING ERRCODE='55000';
+ END IF;
+END $rollback_guard$;
 DROP FUNCTION IF EXISTS public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text);
 DROP FUNCTION IF EXISTS public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text);
 DROP FUNCTION IF EXISTS public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text);

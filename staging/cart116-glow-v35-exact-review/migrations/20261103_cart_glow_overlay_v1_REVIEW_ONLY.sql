@@ -21,7 +21,14 @@ CREATE TABLE hbnf_internal.cart_glow_overlay_challenges_v1 (
  restored_at timestamptz
 );
 REVOKE ALL ON hbnf_internal.cart_glow_overlay_challenges_v1 FROM PUBLIC,anon,authenticated;
-CREATE INDEX cart_glow_overlay_v1_expiry_idx ON hbnf_internal.cart_glow_overlay_challenges_v1 (restore_deadline);
+-- At most one unresolved overlay per cart across *all* desired revisions.
+-- Do not garbage-collect unverified/indeterminate actuation: it needs a human
+-- readback and a separate recovery transaction. Expiry is not proof of restore.
+CREATE UNIQUE INDEX cart_glow_overlay_v1_open_cart_idx
+ ON hbnf_internal.cart_glow_overlay_challenges_v1 (cart_id)
+ WHERE restored_at IS NULL;
+CREATE INDEX cart_glow_overlay_v1_expiry_idx
+ ON hbnf_internal.cart_glow_overlay_challenges_v1 (restore_deadline);
 
 -- All writers serialize desired Cart row then actuator fence, exactly as existing
 -- revision-fence operations. Neither these functions nor this table write league_state.
@@ -33,8 +40,11 @@ DECLARE v_d record; v_f record; v_overlay jsonb; v_now timestamptz := clock_time
         v_now_ms bigint := floor(extract(epoch FROM v_now)*1000)::bigint;
         v_id uuid;
 BEGIN
+ -- The service role is checked by both PostgREST RPC privileges and JWT.
  IF current_setting('request.jwt.claim.role',true) IS DISTINCT FROM 'service_role'
  THEN RAISE EXCEPTION 'service_role_required' USING ERRCODE='42501'; END IF;
+ PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('hbnf-cart-glow-overlay-v1'));
+ v_now:=clock_timestamp(); v_now_ms:=floor(extract(epoch FROM v_now)*1000)::bigint;
  IF p_relay_id IS DISTINCT FROM 'opal-hbnf-cart' OR p_desired_revision IS NULL OR
     p_fence_epoch IS NULL OR coalesce(p_release_id,'')='' OR
     p_canonical_overlay_id !~ '^glow-[a-zA-Z0-9-]{10,100}$' OR
@@ -64,10 +74,11 @@ BEGIN
     jsonb_array_length(v_overlay#>'{payload,entries}') NOT BETWEEN 1 AND 12
  THEN RAISE EXCEPTION 'canonical_glow_overlay_missing' USING ERRCODE='22023'; END IF;
  IF EXISTS(SELECT 1 FROM hbnf_internal.cart_glow_overlay_challenges_v1
-   WHERE cart_id='hbnf-cart' AND desired_revision=p_desired_revision
-   AND restore_deadline>v_now AND restored_at IS NULL)
+   WHERE cart_id='hbnf-cart' AND restored_at IS NULL)
  THEN RAISE EXCEPTION 'overlay_challenge_already_open' USING ERRCODE='40001'; END IF;
- DELETE FROM hbnf_internal.cart_glow_overlay_challenges_v1 WHERE restore_deadline<v_now - interval '1 day';
+ -- Expired-but-unconfirmed overlays remain locked out; never auto-delete.
+ IF p_ttl_ms > ((v_overlay->>'expiresAt')::bigint - v_now_ms)
+ THEN RAISE EXCEPTION 'glow_ttl_exceeds_canonical_expiry' USING ERRCODE='22023'; END IF;
  INSERT INTO hbnf_internal.cart_glow_overlay_challenges_v1
  (relay_id,cart_id,desired_revision,fence_epoch,release_id,canonical_overlay_id,
  native_overlay_id,preimage_sha256,ttl_ms,expires_at,restore_deadline)
@@ -83,8 +94,14 @@ CREATE FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(
 DECLARE v_c hbnf_internal.cart_glow_overlay_challenges_v1%rowtype; v_d record;v_f record;
  v_now_ms bigint := floor(extract(epoch FROM clock_timestamp())*1000)::bigint;
 BEGIN
+ -- The service role is checked by both PostgREST RPC privileges and JWT.
  IF current_setting('request.jwt.claim.role',true) IS DISTINCT FROM 'service_role'
  THEN RAISE EXCEPTION 'service_role_required' USING ERRCODE='42501'; END IF;
+ PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('hbnf-cart-glow-overlay-v1'));
+ v_now_ms:=floor(extract(epoch FROM clock_timestamp())*1000)::bigint;
+ -- Advisory lock serializes all v1 challenge operations. The challenge-row
+ -- lock precedes canonical desired/fence locks, but NO other transaction
+ -- accesses the new challenge table; legacy Owner RPCs remain unchanged.
  SELECT * INTO v_c FROM hbnf_internal.cart_glow_overlay_challenges_v1
  WHERE relay_id=p_relay_id AND challenge_id=p_challenge_id FOR UPDATE;
  IF NOT FOUND OR v_c.expires_at<=clock_timestamp() OR
@@ -98,6 +115,7 @@ BEGIN
  IF v_d.revision IS DISTINCT FROM v_c.desired_revision OR v_f.active IS DISTINCT FROM true OR
   v_f.epoch IS DISTINCT FROM v_c.fence_epoch OR v_f.release_id IS DISTINCT FROM v_c.release_id OR
   v_d.state->>'power' IS DISTINCT FROM 'on' OR
+  jsonb_typeof(v_d.state->'overlays') IS DISTINCT FROM 'array' OR
   NOT EXISTS (SELECT 1 FROM jsonb_array_elements(coalesce(v_d.state->'overlays','[]'::jsonb)) o(value)
     WHERE o.value->>'id'=v_c.canonical_overlay_id AND o.value->>'kind'='scoreboard'
       AND o.value#>>'{payload,label}'='GLOW' AND (o.value->>'expiresAt')::bigint>v_now_ms) OR
@@ -116,18 +134,23 @@ CREATE FUNCTION public.hbnf_cart_glow_overlay_v1_ack(
 ) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $fn$
 DECLARE v_c hbnf_internal.cart_glow_overlay_challenges_v1%rowtype;v_d record;v_f record;
 BEGIN
+ -- The service role is checked by both PostgREST RPC privileges and JWT.
  IF current_setting('request.jwt.claim.role',true) IS DISTINCT FROM 'service_role'
  THEN RAISE EXCEPTION 'service_role_required' USING ERRCODE='42501'; END IF;
+ PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('hbnf-cart-glow-overlay-v1'));
+ -- The same advisory lock prevents competing challenge/ACK transactions.
+ -- Canonical desired/fence rows are read and validated under row locks.
  SELECT * INTO v_c FROM hbnf_internal.cart_glow_overlay_challenges_v1
  WHERE relay_id=p_relay_id AND challenge_id=p_challenge_id FOR UPDATE;
- IF NOT FOUND OR v_c.expires_at<=clock_timestamp() OR
+ IF NOT FOUND OR v_c.restore_deadline<=clock_timestamp() OR
   v_c.apply_authorized_at IS NULL OR v_c.acknowledged_at IS NOT NULL OR
   v_c.native_overlay_id IS DISTINCT FROM p_native_overlay_id OR
   v_c.preimage_sha256 IS DISTINCT FROM p_preimage_sha256 THEN RETURN false; END IF;
  SELECT revision,state INTO v_d FROM hbnf_internal.cart_desired_state WHERE cart_id=v_c.cart_id FOR UPDATE;
  SELECT active,epoch,release_id INTO v_f FROM hbnf_internal.cart_actuator_fence WHERE cart_id=v_c.cart_id FOR SHARE;
  IF v_d.revision IS DISTINCT FROM v_c.desired_revision OR v_f.active IS DISTINCT FROM true OR
-  v_f.epoch IS DISTINCT FROM v_c.fence_epoch OR v_f.release_id IS DISTINCT FROM v_c.release_id
+  v_f.epoch IS DISTINCT FROM v_c.fence_epoch OR v_f.release_id IS DISTINCT FROM v_c.release_id OR
+  v_d.state->>'power' IS DISTINCT FROM 'on'
  THEN RETURN false; END IF;
  UPDATE hbnf_internal.cart_glow_overlay_challenges_v1 SET acknowledged_at=clock_timestamp()
  WHERE challenge_id=p_challenge_id;
@@ -139,8 +162,12 @@ CREATE FUNCTION public.hbnf_cart_glow_overlay_v1_restored(
 ) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $fn$
 DECLARE v_c hbnf_internal.cart_glow_overlay_challenges_v1%rowtype;
 BEGIN
+ -- The service role is checked by both PostgREST RPC privileges and JWT.
  IF current_setting('request.jwt.claim.role',true) IS DISTINCT FROM 'service_role'
  THEN RAISE EXCEPTION 'service_role_required' USING ERRCODE='42501'; END IF;
+ PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('hbnf-cart-glow-overlay-v1'));
+ -- The same advisory lock prevents competing challenge/ACK transactions.
+ -- Canonical desired/fence rows are read and validated under row locks.
  SELECT * INTO v_c FROM hbnf_internal.cart_glow_overlay_challenges_v1
  WHERE relay_id=p_relay_id AND challenge_id=p_challenge_id FOR UPDATE;
  IF NOT FOUND OR v_c.acknowledged_at IS NULL OR v_c.restored_at IS NOT NULL OR
