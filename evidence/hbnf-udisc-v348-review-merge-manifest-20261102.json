@@ -294,5 +294,66 @@
         "proof": "partial omission preserves previously accepted source score; manual correction supersedes source overwrite; event merge metadata/payout/history retained; one guarded CAS plus independent complete-week readback, replay causes no second scoring write, canonical Cart mock receives duplicate; no real provider/device"
       }
     }
+  },
+  "supersedingSourceReconciledReviewCandidate": {
+    "phase": "REVIEW_ONLY_NOT_ADMITTED",
+    "driveFileId": "1pau_eGfkq0S3CjYnWwo3XkoxWsqdryGW",
+    "driveUrl": "https://drive.google.com/file/d/1pau_eGfkq0S3CjYnWwo3XkoxWsqdryGW/view",
+    "sha256": "24c96d043c53c9060f032bef21c57662b2db188f02a9ec1adee2fc46addfc7e6",
+    "bytes": 3330512,
+    "zipMembers": 61,
+    "unchangedOriginalMembers": 58,
+    "supersedesOnlyForSourceReview": "1CdSluI1EwYAVMMltUkviICcByngtLKaY",
+    "preservesFrozenP0SourceArchive": true,
+    "sourceRefBeforePackage": "0ccfbcd41af5d05dd6efe11c6a2ef85c83b90b2b",
+    "sourceModules": [
+      {
+        "member": "src/udisc-glow-auto-sync.mjs",
+        "exactReviewGitBlob": "653ccc0578174ff59e51889b73bd68d72250ffc8",
+        "packagedGitBlob": "653ccc0578174ff59e51889b73bd68d72250ffc8",
+        "sha256": "cf08785e9612fe15cb3899276462dc9ea0fea35a37022d072e5328f3b890eb0c"
+      },
+      {
+        "member": "src/index.js",
+        "reviewGitBlob": "05f45f267c068ed3f1b8e17404cb792e76d5c539",
+        "packagedGitBlob": "64a5ca8332ffb3a08491f6a9655824005f15b7b2",
+        "productionSuffixRewrite": true,
+        "sha256": "00fc3386259bd21041c2b3a5544b7d868c3969fb962c5acb0e046ebf82969be2"
+      }
+    ],
+    "currentP0ReviewHeadAtPackaging": "9251340d96b8972001d09bcc2a39d3ae0576077a",
+    "p0PublicGitBlobsUnchanged": {
+      "public/glow.html": "89fc1e80b157cd331119d7016674773399f23f9a",
+      "public/hbnf-league-state-sync.js": "a94f6492bda0062faaa7cb263b6a2a2546e9fac3"
+    },
+    "zipCRC": "PASS",
+    "fullFileListSha256": "PASS",
+    "downloadBackBytesSha256": "PASS",
+    "nativeActualPackageEntrypointFixture": {
+      "pass": 11,
+      "fail": 0,
+      "runner": "Node 22.16.0",
+      "scope": "real packaged source entrypoint with in-process synthetic Supabase/UDisc/Cart mocks, no genuine Nov3 XLSX or physical device"
+    },
+    "githubSourceGuard": {
+      "sourceTest": "tests/hbnf-udisc-production-import-entrypoint.test.mjs",
+      "addedCommit": "3a49e343f0ca842903972156ff2189c9170bd0f9",
+      "workflowCommit": "f5f04f48f78e28e17c04bd34ece27461bd878b19",
+      "ciStatus": "PENDING_READBACK"
+    },
+    "authenticNov03CourseMetadata": "0_of_18_pars_and_0_of_18_notes_verified",
+    "actualUdiscSourcePermission": "NOT_VERIFIED_POLLING_DISABLED",
+    "controlsNativeOverlayAdmitted": false,
+    "releaseAdmission": "FAIL_CLOSED",
+    "nonMutations": [
+      "league_state",
+      "Supabase migrations",
+      "Cloudflare production",
+      "Opal",
+      "Matrix",
+      "AUX",
+      "rehearsal cleanup"
+    ],
+    "releaseOwner": "Scoring P0 PR151 only; Controls Track A owns Cart/native relay"
   }
 }
