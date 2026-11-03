@@ -97,7 +97,7 @@ test('saved scores survive without a second scoring mutation when the Cart backe
   if(u===endpoint)return new Response('not deployed',{status:404});
   throw Error('unexpected route in no-production fixture');
  };
- const outcome=await runApprovedGlowSync({
+ const outcome=await runGlowSync({
    UDISC_GLOW_ACCESS_APPROVED:'true',SUPABASE_URL:auth.supabaseUrl,
    SUPABASE_SERVICE_ROLE_KEY:auth.serviceKey
  },{fetch,source,now:()=>new Date('2026-11-04T02:00:00Z'),enableCartBackend:true});
