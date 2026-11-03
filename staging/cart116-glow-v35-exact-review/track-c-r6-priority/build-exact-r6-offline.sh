@@ -79,6 +79,22 @@ PY
 # Source tree setup only; no device hostnames, serial ports, OTA or network commands
 # other than fetching public pinned build dependencies.
 (cd "$W" && python3 -m platformio --version && python3 -m platformio pkg install -e "$ENV")
+# Original successful R6 usermod compiler command explicitly includes the
+# installed Arduino 2.0.18 framework's SPI/Wire header locations. PlatformIO
+# LDF on a clean Linux runner did not propagate these through pinned FastLED.
+SPI_ROOT="$HOME/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src"
+WIRE_ROOT="$HOME/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src"
+test -f "$SPI_ROOT/SPI.h"
+test -f "$WIRE_ROOT/Wire.h"
+python3 - "$W/platformio_override.ini" "$SPI_ROOT" "$WIRE_ROOT" <<'PY'
+import pathlib,sys
+p=pathlib.Path(sys.argv[1]);source=p.read_text()
+matches=[x for x in source.splitlines() if x.startswith('build_flags = ${env:esp32dev.build_flags} -I"')]
+if len(matches)!=1:raise SystemExit("R6_build_flags_anchor_mismatch")
+new=matches[0]+' -I"'+sys.argv[2]+'" -I"'+sys.argv[3]+'"'
+p.write_text(source.replace(matches[0],new))
+print("PASS original R6 SPI/Wire compiler include paths restored")
+PY
 VENDOR="$W/.pio/libdeps/$ENV/animartrix/ANIMartRIX.h"
 test -f "$VENDOR"
 mkdir -p "$W/vendor/hbnf-animartrix"
