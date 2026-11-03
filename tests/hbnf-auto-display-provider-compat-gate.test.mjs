@@ -11,6 +11,7 @@ test('installed Nov2 evidence proves v42 Edge/RPC library intersection empty; au
  assert.ok(result.providerBlockers.includes('NO_COMMON_LIBRARY_REVISION_LIVE_CYCLE_VS_CLAIM_RPC'));
  assert.ok(result.providerBlockers.includes('AUTO_LIVE_OFF'));
  assert.ok(result.providerBlockers.includes('MATRIX_NOT_IN_EVENT_MODE'));
+ assert.ok(result.providerBlockers.includes('LEGACY_RESUME_PRESET_UNSUPPORTED_UNLESS_NATIVE_FLOW_PROVEN'));
  const switched=copy(observed);
  switched.control.mode='event';switched.control.auto_live=true;
  assert.equal(inspectGlowAutoDisplayAcceptance(switched).noCommonLibraryRevision,true);
@@ -40,7 +41,7 @@ test('legacy non-native resume rejects installed preset 60 even if revision and 
  x.control.library_revision=x.claimRpc.requiredLibraryRevision;
  x.control.mode='event';x.control.auto_live=true;
  const g=inspectGlowAutoDisplayAcceptance(x);
- assert.ok(g.providerBlockers.includes('NON_NATIVE_RESUME_PRESET_OUT_OF_RANGE'));
+ assert.ok(g.providerBlockers.includes('LEGACY_RESUME_PRESET_UNSUPPORTED_UNLESS_NATIVE_FLOW_PROVEN'));
 });
 test('only hypothetical compatible source plus independent real provider, temporary-card, reconnect and restoration receipts could pass',()=>{
  const x=copy(observed);
