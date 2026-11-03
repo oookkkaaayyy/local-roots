@@ -21,16 +21,16 @@ function fresh(brightness=0){return {
  ownerPriorityClear:true,overlay:{kind:'scoreboard',label:'GLOW',id:'hbnf-'+'a'.repeat(32),entries:['A -2'],ttlMs:12000}
 };}
 test('Track B accepted direct module has exact hashed transport query with no new target',()=>{
- assert.equal(hash(transport),'ae6fc45f833bce652aa4844501df4d79ed19c135fcf22507995ee772b29930d7');
+ assert.equal(hash(transport),'b48f5d7a4b3ea850307b13596857d753d2ff2ee4b9991b859e66b41d0338b37a');
  const s=read(owner+'hbnf-cart-local.js');
- assert.equal((s.match(/local-transport\.js\?v=ae6fc45f833bce65/g)||[]).length,1);
+ assert.equal((s.match(/local-transport\.js\?v=b48f5d7a4b3ea850/g)||[]).length,1);
  assert.doesNotMatch(s,/import\("http:\/\/192\.168\.77\.1\/mission-control-local\/local-transport\.js"\)/);
  assert.match(s,/this\.opalDirect = options\.opalDirect === true/);
- assert.equal(hash(owner+'hbnf-cart-local.js'),'4e3033504f56f2d648f06d364a700d00192fbc4e1a0aed2f202dd5e538887da4');
+ assert.equal(hash(owner+'hbnf-cart-local.js'),'f2bec69f5d14760d6910c06a57d40288070171814c5affbfe2a9b4baa566e419');
 });
 test('all 17 Owner served-asset sums retain B source SHA and only local module changes',()=>{
  const bytes=read(owner+'.hbnf-payload.sha256');
- assert.equal(hash(owner+'.hbnf-payload.sha256'),'df75f4223b0518ceaae933a5e1d55f0260e1ee62c1082ddc8c95b7453f3c62c5');
+ assert.equal(hash(owner+'.hbnf-payload.sha256'),'a32f5a4e25603116400c09eacee0cfd87cd1f8d1d5c22421b1a9d39b20d10c9e');
  const rows=bytes.trim().split('\n');assert.equal(rows.length,17);
  assert.ok(rows.includes(hash(owner+'hbnf-cart-local.js')+'  hbnf-cart-local.js'));
  assert.equal(new Set(rows.map(x=>x.split('  ')[1])).size,17);

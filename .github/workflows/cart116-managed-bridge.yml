@@ -8,12 +8,39 @@ on:
       - staging/cart116-glow-v35-exact-review/opal/hbnf-glow-overlay-v1.sh
       - staging/cart116-glow-v35-exact-review/release/**
       - staging/cart116-glow-v35-exact-review/tests/new_bridge_ci_contract.test.mjs
+      - staging/cart116-glow-v35-exact-review/tests/trackA-networking-reconnect-accepted.test.mjs
+      - staging/cart116-glow-v35-exact-review/tests/trackA-netfix2-served-identity.test.mjs
 permissions:
   contents: read
 concurrency:
   group: cart116-managed-bridge-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  networking_reconnect_integrated_only:
+    if: contains(github.event.head_commit.message, '[trackA-netfix2]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Exact new transport reconnect and Controls 17-asset/11-target identities
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          node --test tests/trackA-networking-reconnect-accepted.test.mjs tests/trackA-netfix2-served-identity.test.mjs
+      - name: Preserve source-only postimages for one existing Controls capsule rebuild
+        uses: actions/upload-artifact@v4
+        with:
+          name: CART116-TrackB-Netfix2-Source-Exchange-NOT-RELEASE
+          path: |
+            staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/mission-control-local/local-transport.js
+            staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/.hbnf-package-version
+            staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/.hbnf-payload.sha256
+            staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js
+            staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.html
+            staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js
+          if-no-files-found: error
+          retention-days: 2
   changed_service_only:
     if: contains(github.event.head_commit.message, '[trackA-bc-integrated]')
     runs-on: ubuntu-24.04

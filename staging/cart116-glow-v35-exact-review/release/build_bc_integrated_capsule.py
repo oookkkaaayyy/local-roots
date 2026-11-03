@@ -23,8 +23,12 @@ def main(base,root,out):
     def rep(dst,src): f[dst]=(root/src).read_bytes()
     target_src={
       '/usr/lib/hbnf-glow-overlay-v1.sh':'opal/hbnf-glow-overlay-v1.sh',
+      '/www/mission-control-local/local-transport.js':'opal/owner-v1201-7target/mission-control-local/local-transport.js',
       '/etc/init.d/hbnf-cart-glow-bridge':'opal/new-service/etc/init.d/hbnf-cart-glow-bridge',
       '/www/mission-control-local/owner-pwa/hbnf-cart-local.js':'opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js',
+      '/www/mission-control-local/owner-pwa/.hbnf-package-version':'opal/owner-v1201-7target/owner-pwa/.hbnf-package-version',
+      '/www/mission-control-local/owner-pwa/hbnf-cart.html':'opal/owner-v1201-7target/owner-pwa/hbnf-cart.html',
+      '/www/mission-control-local/owner-pwa/hbnf-cart.js':'opal/owner-v1201-7target/owner-pwa/hbnf-cart.js',
       '/www/mission-control-local/owner-pwa/.hbnf-payload.sha256':'opal/owner-v1201-7target/owner-pwa/.hbnf-payload.sha256'
     }
     targets=[]
@@ -59,9 +63,9 @@ def main(base,root,out):
     f['README-REVIEW_ONLY.txt']=(
       'CONTROLS #116 B/C source-integrated managed Glow bridge REVIEW_ONLY.\n'
       'Single NEW managed service, same 11 Opal targets and 7 Owner files.\n'
-      'B: exact Safari12 transport cache pin. C: ps=-1 FX142 source qualified.\n'
+      'B: corrected WS reconnect epoch transport b48f5d7a4b3ea850, Safari12 netfix-2. C: ps=-1 FX142 source qualified.\n'
       'Installed R6 Owner TEXT priority race is UNSAFE: original R6 can be\n'
-      'preempted by a new Glow scoreboard; priority-patch BIN NOT built.\n'
+      'preempted by a new Glow scoreboard; compiled review BIN NOT installed.\n'
       'HBNF Matrix brightness last observed 0, scoreboard would be black.\n'
       'All source/service/native priority admission flags remain FALSE.\n'
       'No deploy, install, firmware/UV action or live owner approval.\n'
