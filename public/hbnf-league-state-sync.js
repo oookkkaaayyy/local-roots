@@ -19,6 +19,21 @@
     return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
   };
   const keyHash = (root, key) => hash(has(root, key) ? root[key] : ABSENT);
+  // The installed BEFORE UPDATE tag trigger derives only bagTags.players and
+  // bagTags.manual from the authoritative tag table. An ordinary score save
+  // may acknowledge a different projection without changing the submitted
+  // score. Never excuse changes outside those two fields, or an intentional
+  // bagTags edit/restore that must be reviewed rather than marked Saved.
+  function matchesWithServerTagProjection(expected, acknowledged) {
+    if (!isObject(expected) || !isObject(acknowledged) ||
+        !isObject(expected.bagTags) || !isObject(acknowledged.bagTags)) return false;
+    const left = clone(expected), right = clone(acknowledged);
+    for (const field of ['players', 'manual']) {
+      delete left.bagTags[field];
+      delete right.bagTags[field];
+    }
+    return equal(left, right);
+  }
   function revisionMicros(value) {
     const milliseconds = Date.parse(value);
     if (!Number.isFinite(milliseconds)) return null;
@@ -172,7 +187,13 @@
       if (response.data.length !== 1) throw new Error('Cloud acknowledgment was ambiguous; local edits were retained.');
       const ack = response.data[0];
       const ackRevisionMicros = revisionMicros(ack.updated_at);
-      if (Number(ack.id) !== 1 || ackRevisionMicros === null || ackRevisionMicros <= currentRevisionMicros || !equal(ack.state_json, result.root)) {
+      const baselineTagHash = baseline.keyHashes.bagTags || await keyHash({}, 'bagTags');
+      const draftChangesTags = (await keyHash(draftRoot, 'bagTags')) !== baselineTagHash ||
+        (options && options.forceKeys || []).includes('bagTags');
+      const exactAck = equal(ack.state_json, result.root);
+      const safeProjectedAck = !draftChangesTags && matchesWithServerTagProjection(result.root, ack.state_json);
+      if (Number(ack.id) !== 1 || ackRevisionMicros === null || ackRevisionMicros <= currentRevisionMicros ||
+          (!exactAck && !safeProjectedAck)) {
         throw new Error('Cloud acknowledgment did not match the submitted state or advance its revision; local edits were retained.');
       }
       // The UPDATE response is an acknowledgment, not the independent readback

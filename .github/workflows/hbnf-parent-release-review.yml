@@ -8,6 +8,7 @@ on:
       - 'scripts/hbnf-parent-release/**'
       - 'tests/hbnf-parent-release-driver.test.mjs'
       - 'tests/glow-save-sync-race.test.mjs'
+      - 'tests/hbnf-server-tag-projection.test.mjs'
       - 'tests/hbnf-installed-function-drift.test.mjs'
       - 'tests/hbnf-write-authority-cutover.test.mjs'
       - 'tests/hbnf-server-revision-migration.test.mjs'
@@ -31,7 +32,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify review-only parent gate and cutover source invariants (no secrets)
-        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs
+        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-server-tag-projection.test.mjs
       - name: Fetch exact installed v48 source (read only)
         run: git fetch --no-tags --depth=1 origin 44612c09677f59b84bece7de655af7bb011b51e7
       - name: Assemble reproducible REVIEW_ONLY site asset package
