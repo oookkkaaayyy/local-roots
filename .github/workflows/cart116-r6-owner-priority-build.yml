@@ -54,6 +54,9 @@ jobs:
           data=data.replace('/private/tmp/hbnf-p2-build/FastLED/src','/tmp/cart116-wled/vendor/FastLED/src')
           Path('/tmp/cart116-wled/platformio_override.ini').write_text(data)
           PY
+          git -C "$GITHUB_WORKSPACE" show 00e6552ffe65a3dbd6768b0e017fd22226c5b86f:evidence/cart2-r6-incremental-controls-20261011/BUILD_INPUT_PATCH.diff > /tmp/cart116-original-WLED-adjustments.patch
+          git -C /tmp/cart116-wled apply --check --include=wled00/fontmanager.cpp --include=wled00/fontmanager.h /tmp/cart116-original-WLED-adjustments.patch
+          git -C /tmp/cart116-wled apply --include=wled00/fontmanager.cpp --include=wled00/fontmanager.h /tmp/cart116-original-WLED-adjustments.patch
           python -m pip install --disable-pip-version-check -r /tmp/cart116-wled/requirements.txt
       - name: Compile R6 Owner-priority candidate without any device access
         shell: bash
