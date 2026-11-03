@@ -44,7 +44,7 @@ test('worker deploy rejects unretained candidate and is never confused with roll
  const bytes=Buffer.from('candidate');const spec={driveFileId:'x',sha256:sha(bytes),bytes:bytes.length,
  providerVersionId:'08633e43-dbaa-4421-a072-5af56f75d4b7',uploadedVersionAndBindingsVerified:false};
  let calls=0;
- const a=createAuthenticatedStageAdapter({tx:{transactionId:'t'},env:{SUPABASE_ACCESS_TOKEN:'fake',CLOUDFLARE_API_TOKEN:'fake'},
+ const a=createAuthenticatedStageAdapter({tx:{transactionId:'t',targets:[{id:'cloudflare-worker',baselineProviderVersionId:'48ffa87e-3c83-46d0-a6ca-db7bf0b064e6',rollback:{providerVersionId:'48ffa87e-3c83-46d0-a6ca-db7bf0b064e6'}}]},env:{SUPABASE_ACCESS_TOKEN:'fake',CLOUDFLARE_API_TOKEN:'fake'},
  readAdapter:{readOnly:true,readAllTargets:async()=>({'cloudflare-worker':{}})},readArtifact:async()=>bytes,
  verifyImmediateProviderGate:async()=>true,fetchImpl:async()=>{calls++;}});
  await assert.rejects(()=>a.apply({id:'worker-vnext',targetId:'cloudflare-worker',candidate:spec}),/WORKER_VERSION_UPLOAD_AND_BINDINGS_NOT_VERIFIED/);
