@@ -5,8 +5,8 @@
   "candidate_source_sha256": "6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa",
   "patch_sha256": "9ce39687374ab0895834df750571e2d7f171751d16a8cd02ec20c6654fd5709a",
   "candidate_release_marker": "hbnf-cart2-r6-native-overlay-owner-safe-review-20261103",
-  "candidate_binary_sha256": null,
-  "candidate_build_status": "NOT_BUILT",
+  "candidate_binary_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+  "candidate_build_status": "BUILT_CI_SUCCESS_BIN_INDEPENDENTLY_VERIFIED_SHA_LOCKED_NOT_INSTALLED",
   "installed_R6_rollback": {
     "filename": "hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
     "bytes": 1506032,
@@ -17,5 +17,13 @@
   "owner_precedence": "TEXT overlays suppress later SCOREBOARD while active; text still preempts scoreboard",
   "explicit_null_policy": "unchanged; trusted Owner null can clear, cloud bridge may never send blind null",
   "zero_brightness_policy": "preserve full dark state; no overlay brightness floor",
-  "release_state": "REVIEW_ONLY_NO_INSTALLABLE_BINARY"
+  "release_state": "REVIEW_ONLY_BUILT_FIRMWARE_NO_LIVE_ADMISSION",
+  "candidate_binary_size_bytes": 1505968,
+  "candidate_ota_slot_bytes": 1572864,
+  "candidate_ota_headroom_bytes": 66896,
+  "candidate_initial_ci_run": 41741937797,
+  "candidate_initial_ci_source_commit": "41fb818b54000198c5a776c16ffd3aeb2196cd3c",
+  "candidate_build_artifact_sha256": "ef0bfc1e34728b118e353c89565e58181bfb18fb389b8132cca69d15fee20a9c",
+  "install_authorized": false,
+  "device_field_accepted": false
 }

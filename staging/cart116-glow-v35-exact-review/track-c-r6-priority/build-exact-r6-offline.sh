@@ -149,4 +149,13 @@ r={"schema":"hbnf-cart116-firmware-candidate-build-v1","status":"BUILT_NO_DEVICE
 (d/'SHA256SUMS.txt').write_text("".join(hashlib.sha256(p.read_bytes()).hexdigest()+"  "+p.name+"\n" for p in [d/'firmware.bin',d/'firmware.map',d/'BUILD_FULL.log',d/'BUILD_RECEIPT.json']))
 print(json.dumps(r,indent=2))
 PY
+# Frozen byte identity from independent download/readback of CI run 41741937797.
+# Future rebuilds must match; a changed image is NOT an approved substitute.
+EXPECTED_CANDIDATE_SHA256=85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16
+ACTUAL_CANDIDATE_SHA256="$(sha256sum "$OUT/firmware.bin" | cut -d' ' -f1)"
+if [ "$ACTUAL_CANDIDATE_SHA256" != "$EXPECTED_CANDIDATE_SHA256" ]; then
+ echo "FATAL: rebuilt R6 candidate SHA drift: $ACTUAL_CANDIDATE_SHA256 != $EXPECTED_CANDIDATE_SHA256" >&2
+ exit 1
+fi
+echo "PASS byte-for-byte candidate SHA-256 reproducibility lock"
 echo "PASS exact pinned R6 candidate firmware built offline; no installation or device action"
