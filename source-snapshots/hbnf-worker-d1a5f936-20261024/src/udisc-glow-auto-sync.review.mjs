@@ -55,6 +55,48 @@ function requestHeaders(serviceKey) {
   return {apikey:serviceKey,Authorization:`Bearer ${serviceKey}`,'Content-Type':'application/json',Accept:'application/json'};
 }
 
+// Server-only handoff to the EXISTING Controls Track A Cart backend.
+// Only its canonical source-fenced RPC may issue a Cart desired-state update;
+// the request below never targets WLED, MQTT, Opal, or a Guest route.
+export function sameLeagueRevision(a,b) {
+  function micros(v) {
+    const m=/^(\d{4}-\d\d-\d\d)[ T](\d\d:\d\d:\d\d)(?:\.(\d{1,6}))?(Z|[+-]\d\d(?::?\d\d)?)$/.exec(String(v||''));
+    if(!m)return null;
+    const zone=m[4]==='Z'?'Z':m[4].length===3?m[4]+':00':m[4].replace(/^([+-]\d\d)(\d\d)$/,'$1:$2');
+    const ms=Date.parse(m[1]+'T'+m[2]+(m[3]?'.'+m[3]:'' )+zone);
+    if(!Number.isFinite(ms))return null;
+    const fraction=Number((m[3]||'').padEnd(6,'0'));
+    return BigInt(ms)*1000n+BigInt(fraction%1000);
+  }
+  const x=micros(a),y=micros(b);
+  return x!==null&&y!==null&&x===y;
+}
+export async function submitVerifiedGlowCartIntent(fetchImpl,config,saved) {
+  if(saved?.eventId!=='hb-glow-doubles-tAP8Y5'||saved?.weekDate!=='2026-11-03'||
+     !/^[a-f0-9]{64}$/.test(String(saved?.signature||''))||
+     !sameLeagueRevision(saved?.sourceRevision,saved?.sourceRevision)||
+     !config?.supabaseUrl?.startsWith('https://')||!config?.serviceKey)
+    return {status:'NOT_ACCEPTED',reason:'invalid_saved_score_proof'};
+  try {
+    const response=await fetchImpl(config.supabaseUrl+'/functions/v1/hbnf-cart-control',{
+      method:'POST',redirect:'manual',cache:'no-store',
+      headers:requestHeaders(config.serviceKey),
+      body:JSON.stringify({action:'glow_scoreboard_intent',weekDate:saved.weekDate}),
+      signal:AbortSignal.timeout(8000)
+    });
+    if(response.status!==202)return {status:'NOT_ACCEPTED',reason:'backend_not_admitted'};
+    const ack=await response.json();
+    if(!['COMMITTED','DUPLICATE'].includes(ack?.status)||
+       ack?.relayStatus!=='PENDING_OPAL_PULL'||
+       !/^[a-f0-9]{32}$/.test(String(ack?.scoreFingerprint||''))||
+       !sameLeagueRevision(ack?.sourceRevision,saved.sourceRevision))
+      return {status:'NOT_ACCEPTED',reason:'source_changed_or_unacknowledged'};
+    return {status:ack.status,relayStatus:'PENDING_OPAL_PULL'};
+  }catch{
+    return {status:'NOT_ACCEPTED',reason:'backend_unreachable'};
+  }
+}
+
 async function readGlow(fetchImpl, config) {
   const response = await fetchImpl(`${config.supabaseUrl}/rest/v1/league_state?id=eq.1&select=state_json,updated_at`, {
     headers:requestHeaders(config.serviceKey),cache:'no-store',
