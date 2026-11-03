@@ -22,10 +22,12 @@ jobs:
       - name: Verify exact Controls e6 native-overlay admission gate source
         run: |
           test "$(git hash-object build/cart116-e6-source/staging/coordinated-backend/hbnf-cart-control/glow-intent-service.mjs)" = "70d1493b7981f74f58228b2cbd14e507a115e11a"
+          cp build/cart116-e6-source/scripts/hbnf-glow-cart-intent.mjs build/cart116-e6-source/staging/coordinated-backend/hbnf-cart-control/hbnf-glow-cart-intent.mjs
+          test "$(git hash-object build/cart116-e6-source/staging/coordinated-backend/hbnf-cart-control/hbnf-glow-cart-intent.mjs)" = "509dbe62229d48579594cdd378217e4476ad13e7"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test newly wired private Cart acknowledgement only
+      - name: Test unchanged XLSX reconnect and native-overlay refusal only
         run: |
           set -euo pipefail
           node --test tests/hbnf-udisc-unchanged-cart-reconnect.test.mjs
