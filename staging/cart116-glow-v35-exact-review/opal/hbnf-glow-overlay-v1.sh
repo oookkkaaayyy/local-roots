@@ -27,7 +27,7 @@ TMP=/tmp/hbnf-glow-overlay-v1
 LOCKOUT=/etc/hbnf-glow-overlay-v1.partial-failure
 LEGACY_LOCKOUT=/etc/hbnf-matrix-relay.partial-failure
 [ ! -e "$LEGACY_LOCKOUT" ] && [ ! -L "$LEGACY_LOCKOUT" ] || exit 1
-[ ! -e "$LOCKOUT" ] && [ ! -L "$LOCKOUT" ] || exit 1
+[ ! -L "$LOCKOUT" ] || exit 1
 [ ! -L "$TMP" ] || exit 1
 umask 077; mkdir -p "$TMP"; chmod 700 "$TMP"
 # One process per unit: no independent uncoordinated auto-polling / cron.
@@ -68,7 +68,38 @@ post() {
   -F "auxConfig=@$TMP/auxConfig.json;type=application/json" \
   "$SUPABASE_RELAY_URL" -o "$TMP/$op.json" -w '%{http_code}'
 }
-# Foreground, one attempt only. No automatic install, cron, or background execution.
+# The same foreground relay loop calls this helper once per cycle. After ACK,
+# return immediately to Owner service; later cycles check native TTL restoration.
+# No background process, secondary polling daemon, actuator retry or sleep(21).
+PENDING="$TMP/overlay-v1-pending"
+[ ! -L "$PENDING" ] || exit 1
+if [ -e "$LOCKOUT" ]; then
+ [ -f "$PENDING" ] && [ -r "$PENDING" ] || exit 1
+ challenge="$(sed -n '1p' "$PENDING")"
+ overlay="$(sed -n '2p' "$PENDING")"
+ payload_ttl="$(sed -n '3p' "$PENDING")"
+ started_s="$(sed -n '4p' "$PENDING")"
+ echo "$challenge" | grep -Eq '^[0-9a-f-]{36}$' || exit 1
+ echo "$overlay" | grep -Eq '^hbnf-[a-f0-9]{32}$' || exit 1
+ case "$payload_ttl:$started_s" in *[!0-9:]*|'') exit 1;; esac
+ [ "$payload_ttl" -ge 1000 ] && [ "$payload_ttl" -le 20000 ] || exit 1
+ [ "$(wc -l < "$PENDING")" -eq 4 ] || exit 1
+ now_s="$(date +%s)" || exit 1
+ case "$now_s" in *[!0-9]*|'') exit 1;; esac
+ # TTL plus margin, not a fixed foreground sleep. Owner relay stays responsive.
+ if [ "$now_s" -lt "$((started_s + (payload_ttl + 999)/1000 + 2))" ]; then exit 0; fi
+ snapshot || exit 1
+ code="$(post overlay_v1_restored)" || exit 1
+ [ "$code" = 200 ] &&
+  [ "$(jsonfilter -i "$TMP/overlay_v1_restored.json" -e '@.matrixOriginalProfileConfirmed')" = true ] || exit 1
+ # Exactly the same settled challenge and device readback unlocks native Glow.
+ rm -f "$PENDING" || exit 1
+ rm -f "$LOCKOUT" || exit 1
+ exit 0
+fi
+# A state marker without lockout is inconsistent: do not issue a second overlay.
+[ ! -e "$PENDING" ] || exit 1
+# Foreground one-shot: either issue/ACK or return without a GLOW command.
 snapshot || exit 1
 code="$(post overlay_v1_next)" || exit 1
 [ "$code" = 200 ] || exit 0
@@ -106,13 +137,13 @@ snapshot || exit 1
 code="$(post overlay_v1_ack)" || exit 1
 [ "$code" = 200 ] &&
  [ "$(jsonfilter -i "$TMP/overlay_v1_ack.json" -e '@.matrixOverlayIdConfirmed')" = true ] || exit 1
-# Never send global state or overlay clear: native compositor must autoexpire.
-# Keep a separate lockout until the exact preimage is confirmed after TTL.
-sleep 21
-snapshot || exit 1
-code="$(post overlay_v1_restored)" || exit 1
-[ "$code" = 200 ] &&
- [ "$(jsonfilter -i "$TMP/overlay_v1_restored.json" -e '@.matrixOriginalProfileConfirmed')" = true ] || exit 1
-# The marker is only cleared on an ID-free, exact-profile server readback.
-rm -f "$LOCKOUT"
+# Persist only non-secret validated identifiers in process-local runtime state.
+# After reboot TMP is lost but /etc lockout survives: no unauthorized replay.
+started_s="$(date +%s)" || exit 1
+case "$started_s" in *[!0-9]*|'') exit 1;; esac
+printf '%s\n%s\n%s\n%s\n' "$challenge" "$overlay" "$payload_ttl" "$started_s" > "$PENDING.new" || exit 1
+chmod 600 "$PENDING.new" || exit 1
+mv "$PENDING.new" "$PENDING" || exit 1
+# Return to the existing Owner relay immediately; a later single-loop pass
+# verifies the native auto-expiry without ever sending an overlay CLEAR.
 exit 0

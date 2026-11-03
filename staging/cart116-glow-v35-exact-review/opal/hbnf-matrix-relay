@@ -134,7 +134,14 @@ while :; do
  if [ -L "$OVERLAY_HELPER" ]; then log "overlay helper symlink prohibited"; exit 1; fi
  if [ -e "$OVERLAY_HELPER" ]; then
   [ -f "$OVERLAY_HELPER" ] && [ -r "$OVERLAY_HELPER" ] || { log "overlay helper invalid"; exit 1; }
-  /bin/ash "$OVERLAY_HELPER" || { log "native overlay v1 single-shot failed; relay stopped for safe recovery"; exit 1; }
+  # An overlay-specific lockout must never prevent the existing Owner relay
+  # from processing higher-priority commands. Native GLOW itself stays locked.
+  if /bin/ash "$OVERLAY_HELPER"; then
+   OVERLAY_FAULT_LOGGED=0
+  elif [ "${OVERLAY_FAULT_LOGGED:-0}" -eq 0 ]; then
+   log "native overlay v1 quarantined; legacy Owner relay retained; recovery required"
+   OVERLAY_FAULT_LOGGED=1
+  fi
  fi
  if ! snapshot; then sleep 5; continue; fi
  printf '%s' "{\"op\":\"next\",\"relayId\":\"opal-hbnf-cart\",\"matrixMac\":\"70:4b:ca:5b:34:5c\",\"candidate\":\"$MATRIX_CANDIDATE\",\"recordedFirmwareSha256\":\"$RECORDED_FIRMWARE_SHA256\"}" > "$TMP/request.json"
