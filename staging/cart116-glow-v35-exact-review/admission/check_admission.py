@@ -9,8 +9,8 @@ Exit 43 = corrupted/altered source or manifest.
 import argparse, hashlib, json, pathlib, sys, zipfile
 
 p=argparse.ArgumentParser()
-p.add_argument('--manifest',default='/mnt/data/CART116-Controls-OverlayV1-Admission-PENDING-20261103.json')
-p.add_argument('--archive',default='/mnt/data/CART116-Controls-OverlayV1-Combined-REVIEW_ONLY-20261103.zip')
+p.add_argument('--manifest',default='/mnt/data/CART116-Controls-OverlayV1-Admission-nonblocking-PENDING-20261103.json')
+p.add_argument('--archive',default='/mnt/data/CART116-Controls-OverlayV1-Combined-nonblocking-REVIEW_ONLY-20261103.zip')
 a=p.parse_args()
 try:
  m=json.loads(pathlib.Path(a.manifest).read_text())

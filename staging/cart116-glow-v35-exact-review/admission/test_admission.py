@@ -1,8 +1,8 @@
 import json, os, pathlib, subprocess, sys, tempfile, unittest
 
 HERE=pathlib.Path(os.environ.get('CART116_ARTIFACT_DIR','/mnt/data'))
-MAN=HERE/'CART116-Controls-OverlayV1-Admission-PENDING-20261103.json'
-CAP=HERE/'CART116-Controls-OverlayV1-Combined-REVIEW_ONLY-20261103.zip'
+MAN=HERE/'CART116-Controls-OverlayV1-Admission-nonblocking-PENDING-20261103.json'
+CAP=HERE/'CART116-Controls-OverlayV1-Combined-nonblocking-REVIEW_ONLY-20261103.zip'
 CHECK=HERE/'cart116_native_qualification/check_admission.py'
 
 class ManifestQualification(unittest.TestCase):

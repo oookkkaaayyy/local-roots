@@ -8,9 +8,9 @@ import hashlib, io, json, os, pathlib, tarfile, zipfile
 from datetime import datetime, timezone
 
 ROOT=pathlib.Path(os.environ.get('CART116_ARTIFACT_DIR','/mnt/data'))
-CAPSULE=ROOT/'CART116-Controls-OverlayV1-Combined-REVIEW_ONLY-20261103.zip'
-OUT=ROOT/'CART116-Controls-OverlayV1-Admission-PENDING-20261103.json'
-KNOWN_SHA='3f6e793e5e734d8f1f0bedd12a7dd635a81364b1ea9633b76ad64ace5b791b8a'
+CAPSULE=ROOT/'CART116-Controls-OverlayV1-Combined-nonblocking-REVIEW_ONLY-20261103.zip'
+OUT=ROOT/'CART116-Controls-OverlayV1-Admission-nonblocking-PENDING-20261103.json'
+KNOWN_SHA='71e6331f16d69c9379a932da6d3bd07bc1f497408d5508d8d82d8dc94b256af4'
 SHA=lambda b: hashlib.sha256(b).hexdigest()
 assert CAPSULE.is_file() and SHA(CAPSULE.read_bytes()) == KNOWN_SHA, 'capsule changed'
 with zipfile.ZipFile(CAPSULE) as z:
@@ -58,12 +58,13 @@ manifest={
     'repo':'oookkkaaayyy/local-roots',
     'branch':'review/cart116-glow-canonical-intent-20261103',
     'head_qualified_native':'51d9d50ec8bda9d8f59dd4f55d2d9173158afb5a',
+    'head_nonblocking_candidate':'6d63724d9fd30325a1cdc6427fd3466b6abf4b95',
     'matrix_track_c_head':'e2e0288e8d5db271a01fd0d4881456178fdac5bf',
     'networking_final_head':'ebff085103ed847328dc7ed06b0f69d8f63c6606',
     'edge_provider_original_source_tree':'74dd1d687de44eacb20eff8e3960d9129948ef88',
  },
  'candidate_archive':{'file_name':CAPSULE.name,'bytes':CAPSULE.stat().st_size,'sha256':KNOWN_SHA,
-   'durable_drive_id':'1_MCchUrKTkme-1iVQhUg9sFwdJt4LJ4d','download_back_previously_verified':True,
+   'durable_drive_id':'1cmuKOefdzkDl_BphqIUBfXI1xxR8Kzb0','download_back_previously_verified':True,
    'installable':False,'hard_edge_admitted':False,'hard_opal_admitted':False},
  'nine_target_opal':targets,
  'edge':{
@@ -93,13 +94,16 @@ manifest={
   'expected_actual_opal_main_path':'UNVERIFIED',
   'fresh_device_matrix_ps60_effect_id_and_aux_parity':'MISSING',
   'aux_24_configured_vs_22_ddp':'UNRESOLVED_FAIL_CLOSED',
-  'fresh_owner_priority_cloud_preemption_latency':'UNTESTED_21S_BLOCKING_HELPER',
+  'fresh_owner_priority_cloud_preemption_latency':'NONBLOCKING_SOURCE_10_OF_10_NATIVE_PASS_DEVICE_NOT_CHECKED',
   'independent_device_preimage_backup_downloadback':'MISSING',
   'compiled_edge_candidate_and_rollback_offprovider_downloadback':'MISSING',
   'single_unchanged_manifest_phase1_phase2_closeout':'PENDING',
   'one_time_owner_manifest_bound_authorization':'MISSING',
   'physical_owner_safari12_matrix_aux_acceptance':'NOT_CHECKED',
   'native_pg_and_deno':'PASS_SEPARATE_EXACT_SOURCE_RUNS',
+  'native_opal_nonblocking':'10/10_FOCUSED_BUSYBOX_ASH_PASSED_NO_DEVICE_CONTACT',
+  'fresh_installed_current_Opal_main':'UNKNOWN',
+  'owner_preemption_field_timing':'UNVERIFIED',
  },
  'ordered_release':[
   {'order':1,'phase':'0_readback','action':'authenticate Opal target, list exact 9 paths and installed bytes/ownership, served 17 assets and current relay process; capture Matrix .10 and AUX .11 actual JSON state/info/config/build, ps60/fx and canonical Owner fence; abort on missing/mismatch/lockout'},
