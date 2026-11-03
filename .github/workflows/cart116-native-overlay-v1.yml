@@ -1,0 +1,54 @@
+name: cart116 isolated native PG17 and Deno overlay-v1
+on:
+  push:
+    branches:
+      - review/cart116-glow-canonical-intent-20261103
+    paths:
+      - .github/workflows/cart116-native-overlay-v1.yml
+      - staging/cart116-glow-v35-exact-review/tests/native-release/**
+      - staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql
+      - staging/cart116-glow-v35-exact-review/candidate-source/glow-overlay-v1-handler.mjs
+      - staging/cart116-glow-v35-exact-review/candidate-source/matrix-overlay-safe-review.mjs
+permissions:
+  contents: read
+concurrency:
+  group: cart116-native-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  isolated:
+    if: github.repository == 'oookkkaaayyy/local-roots'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      pg:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: cart116_ephemeral_ci_only
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    steps:
+      - name: Checkout exact Git SHA
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Native PostgreSQL 17 transaction / role / race and guarded rollback
+        env:
+          PG_CONTAINER: ${{ job.services.pg.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          bash tests/native-release/pg-race.sh
+      - name: Provision Deno native runtime
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Native Deno FormData, WebCrypto and versioned Edge handler
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          deno test --no-check tests/native-release/deno-native.test.ts
+          deno check candidate-source/matrix-relay.ts
