@@ -92,5 +92,67 @@
   "mutation_authority": "Scoring P0 solely for league_state and Worker release; Controls Track A solely Cart state; Matrix Track C device/firmware",
   "live_mutation_authorized": false,
   "legacy_mqtt_auto_live_may_be_enabled": false,
-  "one_time_claim_present": false
+  "one_time_claim_present": false,
+  "integrationReceipt": {
+    "status": "REVIEW_ONLY_NOT_ADMITTED",
+    "provenance": "Exact 61-member PR151-derived Worker review artifact from owner-private Drive; local offline two-member source overlay; original PR151 archive 3322952B SHA256 c24e35b7f9c4140feef37e0101441783d1b0ead9d9dd7735868a9a7b832c1b1d",
+    "combinedArchive": {
+      "driveFileId": "19PYS1yDKPGyQb8XAfZBUAAz4KD53-kN7",
+      "bytes": 3325662,
+      "sha256": "10a3cd8f12b65511f2ac3528719055632a01f0916a7eae44f969bfcd7a64f5f2",
+      "memberCount": 61,
+      "crcPass": true,
+      "providerDownloadBackByteAndHashVerified": true
+    },
+    "sourceOverlays": [
+      {
+        "path": "src/udisc-glow-auto-sync.mjs",
+        "gitBlob": "e163b10075d98bbf9c7d0fd1ff33738d8db45237",
+        "priorBlob": "47f2b74fdad8b70e1aeb6eb078176346f696115f"
+      },
+      {
+        "path": "src/index.js",
+        "gitBlob": "c2e46cd70740d1f1daa6bc803b33ebb32d0d08fb",
+        "priorBlob": "d3844e425a4ec4d6556345691d5153525c402bdf"
+      }
+    ],
+    "unchangedMembers": 58,
+    "publicAssetsUntouched": 47,
+    "sourceSafety": {
+      "targetDeployedVersion": "48ffa87e-3c83-46d0-a6ca-db7bf0b064e6",
+      "actualLiveCompiledFunctionParity": "NOT_VERIFIED",
+      "existingPR151ProductionState": "NOT_DEPLOYED",
+      "automaticCartBackendInvocation": "NOT_INSTALLED",
+      "cartSourceProof": "BOUND_TO_B4C0F0D_ONLY",
+      "cartPhysicalReadback": "NOT_VERIFIED",
+      "liveMutationAuthorized": false
+    },
+    "tests": [
+      {
+        "name": "Original poller red/green and event-window capture",
+        "run": 41580689666,
+        "pass": 13
+      },
+      {
+        "name": "Saved-hole safari par safety",
+        "run": 41600185216,
+        "pass": 19,
+        "containsPreviouslyPassedTests": true
+      },
+      {
+        "name": "UDisc merged week→exact v35 selector→b4 Cart backend source",
+        "run": 41601207739,
+        "pass": 4
+      }
+    ],
+    "preRoundMetadata": {
+      "uiSourceBlob": "13b0f66a58aafb215df414fda8acfd0d6a86f069",
+      "manualEntryRoute": "Glow > Scorecards > Enable Scorecard Editing > editablePar/hole for holes 1–18; toggle back off; source schedules sync push, but independent server save/reopen NOT production accepted",
+      "currentEnteredPars": 0,
+      "currentEnteredNotes": 0,
+      "sourceThreeColumnImport": "Historical only, current production import control absent",
+      "june20TemplateApprovedForNov3": false
+    },
+    "nextAction": "Scoring P0 sole Worker/scoring release owner to qualify one merged source/rollback against fresh Cloudflare v348 installed bytes and admit one full transaction; Controls A/Matrix C own independently releasing canonical backend/render, with actual event-window XLSX and physical acceptance separate"
+  }
 }
