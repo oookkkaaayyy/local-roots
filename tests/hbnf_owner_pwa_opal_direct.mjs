@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { LocalOwnerControl, LOCAL_MATRIX_IP, LOCAL_AUX_IP, LOCAL_MATRIX_MAC, LOCAL_AUX_MAC, LOCAL_MATRIX_RELEASE } from "../hbnf-final-controller/hbnf-cart-local.mjs";
-import { buildPatch } from "../staging/coordinated-backend/opal/mission-control-local/local-transport.js";
+import { buildPatch, LocalMatrixTransport as DirectWsTransport } from "../staging/coordinated-backend/opal/mission-control-local/local-transport.js";
 import { LocalMatrixTransport as PairedHttpTransport } from "../staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js";
 
 function directFixture({ auxReachable = true, matrixReachable = true, matrixStateReachable = true } = {}) {
@@ -373,4 +373,47 @@ test("local route preserves cloud reads and distinguishes live scores from manua
   assert.match(html, /id="featureLive"[^>]*>Live scores haven’t loaded yet\./);
   assert.match(html, /id="manualOfflineScorePanel"[\s\S]*?<summary>Manual Show Scores · works offline<\/summary>/);
   assert.match(js, /You are offline\. No change was sent\./);
+});
+
+
+test("Opal-local WebSocket closes on background and requires fresh verified state after reconnect", () => {
+  const sockets = [];
+  const connections = [];
+  const transport = new DirectWsTransport({
+    socketFactory: url => {
+      const socket = {
+        url, readyState: 0, sent: [],
+        send(body) { this.sent.push(body); },
+        close() { this.readyState = 3; if (this.onclose) this.onclose(); },
+      };
+      sockets.push(socket);
+      return socket;
+    },
+    onConnection: ready => connections.push(ready),
+  });
+  const state = { HBNF: { candidate: LOCAL_MATRIX_RELEASE }, seg: [] };
+  transport.connect();
+  assert.equal(sockets[0].url, `ws://${LOCAL_MATRIX_IP}/ws`);
+  sockets[0].readyState = 1;
+  sockets[0].onopen();
+  assert.equal(transport.controlReady(), false, "socket open alone must not enable control");
+  assert.equal(transport.verifyIdentity({ mac: LOCAL_MATRIX_MAC }), true);
+  sockets[0].onmessage({ data: JSON.stringify({ state }) });
+  assert.equal(transport.controlReady(), true);
+  transport.disconnect();
+  assert.equal(sockets[0].readyState, 3, "backgrounding closes the old socket");
+  assert.equal(transport.socket, null);
+  assert.equal(transport.snapshot, null);
+  assert.equal(transport.identityVerifiedAt, 0);
+  assert.equal(transport.controlReady(), false);
+  assert.deepEqual(connections, [true, false]);
+  transport.connect();
+  assert.equal(sockets.length, 2, "foreground status refresh creates a new socket");
+  sockets[1].readyState = 1;
+  sockets[1].onopen();
+  assert.equal(transport.controlReady(), false, "reconnected socket is not yet authorized");
+  assert.equal(transport.verifyIdentity({ mac: LOCAL_MATRIX_MAC }), true);
+  sockets[1].onmessage({ data: JSON.stringify({ state }) });
+  assert.equal(transport.controlReady(), true, "fresh state restores control");
+  transport.disconnect();
 });

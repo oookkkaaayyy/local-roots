@@ -63,4 +63,20 @@ export class LocalMatrixTransport {
  controlReady(){const h=this.snapshot&&this.snapshot.HBNF;return !!(this.socket&&this.socket.readyState===1&&h&&h.candidate===SUPPORTED_RELEASE&&this.snapshotAt&&Date.now()-this.snapshotAt<=15000&&this.identityVerifiedAt&&Date.now()-this.identityVerifiedAt<=30000);}
  requestState(){if(!this.socket||this.socket.readyState!==1)throw new Error("Matrix WebSocket is not connected.");this.socket.send('{"v":true}');}
  command(type,payload={}){const run=()=>commandOnce(this,type,payload),result=this.queue.then(run,run);this.queue=result.catch(()=>{});return result;}
+ disconnect(){
+  const socket=this.socket;
+  this.socket=null;
+  this.identityVerifiedAt=0;
+  this.snapshot=null;
+  this.snapshotAt=0;
+  for(const w of [...this.waiters]){
+   this.waiters.delete(w);
+   clearTimeout(w.timer);
+   w.reject(new Error("Matrix WebSocket closed by Owner page."));
+  }
+  if(socket&&(socket.readyState===0||socket.readyState===1)){
+   try{socket.close()}catch(_){}
+  }
+  this.onConnection(false);
+ }
 }
