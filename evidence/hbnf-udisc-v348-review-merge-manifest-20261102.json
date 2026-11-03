@@ -197,8 +197,8 @@
       {
         "sourcePath": "source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs",
         "targetMember": "src/udisc-glow-auto-sync.mjs",
-        "sourceGitBlob": "2b8e54dbca68317e4620d8df5454f91375e63fb6",
-        "purpose": "submit verified saved-score revision to purpose-bound existing Cart backend; no second score mutation"
+        "sourceGitBlob": "653ccc0578174ff59e51889b73bd68d72250ffc8",
+        "purpose": "After exact UDisc CAS/readback, server-only Cart submission; if same saved signature reappears, independently recheck unchanged week and retry within 10-minute saved-source freshness, no additional score CAS/status mutation. Denied native-overlay 503 stays NOT_ACCEPTED."
       },
       {
         "sourcePath": "source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js",
@@ -222,16 +222,59 @@
     "metadataPreview": {
       "path": "evidence/hbnf-nov03-three-column-layout-preview-20261103.md",
       "holeRows": 18,
-      "confirmedNov03Pars": 0,
-      "confirmedNov03Notes": 0,
-      "confirmedNov03CardLayoutRows": 0,
-      "oldJune20TemplateCannotBeReused": true
+      "actualNov03Verified": {
+        "layoutName": null,
+        "layoutId": null,
+        "parCount": 0,
+        "noteCount": 0,
+        "teeBasketMappings": 0
+      },
+      "comparison": {
+        "layout": "HB Glow Dubs 10.24.26",
+        "sourceEventIds": [
+          "hb-night-flyers-hb-glow-doubles-ZUDJEk",
+          "hb-night-flyers-hb-glow-doubles-test-only-F7DOx3"
+        ],
+        "par": 58,
+        "distanceFt": 5722,
+        "all18ComparisonHoles": true
+      },
+      "reasonNotImportReady": "Nov3 own UDisc Round1 selected layout id/name/tee/basket/par/hole notes not exposed in accessible primary public event record; no copying Oct24/Oct30 or Jun20 without explicit same-layout confirmation"
     },
-    "controlBackend": "review/cart116-glow-canonical-intent-20261103 exact b4c0f0d source tested, but current Controls Track A later 9a498dc source checkpoint remains REVIEW_ONLY; not deployed",
-    "releaseReadiness": "NOT_ADMITTED: v2 frozen source ZIP lacks the new invocation wiring and the newer PR151 public helper; actual Cloudflare v348 source parity, shared full rollback manifest, P0 cleanup, Controls/Track C runtime acceptance and event XLSX remain open",
+    "controlBackend": "Exact Controls Track A review branch e6f1306780e18086a07abb586dcc5288ec4928e2 nativeOverlayAdmitted=false (service blob 70d1493b7981f74f58228b2cbd14e507a115e11a); 5/5 new source-bound tests prove denial before even reading source/Cart or issuing a command; no bypass or physical delivery",
+    "releaseReadiness": "SOURCE REVIEW READY / LIVE PENDING: P0 alone must overlay newer UDisc source blob 653ccc into existing exact 61-member P0 candidate and use P0 five-target same-manifest, backup, rollback, current-source parity and authorization. Controls native-overlay admission OFF; no physical Cart or event partial XLSX acceptance.",
     "noIndependentDeployment": true,
     "currentReviewBranchHeadBeforeManifest": "32f6218ae559ad139b29cecb21ec1d476547aff0",
     "recoveryState": "No live release admission; frozen v2 unchanged; P0 cleanup prior guarded Mac host reached Supabase POST ETIMEDOUT, no claim/CAS/closeout observed; do not bypass original two-phase manifest.",
-    "reuseHistorical3Column": "Historical XLSX and Apps Script may inform pre-round manual metadata but current UI is direct Scorecards par-N/hole-N, not installed 3-col import; no Nov3 approved layout recovered"
+    "reuseHistorical3Column": "Historical XLSX and Apps Script may inform pre-round manual metadata but current UI is direct Scorecards par-N/hole-N, not installed 3-col import; no Nov3 approved layout recovered",
+    "currentP0IntegratedReviewCandidate": {
+      "driveFileId": "1CdSluI1EwYAVMMltUkviICcByngtLKaY",
+      "bytes": 3328250,
+      "sha256": "fc6b4b439a63d02760ff177222c7deb1c646748cb3d7872f02b3d6373ce49994",
+      "memberCount": 61,
+      "sourceHead": "52e120a6f8160d85f7085ebdcf1ef77869420b30",
+      "owner": "Scoring P0 sole five-target production Worker/score release coordinator",
+      "independentP0ProviderArchiveReadback": "Established in #115 comment 6600664567; this UDisc lane did not rebuild or alter it",
+      "importantGap": "Contains prior UDisc sources, but newly tested unchanged-source reconnect retry blob 653ccc0578174ff59e51889b73bd68d72250ffc8 is a review-branch delta and NOT claimed included",
+      "admission": "PENDING_NOT_ADMITTED"
+    },
+    "newSincePriorReceipt": {
+      "reviewSourceCommit": "210f860371476603c02bc7f3608bff1332a62fa3",
+      "latestTestedSourceBlob": "653ccc0578174ff59e51889b73bd68d72250ffc8",
+      "reconnectGuardedTests": {
+        "run": 41618312315,
+        "pass": 5,
+        "fail": 0,
+        "head": "d7c10a8183a780ce0eb22df6c6661f7446fa6efb"
+      },
+      "authenticDerivedCorrectionTest": {
+        "run": 41619293138,
+        "pass": 1,
+        "fail": 0,
+        "head": "438dfd1ae2f5953825e1a3b78e514460a528ef15",
+        "fixture": "authentic Apr18 anonymized fixture 2026-04-18.json transformed under an explicitly synthetic Nov3 clock/binding; no live XLSX bytes, no genuine Nov3 identity decisions",
+        "proof": "partial omission preserves previously accepted source score; manual correction supersedes source overwrite; event merge metadata/payout/history retained; one guarded CAS plus independent complete-week readback, replay causes no second scoring write, canonical Cart mock receives duplicate; no real provider/device"
+      }
+    }
   }
 }
