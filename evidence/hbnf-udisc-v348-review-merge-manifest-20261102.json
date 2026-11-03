@@ -357,9 +357,9 @@
     "releaseOwner": "Scoring P0 PR151 only; Controls Track A owns Cart/native relay"
   },
   "nov03EventReadiness": {
-    "phase": "REVIEW_ONLY_NO_PRODUCTION_MUTATION",
+    "phase": "REVIEW_ONLY_PAR59_SOURCE_AND_INTEGRATION_TESTED_NO_LIVE_ADMISSION",
     "evidenceDoc": "evidence/hbnf-nov03-three-column-layout-preview-20261103.md",
-    "evidenceDocCommit": "aad5bafb7077eaf09cf3bb406c5a4cf66eee4cfb",
+    "evidenceDocCommit": "7f6ec69f1f7f04b72ec18eaec28ea89a392f6ad7",
     "officialProgrammaticExportStatement": "https://forum.udisc.com/t/request-public-api/375?page=2",
     "latestOfficialSchemaCaution": "https://forum.udisc.com/t/changes-to-export-file/742613",
     "officialExportDocumentation": "https://help.udisc.com/en/articles/10859468-how-can-i-export-results-after-an-event-finishes",
@@ -381,12 +381,28 @@
       "round": "GEN R1",
       "localStart": "17:30 PST",
       "localEnd": "21:00 PST",
-      "selectedLayoutId": null,
-      "layoutName": null,
-      "teeBasketAssignmentsVerified": 0,
-      "parsVerified": 0,
-      "holeNotesVerified": 0,
-      "realPlayerIdentitiesVerified": 0
+      "ownerSourcedLayoutId": 150408,
+      "ownerSourcedLayoutName": "HB Glow Dubs 11.3.26",
+      "selectedRoundOneLayoutIdVerified": false,
+      "teeBasketAssignmentsOwnerTranscribed": 18,
+      "parCountOwnerTranscribed": 18,
+      "parTotal": 59,
+      "holeNotesOwnerTranscribed": 18,
+      "sumDisplayedHoleFeet": 6023,
+      "layoutHeaderFeet": 6022,
+      "hole8And9FullTargetLabelsTruncated": true,
+      "globalParkingRulePreserved": true,
+      "hole17DoubleMandoVsGlobalNoMandosNeedsInterpretation": true,
+      "realPlayerIdentitiesVerified": 0,
+      "realPlayerRostersExpectedAtRoundStart": true,
+      "ownerEarlyExport": {
+        "originalFilename": "hb-night-flyers-hb-glow-doubles-2026-11-03.xlsx",
+        "bytes": 15783,
+        "sheet": "Event results",
+        "dimension": "A1",
+        "scoreRows": 0,
+        "disposition": "EXPECTED_EMPTY_NO_SCORE_WRITE"
+      }
     },
     "currentHbnfStateReadOnly": {
       "projectRef": "phcpbvuqibyarpfrftgx",
@@ -400,19 +416,9 @@
       "eventSyncEvidence": false
     },
     "unsafeCurrentP0QuickImport": {
-      "p0PublicFile": "public/glow.html",
-      "blob": "89fc1e80b157cd331119d7016674773399f23f9a",
-      "flow": "confirmQuickUdiscImport",
-      "risks": [
-        "replace entire week player/card arrays",
-        "reset scoresLocked false",
-        "clear winner fields",
-        "new QI timestamp IDs on each import",
-        "pushRoot whole state",
-        "inject aggregate total into hole1 when no hole scores"
-      ],
-      "disposition": "DO_NOT_USE_CONFIRM_IMPORT_PLUS_UPDATE_TAGS_FOR_LIVE_NOV3",
-      "releaseOwner": "Scoring P0, source fix and admission only"
+      "historicalRisk": "Earlier P0 glow.html contained a destructive quick-import; rejected in P0 source commit 2aa8f0a2 and P0 corrected review ZIP",
+      "currentP0ReviewDisposition": "Legacy destructive confirmation disabled in reviewed source; no live installation accepted",
+      "owner": "Scoring P0 only; do not attempt independent source patch or direct state write"
     },
     "verifiedExistingSafeComponents": [
       "public/udisc-glow-reconcile.html READ_ONLY local file preview source, installed runtime not proved",
@@ -421,14 +427,15 @@
     ],
     "nextPermittedPath": "Organizer opens own Event tools/Caddie Book for verified layout, team handles; manually exports Nov3 official XLSX when UDisc permits; UDisc review via existing source without mutation; P0 ONLY applies prepared changed week via admitted guarded RPC after independent state read; Controls ONLY accepts qualified backend overlay intent and physical evidence.",
     "releaseBlockedBy": [
-      "Nov3 current selected Round1 18-hole geometry/pars/notes missing",
-      "real Nov3 UDisc identity mappings not yet recorded",
-      "during-round partial export and automated cadence not verified",
-      "P0 release/rollback/guarded source install not admitted",
-      "unsafe legacy quick import confirm cannot be used",
-      "Controls overlay-only relay not installed/admitted"
+      "Actual UDisc Nov3 Round1 layout 150408 association cannot yet be independently read with authorized organizer context",
+      "No real scored Nov3 XLSX yet; owner card exists, first official 15783-byte A1 export empty as expected",
+      "Actual UDisc names and doubles teams necessarily emerge at event start; not a pre-round setup blocker",
+      "UDisc repeated automated export frequency/permission and active-round partial XLSX availability unconfirmed; polling disabled",
+      "Production Nov3 week contains older test teams and no verified par/notes; P0-only surgical recovery/admitted metadata save",
+      "P0 same-manifest five-target executable Cloudflare/Edge rollback and field admission not complete",
+      "Controls native overlay + Owner priority/Matrix projection and physical recovery not admitted"
     ],
-    "existingP0ReviewHead": "f014104c2a067de98444d78f24a6eb31eb5a82e8",
+    "existingP0ReviewHead": "0f8dabf5104c5342f50c0bf935ad5438f3c8169c",
     "existingP0Manifest": {
       "driveId": "12X06fFmdc5oPGlcq9kprf1hhglbVV7mW",
       "revision": 6,
@@ -436,9 +443,16 @@
       "ownedAndChangedByP0Only": true
     },
     "existingReviewWorkerArchive": {
-      "driveId": "1pau_eGfkq0S3CjYnWwo3XkoxWsqdryGW",
-      "sha256": "24c96d043c53c9060f032bef21c57662b2db188f02a9ec1adee2fc46addfc7e6",
-      "rebuildNeeded": false
+      "historicalUDiscArchive": {
+        "driveId": "1pau_eGfkq0S3CjYnWwo3XkoxWsqdryGW",
+        "sha256": "24c96d043c53c9060f032bef21c57662b2db188f02a9ec1adee2fc46addfc7e6"
+      },
+      "latestP0SafeQuickImportReviewZip": {
+        "driveId": "1XNnYiJ4JU1rfAb-AhW3iUd4_KS_PwioH",
+        "sha256": "bb684434721205345bb8faa67619cb4972e53f4b2e3439e4646b6491507fef2b"
+      },
+      "mustBeReconciledByP0BeforeFutureRelease": true,
+      "noUDiscDuplicateArchivePrepared": true
     },
     "noIndependentChanges": [
       "no provider polling",
@@ -448,6 +462,40 @@
       "no external email sent",
       "no new candidate ZIP",
       "no new P0 manifest"
-    ]
+    ],
+    "par59SourceFixture": {
+      "path": "tests/fixtures/authentic-udisc/2026-11-03-layout-150408.json",
+      "gitBlob": "c06848d80295c08c34ef457d0d23ac5383cd8d72",
+      "source": "GitHub #115 comment 6617174574 owner screenshot and original empty XLSX observation",
+      "verification": "18/18 owner transcribed, selected GEN R1 association still not observed"
+    },
+    "latestNov03Engineering": {
+      "sourceBranch": "review/hbnf-udisc-auto-display-compat-gate-20261102",
+      "nativeFocusedCIRun": 41734147629,
+      "ciHead": "9bd9662438c48949463b0f5243611e2e4d5c75cb",
+      "tests": 24,
+      "passes": 24,
+      "failures": 0,
+      "modules": {
+        "src/udisc-glow-sync.mjs": "91aa80174e1e46db28ee8d6779e077b2d287080f",
+        "src/udisc-glow-sync-runner.mjs": "87e08205538bab9ead8f48a7e40e1efaeb21376c",
+        "src/udisc-glow-auto-sync.review.mjs": "ed61c8af1884ec89c5ec3f8206c8b32333c218b5"
+      },
+      "testFixtures": {
+        "tests/hbnf-udisc-nov03-par59-event-readiness.test.mjs": "1027bc0b0e9f2c523801efd266bfb445c2cfbcb5",
+        "tests/fixtures/authentic-udisc/2026-11-03-layout-150408.json": "c06848d80295c08c34ef457d0d23ac5383cd8d72"
+      },
+      "sourceSafety": [
+        "Stable monotonic free-ID allocator ensures front-inserted UDisc team does not collide/relabel earlier teams",
+        "Scored partnership transfer is refused unless explicit reviewedPartnershipChanges entry matches existing ID and new exact canonical pair",
+        "Rejected empty A1 and roster-only exports make zero scoring/status/Cart writes",
+        "Partial cells additive, manual corrections preserved; identical signed snapshot CAS-free",
+        "Actual PAR59 owner metadata into existing Glow scorecard DOM renderer, deployed v35 chooseLive and canonical Cart plan; source-only no physical command"
+      ],
+      "providerResult": "UDisc officially describes /leaderboard/export XLSX programmatic download but no formal API; active-round partial export cadence and repeated automated access not authorized/proved. No scraping or live polling.",
+      "offlineOnly": true,
+      "physicallyAccepted": false,
+      "productionMutation": false
+    }
   }
 }
