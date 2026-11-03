@@ -36,14 +36,14 @@ git show "$R6:evidence/hbnf-phase2-integration-20261007/r5-offline-qualification
 # dependency graph already links framework SPI 2.0.0 and Wire 2.0.0; make their
 # discovery explicit without replacing their Arduino 2.0.18 implementations.
 sed -i '/^lib_deps =$/a\  SPI\n  Wire' "$W/platformio_override.ini"
-mkdir -p "$W/vendor/FastLED"
-git -C "$W/vendor/FastLED" init -q
-git -C "$W/vendor/FastLED" fetch --quiet --depth 1 https://github.com/FastLED/FastLED.git "$FASTLED"
-git -C "$W/vendor/FastLED" checkout --quiet --detach FETCH_HEAD
-test "$(git -C "$W/vendor/FastLED" rev-parse HEAD)" = "$FASTLED"
+# Match the successful October 14 R6 build: include FastLED HEADERS from an external\n# pinned source checkout, not from WLED/vendor (a PlatformIO lib_extra_dirs).\n# Putting FastLED under WLED/vendor causes a second libFastLED.a and duplicate\n# global symbols when the usermod already compiles FastLED .cpp.hpp headers.\nmkdir -p "$WORK/FastLED"
+git -C "$WORK/FastLED" init -q
+git -C "$WORK/FastLED" fetch --quiet --depth 1 https://github.com/FastLED/FastLED.git "$FASTLED"
+git -C "$WORK/FastLED" checkout --quiet --detach FETCH_HEAD
+test "$(git -C "$WORK/FastLED" rev-parse HEAD)" = "$FASTLED"
 # Only relocate original Mac-specific compiler include flag to this ephemeral runner.
-sed -i 's|-I"/private/tmp/hbnf-p2-build/FastLED/src"|-I"'"$W"'/vendor/FastLED/src"|' "$W/platformio_override.ini"
-grep -Fq "$W/vendor/FastLED/src" "$W/platformio_override.ini"
+sed -i 's|-I"/private/tmp/hbnf-p2-build/FastLED/src"|-I"'"$WORK"'/FastLED/src"|' "$W/platformio_override.ini"
+grep -Fq "$WORK/FastLED/src" "$W/platformio_override.ini"
 # Pin WLED packet20 source hook and exact R6 text-alpha API compatibility.
 git show "$R6:firmware/phase2/integration-r4/packet20-frame-timing.patch" > "$WORK/packet20-frame-timing.patch"
 (cd "$W" && patch --batch --fuzz=0 -p1 -i "$WORK/packet20-frame-timing.patch")
@@ -105,7 +105,7 @@ test "$(sha256sum "$CLOCK" | cut -d' ' -f1)" = f38d260d0f1f50644f24166fa92377d48
 (cd "$W" && patch --batch --fuzz=0 -p1 -i "$CLOCK")
 test "$(sha256sum "$W/vendor/hbnf-animartrix/ANIMartRIX.h"|cut -d' ' -f1)" = bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8
 git show "$R6:scripts/hbnf_packet20_r4_fastled_backport.py" > "$WORK/hbnf_packet20_r4_fastled_backport.py"
-python3 "$WORK/hbnf_packet20_r4_fastled_backport.py" --header "$W/vendor/hbnf-animartrix/ANIMartRIX.h" --fastled-root "$W/vendor/FastLED" --apply
+python3 "$WORK/hbnf_packet20_r4_fastled_backport.py" --header "$W/vendor/hbnf-animartrix/ANIMartRIX.h" --fastled-root "$WORK/FastLED" --apply
 test "$(sha256sum "$W/vendor/hbnf-animartrix/ANIMartRIX.h"|cut -d' ' -f1)" = a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b
 cp "$W/vendor/hbnf-animartrix/ANIMartRIX.h" "$VENDOR"
 echo "PASS exact R6 normal usermod, pinned FastLED and ANIMartrix dependency"
