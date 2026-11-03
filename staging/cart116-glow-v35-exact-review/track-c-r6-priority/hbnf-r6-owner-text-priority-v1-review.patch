@@ -16,7 +16,7 @@
  static Rgb8 canonicalMatrixPixels[32*16]{};
  static Rgb8 transitionFromPixels[32*16]{};
 @@ -217,14 +217,22 @@
-     const int h=digit(hi),l=digit(lo);if(h<0||l<0)return false;values[c]=(uint8_t)((h<<4)|l); 
+     const int h=digit(hi),l=digit(lo);if(h<0||l<0)return false;values[c]=(uint8_t)((h<<4)|l);
    }
    r=values[0];g=values[1];b=values[2];return true;
  }
@@ -61,3 +61,4 @@
  
  static Rgb8 hbnfPaletteColor(uint8_t r,uint8_t g,uint8_t b,uint8_t index) {
    if(hbnfPalette.mode==PALETTE_SOLID) {
+     const uint8_t level=(uint8_t)(((uint16_t)r*54u+(uint16_t)g*183u+(uint16_t)b*19u+128u)>>8);
