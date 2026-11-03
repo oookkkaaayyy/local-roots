@@ -9,6 +9,9 @@ on:
       - 'tests/hbnf-parent-release-driver.test.mjs'
       - 'tests/glow-save-sync-race.test.mjs'
       - 'tests/hbnf-glow-preinit-pending.test.mjs'
+      - 'tests/hbnf-udisc-cart-server-ack.test.mjs'
+      - 'source-snapshots/hbnf-worker-d1a5f936-20261024/src/**'
+      - 'source-snapshots/hbnf-worker-d1a5f936-20261024/worker-private/**'
       - 'tests/skins-pending-review.test.mjs'
       - 'public/glow.html'
       - 'public/skins.html'
@@ -36,7 +39,11 @@ jobs:
         with:
           node-version: '22'
       - name: Verify review-only parent gate and cutover source invariants (no secrets)
-        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-server-tag-projection.test.mjs
+        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-server-tag-projection.test.mjs
+      - name: Verify exact UDisc latest source blobs (read only)
+        run: |
+          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js)" = "05f45f267c068ed3f1b8e17404cb792e76d5c539"
+          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs)" = "653ccc0578174ff59e51889b73bd68d72250ffc8"
       - name: Fetch exact installed v48 source (read only)
         run: git fetch --no-tags --depth=1 origin 44612c09677f59b84bece7de655af7bb011b51e7
       - name: Assemble reproducible REVIEW_ONLY site asset package
