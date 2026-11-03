@@ -417,3 +417,75 @@ test("Opal-local WebSocket closes on background and requires fresh verified stat
   assert.equal(transport.controlReady(), true, "fresh state restores control");
   transport.disconnect();
 });
+
+
+test("Opal-local command queued before background cannot send on a new WebSocket", async () => {
+  const sockets = [];
+  const transport = new DirectWsTransport({
+    socketFactory: url => {
+      const socket = {
+        url, readyState: 0, sent: [],
+        send(body) { this.sent.push(body); },
+        close() { this.readyState = 3; if (this.onclose) this.onclose(); },
+      };
+      sockets.push(socket);
+      return socket;
+    },
+    timeoutMs: 100,
+  });
+  const state = { HBNF: { candidate: LOCAL_MATRIX_RELEASE, matrixBrightness: 70 }, seg: [] };
+  const ready = () => {
+    transport.connect();
+    const socket = sockets[sockets.length - 1];
+    socket.readyState = 1;
+    socket.onopen();
+    assert.equal(transport.verifyIdentity({ mac: LOCAL_MATRIX_MAC }), true);
+    socket.onmessage({ data: JSON.stringify({ state }) });
+    assert.equal(transport.controlReady(), true);
+    return socket;
+  };
+  const oldSocket = ready();
+  const staleCommand = transport.command("TUNE", { matrixBrightness: 80 });
+  transport.disconnect();
+  assert.equal(oldSocket.readyState, 3);
+  const newSocket = ready();
+  await assert.rejects(staleCommand, /superseded by connection change/);
+  assert.deepEqual(newSocket.sent, ['{"v":true}'], "old queued command must never send on new socket");
+  const freshCommand = transport.command("TUNE", { matrixBrightness: 71 });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(newSocket.sent.filter(msg => msg.includes('"matrixBrightness":71')).length, 1);
+  newSocket.onmessage({ data: JSON.stringify({ state: { HBNF: { ...state.HBNF, matrixBrightness: 71 }, seg: [] } }) });
+  assert.equal((await freshCommand).HBNF.matrixBrightness, 71);
+  transport.disconnect();
+});
+
+test("Opal-local queued command fails closed across unexpected socket closure", async () => {
+  const sockets = [];
+  const transport = new DirectWsTransport({
+    socketFactory: url => {
+      const socket = {
+        url, readyState: 0, sent: [],
+        send(body) { this.sent.push(body); },
+        close() { this.readyState = 3; if (this.onclose) this.onclose(); },
+      };
+      sockets.push(socket);
+      return socket;
+    },
+    timeoutMs: 100,
+  });
+  const ready = () => {
+    transport.connect();
+    const socket = sockets[sockets.length - 1];
+    socket.readyState = 1; socket.onopen();
+    assert.equal(transport.verifyIdentity({ mac: LOCAL_MATRIX_MAC }), true);
+    socket.onmessage({ data: JSON.stringify({ state: { HBNF: { candidate: LOCAL_MATRIX_RELEASE }, seg: [] } }) });
+    return socket;
+  };
+  const oldSocket = ready();
+  const pending = transport.command("VIBE", { vibe: "heavy" });
+  oldSocket.close(); // emulate unplanned radio/WebSocket loss, not a forced router outage
+  const recoveredSocket = ready();
+  await assert.rejects(pending, /superseded by connection change/);
+  assert.deepEqual(recoveredSocket.sent, ['{"v":true}']);
+  transport.disconnect();
+});
