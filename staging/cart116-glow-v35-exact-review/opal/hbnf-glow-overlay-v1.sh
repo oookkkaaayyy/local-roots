@@ -49,15 +49,23 @@ snapshot() {
  [ "$(jsonfilter -i "$TMP/build.json" -e '@.release_id')" = 'hbnf-cart2-phase2-r6-skins-readable-20261014' ] || return 1
  ps="$(jsonfilter -i "$TMP/state.json" -e '@.ps')" || return 1
  case "$ps" in
-   60) : ;;
-   -1) # Current physical profile: effect 142 without an active preset.
-       # No source/installed renderer parity proof. Still fail closed.
-       return 1 ;;
+   60|-1) : ;; # Native R6 uses effect ID, not saved preset, for overlay rendering.
    *) return 1 ;;
  esac
  fx="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.effectId')" || return 1
  [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[0].fx')" = "$fx" ] || return 1
  [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[1].fx')" = "$fx" ] || return 1
+ # For current ps=-1, exact compiled R6 and actual HBNF.effectId both require FX142.
+ [ "$ps" != -1 ] || [ "$fx" = 142 ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.bri')" = 255 ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[0].bri')" = 255 ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[1].bri')" = 255 ] || return 1
+ matrix_brightness="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.matrixBrightness')" || return 1
+ case "$matrix_brightness" in
+   ''|*[!0-9]*) return 1 ;;
+ esac
+ [ "$matrix_brightness" -ge 1 ] && [ "$matrix_brightness" -le 255 ] || return 1
+ # Nov 3 slider=0: do not fake brightness or send an invisible test scoreboard.
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.live')" = true ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.lm')" = DDP ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.lip')" = 192.168.77.10 ] || return 1
