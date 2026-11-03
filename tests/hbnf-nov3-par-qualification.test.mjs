@@ -28,8 +28,15 @@ test('removed participants and empty holes cannot invent metadata dependencies',
  assert.deepEqual(qualifiedGlowScorePars(w),{ready:true,scoredHoles:1});
 });
 test('invalid safari par values fail closed instead of reverting to par 3',()=>{
- for(const invalid of ['', '0','1','9','4.5','3abc','NaN']) {
+ for(const invalid of ['', '0','10','4.5','3abc','NaN']) {
   const w=week();w.scorecardText.holePars['2']=invalid;
   assert.equal(qualifiedGlowScorePars(w).ready,false,invalid);
+ }
+});
+
+test('the verified installed manual scorecard input admits entered 1–9 pars without extra invented restrictions',()=>{
+ for(const par of ['1','9']){
+  const w=week();w.scorecardText.holePars['2']=par;
+  assert.deepEqual(qualifiedGlowScorePars(w),{ready:true,scoredHoles:2});
  }
 });
