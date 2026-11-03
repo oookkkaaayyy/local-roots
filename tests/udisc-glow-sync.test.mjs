@@ -100,8 +100,12 @@ test('a unique returning partner can carry a changed partnership; ambiguous matc
  const fixture=await getFixture('2026-03-03'),rows=toAoA(fixture),original=makeProposal(rows,'2026-03-03'),current=existingWeek(original,'2026-03-03');
  const changed=rows.map(row=>row.slice()),nameColumn=changed[0].indexOf('name');
  const parts=String(changed[1][nameColumn]).split(/\s*&\s*/);changed[1][nameColumn]=`${parts[0]} & Fixture New Partner`;
- const revised=makeProposal(changed,'2026-03-03','2026-10-26T12:01:00Z'),updated=await prepareGlowWeekSync(current,revised);
+ const revised=makeProposal(changed,'2026-03-03','2026-10-26T12:01:00Z');
+ await assert.rejects(()=>prepareGlowWeekSync(current,revised),/Scored partnership changed/);
+ const decision={HBNF_1:{priorTeamId:'HBNF_1',partners:[parts[0],'Fixture New Partner'],preserveExistingScores:true}};
+ const updated=await prepareGlowWeekSync(current,revised,{reviewedPartnershipChanges:decision});
  assert.equal(updated.week.players[0].id,'HBNF_1');assert.equal(updated.week.players[0].partner2,'Fixture New Partner');
+ assert.equal(updated.week.udiscSync.latest.reviewedPartnershipTransitions[0].glowTeamId,'HBNF_1');
  const ambiguous=structuredClone(current);ambiguous.cards[0].players[1].partner1=ambiguous.cards[0].players[0].partner1;
  ambiguous.players[1].partner1=ambiguous.players[0].partner1;
  await assert.rejects(()=>prepareGlowWeekSync(ambiguous,revised),/ambiguous|multiple Glow teams/);
