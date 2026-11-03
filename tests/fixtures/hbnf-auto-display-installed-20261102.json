@@ -1,0 +1,76 @@
+{
+  "format": "hbnf-udisc-glow-matrix-provider-parity-v1",
+  "observedAt": "2026-11-02",
+  "provenance": {
+    "supersedes": "none; point-in-time read-only provider snapshot",
+    "productionIssue": "https://github.com/oookkkaaayyy/local-roots/issues/115",
+    "matrixIssue": "https://github.com/oookkkaaayyy/local-roots/issues/116",
+    "cloudflareWorker": "48ffa87e-3c83-46d0-a6ca-db7bf0b064e6",
+    "source": "Connected Supabase get_edge_function, pg_get_functiondef, cron.job, hbnf_matrix_control_state and league_state read-only"
+  },
+  "poller": {
+    "eligibleInWindow": true,
+    "eventDate": "2026-11-03",
+    "confirmedAutomaticScoreWrite": false
+  },
+  "control": {
+    "mode": "showcase",
+    "auto_live": false,
+    "library_revision": "hbnf-wow-r3-max-2026-09-21-v3",
+    "show_preset": 60,
+    "resume_preset": 60
+  },
+  "liveCycle": {
+    "slug": "hbnf-matrix-sync3",
+    "active": true,
+    "version": 42,
+    "bundleSha256": "f6fab60e61c1ecc2353d03eb1408e00b5ae214b0a9a02a2895213450c25588c6",
+    "supportedLibraryRevisions": [
+      "hbnf-native-organic-2026-09-19-v11",
+      "hbnf-flow-2026-09-19-v10"
+    ],
+    "nonNativeResumeLibrary": "hbnf-native-organic-2026-09-19-v11",
+    "nonNativeResumePresetMin": 50,
+    "nonNativeResumePresetMax": 55,
+    "publishTransport": "MQTT",
+    "acknowledgement": "HTTP response precedes asynchronous EdgeRuntime.waitUntil MQTT publish"
+  },
+  "claimRpc": {
+    "name": "public.hbnf_claim_matrix_live_overlay",
+    "requiredLibraryRevision": "hbnf-host-safe-2026-09-15-v3",
+    "requiresMode": "event",
+    "requiresAutoLive": true
+  },
+  "cron": {
+    "name": "hbnf-matrix-live-cycle",
+    "active": true,
+    "schedule": "*/2 * * * *",
+    "requiresMode": "event",
+    "requiresAutoLive": true,
+    "invokes": "hbnf-matrix-sync3"
+  },
+  "queue": {
+    "status": "pending",
+    "fingerprint": "ec15053c2bde3c28fa252ee804c07623",
+    "readbackMatchesLeagueState": true,
+    "consumerProviderVerified": false
+  },
+  "cartRelay": {
+    "slug": "hbnf-cart-control",
+    "active": true,
+    "version": 35,
+    "entry": "X-HBNF-Relay-ID",
+    "transport": "HTTP",
+    "installedMqttToRelayBridgeVerified": false
+  },
+  "acceptance": {
+    "temporaryScorecardConfirmed": false,
+    "providerEndToEndScoreWriteReadback": false,
+    "actualScheduledMQTTToCartReadback": false,
+    "ownerVisualScoreboard": false,
+    "refreshReconnect": false,
+    "restoredPermanentStats": false,
+    "restoredMatrixVibe": false,
+    "restoredLiveConfiguration": false
+  }
+}
