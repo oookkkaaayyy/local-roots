@@ -2,9 +2,11 @@
 # REVIEW_ONLY: source candidate for the existing Opal, NEVER an install launcher.
 # Do not run unless same-manifest admission has replaced the hard false gate.
 set -eu
-[ "${HBNF_NATIVE_OVERLAY_V1_ADMITTED:-false}" = "true" ] || exit 0
-# The installed release gate must replace the above development guard only in a
-# separately reviewed, signed candidate. Environment flags alone are NOT admission.
+# Hard-coded build gate. No environment variable or remote setting can enable
+# actuator writes. Only a separately reviewed manifest-bound source revision may
+# change this value after all recovery and owner authorization checks.
+HBNF_OVERLAY_V1_SOURCE_ADMITTED=false
+[ "$HBNF_OVERLAY_V1_SOURCE_ADMITTED" = true ] || exit 0
 [ -r /etc/hbnf-matrix-relay.conf ] || exit 1
 CONF=/etc/hbnf-matrix-relay.conf
 [ ! -L "$CONF" ] && [ "$(stat -c %a "$CONF")" = 600 ] &&
