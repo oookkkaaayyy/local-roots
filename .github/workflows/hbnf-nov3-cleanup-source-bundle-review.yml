@@ -1,0 +1,31 @@
+name: HBNF Nov3 cleanup source recovery bundle (review only)
+on:
+  push:
+    branches:
+      - review/hbnf-glow-cleanup-toolbridge-20261102
+permissions:
+  contents: read
+jobs:
+  exact-source-bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pin and archive exact original cleanup runner source
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin feature/udisc-glow-standings-prototype:refs/heads/feature/udisc-glow-standings-prototype
+          test "$(git rev-parse refs/heads/feature/udisc-glow-standings-prototype)" = "33ff65caeb609533b0a4eea634100a78fb34ec08"
+          git bundle create hbnf-glow-cleanup-feature-33ff65.bundle feature/udisc-glow-standings-prototype
+          git bundle verify hbnf-glow-cleanup-feature-33ff65.bundle
+          sha256sum hbnf-glow-cleanup-feature-33ff65.bundle
+      - name: Preserve exact source bundle as a review-only artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-GLOW-CLEANUP-EXACT-SOURCE-REVIEW_ONLY
+          path: hbnf-glow-cleanup-feature-33ff65.bundle
+          if-no-files-found: error
+          retention-days: 3
