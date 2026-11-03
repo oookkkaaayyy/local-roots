@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {parseUdiscAoA,publishSnapshot} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-preview.mjs';
-import {buildGlowProposal} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-reconcile.mjs';
+import {buildGlowProposal,memberKey} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/public/udisc-glow-reconcile.mjs';
 import {prepareGlowWeekSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync.mjs';
 import {runApprovedGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs';
 
@@ -19,7 +19,16 @@ function aoa(f){
 }
 function proposal(rows,stamp){
  const model=publishSnapshot(null,parseUdiscAoA(rows,{eventId,observedAtLocal:stamp})).model;
- return buildGlowProposal(model,{aliases:{},historicalNames:[],tagEvidence:[]},{},{weekDate:date});
+ // Deterministic placeholder-only reviewed crosswalk for this isolated fixture,
+ // not evidence that Nov3 real people/handles have been owner-approved.
+ const names=[],decisions={};
+ for(const r of model.snapshots.at(-1).rows)r.members.forEach((name,i)=>{
+   names.push(name);
+   const key=memberKey({name,username:r.memberAlignment?r.usernames[i]:''});
+   decisions[key]={canonicalName:name};
+ });
+ return buildGlowProposal(model,{aliases:{},historicalNames:names,tagEvidence:[]},
+   decisions,{weekDate:date});
 }
 const base=()=>({
  date,scoresLocked:false,cards:[{id:'C1',finalized:false,players:[]}],players:[],
