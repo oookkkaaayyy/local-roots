@@ -25,10 +25,12 @@ export function inspectGlowAutoDisplayAcceptance(source) {
   if(cron.active!==true||cron.invokes!==edge.slug||
      cron.requiresMode!=='event'||cron.requiresAutoLive!==true)
     providerBlockers.push('SCHEDULED_CYCLE_NOT_VERIFIED');
-  if(edge.nonNativeResumeLibrary===ctl.library_revision&&
-     (!Number.isInteger(ctl.resume_preset)||ctl.resume_preset<edge.nonNativeResumePresetMin||
-       ctl.resume_preset>edge.nonNativeResumePresetMax))
-    providerBlockers.push('NON_NATIVE_RESUME_PRESET_OUT_OF_RANGE');
+  // Flow-native status is not established by this provider readback. The
+  // deployed legacy resume branch accepts only 50..55; preset 60 cannot be
+  // presumed restorable by changing only library_revision.
+  if(!Number.isInteger(ctl.resume_preset)||ctl.resume_preset<edge.nonNativeResumePresetMin||
+     ctl.resume_preset>edge.nonNativeResumePresetMax)
+    providerBlockers.push('LEGACY_RESUME_PRESET_UNSUPPORTED_UNLESS_NATIVE_FLOW_PROVEN');
   if(edge.publishTransport!==relay.transport&&relay.installedMqttToRelayBridgeVerified!==true)
     providerBlockers.push('MQTT_TO_CART_RELAY_TRANSPORT_UNPROVEN');
   if(queue.readbackMatchesLeagueState!==true||queue.consumerProviderVerified!==true)
