@@ -77,7 +77,10 @@
     "one_time_owner_manifest_bound_authorization": "MISSING; DO NOT REQUEST BEFORE SOURCE AND ROLLBACK ACCEPTANCE",
     "owner_preemption_field_timing": "UNVERIFIED",
     "physical_owner_safari12_matrix_aux_acceptance": "NOT_CHECKED",
-    "single_unchanged_manifest_phase1_phase2_closeout": "PENDING"
+    "single_unchanged_manifest_phase1_phase2_closeout": "PENDING",
+    "native_aux_gpio_ddp_geometry": "FOCUSED_CI_PASS_41707392710; physical GPIO25/26 OFF documented but DDP packet/electrical unproven",
+    "opal_main_runtime_service": "NOT_CHECKED; historical procd executable path /usr/libexec/hbnf-matrix-relay and init /etc/init.d/hbnf-matrix-relay; no current bytes/process identity",
+    "matrix_active_ps_minus_one_renderer": "FAIL_CLOSED_IN_SOURCE; real ps=-1 effectId142 both FX142; firmware native HBNF.overlay preset independence not proved"
   },
   "installer_included": false,
   "nine_target_opal": [
@@ -312,7 +315,7 @@
   "schema": "hbnf-cart116-controls-track-a-two-phase-admission-v1",
   "source_corrections_20261103": {
     "candidate_main_install_path_corrected": "/usr/libexec/hbnf-matrix-relay",
-    "changed_only_tests": "10/10 native Node PASS, BusyBox ash -n three changed/new scripts PASS; CI PENDING",
+    "changed_only_tests": "10/10 native Node PASS; BusyBox ash syntax 3/3 PASS; GitHub Actions run 41707392710 success",
     "historical_init_source_blob": "fb562b848ca071e6c3d0caffb0d21a5675b39db1",
     "parent_verified_head": "506b911365885ed13ee82b9eb4194ecbc7276441",
     "source_module_paths": [
@@ -321,7 +324,11 @@
       "staging/cart116-glow-v35-exact-review/opal/hbnf-glow-overlay-v1.sh",
       "staging/cart116-glow-v35-exact-review/opal/relay-startup-origin.mjs"
     ],
-    "source_only_no_live_mutation": true
+    "source_only_no_live_mutation": true,
+    "source_commit_verified": "d57e3b2ab0010850baaace9251677105df21d368",
+    "native_pg_deno_repeated": false,
+    "main_procd_source_verified": "Git blob fb562b848ca071e6c3d0caffb0d21a5675b39db1; /usr/libexec/hbnf-matrix-relay; current installed preimage unknown",
+    "reproduction": "Original ZIP sha 71e6331f + frozen capsule snapshot and evidence -> exact new ZIP sha a9ceea54; 36 entries 35/35 internal hashes"
   },
   "sql": {
     "down_member": "candidate/backend/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql",
