@@ -101,7 +101,16 @@ export async function executeMockableSaga(tx, adapters, journal) {
   const txHash = digest(tx);
   try { await journal.claim(tx.transactionId, txHash); } catch { return { status: 'REPLAY_REJECTED', trace: [] }; }
   const completed = [], trace = [];
-  await journal.append({ event: 'START', txHash });
+  // Durable journal failure is a release uncertainty, not an exception that
+  // may skip reverse restoration after a provider has changed.
+  let journalFailure = false;
+  async function record(event) {
+    try { await journal.append(event); return true; }
+    catch { journalFailure = true; return false; }
+  }
+  if (!(await record({ event: 'START', txHash }))) {
+    return { status: 'JOURNAL_UNAVAILABLE_NOT_ADMITTED', errors: ['start evidence is not durable'], trace };
+  }
   for (const op of tx.operations) {
     if (digest(tx) !== txHash) return abort('immutable transaction digest changed', true);
     // A failed pre-change identity read cannot be mistaken for an unchanged
@@ -110,16 +119,18 @@ export async function executeMockableSaga(tx, adapters, journal) {
     let before;
     try { before = await adapters.readTarget(op.targetId); }
     catch {
-      await journal.append({ event: 'PRECHANGE_READBACK_UNAVAILABLE', stage: op.id });
+      const recorded = await record({ event: 'PRECHANGE_READBACK_UNAVAILABLE', stage: op.id });
       if (completed.length) return abort('prechange readback unavailable:' + op.id, true);
-      return { status: 'READBACK_UNAVAILABLE_ABORT_NOT_ADMITTED', errors: ['prechange readback unavailable:' + op.id], trace };
+      return { status: recorded ? 'READBACK_UNAVAILABLE_ABORT_NOT_ADMITTED' : 'MANUAL_RECOVERY_REQUIRED', errors: ['prechange readback unavailable:' + op.id], trace };
     }
     if (digest(before) !== op.expectedBefore) {
-      await journal.append({ event: 'STALE_TARGET_ABORT', stage: op.id, identity: digest(before) });
-      if (completed.length) return abort(`stale provider identity:${op.targetId}`);
-      return { status: 'STALE_TARGET_ABORT', errors: [`stale provider identity:${op.targetId}`], trace };
+      const recorded = await record({ event: 'STALE_TARGET_ABORT', stage: op.id, identity: digest(before) });
+      if (completed.length) return abort(`stale provider identity:${op.targetId}`, !recorded);
+      return { status: recorded ? 'STALE_TARGET_ABORT' : 'MANUAL_RECOVERY_REQUIRED', errors: [`stale provider identity:${op.targetId}`], trace };
     }
-    await journal.append({ event: 'BEFORE', stage: op.id, identity: digest(before) });
+    if (!(await record({ event: 'BEFORE', stage: op.id, identity: digest(before) }))) {
+      return abort('prechange stage evidence not durable:' + op.id, true);
+    }
     let ack;
     try { ack = await adapters.apply(op); } catch { ack = null; }
     let after;
@@ -127,20 +138,26 @@ export async function executeMockableSaga(tx, adapters, journal) {
     const afterHash = digest(after);
     if (afterHash === op.expectedAfter) {
       completed.push(op);
-      await journal.append({ event: 'OBSERVED_APPLIED', stage: op.id, identity: afterHash, acknowledged: ack?.acknowledged === true });
+      if (!(await record({ event: 'OBSERVED_APPLIED', stage: op.id, identity: afterHash, acknowledged: ack?.acknowledged === true }))) {
+        return abort('applied stage evidence not durable:' + op.id, true);
+      }
       if (ack?.acknowledged !== true) return abort('lost or incomplete acknowledgement');
       trace.push(`APPLIED+READBACK:${op.id}`);
       continue;
     }
     if (afterHash !== op.expectedBefore || ack?.acknowledged === true) return abort('operation result differs from acknowledged state', true);
-    await journal.append({ event: 'REJECTED_NO_CHANGE', stage: op.id });
+    if (!(await record({ event: 'REJECTED_NO_CHANGE', stage: op.id }))) {
+      return abort('rejected stage evidence not durable:' + op.id, true);
+    }
     return abort('operation rejected without changing target');
   }
-  await journal.append({ event: 'MOCK_SEQUENCE_COMPLETE_NOT_ADMITTED', txHash });
+  if (!(await record({ event: 'MOCK_SEQUENCE_COMPLETE_NOT_ADMITTED', txHash }))) {
+    return abort('final stage evidence not durable', true);
+  }
   return { status: 'MOCKED_COMPLETE_NOT_ADMITTED', trace, txHash };
 
   async function abort(reason, uncertain = false) {
-    await journal.append({ event: 'ABORT', reason });
+    if (!(await record({ event: 'ABORT', reason }))) uncertain = true;
     for (const op of completed.slice().reverse()) {
       let current;
       try { current = await adapters.readTarget(op.targetId); } catch { return manual(`rollback readback unavailable:${op.id}`); }
@@ -149,7 +166,7 @@ export async function executeMockableSaga(tx, adapters, journal) {
         const result = await adapters.restore(op);
         const restored = await adapters.readTarget(op.targetId);
         if (result?.acknowledged !== true || digest(restored) !== op.expectedRestored) return manual(`rollback failed:${op.id}`);
-        await journal.append({ event: 'RESTORED+READBACK', stage: op.id, identity: digest(restored) });
+        if (!(await record({ event: 'RESTORED+READBACK', stage: op.id, identity: digest(restored) }))) uncertain = true;
         trace.push(`RESTORED+READBACK:${op.id}`);
       } catch { return manual(`rollback failed:${op.id}`); }
     }
@@ -157,7 +174,7 @@ export async function executeMockableSaga(tx, adapters, journal) {
       try { if (digest(await adapters.readTarget(target.id)) !== target.baselineSha256) return manual(`baseline not restored:${target.id}`); }
       catch { return manual(`final baseline readback unavailable:${target.id}`); }
     }
-    return { status: uncertain ? 'MANUAL_RECOVERY_REQUIRED' : 'MOCKED_ABORT_RESTORED_NOT_ADMITTED', reason, trace };
+    return { status: (uncertain || journalFailure) ? 'MANUAL_RECOVERY_REQUIRED' : 'MOCKED_ABORT_RESTORED_NOT_ADMITTED', reason, trace };
   }
-  async function manual(reason) { await journal.append({ event: 'MANUAL_RECOVERY_REQUIRED', reason }); return { status: 'MANUAL_RECOVERY_REQUIRED', reason, trace }; }
+  async function manual(reason) { await record({ event: 'MANUAL_RECOVERY_REQUIRED', reason }); return { status: 'MANUAL_RECOVERY_REQUIRED', reason, trace }; }
 }

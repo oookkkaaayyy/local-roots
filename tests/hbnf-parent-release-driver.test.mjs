@@ -270,3 +270,37 @@ test('same-manifest closeout cannot succeed with wrong manifest, failed acceptan
   const unreachable={async persistAndDownloadBack(){throw new Error('drive transport timeout')}};
   assert.equal((await persistCloseout({admittedManifest:admitted,result},unreachable)).status,'PENDING');
 });
+
+
+test('unavailable durable journal at start blocks all simulated provider stages',async()=>{
+ const tx=makeTx(),p=fakeProvider(tx),j=new MemoryJournal();
+ j.append=async()=>{throw Error('not durable')};
+ const out=await executeMockableSaga(tx,p.adapter,j);
+ assert.equal(out.status,'JOURNAL_UNAVAILABLE_NOT_ADMITTED');
+ assert.deepEqual(p.states,initial);
+ assert.deepEqual(p.calls,[]);
+});
+
+
+test('the fifth durable event failing forces conditional reverse order',async()=>{
+ const tx=makeTx(),p=fakeProvider(tx),j=new MemoryJournal();
+ const append=j.append.bind(j);let sequence=0;
+ j.append=async e=>{sequence++;if(sequence===5)throw Error('unavailable');return append(e)};
+ const out=await executeMockableSaga(tx,p.adapter,j);
+ assert.equal(out.status,'MANUAL_RECOVERY_REQUIRED');
+ assert.deepEqual(p.states,initial);
+ assert.deepEqual(p.calls.filter(v=>v.startsWith('restore:')),['restore:db-rpc-expand','restore:db-revision']);
+});
+
+
+test('durable event interruption before apply, at completion, or during restore never accepts a release',async()=>{
+ for(const [failAt,ackLoss,restores] of [[4,false,1],[16,false,7],[17,true,7]]){
+  const tx=makeTx(),p=fakeProvider(tx,ackLoss?{loseAck:'db-revoke-old-writes'}:{}),j=new MemoryJournal();
+  const append=j.append.bind(j);let count=0;
+  j.append=async e=>{count++;if(count===failAt)throw Error('evidence unavailable');return append(e)};
+  const out=await executeMockableSaga(tx,p.adapter,j);
+  assert.equal(out.status,'MANUAL_RECOVERY_REQUIRED');
+  assert.equal(p.calls.filter(v=>v.startsWith('restore:')).length,restores);
+  assert.deepEqual(p.states,initial);
+ }
+});
