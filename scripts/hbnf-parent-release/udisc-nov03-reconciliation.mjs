@@ -24,6 +24,14 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
   if(snapshot?.eventId!==EVENT_ID || snapshot?.weekDate!==DATE ||
       !Array.isArray(snapshot.rows)||!snapshot.rows.length)
     throw Error('UDISC_NOV03_EVENT_IDENTITY_OR_REAL_ROWS_REQUIRED');
+  // A total-only export cannot create invented hole scores.
+  if(snapshot.rows.some(row=>!Array.isArray(row.scores)||row.scores.length!==18 ||
+      row.scores.some(value=>value!=='' && value!==null &&
+        (!Number.isInteger(Number(value))||Number(value)<1||Number(value)>25))))
+    throw Error('UDISC_VALID_HOLE_STROKES_REQUIRED');
+  if(!snapshot.rows.some(row=>row.scores.some(value=>value!==''&&value!==null)))
+    return {status:'NO_HOLE_SCORES_IN_EXPORT',eventId:EVENT_ID,weekDate:DATE,
+      serverRevision:revision,productionWrite:false};
   if(currentWeek.scoresLocked || arr(currentWeek.cards).some(card=>card.finalized))
     return {status:'BLOCKED_LOCKED_WEEK',eventId:EVENT_ID,weekDate:DATE,
       serverRevision:revision,productionWrite:false};
@@ -33,7 +41,7 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
   const model={eventId:EVENT_ID,snapshots:[snapshot]};
   const proposal=buildGlowProposal(model,evidence,decisions,{weekDate:DATE});
   const mappingIssues=proposal.issues||{};
-  const identityReview=proposal.sourceProvenance?.crosswalk||[];
+  const identityReview=proposal.identityReview?.reviewedCrosswalk||[];
   if(mappingIssues.unresolvedIdentityCount || mappingIssues.duplicateCanonicalTeamRows) {
     if(stable(root)!==before)throw Error('READ_ONLY_SOURCE_STATE_MUTATED');
     return {status:'IDENTITY_REVIEW_REQUIRED',eventId:EVENT_ID,weekDate:DATE,
@@ -51,6 +59,19 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
       throw Error('PROTECTED_GLOW_FIELD_CHANGED:'+key);
   }
   const oldById=new Map(arr(currentWeek.players).map(p=>[String(p.id),p]));
+  const nextById=new Map(arr(proposed.players).map(p=>[String(p.id),p]));
+  for(const [id,old] of oldById) {
+    if(!nextById.has(id))throw Error('RECONCILIATION_LOSES_PRIOR_PLAYER:'+id);
+    const incoming=nextById.get(id);
+    if(incoming.removed!==old.removed)throw Error('RECONCILIATION_CHANGES_REMOVAL_STATUS:'+id);
+  }
+  const priorCards=arr(currentWeek.cards),afterCards=arr(proposed.cards);
+  for(const card of priorCards) {
+    const next=afterCards.find(x=>String(x.id)===String(card.id));
+    if(!next || arr(next.players).slice(0,arr(card.players).length)
+       .some((p,i)=>String(p.id)!==String(card.players[i].id)))
+      throw Error('RECONCILIATION_REORDERS_EXISTING_CARDS:'+card.id);
+  }
   const changes=[];
   for(const player of arr(proposed.players)) {
     const old=oldById.get(String(player.id));

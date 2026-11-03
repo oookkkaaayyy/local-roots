@@ -41,6 +41,7 @@ test('unknown or unreviewed UDisc identity blocks automatic same-week proposal',
    snapshot:snapshot(),decisions:{}});
  assert.equal(result.status,'IDENTITY_REVIEW_REQUIRED');
  assert.equal(JSON.stringify(root),before);
+ assert.equal(result.identityReview.length,2);
 });
 test('wrong event, week or active week cannot enter reconciliation',async()=>{
  const root=base();
@@ -69,4 +70,19 @@ test('repeat snapshot with existing scores must never remove scored hole',async(
 test('same snapshot never touches live database or network',()=>{
  const text=String(prepareNov3Reconciliation);
  assert(!/fetch\(|execute_sql|applyMigration|rpc\(/.test(text));
+});
+
+test('total-only source never guesses hole strokes or enters a write proposal',async()=>{
+ const root=base();
+ const record=snapshot();
+ record.rows[0].scores=Array(18).fill('');
+ const out=await prepareNov3Reconciliation({root,revision:root.updated_at,snapshot:record,decisions});
+ assert.equal(out.status,'NO_HOLE_SCORES_IN_EXPORT');
+ assert.equal(out.productionWrite,false);
+});
+test('source with invalid hole value fails before any HBNF mutation',async()=>{
+ const root=base(),before=JSON.stringify(root),record=snapshot();
+ record.rows[0].scores[2]=-2;
+ await assert.rejects(()=>prepareNov3Reconciliation({root,revision:root.updated_at,snapshot:record,decisions}),/UDISC_VALID_HOLE_STROKES_REQUIRED/);
+ assert.equal(JSON.stringify(root),before);
 });
