@@ -30,6 +30,6 @@ jobs:
       - name: Test unchanged XLSX reconnect and native-overlay refusal only
         run: |
           set -euo pipefail
-          node --test tests/hbnf-udisc-authentic-derived-partial-reconnect.test.mjs
+          node --test tests/hbnf-udisc-production-import-entrypoint.test.mjs tests/hbnf-udisc-authentic-derived-partial-reconnect.test.mjs
           git diff --check HEAD^ HEAD
           git rev-parse HEAD
