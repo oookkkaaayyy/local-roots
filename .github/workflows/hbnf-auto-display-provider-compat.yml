@@ -1,4 +1,4 @@
-name: HBNF Nov3 canonical Glow auto-display review
+name: HBNF Nov3 UDisc stage capture and conflict review
 on:
   push:
     branches:
@@ -17,9 +17,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test new saved-Glow to Cart canonical-intent planner (no provider or device)
+      - name: Test new installed-source poller boundary fixes only (no provider or device)
         run: |
           set -euo pipefail
-          node --experimental-strip-types --test tests/hbnf-glow-cart-intent.test.mjs
+          node --test tests/hbnf-udisc-poller-boundary.test.mjs
           git diff --check HEAD^ HEAD
           git rev-parse HEAD
