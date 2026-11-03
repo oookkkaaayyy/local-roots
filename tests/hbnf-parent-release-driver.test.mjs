@@ -264,7 +264,7 @@ test('same-manifest closeout cannot succeed with wrong manifest, failed acceptan
     acceptance:[{id:'iphone-score-reopen',status:'PASS'},{id:'stale-client',status:'PASS'}]};
   const good={async persistAndDownloadBack(_name,bytes){return{downloadBackVerified:true,sha256:digest(bytes)}}};
   assert.equal((await persistCloseout({admittedManifest:admitted,result:{...result,manifestSha256:'b'.repeat(64)}},good)).status,'PENDING');
-  assert.equal((await persistCloseout({admittedManifest:admitted,result:{...result,acceptance:[{status:'FAIL'}]},good)).status,'PENDING');
+  assert.equal((await persistCloseout({admittedManifest:admitted,result:{...result,acceptance:[{status:'FAIL'}]}},good)).status,'PENDING');
   const corrupt={async persistAndDownloadBack(){return{downloadBackVerified:true,sha256:'f'.repeat(64)}}};
   assert.equal((await persistCloseout({admittedManifest:admitted,result},corrupt)).status,'PENDING');
   const unreachable={async persistAndDownloadBack(){throw new Error('drive transport timeout')}};
