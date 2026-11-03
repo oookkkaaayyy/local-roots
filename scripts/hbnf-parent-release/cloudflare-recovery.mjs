@@ -126,3 +126,37 @@ export async function captureFromControllingDriveManifest({
   return captureCurrentWorkerSource({ manifest, manifestSha256: expectedManifestSha256,
     folderId: metadata.parents[0], env, fetchImpl });
 }
+
+
+// Cloudflare-only, GET-only capture path for an existing authenticated
+// Wrangler Mac. The output is UNBACKED-UP source evidence until a separate
+// private Drive upload and independent byte-identical download-back.
+// This intentionally never requires a Google Drive bearer token on the Mac.
+export async function captureCurrentWorkerForOfflineTransfer({
+ manifest,manifestSha256,env=process.env,fetchImpl=fetch
+}={}){
+ const pin=pinned(manifest);
+ if(!hex64.test(manifestSha256||''))throw Error('CONTROLLING_MANIFEST_HASH_REQUIRED');
+ if(!env?.CLOUDFLARE_API_TOKEN)throw Error('CLOUDFLARE_EXISTING_AUTH_REQUIRED');
+ const cf=checkedFetch(fetchImpl,env.CLOUDFLARE_API_TOKEN,'https://api.cloudflare.com/client/v4');
+ const before=await identity(cf,pin.version,pin.scriptEtag);
+ const bytes=Buffer.from(await (await cf('/accounts/'+ACCOUNT+'/workers/scripts/'+SCRIPT)).arrayBuffer());
+ if(bytes.length!==pin.bytes||sha256(bytes)!==pin.hash)
+  throw Error('WORKER_SCRIPT_BYTES_NOT_PINNED_BASELINE');
+ const after=await identity(cf,pin.version,pin.scriptEtag);
+ if(JSON.stringify(before)!==JSON.stringify(after))
+  throw Error('WORKER_DEPLOYMENT_DRIFT_DURING_CAPTURE');
+ return {
+  schemaVersion:1,status:'LOCAL_SOURCE_VERIFIED_NOT_DURABLE_OR_ROLLBACK_QUALIFIED',
+  recordType:'HBNF_CLOUDFLARE_GET_ONLY_OFFLINE_TRANSFER',
+  controllingManifestFileId:'12X06fFmdc5oPGlcq9kprf1hhglbVV7mW',
+  controllingManifestSha256:manifestSha256,
+  providerIdentity:after,
+  source:{bytes:bytes.length,sha256:sha256(bytes),multipartBase64:bytes.toString('base64')},
+  providerMethod:'GET_ONLY',
+  driveDownloadBackVerified:false,
+  versionSpecificExecutableBytesVerified:false,
+  executableRollbackTested:false,
+  releaseAdmission:'NOT_ADMITTED'
+ };
+}

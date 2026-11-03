@@ -114,3 +114,34 @@ test('version-specific provider ETag mismatch blocks captured rollback evidence 
  folderId:'private',env:auth,fetchImpl:f.fetchImpl}),/WORKER_VERSION_SCRIPT_ETAG_MISMATCH/);
  assert.equal(f.uploaded(),0);
 });
+
+
+import {captureCurrentWorkerForOfflineTransfer} from '../scripts/hbnf-parent-release/cloudflare-recovery.mjs';
+test('Cloudflare-only offline transfer validates active version/raw bytes without Google Drive token, and never claims durable backup',async()=>{
+ const f=fixture();
+ const out=await captureCurrentWorkerForOfflineTransfer({manifest,manifestSha256:'a'.repeat(64),
+ env:{CLOUDFLARE_API_TOKEN:'mock-only'},fetchImpl:f.fetchImpl});
+ assert.equal(out.status,'LOCAL_SOURCE_VERIFIED_NOT_DURABLE_OR_ROLLBACK_QUALIFIED');
+ assert.equal(Buffer.from(out.source.multipartBase64,'base64').toString(),SCRIPT.toString());
+ assert.equal(out.source.sha256,sha(SCRIPT));
+ assert.equal(out.driveDownloadBackVerified,false);
+ assert.equal(out.releaseAdmission,'NOT_ADMITTED');
+ assert(f.requests.every(x=>x.method==='GET'));
+ assert(f.requests.every(x=>x.url.startsWith('https://api.cloudflare.com')));
+ assert.equal(f.uploaded(),0);
+});
+test('Cloudflare offline transfer rejects incorrect script bytes and version drift before any local backup is trusted',async()=>{
+ const one=fixture({wrongBytes:true});
+ await assert.rejects(()=>captureCurrentWorkerForOfflineTransfer({manifest,manifestSha256:'a'.repeat(64),
+  env:{CLOUDFLARE_API_TOKEN:'fake'},fetchImpl:one.fetchImpl}),/WORKER_SCRIPT_BYTES_NOT_PINNED_BASELINE/);
+ const two=fixture({drift:true});
+ await assert.rejects(()=>captureCurrentWorkerForOfflineTransfer({manifest,manifestSha256:'a'.repeat(64),
+  env:{CLOUDFLARE_API_TOKEN:'fake'},fetchImpl:two.fetchImpl}),/WORKER_ACTIVE_VERSION_CHANGED/);
+ assert.equal(one.uploaded()+two.uploaded(),0);
+});
+test('Cloudflare only new path does not attempt unauthenticated provider reads or fall back to a Drive token',async()=>{
+ const f=fixture();
+ await assert.rejects(()=>captureCurrentWorkerForOfflineTransfer({manifest,manifestSha256:'a'.repeat(64),
+  env:{GOOGLE_DRIVE_ACCESS_TOKEN:'fake'},fetchImpl:f.fetchImpl}),/CLOUDFLARE_EXISTING_AUTH_REQUIRED/);
+ assert.equal(f.requests.length,0);
+});

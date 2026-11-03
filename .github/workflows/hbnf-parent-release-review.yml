@@ -70,6 +70,8 @@ jobs:
           fallback_changes="$(git diff --name-only 825e6ec1e57ca4697b831e281cbef5ca7133268a HEAD)"
           fallback_outside="$(printf '%s\n' "$fallback_changes" | grep -Ev '^(scripts/hbnf-parent-release/udisc-nov03-reconciliation\.mjs|tests/hbnf-udisc-nov03-reconciliation\.test\.mjs|\.github/workflows/hbnf-parent-release-review\.yml)$' || true)"
           if [ -z "$fallback_outside" ] && [ -n "$fallback_changes" ]; then echo "fallback_only=true" >> "$GITHUB_OUTPUT"; else echo "fallback_only=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Cloudflare-only no-Drive-token source and drift verification
+        run: node --test tests/hbnf-cloudflare-recovery.test.mjs
       - name: Focused authenticated provider/recovery boundary tests (fake credentials only)
         if: steps.scope.outputs.fallback_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         run: node --test tests/hbnf-live-release-boundary.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
