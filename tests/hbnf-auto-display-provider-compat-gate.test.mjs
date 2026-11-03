@@ -49,10 +49,13 @@ test('only hypothetical compatible source plus independent real provider, tempor
  x.control.mode='event';x.control.auto_live=true;x.control.resume_preset=52;
  x.cartRelay.installedMqttToRelayBridgeVerified=true;
  x.queue.consumerProviderVerified=true;
- for(const name of Object.keys(x.acceptance)) x.acceptance[name]=true;
+ for(const name of Object.keys(x.acceptance)) x.acceptance[name]={
+   verified:true,weekDate:'2026-11-03',sha256:'a'.repeat(64),
+   sourceRef:'synthetic-only-'+name
+ };
  const g=inspectGlowAutoDisplayAcceptance(x);
  assert.equal(g.noCommonLibraryRevision,false);
- assert.equal(g.status,'ACCEPTANCE_EVIDENCE_COMPLETE');
+ assert.equal(g.status,'EVIDENCE_PRESENT_REQUIRES_INDEPENDENT_ACCEPTANCE');
  assert.deepEqual(g.providerBlockers,[]);
  assert.deepEqual(g.fieldBlockers,[]);
  x.acceptance.restoredPermanentStats=false;
