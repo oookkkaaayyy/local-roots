@@ -18,7 +18,7 @@ const cart=()=>({desired:{revision:135,state:{power:'on',devices:{matrix:{bright
   selectedVibe:'Heavy',tuning:{energy:65,variation:43,motion:27,audioResponse:88},overlays:[]}},
   fence:{active:true,epoch:5,release_id:'installed-r6'}});
 const calls=[];
-function deps(a=source(),c=cart()) {return {source:async ()=>structuredClone(a),cart:async()=>structuredClone(c),
+function deps(a=source(),c=cart()) {return {nativeOverlayAdmitted:true,source:async ()=>structuredClone(a),cart:async()=>structuredClone(c),
   chooseLive:(s)=>({active:true,event:'glow',label:'GLOW',entries:['Team A/Team B -1','Team C/Team D E']}),
   reduceCartCommand:(s,type,payload,id,revision)=>{assert.equal(type,'OVERLAY_START');
     assert.equal(payload.priority,20); assert.equal(payload.ttlMs,15000);
@@ -109,4 +109,13 @@ test('SQL migration binds source/Cart row locks, same bridge and no public execu
   const sql=fs.readFileSync(file,'utf8');
   for(const needle of ['FOR SHARE','FOR UPDATE','hbnf_cart_commit_command_bridge','cart_actuator_fence','request.jwt.claim.role','TO service_role','FROM PUBLIC,anon,authenticated','v_fingerprint','p_fence_epoch','sourceRevision','p_intent_key','p_next_state'])assert.ok(sql.includes(needle),needle);
   assert.ok(!/UPDATE\s+public\.league_state/i.test(sql));assert.ok(!/INSERT\s+INTO\s+public\.league_state/i.test(sql));
+});
+
+test('review-only WOW MAX gate blocks backend before reading scores or committing',async()=>{
+ calls.length=0;const d=deps();d.nativeOverlayAdmitted=false;d.source=()=>{throw Error('no_score_read')};
+ const r=await invoke(d);assert.equal(r.status,503);assert.equal(r.body.error,'glow_native_overlay_release_not_admitted');assert.equal(calls.length,0);
+});
+test('missing affirmative native overlay qualification is not admission',async()=>{
+ calls.length=0;const d=deps();delete d.nativeOverlayAdmitted;
+ const r=await invoke(d);assert.equal(r.status,503);assert.equal(calls.length,0);
 });

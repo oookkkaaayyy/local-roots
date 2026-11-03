@@ -29,6 +29,10 @@ export async function runGlowIntentAction({body, authorization, serviceKey, deps
   if (!body || typeof body !== 'object' || Array.isArray(body) || body.action !== ACTION ||
       Object.keys(body).some(k=>!['action','weekDate'].includes(k)) ||
       body.weekDate !== EVENT_DATE) return {status:400,body:{error:'invalid_glow_intent_request'}};
+  // Exact installed WOW MAX60/Opal paired projection is not yet admitted.
+  // A source or manifest label MUST NOT activate GLOW while the relay
+  // would replace segments, audio response or AUX on the existing cart.
+  if(deps?.nativeOverlayAdmitted!==true)return {status:503,body:{error:'glow_native_overlay_release_not_admitted'}};
 
   let source, cart;
   try {

@@ -20,6 +20,7 @@ export function patchIndex(source){
     const result = await runGlowIntentAction({
       body: request, authorization: req.headers.get("Authorization") ?? "", serviceKey,
       deps: {
+        nativeOverlayAdmitted:false, // REVIEW_ONLY: do not commit until Track C native pair admitted
         source: async weekDate => {
           const { data, error } = await service.rpc("hbnf_cart_glow_source_snapshot", { p_week_date: weekDate });
           if (error) throw Error("glow_source_unavailable"); return data;
