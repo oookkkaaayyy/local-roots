@@ -89,6 +89,11 @@ python3 "$WORK/hbnf_packet20_r4_fastled_backport.py" --header "$W/vendor/hbnf-an
 test "$(sha256sum "$W/vendor/hbnf-animartrix/ANIMartRIX.h"|cut -d' ' -f1)" = a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b
 cp "$W/vendor/hbnf-animartrix/ANIMartRIX.h" "$VENDOR"
 echo "PASS exact R6 normal usermod, pinned FastLED and ANIMartrix dependency"
+# The WLED 16.0.1 pinned checkout does not version generated html_ui.h.
+# Rebuild only from pinned WLED package-lock + SOURCE_DATE_EPOCH.
+(cd "$W" && npm ci --ignore-scripts --no-audit --no-fund && npm run build)
+test -s "$W/wled00/html_ui.h"
+echo "PASS pinned WLED UI header generated at fixed SOURCE_DATE_EPOCH"
 echo "BEGIN PLATFORMIO BUILD"
 (cd "$W" && python3 -m platformio run -v -j 1 -e "$ENV") 2>&1 | tee "$OUT/BUILD_FULL.log"
 BIN="$W/.pio/build/$ENV/firmware.bin"
