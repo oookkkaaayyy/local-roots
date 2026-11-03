@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {planSavedGlowOverlay} from '../scripts/hbnf-glow-cart-intent.mjs';
+import {chooseLive} from './fixtures/hbnf-cart-control-live-v35.ts';
 const t=Date.parse('2026-11-04T02:00:00Z');
 const s='a'.repeat(64);
 const baseline=()=>({
@@ -78,4 +79,35 @@ test('Skins source and finalized Glow card cannot be issued as an automatic Glow
 test('selected active Glow week must independently agree with bound event',()=>{
  const x=baseline();x.binding.persistedActiveWeek='2026-10-28';
  assert.equal(planSavedGlowOverlay(x).reason,'ACTIVE_GLOW_WEEK_MISMATCH');
+});
+
+test('exact deployed Cart v35 chooseLive Glow selector feeds canonical intent without a synthetic live_status adapter',()=>{
+ const actualDate=globalThis.Date;
+ const frozen=Date.parse('2026-11-04T02:00:00Z');
+ class FixedDate extends actualDate {
+   constructor(...args){super(...(args.length?args:[frozen]));}
+   static now(){return frozen;}
+ }
+ const week={
+  date:'2026-11-03',
+  scorecardText:{holePars:{'1':3,'2':3}},
+  players:[
+   {name:'Team A / Team B',partner1:'Team A',partner2:'Team B',scores:[3,2],removed:false},
+   {name:'Team C / Team D',partner1:'Team C',partner2:'Team D',scores:[3,3],removed:false},
+   {name:'Team E / Team F',partner1:'Team E',partner2:'Team F',scores:[4,4],removed:false}
+  ]
+ };
+ let live;
+ try{globalThis.Date=FixedDate;live=chooseLive({glow:{activeWeek:'2026-11-03',weeks:{'2026-11-03':week}}});}
+ finally{globalThis.Date=actualDate;}
+ assert.equal(live.label,'GLOW');
+ assert.equal(live.event,'glow');
+ assert.deepEqual(live.entries,['Team A/Team B -1','Team C/Team D E','Team E/Team F +2']);
+ const input=baseline();
+ input.liveStatus.live=live;
+ const plan=planSavedGlowOverlay(input);
+ assert.equal(plan.kind,'canonical_command_candidate');
+ assert.deepEqual(plan.payload.data.entries,live.entries);
+ assert.equal(plan.providerReceiptRequired,true);
+ assert.equal(plan.deviceReadbackRequired,true);
 });
