@@ -1,0 +1,22 @@
+# CART #116 Track A — one guarded physical acceptance, NOT YET ADMITTED
+
+Controlling GitHub: https://github.com/oookkkaaayyy/local-roots/issues/116
+Candidate: original combined review capsule SHA-256 `3f6e793e5e734d8f1f0bedd12a7dd635a81364b1ea9633b76ad64ace5b791b8a`. Source HEAD for separate native qualification `51d9d50ec8bda9d8f59dd4f55d2d9173158afb5a`.
+
+**Stop before touching anything** unless a separate immutable same-manifest receipt attests all nine current Opal preimages, exact Edge release bundle and SQL preimages, independent backup upload/download-back, native PG17 and Deno test links, Matrix WOW MAX preset/effect identity, AUX actual geometry parity, no lockout or competing actuation, rollback rehearsal, and one-time owner approval for the exact postimage. Old source-only ZIP is not an installer and both hard gates remain false. Do not enable UV, flash firmware, change Cart IP/router/firmware or write league_state.
+
+## Single owner-present session, once the released bytes are admitted
+
+1. **Capture baseline together:** record live Opal GL-SFT1200 model/installed process hash and 21 Owner assets, external transport sha; Matrix `.10` MAC `704bca5b345c`, WLED 16.0.1, R6 build identity, ps60, both segments/fx/HBNF.effectId, Owner overlay state, Energy/Variation/Motion, audio, Vibe, palette and brightness; AUX `.11` MAC `8c94df55c34c`, configured/active pixels, segments, `live/lm/lip/lor`, brightness and UV OFF. Prove the exact 24-versus-22 configured/active semantics by GET-only readback. Abort on unknowns.
+2. **Safari 12 Owner first:** iPad Mini 2 on HBNF-Cart LAN, verify page origin `http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart.html`, all assets served/parsed, scene and tuning visible; one harmless Owner text confirms physical Matrix then restores prior WOW MAX state. This is not a course/GLOW acceptance by itself.
+3. **One event GLOW:** only from an authenticated saved Scoring P0/UDisc score state through its already accepted source and newly admitted versioned relay. Confirm stable native overlay ID, exact one-use challenge, relay HTTP/JSON ACK and visible Matrix GLOW with correct player scores. Do not infer visible output from HTTP response alone.
+4. **Owner takes priority during TTL:** command one benign Owner text immediately while GLOW is active; measure end-to-end visual change. The current review helper pauses the cloud relay loop up to ~21 seconds, so require a separately fixed and native-tested nonblocking path or explicitly admitted precedence latency before this test. Abort if Owner cannot immediately override or any stale queued command transmits after reconnect.
+5. **Background/foreground reconnect:** switch iPad away/back once and verify correct source/effect/brightness state without stale WebSocket command replay; do not force WAN outage or reset devices.
+6. **Native autoexpiry:** observe GLOW expiry and return of the exact baseline ps60/fx/HBNF.effectId, Energy/Variation/Motion, Vibe/palette/audio/brightness and AUX live/brightness/segments/DDP. No AUX write permitted. Verify overlay challenge `restored_at` and source revision/fence, without modifying league_state. Record independent photos/video of visible output if available.
+7. **Closeout:** fetch actual served nine-target hashes and provider v35 successor version/bundle SHA, compare all original protected files and in-memory scoreboard to approved manifest. Independently archive acceptance receipt and download back before declaring Done.
+
+## Mandatory abort and same-manifest recovery
+
+On unknown source, changed owner priority/fence, stale source, DDP mismatch, device readback timeout, partial WLED apply, brightness/preset/effect mutation, stuck overlay, failed postimage hash, no physical display, or lost reconnect: do not retry an actuator command. Persist the relay lockout, preserve physical state and source evidence, stop further Glow admission, and execute the **previously verified** exact rollback for all affected targets in reverse order only when its preconditions hold. Never send a generic full-state/FX142/AUX projection as a recovery substitute. SQL inverse refuses unresolved challenges; do not force-drop those rows.
+
+Outcome fields must separately record source, PostgreSQL transaction, Deno runtime, Opal installed, HTTP/JSON, iPad Safari 12, Matrix visible, Owner priority, AUX unchanged, provider and durable-recovery evidence. An Owner report or text-only control cannot be counted as Glow automatic scoring acceptance.

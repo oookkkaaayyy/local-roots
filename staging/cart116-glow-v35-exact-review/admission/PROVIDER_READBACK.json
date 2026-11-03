@@ -1,0 +1,28 @@
+{
+  "project_id": "phcpbvuqibyarpfrftgx",
+  "function": "hbnf-cart-control",
+  "edge_version": 35,
+  "edge_status": "ACTIVE",
+  "provider_bundle_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+  "provider_source_byte_comparison": "10/10 exact deployed file text matched rollback-v35 in review branch",
+  "rollback_source_tree": "74dd1d687de44eacb20eff8e3960d9129948ef88",
+  "files": {
+    "index.ts": "017eea939643850fd38182a5ecd3404167cb4b27",
+    "guest-command.ts": "50e38cad043c4f4fcf1990d779671010365a0e45",
+    "runtime-vibe.ts": "c41f0ff6cf7f92615f3d75f712edb7309e82912a",
+    "live.ts": "b5f72cc38269bfdad3feea8446ea32e389eea345",
+    "skins_scoring.ts": "c7b773d11fdb4b8099d83aba01d22eb148432c57",
+    "matrix-relay.ts": "8b4eccf738c2f76faead74589897f5f2a89f8",
+    "matrix-relay-projection.ts": "5b60dd7fd2def68a186d6c77b6f08c035153213d",
+    "matrix-relay-auth.ts": "49225ac466f562706abd44809ce9cf3d5af68e22",
+    "pairing-expiry.mjs": "0c87ee5b711eb6e74a2079df080bfc4a5e7315b8",
+    "deno.json": "1d245785ce55817c7e0265a28d12968b754aac5f"
+  },
+  "postgresql_production_readonly": "4 legacy relay RPCs present; 0 overlay_v1 RPCs; private new table absent",
+  "observed_device_rows_latest": "2026-10-21T17:28:01Z (stale; cannot establish live installed Opal/Matrix/AUX)",
+  "installed_opal_readback": null,
+  "actual_matrix_wow_max_effect_id": null,
+  "aux_24_vs_22_ddp_resolution": null,
+  "provider_bundle_binary_download_back": false,
+  "result": "EDGE_SOURCE_IDENTICAL_READBACK_PASS_DEVICE_AND_COMPILATION_NO_GO"
+}
