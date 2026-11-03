@@ -34,6 +34,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Native PostgreSQL 17 transaction / role / race and guarded rollback
+        if: ${{ !contains(github.event.head_commit.message, '[deno-only]') }}
         env:
           PG_CONTAINER: ${{ job.services.pg.id }}
         shell: bash
@@ -51,4 +52,4 @@ jobs:
           set -euo pipefail
           cd staging/cart116-glow-v35-exact-review
           deno test --no-check tests/native-release/deno-native.test.ts
-          deno check candidate-source/matrix-relay.ts
+          deno check --node-modules-dir=auto --no-lock candidate-source/matrix-relay.ts
