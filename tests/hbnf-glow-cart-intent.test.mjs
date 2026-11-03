@@ -5,7 +5,7 @@ const t=Date.parse('2026-11-04T02:00:00Z');
 const s='a'.repeat(64);
 const baseline=()=>({
  at:t,
- binding:{eventDate:'2026-11-03',eventId:'hb-glow-doubles-tAP8Y5',windowStart:'2026-11-04T01:30:00Z',windowEnd:'2026-11-04T07:30:00Z',verifiedLeagueRevision:'2026-11-04T02:00:00.000001Z'},
+ binding:{eventDate:'2026-11-03',eventId:'hb-glow-doubles-tAP8Y5',persistedActiveWeek:'2026-11-03',windowStart:'2026-11-04T01:30:00Z',windowEnd:'2026-11-04T07:30:00Z',verifiedLeagueRevision:'2026-11-04T02:00:00.000001Z'},
  liveStatus:{updated_at:'2026-11-04T02:00:00.000001Z',selectorVersion:'skins-front-lock-v1',live:{active:true,event:'glow',label:'GLOW',entries:['Team A/Team B -2','Team C/Team D E','Team E/Team F +3'],acePot:500}},
  week:{date:'2026-11-03',scoresLocked:false,cards:[{finalized:false}],udiscSync:{source:'UDisc event XLSX export',eventId:'hb-glow-doubles-tAP8Y5',weekDate:'2026-11-03',latest:{signature:s},status:{state:'fresh',lastSuccessAt:'2026-11-04T01:59:30Z'}}},
  cartContext:{desired:{revision:16,state:{power:'on',overlays:[]}},fence:{active:true,epoch:8,release_id:'review-fence'}}
@@ -73,4 +73,9 @@ test('Skins source and finalized Glow card cannot be issued as an automatic Glow
  assert.equal(planSavedGlowOverlay(x).reason,'NO_ACTIVE_GLOW_SCOREBOARD');
  const y=baseline();y.week.cards[0].finalized=true;
  assert.equal(planSavedGlowOverlay(y).reason,'WEEK_NOT_ADMISSIBLE');
+});
+
+test('selected active Glow week must independently agree with bound event',()=>{
+ const x=baseline();x.binding.persistedActiveWeek='2026-10-28';
+ assert.equal(planSavedGlowOverlay(x).reason,'ACTIVE_GLOW_WEEK_MISMATCH');
 });
