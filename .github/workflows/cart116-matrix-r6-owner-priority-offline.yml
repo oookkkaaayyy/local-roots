@@ -1,0 +1,49 @@
+name: "Cart #116 Matrix R6 owner-priority offline firmware build"
+on:
+  push:
+    branches:
+      - review/cart116-matrix-r6-owner-text-priority-v1-20261103
+    paths:
+      - .github/workflows/cart116-matrix-r6-owner-priority-offline.yml
+      - staging/cart116-glow-v35-exact-review/track-c-r6-priority/**
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cart116-r6-native-owner-priority-source
+  cancel-in-progress: false
+jobs:
+  build-exact-r6:
+    # No external service deployment; no device, serial, network LAN, MQTT or flash.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout review branch with exact original R6 Git object
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pin original R6 Python interpreter
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Pin UI generation Node runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install PlatformIO Core 6.1.18
+        run: |
+          python3 -m pip install --disable-pip-version-check "platformio==6.1.18"
+          python3 -m platformio --version
+      - name: Build exact pinned WLED 16.0.1 R6 with one approved minimal patch
+        run: |
+          bash staging/cart116-glow-v35-exact-review/track-c-r6-priority/build-exact-r6-offline.sh
+      - name: Preserve candidate, source bindings, full compile/map or bounded failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cart116-matrix-r6-owner-priority-offline-review
+          path: |
+            .trackc-r6-build-out/
+          if-no-files-found: warn
+          retention-days: 5
