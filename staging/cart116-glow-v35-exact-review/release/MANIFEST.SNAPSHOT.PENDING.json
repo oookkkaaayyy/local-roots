@@ -5,7 +5,7 @@
     "file_name": "CART116-Controls-Managed-Glow-BC-REVIEW_ONLY-20261103.zip",
     "independent_download_back_verified": false,
     "installable": false,
-    "note": "immutable snapshot, detached same controlling admission/ADMISSION.PENDING.json binds actual capsule digest post-upload; no auto-install",
+    "note": "revised netfix2 source snapshot; actual exact package SHA is bound separately by same controlling admission manifest; original 21-file Owner rollback unchanged",
     "sha256": null
   },
   "edge": {
@@ -34,7 +34,7 @@
     "head_qualified_native": "51d9d50ec8bda9d8f59dd4f55d2d9173158afb5a",
     "matrix_native_owner_priority_source_review_head": "4af57d8c0d94e0a0966b1735f45f660d769da6a0",
     "matrix_track_c_head": "979e8d729ba2b8bef8a2c8400227fe0b34106e19",
-    "networking_final_head": "c431cfbdbe2ad11b7d11a6ec54878e3470af9b3d",
+    "networking_final_head": "272f18ae64e8d8f531d8d03b0a0ae8574d66b45b",
     "repo": "oookkkaaayyy/local-roots"
   },
   "failure_recovery": [
@@ -72,11 +72,11 @@
     "fresh_installed_current_Opal_main": "NOT_IN_CAPTURE CORRECT MAIN PATH; HISTORICAL INIT /etc/init.d/hbnf-matrix-relay REPORTED ABSENT",
     "fresh_owner_priority_cloud_preemption_latency": "NONBLOCKING_SOURCE_10_OF_10_NATIVE_PASS_DEVICE_NOT_CHECKED",
     "independent_device_preimage_backup_downloadback": "MISSING_INSTALLED_11_PLUS_21_PREIMAGES; review capsule downloadback != live backup",
-    "matrix_native_owner_priority": "FAIL_CLOSED_ORIGINAL_R6_OWNER_TEXT_PREEMPTION_PROVEN_TRACK_C_6615832063; PATCH_4af57d_SOURCE_ONLY_NOT_BUILT_OR_INSTALLED",
+    "matrix_native_owner_priority": "FAIL_CLOSED_ORIGINAL_R6_OWNER_TEXT_PREEMPTION_PROVEN_TRACK_C_6615832063; COMPILED_REVIEW_BIN_SHA256_d577813d281d402a6510a0e9e128916c40fc620d0ba05199cec4c366dff0c552_NOT_INSTALLED_NO_FIRMWARE_ADMISSION",
     "matrix_native_renderer": "SOURCE_QUALIFIED_ORIGINAL_R6_PS_MINUS_ONE_FX142_TRACK_C_979e8d; INSTALLED_BINARY_AND_FIELD_UNVERIFIED",
     "native_opal_nonblocking": "10/10_FOCUSED_BUSYBOX_ASH_PASSED_NO_DEVICE_CONTACT",
     "native_pg_and_deno": "PASS_SEPARATE_EXACT_SOURCE_RUNS",
-    "networking_cache_identity": "SOURCE_INTEGRATED_TRACK_B_c431cfbd: dynamic import ?v=ae6fc45f833bce65; physical Safari12 cache/WS not accepted",
+    "networking_cache_identity": "SOURCE_INTEGRATED_TRACK_B_272f18a: dynamic import ?v=b48f5d7a4b3ea850; source/CI 5/5; installed Safari12 reconnect and WAN NOT ACCEPTED",
     "one_time_owner_manifest_bound_authorization": "NOT_REQUESTED; source/device/firmware/provider technical gates not yet passed",
     "owner_preemption_field_timing": "UNVERIFIED",
     "physical_owner_safari12_matrix_aux_acceptance": "NOT_ACCEPTED; one combined field test after exact manifest approval; UV OFF",
@@ -160,8 +160,8 @@
     },
     {
       "candidate": "candidate/opal/www/mission-control-local/local-transport.js",
-      "candidate_bytes": 9632,
-      "candidate_sha256": "ae6fc45f833bce652aa4844501df4d79ed19c135fcf22507995ee772b29930d7",
+      "candidate_bytes": 9902,
+      "candidate_sha256": "b48f5d7a4b3ea850307b13596857d753d2ff2ee4b9991b859e66b41d0338b37a",
       "mode": "644",
       "preimage_evidence": "6613457326",
       "preimage_expected_sha256_or_status": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
@@ -170,7 +170,7 @@
     {
       "candidate": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-package-version",
       "candidate_bytes": 15,
-      "candidate_sha256": "767396e1dbae2926bfa90c9683774e679507c999c77b0c139f488ec0d5334df2",
+      "candidate_sha256": "c954df07ca147414214c211d894b2a4d920fc4fc740b4a2c196851d173669452",
       "mode": "644",
       "preimage_evidence": "6613457326",
       "preimage_expected_sha256_or_status": "975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191",
@@ -179,7 +179,7 @@
     {
       "candidate": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
       "candidate_bytes": 1485,
-      "candidate_sha256": "df75f4223b0518ceaae933a5e1d55f0260e1ee62c1082ddc8c95b7453f3c62c5",
+      "candidate_sha256": "a32f5a4e25603116400c09eacee0cfd87cd1f8d1d5c22421b1a9d39b20d10c9e",
       "mode": "644",
       "preimage_evidence": "6613457326",
       "preimage_expected_sha256_or_status": "dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
@@ -197,7 +197,7 @@
     {
       "candidate": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
       "candidate_bytes": 31604,
-      "candidate_sha256": "4e3033504f56f2d648f06d364a700d00192fbc4e1a0aed2f202dd5e538887da4",
+      "candidate_sha256": "f2bec69f5d14760d6910c06a57d40288070171814c5affbfe2a9b4baa566e419",
       "mode": "644",
       "preimage_evidence": "6613457326",
       "preimage_expected_sha256_or_status": "9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
@@ -206,7 +206,7 @@
     {
       "candidate": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.html",
       "candidate_bytes": 19237,
-      "candidate_sha256": "8eef477b1b692778ddc17c5f1279fdc9b8b08251ee1fe38145e411d3c4b1ab0c",
+      "candidate_sha256": "cab420a026b31d7ccf7c13aa91814237d7495269f6c72434f4cb26af43acba57",
       "mode": "644",
       "preimage_evidence": "6613457326",
       "preimage_expected_sha256_or_status": "20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f",
@@ -215,7 +215,7 @@
     {
       "candidate": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.js",
       "candidate_bytes": 40437,
-      "candidate_sha256": "e3517d8221fc911c62b5f972f823eb2586efc7cae0109f0932dcd8763c4bd5af",
+      "candidate_sha256": "e3652350ea928585bb29938f758dbc311e337f0620a17715a783b3cb181bf119",
       "mode": "644",
       "preimage_evidence": "6613457326",
       "preimage_expected_sha256_or_status": "9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba",
@@ -504,13 +504,28 @@
       "source_qualified_commit": "979e8d729ba2b8bef8a2c8400227fe0b34106e19"
     },
     "networking": {
-      "commit": "c431cfbdbe2ad11b7d11a6ec54878e3470af9b3d",
-      "local_js_sha256": "4e3033504f56f2d648f06d364a700d00192fbc4e1a0aed2f202dd5e538887da4",
+      "commit": "272f18ae64e8d8f531d8d03b0a0ae8574d66b45b",
+      "local_js_sha256": "f2bec69f5d14760d6910c06a57d40288070171814c5affbfe2a9b4baa566e419",
       "scope": "one existing Safari12 dynamic import, no eighth Owner target",
-      "served_17_asset_manifest_sha256": "df75f4223b0518ceaae933a5e1d55f0260e1ee62c1082ddc8c95b7453f3c62c5",
-      "transport_sha256": "ae6fc45f833bce652aa4844501df4d79ed19c135fcf22507995ee772b29930d7"
+      "served_17_asset_manifest_sha256": "a32f5a4e25603116400c09eacee0cfd87cd1f8d1d5c22421b1a9d39b20d10c9e",
+      "transport_sha256": "b48f5d7a4b3ea850307b13596857d753d2ff2ee4b9991b859e66b41d0338b37a",
+      "cache_key": "b48f5d7a4b3ea850",
+      "owner_version": "1.0.20-netfix2",
+      "reconnect_epoch_native_tests": "3/3_PASS_TRACK_B;Controls exact source CI run 41741222537 PASS; not installed",
+      "field_accepted": false
     },
-    "scope": "sole Controls branch, one 11-target service and seven-target Owner/Safari12 candidate, original rollback and SQL/Edge recovery, no live writes"
+    "scope": "sole Controls branch, one 11-target service and seven-target Owner/Safari12 candidate, original rollback and SQL/Edge recovery, no live writes",
+    "networking_reconnect_20261103": {
+      "accepted_networking_sha": "272f18ae64e8d8f531d8d03b0a0ae8574d66b45b",
+      "transport_git_blob": "9f1f9e5997fc5aa0e3762b53581263c4a9518c64",
+      "transport_sha256": "b48f5d7a4b3ea850307b13596857d753d2ff2ee4b9991b859e66b41d0338b37a",
+      "cache_key": "b48f5d7a4b3ea850",
+      "owner_pkg": "1.0.20-netfix2",
+      "changed_only_CI": "41741222537_SUCCESS",
+      "existing_11_targets": true,
+      "source_only": true,
+      "installed_field_accepted": false
+    }
   },
   "sql": {
     "down_member": "candidate/backend/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql",
