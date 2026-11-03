@@ -1,0 +1,205 @@
+{
+  "schema": "hbnf.udisc.event-layout.source-fixture.v1",
+  "provenance": {
+    "sourceType": "owner-supplied UDisc caddie-book screenshot, transcribed in GitHub #115 comment 6617174574",
+    "sourceIssueComment": "https://github.com/oookkkaaayyy/local-roots/issues/115#issuecomment-6617174574",
+    "layoutUrl": "https://udisc.com/courses/huntington-beach-central-park-A9Fe/layouts/150408/caddie-book",
+    "eventUrl": "https://udisc.com/events/hb-glow-doubles-tAP8Y5",
+    "evidenceLevel": "user-provided-layout-screenshot-not-authenticated-round-assignment",
+    "receivedDate": "2026-11-03"
+  },
+  "event": {
+    "eventId": "hb-glow-doubles-tAP8Y5",
+    "eventDate": "2026-11-03",
+    "round": "Round 1 - GEN R1",
+    "roundOneSelectedLayoutIdVerified": false,
+    "realTeamRosterExpectedAtEventStart": true
+  },
+  "layout": {
+    "id": 150408,
+    "name": "HB Glow Dubs 11.3.26",
+    "statusOnScreenshot": "Active",
+    "numberOfHoles": 18,
+    "totalPar": 59,
+    "lengthFeetHeader": 6022,
+    "lengthFeetRoundedHoles": 6023,
+    "description": "All safari layout.",
+    "globalRule": "NO INTENTIONAL THROWS OVER PARKING LOT. If you throw over the parking lot on purpose you will be DISQUALIFIED. Other than that, no OBs or mandos.",
+    "hole17NoteConflict": "Global 'no mandos' rule appears to conflict with hole 17's explicit double mando; organizer interpretation required.",
+    "holes": [
+      {
+        "hole": 1,
+        "tee": "Parkinglot",
+        "basket": "B on hole 7",
+        "feet": 196,
+        "par": 3,
+        "note": "Parking near pad 10 → 7",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 2,
+        "tee": "Short",
+        "basket": "B on hole 18",
+        "feet": 274,
+        "par": 3,
+        "note": "7 short → 18",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 3,
+        "tee": "Short",
+        "basket": "B on hole 12",
+        "feet": 249,
+        "par": 3,
+        "note": "17 short → 12",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 4,
+        "tee": "Short",
+        "basket": "A on hole 14",
+        "feet": 260,
+        "par": 3,
+        "note": "16 short → 14",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 5,
+        "tee": "Main",
+        "basket": "B on hole 10",
+        "feet": 573,
+        "par": 4,
+        "note": "18 main → 10",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 6,
+        "tee": "Short",
+        "basket": "A on hole 15",
+        "feet": 237,
+        "par": 3,
+        "note": "16 short → 15",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 7,
+        "tee": "Main",
+        "basket": "New 16 on hole 16",
+        "feet": 250,
+        "par": 3,
+        "note": "15 main → 16",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 8,
+        "tee": "PathBy16Long",
+        "basket": "Practice 1 (shop) on hole Glo… [UI truncated]",
+        "feet": 270,
+        "par": 3,
+        "note": "Path by basket 16 → Practice 1",
+        "basketLabelTruncated": true
+      },
+      {
+        "hole": 9,
+        "tee": "Main",
+        "basket": "Practice 3 (long) on hole Glo… [UI truncated]",
+        "feet": 212,
+        "par": 3,
+        "note": "1 main → Practice 3 (CTP)",
+        "basketLabelTruncated": true
+      },
+      {
+        "hole": 10,
+        "tee": "Main",
+        "basket": "New 16 on hole 16",
+        "feet": 233,
+        "par": 3,
+        "note": "8 main → 16",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 11,
+        "tee": "Main",
+        "basket": "A on hole 5",
+        "feet": 660,
+        "par": 4,
+        "note": "12 main → 5",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 12,
+        "tee": "Main",
+        "basket": "A on hole 15",
+        "feet": 308,
+        "par": 3,
+        "note": "14 main → 15",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 13,
+        "tee": "Short",
+        "basket": "B on hole 6",
+        "feet": 230,
+        "par": 3,
+        "note": "15 short → 6",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 14,
+        "tee": "Main",
+        "basket": "B on hole 7",
+        "feet": 365,
+        "par": 3,
+        "note": "18 main → 7",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 15,
+        "tee": "Main",
+        "basket": "A on hole 14",
+        "feet": 536,
+        "par": 4,
+        "note": "8 main → 14",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 16,
+        "tee": "Short",
+        "basket": "B on hole 10",
+        "feet": 309,
+        "par": 3,
+        "note": "16 short → 10",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 17,
+        "tee": "Main",
+        "basket": "C on hole 17",
+        "feet": 396,
+        "par": 4,
+        "note": "12 main → 17 (double mando)",
+        "basketLabelTruncated": false
+      },
+      {
+        "hole": 18,
+        "tee": "Main",
+        "basket": "New 16 on hole 16",
+        "feet": 465,
+        "par": 4,
+        "note": "18 main → 16",
+        "basketLabelTruncated": false
+      }
+    ]
+  },
+  "emptyExport": {
+    "filename": "hb-night-flyers-hb-glow-doubles-2026-11-03.xlsx",
+    "source": "owner-created UDisc card and organizer XLSX, inspected by #115 comment 6617174574",
+    "bytes": 15783,
+    "worksheet": "Event results",
+    "dimension": "A1",
+    "hasHeader": false,
+    "scoreRows": 0,
+    "disposition": "EMPTY_NO_IMPORT_NOT_SETUP_FAILURE"
+  },
+  "release": "REVIEW_ONLY_EVENT_SCOPED_NO_LIVE_SCORE_WRITE"
+}
