@@ -156,6 +156,43 @@ async function readBounded(response, maxBytes = 12 * 1024 * 1024) {
   return bytes;
 }
 
+// Post-save delivery and reconnect retries share the same saved-source guard.
+// Source freshness is NOT a write: unchanged XLSX must not churn league_state.
+async function offerSavedGlowIntent({week,revision,signature,binding,now,onVerifiedSaved,deps}) {
+  if(!onVerifiedSaved)return 'NOT_REQUESTED';
+  const sync=week?.udiscSync;
+  const success=Date.parse(sync?.status?.lastSuccessAt||'');
+  if(sync?.source!=='UDisc event XLSX export'||
+     sync?.eventId!==binding.eventId||sync?.weekDate!==binding.weekDate||
+     sync?.latest?.signature!==signature||sync?.status?.state!=='fresh'||
+     !Number.isFinite(success)||success>now.getTime()||
+     now.getTime()-success>10*60_000) {
+    captureBoundary(deps,'cart_intent_deferred',{reason:'saved_source_not_fresh'});
+    return 'DEFERRED_SOURCE';
+  }
+  const parGate=qualifiedGlowScorePars(week);
+  if(!parGate.ready) {
+    captureBoundary(deps,'cart_intent_deferred',{reason:parGate.reason,missingCount:parGate.missingCount??0});
+    return 'DEFERRED_METADATA';
+  }
+  try {
+    const receipt=await onVerifiedSaved(Object.freeze({
+      eventId:binding.eventId,weekDate:binding.weekDate,
+      sourceRevision:revision,signature,scoredHoles:parGate.scoredHoles
+    }));
+    if((receipt?.status==='COMMITTED'||receipt?.status==='DUPLICATE')&&
+       receipt?.relayStatus==='PENDING_OPAL_PULL') {
+      captureBoundary(deps,'cart_intent',{accepted:true,result:receipt.status,relayStatus:'PENDING_OPAL_PULL'});
+      return 'PENDING_OPAL_PULL';
+    }
+    captureBoundary(deps,'cart_intent',{accepted:false,result:'NOT_ACCEPTED'});
+    return 'NOT_ACCEPTED';
+  }catch{
+    captureBoundary(deps,'cart_intent',{accepted:false,result:'UNAVAILABLE'});
+    return 'NOT_ACCEPTED';
+  }
+}
+
 export async function runApprovedGlowSync(env, deps = {}) {
   const now = deps.now?.() || new Date();
   const fetchImpl = deps.fetch || fetch;
@@ -215,7 +252,24 @@ export async function runApprovedGlowSync(env, deps = {}) {
     const prepared = await prepareGlowWeekSync(existingWeek,proposal,{aliases:evidence.aliases});
     if (!prepared.changed) {
       captureBoundary(deps,'unchanged',{weekDate:binding.weekDate,signature:prepared.signature,casApplied:false});
-      return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature};
+      // The original planner dedupes each four-minute Cart window; retry a
+      // backend denial/reconnect using the SAME signed, persisted snapshot.
+      // No new score CAS or failure-status mutation is permitted here.
+      if(!onVerifiedSaved)
+        return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature};
+      const rechecked=await readGlow(fetchImpl,config);
+      const persistedWeek=rechecked.glow.weeks?.[binding.weekDate];
+      if(rechecked.glow.activeWeek!==binding.weekDate||
+         !sameJson(persistedWeek,existingWeek)||
+         persistedWeek?.udiscSync?.latest?.signature!==prepared.signature) {
+        captureBoundary(deps,'cart_intent_deferred',{reason:'source_revision_or_week_changed'});
+        return {disposition:'source_changed_no_write',date:binding.weekDate,cartIntent:'DEFERRED_SOURCE'};
+      }
+      captureBoundary(deps,'persisted_readback',{verified:true,signature:prepared.signature,revision:rechecked.row.updated_at,casApplied:false});
+      const cartIntent=await offerSavedGlowIntent({week:persistedWeek,revision:rechecked.row.updated_at,
+        signature:prepared.signature,binding,now,onVerifiedSaved,deps});
+      return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature,
+        updatedAt:rechecked.row.updated_at,cartIntent};
     }
     prepared.week.udiscSync.status = {state:'fresh',lastAttemptAt:attemptedAt,lastSuccessAt:attemptedAt,errorCode:null};
     casAttempted=true;
@@ -243,35 +297,10 @@ export async function runApprovedGlowSync(env, deps = {}) {
       throw Object.assign(Error('Glow score save could not be independently verified.'),{code:'READBACK_MISMATCH'});
     }
     captureBoundary(deps,'persisted_readback',{verified:true,signature:saved,revision:verified.row.updated_at});
-    let cartIntent='NOT_REQUESTED';
-    if(onVerifiedSaved) {
-      const parGate=qualifiedGlowScorePars(savedWeek);
-      if(!parGate.ready) {
-        cartIntent='DEFERRED_METADATA';
-        captureBoundary(deps,'cart_intent_deferred',{reason:parGate.reason,missingCount:parGate.missingCount??0});
-      } else {
-        // The dedicated existing Cart backend independently rereads league_state
-        // and performs its OWN source-revision/fence/CAS gate. A successful
-        // score save must never be rolled back because Cart is unreachable.
-        try {
-          const receipt=await onVerifiedSaved(Object.freeze({
-            eventId:binding.eventId,weekDate:binding.weekDate,
-            sourceRevision:verified.row.updated_at,signature:prepared.signature,
-            scoredHoles:parGate.scoredHoles
-          }));
-          if(receipt?.status==='COMMITTED'||receipt?.status==='DUPLICATE') {
-            cartIntent='PENDING_OPAL_PULL';
-            captureBoundary(deps,'cart_intent',{accepted:true,result:receipt.status,relayStatus:'PENDING_OPAL_PULL'});
-          } else {
-            cartIntent='NOT_ACCEPTED';
-            captureBoundary(deps,'cart_intent',{accepted:false,result:'NOT_ACCEPTED'});
-          }
-        } catch {
-          cartIntent='NOT_ACCEPTED';
-          captureBoundary(deps,'cart_intent',{accepted:false,result:'UNAVAILABLE'});
-        }
-      }
-    }
+    // Saved week was independently reread after CAS; the backend owns a
+    // SECOND source/Cart fence check and cannot use this as device acceptance.
+    const cartIntent=await offerSavedGlowIntent({week:savedWeek,revision:verified.row.updated_at,
+      signature:prepared.signature,binding,now,onVerifiedSaved,deps});
     return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at,cartIntent};
   } catch (error) {
     const code=String(error?.code||'SYNC_FAILED');
