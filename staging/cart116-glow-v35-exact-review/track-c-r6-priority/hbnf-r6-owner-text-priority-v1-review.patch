@@ -1,0 +1,63 @@
+--- a/firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp
++++ b/firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp
+@@ -29,12 +29,12 @@
+ using namespace hbnf_v1;
+ 
+ namespace {
+ 
+ static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
+-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-skins-readable-20261014";
+-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"basedOnFirmwareSha256\":\"43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\"]}";
++static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-r6-native-overlay-owner-safe-review-20261103";
++static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-r6-native-overlay-owner-safe-review-20261103\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-r6-native-overlay-owner-safe-review-20261103\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnFirmwareSha256\":\"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\",\"native-overlay-owner-text-priority-v1\"]}";
+ static PaletteSelection hbnfPalette{};
+ static OverlayState hbnfCommandOverlay{};
+ static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
+ static Rgb8 canonicalMatrixPixels[32*16]{};
+ static Rgb8 transitionFromPixels[32*16]{};
+@@ -217,14 +217,22 @@
+     const int h=digit(hi),l=digit(lo);if(h<0||l<0)return false;values[c]=(uint8_t)((h<<4)|l); 
+   }
+   r=values[0];g=values[1];b=values[2];return true;
+ }
+ 
++// REVIEW-ONLY R6 successor: preserve active local Owner text over a later
++// cloud Glow scoreboard, even when an outdated relay command is in flight.
++// No identity/priority claim is accepted from untrusted scoreboard JSON.
++static bool hbnfScoreboardMayReplaceOverlay(const OverlayState& current,uint32_t now) {
++  return !(current.kind==OVERLAY_TEXT && overlayVisible(current,now));
++}
++
+ static bool hbnfAcceptOverlay(JsonVariantConst input,bool explicitNull,uint32_t now) {
+   if(explicitNull){portENTER_CRITICAL(&hbnfOverlayMux);clearOverlay(hbnfCommandOverlay);portEXIT_CRITICAL(&hbnfOverlayMux);return true;}
+   JsonObjectConst obj=input.as<JsonObjectConst>();
+-  if(obj.isNull()) { portENTER_CRITICAL(&hbnfOverlayMux);clearOverlay(hbnfCommandOverlay);portEXIT_CRITICAL(&hbnfOverlayMux);return false; }
++  // An invalid request is NOT a clearance request: never erase Owner text.
++  if(obj.isNull()) return false;
+   const char* id=obj["id"]|"";const char* kind=obj["kind"]|"";const uint32_t ttl=obj["ttlMs"]|0;
+   if(!validBoundedText(id,39)||ttl<250u||ttl>30000u)goto invalid;
+   if(strcmp(kind,"text")==0) {
+     const char* text=obj["text"]|"";uint8_t r=255,g=255,b=255;
+     const int requestedFontIndex=obj["fontIndex"]|4;
+@@ -244,15 +252,21 @@
+       const char* line=entry.as<const char*>();if(!validBoundedText(line,63))goto invalid;
+       strlcpy(entries[count++],line,sizeof(entries[0]));
+     }
+     const char* ptrs[12]{};for(uint8_t i=0;i<count;i++)ptrs[i]=entries[i];
+     portENTER_CRITICAL(&hbnfOverlayMux);
++    // Owner local text (kind=text) preempts Glow scoreboard even when the
++    // relay's earlier admission readback raced with an Owner text command.
++    if(!hbnfScoreboardMayReplaceOverlay(hbnfCommandOverlay,now)) {
++      portEXIT_CRITICAL(&hbnfOverlayMux);return false;
++    }
+     setScoreboardOverlay(hbnfCommandOverlay,id,label,ptrs,count,ttl,now);
+     portEXIT_CRITICAL(&hbnfOverlayMux);return true;
+   }
+ invalid:
+-  portENTER_CRITICAL(&hbnfOverlayMux);clearOverlay(hbnfCommandOverlay);portEXIT_CRITICAL(&hbnfOverlayMux);return false;
++  // Reject malformed scoreboard/text without touching an existing overlay.
++  return false;
+ }
+ 
+ static Rgb8 hbnfPaletteColor(uint8_t r,uint8_t g,uint8_t b,uint8_t index) {
+   if(hbnfPalette.mode==PALETTE_SOLID) {
