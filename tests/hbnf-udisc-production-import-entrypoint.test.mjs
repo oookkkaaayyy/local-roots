@@ -17,7 +17,7 @@ const source={
   schema:'hbnf.glow.proposed-week.v1',disposition:'PROPOSED_ONLY_NOT_DELIVERED',
   event:{eventId,weekDate:day,observedAtLocal:'2026-11-04T02:00:00Z'},
   destination:{week:{date:day,activeWeek:day,players:[{partner1:'A',partner2:'B',scores:['3',...Array(17).fill('')]}]}},
-  sourceProvenance:{rowEvidence:[{sourceRow:2,sourceTeam:'A/B',sourceRank:1,sourceRankRaw:'1',division:'GEN',relativeScore:0,strokeTotal:3,holeStrokesTotal:3}]},
+  sourceProvenance:{rowEvidence:[{sourceRow:2,sourceTeam:'A/B',sourceRank:1,sourceRankRaw:'1',division:'GEN',relativeScore:0,strokeTotal:3,holeStrokesTotal:3,holeScores:[3,...Array(17).fill(null)]}]},
   issues:{unresolvedIdentityCount:0,duplicateCanonicalTeamRows:0}
  })
 };
