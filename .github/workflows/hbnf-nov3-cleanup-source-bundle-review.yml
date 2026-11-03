@@ -1,4 +1,4 @@
-name: HBNF Nov3 cleanup exact source bundle (review only)
+name: HBNF Nov3 exact original and bridge source recovery (review only)
 on:
   push:
     branches:
@@ -15,26 +15,31 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
-      - name: Pin and archive exact original cleanup runner source
+      - name: Pin original and bridge separately; do not change source
         run: |
           set -euo pipefail
           git fetch --no-tags origin refs/heads/feature/udisc-glow-standings-prototype:refs/heads/feature/udisc-glow-standings-prototype
           test "$(git rev-parse refs/heads/feature/udisc-glow-standings-prototype)" = "33ff65caeb609533b0a4eea634100a78fb34ec08"
           git bundle create hbnf-glow-cleanup-feature-33ff65.bundle feature/udisc-glow-standings-prototype
+          git branch -f review/hbnf-glow-cleanup-toolbridge-20261102 "$GITHUB_SHA"
+          git bundle create hbnf-glow-cleanup-existing-toolbridge.bundle review/hbnf-glow-cleanup-toolbridge-20261102
           git bundle verify hbnf-glow-cleanup-feature-33ff65.bundle
-          sha256sum hbnf-glow-cleanup-feature-33ff65.bundle
-      - name: Preserve exact source bundle as review-only artifact
+          git bundle verify hbnf-glow-cleanup-existing-toolbridge.bundle
+          sha256sum hbnf-glow-cleanup-*.bundle
+      - name: Preserve exact existing source and bridge as review-only artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-GLOW-CLEANUP-EXACT-SOURCE-REVIEW_ONLY
-          path: hbnf-glow-cleanup-feature-33ff65.bundle
+          name: HBNF-GLOW-CLEANUP-EXACT-SOURCE-AND-BRIDGE-REVIEW_ONLY
+          path: |
+            hbnf-glow-cleanup-feature-33ff65.bundle
+            hbnf-glow-cleanup-existing-toolbridge.bundle
           if-no-files-found: error
           retention-days: 3
-      - name: Record artifact run ID internally on existing issue
+      - name: Record source artifact run ID internally on existing issue
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.run_id }}
           HEAD_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          gh api repos/oookkkaaayyy/local-roots/issues/115/comments -f body="Source-only original cleanup git bundle artifact run: https://github.com/oookkkaaayyy/local-roots/actions/runs/${RUN_ID}; review HEAD ${HEAD_SHA}; no scoring/claim/device mutation, not release admission."
+          gh api repos/oookkkaaayyy/local-roots/issues/115/comments -f body="Original cleanup AND existing connected-tool bridge source-only bundles: https://github.com/oookkkaaayyy/local-roots/actions/runs/${RUN_ID}; review HEAD ${HEAD_SHA}; original feature commit pinned 33ff65; zero scoring/claim/Cart mutation; no release admission."
