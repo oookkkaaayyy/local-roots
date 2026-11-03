@@ -1,10 +1,10 @@
 /**
  * Track C review-only acceptance assertions against Controls Track A v35 review.
  * NO WLED/Opal/Supabase network access, command transport or release admission.
- * R6 firmware reference: 00e6552.../firmware/phase2/integration-r6-cachefix/
+ * R6 firmware reference: 00e6552.../firmware/phase2/integration-r6-f89-compact-font/
  * usermod/usermod_hbnf_foundation_v1.cpp (overlay parsing, brightness, segment owner).
  */
-export const REVIEW_CONTROL_HEAD='e6f1306780e18086a07abb586dcc5288ec4928e2';
+export const REVIEW_CONTROL_HEAD='1f38a99240d77077ad5fd772aea83aaf41164357';
 export const MATRIX_R6='hbnf-cart2-phase2-r6-skins-readable-20261014';
 const MATRIX_MAC='704bca5b345c', AUX_MAC='8c94df55c34c', MATRIX_IP='192.168.77.10';
 const mac=x=>String(x??'').toLowerCase().replaceAll(':','');
