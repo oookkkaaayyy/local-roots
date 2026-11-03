@@ -41,7 +41,7 @@
     "matrix_track_c_head": "979e8d729ba2b8bef8a2c8400227fe0b34106e19",
     "networking_final_head": "c431cfbdbe2ad11b7d11a6ec54878e3470af9b3d",
     "repo": "oookkkaaayyy/local-roots",
-    "current_review_source_head": "6f76ba9d71909e7afc5ca0da4417103ea61d3bd9",
+    "current_review_source_head": "d91b42039be6c8bff4768da656a995a89272a3f6",
     "matrix_owner_priority_review_patch_head": "4af57d8c0d94e0a0966b1735f45f660d769da6a0"
   },
   "failure_recovery": [
@@ -71,17 +71,17 @@
   "hard_gates": {
     "new_service_current_11_target_preimages": "3 NEW executable/init/provision target preimages UNKNOWN; seven original Owner/transport known at capture time; helper observed ABSENT; require fresh exact originals/absence and ownership/mode before admission",
     "new_service_conflicts": "original legacy /usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay absent Nov3 #6614401763; complete current named process/procd service and secret-config absence must match at release preflight",
-    "independent_installed_preimage_backup_download_back": "MISSING exact live 11-target plus dynamic config original backup/absence and independent durable upload/download-back",
-    "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_NATIVE_PASS 29/29 actual original R6 FX142 and ps=-1; installed binary parity and physical visible evidence NOT VERIFIED",
+    "independent_installed_preimage_backup_download_back": "CURRENT NEW 11+credential/21 Owner EXACT LIVE PREIMAGES AND PROTECTED ABSENCE STILL UNVERIFIED; Library Nov3 capture exists but raw container materialization denied; no independently downloaded real installed target archive; existing review and firmware source/rollback backups verified separately",
+    "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_NATIVE_PASS 29/29; candidate built under non-diagnostic environment; installed original R6 true ps=-1 FX142; no physical display or binary parity proof; no preset60 forcing",
     "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted",
     "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute",
-    "provider_compiled_edge_candidate_and_rollback": "MISSING compiled Edge candidate and independently downloaded production compiled v35 rollback; source 10/10 provider parity only",
+    "provider_compiled_edge_candidate_and_rollback": "MISSING DEPLOYED V35 COMPILED BODY AND CANDIDATE ESZIP BYTES AND OFF-PROVIDER READBACK. Connected source returned 10/10 and ezbr identity but does not expose function body; official GET /v1/projects/{ref}/functions/{slug}/body needs authenticated read scope unavailable in connected action.",
     "versioned_sql_and_edge": "new overlay V1 functions not applied, Edge active v35; no destructive old Glow writer permitted",
     "new_service_start_and_conflict_audit": "NOT_RUN; require installed service list read-only and unique process no duplicate, no Owner WS regression",
     "manifest_one_time_approval": "NULL, no approval requested until independent recovery and native Owner priority gate pass",
     "phase1_phase2": "PENDING_NOT_ADMITTED; all source gates false and release includes no production changes",
-    "native_owner_priority_installed_r6": "FAIL_PROVEN original R6 permits scoreboard overwrite active direct Owner TEXT. 4af57... source patch native tests PASS but no compiled candidate or installed firmware; source gate false",
-    "actual_owner_selected_brightness": "Matrix HBNF.matrixBrightness=0 in latest Nov3 authenticated readback; GLOW visually black. No automatic brightness/preset adjustments allowed"
+    "native_owner_priority_installed_r6": "FAIL_PROVEN LIVE original R6 Owner TEXT overwrite race; exact corrected source native test PASS, independently compiled REVIEW BIN d577813d.../1474064B and archived R6 exact rollback de38221f.../1506032B now DURABLY VERIFIED; candidate target build differs from original unverified flags and no installed binary readback/firmware mutation/field acceptance. HARD SOURCE GATE FALSE.",
+    "actual_owner_selected_brightness": "LATEST READBACK MATRIX HBNF.matrixBrightness=0; render black, do not change automatically; visible Glow acceptance only upon naturally selected nonzero normal operation"
   },
   "installer_included": true,
   "ordered_release": [
@@ -214,8 +214,8 @@
   },
   "sql": {
     "down_member": "candidate/backend/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql",
-    "production_preimage": "four_legacy_rpc_functions_overlay_v1_absent",
-    "restore_guard": "abort inverse if any new overlay challenge not confirmed restored",
+    "production_preimage": "2026-11-03 fresh exact four_legacy_rpc_functions_overlay_v1_absent_no_challenge_table",
+    "restore_guard": "verified source fails on unresolved restored_at NULL challenge; no legacy SQL functions or league_state writes",
     "test": "PostgreSQL 17.11 native role/revision/fence/TTL/race/guarded-rollback PASS run 41694282141",
     "up_member": "candidate/backend/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql",
     "writes_league_state": false
@@ -537,5 +537,77 @@
     "ci_changed": "41725610372 SUCCESS",
     "ci_deno": "41725610237 SUCCESS",
     "owner_field_accepted": false
+  },
+  "firmware_review_owner_priority_20261103": {
+    "status": "REVIEW_ONLY_COMPILED_NOT_DEVICE_APPROVED",
+    "historical_original_source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+    "historical_original_source_sha256": "87bdbd9a68425e97cd5b97641768c4e4a16a527c3dfadfca3d0cb4e3ea5c5559",
+    "exact_review_patch_sha256": "9ce39687374ab0895834df750571e2d7f171751d16a8cd02ec20c6654fd5709a",
+    "patched_source_sha256": "6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa",
+    "compiled_candidate": {
+      "name": "CART116_R6_OWNER_TEXT_PRIORITY_REVIEW_ONLY.bin",
+      "sha256": "d577813d281d402a6510a0e9e128916c40fc620d0ba05199cec4c366dff0c552",
+      "bytes": 1474064,
+      "partition_bytes": 1572864,
+      "headroom_bytes": 98800,
+      "board": "Matrix WLED16 4MB",
+      "build_environment": "hbnf_matrix_wled16_max",
+      "original_r6_build_flags_verified": false,
+      "recorded_historical_R6_OTA_compatibility": "NOT_PROVEN",
+      "installed_firmware_sha256_verified": false,
+      "exact_device_restore_proven": false,
+      "field_visible_test": false,
+      "condition": "REQUIRES_SEPARATE_SAME_MANIFEST_FIRMWARE_ADMISSION_BEFORE_ANY_FLASH"
+    },
+    "historical_original_rollback": {
+      "name": "hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
+      "bytes": 1506032,
+      "sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "confirmed_archived_bytes_sha256": true,
+      "matched_to_installed_binary_sha256": false
+    },
+    "hosted_ci": {
+      "workflow": "Cart116 R6 Owner Priority review firmware build",
+      "final_run_id": 41735435178,
+      "workflow_head": "d91b42039be6c8bff4768da656a995a89272a3f6",
+      "result": "SUCCESS",
+      "github_artifact_id": 13278731551,
+      "github_artifact_zip_sha256": "d447f3693a1a8ce1a7c5a5c2d39a2ab5ed0c5470c8f081e8ad5d8e914c934b6e",
+      "exact_original_specialist_native_test": "39/39 PASS; old source fails negative control",
+      "previous_source_preparation_and_missing_legacy_toolchain_runs": "41733974565 and 41734118808 and 41734974817 failed due missing old WLED build components; final run recovered historical FontManager patch and generated web headers"
+    },
+    "exact_candidate_and_rollback_recovery_zip": {
+      "name": "CART116-R6-OwnerPriority-Candidate-and-ExactOriginal-REVIEW_ONLY-20261103.zip",
+      "bytes": 2291511,
+      "sha256": "2ec2b852a50af38758d3bc3f90a761c72a0e49791fde0b165ac32316bd475c2c",
+      "drive_id": "1z4tFXe7kXDiYcHBlQxnYA6roFvUNUdWq",
+      "independent_download_back_sha_and_byte_equality": "PASS",
+      "zip_crc": "PASS",
+      "embedded_shas": "4/4 PASS",
+      "installable": false
+    },
+    "physical_preservation": "ps=-1, two FX142 segments, 32x16 native + DDP22, Owner first, all Vibe/audio/Energy/Variation/Motion controls, brightness may be zero, 22 RGB GPIO16 + two OFF PWM25/26, UV OFF",
+    "new_candidate_binary_release_gate": "BLOCKED_PENDING_INSTALLED_BINARY_ATTESTATION_OR_SUPPORTED_EQUIVALENCE; one owner-specific transactional firmware permission separate from Controls Opal/Edge changes"
+  },
+  "integration_udisc_event_20261103": {
+    "source": "github-115-comment-6617174574",
+    "event_url": "https://udisc.com/events/hb-glow-doubles-tAP8Y5",
+    "layout_id": "150408",
+    "layout_name": "HB Glow Dubs 11.3.26",
+    "holes": 18,
+    "par": 59,
+    "par4_holes": [
+      5,
+      11,
+      15,
+      17,
+      18
+    ],
+    "round1_layout_binding_verified": false,
+    "official_export_rows": 0,
+    "player_team_roster_pre_round_requirement": false,
+    "actual_scores_ready": false,
+    "production_scoring_mutation_owner": "Scoring P0 #115 only",
+    "no_unapproved_udisc_polling": true
   }
 }
