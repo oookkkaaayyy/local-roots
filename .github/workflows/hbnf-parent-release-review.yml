@@ -40,34 +40,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Determine changed-only qualification scope
+      - name: Determine focused UDisc qualification scope
         id: scope
         shell: bash
         run: |
           git fetch --no-tags --depth=1 origin 6ce83a5f791dd42a14521a04ab870f5c9341f5b6
           changes="$(git diff --name-only 6ce83a5f791dd42a14521a04ab870f5c9341f5b6 HEAD)"
-          outside="$(printf '%s\n' "$changes" | grep -Ev '^(public/glow.html|tests/hbnf-glow-quick-import.test.mjs|.github/workflows/hbnf-parent-release-review.yml) tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-server-tag-projection.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
-      - name: Verify exact UDisc latest source blobs (read only)
-        run: |
-          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js)" = "05f45f267c068ed3f1b8e17404cb792e76d5c539"
-          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs)" = "653ccc0578174ff59e51889b73bd68d72250ffc8"
-      - name: Fetch exact installed v48 source (read only)
-        run: git fetch --no-tags --depth=1 origin 44612c09677f59b84bece7de655af7bb011b51e7
-      - name: Assemble reproducible REVIEW_ONLY site asset package
-        run: node scripts/hbnf-parent-release/build-review-only-assets.mjs
-      - name: Attach unadmitted candidate (not a deployment)
-        uses: actions/upload-artifact@v4
-        with:
-          name: HBNF-P0-public-assets-REVIEW_ONLY
-          path: |
-            build/HBNF-P0-public-assets-REVIEW_ONLY.zip
-            build/HBNF-P0-public-assets-review-result.json
-          if-no-files-found: error
-          retention-days: 14
-
- || true)"
+          outside="$(printf '%s\n' "$changes" | grep -Ev '^(public/glow.html|tests/hbnf-glow-quick-import.test.mjs|.github/workflows/hbnf-parent-release-review.yml)$' || true)"
           if [ -z "$outside" ] && [ -n "$changes" ]; then echo "quick_only=true" >> "$GITHUB_OUTPUT"; else echo "quick_only=false" >> "$GITHUB_OUTPUT"; fi
-      - name: Unsafe actual handler RED, corrected actual handler GREEN (focused)
+      - name: Actual prior handler RED then corrected handler GREEN
         shell: bash
         run: |
           git show 6ce83a5f791dd42a14521a04ab870f5c9341f5b6:public/glow.html > /tmp/hbnf-prior-glow.html
