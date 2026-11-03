@@ -97,17 +97,18 @@
     "status": "REVIEW_ONLY_NOT_ADMITTED",
     "provenance": "Exact 61-member PR151-derived Worker review artifact from owner-private Drive; local offline two-member source overlay; original PR151 archive 3322952B SHA256 c24e35b7f9c4140feef37e0101441783d1b0ead9d9dd7735868a9a7b832c1b1d",
     "combinedArchive": {
-      "driveFileId": "19PYS1yDKPGyQb8XAfZBUAAz4KD53-kN7",
-      "bytes": 3325662,
-      "sha256": "10a3cd8f12b65511f2ac3528719055632a01f0916a7eae44f969bfcd7a64f5f2",
+      "driveFileId": "1BIa7oJGs7FczcjW5eCbCtvYO7nFAXhgm",
+      "bytes": 3325661,
+      "sha256": "26b003f7df117a76e1c1c97930b7a6771459aec794f9c26b58500086b3250c75",
       "memberCount": 61,
       "crcPass": true,
-      "providerDownloadBackByteAndHashVerified": true
+      "providerDownloadBackByteAndHashVerified": true,
+      "scope": "superseding v2 review-only package, exact base PR151 plus 2 UDisc module overlays"
     },
     "sourceOverlays": [
       {
         "path": "src/udisc-glow-auto-sync.mjs",
-        "gitBlob": "e163b10075d98bbf9c7d0fd1ff33738d8db45237",
+        "gitBlob": "dd2c163b47491cddb6e386ff8dd627d5ebee4141",
         "priorBlob": "47f2b74fdad8b70e1aeb6eb078176346f696115f"
       },
       {
@@ -122,27 +123,29 @@
       "targetDeployedVersion": "48ffa87e-3c83-46d0-a6ca-db7bf0b064e6",
       "actualLiveCompiledFunctionParity": "NOT_VERIFIED",
       "existingPR151ProductionState": "NOT_DEPLOYED",
-      "automaticCartBackendInvocation": "NOT_INSTALLED",
+      "automaticCartBackendInvocation": "NOT_INSTALLED; pure reviewed onVerifiedSaved hook only; Controls b4 code also review-only",
       "cartSourceProof": "BOUND_TO_B4C0F0D_ONLY",
       "cartPhysicalReadback": "NOT_VERIFIED",
       "liveMutationAuthorized": false
     },
     "tests": [
       {
-        "name": "Original poller red/green and event-window capture",
+        "name": "Preserved UDisc source RED/GREEN",
         "run": 41580689666,
         "pass": 13
       },
       {
-        "name": "Saved-hole safari par safety",
+        "name": "Prior saved-par candidate",
         "run": 41600185216,
         "pass": 19,
-        "containsPreviouslyPassedTests": true
+        "archiveSuperseded": true
       },
       {
-        "name": "UDisc merged week→exact v35 selector→b4 Cart backend source",
-        "run": 41601207739,
-        "pass": 4
+        "name": "Exact v35 chooseLive + Controls b4c0f0d backend source and current 1–9 metadata gates",
+        "run": 41601683888,
+        "pass": 11,
+        "failed": 0,
+        "sourceHead": "fbd14b3ab51b44fa842874213f09f4cc8a2d1ebe"
       }
     ],
     "preRoundMetadata": {
@@ -151,8 +154,17 @@
       "currentEnteredPars": 0,
       "currentEnteredNotes": 0,
       "sourceThreeColumnImport": "Historical only, current production import control absent",
-      "june20TemplateApprovedForNov3": false
+      "june20TemplateApprovedForNov3": false,
+      "manualScorecardParRange": "1–9 source HTML input min/max; existing parity with candidate corrected",
+      "thirdColumnNotesFilledByScript": "NOT_SUPPORTED_BY_HISTORICAL_APPS_SCRIPT; manual notes required",
+      "savedCloudReopenAcceptance": "NOT_VERIFIED; no production metadata write attempted"
     },
-    "nextAction": "Scoring P0 sole Worker/scoring release owner to qualify one merged source/rollback against fresh Cloudflare v348 installed bytes and admit one full transaction; Controls A/Matrix C own independently releasing canonical backend/render, with actual event-window XLSX and physical acceptance separate"
+    "nextAction": "Scoring P0 sole Worker/scoring release owner to qualify one merged source/rollback against fresh Cloudflare v348 installed bytes and admit one full transaction; Controls A/Matrix C own independently releasing canonical backend/render, with actual event-window XLSX and physical acceptance separate",
+    "supersededReadOnlyArchive": {
+      "driveFileId": "19PYS1yDKPGyQb8XAfZBUAAz4KD53-kN7",
+      "sha256": "10a3cd8f12b65511f2ac3528719055632a01f0916a7eae44f969bfcd7a64f5f2",
+      "reason": "review par validation was narrower than installed manual 1–9 UI bounds; never deploy or use this older archive"
+    },
+    "currentSourceReviewHead": "fbd14b3ab51b44fa842874213f09f4cc8a2d1ebe"
   }
 }
