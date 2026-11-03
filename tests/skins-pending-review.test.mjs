@@ -15,7 +15,7 @@ const clone=v=>structuredClone(v);
 function storage(previous){const data=previous??new Map();return {data,failKey:null,getItem:k=>data.has(k)?data.get(k):null,setItem(k,v){if(k===this.failKey)throw new Error('quota');data.set(k,String(v))},removeItem(k){data.delete(k)}}}
 function backend(){return {row:{id:1,state_json:{skins:state()},updated_at:'rev-1'},writes:0,readError:false,readbackError:false,readbackErrorOnce:false,reads:0,interceptWrite:null,select(){this.reads++;if(this.readError)return {error:{code:'NETWORK',message:'503'}};if(this.readbackError&&this.writes>0)return {error:{code:'NETWORK',message:'522'}};if(this.readbackErrorOnce&&this.writes>0){this.readbackErrorOnce=false;return {error:{code:'NETWORK',message:'522'}}}return {data:clone(this.row),error:null}}}
 }
-function client(b){return {from(name){assert.equal(name,'league_state');return {select(){return this},eq(){return this},single(){return Promise.resolve(b.select())}}},async rpc(name,args){assert.equal(name,'hbnf_save_league_state_v1');if(b.interceptWrite)b.interceptWrite(b);if(args.p_expected_updated_at!==b.row.updated_at)return {data:[],error:null};b.row={id:1,state_json:clone(args.p_state_json),updated_at:`rev-${++b.writes+1}`};return {data:[clone(b.row)],error:null}},channel(){return {on(){return this},subscribe(){return this}}}}}
+function client(b){return {from(name){assert.equal(name,'league_state');return {select(){return this},eq(){return this},single(){return Promise.resolve(b.select())}}},async rpc(name,args){assert.equal(name,'hbnf_save_league_state_v1');if(b.interceptWrite)b.interceptWrite(b);if(args.p_expected_updated_at!==b.row.updated_at)return {data:[],error:null};b.row={id:1,state_json:clone(args.p_state_json),updated_at:`rev-${++b.writes+1}`};if(b.projectTagsOnWrite)b.row.state_json.bagTags=clone(b.projectTagsOnWrite);return {data:[clone(b.row)],error:null}},channel(){return {on(){return this},subscribe(){return this}}}}}
 function open(b,s){const label={textContent:''},alert={textContent:'',hidden:true};const context=vm.createContext({console:{error(){}},window:{addEventListener(){},APP_CONFIG:{SUPABASE_URL:'https://isolated.example',SUPABASE_ANON_KEY:'synthetic'},supabase:{createClient(){return client(b)}}},document:{querySelector(selector){return selector==='#syncAlert'?alert:label}},localStorage:s,setTimeout(fn){/* test drives scheduled writes explicitly */},clearTimeout(){},Date,JSON,Object,Array,String,Number,Boolean,Promise,Set});vm.runInContext(source,context);vm.runInContext(`ctx.normalize=(s)=>s;function saveLocal(){try{localStorage.setItem(ctx.localKey,JSON.stringify(ctx.state));ctx.localDraftStored=true;return true}catch(e){ctx.localDraftStored=false;return false}};function loadLocal(){try{return JSON.parse(localStorage.getItem(ctx.localKey)||'null')}catch{return null}};function renderAll(){}`,context);
 return {label,alert,s,async init(){vm.runInContext(`ctx.state=loadLocal()||${JSON.stringify(state())};const pending=hbnfReadPendingDraft();if(pending){ctx.state=JSON.parse(JSON.stringify(pending.branchState));ctx.pendingBaseHash=pending.baseHash||'';ctx.localDirty=true;ctx.localEditedBeforeBaseline=true}`,context);await vm.runInContext('ctx.initSync()',context)},get:x=>vm.runInContext(x,context),set:(x,v)=>{context.testValue=clone(v);vm.runInContext(`${x}=testValue`,context)},exec:async x=>vm.runInContext(x,context)}
 }
@@ -71,4 +71,25 @@ test('installed v48 pending scorecard is retained across the PR151 draft format 
  assert.equal(app.get('ctx.pendingBaseHash'),'unverified-v48-base');
  await app.exec('ctx.pushRoot()');assert.equal(b.writes,0);
  assert.equal(JSON.parse(s.getItem(PENDING)).branchState.weeks['2099-01-06'].front.cards[0].winners['1'],'card_1_p_0');
+});
+
+
+test('actual Skins score writer tolerates authoritative tag projection racing the score while preserving score/history',async()=>{
+ const b=backend(),s=storage();
+ b.row.state_json.bagTags={players:[],manual:{}};
+ b.row.state_json.glow={payouts:{Mason:20},acePots:{main:500,reserve:200}};
+ b.row.state_json.__backups=[{id:'prior'}];
+ const app=open(b,s);await app.init();
+ const remoteTag={players:[{tag:2,name:'Mason'}],manual:{Mason:2}};
+ b.projectTagsOnWrite=clone(remoteTag);
+ const draft=clone(app.get('ctx.state'));
+ draft.weeks['2099-01-06'].front.cards[0].winners['1']='card_1_p_0';
+ app.set('ctx.state',draft);app.set('ctx.localDirty',true);
+ app.get('hbnfWritePendingDraft()');app.get('saveLocal()');
+ await app.exec('ctx.pushRoot()');
+ assert.equal(b.row.state_json.skins.weeks['2099-01-06'].front.cards[0].winners['1'],'card_1_p_0');
+ assert.deepEqual(b.row.state_json.bagTags,remoteTag);
+ assert.deepEqual(b.row.state_json.glow,{payouts:{Mason:20},acePots:{main:500,reserve:200}});
+ assert.deepEqual(b.row.state_json.__backups,[{id:'prior'}]);
+ assert.equal(s.getItem(PENDING),null);
 });
