@@ -81,11 +81,28 @@ export function proposeNativeOverlayOnly({ matrixInfo, matrixState, matrixBuild,
   if (matrixState.HBNF.overlayId != null) return blocked('existing_overlay_not_preemptible');
   const ddp=inspectAux22DdpWithOffPwm({auxInfo,auxState,auxConfig});
   if (!ddp.compatible) return blocked(ddp.reason);
-  // The live physical state is ps=-1 with segment 0/1 fx142, NOT ps60.
-  // Matching effects alone do not establish that this exact R6 binary can
-  // render an HBNF.overlay independently of its current preset. Never set
-  // ps=60, FX, global on/bri, audio or AUX to manufacture a passing gate.
-  if (matrixState.ps===-1) return blocked('native_overlay_ps_minus1_renderer_not_proven');
+  // EXACT COMPILED Oct 14 R6 source binding: 00e6552...,
+  // integration-r6-f89-compact-font/usermod_hbnf_foundation_v1.cpp,
+  // SHA-256 87bdbd9a68425e97cd5b97641768c4e4a16a527c3dfadfca3d0cb4e3ea5c5559.
+  // Its loop keeps both segments on registered foundationEffectId (FX142 in
+  // the actual Nov 3 readback), and mode_hbnf_foundation renders HBNF.overlay
+  // without consulting ps. ps=-1 is NOT a failure or an instruction to load
+  // preset 60. This review helper is NOT provider/device admission.
+  if (matrixState.ps===-1 && fx!==142)
+    return blocked('ps_minus1_requires_verified_r6_fx142');
+  // R6 reserves WLED master+segment brightness at 255 and applies the user
+  // brightness in HBNF.matrixBrightness. A non-null HBNF.overlay JSON also
+  // normalizes WLED bri to 255. Preserve the baseline, never send bri writes.
+  if (matrixState.bri!==255 || a.bri!==255 || b.bri!==255)
+    return blocked('native_wled_unity_brightness_unproven');
+  const matrixBrightness=matrixState.HBNF.matrixBrightness;
+  if (!integer(matrixBrightness) || matrixBrightness<0 || matrixBrightness>255)
+    return blocked('native_matrix_brightness_unproven');
+  // The installed Nov 3 HBNF.matrixBrightness=0: native R6 outputs all-black
+  // overlay pixels at zero. JSON overlayId can ACK but visible scoring cannot.
+  // Never raise it automatically or ask owner to do so merely for a test.
+  if (matrixBrightness===0)
+    return blocked('matrix_brightness_zero_invisible_scoreboard');
   if (!overlay || overlay.kind !== 'scoreboard' || overlay.label !== 'GLOW' ||
       typeof overlay.id !== 'string' || !/^hbnf-[a-f0-9]{32}$/.test(overlay.id) ||
       !integer(overlay.ttlMs) || overlay.ttlMs < 250 || overlay.ttlMs > 30000 ||
