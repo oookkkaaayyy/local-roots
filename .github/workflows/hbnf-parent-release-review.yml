@@ -7,6 +7,7 @@ on:
     paths:
       - 'scripts/hbnf-parent-release/**'
       - 'tests/hbnf-parent-release-driver.test.mjs'
+      - 'tests/hbnf-cloudflare-recovery.test.mjs'
       - 'tests/glow-save-sync-race.test.mjs'
       - 'tests/hbnf-glow-preinit-pending.test.mjs'
       - 'tests/hbnf-udisc-cart-server-ack.test.mjs'
@@ -39,7 +40,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify review-only parent gate and cutover source invariants (no secrets)
-        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-server-tag-projection.test.mjs
+        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-server-tag-projection.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
       - name: Verify exact UDisc latest source blobs (read only)
         run: |
           test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js)" = "05f45f267c068ed3f1b8e17404cb792e76d5c539"
