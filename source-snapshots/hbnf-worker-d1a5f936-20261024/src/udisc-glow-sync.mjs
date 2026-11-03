@@ -112,6 +112,17 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
   const sourcePairs = new Set();
   const incomingRecords = [];
   const newTeams = [];
+  // UDisc exports may insert/reorder teams when players arrive. Row index is
+  // provenance, not a stable team ID; never reuse a previously assigned ID.
+  const reservedIds = new Set([...entries.keys(), ...existingPlayers.keys()]);
+  let nextTeamOrdinal = 1;
+  const nextTeamId = () => {
+    for (;;) {
+      const candidate = `UDISC_${weekDate.replaceAll('-', '')}_${String(nextTeamOrdinal++).padStart(2, '0')}`;
+      if (!reservedIds.has(candidate)) { reservedIds.add(candidate); return candidate; }
+    }
+  };
+  const reviewedPartnershipTransitions = [];
 
   for (let index = 0; index < incoming.length; index++) {
     const player = incoming[index];
@@ -129,12 +140,33 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
       const sourceNames = new Set(names.map(norm).filter(Boolean));
       const overlaps = [...entries.entries()].filter(([candidateId, item]) => !used.has(candidateId) && item.names.some(name => sourceNames.has(norm(name))));
       if (overlaps.length > 1) throw Error('A changed UDisc partnership matches multiple Glow teams.');
-      if (overlaps.length === 1) [id, match] = overlaps[0];
+      if (overlaps.length === 1) {
+        const [priorId, priorEntry] = overlaps[0];
+        const priorPlayer = existingPlayers.get(priorId);
+        const hasScores = Array.isArray(priorPlayer?.scores) &&
+          priorPlayer.scores.some(value => text(value) !== '');
+        if (hasScores && priorEntry.key !== key) {
+          // One unchanged partner does not prove that a new doubles team owns
+          // the old team's scores. Source-sync automation never approves that
+          // transfer. Only a separately reviewed P0 caller may bind it.
+          const decision = options.reviewedPartnershipChanges?.[priorId];
+          if (decision?.priorTeamId !== priorId ||
+              decision?.preserveExistingScores !== true ||
+              !Array.isArray(decision?.partners) ||
+              pairKey(decision.partners) !== key) {
+            throw Error('Scored partnership changed: explicit P0 identity and score-carry review required.');
+          }
+          reviewedPartnershipTransitions.push({
+            glowTeamId:priorId,from:[...priorEntry.names],to:[...names],
+            review:'explicit_P0_score_carry_authorization'
+          });
+        }
+        [id, match] = overlaps[0];
+      }
     }
     if (id) used.add(id);
     else {
-      id = `UDISC_${weekDate.replaceAll('-', '')}_${String(index+1).padStart(2,'0')}`;
-      if (entries.has(id) || newTeams.some(item => item.id === id)) throw Error('A generated Glow team ID collides with an existing entry.');
+      id = nextTeamId();
       newTeams.push({id,names,sourceIndex:index});
     }
     incomingRecords.push({id, player, names, evidence, sourceIndex:index, match});
@@ -226,6 +258,7 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
       glowTeamId:record.id,
     })),
     manualOverrides,
+    reviewedPartnershipTransitions,
   };
   const priorHistory = Array.isArray(prior?.history) ? prior.history : [];
   const history = prior?.latest ? [...priorHistory, prior.latest].slice(-20) : priorHistory.slice(-20);
