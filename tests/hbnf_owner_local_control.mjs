@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
-import { LocalOwnerControl, LOCAL_CONTROL_ORIGIN, LOCAL_MATRIX_MAC, LOCAL_AUX_MAC, LOCAL_MATRIX_RELEASE } from "../hbnf-final-controller/hbnf-cart-local.mjs";
+import { LocalOwnerControl, LOCAL_CONTROL_ORIGIN, LOCAL_MATRIX_IP, LOCAL_AUX_IP, LOCAL_MATRIX_MAC, LOCAL_AUX_MAC, LOCAL_MATRIX_RELEASE } from "../hbnf-final-controller/hbnf-cart-local.mjs";
 import * as transportModule from "../staging/coordinated-backend/opal/mission-control-local/local-transport.js";
 import * as ownerHttpTransportModule from "../staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js";
 
@@ -59,6 +59,15 @@ function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentSta
 function makeClient(f, options = {}) {
   return new LocalOwnerControl({ ...options, fetchFn: f.fetchFn, transportLoader: async () => f.module });
 }
+
+test("Cart-local Owner device routes pin the verified Matrix and AUX IPs", async () => {
+  assert.equal(LOCAL_MATRIX_IP, "192.168.77.10", "actual Matrix address; former .82 must not return");
+  assert.equal(LOCAL_AUX_IP, "192.168.77.11", "actual AUX address");
+  assert.equal(LOCAL_MATRIX_MAC, "704bca5b345c", "do not accept another Matrix at the correct IP");
+  assert.equal(LOCAL_AUX_MAC, "8c94df55c34c", "do not accept another AUX at the correct IP");
+  const localSource = await readFile(new URL("../hbnf-final-controller/hbnf-cart-local.mjs", import.meta.url), "utf8");
+  assert.doesNotMatch(localSource, /192\\.168\\.77\\.82\\b/, "old Matrix address must never be used by local Owner transport");
+});
 
 test("paired local status and per-command HTTP writes use only Opal on the WAN-off path", async (t) => {
   const f = fixture();
