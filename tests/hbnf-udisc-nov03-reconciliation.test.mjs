@@ -51,6 +51,22 @@ test('wrong event, week or active week cannot enter reconciliation',async()=>{
  await assert.rejects(()=>prepareNov3Reconciliation({root,revision:root.updated_at,
    snapshot:snapshot() }),/NOV03_GLOW_WEEK/);
 });
+test('live production-shaped Nov3 week without redundant date fields is recognized',async()=>{
+ const root=base(),week=root.state_json.glow.weeks[DATE],before=JSON.stringify(root);
+ delete week.date;delete week.activeWeek;
+ const source=JSON.stringify(root);
+ const result=await prepareNov3Reconciliation({root,revision:root.updated_at,
+  snapshot:{eventId:EVENT_ID,weekDate:DATE,rows:[]}});
+ assert.equal(result.status,'EMPTY_OFFICIAL_EXPORT_NO_IMPORT');
+ assert.equal(result.productionWrite,false);
+ assert.equal(JSON.stringify(root),source);
+ assert.notEqual(before,source);
+});
+test('explicit contradictory week date is rejected rather than silently ignored',async()=>{
+ const root=base();root.state_json.glow.weeks[DATE].date='2026-10-24';
+ await assert.rejects(()=>prepareNov3Reconciliation({root,revision:root.updated_at,
+  snapshot:{eventId:EVENT_ID,weekDate:DATE,rows:[]}}),/NOV03_GLOW_WEEK_AND_ACTIVE_DATE_REQUIRED/);
+});
 test('finalized or locked HBNF card blocks without changing scores',async()=>{
  const root=base(),before=JSON.stringify(root);
  root.state_json.glow.weeks[DATE].cards[0].finalized=true;
