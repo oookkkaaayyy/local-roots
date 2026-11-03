@@ -1,5 +1,41 @@
 # November 3 HB Glow Doubles — attributed 18-hole conditional three-column preload
 
+> **OWNER PAR59 LAYOUT SUPERSESSION — 2026-11-03 (latest evidence; no production write).** The historical `UNKNOWN` comparison table later in this file was a prior checkpoint; it is now **superseded for layout source values only**, NOT proof the actual UDisc Round 1 has this layout selected. Source: [#115 owner original 18-hole screenshot transcription](https://github.com/oookkkaaayyy/local-roots/issues/115#issuecomment-6617174574), immutable [event-scoped PAR59 JSON fixture](../tests/fixtures/authentic-udisc/2026-11-03-layout-150408.json). Still **REVIEW_ONLY**; do not upload this table directly into `league_state` or overwrite scoring history.
+
+## Owner-transcribed UDisc layout 150408 — HB Glow Dubs 11.3.26
+
+Actual event slug `hb-glow-doubles-tAP8Y5`; [caddie book](https://udisc.com/courses/huntington-beach-central-park-A9Fe/layouts/150408/caddie-book); photographed layout labelled Active, `All safari layout.`, **18 holes**, **par 59**, header **6,022 ft**. Individual displayed rounded hole lengths total **6,023 ft** (one-foot rounding mismatch; retain both reported figures). The selected **Round 1** layout association remains **unverified** from organizer event configuration; title/date of this layout and screenshot event badge are not sufficient to claim attachment. No registered player/team mapping is required before round start.
+
+**Exact top rule:** `NO INTENTIONAL THROWS OVER PARKING LOT. If you throw over the parking lot on purpose you will be DISQUALIFIED. Other than that, no OBs or mandos.`  
+**Unresolved rule interpretation:** Hole 17 explicitly says `double mando`, while global rule says no mandos. Preserve both and obtain organizer ruling before applying a penalty. Holes 8/9 have explicitly truncated source target labels; do not invent their suffixes.
+
+| Hole | Tee → basket/target (owner screenshot) | ft | Par | Hole note |
+|---:|---|---:|---:|---|
+| 1 | Parkinglot → B on hole 7 | 196 | **3** | Parking near pad 10 → 7 |
+| 2 | Short → B on hole 18 | 274 | **3** | 7 short → 18 |
+| 3 | Short → B on hole 12 | 249 | **3** | 17 short → 12 |
+| 4 | Short → A on hole 14 | 260 | **3** | 16 short → 14 |
+| 5 | Main → B on hole 10 | 573 | **4** | 18 main → 10 |
+| 6 | Short → A on hole 15 | 237 | **3** | 16 short → 15 |
+| 7 | Main → New 16 on hole 16 | 250 | **3** | 15 main → 16 |
+| 8 | PathBy16Long → Practice 1 (shop) on hole Glo… [UI truncated] | 270 | **3** | Path by basket 16 → Practice 1 |
+| 9 | Main → Practice 3 (long) on hole Glo… [UI truncated] | 212 | **3** | 1 main → Practice 3 (CTP) |
+| 10 | Main → New 16 on hole 16 | 233 | **3** | 8 main → 16 |
+| 11 | Main → A on hole 5 | 660 | **4** | 12 main → 5 |
+| 12 | Main → A on hole 15 | 308 | **3** | 14 main → 15 |
+| 13 | Short → B on hole 6 | 230 | **3** | 15 short → 6 |
+| 14 | Main → B on hole 7 | 365 | **3** | 18 main → 7 |
+| 15 | Main → A on hole 14 | 536 | **4** | 8 main → 14 |
+| 16 | Short → B on hole 10 | 309 | **3** | 16 short → 10 |
+| 17 | Main → C on hole 17 | 396 | **4** | 12 main → 17 (double mando) |
+| 18 | Main → New 16 on hole 16 | 465 | **4** | 18 main → 16 |
+
+**Actual Nov3 organizer XLSX first observation:** `hb-night-flyers-hb-glow-doubles-2026-11-03.xlsx`, 15,783 bytes, single `Event results` sheet, dimension `A1`, empty `sheetData`; **no score/header/team rows**, expected before scoring. This is `EMPTY_EXPORT_NO_SCORES`, not failed UDisc card setup or evidence of missing participant. The review source now refuses to fabricate hole1/teams/status writes/Cart intent on empty and roster-only exports. Genuine participant/alias crosswalk begins only when UDisc exposes scored event rows at play.
+
+**Current release source status:** UDisc branch has corrected late team ID allocator, scored-partnership review gate, empty/no-score early exits, and PAR59 fixture native source/projection tests; Scoring P0 solely owns production metadata and score mutation, Controls solely owns Cart/Matrix delivery. No vendor polling permission or actual field admission. See latest #115 integration receipt.
+
+---
+
 **Decision: NOT IMPORT READY; zero authorized Nov 3 par, card, or hole-note entries verified.** This preview is an explicit no-write comparison, NOT a row list to paste into `glow.html`. Historical 3-column contract is `card | par | hole_notes` from `HBNF_UDisc_3_Column_Import_Template.xlsx` / archived Apps Script workflow. Preserve that existing importer; do not reconstruct it.
 
 ### Event-specific authority
