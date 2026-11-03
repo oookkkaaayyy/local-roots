@@ -137,7 +137,12 @@ export async function parseUdiscWorkbook(buffer, {eventId, weekDate, observedAt}
     }
     return row;
   });
-  if (!rows.length) throw Error('UDisc workbook has no results.');
+  // The organizer's first Nov3 official XLSX has one empty Event results
+  // sheet (dimension A1). A created card is not a score row. This is an
+  // expected no-data state, never a pretext to fabricate strokes or teams.
+  if (rows.length<2 || !rows.slice(1).some(row=>row.some(value=>clean(value)!==''))) {
+    throw Object.assign(Error('UDisc export has no scored team rows yet.'),{code:'EMPTY_EXPORT_NO_SCORES'});
+  }
   const snapshot=sourceParser().parseUdiscAoA(rows,{eventId,observedAtLocal:observedAt});
   return Object.freeze({...snapshot,weekDate,sourceUpdatedAt:null});
 }
