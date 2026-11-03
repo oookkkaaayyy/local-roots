@@ -14,12 +14,22 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 2
+      - uses: actions/checkout@v4
+        with:
+          ref: b4c0f0d5a354a02b1ab0a182b344e2b1c57ca69b
+          path: build/cart116-b4-source
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test new installed-source poller boundary fixes only (no provider or device)
+      - name: Test exact v35 + b4 Cart source with saved Glow merge (offline)
         run: |
           set -euo pipefail
-          node --test tests/hbnf-udisc-poller-boundary.test.mjs tests/hbnf-nov3-par-qualification.test.mjs
+          mkdir -p build/cart116-b4-glow-source
+          cp build/cart116-b4-source/staging/coordinated-backend/hbnf-cart-control/glow-intent-service.mjs build/cart116-b4-glow-source/glow-intent-service.mjs
+          cp build/cart116-b4-source/scripts/hbnf-glow-cart-intent.mjs build/cart116-b4-glow-source/hbnf-glow-cart-intent.mjs
+          test "$(git hash-object build/cart116-b4-glow-source/glow-intent-service.mjs)" = "7c1fcd79ef2fb3841ebb136b62da7a8323099fb9"
+          test "$(git hash-object build/cart116-b4-glow-source/hbnf-glow-cart-intent.mjs)" = "509dbe62229d48579594cdd378217e4476ad13e7"
+          node --experimental-strip-types --test tests/hbnf-udisc-cart-b4-source-bound.test.mjs
           git diff --check HEAD^ HEAD
           git rev-parse HEAD
