@@ -127,7 +127,7 @@ export async function prepareNov3FromFiles({xlsxFile,stateFile,decisionsFile,rep
  try{snapshot=await parseUdiscWorkbook(arraybuffer,
    {eventId:EVENT_ID,weekDate:DATE,observedAt:new Date().toISOString()});}
  catch(err){
-   if(err?.message!=='UDisc workbook has no results.')throw err;
+   if(err?.code!=='EMPTY_EXPORT_NO_SCORES' && err?.message!=='UDisc workbook has no results.')throw err;
    snapshot={eventId:EVENT_ID,weekDate:DATE,rows:[]};
  }
  const preview=await prepareNov3Reconciliation({root,revision,snapshot,decisions});
