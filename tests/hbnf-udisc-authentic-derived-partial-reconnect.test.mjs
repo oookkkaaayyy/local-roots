@@ -7,7 +7,9 @@ import {prepareGlowWeekSync} from '../source-snapshots/hbnf-worker-d1a5f936-2026
 import {runApprovedGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs';
 
 const fixture=JSON.parse(await readFile(new URL('./fixtures/authentic-udisc/2026-04-18.json',import.meta.url),'utf8'));
-// Historical April workbook rows transformed into a November 3 synthetic event-window fixture.\n// NO claim about November 3 live UDisc teams, tee geometry or pars.\nconst date='2026-11-03',eventId='hb-glow-doubles-tAP8Y5';
+// Historical April workbook rows transformed into a November 3 synthetic event-window fixture.
+// NO claim about November 3 live UDisc teams, tee geometry or pars.
+const date='2026-11-03',eventId='hb-glow-doubles-tAP8Y5';
 function aoa(f){
  return [['division','position','position_raw','name','event_relative_score','event_total_score','usernames',
   ...Array.from({length:18},(_,i)=>'hole_'+(i+1))],...f.rows.map(r=>[
