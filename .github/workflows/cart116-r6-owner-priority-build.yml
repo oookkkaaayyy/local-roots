@@ -60,9 +60,9 @@ jobs:
         run: |
           set -euo pipefail
           cd /tmp/cart116-wled
-          pio run -e hbnf_matrix_wled16_packet20_diag 2>&1 | tee /tmp/cart116-r6-first.log
+          pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/cart116-r6-first.log
           mkdir -p /tmp/cart116-r6-artifacts
-          cp .pio/build/hbnf_matrix_wled16_packet20_diag/firmware.bin /tmp/cart116-r6-artifacts/CART116_R6_OWNER_TEXT_PRIORITY_REVIEW_ONLY.bin
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/cart116-r6-artifacts/CART116_R6_OWNER_TEXT_PRIORITY_REVIEW_ONLY.bin
           python - <<'PY'
           from pathlib import Path
           import hashlib, json
@@ -71,7 +71,7 @@ jobs:
           marker=b'hbnf-cart2-r6-native-overlay-owner-safe-review-20261103'
           assert marker in raw,'exact patched build marker not embedded'
           assert len(raw)<=1572864, f'4MB dual-OTA app partition exceeded: {len(raw)}'
-          report={'schema':'cart116-r6-owner-priority-review-build-v1','source_commit':'00e6552ffe65a3dbd6768b0e017fd22226c5b86f','base_wled_commit':'29b389df1c1aaec6ff53aea742d17063b985906c','fastled_commit':'adedfc40e73fb80f8e930318781036d8fe1dbd9f','build_environment':'hbnf_matrix_wled16_packet20_diag','source_date_epoch':1791450000,'candidate_source_sha256':'6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa','patch_sha256':'9ce39687374ab0895834df750571e2d7f171751d16a8cd02ec20c6654fd5709a','candidate_bin_sha256':hashlib.sha256(raw).hexdigest(),'candidate_bin_bytes':len(raw),'partition_bytes':1572864,'partition_headroom':1572864-len(raw),'historical_original_r6_rollback_sha256':'de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d','historical_rollback_offdevice_ref':'libfile_685d3e5f74b48191ab22e25a48640efa','installed_binary_readback_accepted':False,'device_mutation':False,'review_only':True}
+          report={'schema':'cart116-r6-owner-priority-review-build-v1','source_commit':'00e6552ffe65a3dbd6768b0e017fd22226c5b86f','base_wled_commit':'29b389df1c1aaec6ff53aea742d17063b985906c','fastled_commit':'adedfc40e73fb80f8e930318781036d8fe1dbd9f','build_environment':'hbnf_matrix_wled16_max','source_date_epoch':1791450000,'candidate_source_sha256':'6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa','patch_sha256':'9ce39687374ab0895834df750571e2d7f171751d16a8cd02ec20c6654fd5709a','candidate_bin_sha256':hashlib.sha256(raw).hexdigest(),'candidate_bin_bytes':len(raw),'partition_bytes':1572864,'partition_headroom':1572864-len(raw),'historical_original_r6_rollback_sha256':'de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d','historical_rollback_offdevice_ref':'libfile_685d3e5f74b48191ab22e25a48640efa','original_R6_build_flags_verified':False,'installed_binary_readback_accepted':False,'device_mutation':False,'review_only':True}
           Path('/tmp/cart116-r6-artifacts/BUILD-RECEIPT.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
           print(json.dumps(report,indent=2))
           PY
