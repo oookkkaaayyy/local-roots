@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {runApprovedGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs';
+import {runApprovedGlowSync as runPreservedGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.mjs';
 import workerEntry from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js';
 
 const date='2026-11-03';
@@ -231,4 +232,37 @@ test('review scheduled handler logs nothing before bound event window',async()=>
  assert.deepEqual(f.calls,['binding']);
  assert.equal(written.length,0);
  assert.equal(errors.length,0);
+});
+
+function originalRun(f){
+ return runPreservedGlowSync({
+  UDISC_GLOW_ACCESS_APPROVED:'true',
+  SUPABASE_URL:'https://fixture.supabase.co',
+  SUPABASE_SERVICE_ROLE_KEY:'fixture-secret-do-not-log',
+ },{now:()=>new Date(now),fetch:f.fetch,source:f.source});
+}
+test('RED/GREEN: unchanged preserved source wrongly reports saved after a same-signature intervening score edit',async()=>{
+ const pre=fixture('readback_modified');
+ const oldResult=await originalRun(pre);
+ assert.equal(oldResult.disposition,'updated'); // Demonstrated unsafe original behavior.
+ assert.equal(pre.counters().casCount,1);
+ const fixed=fixture('readback_modified');
+ await assert.rejects(()=>fixed.run(),/independently verified/);
+ assert.equal(fixed.counters().statusCount,0);
+});
+test('RED/GREEN: original CAS-conflict handler causes a second scoring-root status write',async()=>{
+ const pre=fixture('cas_conflict');
+ await assert.rejects(()=>originalRun(pre),/Glow score save conflicted/);
+ assert.equal(pre.counters().statusCount,1); // Source-level reproducible extra write.
+ const fixed=fixture('cas_conflict');
+ await assert.rejects(()=>fixed.run(),/Glow score save conflicted/);
+ assert.equal(fixed.counters().statusCount,0);
+});
+test('RED/GREEN: original repeatedly rewrites identical transient failure while review candidate deduplicates',async()=>{
+ const pre=fixture('repeated_failure');
+ await assert.rejects(()=>originalRun(pre),/UDisc score export unavailable/);
+ assert.equal(pre.counters().statusCount,1);
+ const fixed=fixture('repeated_failure');
+ await assert.rejects(()=>fixed.run(),/UDisc score export unavailable/);
+ assert.equal(fixed.counters().statusCount,0);
 });
