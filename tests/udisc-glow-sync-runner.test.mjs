@@ -157,3 +157,47 @@ test('identity ambiguity fails before score write and records verified error sta
   assert.equal(fake.calls.writes,0);assert.equal(fake.calls.failures,1);
   assert.equal(fake.root.glow.weeks[eventDate].udiscSync.status.state,'failed');
 });
+
+
+function noSheetRowsWorkbookBytes(){
+ const encode=value=>new TextEncoder().encode(value);
+ return makeZip({
+  'xl/workbook.xml':encode('<workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Event results" sheetId="1" r:id="rId1"/></sheets></workbook>'),
+  'xl/_rels/workbook.xml.rels':encode('<Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>'),
+  'xl/worksheets/sheet1.xml':encode('<worksheet><dimension ref="A1"/><sheetData/></worksheet>')
+ });
+}
+
+test('owner-described Nov3 A1 empty Event results XLSX returns expected no-scores; no status CAS or Cart write',async()=>{
+ const sourceBinding={event_id:'hb-glow-doubles-tAP8Y5',event_date:'2026-11-03',
+  window_start:'2026-11-04T01:30:00Z',window_end:'2026-11-04T07:30:00Z'};
+ const date=sourceBinding.event_date;
+ const state={weeks:{[date]:{...structuredClone(initializedWeek),date,activeWeek:date}},activeWeek:date,playerAliases:aliasesForFixture()};
+ const at=()=>new Date('2026-11-04T02:00:00Z');
+ for(const bytes of [noSheetRowsWorkbookBytes(),workbookBytes([])]){
+  const fake=makeFetch(state,{value:bytes},sourceBinding);
+  const result=await runGlowSync(env,{fetch:fake.fetch,now:at});
+  assert.equal(result.disposition,'empty_export_no_scores');
+  assert.equal(result.cartIntent,'NOT_REQUESTED');
+  assert.equal(fake.calls.writes,0);
+  assert.equal(fake.calls.failures,0);
+  assert.equal(fake.calls.udisc,1);
+ }
+});
+
+test('valid roster-only XLSX with no entered holes neither creates teams nor fabricates hole 1',async()=>{
+ const sourceBinding={event_id:'hb-glow-doubles-tAP8Y5',event_date:'2026-11-03',
+  window_start:'2026-11-04T01:30:00Z',window_end:'2026-11-04T07:30:00Z'};
+ const date=sourceBinding.event_date;
+ const state={weeks:{[date]:{...structuredClone(initializedWeek),date,activeWeek:date}},activeWeek:date,playerAliases:aliasesForFixture()};
+ const rosterOnly=fixture.rows.slice(0,1).map(row=>({
+  ...row,position:'DNF',event_total_score:0,event_relative_score:0,
+  ...Object.fromEntries(Array.from({length:18},(_,i)=>['hole_'+(i+1),'']))
+ }));
+ const fake=makeFetch(state,{value:workbookBytes(rosterOnly)},sourceBinding);
+ const result=await runGlowSync(env,{fetch:fake.fetch,now:()=>new Date('2026-11-04T02:00:00Z')});
+ assert.equal(result.disposition,'no_scores_yet');
+ assert.equal(result.cartIntent,'NOT_REQUESTED');
+ assert.equal(fake.calls.writes,0);assert.equal(fake.calls.failures,0);
+ assert.equal(fake.root.glow.weeks[date].players.length,0);
+});
