@@ -27,9 +27,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test unchanged XLSX reconnect and native-overlay refusal only
+      - name: Qualify real Nov3 PAR59 event metadata, empty export, late teams and Cart projection
         run: |
           set -euo pipefail
-          node --test tests/hbnf-udisc-production-import-entrypoint.test.mjs tests/hbnf-udisc-authentic-derived-partial-reconnect.test.mjs
+          node --test tests/hbnf-udisc-nov03-par59-event-readiness.test.mjs tests/udisc-glow-sync.test.mjs tests/udisc-glow-sync-runner.test.mjs tests/hbnf-udisc-production-import-entrypoint.test.mjs
           git diff --check HEAD^ HEAD
           git rev-parse HEAD
