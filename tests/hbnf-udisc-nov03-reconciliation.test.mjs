@@ -151,3 +151,26 @@ test('one real participant mixed with QI test rows stops surgical cleanup',()=>{
  assert.equal(prepareNov3TestOnlyQuarantine({root,revision:root.updated_at}).status,
   'BLOCKED_MIXED_OR_SETTLED_WEEK');
 });
+
+
+import {prepareNov3TagSeasonReset,NOV3_TAG_SEED} from '../scripts/hbnf-parent-release/nov03-event-source.mjs';
+test('Nov3 season seed is exactly Matt1 Jason2 Andrew3 without old tags',()=>{
+ const old={rusty:1,andrew:2,fox:5,jason:6,quiotee:7,dylan:8,matt:10,karl:15,danny:16};
+ const currentOwners=Object.entries(old).map(([player_key,tag_number])=>({player_key,player_name:player_key,tag_number}));
+ const source=JSON.stringify(currentOwners),result=prepareNov3TagSeasonReset({authorityRevision:9,currentOwners});
+ assert.equal(result.status,'EXACT_NEW_SEASON_RESET_READY_FOR_SEPARATE_ADMITTED_TRANSACTION');
+ assert.deepEqual(result.proposedCurrentOwners,NOV3_TAG_SEED);
+ assert.equal(result.priorOwnersArchive.length,9);
+ assert.equal(result.rootBagTagsMetadata.seasonStartDate,'2026-11-03');
+ assert.equal(JSON.stringify(currentOwners),source);
+ assert.equal(result.productionWrite,false);
+});
+test('season reset rejects concurrent tag authority changes and preserves manual-add workflow',()=>{
+ const entries=[{player_key:'matt',tag_number:10}];
+ assert.equal(prepareNov3TagSeasonReset({authorityRevision:10,currentOwners:entries}).status,
+ 'BLOCKED_TAG_SEASON_AUTHORITY_OR_FINALIZATION_CHANGED');
+ assert.equal(prepareNov3TagSeasonReset({authorityRevision:9,currentOwners:entries}).status,
+ 'BLOCKED_TAG_SEASON_PREIMAGE_DRIFT');
+ assert.equal(prepareNov3TagSeasonReset({authorityRevision:9,currentOwners:entries,alreadyFinalized:true}).status,
+ 'BLOCKED_TAG_SEASON_AUTHORITY_OR_FINALIZATION_CHANGED');
+});

@@ -898,7 +898,7 @@ function activeBagTagEvents(root){
  root=root||tagRootState();
  const branchRoot={skins:(root&&root.skins)||(ctx.branch==='skins'?ctx.state:null)||{},glow:(root&&root.glow)||(ctx.branch==='glow'?ctx.state:null)||{}};
  const events=[...btSkinsEvents(branchRoot.skins),...btGlowEvents(branchRoot.glow)].sort((a,b)=>String(a.date).localeCompare(String(b.date))||((a.order||0)-(b.order||0))||String(a.type).localeCompare(String(b.type)));
- return tagEventsToApply(events);
+ return tagEventsToApply(bagTagEventsSinceSeason(events,normalizeBagTagsConfig(root).seasonStartDate));
 }
 function activeBagTagEventBlockers(root){
  const blocked={};
@@ -940,6 +940,11 @@ function redistributeTags(current,event){
  people.sort((a,b)=>event.compare(a,b,current));
  people.forEach((r,i)=>{if(available[i])current[r.name]=available[i]});
 }
+function bagTagEventsSinceSeason(events,start){
+ if(!start)return events;
+ if(typeof start!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(start))throw Error('Invalid bag-tag season start date');
+ return events.filter(ev=>String(ev.date||'')>=start&&/^\d{4}-\d{2}-\d{2}$/.test(String(ev.date||'')));
+}
 function tagEventsToApply(events){
  if(!events||!events.length)return [];
  const sorted=[...events].sort((a,b)=>String(a.date).localeCompare(String(b.date))||((a.order||0)-(b.order||0))||String(a.type).localeCompare(String(b.type)));
@@ -950,7 +955,7 @@ function tagEventsToApply(events){
  }
  return [latest];
 }
-function computeBagTags(root){root=root||tagRootState();const cfg=normalizeBagTagsConfig(root);const current={};cfg.players.forEach(p=>{if(p.name&&p.tag>0)current[p.name]=Number(p.tag)});const branchRoot={skins:(root&&root.skins)||(ctx.branch==='skins'?ctx.state:null)||{},glow:(root&&root.glow)||(ctx.branch==='glow'?ctx.state:null)||{}};const events=[...btSkinsEvents(branchRoot.skins),...btGlowEvents(branchRoot.glow)].sort((a,b)=>String(a.date).localeCompare(String(b.date))||((a.order||0)-(b.order||0))||String(a.type).localeCompare(String(b.type)));const blockers=(cfg&&cfg.manualEventBlockers&&typeof cfg.manualEventBlockers==='object')?cfg.manualEventBlockers:{};const appliedEvents=tagEventsToApply(events).filter(ev=>blockers[bagTagEventKey(ev)]!==bagTagEventSignature(ev));appliedEvents.forEach(ev=>redistributeTags(current,ev));root.bagTags=cfg;btSaveLocalConfig(cfg);return{current,events,cfg,latestEvent:appliedEvents.length?appliedEvents[appliedEvents.length-1]:null,appliedEvents}}
+function computeBagTags(root){root=root||tagRootState();const cfg=normalizeBagTagsConfig(root);const current={};cfg.players.forEach(p=>{if(p.name&&p.tag>0)current[p.name]=Number(p.tag)});const branchRoot={skins:(root&&root.skins)||(ctx.branch==='skins'?ctx.state:null)||{},glow:(root&&root.glow)||(ctx.branch==='glow'?ctx.state:null)||{}};const events=[...btSkinsEvents(branchRoot.skins),...btGlowEvents(branchRoot.glow)].sort((a,b)=>String(a.date).localeCompare(String(b.date))||((a.order||0)-(b.order||0))||String(a.type).localeCompare(String(b.type)));const blockers=(cfg&&cfg.manualEventBlockers&&typeof cfg.manualEventBlockers==='object')?cfg.manualEventBlockers:{};const appliedEvents=tagEventsToApply(bagTagEventsSinceSeason(events,cfg.seasonStartDate)).filter(ev=>blockers[bagTagEventKey(ev)]!==bagTagEventSignature(ev));appliedEvents.forEach(ev=>redistributeTags(current,ev));root.bagTags=cfg;btSaveLocalConfig(cfg);return{current,events,cfg,latestEvent:appliedEvents.length?appliedEvents[appliedEvents.length-1]:null,appliedEvents}}
 let bagTagRefreshPending=false;
 function renderBagTagsPanel(){
  const el=qs('#bagTagsPanel');if(!el)return;

@@ -11,6 +11,7 @@ on:
       - 'tests/hbnf-live-release-boundary.test.mjs'
       - 'tests/hbnf-provider-artifact.test.mjs'
       - 'tests/hbnf-udisc-nov03-reconciliation.test.mjs'
+      - 'tests/hbnf-nov03-tag-season.test.mjs'
       - 'tests/hbnf-glow-quick-import.test.mjs'
       - 'tests/hbnf-glow-financial-settlement.test.mjs'
       - 'tests/glow-save-sync-race.test.mjs'
@@ -73,7 +74,7 @@ jobs:
         run: node --test tests/hbnf-live-release-boundary.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
       - name: November 3 offline UDisc source preservation and reconciliation test
         if: steps.scope.outputs.provider_only != 'true'
-        run: node --test tests/hbnf-udisc-nov03-reconciliation.test.mjs
+        run: node --test tests/hbnf-udisc-nov03-reconciliation.test.mjs tests/hbnf-nov03-tag-season.test.mjs
       - name: Exact provider artifact/route verification (synthetic provider, no network credentials)
         if: steps.scope.outputs.nov3_only != 'true'
         run: node --test tests/hbnf-provider-artifact.test.mjs
