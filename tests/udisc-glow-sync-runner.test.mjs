@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {deflateRawSync} from 'node:zlib';
 import {runGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
+import {runGlowSync as runReviewGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js';
 
 const fixture = JSON.parse(await readFile(new URL('./fixtures/authentic-udisc/2026-04-18.json', import.meta.url),'utf8'));
 const eventId='hb-night-flyers-hb-glow-doubles-ZUDJEk';
@@ -176,7 +177,7 @@ test('owner-described Nov3 A1 empty Event results XLSX returns expected no-score
  const at=()=>new Date('2026-11-04T02:00:00Z');
  for(const bytes of [noSheetRowsWorkbookBytes(),workbookBytes([])]){
   const fake=makeFetch(state,{value:bytes},sourceBinding);
-  const result=await runGlowSync(env,{fetch:fake.fetch,now:at});
+  const result=await runReviewGlowSync(env,{fetch:fake.fetch,now:at});
   assert.equal(result.disposition,'empty_export_no_scores');
   assert.equal(result.cartIntent,'NOT_REQUESTED');
   assert.equal(fake.calls.writes,0);
@@ -195,7 +196,7 @@ test('valid roster-only XLSX with no entered holes neither creates teams nor fab
   ...Object.fromEntries(Array.from({length:18},(_,i)=>['hole_'+(i+1),'']))
  }));
  const fake=makeFetch(state,{value:workbookBytes(rosterOnly)},sourceBinding);
- const result=await runGlowSync(env,{fetch:fake.fetch,now:()=>new Date('2026-11-04T02:00:00Z')});
+ const result=await runReviewGlowSync(env,{fetch:fake.fetch,now:()=>new Date('2026-11-04T02:00:00Z')});
  assert.equal(result.disposition,'no_scores_yet');
  assert.equal(result.cartIntent,'NOT_REQUESTED');
  assert.equal(fake.calls.writes,0);assert.equal(fake.calls.failures,0);
