@@ -36,11 +36,16 @@ export function inspectGlowAutoDisplayAcceptance(source) {
   if(poller.eligibleInWindow!==true)providerBlockers.push('UDISC_POLLER_NOT_PROVEN_ELIGIBLE');
   for(const name of ['temporaryScorecardConfirmed','providerEndToEndScoreWriteReadback',
     'actualScheduledMQTTToCartReadback','ownerVisualScoreboard','refreshReconnect',
-    'restoredPermanentStats','restoredMatrixVibe','restoredLiveConfiguration'])
-    if(acc[name]!==true)fieldBlockers.push(name);
+    'restoredPermanentStats','restoredMatrixVibe','restoredLiveConfiguration']){
+    const receipt=acc[name];
+    if(!receipt||receipt.verified!==true||receipt.weekDate!=='2026-11-03'||
+       !/^[0-9a-f]{64}$/.test(receipt.sha256||'')||
+       typeof receipt.sourceRef!=='string'||!receipt.sourceRef.trim())
+      fieldBlockers.push(name);
+  }
   return Object.freeze({
     status:providerBlockers.length||fieldBlockers.length?
-      'REVIEW_ONLY_NOT_FIELD_ACCEPTED':'ACCEPTANCE_EVIDENCE_COMPLETE',
+      'REVIEW_ONLY_NOT_FIELD_ACCEPTED':'EVIDENCE_PRESENT_REQUIRES_INDEPENDENT_ACCEPTANCE',
     noCommonLibraryRevision:noIntersection,
     providerBlockers,fieldBlockers,
     snapshotVersion:edge.slug+'/v'+String(edge.version??'?'),
