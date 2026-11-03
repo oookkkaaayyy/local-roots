@@ -104,7 +104,16 @@ export async function executeMockableSaga(tx, adapters, journal) {
   await journal.append({ event: 'START', txHash });
   for (const op of tx.operations) {
     if (digest(tx) !== txHash) return abort('immutable transaction digest changed', true);
-    const before = await adapters.readTarget(op.targetId);
+    // A failed pre-change identity read cannot be mistaken for an unchanged
+    // target. If earlier stages already applied, reverse only their verified
+    // effects and classify this as uncertain even if local restore appears complete.
+    let before;
+    try { before = await adapters.readTarget(op.targetId); }
+    catch {
+      await journal.append({ event: 'PRECHANGE_READBACK_UNAVAILABLE', stage: op.id });
+      if (completed.length) return abort('prechange readback unavailable:' + op.id, true);
+      return { status: 'READBACK_UNAVAILABLE_ABORT_NOT_ADMITTED', errors: ['prechange readback unavailable:' + op.id], trace };
+    }
     if (digest(before) !== op.expectedBefore) {
       await journal.append({ event: 'STALE_TARGET_ABORT', stage: op.id, identity: digest(before) });
       if (completed.length) return abort(`stale provider identity:${op.targetId}`);

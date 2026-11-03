@@ -62,3 +62,59 @@ test('a newer edit queued during successful CAS is saved on the next flush witho
   assert.equal(remote.root.skins.winner,'Mason');
   assert.equal(statuses.at(-1),'saved');
 });
+
+
+test('actual Glow coordinator confirms independent save and cold reopen without losing Skins, financials, tags or history',async()=>{
+  const s=storage(), statuses=[], coordinator=createGlowSaveCoordinator({storage:s,onStatus:status=>statuses.push(status)});
+  const original={
+    glow:{activeWeek:'2026-11-03',weeks:{'2026-11-03':{players:[{id:'team-1',scores:['','','']}] }},payouts:{first:20},acePots:{main:500,reserve:200}},
+    skins:{weeks:{'2026-11-03':{front:{winners:{'1':'Mason'}}}}},
+    bagTags:{manual:{Mason:2}},admin:{backups:[{revision:'historical-before-round'}]},history:{olderWeek:'intact'}
+  };
+  let remote={root:structuredClone(original),updatedAt:'rev-10'}, writes=0, reads=0;
+  const draft=structuredClone(original.glow);
+  draft.weeks['2026-11-03'].players[0].scores[0]='3';
+  coordinator.queue(draft,remote.updatedAt,original.glow);
+  const readCurrent=async()=>{reads++;return structuredClone(remote)};
+  const compareAndSwap=async(revision,root)=>{
+    assert.equal(revision,remote.updatedAt);
+    assert.deepEqual(root.skins,original.skins);
+    assert.deepEqual(root.admin,original.admin);
+    assert.deepEqual(root.history,original.history);
+    writes++;
+    remote={root:structuredClone(root),updatedAt:'rev-11'};
+    return {rows:[{id:1,updated_at:remote.updatedAt}]};
+  };
+  const result=await coordinator.flush({readCurrent,compareAndSwap});
+  assert.equal(result.status,'saved');
+  assert.equal(writes,1);
+  assert(reads>=2,'a returned row alone must not be treated as independent confirmation');
+  assert.equal(coordinator.hasPending,false);
+  assert.equal(remote.root.glow.weeks['2026-11-03'].players[0].scores[0],'3');
+  assert.deepEqual(remote.root.glow.acePots,original.glow.acePots);
+  assert.deepEqual(remote.root.glow.payouts,original.glow.payouts);
+  for(const branch of ['skins','bagTags','admin','history']) assert.deepEqual(remote.root[branch],original[branch]);
+  assert.equal(createGlowSaveCoordinator({storage:s}).hasPending,false,'cold reopen must show only provider-confirmed state');
+  assert.equal(statuses.at(-1),'saved');
+});
+
+test('actual Glow coordinator refuses a stale second-device overwrite and keeps its offline score for reopen',async()=>{
+  const s=storage(),coordinator=createGlowSaveCoordinator({storage:s});
+  const baseGlow={activeWeek:'2026-11-03',weeks:{'2026-11-03':{scores:{hole1:'3'}}},payouts:{first:20},acePots:{main:500}};
+  const draft=structuredClone(baseGlow);
+  draft.weeks['2026-11-03'].scores.hole2='4';
+  coordinator.queue(draft,'rev-10',baseGlow);
+  const serverGlow=structuredClone(baseGlow);
+  serverGlow.weeks['2026-11-03'].scores.hole1='5'; // newer accepted score on another device
+  let writes=0;
+  const current={root:{glow:serverGlow,skins:{winner:'Mason'},admin:{backups:['old']},history:{older:true}},updatedAt:'rev-11'};
+  const result=await coordinator.flush({
+    readCurrent:async()=>structuredClone(current),
+    compareAndSwap:async()=>{writes++;return{rows:[]}}
+  });
+  assert.equal(result.status,'conflict');
+  assert.equal(writes,0,'a changed Glow branch must not trigger an unsafe full-root retry');
+  assert.deepEqual(current.root.glow,serverGlow);
+  assert.equal(coordinator.pending.branchState.weeks['2026-11-03'].scores.hole2,'4');
+  assert.equal(createGlowSaveCoordinator({storage:s}).pending.branchState.weeks['2026-11-03'].scores.hole2,'4');
+});

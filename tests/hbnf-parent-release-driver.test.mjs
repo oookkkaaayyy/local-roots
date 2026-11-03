@@ -38,7 +38,7 @@ const fakeProvider = (tx, fault = {}) => {
   const calls = [];
   return { states, calls, adapter: {
     testOnly:true,
-    async readTarget(id) { readCount++; if ((fault.staleFirstRead && readCount===1) || fault.staleOnRead===readCount) states[id]={id,revision:99}; return structuredClone(states[id]); },
+    async readTarget(id) { readCount++; if(fault.failReadAt===readCount)throw new Error('injected provider readback timeout'); if ((fault.staleFirstRead && readCount===1) || fault.staleOnRead===readCount) states[id]={id,revision:99}; return structuredClone(states[id]); },
     async apply(op) { calls.push(`apply:${op.id}`); applyCount++; if (fault.failApply===op.id) return {acknowledged:false}; states[op.targetId]=structuredClone(op.afterState); return {acknowledged:fault.loseAck===op.id?false:true}; },
     async restore(op) { calls.push(`restore:${op.id}`); if(fault.failRestore===op.id)return {acknowledged:false}; states[op.targetId]=structuredClone(op.beforeState); return {acknowledged:true}; }
   }};
@@ -213,4 +213,60 @@ test('transaction rejects an older Worker rollback than the installed baseline',
   const tx=makeTx();
   tx.targets.find(t=>t.id==='cloudflare-worker').rollback.providerVersionId=olderWorkerVersion;
   assert(validateTransaction(tx).includes('target cloudflare-worker: baseline and rollback binding incomplete'));
+});
+
+
+test('every stage failure aborts and restores only previously acknowledged targets in exact reverse order',async()=>{
+  for(let index=0;index<REQUIRED_STAGES.length;index++){
+    const stage=REQUIRED_STAGES[index][0],tx=makeTx();
+    const p=fakeProvider(tx,{failApply:stage}),journal=new MemoryJournal();
+    const out=await executeMockableSaga(tx,p.adapter,journal);
+    assert.equal(out.status,'MOCKED_ABORT_RESTORED_NOT_ADMITTED','rejected stage '+stage);
+    assert.deepEqual(p.states,initial,'no partial mutable state may remain after '+stage);
+    assert.deepEqual(p.calls.filter(x=>x.startsWith('restore:')),
+      tx.operations.slice(0,index).reverse().map(o=>'restore:'+o.id),'reverse restore '+stage);
+    assert(!journal.events.some(e=>e.event==='MOCK_SEQUENCE_COMPLETE_NOT_ADMITTED'));
+  }
+});
+
+test('lost acknowledgement at every stage restores its observed mutation and refuses automatic success',async()=>{
+  for(let index=0;index<REQUIRED_STAGES.length;index++){
+    const stage=REQUIRED_STAGES[index][0],tx=makeTx();
+    const p=fakeProvider(tx,{loseAck:stage}),journal=new MemoryJournal();
+    const out=await executeMockableSaga(tx,p.adapter,journal);
+    assert.equal(out.status,'MOCKED_ABORT_RESTORED_NOT_ADMITTED','lost ack '+stage);
+    assert.deepEqual(p.states,initial,'unacknowledged but observed writes must be fully reversed: '+stage);
+    assert.deepEqual(p.calls.filter(x=>x.startsWith('restore:')),
+      tx.operations.slice(0,index+1).reverse().map(o=>'restore:'+o.id),'restore after observed update '+stage);
+    assert(!journal.events.some(e=>e.event==='MOCK_SEQUENCE_COMPLETE_NOT_ADMITTED'));
+  }
+});
+
+test('missing provider pre-change readback aborts before mutation, or reverses partial work but retains uncertain status',async()=>{
+  const tx=makeTx();
+  const first=fakeProvider(tx,{failReadAt:1});
+  const out1=await executeMockableSaga(tx,first.adapter,new MemoryJournal());
+  assert.equal(out1.status,'READBACK_UNAVAILABLE_ABORT_NOT_ADMITTED');
+  assert.deepEqual(first.calls,[]);
+  assert.deepEqual(first.states,initial);
+  const second=fakeProvider(tx,{failReadAt:3}),journal=new MemoryJournal();
+  const out2=await executeMockableSaga(tx,second.adapter,journal);
+  assert.equal(out2.status,'MANUAL_RECOVERY_REQUIRED','partial provider ambiguity remains manual even if rollback readback succeeds');
+  assert.deepEqual(second.states,initial);
+  assert.deepEqual(second.calls,['apply:db-revision','restore:db-revision']);
+  assert(journal.events.some(e=>e.event==='PRECHANGE_READBACK_UNAVAILABLE'));
+  assert(journal.events.some(e=>e.event==='RESTORED+READBACK'));
+});
+
+test('same-manifest closeout cannot succeed with wrong manifest, failed acceptance or mismatched durable receipt',async()=>{
+  const admitted={status:'ADMITTED',manifestSha256:'a'.repeat(64),releaseId:'test-claim',evidenceFolderId:'private-test'};
+  const result={manifestSha256:'a'.repeat(64),providerReadbacks:Object.fromEntries(targetIds.map(id=>[id,initial[id]])),
+    acceptance:[{id:'iphone-score-reopen',status:'PASS'},{id:'stale-client',status:'PASS'}]};
+  const good={async persistAndDownloadBack(_name,bytes){return{downloadBackVerified:true,sha256:digest(bytes)}}};
+  assert.equal((await persistCloseout({admittedManifest:admitted,result:{...result,manifestSha256:'b'.repeat(64)}},good)).status,'PENDING');
+  assert.equal((await persistCloseout({admittedManifest:admitted,result:{...result,acceptance:[{status:'FAIL'}]},good)).status,'PENDING');
+  const corrupt={async persistAndDownloadBack(){return{downloadBackVerified:true,sha256:'f'.repeat(64)}}};
+  assert.equal((await persistCloseout({admittedManifest:admitted,result},corrupt)).status,'PENDING');
+  const unreachable={async persistAndDownloadBack(){throw new Error('drive transport timeout')}};
+  assert.equal((await persistCloseout({admittedManifest:admitted,result},unreachable)).status,'PENDING');
 });
