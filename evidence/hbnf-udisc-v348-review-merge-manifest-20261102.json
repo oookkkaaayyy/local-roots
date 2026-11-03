@@ -172,7 +172,7 @@
     "frozenV2DriveId": "1BIa7oJGs7FczcjW5eCbCtvYO7nFAXhgm",
     "frozenV2Sha256": "26b003f7df117a76e1c1c97930b7a6771459aec794f9c26b58500086b3250c75",
     "productionScoringOwnerPR151": {
-      "latestHead": "52e120a6f8160d85f7085ebdcf1ef77869420b30",
+      "latestHead": "b4e48b9ef7e014ca2a27527a305a6877a55dfbe8",
       "priorBase": "7ece6f2d9fdc0765c1053643811df42162651a82",
       "changedSourceAsset": "public/hbnf-league-state-sync.js",
       "oldGitBlob": "af88412a6669c95aba50000d7ab6c08fd4271b27",
@@ -183,7 +183,7 @@
         ".github/workflows/hbnf-parent-release-review.yml"
       ],
       "impact": "P0 adds exactly 2 public asset deltas since frozen v2: hbnf-league-state-sync.js and glow.html; tests/CI only otherwise. UDisc private source modules unchanged. No rebuild of frozen v2; P0 sole integrated candidate owner.",
-      "reportedCI": "77/77 PASS (Scoring P0 source-only)",
+      "reportedCI": "85/85 PASS on exact new P0 HEAD per #115 comment 6601099679 (review-only)",
       "additionalLaterCommit": {
         "parent": "6166de91f44e563efb035dce10d7852337d7598b",
         "changedPublicAsset": "public/glow.html",
@@ -191,6 +191,24 @@
         "currentPublicAssetBlob": "89fc1e80b157cd331119d7016674773399f23f9a",
         "testAdded": "tests/hbnf-glow-preinit-pending.test.mjs",
         "purpose": "Protect Glow edits entered before async save coordinator is established; separate P0 protection, not a new UDisc importer"
+      },
+      "newNonAssetDelta": {
+        "previousHead": "52e120a6f8160d85f7085ebdcf1ef77869420b30",
+        "currentHead": "b4e48b9ef7e014ca2a27527a305a6877a55dfbe8",
+        "changed": [
+          ".github/workflows/hbnf-parent-release-review.yml",
+          "scripts/hbnf-parent-release/driver.mjs",
+          "tests/glow-save-sync-race.test.mjs",
+          "tests/hbnf-parent-release-driver.test.mjs"
+        ],
+        "productionPublicAssetsChanged": 0,
+        "udiscPrivateSourcesChanged": 0,
+        "singleP0ReleaseManifest": {
+          "id": "12X06fFmdc5oPGlcq9kprf1hhglbVV7mW",
+          "revision": 3,
+          "sha256": "b61277eea99ffe59e272c7671e044fa5404a46df3106b820ffcdb0431b1824d0"
+        },
+        "note": "Original P0 integrated source ZIP bytes unchanged; P0 confirms UDisc at 63b453 not yet integrated, latest reviewed UDisc source 653ccc also not integrated. Do not mutate P0 branch."
       }
     },
     "reviewedUnmergedChanges": [
