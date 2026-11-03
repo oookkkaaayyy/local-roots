@@ -12,6 +12,7 @@ on:
       - 'tests/hbnf-provider-artifact.test.mjs'
       - 'tests/hbnf-udisc-nov03-reconciliation.test.mjs'
       - 'tests/hbnf-glow-quick-import.test.mjs'
+      - 'tests/hbnf-glow-financial-settlement.test.mjs'
       - 'tests/glow-save-sync-race.test.mjs'
       - 'tests/hbnf-glow-preinit-pending.test.mjs'
       - 'tests/hbnf-udisc-cart-server-ack.test.mjs'
@@ -76,6 +77,8 @@ jobs:
       - name: Exact provider artifact/route verification (synthetic provider, no network credentials)
         if: steps.scope.outputs.nov3_only != 'true'
         run: node --test tests/hbnf-provider-artifact.test.mjs
+      - name: Actual Glow financial settlement source behavior (no state writes)
+        run: node --test tests/hbnf-glow-financial-settlement.test.mjs
       - name: Actual prior handler RED then corrected handler GREEN
         if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         shell: bash
