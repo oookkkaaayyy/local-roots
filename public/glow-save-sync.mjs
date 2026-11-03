@@ -59,6 +59,21 @@ export function createGlowSaveCoordinator({storage, onStatus = () => {}, now = (
     return true;
   }
 
+  // Acknowledging one generation does not acknowledge edits queued during its request.
+  function settleAcknowledged(submitted, current) {
+    if (pending?.generation === submitted.generation) {
+      if (!clear()) return {status: 'local-failure', current};
+      return {status: 'saved', current};
+    }
+    if (pending) {
+      const newer = {...pending, baseUpdatedAt: current.updatedAt, baseBranchState: clone(submitted.branchState)};
+      if (!persist(newer)) return {status: 'local-failure', current};
+      status('pending');
+      return {status: 'pending', current};
+    }
+    return {status: 'saved', current}; // Explicit user clear while a save was in flight.
+  }
+
   async function flush({readCurrent, compareAndSwap}) {
     if (!pending) return {status: 'saved'};
     if (saving) return {status: 'pending'};
@@ -69,8 +84,7 @@ export function createGlowSaveCoordinator({storage, onStatus = () => {}, now = (
       let current = await readCurrent();
       if (!current || !current.root || !current.updatedAt) throw new Error('The shared score row could not be read.');
       if (same(current.root.glow, submitted.branchState)) {
-        if (pending?.generation === submitted.generation) clear();
-        return {status: 'saved', current};
+        return settleAcknowledged(submitted, current);
       }
       if (!submitted.baseUpdatedAt || current.updatedAt !== submitted.baseUpdatedAt) {
         if (submitted.baseBranchState && same(current.root.glow, submitted.baseBranchState)) {
@@ -89,8 +103,7 @@ export function createGlowSaveCoordinator({storage, onStatus = () => {}, now = (
       if (!write || write.error || returnedRows.length !== 1) {
         current = await readCurrent();
         if (current?.root && same(current.root.glow, submitted.branchState)) {
-          if (pending?.generation === submitted.generation) clear();
-          return {status: 'saved', current};
+          return settleAcknowledged(submitted, current);
         }
         if (current?.root && submitted.baseBranchState && same(current.root.glow, submitted.baseBranchState)) {
           submitted.baseUpdatedAt = current.updatedAt;
@@ -112,16 +125,7 @@ export function createGlowSaveCoordinator({storage, onStatus = () => {}, now = (
         status('conflict');
         return {status: 'conflict', current};
       }
-      if (pending?.generation === submitted.generation) {
-        clear();
-        return {status: 'saved', current};
-      }
-      // More edits arrived while the write was in flight. Keep them as a new
-      // draft based on the acknowledged revision and let the caller flush again.
-      pending = {...pending, baseUpdatedAt: current.updatedAt, baseBranchState: clone(submitted.branchState)};
-      if (!persist(pending)) return {status: 'local-failure', current};
-      status('pending');
-      return {status: 'pending', current};
+      return settleAcknowledged(submitted, current);
     } catch {
       status('failed');
       return {status: 'failed'};
