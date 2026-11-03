@@ -47,3 +47,4 @@ jobs:
             .trackc-r6-build-out/
           if-no-files-found: warn
           retention-days: 5
+          include-hidden-files: true

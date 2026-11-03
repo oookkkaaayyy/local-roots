@@ -32,6 +32,10 @@ mkdir -p "$W/usermods/hbnf_foundation_v1" "$W/vendor"
 cp -a "$WORK/r6/$MOD/." "$W/usermods/hbnf_foundation_v1/"
 # This is the original R6 packet20 environment, NOT the unrelated C5 normal target.
 git show "$R6:evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs/platformio_override.ini" > "$W/platformio_override.ini"
+# FastLED's pinned render header includes SPI and Wire. The original R6
+# dependency graph already links framework SPI 2.0.0 and Wire 2.0.0; make their
+# discovery explicit without replacing their Arduino 2.0.18 implementations.
+sed -i '/^lib_deps =$/a\  SPI\n  Wire' "$W/platformio_override.ini"
 mkdir -p "$W/vendor/FastLED"
 git -C "$W/vendor/FastLED" init -q
 git -C "$W/vendor/FastLED" fetch --quiet --depth 1 https://github.com/FastLED/FastLED.git "$FASTLED"
