@@ -128,3 +128,23 @@ test('reconnect loop never claims physical delivery or commingles source and Car
  assert.equal(f.capture.find(x=>x.stage==='cart_intent')?.relayStatus,'PENDING_OPAL_PULL');
  assert.equal(f.counters().cas,0);
 });
+
+test('exact Controls e6 backend native-overlay denial takes precedence over score/Cart read or mutation',async()=>{
+ const {runGlowIntentAction}=await import('../build/cart116-e6-source/staging/coordinated-backend/hbnf-cart-control/glow-intent-service.mjs');
+ const secret='synthetic-only-token-at-least-thirty-two';
+ let reads=0,commits=0,commands=0;
+ const out=await runGlowIntentAction({
+  body:{action:'glow_scoreboard_intent',weekDate:day},
+  authorization:'Bearer '+secret,serviceKey:secret,
+  deps:{
+    nativeOverlayAdmitted:false,
+    source:async()=>{reads++;throw Error('source must not be touched');},
+    cart:async()=>{reads++;throw Error('cart must not be touched');},
+    reduceCartCommand:()=>{commands++;throw Error('reducer must not run');},
+    commit:async()=>{commits++;throw Error('commit must not run');}
+  }
+ });
+ assert.equal(out.status,503);
+ assert.equal(out.body.error,'glow_native_overlay_release_not_admitted');
+ assert.equal(reads,0);assert.equal(commits,0);assert.equal(commands,0);
+});
