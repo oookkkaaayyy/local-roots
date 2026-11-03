@@ -161,6 +161,8 @@ export async function runApprovedGlowSync(env, deps = {}) {
   const fetchImpl = deps.fetch || fetch;
   const config = configFor(env || {});
   if (config.blocked) return {disposition:config.blocked};
+  const onVerifiedSaved = typeof deps.onVerifiedSaved==='function' ? deps.onVerifiedSaved
+    : deps.enableCartBackend === true ? saved=>submitVerifiedGlowCartIntent(fetchImpl,config,saved) : null;
 
   // A single narrow event-config read runs each cron minute. No score state or
   // UDisc request is read outside a configured HBNF event window.
@@ -242,7 +244,7 @@ export async function runApprovedGlowSync(env, deps = {}) {
     }
     captureBoundary(deps,'persisted_readback',{verified:true,signature:saved,revision:verified.row.updated_at});
     let cartIntent='NOT_REQUESTED';
-    if(typeof deps.onVerifiedSaved==='function') {
+    if(onVerifiedSaved) {
       const parGate=qualifiedGlowScorePars(savedWeek);
       if(!parGate.ready) {
         cartIntent='DEFERRED_METADATA';
@@ -252,7 +254,7 @@ export async function runApprovedGlowSync(env, deps = {}) {
         // and performs its OWN source-revision/fence/CAS gate. A successful
         // score save must never be rolled back because Cart is unreachable.
         try {
-          const receipt=await deps.onVerifiedSaved(Object.freeze({
+          const receipt=await onVerifiedSaved(Object.freeze({
             eventId:binding.eventId,weekDate:binding.weekDate,
             sourceRevision:verified.row.updated_at,signature:prepared.signature,
             scoredHoles:parGate.scoredHoles
