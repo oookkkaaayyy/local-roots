@@ -19,7 +19,8 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
   const state=root?.state_json||root;
   const glow=state?.glow;
   const currentWeek=glow?.weeks?.[DATE];
-  if (!glow || glow.activeWeek!==DATE || !currentWeek || currentWeek.date!==DATE)
+  if (!glow || glow.activeWeek!==DATE || !currentWeek ||
+      (Object.prototype.hasOwnProperty.call(currentWeek,'date') && currentWeek.date!==DATE))
     throw Error('NOV03_GLOW_WEEK_AND_ACTIVE_DATE_REQUIRED');
   if(!revision || typeof revision!=='string')throw Error('EXACT_SERVER_REVISION_REQUIRED');
   if(snapshot?.eventId!==EVENT_ID || snapshot?.weekDate!==DATE ||
