@@ -11,7 +11,7 @@ const complete=(a=18)=>Array.from({length:18},(_,i)=>i<a?'3':'');
 const week=scores=>({date:'2026-11-03',players:scores.map((values,i)=>({
  id:'T'+(i+1),partner1:'Player '+(i+1),partner2:'Partner '+(i+1),removed:false,scores:values
 })),cards:[{id:'C1',finalized:false,players:[]}]});
-const source=extract('function settledTeamsForWeek(w){','function winterSummaryRows(){');
+const source=extract('function isSept02FixtureWeek(w,key){','function winterSummaryRows(){');
 const context=vm.createContext({
  completedHoles:p=>p.scores.filter(v=>String(v).trim()!=='').length,
  uniqueTeamParts:p=>[p.partner1,p.partner2].filter(Boolean),
@@ -28,12 +28,13 @@ test('actual Glow settled teams ignore incomplete three-hole real or QI test car
 });
 test('Glow ace-pot carry and summer winner payouts use only complete source weeks',()=>{
  assert.match(html,/function aceStateBeforeWeek\([^)]*\)[^\n]*applyAceWeekToState\(st,w,key,true\)/);
- assert.match(html,/function computeGlowFinancials\(\)[^\n]*const teams=settledTeamsForWeek\(w\);const aceInfo=applyAceWeekToState\(aceState,w,key,true\)/);
+ assert.match(html,/function computeGlowFinancials\(\)[^\n]*const teams=settledTeamsForWeek\(w,key\);const aceInfo=applyAceWeekToState\(aceState,w,key,true\)/);
  const ace=extract('function applyAceWeekToState(st,w,key,settlementOnly=false){','function acePreviewForWeek(w,targetKey){');
  const state=vm.createContext({
  playerCountForWeek:w=>w.players.length*2,
  scoredTeamsForWeek:w=>w.players.filter(p=>p.scores.some(Boolean)).map(p=>({player:p})),
  settledTeamsForWeek:vm.runInContext('settledTeamsForWeek',context),
+ isSept02FixtureWeek:vm.runInContext('isSept02FixtureWeek',context),
  cloneAceState:s=>({...s}),
  routeAceMoney:(s,count)=>{s.reserve+=count;return{toReserve:count,toMain:0}},
  aceWinnersForWeek:()=>[],
@@ -52,4 +53,58 @@ test('all historic fully scored even if unlocked remain eligible without forcing
  const historical=week([complete(18)]);
  historical.date='2026-09-02';historical.scoresLocked=false;historical.cards[0].finalized=false;
  assert.equal(vm.runInContext('settledTeamsForWeek',context)(historical).length,1);
+});
+
+test('September 2 six fully scored Fixture teams are excluded from genuine financial settlement',()=>{
+ const fake=week([complete(18),complete(18),complete(18),complete(18),complete(18),complete(18)]);
+ fake.date='2026-09-02';
+ fake.players.forEach((p,i)=>{p.id='G'+(i+1);p.name='Fixture Test '+(i+1)+' / Fixture Partner';});
+ const real=week([complete(18)]);real.date='2026-09-02';
+ const settle=vm.runInContext('settledTeamsForWeek',context);
+ assert.equal(settle(fake,'2026-09-02').length,0);
+ assert.equal(settle(real,'2026-09-02').length,1,'genuine source on that date is not blanket-excluded');
+ fake.players[0].name='Real Player / Real Partner';
+ assert.equal(settle(fake,'2026-09-02').length,0,'mixed source is quarantined pending review');
+ assert.equal(settle(fake,'2026-08-22').length,6,'other valid dates remain unaffected');
+});
+test('synthetic Fixture ace contributions and cash winner entries are zero on actual settlement path',()=>{
+ const fake=week([complete(18),complete(18)]);fake.date='2026-09-02';
+ fake.players.forEach((p,i)=>{p.name='Fixture Player '+i+' / Fixture Partner';});
+ const state=vm.createContext({
+ playerCountForWeek:w=>w.players.length*2,
+ scoredTeamsForWeek:w=>w.players.filter(p=>p.scores.some(Boolean)).map(p=>({player:p})),
+ isSept02FixtureWeek:vm.runInContext('isSept02FixtureWeek',context),
+ settledTeamsForWeek:vm.runInContext('settledTeamsForWeek',context),
+ cloneAceState:x=>({...x}),
+ routeAceMoney:(s,count)=>{s.reserve+=count;return{toReserve:count,toMain:0}},
+ aceWinnersForWeek:()=>[],GLOW_ACE_RULE_BASE_AFTER:'2026-06-20',
+ GLOW_ACE_SHARE:3,GLOW_ACE_FIRST_RESERVE_TARGET:200
+ });
+ vm.runInContext(extract('function applyAceWeekToState(st,w,key,settlementOnly=false){',
+  'function acePreviewForWeek(w,targetKey){'),state);
+ const a={main:500,reserve:79,mode:'reserve',mainTarget:500,reserveTarget:200};
+ const result=vm.runInContext('applyAceWeekToState',state)({...a},fake,'2026-09-02',true);
+ assert.equal(result.count,0);
+ assert.equal(result.addedToAcePot,0);
+ assert.equal(result.acePayout,0);
+ assert.equal(result.availableEnd,500);
+ assert.equal(result.reserveEnd,79);
+ assert.match(html,/const teams=settledTeamsForWeek\(w,key\)/);
+});
+test('glow 2026 PAR standings exclude September 2 Fixture trophy, while retaining historic audit',()=>{
+ const fixture=week([complete(18)]);fixture.date='2026-09-02';
+ fixture.players[0].name='Fixture Jason / Fixture Partner A';
+ const audit=[{partners:['Fixture Jason','Fixture Partner A'],raw:54,rel:-6}];
+ const state={weeks:{'2026-09-02':fixture},trophyHistory:{'2026-09-02':audit}};
+ const before=JSON.stringify(state);
+ const c=vm.createContext({
+ ctx:{state},isSept02FixtureWeek:vm.runInContext('isSept02FixtureWeek',context),
+ GLOW_2026_TROPHY_SEED:{},GLOW_REMOVED_WEEK_DATES:[],
+ hbnfMergeTrophyHistory:(a,b)=>({...a,...b}),
+ hbnfApplyAuthoritativeTrophySeed:x=>({...x}),
+ hbnfWeekToTrophyRows:()=>audit,canonicalGlowName:x=>x
+ });
+ vm.runInContext(extract('function glow2026ParRows(){','function renderLegacyPanels(){'),c);
+ assert.equal(vm.runInContext('glow2026ParRows',c)().length,0);
+ assert.equal(JSON.stringify(state),before,'the permanent fixture history was not deleted');
 });
