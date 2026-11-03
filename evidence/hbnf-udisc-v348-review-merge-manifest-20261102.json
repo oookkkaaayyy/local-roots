@@ -46,12 +46,13 @@
     }
   ],
   "test_receipt": {
-    "github_actions_run": 41580211677,
-    "source_head": "3a6c353d49fb30ea46f78b263a4ac64db03df661",
-    "passed": 10,
+    "github_actions_run": 41580689666,
+    "source_head": "4815ccec1066d74dd8cfd1c108898a4b0802588f",
+    "test_source_blob": "1fd530445553d9f6bb15b69f5f8e872de4640af0",
+    "passed": 13,
     "failed": 0,
     "skipped": 0,
-    "scope": "synthetic network/source boundary and real candidate source; not live partial XLSX or true production CAS"
+    "scope": "10 new boundary and scheduled mock tests plus 3 RED/GREEN demonstrations against unchanged preserved source; not live partial XLSX or true production CAS"
   },
   "existing_cart_intent_receipt": {
     "run": 41574629192,
