@@ -3,8 +3,8 @@
 Scope: replace the **unproven installed-relay replacement assumption** with one
 new Controls-owned, outbound-only service. The direct Matrix WebSocket Owner
 page remains separate and is not restarted, reconfigured, proxied or modified
-by the service. Existing seven Owner/Safari12/Networking candidate files stay
-byte-identical to the accepted previous review package.
+by the service. The SAME seven Owner/Safari12/Networking targets contain Track B c431cfbd
+cache-version import with regenerated 17-asset manifest, otherwise unchanged.
 
 ## Source and installed evidence
 
@@ -106,3 +106,29 @@ stop Glow and follow the physical recovery witness.
 `HBNF_CART_GLOW_SOURCE_ADMITTED=false`,
 `HBNF_OVERLAY_V1_SOURCE_ADMITTED=false`, Edge `admitted:false` and
 `nativeOverlayAdmitted:false`, scoring `auto_live=false`. No install here.
+
+## November 3 independent source integration and release blockers
+
+Networking B exact commit c431cfbd pins imported Safari12 local transport to
+?v=ae6fc45f833bce65; the candidate remains SEVEN existing owner targets.
+Matrix C 979e8d native ps=-1 source qualification (29/29 historical C++ PASS)
+removes the old false assumption that ps60 must be loaded. The later
+4af57d owner-priority patch (39/39 native host assertions and original R6
+negative control) is NOT built/installed. Installed original R6 hbnfAcceptOverlay
+may overwrite Owner TEXT or clear it on malformed JSON. Existing backend
+revision/fence checks are NOT atomic against direct Owner WebSocket and do
+not repair this. Thus the pure guard and Opal service now carry independent
+additional hard false Owner-priority admission gates.
+
+The actual current Matrix slider was zero; only naturally owner-selected
+nonzero operating brightness could permit a VISUAL test. HTTP ACK and R6
+source/native assertions are NOT visual field acceptance. No automatic
+score display/release before compiled source+firmware+device backup identity,
+one-use approved manifest, exact prechange readback, native Owner priority,
+Safe 22 RGB+2 OFF PWM, and one combined iPad/Owner/GLOW/TTL/restore session.
+
+Compiled provider Edge candidate and exact byte-downloadable deployed v35
+compiled rollback are still NOT available. Provider v35 source parity 10/10
+and deployment digest are evidence but not the actual compiled rollback bytes.
+The independently downloadable REVIEW candidate ZIP is NOT the installed
+preimage/rollback backup.

@@ -15,8 +15,6 @@ function repoMember(member){
  if (member==='candidate/opal/etc/init.d/hbnf-cart-glow-bridge') return 'opal/new-service/etc/init.d/hbnf-cart-glow-bridge';
  if (member==='candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh') return 'opal/hbnf-glow-overlay-v1.sh';
  const pre='candidate/opal/www/mission-control-local/';
- // The verified Owner PWA subdirectory is a sibling of mission-control-local, not nested under it.
- if (member.startsWith(pre+'owner-pwa/')) return 'opal/owner-v1201-7target/owner-pwa/'+member.slice((pre+'owner-pwa/').length);
  if (member.startsWith(pre)) return 'opal/owner-v1201-7target/mission-control-local/'+member.slice(pre.length);
  throw Error('unexpected member '+member);
 }
@@ -50,6 +48,7 @@ test('procd is a new service, never hijacks Owner WS or original relay',()=>{
  assert.match(s,/procd_set_param command "\$BIN"/);
  assert.match(s,/HBNF_CART_GLOW_SOURCE_ADMITTED=true/);
  assert.match(s,/HBNF_OVERLAY_V1_SOURCE_ADMITTED=true/);
+ assert.match(s,/HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED=true/);
  assert.doesNotMatch(s,/\/etc\/init\.d\/hbnf-owner|service restart.*hbnf-matrix-relay/);
  assert.match(src('opal/owner-v1201-7target/mission-control-local/local-transport.js'),/ws:\/\/\$\{MATRIX_IP\}\/ws/);
 });
@@ -62,7 +61,8 @@ test('native overlay helper has persistent reboot cursor, no independent AUX wri
  assert.match(s,/owner_overlay_id=/);
  assert.match(s,/snapshot \|\| exit 1/);
  assert.match(s,/GPIO25\/26/);
- assert.match(s,/\-1\) # Current physical profile/);
+ assert.match(s,/60\|-1\) : ;; # Native R6 overlays/);
+ assert.match(s,/HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED=false/);
  assert.ok(s.includes('{"HBNF":{"overlay":%s}}')); 
  assert.doesNotMatch(s,/^[^#\n]*(?:aux_apply|A\/json\/state|AUX\/json\/state)/m);
 });

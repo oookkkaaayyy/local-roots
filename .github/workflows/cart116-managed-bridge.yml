@@ -1,4 +1,4 @@
-name: cart116 managed outbound Glow bridge source-only qualification
+name: cart116 managed Glow bridge B/C safety integration qualification
 on:
   push:
     branches: [review/cart116-glow-canonical-intent-20261103]
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   changed_service_only:
-    if: contains(github.event.head_commit.message, '[trackA-new-service]')
+    if: contains(github.event.head_commit.message, '[trackA-bc-integrated]')
     runs-on: ubuntu-24.04
     timeout-minutes: 6
     steps:
@@ -25,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           cd staging/cart116-glow-v35-exact-review
-          node --test tests/new_bridge_ci_contract.test.mjs
+          node --test tests/new_bridge_ci_contract.test.mjs tests/trackA-bc-final-integration.test.mjs
       - name: Native BusyBox ash syntax, five changed shell files
         run: |
           set -euo pipefail
@@ -38,5 +38,5 @@ jobs:
             release/cart116-opal-transaction.sh; do
             docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n "/src/$src"
           done
-      # No PostgreSQL/Deno/native old 35/35 or 26/26 suites, no live devices,
+      # No PostgreSQL/Deno/old 35/35 or 26/26 suites, no live devices,
       # no CI artifact upload, no deployment or any owner secrets.

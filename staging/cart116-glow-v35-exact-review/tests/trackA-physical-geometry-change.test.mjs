@@ -36,14 +36,14 @@ test('PWM segment on, missing segment, wrong extent, or DDP source rejected',()=
 });
 test('current actual ps=-1, fx142 both matching: no forced preset, no mutation, still not eligible',()=>{
  const x=fixture(),r=proposal(x);assert.equal(r.eligible,false);
- assert.equal(r.reason,'native_overlay_ps_minus1_renderer_not_proven');
+ assert.equal(r.reason,'native_wled_unity_brightness_unproven');
  assert.equal(x.state.ps,-1);assert.deepEqual(x.state.seg.map(y=>y.fx),[142,142]);
  assert.equal(x.state.HBNF.matrixBrightness,0);
 });
-test('preset60 supported source path also omits all AUX/FX/brightness writes',()=>{
+test('preset60 source profile does not bypass brightness and native Owner priority',()=>{
  const x=fixture();x.state.ps=60;const r=proposal(x);
- assert.equal(r.eligible,true);assert.deepEqual(Object.keys(r.payload),['HBNF']);
- assert.deepEqual(Object.keys(r.payload.HBNF),['overlay']);assert.equal(r.mutationAuthorized,false);
+ assert.equal(r.eligible,false);assert.equal(r.reason,'native_wled_unity_brightness_unproven');
+ assert.equal(r.mutationAuthorized,false);
 });
 test('effect mismatch/Owner priority both deny even when native support and DDP exact',()=>{
  const x=fixture();x.state.ps=60;x.state.seg[1].fx=143;

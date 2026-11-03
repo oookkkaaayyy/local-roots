@@ -81,11 +81,22 @@ export function proposeNativeOverlayOnly({ matrixInfo, matrixState, matrixBuild,
   if (matrixState.HBNF.overlayId != null) return blocked('existing_overlay_not_preemptible');
   const ddp=inspectAux22DdpWithOffPwm({auxInfo,auxState,auxConfig});
   if (!ddp.compatible) return blocked(ddp.reason);
-  // The live physical state is ps=-1 with segment 0/1 fx142, NOT ps60.
-  // Matching effects alone do not establish that this exact R6 binary can
-  // render an HBNF.overlay independently of its current preset. Never set
-  // ps=60, FX, global on/bri, audio or AUX to manufacture a passing gate.
-  if (matrixState.ps===-1) return blocked('native_overlay_ps_minus1_renderer_not_proven');
+  // Exact Oct 14 R6 C++ source (00e6552..., SHA256 87bdbd9a...):
+  // mode_hbnf_foundation reads native HBNF.overlay with registered FX142
+  // independent of ps. The observed ps=-1 is valid; never force ps=60.
+  if (matrixState.ps===-1 && fx!==142)
+    return blocked('ps_minus1_requires_verified_r6_fx142');
+  // R6 non-null HBNF writes force WLED master bri=255. Only an existing
+  // unity master/segment preimage can be preserved without a brightness write.
+  if (matrixState.bri!==255 || a.bri!==255 || b.bri!==255)
+    return blocked('native_wled_unity_brightness_unproven');
+  const selectedBrightness=matrixState.HBNF.matrixBrightness;
+  if (!integer(selectedBrightness) || selectedBrightness<0 || selectedBrightness>255)
+    return blocked('native_matrix_brightness_unproven');
+  // At owner-selected zero, firmware draws black even if overlayId ACKs.
+  // Never raise Matrix/AUX sliders, load a preset or alter FX for testing.
+  if (selectedBrightness===0)
+    return blocked('matrix_brightness_zero_invisible_scoreboard');
   if (!overlay || overlay.kind !== 'scoreboard' || overlay.label !== 'GLOW' ||
       typeof overlay.id !== 'string' || !/^hbnf-[a-f0-9]{32}$/.test(overlay.id) ||
       !integer(overlay.ttlMs) || overlay.ttlMs < 250 || overlay.ttlMs > 30000 ||
@@ -93,6 +104,13 @@ export function proposeNativeOverlayOnly({ matrixInfo, matrixState, matrixBuild,
       overlay.entries.length > 12 ||
       overlay.entries.some(entry => typeof entry !== 'string' ||
         !entry.trim() || entry.length > 63)) return blocked('glow_overlay_invalid');
+  // Track C #6615832063: original R6 permits later SCOREBOARD over active
+  // Owner TEXT; its malformed parser may clear TEXT. The separately tested
+  // 4af57d... firmware patch is NOT built or installed. A backend owner check
+  // cannot serialize a later direct-WS Owner command with a cloud POST.
+  const NATIVE_OWNER_TEXT_PRIORITY_INSTALLED_AND_ACCEPTED=false;
+  if (!NATIVE_OWNER_TEXT_PRIORITY_INSTALLED_AND_ACCEPTED)
+    return blocked('installed_r6_owner_text_priority_not_enforced');
   // Explicitly omit every WLED core key, segment/effect/brightness/preset,
   // HBNF scene/Vibe/palette/tuning key, and all AUX writes.
   const payload = { HBNF: { overlay: {

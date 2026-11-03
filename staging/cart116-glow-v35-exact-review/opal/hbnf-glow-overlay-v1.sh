@@ -6,7 +6,11 @@ set -eu
 # actuator writes. Only a separately reviewed manifest-bound source revision may
 # change this value after all recovery and owner authorization checks.
 HBNF_OVERLAY_V1_SOURCE_ADMITTED=false
-[ "$HBNF_OVERLAY_V1_SOURCE_ADMITTED" = true ] || exit 0
+# Separate direct Owner TEXT priority is NOT enforced by installed R6.
+# Revalidate exact newly compiled native priority firmware before enabling.
+HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED=false
+[ "$HBNF_OVERLAY_V1_SOURCE_ADMITTED" = true ] &&
+ [ "$HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED" = true ] || exit 0
 # The NEW outbound bridge owns the sole service loop; the Owner websocket
 # is separate and must remain responsive. No second Glow poller/daemon.
 [ -r /etc/hbnf-cart-glow-bridge.conf ] || exit 1
@@ -49,15 +53,22 @@ snapshot() {
  [ "$(jsonfilter -i "$TMP/build.json" -e '@.release_id')" = 'hbnf-cart2-phase2-r6-skins-readable-20261014' ] || return 1
  ps="$(jsonfilter -i "$TMP/state.json" -e '@.ps')" || return 1
  case "$ps" in
-   60) : ;;
-   -1) # Current physical profile: effect 142 without an active preset.
-       # No source/installed renderer parity proof. Still fail closed.
-       return 1 ;;
+   60|-1) : ;; # Native R6 overlays render using registered foundation effect.
    *) return 1 ;;
  esac
  fx="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.effectId')" || return 1
  [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[0].fx')" = "$fx" ] || return 1
  [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[1].fx')" = "$fx" ] || return 1
+ [ "$ps" != -1 ] || [ "$fx" = 142 ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.bri')" = 255 ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[0].bri')" = 255 ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.seg[1].bri')" = 255 ] || return 1
+ matrix_brightness="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.matrixBrightness')" || return 1
+ case "$matrix_brightness" in ''|*[!0-9]*) return 1 ;; esac
+ [ "$matrix_brightness" -ge 1 ] && [ "$matrix_brightness" -le 255 ] || return 1
+ # Zero is an owner-selected, physically black scoreboard. No slider writes.
+ # Even with nonzero brightness, original R6 Owner TEXT priority still blocks
+ # actual actuation via the second immutable hard gate above.
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.live')" = true ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.lm')" = DDP ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.lip')" = 192.168.77.10 ] || return 1
