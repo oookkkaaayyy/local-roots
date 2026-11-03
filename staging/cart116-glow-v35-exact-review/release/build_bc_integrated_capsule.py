@@ -24,8 +24,8 @@ def main(base,root,out):
     target_src={
       '/usr/lib/hbnf-glow-overlay-v1.sh':'opal/hbnf-glow-overlay-v1.sh',
       '/etc/init.d/hbnf-cart-glow-bridge':'opal/new-service/etc/init.d/hbnf-cart-glow-bridge',
-      '/www/mission-control-local/owner-pwa/hbnf-cart-local.js':'opal/owner-v1201-7target/mission-control-local/owner-pwa/hbnf-cart-local.js',
-      '/www/mission-control-local/owner-pwa/.hbnf-payload.sha256':'opal/owner-v1201-7target/mission-control-local/owner-pwa/.hbnf-payload.sha256'
+      '/www/mission-control-local/owner-pwa/hbnf-cart-local.js':'opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js',
+      '/www/mission-control-local/owner-pwa/.hbnf-payload.sha256':'opal/owner-v1201-7target/owner-pwa/.hbnf-payload.sha256'
     }
     targets=[]
     for line in (root/'release/TARGETS.PENDING.tsv').read_text().strip().splitlines():

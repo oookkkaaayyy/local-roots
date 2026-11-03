@@ -23,7 +23,10 @@ def target_to_repo(member):
     if rel=='etc/init.d/hbnf-cart-glow-bridge':return 'opal/new-service/etc/init.d/hbnf-cart-glow-bridge'
     if rel=='usr/lib/hbnf-glow-overlay-v1.sh':return 'opal/hbnf-glow-overlay-v1.sh'
     assert rel.startswith('www/mission-control-local/')
-    return 'opal/owner-v1201-7target/mission-control-local/'+rel[len('www/mission-control-local/'):]
+    tail=rel[len('www/mission-control-local/'):]
+    if tail.startswith('owner-pwa/'):
+        return 'opal/owner-v1201-7target/'+tail
+    return 'opal/owner-v1201-7target/mission-control-local/'+tail
 
 def make(base,root,out):
     raw=base.read_bytes()

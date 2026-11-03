@@ -15,6 +15,7 @@ function repoMember(member){
  if (member==='candidate/opal/etc/init.d/hbnf-cart-glow-bridge') return 'opal/new-service/etc/init.d/hbnf-cart-glow-bridge';
  if (member==='candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh') return 'opal/hbnf-glow-overlay-v1.sh';
  const pre='candidate/opal/www/mission-control-local/';
+ if (member.startsWith(pre+'owner-pwa/')) return 'opal/owner-v1201-7target/'+member.slice(pre.length);
  if (member.startsWith(pre)) return 'opal/owner-v1201-7target/mission-control-local/'+member.slice(pre.length);
  throw Error('unexpected member '+member);
 }

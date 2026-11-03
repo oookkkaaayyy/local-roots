@@ -25,7 +25,7 @@ export class LocalOwnerControl {
     const defaultPageOrigin = typeof location !== "undefined" && location ? location.origin : "";
     this.pageOrigin = String(options.pageOrigin || defaultPageOrigin || "");
     this.opalDirect = options.opalDirect === true;
-    this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js"));
+    this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js?v=ae6fc45f833bce65"));
     this.directStorage = options.storage || (typeof localStorage !== "undefined" ? localStorage : null);
     this.directPowerKey = "hbnf.owner-pwa-opal.power-restore.v1";
     this.fetchFn = options.fetchFn || fetch;

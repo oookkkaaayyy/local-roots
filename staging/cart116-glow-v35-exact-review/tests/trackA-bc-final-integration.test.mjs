@@ -8,7 +8,7 @@ import {proposeNativeOverlayOnly,inspectAux22DdpWithOffPwm} from '../candidate-s
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFileSync(join(root,p),'utf8');
 const hash=p=>createHash('sha256').update(readFileSync(join(root,p))).digest('hex');
-const owner='opal/owner-v1201-7target/mission-control-local/owner-pwa/';
+const owner='opal/owner-v1201-7target/owner-pwa/';
 const transport='opal/owner-v1201-7target/mission-control-local/local-transport.js';
 const release='hbnf-cart2-phase2-r6-skins-readable-20261014';
 function fresh(brightness=0){return {
