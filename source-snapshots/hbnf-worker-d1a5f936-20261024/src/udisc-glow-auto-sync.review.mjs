@@ -19,6 +19,28 @@ function stableJson(value){
 }
 function sameJson(a,b){return JSON.stringify(stableJson(a))===JSON.stringify(stableJson(b));}
 
+// Only attempt a relative-to-par scoreboard for holes with an independently
+// saved par. The installed Cart v35 selector defaults missing pars to 3, which
+// is unsafe for a new safari layout. Never source those pars from June's round.
+export function qualifiedGlowScorePars(week) {
+  if(!week||!Array.isArray(week.players))return {ready:false,reason:'week_missing'};
+  const scored=new Set();
+  for(const player of week.players) {
+    if(player?.removed===true||!Array.isArray(player?.scores))continue;
+    for(let i=0;i<Math.min(player.scores.length,18);i++) {
+      if(String(player.scores[i]??'').trim())scored.add(i+1);
+    }
+  }
+  if(!scored.size)return {ready:false,reason:'no_scored_holes'};
+  const pars=week.scorecardText?.holePars;
+  const missing=[...scored].filter(h=>{
+    const raw=String(pars?.[String(h)]??'').trim();
+    return !/^[2-8]$/.test(raw);
+  });
+  if(missing.length)return {ready:false,reason:'hole_pars_not_verified',missingCount:missing.length,scoredHoles:scored.size};
+  return {ready:true,scoredHoles:scored.size};
+}
+
 function configFor(env) {
   if (env.UDISC_GLOW_ACCESS_APPROVED !== 'true') return {blocked:'source_access_disabled'};
   const supabaseUrl = String(env.SUPABASE_URL || '').replace(/\/$/, '');
@@ -177,7 +199,36 @@ export async function runApprovedGlowSync(env, deps = {}) {
       throw Object.assign(Error('Glow score save could not be independently verified.'),{code:'READBACK_MISMATCH'});
     }
     captureBoundary(deps,'persisted_readback',{verified:true,signature:saved,revision:verified.row.updated_at});
-    return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at};
+    let cartIntent='NOT_REQUESTED';
+    if(typeof deps.onVerifiedSaved==='function') {
+      const parGate=qualifiedGlowScorePars(savedWeek);
+      if(!parGate.ready) {
+        cartIntent='DEFERRED_METADATA';
+        captureBoundary(deps,'cart_intent_deferred',{reason:parGate.reason,missingCount:parGate.missingCount??0});
+      } else {
+        // The dedicated existing Cart backend independently rereads league_state
+        // and performs its OWN source-revision/fence/CAS gate. A successful
+        // score save must never be rolled back because Cart is unreachable.
+        try {
+          const receipt=await deps.onVerifiedSaved(Object.freeze({
+            eventId:binding.eventId,weekDate:binding.weekDate,
+            sourceRevision:verified.row.updated_at,signature:prepared.signature,
+            scoredHoles:parGate.scoredHoles
+          }));
+          if(receipt?.status==='COMMITTED'||receipt?.status==='DUPLICATE') {
+            cartIntent='PENDING_OPAL_PULL';
+            captureBoundary(deps,'cart_intent',{accepted:true,result:receipt.status,relayStatus:'PENDING_OPAL_PULL'});
+          } else {
+            cartIntent='NOT_ACCEPTED';
+            captureBoundary(deps,'cart_intent',{accepted:false,result:'NOT_ACCEPTED'});
+          }
+        } catch {
+          cartIntent='NOT_ACCEPTED';
+          captureBoundary(deps,'cart_intent',{accepted:false,result:'UNAVAILABLE'});
+        }
+      }
+    }
+    return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at,cartIntent};
   } catch (error) {
     const code=String(error?.code||'SYNC_FAILED');
     // The CAS may have rejected a concurrent writer, or succeeded but its
