@@ -20,6 +20,6 @@ jobs:
       - name: Test new saved-Glow to Cart canonical-intent planner (no provider or device)
         run: |
           set -euo pipefail
-          node --test tests/hbnf-glow-cart-intent.test.mjs
+          node --experimental-strip-types --test tests/hbnf-glow-cart-intent.test.mjs
           git diff --check HEAD^ HEAD
           git rev-parse HEAD
