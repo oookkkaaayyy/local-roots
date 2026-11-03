@@ -48,9 +48,9 @@ export function patchRelay(source){
   const nextAnchor='  let built;try{built=await buildWledProjection(c,d.revision,f.epoch);}catch(err){return reply({error:(err as Error).message||"projection_invalid"},422);}';
   const checkAnchor=' if(ge||!challenge)return reply({error:"challenge_expired_or_consumed"},409);';
   for(const a of [importAnchor,nextAnchor,checkAnchor])unique(source,a);
-  return source.replace(importAnchor,importAnchor+'\\nimport {enforcePreservedGlowRelay,GLOW_PROJECTION_BLOCK_REASON} from "./glow-relay-preservation.mjs";')
-    .replace(nextAnchor,nextAnchor+'\\n  try{enforcePreservedGlowRelay({context:c,wledPayload:built.wledPayload});}catch{return reply({error:GLOW_PROJECTION_BLOCK_REASON},422);}')
-    .replace(checkAnchor,checkAnchor+'\\n try{enforcePreservedGlowRelay({wledPayload:challenge.wled_payload});}catch{return reply({error:GLOW_PROJECTION_BLOCK_REASON},409);}');
+  return source.replace(importAnchor,importAnchor+'\nimport {enforcePreservedGlowRelay,GLOW_PROJECTION_BLOCK_REASON} from "./glow-relay-preservation.mjs";')
+    .replace(nextAnchor,nextAnchor+'\n  try{enforcePreservedGlowRelay({context:c,wledPayload:built.wledPayload});}catch{return reply({error:GLOW_PROJECTION_BLOCK_REASON},422);}')
+    .replace(checkAnchor,checkAnchor+'\n try{enforcePreservedGlowRelay({wledPayload:challenge.wled_payload});}catch{return reply({error:GLOW_PROJECTION_BLOCK_REASON},409);}');
 }
 
 export function stageV35({sourceDir,destinationDir,sourceReceipt,plannerFile,adapterFile,guardFile}){
