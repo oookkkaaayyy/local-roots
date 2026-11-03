@@ -16,6 +16,7 @@ export function planSavedGlowOverlay({liveStatus,week,binding,cartContext,at,pri
   const live=liveStatus?.live;
   if(live?.active!==true||live.event!=='glow'||live.label!=='GLOW')
     return fail('NO_ACTIVE_GLOW_SCOREBOARD');
+  if(binding?.persistedActiveWeek!==date)return fail('ACTIVE_GLOW_WEEK_MISMATCH');
   if(week?.date!==date||week?.scoresLocked===true||
      !Array.isArray(week?.cards)||week.cards.some(c=>c?.finalized===true))
     return fail('WEEK_NOT_ADMISSIBLE');
@@ -23,7 +24,6 @@ export function planSavedGlowOverlay({liveStatus,week,binding,cartContext,at,pri
   const signature=sync?.latest?.signature;
   const success=Date.parse(sync?.status?.lastSuccessAt??'');
   const revision=String(liveStatus?.updated_at??'');
-  const confirmedRevision=String(sync?.status?.sourceStateRevision??'');
   // A verified independent readback is required; caller sets the source state
   // revision from the returned league_state row, NOT an arbitrary UI label.
   if(sync?.source!=='UDisc event XLSX export'||sync?.eventId!==binding.eventId||
