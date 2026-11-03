@@ -355,5 +355,99 @@
       "rehearsal cleanup"
     ],
     "releaseOwner": "Scoring P0 PR151 only; Controls Track A owns Cart/native relay"
+  },
+  "nov03EventReadiness": {
+    "phase": "REVIEW_ONLY_NO_PRODUCTION_MUTATION",
+    "evidenceDoc": "evidence/hbnf-nov03-three-column-layout-preview-20261103.md",
+    "evidenceDocCommit": "aad5bafb7077eaf09cf3bb406c5a4cf66eee4cfb",
+    "officialProgrammaticExportStatement": "https://forum.udisc.com/t/request-public-api/375?page=2",
+    "latestOfficialSchemaCaution": "https://forum.udisc.com/t/changes-to-export-file/742613",
+    "officialExportDocumentation": "https://help.udisc.com/en/articles/10859468-how-can-i-export-results-after-an-event-finishes",
+    "officialLiveLeaderboardGuide": "https://help.udisc.com/en/articles/13605808-running-your-weekly-league-ongoing-operations",
+    "officialTerms": "https://udisc.com/terms",
+    "decision": "Programmatic event XLSX export exists by UDisc staff statement but automated repeated during-round access (rate, permissions, partial availability) NOT verified; existing UDisc support email is unsent DRAFT. NO LIVE POLLING.",
+    "authenticPartialFileEvidence": {
+      "driveId": "1HcTGlyfa0J3aYV3pMgC48PfGqRKqY1J7",
+      "date": "2026-10-30",
+      "purpose": "TEST_ONLY",
+      "scoredHolesPerRow": 3,
+      "remainingHoleColumnsBlank": 15,
+      "canRepresentPartial": true,
+      "availabilityDuringActiveRound": "NOT_VERIFIED"
+    },
+    "actualEvent": {
+      "eventId": "hb-glow-doubles-tAP8Y5",
+      "date": "2026-11-03",
+      "round": "GEN R1",
+      "localStart": "17:30 PST",
+      "localEnd": "21:00 PST",
+      "selectedLayoutId": null,
+      "layoutName": null,
+      "teeBasketAssignmentsVerified": 0,
+      "parsVerified": 0,
+      "holeNotesVerified": 0,
+      "realPlayerIdentitiesVerified": 0
+    },
+    "currentHbnfStateReadOnly": {
+      "projectRef": "phcpbvuqibyarpfrftgx",
+      "rowId": 1,
+      "updatedAt": "2026-11-01 22:33:40.372437+00",
+      "stateMd5": "ec15053c2bde3c28fa252ee804c07623",
+      "activeWeek": "2026-11-03",
+      "rehearsalPlayerRows": 3,
+      "rehearsalCards": 1,
+      "aliasKeys": 43,
+      "eventSyncEvidence": false
+    },
+    "unsafeCurrentP0QuickImport": {
+      "p0PublicFile": "public/glow.html",
+      "blob": "89fc1e80b157cd331119d7016674773399f23f9a",
+      "flow": "confirmQuickUdiscImport",
+      "risks": [
+        "replace entire week player/card arrays",
+        "reset scoresLocked false",
+        "clear winner fields",
+        "new QI timestamp IDs on each import",
+        "pushRoot whole state",
+        "inject aggregate total into hole1 when no hole scores"
+      ],
+      "disposition": "DO_NOT_USE_CONFIRM_IMPORT_PLUS_UPDATE_TAGS_FOR_LIVE_NOV3",
+      "releaseOwner": "Scoring P0, source fix and admission only"
+    },
+    "verifiedExistingSafeComponents": [
+      "public/udisc-glow-reconcile.html READ_ONLY local file preview source, installed runtime not proved",
+      "src/udisc-glow-sync.mjs prepareGlowWeekSync existing conflict-preserving candidate",
+      "src/udisc-glow-auto-sync.review.mjs server-side guarded CAS and independent week readback (review-only)"
+    ],
+    "nextPermittedPath": "Organizer opens own Event tools/Caddie Book for verified layout, team handles; manually exports Nov3 official XLSX when UDisc permits; UDisc review via existing source without mutation; P0 ONLY applies prepared changed week via admitted guarded RPC after independent state read; Controls ONLY accepts qualified backend overlay intent and physical evidence.",
+    "releaseBlockedBy": [
+      "Nov3 current selected Round1 18-hole geometry/pars/notes missing",
+      "real Nov3 UDisc identity mappings not yet recorded",
+      "during-round partial export and automated cadence not verified",
+      "P0 release/rollback/guarded source install not admitted",
+      "unsafe legacy quick import confirm cannot be used",
+      "Controls overlay-only relay not installed/admitted"
+    ],
+    "existingP0ReviewHead": "f014104c2a067de98444d78f24a6eb31eb5a82e8",
+    "existingP0Manifest": {
+      "driveId": "12X06fFmdc5oPGlcq9kprf1hhglbVV7mW",
+      "revision": 6,
+      "sha256": "afa652cb088b735593301632422129f85dfdc0f169f08a723eb9156a112e94bd",
+      "ownedAndChangedByP0Only": true
+    },
+    "existingReviewWorkerArchive": {
+      "driveId": "1pau_eGfkq0S3CjYnWwo3XkoxWsqdryGW",
+      "sha256": "24c96d043c53c9060f032bef21c57662b2db188f02a9ec1adee2fc46addfc7e6",
+      "rebuildNeeded": false
+    },
+    "noIndependentChanges": [
+      "no provider polling",
+      "no production scores",
+      "no Supabase/Cloudflare deployments",
+      "no Cart/Opal/Matrix",
+      "no external email sent",
+      "no new candidate ZIP",
+      "no new P0 manifest"
+    ]
   }
 }
