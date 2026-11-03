@@ -1,0 +1,84 @@
+name: Cart116 R6 Owner Priority review firmware build
+on:
+  push:
+    branches: [review/cart116-glow-canonical-intent-20261103]
+    paths:
+      - .github/workflows/cart116-r6-owner-priority-build.yml
+      - staging/cart116-glow-v35-exact-review/firmware-owner-priority/**
+permissions:
+  contents: read
+jobs:
+  exact_review_firmware:
+    if: github.repository == 'oookkkaaayyy/local-roots'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      SOURCE_DATE_EPOCH: '1791450000'
+      PLATFORMIO_CORE_DIR: /tmp/cart116-pio-core
+    steps:
+      - name: Checkout full source graph for exact historical R6 commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pin PlatformIO toolchain
+        run: python -m pip install --disable-pip-version-check 'platformio==6.1.18'
+      - name: Verify exact original C++ and Track C correction, stage one-file-patched usermod
+        shell: bash
+        run: |
+          set -euo pipefail
+          python staging/cart116-glow-v35-exact-review/firmware-owner-priority/prepare_pinned_r6.py
+      - name: Fetch only pinned WLED and FastLED source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/cart116-wled
+          git -C /tmp/cart116-wled checkout 29b389df1c1aaec6ff53aea742d17063b985906c
+          test "$(git -C /tmp/cart116-wled rev-parse HEAD)" = 29b389df1c1aaec6ff53aea742d17063b985906c
+          mkdir -p /tmp/cart116-wled/vendor
+          git clone --filter=blob:none https://github.com/FastLED/FastLED.git /tmp/cart116-wled/vendor/FastLED
+          git -C /tmp/cart116-wled/vendor/FastLED checkout adedfc40e73fb80f8e930318781036d8fe1dbd9f
+          test "$(git -C /tmp/cart116-wled/vendor/FastLED rev-parse HEAD)" = adedfc40e73fb80f8e930318781036d8fe1dbd9f
+          cp -a /tmp/cart116-r6-input/firmware/phase2/integration-r6-f89-compact-font/usermod /tmp/cart116-wled/usermods/hbnf_foundation_v1
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs/platformio_override.ini')
+          data=p.read_text()
+          assert '/private/tmp/hbnf-p2-build/FastLED/src' in data
+          data=data.replace('/private/tmp/hbnf-p2-build/FastLED/src','/tmp/cart116-wled/vendor/FastLED/src')
+          Path('/tmp/cart116-wled/platformio_override.ini').write_text(data)
+          PY
+          python -m pip install --disable-pip-version-check -r /tmp/cart116-wled/requirements.txt
+      - name: Compile R6 Owner-priority candidate without any device access
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/cart116-wled
+          pio run -e hbnf_matrix_wled16_packet20_diag 2>&1 | tee /tmp/cart116-r6-first.log
+          mkdir -p /tmp/cart116-r6-artifacts
+          cp .pio/build/hbnf_matrix_wled16_packet20_diag/firmware.bin /tmp/cart116-r6-artifacts/CART116_R6_OWNER_TEXT_PRIORITY_REVIEW_ONLY.bin
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          f=Path('/tmp/cart116-r6-artifacts/CART116_R6_OWNER_TEXT_PRIORITY_REVIEW_ONLY.bin')
+          raw=f.read_bytes()
+          marker=b'hbnf-cart2-r6-native-overlay-owner-safe-review-20261103'
+          assert marker in raw,'exact patched build marker not embedded'
+          assert len(raw)<=1572864, f'4MB dual-OTA app partition exceeded: {len(raw)}'
+          report={'schema':'cart116-r6-owner-priority-review-build-v1','source_commit':'00e6552ffe65a3dbd6768b0e017fd22226c5b86f','base_wled_commit':'29b389df1c1aaec6ff53aea742d17063b985906c','fastled_commit':'adedfc40e73fb80f8e930318781036d8fe1dbd9f','build_environment':'hbnf_matrix_wled16_packet20_diag','source_date_epoch':1791450000,'candidate_source_sha256':'6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa','patch_sha256':'9ce39687374ab0895834df750571e2d7f171751d16a8cd02ec20c6654fd5709a','candidate_bin_sha256':hashlib.sha256(raw).hexdigest(),'candidate_bin_bytes':len(raw),'partition_bytes':1572864,'partition_headroom':1572864-len(raw),'historical_original_r6_rollback_sha256':'de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d','historical_rollback_offdevice_ref':'libfile_685d3e5f74b48191ab22e25a48640efa','installed_binary_readback_accepted':False,'device_mutation':False,'review_only':True}
+          Path('/tmp/cart116-r6-artifacts/BUILD-RECEIPT.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(report,indent=2))
+          PY
+          cp /tmp/cart116-r6-first.log /tmp/cart116-r6-artifacts/
+          sha256sum /tmp/cart116-r6-artifacts/* > /tmp/cart116-r6-artifacts/SHA256SUMS.txt
+      - name: Publish isolated firmware candidate, not an OTA installation
+        uses: actions/upload-artifact@v4
+        with:
+          name: CART116-R6-OwnerPriority-REVIEW_ONLY
+          path: /tmp/cart116-r6-artifacts
+          if-no-files-found: error
+          retention-days: 14
