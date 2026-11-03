@@ -1,0 +1,25 @@
+name: HBNF Nov3 auto-display provider compatibility only
+on:
+  push:
+    branches:
+      - review/hbnf-udisc-auto-display-compat-gate-20261102
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test only new Edge/RPC/Matrix receipt compatibility gate
+        run: |
+          set -euo pipefail
+          node --test tests/hbnf-auto-display-provider-compat-gate.test.mjs
+          git diff --check HEAD^ HEAD
+          git rev-parse HEAD
