@@ -58,6 +58,22 @@ jobs:
           git -C /tmp/cart116-wled apply --check --include=wled00/fontmanager.cpp --include=wled00/fontmanager.h /tmp/cart116-original-WLED-adjustments.patch
           git -C /tmp/cart116-wled apply --include=wled00/fontmanager.cpp --include=wled00/fontmanager.h /tmp/cart116-original-WLED-adjustments.patch
           python -m pip install --disable-pip-version-check -r /tmp/cart116-wled/requirements.txt
+          cd /tmp/cart116-wled
+          npm ci --ignore-scripts --no-audit --no-fund
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tools/cdata.js')
+          s=p.read_text()
+          old='return Math.floor(Date.now() / 1000);'
+          new='return Number(process.env.SOURCE_DATE_EPOCH || 1791450000);'
+          assert s.count(old)==1, 'WLED build-time anchor drift'
+          p.write_text(s.replace(old,new,1))
+          PY
+          node tools/cdata.js --force
+          test -s wled00/html_ui.h
+          test -s wled00/html_settings.h
+          test -s wled00/html_other.h
+          test -s wled00/js_iro.h
       - name: Compile R6 Owner-priority candidate without any device access
         shell: bash
         run: |
