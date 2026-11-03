@@ -9,7 +9,7 @@ const SCRIPT=Buffer.from('mock-exact-cloudflare-script-multipart');
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const manifest={status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
   targets:[{id:'cloudflare-worker',accountId:ACCOUNT,worker:'hbnf',
-    lastAuthenticatedVersionId:VERSION,sourceMultipart:{sha256:sha(SCRIPT),bytes:SCRIPT.length}}]};
+    lastAuthenticatedVersionId:VERSION,lastAuthenticatedScriptEtag:'e'.repeat(64),sourceMultipart:{sha256:sha(SCRIPT),bytes:SCRIPT.length}}]};
 const auth={CLOUDFLARE_API_TOKEN:'fake-cloudflare',GOOGLE_DRIVE_ACCESS_TOKEN:'fake-drive'};
 
 function fixture({wrongBytes=false,drift=false,corruptDrive=false,manifestMismatch=false}={}) {
@@ -25,7 +25,7 @@ function fixture({wrongBytes=false,drift=false,corruptDrive=false,manifestMismat
       return reply({result:{deployments:[{id:'dep1',versions:[{percentage:100,version_id:version}]}]}});
     }
     if(path.endsWith('/workers/routes')) return reply({result:[{id:'route1',pattern:'hbnightflyers.com',script:'hbnf'}]});
-    if(path.endsWith('/versions/'+VERSION)) return reply({result:{id:VERSION,number:348}});
+    if(path.endsWith('/versions/'+VERSION)) return reply({result:{id:VERSION,number:348,resources:{script:{etag:'e'.repeat(64)}}}});
     if(path.endsWith('/workers/scripts/hbnf')) return new Response(wrongBytes?'wrong bytes':SCRIPT,{status:200});
     if(path==='/upload/drive/v3/files'){
       uploaded++;
@@ -105,4 +105,12 @@ test('review-only manifest forbids silent elevation into release admission',asyn
   const f=fixture(), altered=structuredClone(manifest); altered.productionMutationAuthorized=true;
   await assert.rejects(()=>captureCurrentWorkerSource({manifest:altered,manifestSha256:'a'.repeat(64),folderId:'private',env:auth,fetchImpl:f.fetchImpl}),/CONTROLLING_MANIFEST_NOT_REVIEW_ONLY/);
   assert.equal(f.requests.length,0);
+});
+
+test('version-specific provider ETag mismatch blocks captured rollback evidence before Drive writes',async()=>{
+ const f=fixture(),changed=structuredClone(manifest);
+ changed.targets[0].lastAuthenticatedScriptEtag='f'.repeat(64);
+ await assert.rejects(()=>captureCurrentWorkerSource({manifest:changed,manifestSha256:'a'.repeat(64),
+ folderId:'private',env:auth,fetchImpl:f.fetchImpl}),/WORKER_VERSION_SCRIPT_ETAG_MISMATCH/);
+ assert.equal(f.uploaded(),0);
 });

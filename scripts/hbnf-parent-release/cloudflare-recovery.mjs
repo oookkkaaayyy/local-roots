@@ -34,11 +34,12 @@ function pinned(manifest) {
     !hex64.test(worker.sourceMultipart?.sha256 || '') ||
     !Number.isSafeInteger(worker.sourceMultipart?.bytes) || worker.sourceMultipart.bytes < 1)
     throw Error('EXACT_CLOUDFLARE_BASELINE_MISSING');
+  if (!hex64.test(worker.lastAuthenticatedScriptEtag || '')) throw Error('EXACT_VERSION_SCRIPT_ETAG_MISSING');
   return { version: worker.lastAuthenticatedVersionId, hash: worker.sourceMultipart.sha256,
-    bytes: worker.sourceMultipart.bytes };
+    bytes: worker.sourceMultipart.bytes, scriptEtag: worker.lastAuthenticatedScriptEtag };
 }
 
-async function identity(cf, expectedVersion) {
+async function identity(cf, expectedVersion, expectedScriptEtag) {
   const [deployment, routes, version] = await Promise.all([
     cf('/accounts/' + ACCOUNT + '/workers/scripts/' + SCRIPT + '/deployments').then(r => r.json()),
     cf('/zones/' + ZONE + '/workers/routes').then(r => r.json()),
@@ -54,8 +55,11 @@ async function identity(cf, expectedVersion) {
   if (!route) throw Error('WORKER_ROUTE_CHANGED');
   const v = version?.result;
   if (v?.id !== expectedVersion || !Number.isFinite(v.number)) throw Error('WORKER_VERSION_IDENTITY_MISSING');
+  if (v?.resources?.script?.etag !== expectedScriptEtag) throw Error('WORKER_VERSION_SCRIPT_ETAG_MISMATCH');
   return { deploymentId: current.id, activeVersionId: expectedVersion, versionNumber: v.number,
-    routeId: route.id || null, routePattern: route.pattern, routeScript: route.script };
+    routeId: route.id || null, routePattern: route.pattern, routeScript: route.script,
+    versionSpecificScriptEtag: expectedScriptEtag,
+    versionResourcesSha256: sha256(Buffer.from(JSON.stringify(v.resources || null))) };
 }
 
 async function storeAndDownloadBack(drive, name, payload, folderId) {
@@ -82,19 +86,20 @@ export async function captureCurrentWorkerSource({ manifest, manifestSha256, fol
   const t = tokens(env);
   const cf = checkedFetch(fetchImpl, t.cf, 'https://api.cloudflare.com/client/v4');
   const drive = checkedFetch(fetchImpl, t.drive, 'https://www.googleapis.com');
-  const before = await identity(cf, pin.version);
+  const before = await identity(cf, pin.version, pin.scriptEtag);
   const raw = Buffer.from(await (await cf('/accounts/' + ACCOUNT + '/workers/scripts/' + SCRIPT)).arrayBuffer());
   if (raw.length !== pin.bytes || sha256(raw) !== pin.hash) throw Error('WORKER_SCRIPT_BYTES_NOT_PINNED_BASELINE');
-  const after = await identity(cf, pin.version);
+  const after = await identity(cf, pin.version, pin.scriptEtag);
   if (JSON.stringify(before) !== JSON.stringify(after)) throw Error('WORKER_DEPLOYMENT_DRIFT_DURING_CAPTURE');
   const backup = await storeAndDownloadBack(drive, 'hbnf-worker-active-' + pin.version + '.raw', raw, folderId);
-  const finalIdentity = await identity(cf, pin.version);
+  const finalIdentity = await identity(cf, pin.version, pin.scriptEtag);
   if (JSON.stringify(after) !== JSON.stringify(finalIdentity)) throw Error('WORKER_DEPLOYMENT_DRIFT_AFTER_BACKUP');
   const receipt = {
     schemaVersion: 1, recordType: 'HBNF_CLOUDFLARE_SOURCE_CAPTURE',
     controllingManifestSha256: manifestSha256, worker: SCRIPT, route: ROUTE,
     providerIdentity: finalIdentity, source: backup,
     sourceMatchesManifest: true, authenticatedScriptRead: true,
+    versionSpecificScriptEtagVerified: true,
     versionSpecificExecutableBytesVerified: false,
     executableRollbackTested: false, releaseAdmission: 'NOT_ADMITTED',
   };
@@ -102,7 +107,8 @@ export async function captureCurrentWorkerSource({ manifest, manifestSha256, fol
   const receiptStored = await storeAndDownloadBack(drive, 'hbnf-worker-active-' + pin.version + '.capture-receipt.json', receiptBytes, folderId);
   return { status: 'SOURCE_BACKUP_DURABLE_ROLLBACK_UNQUALIFIED', source: backup,
     receipt: receiptStored, providerIdentity: finalIdentity,
-    versionSpecificExecutableBytesVerified: false, releaseAdmission: 'NOT_ADMITTED' };
+    versionSpecificExecutableBytesVerified: false, versionSpecificScriptEtagVerified: true,
+    releaseAdmission: 'NOT_ADMITTED' };
 }
 
 export async function captureFromControllingDriveManifest({

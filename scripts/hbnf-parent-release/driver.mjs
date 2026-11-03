@@ -94,10 +94,48 @@ export async function persistCloseout({ admittedManifest, result }, evidenceStor
 
 // Saga engine is exercised only with explicit testOnly adapters. Live provider adapters are read-only.
 export async function executeMockableSaga(tx, adapters, journal) {
+  return runProviderSaga(tx, adapters, journal, false);
+}
+
+// This is the real-provider execution ENTRYPOINT, not a release authorization.
+// A separate, independently durable same-manifest owner approval and atomic
+// provider-backed one-time claim remain mandatory; in their absence NO write
+// adapter may be invoked. The controlling review manifest can never satisfy it.
+export async function executeAdmittedProviderSaga(tx, adapters, journal, admission, verifier) {
+  const txHash = digest(tx);
+  const blocked = reason => ({status:'NOT_ADMITTED_NO_MUTATION', errors:[reason], trace:[]});
+  if (validateTransaction(tx).length) return blocked('INVALID_IMMUTABLE_TRANSACTION');
+  if (admission?.status !== 'ADMITTED' || admission?.productionMutationAuthorized !== true ||
+      admission?.transactionSha256 !== txHash || !/^[a-f0-9]{64}$/.test(admission?.manifestSha256 || '') ||
+      admission?.controllingManifestFileId !== '12X06fFmdc5oPGlcq9kprf1hhglbVV7mW' ||
+      admission?.ownerApproval?.approved !== true ||
+      admission?.rollbackVersionAndBindingsVerified !== true ||
+      admission?.fiveTargetConditionalRestoreQualified !== true ||
+      admission?.fullSourceAndProviderArtifactReadbackVerified !== true)
+    return blocked('SAME_MANIFEST_FULL_ADMISSION_REQUIRED');
+  if (adapters?.authenticated !== true || adapters?.readOnly !== false ||
+      typeof adapters.readTarget !== 'function' || typeof adapters.apply !== 'function' ||
+      typeof adapters.restore !== 'function')
+    return blocked('AUTHENTICATED_FIVE_TARGET_PROVIDER_ADAPTER_REQUIRED');
+  if (journal?.atomicOneTimeClaim !== true || journal?.durableDownloadBack !== true ||
+      typeof journal.claim !== 'function' || typeof journal.append !== 'function')
+    return blocked('DURABLE_ATOMIC_ONCE_ONLY_JOURNAL_REQUIRED');
+  if (typeof verifier?.verifyOwnerApprovalAndManifest !== 'function' ||
+      typeof verifier?.verifyFiveProviderRecoveryReadbacks !== 'function')
+    return blocked('TRUSTED_EXTERNAL_ADMISSION_VERIFIER_REQUIRED');
+  try {
+    if (await verifier.verifyOwnerApprovalAndManifest({txHash,admission}) !== true ||
+        await verifier.verifyFiveProviderRecoveryReadbacks({tx,admission}) !== true)
+      return blocked('ADMISSION_OR_PROVIDER_GATE_FAILED');
+  } catch { return blocked('ADMISSION_VERIFICATION_UNAVAILABLE'); }
+  return runProviderSaga(tx, adapters, journal, true);
+}
+
+async function runProviderSaga(tx, adapters, journal, authenticatedLive) {
   tx = structuredClone(tx);
   const errors = validateTransaction(tx);
   if (errors.length) return { status: 'PENDING', errors, trace: [] };
-  if (adapters?.testOnly !== true || adapters?.readOnly === true) return { status: 'PENDING', errors: ['mutations are disabled outside explicit isolated test adapters'], trace: [] };
+  if (!authenticatedLive && (adapters?.testOnly !== true || adapters?.readOnly === true)) return { status: 'PENDING', errors: ['mutations are disabled outside explicit isolated test adapters'], trace: [] };
   const txHash = digest(tx);
   try { await journal.claim(tx.transactionId, txHash); } catch { return { status: 'REPLAY_REJECTED', trace: [] }; }
   const completed = [], trace = [];
@@ -151,10 +189,10 @@ export async function executeMockableSaga(tx, adapters, journal) {
     }
     return abort('operation rejected without changing target');
   }
-  if (!(await record({ event: 'MOCK_SEQUENCE_COMPLETE_NOT_ADMITTED', txHash }))) {
+  if (!(await record({ event: authenticatedLive ? 'PROVIDER_STAGES_APPLIED_PENDING_FIELD_ACCEPTANCE' : 'MOCK_SEQUENCE_COMPLETE_NOT_ADMITTED', txHash }))) {
     return abort('final stage evidence not durable', true);
   }
-  return { status: 'MOCKED_COMPLETE_NOT_ADMITTED', trace, txHash };
+  return { status: authenticatedLive ? 'PROVIDER_STAGES_APPLIED_PENDING_FIELD_ACCEPTANCE' : 'MOCKED_COMPLETE_NOT_ADMITTED', trace, txHash };
 
   async function abort(reason, uncertain = false) {
     if (!(await record({ event: 'ABORT', reason }))) uncertain = true;
@@ -174,7 +212,7 @@ export async function executeMockableSaga(tx, adapters, journal) {
       try { if (digest(await adapters.readTarget(target.id)) !== target.baselineSha256) return manual(`baseline not restored:${target.id}`); }
       catch { return manual(`final baseline readback unavailable:${target.id}`); }
     }
-    return { status: (uncertain || journalFailure) ? 'MANUAL_RECOVERY_REQUIRED' : 'MOCKED_ABORT_RESTORED_NOT_ADMITTED', reason, trace };
+    return { status: (uncertain || journalFailure) ? 'MANUAL_RECOVERY_REQUIRED' : (authenticatedLive ? 'PROVIDER_ABORT_RESTORED_PENDING_REACCEPTANCE' : 'MOCKED_ABORT_RESTORED_NOT_ADMITTED'), reason, trace };
   }
   async function manual(reason) { await record({ event: 'MANUAL_RECOVERY_REQUIRED', reason }); return { status: 'MANUAL_RECOVERY_REQUIRED', reason, trace }; }
 }
