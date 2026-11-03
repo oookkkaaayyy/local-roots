@@ -1,10 +1,11 @@
-name: HBNF Nov3 cleanup source recovery bundle (review only)
+name: HBNF Nov3 cleanup exact source bundle (review only)
 on:
   push:
     branches:
       - review/hbnf-glow-cleanup-toolbridge-20261102
 permissions:
   contents: read
+  issues: write
 jobs:
   exact-source-bundle:
     runs-on: ubuntu-latest
@@ -13,19 +14,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
       - name: Pin and archive exact original cleanup runner source
         run: |
           set -euo pipefail
-          git fetch --no-tags origin feature/udisc-glow-standings-prototype:refs/heads/feature/udisc-glow-standings-prototype
+          git fetch --no-tags origin refs/heads/feature/udisc-glow-standings-prototype:refs/heads/feature/udisc-glow-standings-prototype
           test "$(git rev-parse refs/heads/feature/udisc-glow-standings-prototype)" = "33ff65caeb609533b0a4eea634100a78fb34ec08"
           git bundle create hbnf-glow-cleanup-feature-33ff65.bundle feature/udisc-glow-standings-prototype
           git bundle verify hbnf-glow-cleanup-feature-33ff65.bundle
           sha256sum hbnf-glow-cleanup-feature-33ff65.bundle
-      - name: Preserve exact source bundle as a review-only artifact
+      - name: Preserve exact source bundle as review-only artifact
         uses: actions/upload-artifact@v4
         with:
           name: HBNF-GLOW-CLEANUP-EXACT-SOURCE-REVIEW_ONLY
           path: hbnf-glow-cleanup-feature-33ff65.bundle
           if-no-files-found: error
           retention-days: 3
+      - name: Record artifact run ID internally on existing issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          gh api repos/oookkkaaayyy/local-roots/issues/115/comments -f body="Source-only original cleanup git bundle artifact run: https://github.com/oookkkaaayyy/local-roots/actions/runs/${RUN_ID}; review HEAD ${HEAD_SHA}; no scoring/claim/device mutation, not release admission."
