@@ -4,6 +4,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
+import {verifyNov3Layout,classifyNov3TestEntries,prepareNov3TestOnlyQuarantine} from './nov03-event-source.mjs';
 import { parseUdiscWorkbook, buildGlowProposal, validateIdentityEvidence, prepareGlowWeekSync } from '../../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync-runner.mjs';
 
 const EVENT_ID='hb-glow-doubles-tAP8Y5';
@@ -22,8 +23,12 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
     throw Error('NOV03_GLOW_WEEK_AND_ACTIVE_DATE_REQUIRED');
   if(!revision || typeof revision!=='string')throw Error('EXACT_SERVER_REVISION_REQUIRED');
   if(snapshot?.eventId!==EVENT_ID || snapshot?.weekDate!==DATE ||
-      !Array.isArray(snapshot.rows)||!snapshot.rows.length)
+      !Array.isArray(snapshot.rows))
     throw Error('UDISC_NOV03_EVENT_IDENTITY_OR_REAL_ROWS_REQUIRED');
+  const layout=verifyNov3Layout();
+  if(!snapshot.rows.length)
+    return {status:'EMPTY_OFFICIAL_EXPORT_NO_IMPORT',eventId:EVENT_ID,weekDate:DATE,
+      layout,serverRevision:revision,sourceRowCount:0,productionWrite:false};
   // A total-only export cannot create invented hole scores.
   if(snapshot.rows.some(row=>!Array.isArray(row.scores)||row.scores.length!==18 ||
       row.scores.some(value=>value!=='' && value!==null &&
@@ -35,6 +40,15 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
   if(currentWeek.scoresLocked || arr(currentWeek.cards).some(card=>card.finalized))
     return {status:'BLOCKED_LOCKED_WEEK',eventId:EVENT_ID,weekDate:DATE,
       serverRevision:revision,productionWrite:false};
+  const tests=classifyNov3TestEntries(currentWeek);
+  if(tests.contaminated){
+    const plan=prepareNov3TestOnlyQuarantine({root,revision});
+    if(stable(root)!==before)throw Error('READ_ONLY_SOURCE_STATE_MUTATED');
+    return {status:'NOV03_QUARANTINE_REQUIRED_BEFORE_REAL_IMPORT',
+      eventId:EVENT_ID,weekDate:DATE,layout,serverRevision:revision,
+      testEntryIds:tests.ids,quarantineStatus:plan.status,
+      originalWeekSha256:plan.oldWeekSha256||null,productionWrite:false};
+  }
   const names=Object.values(glow.weeks).flatMap(week=>arr(week?.players)
     .flatMap(player=>[player.partner1,player.partner2])).filter(Boolean);
   const evidence=validateIdentityEvidence({aliases:glow.playerAliases||{},historicalNames:names,tagEvidence:[]});
@@ -109,8 +123,13 @@ export async function prepareNov3FromFiles({xlsxFile,stateFile,decisionsFile,rep
  if(!decisions || Array.isArray(decisions) || typeof decisions!=='object')
    throw Error('OWNER_REVIEW_DECISIONS_OBJECT_REQUIRED');
  const arraybuffer=raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength);
- const snapshot=await parseUdiscWorkbook(arraybuffer,
-   {eventId:EVENT_ID,weekDate:DATE,observedAt:new Date().toISOString()});
+ let snapshot;
+ try{snapshot=await parseUdiscWorkbook(arraybuffer,
+   {eventId:EVENT_ID,weekDate:DATE,observedAt:new Date().toISOString()});}
+ catch(err){
+   if(err?.message!=='UDisc workbook has no results.')throw err;
+   snapshot={eventId:EVENT_ID,weekDate:DATE,rows:[]};
+ }
  const preview=await prepareNov3Reconciliation({root,revision,snapshot,decisions});
  const receipt={...preview,udiscXlsxSha256:digest(raw),stateSnapshotSha256:digest(stateRaw),
    stateSnapshotBytes:stateRaw.length,sourceProvenance:'Official organizer XLSX, locally opened read-only'};

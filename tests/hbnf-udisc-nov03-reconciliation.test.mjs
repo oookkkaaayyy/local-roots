@@ -86,3 +86,68 @@ test('source with invalid hole value fails before any HBNF mutation',async()=>{
  await assert.rejects(()=>prepareNov3Reconciliation({root,revision:root.updated_at,snapshot:record,decisions}),/UDISC_VALID_HOLE_STROKES_REQUIRED/);
  assert.equal(JSON.stringify(root),before);
 });
+
+
+import {NOV3_LAYOUT,verifyNov3Layout,classifyNov3TestEntries,prepareNov3TestOnlyQuarantine} from '../scripts/hbnf-parent-release/nov03-event-source.mjs';
+test('actual Nov3 PAR59 source fixture is complete without inventing the roster or Round1 attachment',()=>{
+ const v=verifyNov3Layout();
+ assert.equal(v.par,59);assert.equal(v.summedRoundedFeet,6023);
+ assert.equal(v.displayedFeet,6022);assert.equal(v.round1Attached,'UNVERIFIED');
+ assert.deepEqual(v.par4,[5,11,15,17,18]);
+ assert.deepEqual(NOV3_LAYOUT.truncatedLabels,[8,9]);
+ assert.equal(NOV3_LAYOUT.roster,'UNKNOWN_UNTIL_ROUND_BEGINS');
+ assert.match(v.unresolvedRuleConflict,/Hole 17/);
+});
+test('layout altered par or duplicate hole is rejected without network',()=>{
+ const source=structuredClone(NOV3_LAYOUT);source.holes[4][4]=3;
+ assert.throws(()=>verifyNov3Layout(source),/NOV3_LAYOUT_PAR_LENGTH_INVALID/);
+ source.holes[4][4]=4;source.holes[4][0]=1;
+ assert.throws(()=>verifyNov3Layout(source),/NOV3_LAYOUT_HOLE_SEQUENCE_INVALID/);
+});
+test('valid official empty XLSX rows do not become a fabricated scorecard',async()=>{
+ const root=base(),before=JSON.stringify(root);
+ const r=await prepareNov3Reconciliation({root,revision:root.updated_at,
+   snapshot:{eventId:EVENT_ID,weekDate:DATE,rows:[]}});
+ assert.equal(r.status,'EMPTY_OFFICIAL_EXPORT_NO_IMPORT');
+ assert.equal(r.sourceRowCount,0);assert.equal(r.productionWrite,false);
+ assert.equal(JSON.stringify(root),before);
+});
+function realNov3TestState(){
+ const root=base(),week=root.state_json.glow.weeks[DATE];
+ const ids=['QI_1793572411877_1','QI_1793572411877_2','QI_1793572411877_3'];
+ const names=[['Andrew','Test Player D'],['Test Player B',''],['Test Player C','Test Player A']];
+ const scores=[['3','4','4'],['2','4','3'],['2','3','4']];
+ week.cards[0].players=ids.map((id,i)=>({id,partner1:names[i][0],partner2:names[i][1]}));
+ week.players=ids.map((id,i)=>team(id,names[i][0],names[i][1],
+  [...scores[i],...Array(15).fill('')]));
+ return root;
+}
+test('real QI test scores fail closed before any Nov3 UDisc proposal',async()=>{
+ const root=realNov3TestState(),before=JSON.stringify(root);
+ const r=await prepareNov3Reconciliation({root,revision:root.updated_at,
+  snapshot:snapshot(),decisions});
+ assert.equal(r.status,'NOV03_QUARANTINE_REQUIRED_BEFORE_REAL_IMPORT');
+ assert.equal(r.testEntryIds.length,3);
+ assert.equal(r.quarantineStatus,'SOURCE_QUALIFIED_QUARANTINE_REVIEW_ONLY');
+ assert.equal(JSON.stringify(root),before);
+});
+test('exact quarantined-score proposal changes only Nov3 players/card list and preserves archive',()=>{
+ const root=realNov3TestState(),before=JSON.stringify(root);
+ const plan=prepareNov3TestOnlyQuarantine({root,revision:root.updated_at});
+ assert.equal(plan.status,'SOURCE_QUALIFIED_QUARANTINE_REVIEW_ONLY');
+ assert.equal(plan.sourceArchive.players.length,3);
+ assert.equal(plan.proposedWeek.players.length,0);
+ assert.equal(plan.proposedWeek.cards[0].players.length,0);
+ assert.deepEqual(plan.proposedWeek.acePots,root.state_json.glow.weeks[DATE].acePots);
+ assert.equal(JSON.stringify(root),before);
+ assert.equal(classifyNov3TestEntries(root.state_json.glow.weeks[DATE]).contaminated,true);
+ root.state_json.glow.weeks[DATE].players[0].scores[3]='4';
+ assert.equal(prepareNov3TestOnlyQuarantine({root,revision:root.updated_at}).status,
+  'BLOCKED_TEST_PREIMAGE_DRIFT_OR_GENUINE_SCORE');
+});
+test('one real participant mixed with QI test rows stops surgical cleanup',()=>{
+ const root=realNov3TestState(),w=root.state_json.glow.weeks[DATE];
+ w.players.push(team('REAL','Chris','Pat',['3',...Array(17).fill('')]));
+ assert.equal(prepareNov3TestOnlyQuarantine({root,revision:root.updated_at}).status,
+  'BLOCKED_MIXED_OR_SETTLED_WEEK');
+});
