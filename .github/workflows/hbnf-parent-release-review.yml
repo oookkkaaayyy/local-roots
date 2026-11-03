@@ -11,6 +11,7 @@ on:
       - 'tests/hbnf-live-release-boundary.test.mjs'
       - 'tests/hbnf-provider-artifact.test.mjs'
       - 'tests/hbnf-udisc-nov03-reconciliation.test.mjs'
+      - 'tests/hbnf-oct24-business-recovery.test.mjs'
       - 'tests/hbnf-nov03-tag-season.test.mjs'
       - 'tests/hbnf-glow-quick-import.test.mjs'
       - 'tests/hbnf-glow-financial-settlement.test.mjs'
@@ -72,6 +73,8 @@ jobs:
       - name: Focused authenticated provider/recovery boundary tests (fake credentials only)
         if: steps.scope.outputs.fallback_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         run: node --test tests/hbnf-live-release-boundary.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
+      - name: October 24 exact-history, Jason ace and nominal-vs-cash rollover safeguards
+        run: node --test tests/hbnf-oct24-business-recovery.test.mjs
       - name: November 3 offline UDisc source preservation and reconciliation test
         if: steps.scope.outputs.provider_only != 'true'
         run: node --test tests/hbnf-udisc-nov03-reconciliation.test.mjs tests/hbnf-nov03-tag-season.test.mjs
