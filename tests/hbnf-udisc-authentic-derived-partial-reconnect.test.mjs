@@ -7,7 +7,7 @@ import {prepareGlowWeekSync} from '../source-snapshots/hbnf-worker-d1a5f936-2026
 import {runApprovedGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs';
 
 const fixture=JSON.parse(await readFile(new URL('./fixtures/authentic-udisc/2026-04-18.json',import.meta.url),'utf8'));
-const date='2026-04-18',eventId='hb-night-flyers-hb-glow-doubles-ZUDJEk';
+// Historical April workbook rows transformed into a November 3 synthetic event-window fixture.\n// NO claim about November 3 live UDisc teams, tee geometry or pars.\nconst date='2026-11-03',eventId='hb-glow-doubles-tAP8Y5';
 function aoa(f){
  return [['division','position','position_raw','name','event_relative_score','event_total_score','usernames',
   ...Array.from({length:18},(_,i)=>'hole_'+(i+1))],...f.rows.map(r=>[
@@ -30,7 +30,7 @@ const base=()=>({
 });
 test('authentic-derived partial/correction→CAS full readback→reconnect keeps owner score, metadata, history and single source write',async()=>{
  const initialRows=aoa(fixture);
- const initial=proposal(initialRows,'2026-04-18T19:30:00Z');
+ const initial=proposal(initialRows,'2026-11-04T01:59:00Z');
  const first=await prepareGlowWeekSync(base(),initial,{aliases:{}});
  assert.equal(first.changed,true);
  const week=structuredClone(first.week);
@@ -43,7 +43,7 @@ test('authentic-derived partial/correction→CAS full readback→reconnect keeps
  correctedRows[1][head.indexOf('event_total_score')]=Number(correctedRows[1][head.indexOf('event_total_score')])+1;
  correctedRows[1][head.indexOf('event_relative_score')]=Number(correctedRows[1][head.indexOf('event_relative_score')])+1;
  correctedRows[2][c2]=''; // simulated partial input from previously authentic-shaped rows
- const corrected=proposal(correctedRows,'2026-04-18T20:00:00Z');
+ const corrected=proposal(correctedRows,'2026-11-04T02:00:00Z');
  const next=await prepareGlowWeekSync(week,corrected,{aliases:{}});
  assert.equal(next.changed,true);
  assert.equal(next.week.players[0].scores[0],'9');
@@ -58,13 +58,13 @@ test('authentic-derived partial/correction→CAS full readback→reconnect keeps
 
  let root={glow:{activeWeek:date,weeks:{[date]:week},playerAliases:{}},
   skins:{unchanged:true},bagTags:{players:{A:1}}};
- let revision='2026-04-18T19:30:00.123456Z';
+ let revision='2026-11-04T01:59:00.123456Z';
  const requests={source:0,reads:0,cas:0,failWrites:0,cart:0};
  const fetch=async(url,options={})=>{
   const u=String(url);
   if(u.includes('/hbnf_udisc_glow_event_bindings'))
    return Response.json([{event_id:eventId,event_date:date,
-    window_start:'2026-04-18T19:00:00Z',window_end:'2026-04-18T23:00:00Z'}]);
+    window_start:'2026-11-04T01:30:00Z',window_end:'2026-11-04T07:30:00Z'}]);
   if(u.includes('/rest/v1/league_state?')){
    requests.reads++;
    return Response.json([{state_json:structuredClone(root),updated_at:revision}]);
@@ -78,7 +78,7 @@ test('authentic-derived partial/correction→CAS full readback→reconnect keeps
    const b=JSON.parse(options.body);
    assert.deepEqual(b.p_expected_week,root.glow.weeks[date]);
    root={...root,glow:{...root.glow,weeks:{...root.glow.weeks,[date]:b.p_replacement_week}}};
-   revision='2026-04-18T20:00:00.123457Z';
+   revision='2026-11-04T02:00:00.123457Z';
    assert.deepEqual(root.bagTags,{players:{A:1}});
    return Response.json({applied:true});
   }
@@ -101,7 +101,7 @@ test('authentic-derived partial/correction→CAS full readback→reconnect keeps
   SUPABASE_SERVICE_ROLE_KEY:'synthetic-key-only'};
  const invoke=time=>runApprovedGlowSync(env,{fetch,source:src,now:()=>new Date(time),
   onVerifiedSaved:offer});
- const saved=await invoke('2026-04-18T20:00:00Z');
+ const saved=await invoke('2026-11-04T02:00:00Z');
  assert.equal(saved.disposition,'updated');
  assert.equal(saved.cartIntent,'PENDING_OPAL_PULL');
  assert.equal(requests.cas,1);
@@ -109,7 +109,7 @@ test('authentic-derived partial/correction→CAS full readback→reconnect keeps
  assert.equal(root.glow.weeks[date].players[1].scores[1],week.players[1].scores[1]);
  assert.equal(root.glow.weeks[date].udiscSync.status.state,'fresh');
  assert.equal(root.glow.weeks[date].udiscSync.latest.signature,next.signature);
- const replay=await invoke('2026-04-18T20:01:00Z');
+ const replay=await invoke('2026-11-04T02:01:00Z');
  assert.equal(replay.disposition,'unchanged');
  assert.equal(replay.cartIntent,'PENDING_OPAL_PULL');
  assert.equal(requests.cas,1);
