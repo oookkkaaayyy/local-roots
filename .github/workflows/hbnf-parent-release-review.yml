@@ -51,6 +51,7 @@ jobs:
           changes="$(git diff --name-only 6ce83a5f791dd42a14521a04ab870f5c9341f5b6 HEAD)"
           outside="$(printf '%s\n' "$changes" | grep -Ev '^(public/glow.html|tests/hbnf-glow-quick-import.test.mjs|.github/workflows/hbnf-parent-release-review.yml)$' || true)"
           if [ -z "$outside" ] && [ -n "$changes" ]; then echo "quick_only=true" >> "$GITHUB_OUTPUT"; else echo "quick_only=false" >> "$GITHUB_OUTPUT"; fi
+          git fetch --no-tags --depth=1 origin 9300e2011defc6d221df771a6850929ee077980f
           new_changes="$(git diff --name-only 9300e2011defc6d221df771a6850929ee077980f HEAD)"
           new_outside="$(printf '%s\n' "$new_changes" | grep -Ev '^(scripts/hbnf-parent-release/(driver\.mjs|providers-live\.mjs|cloudflare-recovery\.mjs|verify-integrated-candidate\.py)|tests/hbnf-live-release-boundary\.test\.mjs|tests/hbnf-cloudflare-recovery\.test\.mjs|\.github/workflows/hbnf-parent-release-review\.yml)$' || true)"
           if [ -z "$new_outside" ] && [ -n "$new_changes" ]; then echo "release_only=true" >> "$GITHUB_OUTPUT"; else echo "release_only=false" >> "$GITHUB_OUTPUT"; fi
