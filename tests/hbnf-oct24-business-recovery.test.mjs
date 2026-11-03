@@ -26,7 +26,7 @@ const fakeScores=()=>{
  return OCT24_OFFICIAL_ROWS.map((r,i)=>{
   const holes=Array(18).fill(2);if(i===2)holes[8]=1;
   let left=r.total-holes.reduce((a,b)=>a+b,0),j=0;
-  while(left>0){holes[j%18]++;left--;j++;}
+  while(left>0){const index=j%18;j++;if(i===2&&index===8)continue;holes[index]++;left--;}
   return {members:r.members,holes};
  });
 };
@@ -87,5 +87,5 @@ test('reserve/main alternate above milestones rather than overflow directly',()=
  const a=routeConfirmedAceMoney({main:20000,reserve:0,mode:'reserve',mainTarget:20000,reserveTarget:20000},35700);
  assert.equal(a.main,35700);assert.equal(a.reserve,20000);
  const b=routeConfirmedAceMoney({main:20000,reserve:0,mode:'reserve',mainTarget:20000,reserveTarget:20000},60000);
- assert.equal(b.main,40000);assert.equal(b.reserve,30000);
+ assert.equal(b.main,50000);assert.equal(b.reserve,30000);
 });
