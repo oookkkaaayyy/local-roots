@@ -30,6 +30,6 @@ jobs:
           cp build/cart116-b4-source/scripts/hbnf-glow-cart-intent.mjs build/cart116-b4-glow-source/hbnf-glow-cart-intent.mjs
           test "$(git hash-object build/cart116-b4-glow-source/glow-intent-service.mjs)" = "7c1fcd79ef2fb3841ebb136b62da7a8323099fb9"
           test "$(git hash-object build/cart116-b4-glow-source/hbnf-glow-cart-intent.mjs)" = "509dbe62229d48579594cdd378217e4476ad13e7"
-          node --experimental-strip-types --test tests/hbnf-udisc-cart-b4-source-bound.test.mjs
+          node --experimental-strip-types --test tests/hbnf-udisc-cart-b4-source-bound.test.mjs tests/hbnf-nov3-par-qualification.test.mjs
           git diff --check HEAD^ HEAD
           git rev-parse HEAD
