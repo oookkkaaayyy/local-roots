@@ -1,0 +1,95 @@
+{
+  "schema": "hbnf.udisc.glow.worker-source-review.v1",
+  "phase": "REVIEW_ONLY_NOT_ADMITTED",
+  "exact_source_record": "https://github.com/oookkkaaayyy/local-roots/issues/115#issuecomment-6595358654",
+  "provenance": "Owner-authenticated Cloudflare v348 ETag/source receipt, independently retrieved preserved GitHub source, 10 new focused CI fixture checks; current compiled worker function body not independently compared",
+  "target": {
+    "provider": "Cloudflare Workers",
+    "account_id": "e3bc6b78f1104fa0c2a01245084594cf",
+    "script": "hbnf",
+    "version": "48ffa87e-3c83-46d0-a6ca-db7bf0b064e6",
+    "version_number": 348,
+    "script_etag": "c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25",
+    "source_content_v2_bytes": 194486,
+    "source_content_v2_sha256": "fd45197dc2bcf23505490c0d64b3b622ad1d7e782a06907be59cc0081ff4eefc",
+    "traffic": "100% as of latest owner-authenticated Oct31 deployment inventory; refresh before mutation"
+  },
+  "baseline": {
+    "original_source_commit": "44612c09677f59b84bece7de655af7bb011b51e7",
+    "source_snapshot_path": "source-snapshots/hbnf-worker-d1a5f936-20261024",
+    "original_worker_entry_blob": "d3844e425a4ec4d6556345691d5153525c402bdf",
+    "original_poller_blob": "47f2b74fdad8b70e1aeb6eb078176346f696115f",
+    "never_edit_obsolete_env": [
+      "UDISC_GLOW_EVENT_DATE",
+      "UDISC_GLOW_EVENT_ID",
+      "UDISC_GLOW_WINDOW_START",
+      "UDISC_GLOW_WINDOW_END"
+    ],
+    "binding": {
+      "event_id": "hb-glow-doubles-tAP8Y5",
+      "date": "2026-11-03",
+      "window_start": "2026-11-04T01:30:00Z",
+      "window_end": "2026-11-04T07:30:00Z"
+    }
+  },
+  "overlays": [
+    {
+      "review_path": "source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs",
+      "future_target_path": "src/udisc-glow-auto-sync.mjs",
+      "blob": "0e6491751402ec6f987b58edc5a65cb386a47f56"
+    },
+    {
+      "review_path": "source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js",
+      "future_target_path": "src/index.js",
+      "blob": "6efda2808fd76cabb9f5309383a65f9854fca776",
+      "requires_import_rewrite_from_review_suffix": true
+    }
+  ],
+  "test_receipt": {
+    "github_actions_run": 41580211677,
+    "source_head": "3a6c353d49fb30ea46f78b263a4ac64db03df661",
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "scope": "synthetic network/source boundary and real candidate source; not live partial XLSX or true production CAS"
+  },
+  "existing_cart_intent_receipt": {
+    "run": 41574629192,
+    "passed": 11,
+    "source_head": "d4189007fe179d06cb2740c49f95a34dd3ac5930"
+  },
+  "current_prequalified_scoring_source": {
+    "PR": 151,
+    "source_head": "7ece6f2d9fdc0765c1053643811df42162651a82",
+    "integrated_worker_review_archive_drive_id": "1PuOAVXcy1dgwNsi4yy4D8aa0aZzIuQNI",
+    "archive_sha256": "c24e35b7f9c4140feef37e0101441783d1b0ead9d9dd7735868a9a7b832c1b1d",
+    "scope": "review-only, not deployed; Scoring P0 sole production mutation owner"
+  },
+  "rollback": {
+    "current_v348_full_worker_source_archive_drive_id": "1UUDgrd5udbV7ZX0BG-GwSAT6FRLpd69v",
+    "archive_sha256": "0b51b7ecdfeced01cc73bee96dff8085f2f1f9529df48223fa4f7185c7d15b4c",
+    "physical_provider_restore_not_tested": true
+  },
+  "invariants": [
+    "no additional poller",
+    "no obsolete env mutations",
+    "no production scoring mutation from review",
+    "no parallel MQTT actuator",
+    "don't count source_http as parser or CAS",
+    "don't count CAS acknowledgement as persisted saved week",
+    "don't count saved Glow as physical Matrix display",
+    "don't enable auto_live on incompatible v42",
+    "UV remains off"
+  ],
+  "blocked_gates": [
+    "exact owner-recovered v348 compiled function byte comparison; Mac-local source inaccessible to this Chat",
+    "one integrated v348+PR151+new review overlay complete ZIP with final content SHA256 and byte-for-byte durable provider download-back",
+    "fresh target identity readback, unique admission manifest, one-time claims and exact rollback with same-manifest closeout",
+    "real permitted UDisc partial XLSX at November 3 event window and successful service-role CAS+independent full saved-week readback",
+    "Controls Track A authenticated Cart desired overlay commit and Opal challenge/device readback; Matrix Track C WOW MAX/Owner priority acceptance"
+  ],
+  "mutation_authority": "Scoring P0 solely for league_state and Worker release; Controls Track A solely Cart state; Matrix Track C device/firmware",
+  "live_mutation_authorized": false,
+  "legacy_mqtt_auto_live_may_be_enabled": false,
+  "one_time_claim_present": false
+}
