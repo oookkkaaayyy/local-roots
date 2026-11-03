@@ -79,8 +79,10 @@ VENDOR="$W/.pio/libdeps/$ENV/animartrix/ANIMartRIX.h"
 test -f "$VENDOR"
 mkdir -p "$W/vendor/hbnf-animartrix"
 cp "$VENDOR" "$W/vendor/hbnf-animartrix/ANIMartRIX.h"
-git show "$R6:firmware/packet20/animartrix-render-value-trig-cache.patch" > "$WORK/animartrix-render-value-trig-cache.patch"
-(cd "$W" && patch --batch --fuzz=0 -p1 -i "$WORK/animartrix-render-value-trig-cache.patch")
+# Exact C5 R4 clock patch restored from pinned archived build closure.
+CLOCK="$ROOT/staging/cart116-glow-v35-exact-review/track-c-r6-priority/animartrix-clock-pinned.patch"
+test "$(sha256sum "$CLOCK" | cut -d' ' -f1)" = f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4
+(cd "$W" && patch --batch --fuzz=0 -p1 -i "$CLOCK")
 test "$(sha256sum "$W/vendor/hbnf-animartrix/ANIMartRIX.h"|cut -d' ' -f1)" = bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8
 git show "$R6:scripts/hbnf_packet20_r4_fastled_backport.py" > "$WORK/hbnf_packet20_r4_fastled_backport.py"
 python3 "$WORK/hbnf_packet20_r4_fastled_backport.py" --header "$W/vendor/hbnf-animartrix/ANIMartRIX.h" --fastled-root "$W/vendor/FastLED" --apply
