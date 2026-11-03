@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {runApprovedGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs';
+import workerEntry from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js';
 
 const date='2026-11-03';
 const eventId='hb-glow-doubles-tAP8Y5';
@@ -74,7 +75,7 @@ function fixture(mode='success'){
   throw Error(`Unexpected fetch ${u}`);
  };
  return {
-  capture,calls,source,
+  capture,calls,source,fetch,
   counters:()=>({casCount,statusCount,sourceCount,rootReads}),
   run:(time=now)=>runApprovedGlowSync({
    UDISC_GLOW_ACCESS_APPROVED:'true',
@@ -159,4 +160,75 @@ test('observer throwing does not interrupt score import or compromise CAS/readba
   SUPABASE_SERVICE_ROLE_KEY:'fixture-secret-do-not-log',
  },{now:()=>new Date('2026-11-04T01:00:00Z'),fetch:async()=>JSONResponse([]),capture:()=>{throw Error('observer unavailable')}});
  assert.equal(result.disposition,'outside_event_window');
+});
+
+test('review scheduled handler emits one sanitized in-window stage record, no unbounded or secret logs',async()=>{
+ const f=fixture('source_503');
+ const originalFetch=globalThis.fetch,originalDate=globalThis.Date;
+ const originalInfo=console.info,originalError=console.error;
+ const written=[],errors=[];
+ const fixed=Date.parse(now);
+ class FixedDate extends originalDate {
+   constructor(...args){super(...(args.length?args:[fixed]));}
+   static now(){return fixed;}
+ }
+ let promise;
+ try {
+   globalThis.Date=FixedDate;
+   globalThis.fetch=f.fetch;
+   console.info=(...args)=>written.push(args);
+   console.error=(...args)=>errors.push(args);
+   await workerEntry.scheduled(null,{
+     UDISC_GLOW_ACCESS_APPROVED:'true',
+     SUPABASE_URL:'https://fixture.supabase.co',
+     SUPABASE_SERVICE_ROLE_KEY:'fixture-secret-do-not-log',
+   },{waitUntil:p=>{promise=p}});
+   assert.ok(promise);
+   await promise;
+ } finally {
+   globalThis.fetch=originalFetch;
+   globalThis.Date=originalDate;
+   console.info=originalInfo;
+   console.error=originalError;
+ }
+ assert.equal(written.length,1);
+ assert.equal(written[0][0],'HBNF_UDISC_GLOW_BOUNDARY_V1');
+ const detail=JSON.parse(written[0][1]);
+ assert.equal(detail.schema,'hbnf.udisc.glow.boundary.capture.v1');
+ assert.equal(detail.result,'error');
+ assert.equal(detail.code,'SOURCE_UNAVAILABLE');
+ assert.equal(detail.stages.find(x=>x.stage==='source_http')?.status,503);
+ assert.equal(detail.stages.some(x=>x.stage==='parser_succeeded'),false);
+ assert.equal(f.counters().casCount,0);
+ assert.ok(!JSON.stringify(written).includes('fixture-secret'));
+ assert.ok(!JSON.stringify(written).includes('scores'));
+});
+test('review scheduled handler logs nothing before bound event window',async()=>{
+ const f=fixture();
+ const originalFetch=globalThis.fetch,originalDate=globalThis.Date;
+ const originalInfo=console.info,originalError=console.error;
+ const written=[],errors=[];
+ const fixed=Date.parse('2026-11-04T01:29:00Z');
+ class FixedDate extends originalDate {
+   constructor(...args){super(...(args.length?args:[fixed]));}
+   static now(){return fixed;}
+ }
+ let promise;
+ try{
+   globalThis.Date=FixedDate;globalThis.fetch=f.fetch;
+   console.info=(...args)=>written.push(args);
+   console.error=(...args)=>errors.push(args);
+   await workerEntry.scheduled(null,{
+    UDISC_GLOW_ACCESS_APPROVED:'true',
+    SUPABASE_URL:'https://fixture.supabase.co',
+    SUPABASE_SERVICE_ROLE_KEY:'fixture-secret-do-not-log',
+   },{waitUntil:p=>{promise=p}});
+   await promise;
+ }finally{
+   globalThis.Date=originalDate;globalThis.fetch=originalFetch;
+   console.info=originalInfo;console.error=originalError;
+ }
+ assert.deepEqual(f.calls,['binding']);
+ assert.equal(written.length,0);
+ assert.equal(errors.length,0);
 });
