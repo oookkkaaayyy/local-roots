@@ -166,5 +166,61 @@
       "reason": "review par validation was narrower than installed manual 1–9 UI bounds; never deploy or use this older archive"
     },
     "currentSourceReviewHead": "fbd14b3ab51b44fa842874213f09f4cc8a2d1ebe"
+  },
+  "sourceOnlyPostArchiveDelta": {
+    "phase": "REVIEW_ONLY_NOT_MERGED_INTO_EXISTING_ZIP",
+    "frozenV2DriveId": "1BIa7oJGs7FczcjW5eCbCtvYO7nFAXhgm",
+    "frozenV2Sha256": "26b003f7df117a76e1c1c97930b7a6771459aec794f9c26b58500086b3250c75",
+    "productionScoringOwnerPR151": {
+      "latestHead": "6166de91f44e563efb035dce10d7852337d7598b",
+      "priorBase": "7ece6f2d9fdc0765c1053643811df42162651a82",
+      "changedSourceAsset": "public/hbnf-league-state-sync.js",
+      "oldGitBlob": "af88412a6669c95aba50000d7ab6c08fd4271b27",
+      "currentGitBlob": "a94f6492bda0062faaa7cb263b6a2a2546e9fac3",
+      "otherChanges": [
+        "tests/hbnf-server-tag-projection.test.mjs",
+        "tests/skins-pending-review.test.mjs",
+        ".github/workflows/hbnf-parent-release-review.yml"
+      ],
+      "impact": "one independent scoring public helper changed; UDisc Worker src module imports unchanged; P0 alone decides a combined release overlay; do not mutate PR151 or rebuild the existing v2 ZIP",
+      "reportedCI": "77/77 PASS (Scoring P0 source-only)"
+    },
+    "reviewedUnmergedChanges": [
+      {
+        "sourcePath": "source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs",
+        "targetMember": "src/udisc-glow-auto-sync.mjs",
+        "sourceGitBlob": "2b8e54dbca68317e4620d8df5454f91375e63fb6",
+        "purpose": "submit verified saved-score revision to purpose-bound existing Cart backend; no second score mutation"
+      },
+      {
+        "sourcePath": "source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js",
+        "targetMember": "src/index.js",
+        "sourceGitBlob": "05f45f267c068ed3f1b8e17404cb792e76d5c539",
+        "note": "when integrating into Worker, restore dynamic relative import .review.mjs to production existing module filename, as already done in frozen v2"
+      }
+    ],
+    "changedScopeTests": {
+      "run": 41612071416,
+      "head": "9c588547539671451eb65e420ac532163fba0795",
+      "pass": 4,
+      "fail": 0,
+      "scope": "Cart backend response validation, microsecond revision, failure no second CAS, saved score retained; mocks only"
+    },
+    "existingScopePreserved": {
+      "run": 41601683888,
+      "pass": 11,
+      "scope": "exact b4 Controls/v35 selector/metadata retention source seam, NOT rerun"
+    },
+    "metadataPreview": {
+      "path": "evidence/hbnf-nov03-three-column-layout-preview-20261103.md",
+      "holeRows": 18,
+      "confirmedNov03Pars": 0,
+      "confirmedNov03Notes": 0,
+      "confirmedNov03CardLayoutRows": 0,
+      "oldJune20TemplateCannotBeReused": true
+    },
+    "controlBackend": "review/cart116-glow-canonical-intent-20261103 exact b4c0f0d source tested, but current Controls Track A later 9a498dc source checkpoint remains REVIEW_ONLY; not deployed",
+    "releaseReadiness": "NOT_ADMITTED: v2 frozen source ZIP lacks the new invocation wiring and the newer PR151 public helper; actual Cloudflare v348 source parity, shared full rollback manifest, P0 cleanup, Controls/Track C runtime acceptance and event XLSX remain open",
+    "noIndependentDeployment": true
   }
 }
