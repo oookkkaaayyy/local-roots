@@ -1,0 +1,15 @@
+{
+  "schema": "cart116-v35-exact-source-snapshot-v1",
+  "source": "Supabase connected get_edge_function",
+  "projectId": "phcpbvuqibyarpfrftgx",
+  "functionSlug": "hbnf-cart-control",
+  "version": 35,
+  "providerBundleSha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+  "rollbackFileCount": 10,
+  "candidateFileCount": 12,
+  "productionMutation": false,
+  "releaseAdmission": "REVIEW_ONLY",
+  "mustRevalidateProviderPrechange": true,
+  "installedMatrixParityRequired": true,
+  "parentSourceCommit": "b4c0f0d5a354a02b1ab0a182b344e2b1c57ca69b"
+}
