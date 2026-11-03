@@ -2,6 +2,7 @@ import {createClient} from "npm:@supabase/supabase-js@2.57.0";
 import {buildWledProjection,checkDecision,MATRIX_CANDIDATE,MATRIX_MAC,MATRIX_RECORDED_SHA256,normalizeReadback} from "./matrix-relay-projection.ts";
 import {relayTokenAuthorized} from "./matrix-relay-auth.ts";
 import {enforcePreservedGlowRelay,GLOW_PROJECTION_BLOCK_REASON} from "./glow-relay-preservation.mjs";
+import {runOverlayV1,GLOW_V1_OPS} from "./glow-overlay-v1-handler.mjs";
 const reply=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 function auth(req:Request){const relayId=Deno.env.get("HBNF_MATRIX_RELAY_ID")??"";return req.headers.get("X-HBNF-Relay-ID")===relayId&&relayTokenAuthorized(req.headers.get("Authorization"),Deno.env.get("HBNF_MATRIX_RELAY_TOKEN")??"",relayId);}
 function db(){const u=Deno.env.get("SUPABASE_URL"),k=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");if(!u||!k)throw Error("relay_backend_not_configured");return createClient(u,k,{auth:{persistSession:false,autoRefreshToken:false}});}
@@ -9,6 +10,16 @@ export async function handleMatrixRelay(req:Request){
  if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
  if(!auth(req))return reply({error:"unauthorized"},401);
  const relayId=Deno.env.get("HBNF_MATRIX_RELAY_ID")!,client=db(),ct=req.headers.get("content-type")??"";
+ // Overlay v1 has an independent authenticated, versioned challenge protocol.
+ // REVIEW_ONLY: explicit FALSE. Never accept admission from request/env flags.
+ if(ct.includes("multipart/form-data")) {
+   const overlayForm=await req.clone().formData().catch(()=>null);
+   const operation=String(overlayForm?.get("op")??"");
+   if(GLOW_V1_OPS.includes(operation)) {
+     const r=await runOverlayV1({operation,form:overlayForm,db:client,relayId,admitted:false});
+     return reply(r.body,r.status);
+   }
+ }
  if(ct.includes("application/json")){
   const b=await req.json().catch(()=>null);
   if(b?.op!=="next"||b.relayId!==relayId||String(b.matrixMac??"").toLowerCase().replaceAll(":","")!==MATRIX_MAC.replaceAll(":","")||b.candidate!==MATRIX_CANDIDATE||b.recordedFirmwareSha256!==MATRIX_RECORDED_SHA256)return reply({error:"invalid_relay_request"},400);
