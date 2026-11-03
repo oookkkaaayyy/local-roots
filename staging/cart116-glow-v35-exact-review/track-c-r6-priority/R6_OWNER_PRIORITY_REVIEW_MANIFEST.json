@@ -1,0 +1,21 @@
+{
+  "source_path": "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp",
+  "source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+  "source_sha256": "87bdbd9a68425e97cd5b97641768c4e4a16a527c3dfadfca3d0cb4e3ea5c5559",
+  "candidate_source_sha256": "6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa",
+  "patch_sha256": "9ce39687374ab0895834df750571e2d7f171751d16a8cd02ec20c6654fd5709a",
+  "candidate_release_marker": "hbnf-cart2-r6-native-overlay-owner-safe-review-20261103",
+  "candidate_binary_sha256": null,
+  "candidate_build_status": "NOT_BUILT",
+  "installed_R6_rollback": {
+    "filename": "hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
+    "bytes": 1506032,
+    "sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d"
+  },
+  "device_flash_authorized": false,
+  "live_mutation_authorized": false,
+  "owner_precedence": "TEXT overlays suppress later SCOREBOARD while active; text still preempts scoreboard",
+  "explicit_null_policy": "unchanged; trusted Owner null can clear, cloud bridge may never send blind null",
+  "zero_brightness_policy": "preserve full dark state; no overlay brightness floor",
+  "release_state": "REVIEW_ONLY_NO_INSTALLABLE_BINARY"
+}
