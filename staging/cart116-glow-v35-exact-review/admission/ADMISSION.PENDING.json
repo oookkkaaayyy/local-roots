@@ -1,19 +1,19 @@
 {
   "backend_or_opal_mutated": false,
   "candidate_archive": {
-    "previous_review_capsule_sha256": "a9ceea5442a2dac558638f2fde1ba3d40b3eacfc5ca6d5bbd415deb344eb2c49",
-    "file_name": "CART116-Controls-Managed-Glow-Bridge-REVIEW_ONLY-20261103.zip",
-    "sha256": "0639a7c68628db88879a73772ec34433d60de0aff4f7fe28644559aff1a21c29",
-    "bytes": 969512,
-    "durable_drive_id": "1a4YEamzHfsiM1gJ7PWsvv2zyNaPsDRT4",
+    "file_name": "CART116-Controls-Managed-Glow-BC-REVIEW_ONLY-20261103.zip",
+    "bytes": 980736,
+    "sha256": "d38061cb21c1943d3d09b4569eda234afcd3bb524fdb97ef48fc94a14563084e",
+    "durable_drive_id": "1waGa_02GjaqPCsAnK46SQNXVQ4md4MVo",
     "download_back_previously_verified": true,
     "zip_crc": "PASS",
-    "embedded_hashes": "44/44_PASS",
-    "rebuild_sha256": "0639a7c68628db88879a73772ec34433d60de0aff4f7fe28644559aff1a21c29",
+    "embedded_hashes": "48/48_PASS",
+    "byte_identical_rebuilds": true,
     "installable": false,
     "hard_edge_admitted": false,
     "hard_opal_admitted": false,
-    "reason": "REVIEW source hard admission gates are false; no compiled Edge provider candidate or accepted Matrix ps-minus-one renderer."
+    "previous_review_capsule_sha256": "0639a7c68628db88879a73772ec34433d60de0aff4f7fe28644559aff1a21c29",
+    "reason": "HARD SOURCE GATES FALSE; installed R6 Owner priority race PROVEN; owner-selected Matrix brightness ZERO; new service target backup and compiled provider recovery INCOMPLETE"
   },
   "edge": {
     "candidate_source": {
@@ -38,9 +38,11 @@
     "edge_provider_original_source_tree": "74dd1d687de44eacb20eff8e3960d9129948ef88",
     "head_nonblocking_candidate": "6d63724d9fd30325a1cdc6427fd3466b6abf4b95",
     "head_qualified_native": "51d9d50ec8bda9d8f59dd4f55d2d9173158afb5a",
-    "matrix_track_c_head": "e2e0288e8d5db271a01fd0d4881456178fdac5bf",
-    "networking_final_head": "ebff085103ed847328dc7ed06b0f69d8f63c6606",
-    "repo": "oookkkaaayyy/local-roots"
+    "matrix_track_c_head": "979e8d729ba2b8bef8a2c8400227fe0b34106e19",
+    "networking_final_head": "c431cfbdbe2ad11b7d11a6ec54878e3470af9b3d",
+    "repo": "oookkkaaayyy/local-roots",
+    "current_review_source_head": "6f76ba9d71909e7afc5ca0da4417103ea61d3bd9",
+    "matrix_owner_priority_review_patch_head": "4af57d8c0d94e0a0966b1735f45f660d769da6a0"
   },
   "failure_recovery": [
     {
@@ -69,15 +71,17 @@
   "hard_gates": {
     "new_service_current_11_target_preimages": "3 NEW executable/init/provision target preimages UNKNOWN; seven original Owner/transport known at capture time; helper observed ABSENT; require fresh exact originals/absence and ownership/mode before admission",
     "new_service_conflicts": "original legacy /usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay absent Nov3 #6614401763; complete current named process/procd service and secret-config absence must match at release preflight",
-    "independent_installed_preimage_backup_download_back": "MISSING; original owner Mac private 865215 B TAR/ZIP not independently verified in permanent off-device Drive; new current 11+config preimage backup must also be independently downloaded back",
-    "native_matrix_ps_minus_one_fx142_renderer": "FAIL_CLOSED; actual ps=-1 fx142 HBNF.effectId142 cannot be treated as ps60/native overlay proof; source helper refuses",
+    "independent_installed_preimage_backup_download_back": "MISSING exact live 11-target plus dynamic config original backup/absence and independent durable upload/download-back",
+    "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_NATIVE_PASS 29/29 actual original R6 FX142 and ps=-1; installed binary parity and physical visible evidence NOT VERIFIED",
     "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted",
     "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute",
-    "provider_compiled_edge_candidate_and_rollback": "MISSING; live v35 provider source 10/10 matches pinned Git rollback; compiled candidate and exact offprovider restore/download-back absent",
+    "provider_compiled_edge_candidate_and_rollback": "MISSING compiled Edge candidate and independently downloaded production compiled v35 rollback; source 10/10 provider parity only",
     "versioned_sql_and_edge": "new overlay V1 functions not applied, Edge active v35; no destructive old Glow writer permitted",
     "new_service_start_and_conflict_audit": "NOT_RUN; require installed service list read-only and unique process no duplicate, no Owner WS regression",
-    "manifest_one_time_approval": "NULL; owner advances scope but no specific SHA-bound one-use approval",
-    "phase1_phase2": "PENDING_NOT_ADMITTED; no production mutation"
+    "manifest_one_time_approval": "NULL, no approval requested until independent recovery and native Owner priority gate pass",
+    "phase1_phase2": "PENDING_NOT_ADMITTED; all source gates false and release includes no production changes",
+    "native_owner_priority_installed_r6": "FAIL_PROVEN original R6 permits scoreboard overwrite active direct Owner TEXT. 4af57... source patch native tests PASS but no compiled candidate or installed firmware; source gate false",
+    "actual_owner_selected_brightness": "Matrix HBNF.matrixBrightness=0 in latest Nov3 authenticated readback; GLOW visually black. No automatic brightness/preset adjustments allowed"
   },
   "installer_included": true,
   "ordered_release": [
@@ -178,7 +182,7 @@
     "physical_checked": false,
     "software": [
       "21/21 Owner installed unchanged except approved six",
-      "9/9 exact changed target hashes",
+      "11/11 exact packaged Opal targets plus dynamically protected config, actual preimage/readback/rollback still required",
       "17/17 locally served HTTP assets",
       "no stale queued command after reconnect",
       "provider Edge candidate exact provider hash",
@@ -190,7 +194,7 @@
     "manifest_verification": "11 packaged targets plus 1 dynamic protected secret config, 21 Owner backup, exact absent recovery, no inherited old service",
     "source_ci": "41720381549 SUCCESS; native 6/6, BusyBox 5/5; local transactional 13/13"
   },
-  "schema": "hbnf-cart116-controls-track-a-managed-glow-two-phase-admission-v2",
+  "schema": "hbnf-cart116-controls-track-a-managed-glow-two-phase-admission-v3-bc-integrated",
   "source_corrections_20261103": {
     "candidate_main_install_path_corrected": "/usr/libexec/hbnf-matrix-relay",
     "changed_only_tests": "10/10 native Node PASS; BusyBox ash syntax 3/3 PASS; GitHub Actions run 41707392710 success",
@@ -372,7 +376,7 @@
       "targets": "staging/cart116-glow-v35-exact-review/release/TARGETS.PENDING.tsv",
       "readme": "staging/cart116-glow-v35-exact-review/release/README-MANAGED-SERVICE.md"
     },
-    "candidate_target_manifest_git_blob_sha1": "3555404c92ff39b0fe195ce02a56904ee35f8f70",
+    "candidate_target_manifest_git_blob_sha1": "7424fc81f82ba796864a359318ea07871dd52837",
     "packaged_target_count": 11,
     "packaged_targets": [
       {
@@ -387,7 +391,7 @@
       {
         "path": "/etc/init.d/hbnf-cart-glow-bridge",
         "zip_member": "candidate/opal/etc/init.d/hbnf-cart-glow-bridge",
-        "candidate_sha256": "392c3c4a0ab00c456b30d4841e38625d4745e2de840eb93cdd07541519ffdb9d",
+        "candidate_sha256": "e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7",
         "observed_preimage_sha256": "UNKNOWN",
         "mode": "755",
         "preimage_verified_current": false,
@@ -396,7 +400,7 @@
       {
         "path": "/usr/lib/hbnf-glow-overlay-v1.sh",
         "zip_member": "candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh",
-        "candidate_sha256": "89426f278020abb2913b8cd8ffd48e80b0f31f013aed52a11b1f4b3d4e5a07c6",
+        "candidate_sha256": "d97ac46d435edfac0d622fc46503a98f2f4ffab22b91e516aef8b25e46eabe33",
         "observed_preimage_sha256": "ABSENT",
         "mode": "700",
         "preimage_verified_current": true,
@@ -432,7 +436,7 @@
       {
         "path": "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
         "zip_member": "candidate/opal/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
-        "candidate_sha256": "c689729e41dd1c4004ded7e1daf69ae05cd595eaa441cb93288b742d017e264d",
+        "candidate_sha256": "df75f4223b0518ceaae933a5e1d55f0260e1ee62c1082ddc8c95b7453f3c62c5",
         "observed_preimage_sha256": "dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
         "mode": "644",
         "preimage_verified_current": true,
@@ -450,7 +454,7 @@
       {
         "path": "/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
         "zip_member": "candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
-        "candidate_sha256": "1c055c510aaa1cbfa6a645b465a4639a78320ddbac030b79ceefccb08262b1da",
+        "candidate_sha256": "4e3033504f56f2d648f06d364a700d00192fbc4e1a0aed2f202dd5e538887da4",
         "observed_preimage_sha256": "9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
         "mode": "644",
         "preimage_verified_current": true,
@@ -483,7 +487,8 @@
       "persistent_on_device": true,
       "in_repo": false,
       "in_offdevice_backup": false,
-      "rollback": "STOP_NEW_SERVICE_THEN_DELETE_ONLY_IF_MATCHING_ROOT_0600_CREATED_CONFIG_AND_ORIGINAL_VERIFIED_ABSENT"
+      "rollback": "STOP_NEW_SERVICE_THEN_DELETE_ONLY_IF_MATCHING_ROOT_0600_CREATED_CONFIG_AND_ORIGINAL_VERIFIED_ABSENT",
+      "preimage_verified_current": false
     },
     "historical_absent_origin": "/usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay absent in owner verified #6614401763; NEW targets individually unknown",
     "owner_ws": "EXISTING_DIRECT_ws://192.168.77.10/ws_NOT_CONTROLLED_OR_RESTARTED_BY_NEW_SERVICE",
@@ -492,7 +497,10 @@
       "main": "HBNF_CART_GLOW_SOURCE_ADMITTED=false",
       "helper": "HBNF_OVERLAY_V1_SOURCE_ADMITTED=false",
       "edge": "admitted:false/nativeOverlayAdmitted:false",
-      "auto_live": false
+      "auto_live": false,
+      "native_owner_priority": "HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED=false",
+      "review_guard": "NATIVE_OWNER_TEXT_PRIORITY_INSTALLED_AND_ACCEPTED=false",
+      "procd": "requires_three_hard_source_gates_even_before_start"
     },
     "conflict_gate": "reject unexpected legacy relay files/processes, unknown target drift, symlinks and preexisting credential config",
     "bootstrap_and_recovery": "new procd service only after authenticated preflight, exact backup independently downloaded back and same one-time approval; persisted lockout after ambiguous network/TTL/reboot; Owner direct WS independent",
@@ -502,7 +510,32 @@
       "ash_syntax": "5/5 PASS github-actions run 41720381549",
       "github_ci": "https://github.com/oookkkaaayyy/local-roots/actions/runs/41720381549",
       "old_native_pg_deno_repeated": false,
-      "old_physical_guard_tests_repeated": false
+      "old_physical_guard_tests_repeated": false,
+      "networking_B": "c431cfbdbe2ad11b7d11a6ec54878e3470af9b3d",
+      "matrix_C": "979e8d729ba2b8bef8a2c8400227fe0b34106e19",
+      "changed_only_ci": "41725610372 SUCCESS 14/14 Node plus BusyBox ash",
+      "native_deno": "41725610237 SUCCESS 8/8 current R6 Deno; PG intentionally skipped, prior 41694282141 PASS",
+      "first_bad_path_run": "41724324221 FAIL corrected source layout on 6f76ba9d71909e7afc5ca0da4417103ea61d3bd9",
+      "original_R6_native_renderer": "29/29 source/native only",
+      "uninstalled_owner_priority_patch": "4af57d8c... native 39/39; compiled BIN absent"
     }
+  },
+  "integration_bc_20261103": {
+    "integrated_source_commit": "6f76ba9d71909e7afc5ca0da4417103ea61d3bd9",
+    "networking_B_head": "c431cfbdbe2ad11b7d11a6ec54878e3470af9b3d",
+    "owner_module_git_blob": "e178c4a6b3631be79a12dd467f5b4361aa504ad1",
+    "owner_module_sha256": "4e3033504f56f2d648f06d364a700d00192fbc4e1a0aed2f202dd5e538887da4",
+    "owner_asset_manifest_sha256": "df75f4223b0518ceaae933a5e1d55f0260e1ee62c1082ddc8c95b7453f3c62c5",
+    "transport_source_sha256": "ae6fc45f833bce652aa4844501df4d79ed19c135fcf22507995ee772b29930d7",
+    "safari12_cache_key": "ae6fc45f833bce65",
+    "matrix_C_head": "979e8d729ba2b8bef8a2c8400227fe0b34106e19",
+    "renderer": "ps=-1 effectId142 both segments FX142 source-qualified, no preset60 forcing; not physical visible",
+    "installed_r6_owner_priority": "FAIL_PROVEN original R6 allows delayed GLOW overwrite of active Owner text; cannot be closed by cloud preflight",
+    "matrix_review_patch": "4af57d8c0d94e0a0966b1735f45f660d769da6a0; 39/39 native source tests; candidate firmware NOT BUILT or installed",
+    "matrix_brightness": "OWNER_REPORT_ZERO, visible GLOW impossible; never force nonzero for test",
+    "aux": "22 RGB GPIO16 + 2 OFF PWM25/26; DDP 22 of 24 configured; no AUX/PWM/UV write",
+    "ci_changed": "41725610372 SUCCESS",
+    "ci_deno": "41725610237 SUCCESS",
+    "owner_field_accepted": false
   }
 }
