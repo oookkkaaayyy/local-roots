@@ -113,3 +113,46 @@ test('glow 2026 PAR standings exclude September 2 Fixture trophy, while retainin
  assert.equal(vm.runInContext('glow2026ParRows',c)().length,0);
  assert.equal(JSON.stringify(state),before,'the permanent fixture history was not deleted');
 });
+
+test('Nov3 actual-score-derived team ranks are competition ranks 1/T2/T2/4 shared by both partners',()=>{
+ const teams=[
+  {player:{id:'A',cardId:'C1'},partners:['Fox','Jason'],total:48,relTotal:-11},
+  {player:{id:'B',cardId:'C1'},partners:['Andrew','Matt'],total:52,relTotal:-7},
+  {player:{id:'C',cardId:'C1'},partners:['Kyle','Dylan'],total:52,relTotal:-7},
+  {player:{id:'D',cardId:'C1'},partners:['Karl','Tony'],total:57,relTotal:-2}
+ ];
+ const c=vm.createContext({
+  scoredTeamsForWeek:()=>teams,
+  hbnfFlatMap:(items,fn)=>items.flatMap(fn)
+ });
+ vm.runInContext(extract('function standingsForWeek(w){','function weekHasScores(w){'),c);
+ const standings=vm.runInContext('standingsForWeek',c)({scoresLocked:true,cards:[{id:'C1',finalized:true}]});
+ assert.deepEqual(Array.from(standings,r=>r.rankLabel),['1','1','T2','T2','T2','T2','4','4']);
+ assert.deepEqual(Array.from(standings,r=>r.rank),[1,1,2,2,2,2,4,4]);
+ assert.deepEqual(Array.from(standings.filter(r=>r.isTeamLead),r=>r.teamName),
+  ['Fox / Jason','Andrew / Matt','Kyle / Dylan','Karl / Tony']);
+ assert.equal(standings.every(r=>r.status==='Finalized'),true);
+});
+test('Nov3 rank UI shows team-first dashboard and shared teammate rank in standings, not individual indexes',()=>{
+ assert.match(html,/const dashboardTeams=weekRows\.filter\(r=>r\.isTeamLead\)/);
+ assert.match(html,/dashboardTeams\.slice\(0,5\)\.map\(r=>/);
+ assert.match(html,/\$\{r\.rankLabel\}<\/span><\/td><td>\$\{escapeHtml\(r\.teamName\)\}/);
+ assert.match(html,/weekRows\.map\(r=>/);
+ assert.doesNotMatch(html,/weekRows\.map\(\(r,i\)=>/);
+});
+test('all modeled Glow monetary panels clearly disclaim unverified collections, ace balances and disbursements',()=>{
+ const payout=extract('function renderPayout(){','function glowScorecardTagLabel(');
+ const history=extract('function renderLegacyPanels(){','function makeStandingTablesScrollable(){');
+ const dashboard=extract('function renderGlowDashboard(){','function renderStandings(){');
+ for(const [name,src] of [['payout',payout],['history',history],['dashboard',dashboard]]){
+  assert.match(src,/PROJECTED \/ UNVERIFIED/,name+' must disclaim cash');
+ }
+ assert.match(payout,/October 24 Jason ace: \$500 already PAID, \$0 owed/);
+ assert.match(payout,/Ace payout \(PROJECTED \/ UNVERIFIED, not paid record\)/);
+ assert.match(history,/Main Ace Pot \(PROJECTED \/ UNVERIFIED\)/);
+ assert.match(history,/Summer Payout \(PROJECTED \/ UNVERIFIED\)/);
+ assert.match(history,/Reserve \(PROJECTED \/ UNVERIFIED\)/);
+ assert.match(dashboard,/Winner Pool \(PROJECTED \/ UNVERIFIED\)/);
+ assert.match(dashboard,/Ace Pot \(PROJECTED \/ UNVERIFIED\)/);
+ assert.match(dashboard,/Award not verified paid/);
+});
