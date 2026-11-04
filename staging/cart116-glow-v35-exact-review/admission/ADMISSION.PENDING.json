@@ -1179,5 +1179,138 @@
       "current_first_hard_stop": "Authenticated exact four-target live preimage/absent-state + private durable independent downloadback",
       "next_independent_after_capture": "Check exact returned read-only paths, absence/presence/mode/procd/lockouts; verify source tar member hashes and private durable downloadback; then provider compiled-body and actual installed R6 flash recovery gate; same original manifest only. No approval before full readiness."
     }
+  },
+  "dora_c4_20261104": {
+    "schema": "hbnf-cart116-track-a-dora-c4-recovery-only-reconciliation-v1",
+    "authority": "GitHub #116 issue comment 6643295817; same C3/C2 controlling admission, no new cutover/install stream",
+    "source_head_inspected": "eb8a8b2ebea7498d47bc4f85cf0240650f602ce5",
+    "status": "PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION",
+    "provider_authenticated_new_readback": {
+      "project": "phcpbvuqibyarpfrftgx",
+      "function": "hbnf-cart-control",
+      "status": "ACTIVE",
+      "version": 35,
+      "ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+      "source_file_count": 10,
+      "source_file_names": [
+        "index.ts",
+        "guest-command.ts",
+        "runtime-vibe.ts",
+        "live.ts",
+        "skins_scoring.ts",
+        "matrix-relay.ts",
+        "matrix-relay-projection.ts",
+        "matrix-relay-auth.ts",
+        "pairing-expiry.mjs",
+        "deno.json"
+      ],
+      "exact_historical_github_rollback_source_tree": "74dd1d687de44eacb20eff8e3960d9129948ef88",
+      "prior_10_of_10_source_parity": "PASS_PREEXISTING_NOT_RERUN_C4",
+      "new_binary_ESZip_recovery_sha256": null,
+      "prospective_compiled_candidate_sha256": null,
+      "connected_get_edge_function_exposes": "provider metadata and ten individual source file strings, not raw bundled deployed ESZip",
+      "provider_management_get_body": "GET /v1/projects/{ref}/functions/{function_slug}/body is documented requiring edge_functions:read; response sample {} does not establish native ESZip raw download; not available in connector",
+      "management_bundleOnly": "POST /v1/projects/{ref}/functions/deploy?bundleOnly=1 is documented nonpersistent bundling but requires write-capable API and returns metadata, not accepted bytes; NOT CALLED",
+      "source_download_recovery_limit": "Supabase dashboard/CLI Download fetches source; official guide warns CLI download omits import maps and deno.json (existing rollback source includes deno.json), so not compiled deployment parity",
+      "exact_compiled_rollback_gate": "BLOCKED_MISSING_SUPPORTED_AUTHENTICATED_BINARY_BYTES_AND_INDEPENDENT_DOWNLOADBACK",
+      "resumption_trigger": "Connected authenticated provider read action accepting approved Management body endpoint must expose actual compiled ESZip bytes/content-type and permit independent SHA/download-back, or a separately qualified provider-native source restore/reproducible deployment with exact same-manifest rollback accepted by owner; until then no provider mutation",
+      "official_docs": [
+        "https://supabase.com/docs/guides/functions/architecture",
+        "https://supabase.com/docs/reference/api/v1-get-a-function-body",
+        "https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore",
+        "https://supabase.com/changelog/33720-deploy-and-update-edge-functions-using-the-management-api"
+      ]
+    },
+    "sql_authenticated_new_readback": {
+      "overlay_v1_rpc_count": 0,
+      "overlay_v1_challenge_table": null,
+      "existing_legacy_matrix_relay_rpcs": 5,
+      "new_sql_changes_or_test_writes": false,
+      "reviewed_sql_inverse_source_preserved": true,
+      "source_protocol_pg17_and_deno_previous_ci": "PREVIOUSLY_VERIFIED_NOT_RERUN"
+    },
+    "firmware_installed_vs_original_identity": {
+      "last_hardware_authenticated_readback": "2026-11-03 Nov3 owner readback #116 6613457326: .10 MAC 704bca5b345c, WLED16.0.1, HBNF build release hbnf-cart2-phase2-r6-skins-readable-20261014, ps=-1 FX142 both, 534 logical LEDs",
+      "source_release_marker_matches_historical_original_build_receipt": true,
+      "archived_historical_source_build_receipt": "existing C3 verified 22/22 private Library 9c126ccf... archive, source/ORIGINAL_R6_BUILD_RECEIPT.json and SOURCE_BINDING.json",
+      "historical_source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+      "historical_build_environment": "PlatformIO 6.1.18; hbnf_matrix_wled16_packet20_diag; Arduino-ESP32 2.0.18; esptool 4.7.4",
+      "historical_build_exit_status": 0,
+      "historical_original_r6_image_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "original_r6_image_size": 1506032,
+      "patched_corrected_candidate_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "patched_candidate_size": 1505968,
+      "ota_slot_size": 1572864,
+      "archived_receipt_limits": "No OTA or physical acceptance performed (explicit in original Oct14 build receipt); this is a compile/source receipt, not an installed flash digest",
+      "archived_original_rollback_source_and_bytes": "PRESERVED_VERIFIED_C3",
+      "version_level_runtime_identity": "ACCEPTED",
+      "exact_installed_raw_image_parity": "NOT_VERIFIED_WLED_JSON_MARKER_DOES_NOT_EXPOSE_RAW_FLASH_SHA",
+      "supported_restoration_path": "WLED firmware OTA upload and configuration/presets export documented, with lock/settings conditions; Espressif serial read-flash supports raw image readback with physical serial access; NOT TESTED_OR_RUN",
+      "restore_route_qualified_for_actual_device": false,
+      "no_additional_separate_field_test_requested": true,
+      "source_compilation_or_artifact_regenerated": false,
+      "restoration_gate": "ARCHIVED_COMPATIBLE_ORIGINAL_TARGET_AND_VERSION_WITNESS_PASS; EXACT_INSTALLED_FLASH_BYTES_OR_ACCEPTED_RECOVERY_CAPABILITY_NOT_YET_PASS"
+    },
+    "opal_four_target_and_protected_config": {
+      "available_installed_capture_in_this_conversation": false,
+      "previously_authenticated_20261103_captures_cover_new_four_targets": false,
+      "current_target_preimages_four": "UNKNOWN_PRESENCE_ABSENCE_BYTES_OWNER_MODE",
+      "protected_config_presence_mode": "UNKNOWN",
+      "procd_new_service_process_and_lockout": "UNKNOWN",
+      "historical_relay_path_absence": "KNOWN_20261103_FOR_DIFFERENT_LEGACY_PATHS_ONLY",
+      "direct_browser_authenticated_local_hardware_access": "UNAVAILABLE_CHAT_NO_ORIGINATING_BROWSER_CONTEXT",
+      "existing_C3_capture_tool": {
+        "exact_path": "/mnt/data/CART116-C3-Opal-ReadOnly-Capture-Tool.zip",
+        "file_size": 4664,
+        "sha256": "5c34fdd0ae4125bcbbad9e7e0c715962100f0dfe7efe6fb3dd25cf3942b9edbc",
+        "zip_entries": [
+          "CART116-C3-Opal-ReadOnly.command",
+          "CART116-C3-READ-ME.txt"
+        ],
+        "remote_script_scope": "source bytes/hash/stat/absence for only 4 whitelisted files, config presence permissions ONLY (no config bytes), counts/flags for named service/process and locks; no firmware/Opal router/Owner writes",
+        "local_zip_reopened_and_script_audited_in_C4": true,
+        "user_already_given_link_C3": true,
+        "new_archive_generated": false,
+        "output_capture_uploaded": false,
+        "owner_single_action": "Reuse existing .command once on Mac while connected to HBNF-Cart; privately attach only resulting CART116-C3-READONLY-CAPTURE.zip. No copy/paste Terminal commands.",
+        "safe_abort_conditions": "SSID/subnet/route mismatch, SSH known-host mismatch, root auth failure, symlink/nonregular, wrong ownership/config mode, incomplete receipt or extracted hash mismatch"
+      },
+      "exact_installed_source_preimage_backup_offdevice_downloadback": "PENDING_NO_CAPTURE_OUTPUT",
+      "first_hard_blocker": "AUTHENTICATED_INSTALLED_FOUR_PATHS_AND_PROTECTED_CONFIG_METADATA_NOT_AVAILABLE",
+      "resume_trigger": "Owner supplies ONE existing private C3 read-only artifact or an equivalent authenticated direct-provider Opal readback; then verify exact target sha/absence+file owner/mode and private offdevice backup/download-back in same manifest, not public GitHub."
+    },
+    "scoring_p0_gate_fresh_nonmutating": {
+      "issue": "GitHub #115/#147 draft PR151 sole writer",
+      "provider_public_league_state_id": 1,
+      "updated_at": "2026-11-04T07:30:01.546079Z",
+      "state_md5": "a4fb5d8606f7f6a7a7ae1e96026e78af",
+      "nov03_players": 3,
+      "sync_state": "failed",
+      "sync_error": "SOURCE_UNAVAILABLE",
+      "genuine_4_team_persisted_and_independently_acknowledged": false,
+      "recovered_four_team_XLSX_fixture_not_live": true,
+      "writes_executed_by_C4": false
+    },
+    "exact_cutover_scope": {
+      "matrix": "original-target corrected firmware SHA 85796804..., original rollback de38221...",
+      "provider": "versioned overlay-v1 SQL/RPC and Edge handler only, preserve existing v35 routes and archive",
+      "opal": "only 4 new source/executable/init/provision paths plus protected root:root 0600 config created on-device after admission",
+      "excluded": "seven working Owner PWA assets, AUX writes, UV switch, router, WAN, guest UI, networking, unrelated features, unsafe full-state Matrix relay",
+      "all_admission_gates_false": true,
+      "one_time_approval_in_manifest": null,
+      "actual_firmware_flash": false,
+      "actual_edge_deployment": false,
+      "actual_sql_migration": false,
+      "actual_opal_file_service_change": false,
+      "actual_score_activation": false
+    },
+    "next_admission_step": {
+      "user_action_required_now": "ONE_C3_READ_ONLY_OPAL_CAPTURE_ONLY_IF_OWNER_CAN_ACCESS_CART_LAN",
+      "after_capture": "Independently verify private source backup against receipt and preserve/download-back durably; reconcile same-manifest four-target installed state and then provider compiled (or explicitly admitted equivalent recovery) and firmware target restore capability; no source changes or approval request before gates pass",
+      "first_stop": "Opal four-target/secret-config/procd preimages and offdevice backup not evidenced",
+      "later_stop": "Compiled ESZip rollback/candidate unavailable from connected provider plus unverified actual-device firmware rollback; scoring P0 not yet persisted",
+      "one_combined_field_session": "ALREADY_IN_C2_SAME_MANIFEST_NOT_REWRITTEN",
+      "new_device_test_requests": false
+    }
   }
 }
