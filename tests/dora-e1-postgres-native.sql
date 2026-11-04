@@ -8,8 +8,8 @@ CREATE TABLE public.lr_event_sources (id uuid PRIMARY KEY,event_id uuid NOT NULL
 CREATE TABLE public.lr_results (id uuid PRIMARY KEY,event_id uuid NOT NULL
  REFERENCES public.lr_events(id),source_id uuid NOT NULL,player_name text,
  place integer,total_score integer,updated_at timestamptz DEFAULT now());
-CREATE FUNCTION public.lr_touch_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$
- BEGIN NEW.updated_at=clock_timestamp(); RETURN NEW; END; $;
+CREATE FUNCTION public.lr_touch_updated_at() RETURNS trigger LANGUAGE plpgsql AS $touch$
+ BEGIN NEW.updated_at=clock_timestamp(); RETURN NEW; END; $touch$;
 CREATE TRIGGER lr_events_touch_updated_at BEFORE UPDATE ON public.lr_events
  FOR EACH ROW EXECUTE FUNCTION public.lr_touch_updated_at();
 CREATE TRIGGER lr_event_sources_touch_updated_at BEFORE UPDATE ON public.lr_event_sources
