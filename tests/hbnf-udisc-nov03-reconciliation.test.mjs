@@ -260,6 +260,14 @@ test('atomic read-only review isolates exact QI and stages all four real teams w
   [['Fox','Jason'],['Andrew','Matt'],['Kyle','Dylan'],['Karl','Tony Howell']]);
  assert.deepEqual(report.projectedWeek.players.map(p=>p.scores.reduce((a,v)=>a+Number(v),0)),
    [48,52,52,57]);
+ const par=report.projectedWeek.scorecardText.holePars;
+ assert.equal(Object.keys(par).length,18);
+ assert.equal(Object.values(par).reduce((sum,n)=>sum+Number(n),0),59);
+ assert.deepEqual(Object.entries(par).filter(([,v])=>v==='4').map(([k])=>Number(k)),
+   [5,11,15,17,18]);
+ assert.deepEqual(report.projectedWeek.scorecardText.holeNotes,
+   root.state_json.glow.weeks[DATE].scorecardText.holeNotes);
+ assert(report.changedPaths.includes('glow.weeks.2026-11-03.scorecardText.holePars'));
  assert.deepEqual(root.state_json.glow.weeks[DATE].players.map(p=>p.id),
   ['QI_1793572411877_1','QI_1793572411877_2','QI_1793572411877_3']);
  assert.equal(JSON.stringify(root),before);
@@ -291,4 +299,13 @@ test('empty scored export cannot begin Nov03 atomic replacement',async()=>{
  const root=configuredOfficialRoot();
  await assert.rejects(()=>prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
    snapshot:{eventId:EVENT_ID,weekDate:DATE,rows:[]}}),/NONEMPTY_SCORED_EXPORT_REQUIRED/);
+});
+
+test('preexisting conflicting November 3 par rejects scores rather than silently skewing standings',async()=>{
+ const root=configuredOfficialRoot();
+ root.state_json.glow.weeks[DATE].scorecardText.holePars['5']='3';
+ const original=JSON.stringify(root);
+ await assert.rejects(()=>prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
+   snapshot:receiptSnapshot(),decisions:reviewedNames}),/NOV03_PAR_LAYOUT_PREIMAGE_CONFLICT:5/);
+ assert.equal(JSON.stringify(root),original);
 });
