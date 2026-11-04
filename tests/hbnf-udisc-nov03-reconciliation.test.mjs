@@ -256,6 +256,9 @@ test('atomic read-only review isolates exact QI and stages all four real teams w
  assert.equal(report.quarantinedIds.length,3);
  assert.equal(report.projectedSummary.teams,4);
  assert.equal(report.projectedSummary.changes,72);
+ assert.deepEqual(report.projectedSummary.sourceReceipt,
+  {teamCount:4,playerCount:8,scoredHoles:72,totalStrokes:209,par:59,
+   ranks:[1,2,2,4],source:'owner_XLSX_secondary_receipt_only'});
  assert.deepEqual(report.projectedWeek.players.map(p=>[p.partner1,p.partner2]),
   [['Fox','Jason'],['Andrew','Matt'],['Kyle','Dylan'],['Karl','Tony Howell']]);
  assert.deepEqual(report.projectedWeek.players.map(p=>p.scores.reduce((a,v)=>a+Number(v),0)),
@@ -308,4 +311,19 @@ test('preexisting conflicting November 3 par rejects scores rather than silently
  await assert.rejects(()=>prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
    snapshot:receiptSnapshot(),decisions:reviewedNames}),/NOV03_PAR_LAYOUT_PREIMAGE_CONFLICT:5/);
  assert.equal(JSON.stringify(root),original);
+});
+
+test('changed authentic Nov03 hole scores or purported ranks fail before quarantine planning',async()=>{
+ const root=configuredOfficialRoot(),untouched=JSON.stringify(root);
+ const altered=receiptSnapshot();
+ altered.rows[3].scores[17]='5';
+ altered.rows[3].strokeTotal=58;
+ altered.rows[3].holeStrokesTotal=58;
+ altered.rows[3].relativeScore=-1;
+ await assert.rejects(()=>prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
+  snapshot:altered,decisions:reviewedNames}),/NOV03_OFFICIAL_SCORED_RECEIPT_MISMATCH_ROW_5/);
+ const rank=receiptSnapshot();rank.rows[2].sourceRank=3;
+ await assert.rejects(()=>prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
+  snapshot:rank,decisions:reviewedNames}),/NOV03_OFFICIAL_SCORED_RECEIPT_MISMATCH_ROW_4/);
+ assert.equal(JSON.stringify(root),untouched);
 });
