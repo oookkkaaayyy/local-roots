@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { DORA_E1, isDoraE1FixtureDate, isDoraE1LinkedEvent } from "./dora-e1-quarantine.mjs";
 import {
   buildConfirmedGlowSchedule,
   findMissingSourceRecords,
@@ -223,6 +224,8 @@ Deno.serve(async (req) => {
 
     for (const [date, week] of Object.entries(glowWeeks)) {
       if (!dateKey(date) || !week || typeof week !== "object") continue;
+      // DORA E1: skip this single confirmed synthetic fixture before creating candidates or result rows.
+      if (isDoraE1FixtureDate("glow", date)) continue;
       if (shouldUseConfirmedSchedule(date, week, confirmedGlowDates)) continue;
       const url = eventSourceUrl("glow", date);
       const tuesdayGlow = date >= FIRST_CONFIRMED_TUESDAY_GLOW;
@@ -306,7 +309,19 @@ Deno.serve(async (req) => {
       .filter((event: any) => event.status === "canceled")
       .map((event: any) => event.id));
     const existingByExternalId = new Map((existing.data ?? []).map((row: any) => [row.external_id, row]));
-    const seen = new Set(records.map((record) => record.externalId));
+    // Do not mistake this deliberately quarantined identity for a missing source week.
+    const seen = new Set([...records.map((record) => record.externalId), DORA_E1.externalId]);
+    const e1Link = existingByExternalId.get(DORA_E1.externalId);
+    if (isDoraE1LinkedEvent(e1Link, sourceId)) {
+      // One event only; preserve provenance, six results, other fields and real played rounds.
+      // The published=true condition prevents repeat runs from churning updated_at.
+      const quarantineE1 = await service.from("lr_events")
+        .update({ published: false })
+        .eq("id", DORA_E1.eventId)
+        .eq("slug", DORA_E1.slug)
+        .eq("published", true);
+      if (quarantineE1.error) throw new Error(`DORA E1 fixture quarantine failed: ${quarantineE1.error.message}`);
+    }
     const missing = findMissingSourceRecords(existing.data ?? [], seen, !stateFetchError);
 
     let valid = 0;
