@@ -2,13 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildS1ApplySQL,buildS1ExactRollbackSQL,neededS1Gates,SCORED_XLSX_SHA256} from '../scripts/hbnf-parent-release/nov03-score-only-s1.mjs';
+import {NOV03_SCORED_RECEIPT} from '../scripts/hbnf-parent-release/udisc-nov03-reconciliation.mjs';
+import {NOV3_LAYOUT} from '../scripts/hbnf-parent-release/nov03-event-source.mjs';
 const sql=readFileSync(new URL('../scripts/hbnf-parent-release/sql/nov03-score-only-guard.sql',import.meta.url),'utf8');
 const before={beforeSha:'4ede8a226b55d556c24359903ebf496e67cff6006b695fe475b72f1673c860f7',
  beforeRevision:'2026-11-04 07:30:01.546079+00',
  oldWeek:{players:[1,2,3].map(n=>({id:'QI_1793572411877_'+n})),cards:[{id:'C1',players:[]}]}};
 const report={status:'ATOMIC_NOV03_SCORE_PROPOSAL_REVIEW_ONLY',projectedStatus:'READY_FOR_SEPARATE_ADMITTED_CAS_REVIEW',
  eventId:'hb-glow-doubles-tAP8Y5',officialSource:{claimedSha256:SCORED_XLSX_SHA256,originalXlsxVerified:true},
- projectedWeek:{players:[1,2,3,4].map(n=>({id:'UDISC_20261103_0'+n,scores:Array(18).fill('3')})),cards:[{id:'C1'}]}};
+ projectedWeek:(()=>{const names=[['Fox','Jason'],['Andrew','Matt'],['Kyle','Dylan'],['Karl','Tony Howell']];
+ const players=NOV03_SCORED_RECEIPT.map((row,i)=>({id:'UDISC_20261103_0'+(i+1),partner1:names[i][0],partner2:names[i][1],scores:row.strokes.map(String)}));
+ return {players,cards:[{id:'C1',players:players.map(p=>({id:p.id}))}],scorecardText:{holePars:Object.fromEntries(NOV3_LAYOUT.holes.map(h=>[String(h[0]),String(h[4])]))}};})()};
 const good=()=>Object.fromEntries(neededS1Gates.map(k=>[k,true]));
 test('server guard freezes four Nov03 scoring source fields without ACL or sign-in changes',()=>{
  for(const k of ['CREATE TRIGGER','BEFORE UPDATE OF state_json','UDISC_20261103_',
@@ -26,4 +30,16 @@ test('exact source-only forward and reverse are single transactions with old roo
  for(const k of ['BEGIN;','ACCESS EXCLUSIVE MODE','S1_REVERSE_FENCE_MISMATCH',
  'DROP TRIGGER','S1_REVERSE_CAS_FAILED','S1_EXACT_ROOT_RESTORE_FAILED',
  'DROP FUNCTION','COMMIT;'])assert(b.includes(k),k);
+});
+
+test('S1 final SQL admission rejects a tampered real score, identity, card or hole par',()=>{
+ for(const edit of [
+  w=>{w.players[0].scores[0]='9';},
+  w=>{w.players[3].partner2='Test Player';},
+  w=>{w.cards[0].players[1].id='QI_1793572411877_2';},
+  w=>{w.scorecardText.holePars['5']='3';}
+ ]){
+  const altered=structuredClone(report);edit(altered.projectedWeek);
+  assert.throws(()=>buildS1ApplySQL({before,review:altered,gates:good()}),/S1_REVIEW_/);
+ }
 });
