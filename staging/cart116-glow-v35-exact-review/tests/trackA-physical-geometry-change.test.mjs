@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {inspectAux22DdpWithOffPwm,proposeNativeOverlayOnly} from '../candidate-source/matrix-overlay-safe-review.mjs';
+import {inspectAux22DdpWithOffPwm,proposeNativeOverlayOnly,R6_OWNER_PRIORITY_RELEASE} from '../candidate-source/matrix-overlay-safe-review.mjs';
 import {captureOverlayProfile,overlayPreimageHash} from '../candidate-source/glow-overlay-v1-handler.mjs';
 import {assessRelayRuntimeOrigin,HISTORICAL_SKINS_PATHS,PROPOSED_GLOW_PATHS} from '../opal/relay-startup-origin.mjs';
 const release='hbnf-cart2-phase2-r6-skins-readable-20261014';
@@ -76,4 +76,50 @@ test('existing procd START95 points to libexec, never proposed absent /usr/lib e
  assert.deepEqual(PROPOSED_GLOW_PATHS,['/usr/libexec/hbnf-matrix-relay','/usr/lib/hbnf-glow-overlay-v1.sh']);
  const f=assessRelayRuntimeOrigin({files:Object.fromEntries([...HISTORICAL_SKINS_PATHS,...PROPOSED_GLOW_PATHS].map(p=>[p,{kind:'absent'}])),services:[],processes:[],sessionId:'physical-receipt-6613457326'});
  assert.equal(f.admitted,false);assert.equal(f.reason,'new_relay_paths_absent_origin_not_verified');
+});
+
+function visibleUnityR6(x) {
+  x.state.bri=255;
+  x.state.seg[0].bri=255;
+  x.state.seg[1].bri=255;
+  x.state.HBNF.matrixBrightness=24;
+  return x;
+}
+test('original R6 remains Owner-priority blocked; exact successor recognized but never admitted',()=>{
+  const original=visibleUnityR6(fixture());
+  const old=proposal(original);
+  assert.equal(old.reason,'installed_r6_owner_text_priority_not_enforced');
+  assert.equal(old.eligible,false);
+  const patched=clone(original);
+  patched.build.release_id=R6_OWNER_PRIORITY_RELEASE;
+  patched.build.features=['native-overlay-owner-text-priority-v1'];
+  patched.state.HBNF.candidate=R6_OWNER_PRIORITY_RELEASE;
+  const next=proposal(patched);
+  assert.equal(next.reason,'native_owner_priority_source_gate_not_admitted');
+  assert.equal(next.eligible,false);
+  assert.equal(next.mutationAuthorized,false);
+  assert.equal(next.reviewOnly,true);
+  assert.deepEqual(patched.state.seg.map(v=>[v.start,v.stop,v.fx,v.bri]),[[0,512,142,255],[512,534,142,255]]);
+  assert.equal(patched.state.ps,-1);
+  assert.equal(patched.state.HBNF.matrixBrightness,24);
+  assert.equal(patched.auxState.seg[1].on,false);
+  assert.equal(patched.auxState.seg[2].on,false);
+});
+test('wrong/mismatched build marker and missing/forged feature are never accepted',()=>{
+  const base=visibleUnityR6(fixture());
+  const mismatch=clone(base);
+  mismatch.build.release_id=R6_OWNER_PRIORITY_RELEASE;
+  mismatch.build.features=['native-overlay-owner-text-priority-v1'];
+  assert.equal(proposal(mismatch).reason,'installed_release_not_verified');
+  const unknown=clone(base);
+  unknown.build.release_id='unapproved-new-firmware';
+  unknown.state.HBNF.candidate='unapproved-new-firmware';
+  assert.equal(proposal(unknown).reason,'installed_release_not_verified');
+  const noFeature=clone(base);
+  noFeature.build.release_id=R6_OWNER_PRIORITY_RELEASE;
+  noFeature.state.HBNF.candidate=R6_OWNER_PRIORITY_RELEASE;
+  assert.equal(proposal(noFeature).reason,'installed_r6_owner_text_priority_not_enforced');
+  const forgedOld=clone(base);
+  forgedOld.build.features=['native-overlay-owner-text-priority-v1'];
+  assert.equal(proposal(forgedOld).reason,'installed_r6_owner_text_priority_not_enforced');
 });
