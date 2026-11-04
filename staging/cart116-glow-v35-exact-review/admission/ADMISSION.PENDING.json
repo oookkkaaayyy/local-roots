@@ -1093,5 +1093,91 @@
     ],
     "no_live_mutation": true,
     "owner_approval_not_requested": true
+  },
+  "dora_c3_20261104": {
+    "authority": "GitHub #116 Track A existing C2 admission only; evidence delta, not another release/package",
+    "starting_source_head": "247dbe1543cd0f252a2d77bdcc967097f647494e",
+    "actual_hardware_capture": "NOT_OBTAINED_NO_LOCAL_CART_LAN_SSH_AUTH_IN_THIS_CHAT",
+    "hardware_connected_browser_result": "Browser list_tabs refuses absent originating browser context; cannot use as Opal SSH bridge",
+    "first_hard_blocker": "FOUR_INSTALLED_OPAL_PREIMAGE_AND_DURABLE_DOWNLOADBACK_MISSING",
+    "previous_real_device_receipts": {
+      "old_owner_and_hardware": "2026-11-03 #116 6613457326; old 21 Owner files read-only; Matrix .10 R6 ps=-1 FX142 and AUX .11 22 DDP+2 PWM OFF",
+      "old_relay_absence": "2026-11-03 #116 6614401763; old /usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay absent; bounded relay ps without matching PID",
+      "four_new_targets": "NOT_COVERED_BY_HISTORICAL_RECEIPTS",
+      "protected_config": "NOT_COVERED_BY_HISTORICAL_RECEIPTS"
+    },
+    "fresh_baseline_read": {
+      "supabase_project": "phcpbvuqibyarpfrftgx",
+      "edge": "hbnf-cart-control",
+      "active_version": 35,
+      "edge_deployed_metadata_ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+      "edge_source_file_count": 10,
+      "edge_compiled_body_obtained": false,
+      "edge_compiled_provider_rollback_downloadback": false
+    },
+    "provider_supported_read_path": {
+      "official_documentation": "https://supabase.com/docs/reference/api/v1-get-a-function-body",
+      "management_get_route": "GET /v1/projects/{ref}/functions/{function_slug}/body",
+      "required_scope": "edge_functions:read (fine-grained edge_functions_read)",
+      "tool_available_for_that_raw_body": false,
+      "caveat": "Endpoint is documented as function body; do not claim compiled ESZIP return until exact authenticated content type/bytes observed. Current get_edge_function gives only 10 source files and metadata. Dashboard/CLI Download is a source export and may omit deno.json/import maps; not exact compiled rollback.",
+      "next_authenticated_trigger": "Available connector with exact scoped management GET or authenticated dashboard/CLI raw function-body export and independent bytes/download-back; later candidate binary bundleOnly metadata plus source lock and recovery compatibility"
+    },
+    "original_r6_firmware_recovery_newly_reverified": {
+      "library_path": "/Cart Upgrades/Matrix C5 Recovery/Cart116-Matrix-R6-OwnerPriority-ExactHash-REPRODUCED-REVIEW_ONLY-20261103.zip",
+      "library_file_id": "file_00000000f84c81fd9f63adaac3b64383",
+      "downloaded_bytes": 3526950,
+      "downloaded_zip_sha256": "9c126ccf09b135fcb3347d069f9661df335531dd2cce3332da3c2a3e3492d102",
+      "zip_crc": "PASS",
+      "manifest_embedded_entries_checked": 22,
+      "manifest_embedded_hashes_correct": 22,
+      "embedded_candidate": "candidate/firmware.bin",
+      "candidate_bytes": 1505968,
+      "candidate_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "embedded_original_rollback": "rollback/hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
+      "rollback_bytes": 1506032,
+      "rollback_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "actual_installed_flash_sha256": "UNKNOWN",
+      "restoration_mechanism_source": "WLED official manual OTA/reflash documentation https://kno.wled.ge/basics/getting-started/ ; Espressif serial read-flash documentation https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/basic-commands.html",
+      "supported_restoration_identity_admitted": false,
+      "note": "Archive source/OTA formats are not proof of live flash identity, OTA unlock, retained configuration, or proven target rollback; no serial, OTA, flash read or reboot performed."
+    },
+    "single_bounded_opal_capture_prepared": {
+      "artifact_name": "CART116-C3-Opal-ReadOnly-Capture-Tool.zip",
+      "artifact_size": 4664,
+      "artifact_sha256": "5c34fdd0ae4125bcbbad9e7e0c715962100f0dfe7efe6fb3dd25cf3942b9edbc",
+      "embedded_command": "CART116-C3-Opal-ReadOnly.command",
+      "command_mode": "0755_in_zip",
+      "test_evidence": "macOS bash -n PASS; isolated BusyBox ash syntax PASS and all-four-absent receipt observed; ZIP CRC PASS",
+      "executed_on_real_opal": false,
+      "user_action": "On Mac connected directly to HBNF-Cart, unzip and double-click one .command; enter known SSH root password if asked; attach resulting private CART116-C3-READONLY-CAPTURE.zip only in ChatGPT private conversation. No Terminal commands to paste.",
+      "shell_ssh_security": "StrictHostKeyChecking=yes; existing ssh-rsa host key only; en0 must have 192.168.77.x and route directly to .1; one SSH authentication",
+      "read_only_scope": {
+        "paths": [
+          "/usr/libexec/hbnf-cart-glow-bridge",
+          "/etc/init.d/hbnf-cart-glow-bridge",
+          "/usr/libexec/hbnf-cart-glow-provision",
+          "/usr/lib/hbnf-glow-overlay-v1.sh"
+        ],
+        "captures": "regular file hash/size/owner/mode, exact allowlisted nonsecret file bytes as private local tar only when present; absent explicit",
+        "protected_config": "/etc/hbnf-cart-glow-bridge.conf PRESENCE/MODE/UID/GID ONLY; never contents or tar",
+        "service": "procd service name presence, bridge/legacy named process counts, 3 lockout/cursor presence booleans; no raw process/service JSON",
+        "remote_write": false,
+        "local_output": "one private ZIP and SHA256 receipt on Mac Desktop",
+        "safe_stop": "wrong subnet/route, host-key mismatch, auth failure, symlink/nonregular path, ownership drift, config permissions wrong, incomplete receipt or local archive hash mismatch",
+        "secrets_stored_in_report": false
+      },
+      "capture_returns_verified_installed_preimages": false,
+      "durable_offdevice_original_backup_after_capture": "PENDING_OWNER_PRIVATE_UPLOAD_THEN_INDEPENDENT_REDOWNLOAD_HASH_VERIFY",
+      "owner_approval_requested": false
+    },
+    "continuation": {
+      "no_unadmitted_mutation": true,
+      "old_eleven_target_zip_rebuild": false,
+      "seven_working_owner_pwa_replacements": false,
+      "original_score_p0_gate": "PENDING_REAL_FOUR_TEAM_SAVED_REVISION_AND_INDEPENDENT_READBACK",
+      "current_first_hard_stop": "Authenticated exact four-target live preimage/absent-state + private durable independent downloadback",
+      "next_independent_after_capture": "Check exact returned read-only paths, absence/presence/mode/procd/lockouts; verify source tar member hashes and private durable downloadback; then provider compiled-body and actual installed R6 flash recovery gate; same original manifest only. No approval before full readiness."
+    }
   }
 }
