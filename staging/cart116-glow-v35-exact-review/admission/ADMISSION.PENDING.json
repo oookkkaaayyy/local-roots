@@ -777,5 +777,321 @@
       "live_matrix_aux_edge_sql_opal_mutations": false,
       "physical_accepted": false
     }
+  },
+  "dora_c2_20261104": {
+    "schema": "hbnf-cart116-track-a-dora-c2-readonly-phase0-evidence-v1",
+    "disposition": "NOT_ADMITTED_NO_LIVE_MUTATION",
+    "checkpoint_source_parent": "397e071fbc9b56daaa9d0356a891b06123779f0f",
+    "changed_only_hosted_ci": {
+      "c1_adapter": {
+        "commit": "dbc54c4a475518b13eb1a39713e2c20e02dfb94c",
+        "run_id": 41808438162,
+        "job_id": 126501235768,
+        "conclusion": "SUCCESS",
+        "steps": "FOCUSED_NODE_AND_BUSYBOX_ASH_SUCCESS",
+        "url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/41808438162"
+      },
+      "c1_opal_helper": {
+        "commit": "9717ea82826edb135059b1d21e127876b50bf9fd",
+        "run_id": 41811101246,
+        "job_id": 126510257620,
+        "conclusion": "SUCCESS",
+        "steps": "FOCUSED_NODE_AND_BUSYBOX_ASH_SUCCESS",
+        "url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/41811101246"
+      },
+      "manifest_only_head": {
+        "commit": "397e071fbc9b56daaa9d0356a891b06123779f0f",
+        "run_id": 41811478748,
+        "conclusion": "SKIPPED_AS_EXPECTED",
+        "reason": "NO_IMPLEMENTATION_CHANGE"
+      },
+      "no_reruns_performed": true
+    },
+    "native_protocol_and_transaction_evidence": {
+      "current_source_compatibility": "12/12 READ_ONLY EXACT_SOURCE_INTERFACE_CHECKS",
+      "sql_up_git_blob": "e03daecfd23f8431758551f0a0efe1f4bcb77eef",
+      "sql_down_git_blob": "f093047c8c69096e5529cffce4733d94b12be459",
+      "sql_functions": [
+        "hbnf_cart_glow_overlay_v1_issue",
+        "hbnf_cart_glow_overlay_v1_authorize",
+        "hbnf_cart_glow_overlay_v1_ack",
+        "hbnf_cart_glow_overlay_v1_restored"
+      ],
+      "native_pg": {
+        "run_id": 41694282141,
+        "head": "9058cb467ac86c14efe2a34e519de60017d63242",
+        "step": "Native PostgreSQL 17 transaction / role / race and guarded rollback",
+        "step_conclusion": "SUCCESS",
+        "overall_run_conclusion": "FAILURE_due_later_Deno_dependency_check",
+        "two_clients_one_unique_issuance": true,
+        "unresolved_challenge_rollback_denied": true
+      },
+      "native_deno": {
+        "run_id": 41694531461,
+        "head": "51d9d50ec8bda9d8f59dd4f55d2d9173158afb5a",
+        "step": "Native Deno FormData, WebCrypto and versioned Edge handler",
+        "step_conclusion": "SUCCESS",
+        "overall_run_conclusion": "SUCCESS",
+        "pg_rerun": "SKIPPED"
+      },
+      "nonblocking_opal": {
+        "run_id": 41720381549,
+        "conclusion": "SUCCESS",
+        "changed_native_source_and_ash": "SUCCESS"
+      },
+      "registered_source_gates": "ALL_FALSE, independent native/Opal/Edge, no on-device source toggle",
+      "edge_handler_bridge": "REVIEW_ONLY; deployed v35 still old and no SQL overlay table; neither deployed nor field accepted",
+      "physical_protocol_recovery_accepted": false
+    },
+    "baseline": {
+      "matrix_last_authenticated_capture": {
+        "source_issue_comment": 6613457326,
+        "date": "2026-11-03T19:21:40Z/19:21:53Z",
+        "target_ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "wled": "16.0.1",
+        "installed_by_readback_release": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+        "actual_installed_flash_sha256": "UNKNOWN",
+        "ps": -1,
+        "foundation_effect": 142,
+        "segments_fx": [
+          142,
+          142
+        ],
+        "logical_count": 534,
+        "companion_segment": [
+          512,
+          534
+        ],
+        "master_brightness": 255,
+        "matrix_brightness": 0,
+        "aux_brightness": 0,
+        "brightness_note": "historical capture only; Nov3 owner after-scenario sliders may differ",
+        "owner_priority_native_correction_installed": false
+      },
+      "aux_last_authenticated_capture": {
+        "source_issue_comment": 6613457326,
+        "target_ip": "192.168.77.11",
+        "mac": "8c94df55c34c",
+        "ddp_source_ip": "192.168.77.10",
+        "ddp_active_rgb": 22,
+        "configured_outputs": 24,
+        "segments": [
+          {
+            "start": 0,
+            "stop": 22,
+            "type": "RGB",
+            "gpio": 16,
+            "on": true
+          },
+          {
+            "start": 22,
+            "stop": 23,
+            "type": "PWM",
+            "gpio": 25,
+            "on": false
+          },
+          {
+            "start": 23,
+            "stop": 24,
+            "type": "PWM",
+            "gpio": 26,
+            "on": false
+          }
+        ],
+        "packet_level_and_electrical_uv_off_not_certified": true
+      },
+      "opal_last_authenticated_capture": {
+        "source_issue_comments": [
+          6613457326,
+          6614401763
+        ],
+        "date": "2026-11-03",
+        "owner_direct_ws_control_last_owner_report": "2026-11-03_IPAD_SMOKE_PASS_6619078893",
+        "original_owner_files": "21/21_PASS_AT_CAPTURE",
+        "new_four_exact_targets": "NOT_CAPTURED_BY_LAST_OLD_9_TARGET_RECEIPT",
+        "historical_relay_libexec": "ABSENT_AT_1212_PST",
+        "historical_relay_init": "ABSENT_AT_1212_PST",
+        "historical_relay_matching_process": "NONE_OBSERVED_BY_BOUNDED_GREP_NOT_FULL_PROCD_INVENTORY",
+        "protected_new_service_config": "NOT_CAPTURED",
+        "fresh_target_capture": "MISSING",
+        "installed_backup_independent_downloadback": "MISSING"
+      },
+      "edge_current_authenticated_readback": {
+        "function": "hbnf-cart-control",
+        "project": "phcpbvuqibyarpfrftgx",
+        "status": "ACTIVE",
+        "version": 35,
+        "ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+        "source_files": 10,
+        "exact_source_rollback_previous_parity": "10/10",
+        "compiled_provider_ESZIP_bytes_available": false,
+        "compiled_candidate_ESZIP_bytes_available": false
+      },
+      "sql_current_authenticated_readback": {
+        "overlay_v1_rpc_count": 0,
+        "challenge_table": null,
+        "legacy_relay_preserved": true
+      },
+      "scoring_p0_readback": {
+        "owner": "GitHub #115/#147 PR151 ONLY",
+        "league_state_id": 1,
+        "updated_at": "2026-11-04T07:30:01.546079Z",
+        "md5": "a4fb5d8606f7f6a7a7ae1e96026e78af",
+        "glow_20261103_players_count": 3,
+        "status": "failed",
+        "errorCode": "SOURCE_UNAVAILABLE",
+        "lastSuccessAt": null,
+        "real_four_team_revision_persisted_and_independently_verified": false,
+        "offline_fixture_only": true
+      }
+    },
+    "recovery_artifacts": {
+      "exact_target_r6_review_firmware_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "exact_target_r6_review_firmware_bytes": 1505968,
+      "original_r6_archived_binary_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "original_r6_archived_binary_bytes": 1506032,
+      "exact_r6_independent_recovery_zip_sha256": "9c126ccf09b135fcb3347d069f9661df335531dd2cce3332da3c2a3e3492d102",
+      "exact_r6_recovery_library_id": "libfile_290600d927248191bfa18206e1a2c0d0",
+      "exact_r6_recovery_prior_independent_downloadback": "PASS_22_OF_22_SHA_NO_THIS_TURN_REDOWNLOAD",
+      "superseded_max_target_binary_sha256": "d577813d281d402a6510a0e9e128916c40fc620d0ba05199cec4c366dff0c552",
+      "old_eleven_target_opal_review_archive": {
+        "drive_id": "1waGa_02GjaqPCsAnK46SQNXVQ4md4MVo",
+        "sha256": "1ae02a4a9745599e16abdc7528016c113f22652078866cd7320c35b01ec6a544",
+        "drive_metadata_size_verified": 981839,
+        "prior_crc": "PASS",
+        "prior_embedded_hashes": "48/48_PASS",
+        "prior_target_hashes": "11/11_PASS",
+        "has_old_pre_C1_helper": true,
+        "installable": false,
+        "not_to_repackage_or_install": true
+      },
+      "original_owner_v120_backup_sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
+      "nov3_owner_preimage_capture": {
+        "filename": "cart116-NINE-readonly-20261103-112139.zip",
+        "sha256": "ee458c62b35d22c7f24214c1d782e8173f836484fc6e58f41b4e9a89c448ab3a",
+        "inside_opal_original_tar_sha256": "7922d1a5526c8f901316b368ffaf3a3d9caad84a6032aa7e110085b6562e61a6",
+        "independent_durable_external_downloadback": false
+      },
+      "new_c2_artifact_or_archive_created": false
+    },
+    "four_new_opal_targets_exact_review_source": [
+      {
+        "target": "/usr/libexec/hbnf-cart-glow-bridge",
+        "git_blob": "cbc2798a5616068688c77eb72d95feae9d1e4f0b",
+        "source_sha256": "97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c",
+        "bytes": 2372,
+        "expected_owner": "root:root",
+        "mode": "0755",
+        "live_preimage": "UNKNOWN"
+      },
+      {
+        "target": "/etc/init.d/hbnf-cart-glow-bridge",
+        "git_blob": "8d18de8dcbed119fc7799f12f074d12802341d85",
+        "source_sha256": "e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7",
+        "bytes": 1083,
+        "expected_owner": "root:root",
+        "mode": "0755",
+        "live_preimage": "UNKNOWN"
+      },
+      {
+        "target": "/usr/libexec/hbnf-cart-glow-provision",
+        "git_blob": "fbdaa95a1f4282c94077f011c28251dfd9bd8a65",
+        "source_sha256": "fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20",
+        "bytes": 1447,
+        "expected_owner": "root:root",
+        "mode": "0700",
+        "live_preimage": "UNKNOWN"
+      },
+      {
+        "target": "/usr/lib/hbnf-glow-overlay-v1.sh",
+        "git_blob": "2c92c84a7325b548513555c0c8f4d6a3cda83ac6",
+        "source_sha256": "de51e9ace05f876124886089b841c6f5858b91ee4d42a3260f7e8f1788146538",
+        "bytes": 12573,
+        "expected_owner": "root:root",
+        "mode": "0700",
+        "live_preimage": "ABSENT_ON_OLD_NOV3_CAPTURE_REQUIRES_FRESH_VERIFICATION",
+        "old_11_target_zip_helper_sha256": "d97ac46d435edfac0d622fc46503a98f2f4ffab22b91e516aef8b25e46eabe33"
+      }
+    ],
+    "protected_config": {
+      "target": "/etc/hbnf-cart-glow-bridge.conf",
+      "expected_owner": "root:root",
+      "mode": "0600",
+      "preimage": "UNKNOWN",
+      "credential_source": "auth_root_stdin_only",
+      "secrets_in_manifest": false,
+      "offdevice_backup_secrets": false,
+      "rollback": "restore presence or exact absence without disclosing secrets"
+    },
+    "admission_manifest_phase0": {
+      "first_hard_blocker": "NO_CURRENT_AUTHENTICATED_OPAL_NEW_SERVICE_TARGET_PREIMAGE_OR_DURABLE_INSTALLED_BACKUP",
+      "named_missing_capability": "this Chat has no authenticated Cart LAN root readback/SSH; Browser connected originating session unavailable; old Nov3 9-target capture does not cover four new paths or protected config",
+      "resumption_trigger": "authenticated read-only Opal prechange capture of exactly four target lstat/sha256/mode/owner and absence, root protected config existence+mode/owner ONLY (NO bytes), current procd/process/service/lockouts, combined independent private offdevice backup+download-back identity; plus Matrix/AUX read-only render baseline and exact installed firmware image identity/restore",
+      "separate_provider_blocker": "read-only compiled ESZIP v35 and candidate bodies+offprovider durable restore not exposed through get_edge_function (10 source files and metadata only), require authorized edge_functions:read provider body download and digest/rollback verification",
+      "firmware_blocker": "actual installed Matrix raw flash image identity and safe reversible update/restore method are not yet verified; archived original R6 image is not a raw installed firmware attestation",
+      "score_blocker": "Scoring P0 has not persisted and independently verified the four genuine teams; never display offline fixture as live standings",
+      "source_gates_false": [
+        "HBNF_CART_GLOW_SOURCE_ADMITTED",
+        "HBNF_OVERLAY_V1_SOURCE_ADMITTED",
+        "HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED",
+        "NATIVE_OWNER_TEXT_PRIORITY_INSTALLED_AND_ACCEPTED",
+        "Edge admitted",
+        "Edge nativeOverlayAdmitted"
+      ],
+      "authoritative_manifest_one_time_id": null,
+      "compiled_edge_candidate_sha256": null,
+      "compiled_edge_preimage_downloadback_sha256": null,
+      "actual_installed_flash_identity_sha256": null,
+      "opaltarget_backup_downloadback_sha256": null,
+      "approved_enabled_source_postimage_sha256": null,
+      "one_use_owner_approval": null
+    },
+    "same_manifest_ordered_release_restore_contract": [
+      {
+        "order": 0,
+        "phase": "PRECHANGE_RECONCILE",
+        "effect": "READ_ONLY",
+        "instructions": "Freeze real installed Owner v1.0.20 working direct WS; snapshot Matrix .10 native release/ps/fx142/global and HBNF brightness/overlay/AudioReactive state, AUX .11 24 configured 22 DDP RGB plus two PWM OFF, current 4 Opal new path lstat/hash/owner/mode/absence, protected config metadata (never contents), procd and lockouts, actual firmware rollback feasibility, Edge v35 deployment and SQL signatures. Require exact current source and no drift."
+      },
+      {
+        "order": 1,
+        "phase": "RETAIN_AND_PROVE_RECOVERY",
+        "effect": "NO_ACTUATION",
+        "instructions": "Preserve existing independently validated exact original R6 and 21-file Owner backup; acquire true current Opal preimages/absence and no-secret config proof, durable private offdevice upload and downloadback SHA, actual installed firmware identity/restore, compiled provider v35 ESZIP + candidate body exact bytes with separately verified restore, SQL inverse; no reuse of superseded max-target BIN or old 11-target ZIP as C2 installer."
+      },
+      {
+        "order": 2,
+        "phase": "FREEZE_SINGLE_PROTECTED_MANIFEST",
+        "effect": "NO_ACTUATION",
+        "instructions": "Pin exactly four Opal target postimages plus root 0600 config presence lifecycle, Matrix corrected original-target BIN, Edge compiled candidate plus original v35 binary rollback and SQL migration up/down, desired Cart revision/fence/challenge. Derive and verify separate admitted-enabled source postimages only after all preimage/recovery gates pass; preserve old source false gates now. Bind one unique manifest and one explicit owner approval; do not take approval on a partial manifest."
+      },
+      {
+        "order": 3,
+        "phase": "PHASE1_PROVIDER_AND_MATRIX",
+        "effect": "MUTATION_FORBIDDEN_NOW",
+        "instructions": "Under exact approved manifest and current readback only: apply SQL v1 with exact inverse and Edge overlay handler with unchanged legacy routes, both remain inactive until safe; flash corrected original-target R6 with verified native rollback, confirm Owner PWA local no regression, 32x16+22 DDP and PWM off before enabling any Glow overlay. Abort and rollback on identity drift/Owner control failure; never force preset60 or brightness."
+      },
+      {
+        "order": 4,
+        "phase": "PHASE1_OPAL_ACTIVATION",
+        "effect": "MUTATION_FORBIDDEN_NOW",
+        "instructions": "Under same approved immutable manifest only: stage and hash four new Opal files (not seven working /www files), provision protected new config using authenticated root stdin, start precisely one managed outbound-only procd service after compatible exact enrolled source postimages/flags, verify no old relay process or competing loop, no AUX state writes and no Owner WS interruption."
+      },
+      {
+        "order": 5,
+        "phase": "PHASE2_SINGLE_INSTRUMENTED_ACCEPTANCE",
+        "effect": "NO_NEW_SESSION_UNTIL_ADMITTED",
+        "instructions": "One owner-present accepted session, only after P0 authoritative saved scoring revision + existing normal nonzero owner-selected Matrix brightness: baseline capture, issue one legitimate 4-team GLOW command; independently verify provider revision/fence, one-use challenge, Matrix overlay ID and visible PAR59 scores, no AUX write, direct Owner TEXT priority while GLOW pending, refresh/Safari12 reconnect without stale replay, TTL natural expiry with restoration of original FX142 ps=-1/animation/Vibe/AudioReactive/Energy/Variation/Motion/brightness/DDP22 and both PWM/UV OFF. One-stop on discrepancy; no repeated speculative sessions."
+      },
+      {
+        "order": 6,
+        "phase": "CLOSEOUT_OR_EXACT_RESTORE",
+        "effect": "MUTATION_FORBIDDEN_NOW",
+        "instructions": "Record same-manifest deployed provider hash, SQL privileges/challenge settled, Opal four exact files and protected config mode, Matrix installed identity, original Owner HTTP/web asset hashes and physical acceptance. On failure STOP and quarantine Glow/keep Owner WS; never replay one-use overlay or blind overlay:null; if any challenge unresolved, SQL inverse refuses until readback/owner-safe recovery. Restore Edge from exact pinned compiled v35 rollback, reverse SQL only after resolved challenge, disable and restore/remove each of four Opal paths strictly from captured present/absent preimage, delete protected config only if it was verified absent before, restore original R6 through verified compatible firmware path, verify hash/state and durable downloadback closeout. Do not globally rewrite Matrix/AUX over active Owner overlay; preserve lockout on ambiguous WLED actuation."
+      }
+    ],
+    "no_live_mutation": true,
+    "owner_approval_not_requested": true
   }
 }
