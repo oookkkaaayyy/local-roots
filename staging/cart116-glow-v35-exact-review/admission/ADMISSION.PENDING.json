@@ -18,7 +18,7 @@
     "hard_opal_admitted": false,
     "previous_review_capsule_sha256": "d38061cb21c1943d3d09b4569eda234afcd3bb524fdb97ef48fc94a14563084e",
     "original_underlying_managed_service_source_sha256": "0639a7c68628db88879a73772ec34433d60de0aff4f7fe28644559aff1a21c29",
-    "reason": "New transport/Owner source exact and backed up; no installed 11-target new-service+secret-config preimage backup/download-back, compiled provider body restore, Owner-safe firmware installed equivalence or one-use owner approval"
+    "reason": "Owner/Networking source exact and recoverable; managed 11-target ZIP contains NO R6 firmware. Hard STOP: current new-service/secret config preimage + independent installed backup, compiled Edge body recovery, installed firmware image parity/same-manifest rollback, one-time authorization and field acceptance absent."
   },
   "edge": {
     "candidate_source": {
@@ -47,7 +47,8 @@
     "networking_final_head": "272f18ae64e8d8f531d8d03b0a0ae8574d66b45b",
     "repo": "oookkkaaayyy/local-roots",
     "current_review_source_head": "36483c2be61c4792c6657cf8f3f454765530b075",
-    "matrix_owner_priority_review_patch_head": "4af57d8c0d94e0a0966b1735f45f660d769da6a0"
+    "matrix_owner_priority_review_patch_head": "4af57d8c0d94e0a0966b1735f45f660d769da6a0",
+    "matrix_track_c_exact_r6_reproduced_head": "ea257573f390eef8bd6f42668b25399f2e4ce8cb"
   },
   "failure_recovery": [
     {
@@ -77,7 +78,7 @@
     "new_service_current_11_target_preimages": "3 NEW executable/init/provision target preimages UNKNOWN; seven original Owner/transport known at capture time; helper observed ABSENT; require fresh exact originals/absence and ownership/mode before admission",
     "new_service_conflicts": "original legacy /usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay absent Nov3 #6614401763; complete current named process/procd service and secret-config absence must match at release preflight",
     "independent_installed_preimage_backup_download_back": "STILL BLOCKED: current actual Opal new managed service/protected config 11 target readback and durable original backup/downloadback not obtained; separate new source candidate Drive backup is NOT an installed-state backup",
-    "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_NATIVE_PASS 29/29; candidate built under non-diagnostic environment; installed original R6 true ps=-1 FX142; no physical display or binary parity proof; no preset60 forcing",
+    "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_ONLY: original packet20_diag R6-target Owner priority binary 85796804... independently reproducible; original ps=-1 FX142 and audio/DDP code preserved; installed native renderer/priority/physical display unverified; no preset60 forcing.",
     "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted",
     "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute",
     "provider_compiled_edge_candidate_and_rollback": "STILL BLOCKED: connected get_edge_function exposes only 10 v35 source and deployed bundle digest metadata; not actual compiled v35 ESZIP body nor candidate compiled body with independent offprovider recovery",
@@ -85,7 +86,7 @@
     "new_service_start_and_conflict_audit": "NOT_RUN; require installed service list read-only and unique process no duplicate, no Owner WS regression",
     "manifest_one_time_approval": "NULL, no approval requested until independent recovery and native Owner priority gate pass",
     "phase1_phase2": "PENDING_NOT_ADMITTED; all source gates false and release includes no production changes",
-    "native_owner_priority_installed_r6": "STILL BLOCKED: reviewed corrected R6 firmware binary d577813d... compiled and source-bound+archived, but not shown byte-equivalent to installed R6 or physically installed; Owner TEXT race persists on running R6. No firmware flash approval.",
+    "native_owner_priority_installed_r6": "BLOCKED: exact-original-build-target patched BIN 85796804... reproduced twice and archived with original rollback; no installed raw-image SHA/parity, same-manifest firmware approval or flash; original R6 Owner TEXT-vs-stale Glow race remains on device. Earlier max-target BIN d577813d... is not equivalent.",
     "actual_owner_selected_brightness": "LATEST READBACK MATRIX HBNF.matrixBrightness=0; render black, do not change automatically; visible Glow acceptance only upon naturally selected nonzero normal operation",
     "network_reconnect_20261103": "SOURCE_INTEGRATED CI 41741222537 SUCCESS 5/5 native + exact hashes; NO LIVE IPAD/SAFARI12/WAN/POWER FIELD ACCEPTANCE; replace old d380 package not install prior digest"
   },
@@ -553,19 +554,24 @@
     "exact_review_patch_sha256": "9ce39687374ab0895834df750571e2d7f171751d16a8cd02ec20c6654fd5709a",
     "patched_source_sha256": "6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa",
     "compiled_candidate": {
-      "name": "CART116_R6_OWNER_TEXT_PRIORITY_REVIEW_ONLY.bin",
-      "sha256": "d577813d281d402a6510a0e9e128916c40fc620d0ba05199cec4c366dff0c552",
-      "bytes": 1474064,
+      "name": "CART116_R6_OWNER_TEXT_PRIORITY_EXACT_ORIGINAL_TARGET_REPRODUCED_REVIEW_ONLY.bin",
+      "sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "bytes": 1505968,
       "partition_bytes": 1572864,
-      "headroom_bytes": 98800,
-      "board": "Matrix WLED16 4MB",
-      "build_environment": "hbnf_matrix_wled16_max",
-      "original_r6_build_flags_verified": false,
-      "recorded_historical_R6_OTA_compatibility": "NOT_PROVEN",
+      "headroom_bytes": 66896,
+      "board": "original R6 ESP32 Matrix WLED16 4MB",
+      "build_environment": "hbnf_matrix_wled16_packet20_diag",
+      "original_r6_build_target_verified": true,
+      "source_sha256": "6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa",
+      "patch_sha256": "9ce39687374ab0895834df750571e2d7f171751d16a8cd02ec20c6654fd5709a",
+      "clean_builds_byte_identical": true,
+      "original_build_flag_semantics": "historical receipt target and pinned source/toolchain matched; exact installed raw firmware parity not proven",
       "installed_firmware_sha256_verified": false,
       "exact_device_restore_proven": false,
       "field_visible_test": false,
-      "condition": "REQUIRES_SEPARATE_SAME_MANIFEST_FIRMWARE_ADMISSION_BEFORE_ANY_FLASH"
+      "install_authorized": false,
+      "in_opal_managed_11_target_zip": false,
+      "condition": "REVIEW_ONLY; REQUIRES_SEPARATE_SAME_MANIFEST_PREIMAGE_RECOVERY_AND_ONE_TIME_FIRMWARE_APPROVAL_BEFORE_FLASH"
     },
     "historical_original_rollback": {
       "name": "hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
@@ -595,7 +601,46 @@
       "installable": false
     },
     "physical_preservation": "ps=-1, two FX142 segments, 32x16 native + DDP22, Owner first, all Vibe/audio/Energy/Variation/Motion controls, brightness may be zero, 22 RGB GPIO16 + two OFF PWM25/26, UV OFF",
-    "new_candidate_binary_release_gate": "BLOCKED_PENDING_INSTALLED_BINARY_ATTESTATION_OR_SUPPORTED_EQUIVALENCE; one owner-specific transactional firmware permission separate from Controls Opal/Edge changes"
+    "new_candidate_binary_release_gate": "EXACT_ORIGINAL_R6_TARGET_BUILT_REPRODUCED_AND_DURABLY_RECOVERABLE_REVIEW_ONLY; INSTALLED_IMAGE_PARITY/RELEASE PREIMAGE/ONE_TIME_APPROVAL/PHYSICAL RESTORE ALL BLOCKED",
+    "previous_different_build_environment_review_candidate": {
+      "name": "CART116_R6_OWNER_TEXT_PRIORITY_REVIEW_ONLY.bin",
+      "sha256": "d577813d281d402a6510a0e9e128916c40fc620d0ba05199cec4c366dff0c552",
+      "bytes": 1474064,
+      "partition_bytes": 1572864,
+      "headroom_bytes": 98800,
+      "board": "Matrix WLED16 4MB",
+      "build_environment": "hbnf_matrix_wled16_max",
+      "original_r6_build_flags_verified": false,
+      "recorded_historical_R6_OTA_compatibility": "NOT_PROVEN",
+      "installed_firmware_sha256_verified": false,
+      "exact_device_restore_proven": false,
+      "field_visible_test": false,
+      "condition": "REQUIRES_SEPARATE_SAME_MANIFEST_FIRMWARE_ADMISSION_BEFORE_ANY_FLASH",
+      "disposition": "SUPERSEDED_NONEXACT_R6_TARGET_REVIEW_ONLY_NOT_EQUIVALENT_NOT_FOR_FLASH",
+      "earlier_recovery_zip_drive_id": "1z4tFXe7kXDiYcHBlQxnYA6roFvUNUdWq"
+    },
+    "exact_r6_reproduced_evidence": {
+      "track_c_issue_comment": 6618608191,
+      "track_c_source_head": "ea257573f390eef8bd6f42668b25399f2e4ce8cb",
+      "original_build_receipt_target": "hbnf_matrix_wled16_packet20_diag",
+      "first_run_id": 41741937797,
+      "second_run_id": 41742832729,
+      "first_artifact_id": 13282760988,
+      "second_artifact_id": 13282666777,
+      "independent_binary_byte_comparison": "PASS",
+      "file_and_checksum_recovery": {
+        "name": "Cart116-Matrix-R6-OwnerPriority-ExactHash-REPRODUCED-REVIEW_ONLY-20261103.zip",
+        "bytes": 3526950,
+        "sha256": "9c126ccf09b135fcb3347d069f9661df335531dd2cce3332da3c2a3e3492d102",
+        "private_library_path": "/Cart Upgrades/Matrix C5 Recovery/Cart116-Matrix-R6-OwnerPriority-ExactHash-REPRODUCED-REVIEW_ONLY-20261103.zip",
+        "library_id": "libfile_290600d927248191bfa18206e1a2c0d0",
+        "independent_byte_download_back": "PASS",
+        "embedded_hashes": "22/22 PASS",
+        "installable": false
+      },
+      "original_rollback_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "source_only_no_firmware_flash": true
+    }
   },
   "integration_udisc_event_20261103": {
     "source": "github-115-comment-6617174574",
