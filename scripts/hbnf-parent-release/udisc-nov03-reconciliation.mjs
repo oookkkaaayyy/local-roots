@@ -117,9 +117,55 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
  * result is projected only against a CLONE of the quarantined week.
  * No live write, admission, settlement, or UDisc organizer attestation.
  */
+// This is a secondary transcription of the owner-verified original scored
+// XLSX (#115 comment 6627720510), NOT its bytes. Only this exact completed
+// event is eligible for the one-time QI replacement review; an amended
+// official export requires separately reviewed source/correction evidence.
+const NOV03_SCORED_RECEIPT=Object.freeze([
+ {names:['Fox','Jason mintzer'],handles:['mrfox1','jasonmintzer'],
+  strokes:[2,2,3,2,3,3,3,3,2,2,4,2,2,2,3,3,4,3],total:48,rank:1},
+ {names:['Andrew','Matthew Levinson'],handles:['ookkaayy','thetek'],
+  strokes:[3,2,3,3,4,2,2,2,2,3,4,2,2,3,3,3,5,4],total:52,rank:2},
+ {names:['Kyle Gundlach','Dylan Jones'],handles:['bogeybillbrasky','drjfuu'],
+  strokes:[2,2,3,3,3,3,4,3,2,2,4,2,2,3,3,3,5,3],total:52,rank:2},
+ {names:['Zimgirdib','Tony Howell'],handles:['zimgirdib','orion3'],
+  strokes:[3,3,3,3,3,3,2,3,2,3,4,3,3,3,5,3,4,4],total:57,rank:4}
+]);
+function verifyCompletedNov3Receipt(snapshot){
+ if(snapshot?.eventId!==EVENT_ID||snapshot?.weekDate!==DATE||
+    !Array.isArray(snapshot?.rows)||snapshot.rows.length!==4)
+   throw Error('NOV03_COMPLETED_FOUR_TEAM_EXPORT_REQUIRED');
+ const usernames=new Set();
+ for(const [index,ref] of NOV03_SCORED_RECEIPT.entries()){
+   const row=snapshot.rows[index];
+   if(!row||row.sourceRow!==index+2||!row.memberAlignment||
+      row.holesComplete!==true||Number(row.holesCompleted)!==18||
+      !Array.isArray(row.members)||!Array.isArray(row.usernames)||
+      !Array.isArray(row.scores)||row.scores.length!==18 ||
+      row.members.length!==2||row.usernames.length!==2||
+      Number(row.sourceRank)!==ref.rank ||
+      Number(row.strokeTotal)!==ref.total||
+      Number(row.holeStrokesTotal)!==ref.total||
+      Number(row.relativeScore)!==ref.total-59 ||
+      row.members.some((v,i)=>String(v).trim()!==ref.names[i]) ||
+      row.usernames.some((v,i)=>String(v).trim()!==ref.handles[i])||
+      row.scores.some((v,i)=>Number(v)!==ref.strokes[i])||
+      row.scores.reduce((sum,v)=>sum+Number(v),0)!==ref.total)
+     throw Error('NOV03_OFFICIAL_SCORED_RECEIPT_MISMATCH_ROW_'+(index+2));
+   for(const handle of row.usernames){
+     if(usernames.has(handle))throw Error('NOV03_DUPLICATE_U_DISC_USERNAME');
+     usernames.add(handle);
+   }
+ }
+ if(usernames.size!==8)throw Error('NOV03_INCOMPLETE_U_DISC_PLAYER_SET');
+ return {teamCount:4,playerCount:8,scoredHoles:72,totalStrokes:209,par:59,
+   ranks:[1,2,2,4],source:'owner_XLSX_secondary_receipt_only'};
+}
+
 export async function prepareNov3AtomicRecoveryReview({root,revision,snapshot,decisions={},sourceProof={}}) {
   const untouched=stable(root);
   if(!snapshot?.rows?.length)throw Error('NONEMPTY_SCORED_EXPORT_REQUIRED');
+  const sourceReceipt=verifyCompletedNov3Receipt(snapshot);
   const original=prepareNov3TestOnlyQuarantine({root,revision});
   if(original.status!=='SOURCE_QUALIFIED_QUARANTINE_REVIEW_ONLY')
     return {status:'QUARANTINE_PREIMAGE_NOT_ADMITTED',quarantineStatus:original.status,
@@ -171,7 +217,7 @@ export async function prepareNov3AtomicRecoveryReview({root,revision,snapshot,de
       exportedStartTime:'DO_NOT_EQUATE_WITH_LOCAL_5_30_PM_EVENT_START'},
     projectedStatus:projected.status,projectedWeek:completedWeek,
     projectedWeekSha256:completedWeek?digest(Buffer.from(stable(completedWeek))):null,
-    projectedSummary:ready?{teams:projected.teamCount,changes:projected.observedChanges.length}:null,
+    projectedSummary:ready?{teams:projected.teamCount,changes:projected.observedChanges.length,sourceReceipt}:null,
     identityReview:projected.identityReview||null,
     issues:projected.issues||null,
     preconditions:['fresh one-time CAS revision and complete unchanged root preimage',
