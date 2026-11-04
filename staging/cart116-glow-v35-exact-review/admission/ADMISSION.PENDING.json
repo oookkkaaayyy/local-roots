@@ -418,7 +418,9 @@
         "observed_preimage_sha256": "ABSENT",
         "mode": "700",
         "preimage_verified_current": true,
-        "restore_behavior": "DELETE_ONLY_AFTER_FRESH_ABSENCE_READBACK"
+        "restore_behavior": "DELETE_ONLY_AFTER_FRESH_ABSENCE_READBACK",
+        "dora_c1_review_source_blob_after_archive": "2c92c84a7325b548513555c0c8f4d6a3cda83ac6",
+        "dora_c1_in_existing_11_target_archive": false
       },
       {
         "path": "/usr/libexec/hbnf-cart-glow-provision",
@@ -696,5 +698,84 @@
     "no_firmware_opal_edge_or_sql_install": true,
     "course_readiness_accepted": false,
     "no_additional_pre_round_test_requested": true
+  },
+  "dora_c1_20261104": {
+    "authority": "GitHub #116 Track A existing Controls branch, NOT a release authority or new package",
+    "source_head_before_record_commit": "9717ea82826edb135059b1d21e127876b50bf9fd",
+    "c1_commits": {
+      "native_readonly_identity": "dbc54c4a475518b13eb1a39713e2c20e02dfb94c",
+      "native_test_regressions": "534a6509f514c866a6d6466b67a8bd94eb947b03",
+      "shell_helper_marker": "5b9bc4f04987daea47cba1b388f6f898f823b080",
+      "shell_fixture_regressions": "9717ea82826edb135059b1d21e127876b50bf9fd"
+    },
+    "verified_git_blobs": {
+      "adapter": "b9a15f43606e8734c2bc34f98e08eebad090f9ec",
+      "helper": "2c92c84a7325b548513555c0c8f4d6a3cda83ac6",
+      "focused_tests": "8ce65ccca0f0f452f487cb63c3bb8e81ca553557"
+    },
+    "source_test": "4/4 targeted committed C1 regression definitions PASS in isolated V8 against exact fetched adapter/helper bytes, no device I/O; Node/BusyBox Github Actions job result not connector-observable",
+    "hosted_ci": "NOT_VERIFIED: GitHub commit combined statuses and PR-triggered workflow runs empty; branch push job conditional configured [trackA-source-only]; do not claim hosted CI passed",
+    "original_owner_smoke": "2026-11-03 owner-reported installed v1.0.20 iPad Matrix/AUX functional PASS; not new feature acceptance",
+    "sourced_offline_standings": {
+      "provenance": "https://github.com/oookkkaaayyy/local-roots/issues/115#issuecomment-6627720510",
+      "source": "original scored 22424-byte UDisc XLSX receipt SHA256 29ed49f19ee3b9c9cb8b12043e9beeb111b0c156ac3cc89a90a9dc54669f86f8",
+      "status": "OFFLINE_FIXTURE_ONLY_NOT_PERSISTED_OR_RELEASE_APPROVED",
+      "par": 59,
+      "team_count": 4,
+      "strokes": [
+        48,
+        52,
+        52,
+        57
+      ],
+      "relative": [
+        -11,
+        -7,
+        -7,
+        -2
+      ],
+      "ranks": [
+        1,
+        2,
+        2,
+        4
+      ],
+      "real_week_save_confirmed": false,
+      "score_authority": "Scoring P0 #115 only"
+    },
+    "smallest_integrated_actuation_boundary": {
+      "disposition": "ATOMIC_MULTITARGET_CUTOVER_REQUIRED; SOURCE PREPARED, NO_INSTALL, NO_ACTUATION",
+      "why": "Original installed R6 allows delayed GLOW scoreboard to supersede active local Owner TEXT; corrected native binary needed. Opal helper rejects old R6 and has two false gates; outbound procd main has false gate; Edge runOverlayV1 and glow_scoreboard_intent remain admitted:false; versioned SQL challenge RPCs/table are absent. Activating any one without shared revision/nonce/TTL and installed native Owner-priority is unsafe or inert.",
+      "phase0_required_targets": [
+        "Matrix .10 original-target reproducible review BIN 85796804... vs archived original R6 rollback de38221f...; installed raw image parity/restore evidence missing",
+        "Supabase hbnf-cart-control v35 compiled exact provider rollback and review successor compiled bytes; currently only 10-file source readback + deployed metadata digest; absent overlay SQL/table",
+        "Opal NEW hbnf-cart-glow-bridge: /usr/libexec/hbnf-cart-glow-bridge, /etc/init.d/hbnf-cart-glow-bridge, /usr/libexec/hbnf-cart-glow-provision, /usr/lib/hbnf-glow-overlay-v1.sh, plus dynamic protected /etc/hbnf-cart-glow-bridge.conf",
+        "Existing same release manifest v1 SQL up/down, one-use challenge and native overlay-only HBNF state with ID/TTL/Owner precedence; never old full-state relay"
+      ],
+      "explicitly_excluded_from_c1_rollout": [
+        "Seven Owner PWA/www replacements in preexisting 11-target archive: preserve working installed v1.0.20 and direct Matrix WS",
+        "Original legacy full-state relay, AUX state/config/segments, WLED presets/FX, audio/Vibe/Energy/Variation/Motion/brightness, UV/PWM25/26, production scoring writes"
+      ],
+      "existing_archive_id": "1waGa_02GjaqPCsAnK46SQNXVQ4md4MVo",
+      "existing_archive_sha256": "1ae02a4a9745599e16abdc7528016c113f22652078866cd7320c35b01ec6a544",
+      "existing_archive_c1_compatible": false,
+      "reason_archive_not_c1_compatible": "Already durable old 11-target review ZIP excludes firmware/provider/SQL and contains pre-C1 helper; retained untouched as earlier review evidence, not reused as C1 installer",
+      "firmware_exact_original_target_candidate_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "firmware_original_R6_rollback_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "firmware_exact_recovery_zip_sha256": "9c126ccf09b135fcb3347d069f9661df335531dd2cce3332da3c2a3e3492d102",
+      "independent_firmware_recovery_download_back": "PRIOR_VERIFIED_22_OF_22; NOT_FRESH_INSTALLED_IMAGE_BACKUP",
+      "next_phase0_hard_stop": "FRESH_AUTHENTICATED_INSTALLED_PREIMAGE+OFFDEVICE_INDEPENDENT_DOWNLOAD_BACK covering Matrix target/flash rollback, Opal four precise new paths/service/process/protected config, current v35 compiled Edge rollback and candidate; no mutation until same-manifest two-phase + one-use owner approval",
+      "source_switches_to_remain_false": [
+        "HBNF_CART_GLOW_SOURCE_ADMITTED",
+        "HBNF_OVERLAY_V1_SOURCE_ADMITTED",
+        "HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED",
+        "NATIVE_OWNER_TEXT_PRIORITY_INSTALLED_AND_ACCEPTED",
+        "Edge admitted",
+        "Edge nativeOverlayAdmitted"
+      ],
+      "release_approval": null,
+      "live_matrix_aux_edge_sql_opal_mutations": false,
+      "physical_accepted": false
+    }
   }
 }
