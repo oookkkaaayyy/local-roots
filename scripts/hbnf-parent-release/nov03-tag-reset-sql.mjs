@@ -16,7 +16,7 @@ const validReceipt=value=>typeof value==='string'&&value.length>=12&&value.lengt
 const fail=status=>({status,productionWrite:false});
 
 function statements(body,tag) {
- return ['BEGIN;','DO $'+tag+'$',...body,'$'+tag+';','COMMIT;'].join('\n');
+ return ['BEGIN;','DO $'+tag+'$',...body,'$'+tag+'$;','COMMIT;'].join('\n');
 }
 const coreOwners=owners=>owners.map(x=>({
  key:String(x.player_key),name:String(x.player_name),tag:Number(x.tag_number)
