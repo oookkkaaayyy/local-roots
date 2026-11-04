@@ -50,7 +50,12 @@ snapshot() {
  jsonfilter -i "$TMP/a-si.json" -e '@.state' > "$TMP/auxState.json" || return 1
  [ "$(jsonfilter -i "$TMP/info.json" -e '@.mac' | tr -d : | tr 'A-F' 'a-f')" = 704bca5b345c ] || return 1
  [ "$(jsonfilter -i "$TMP/auxInfo.json" -e '@.mac' | tr -d : | tr 'A-F' 'a-f')" = 8c94df55c34c ] || return 1
- [ "$(jsonfilter -i "$TMP/build.json" -e '@.release_id')" = 'hbnf-cart2-phase2-r6-skins-readable-20261014' ] || return 1
+ # Corrected exact-original-target R6 firmware advertises a distinct marker.
+ # Old R6 is still unsafe for delayed Glow-versus-Owner TEXT and MUST fail here.
+ # Source markers do not attest installed flash SHA or authorize any actuation.
+ native_owner_safe_release='hbnf-cart2-r6-native-overlay-owner-safe-review-20261103'
+ [ "$(jsonfilter -i "$TMP/build.json" -e '@.release_id')" = "$native_owner_safe_release" ] || return 1
+ [ "$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.candidate')" = "$native_owner_safe_release" ] || return 1
  ps="$(jsonfilter -i "$TMP/state.json" -e '@.ps')" || return 1
  case "$ps" in
    60|-1) : ;; # Native R6 overlays render using registered foundation effect.
