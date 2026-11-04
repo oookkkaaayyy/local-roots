@@ -5,7 +5,7 @@
     "file_name": "CART116-Controls-Managed-Glow-BC-REVIEW_ONLY-20261103.zip",
     "independent_download_back_verified": false,
     "installable": false,
-    "note": "revised netfix2 source snapshot; actual exact package SHA is bound separately by same controlling admission manifest; original 21-file Owner rollback unchanged",
+    "note": "netfix2 source snapshot; exact 11-target package SHA/Drive recovery bound separately in controlling admission. Firmware 85796804... is separate durable REVIEW_ONLY candidate, NOT packaged/installed; original 21-file Owner rollback unchanged.",
     "sha256": null
   },
   "edge": {
@@ -35,7 +35,8 @@
     "matrix_native_owner_priority_source_review_head": "4af57d8c0d94e0a0966b1735f45f660d769da6a0",
     "matrix_track_c_head": "979e8d729ba2b8bef8a2c8400227fe0b34106e19",
     "networking_final_head": "272f18ae64e8d8f531d8d03b0a0ae8574d66b45b",
-    "repo": "oookkkaaayyy/local-roots"
+    "repo": "oookkkaaayyy/local-roots",
+    "matrix_track_c_exact_r6_reproduced_head": "ea257573f390eef8bd6f42668b25399f2e4ce8cb"
   },
   "failure_recovery": [
     {
@@ -80,7 +81,9 @@
     "one_time_owner_manifest_bound_authorization": "NOT_REQUESTED; source/device/firmware/provider technical gates not yet passed",
     "owner_preemption_field_timing": "UNVERIFIED",
     "physical_owner_safari12_matrix_aux_acceptance": "NOT_ACCEPTED; one combined field test after exact manifest approval; UV OFF",
-    "single_unchanged_manifest_phase1_phase2_closeout": "PENDING"
+    "single_unchanged_manifest_phase1_phase2_closeout": "PENDING",
+    "native_owner_priority_installed_r6": "Review-only exact original R6 packet20_diag build 85796804... now reproducible and durably archived; installed raw-image parity, native Owner priority on device, same-manifest device preimage/rollback and one-use approval NOT PROVEN; no flash.",
+    "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_ONLY exact R6-target reviewed firmware built/reproduced, not installed; preserve native FX142 ps=-1, DDP22 and audio; no physical renderer acceptance."
   },
   "installer_included": true,
   "legacy_nine_target_opal_status": "SUPERSEDED_HISTORY_ONLY",
@@ -492,7 +495,7 @@
       "native_owner_priority_patch_source_sha256": "6d89f623982a9045f7cd7527bd293ab2ea68d3727461b2ad359aeb47dd7001aa",
       "native_r6_cpp_tests": "29/29 prior PASS not rerun",
       "original_r6_source_sha256": "87bdbd9a68425e97cd5b97641768c4e4a16a527c3dfadfca3d0cb4e3ea5c5559",
-      "owner_priority_patch_candidate_binary_sha256": null,
+      "owner_priority_patch_candidate_binary_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
       "owner_priority_patch_installed": false,
       "owner_priority_patch_native_tests": "39/39 prior PASS; unmodified original negative control FAIL; no field acceptance",
       "source_gates": {
@@ -501,7 +504,17 @@
         "native_owner_priority": false,
         "service": false
       },
-      "source_qualified_commit": "979e8d729ba2b8bef8a2c8400227fe0b34106e19"
+      "source_qualified_commit": "979e8d729ba2b8bef8a2c8400227fe0b34106e19",
+      "owner_priority_patch_candidate_binary_size": 1505968,
+      "owner_priority_patch_original_build_target": "hbnf_matrix_wled16_packet20_diag",
+      "owner_priority_patch_reproducibility": "two_clean_CI_builds_byte_identical_41741937797_41742832729",
+      "owner_priority_patch_source_review_head": "ea257573f390eef8bd6f42668b25399f2e4ce8cb",
+      "owner_priority_patch_exact_original_recovery_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "owner_priority_patch_recovery_zip_sha256": "9c126ccf09b135fcb3347d069f9661df335531dd2cce3332da3c2a3e3492d102",
+      "owner_priority_patch_recovery_library_id": "libfile_290600d927248191bfa18206e1a2c0d0",
+      "owner_priority_patch_recovery_independent_download_back": "PASS_22_OF_22_SHA",
+      "owner_priority_patch_superseded_different_build_target_sha256": "d577813d281d402a6510a0e9e128916c40fc620d0ba05199cec4c366dff0c552",
+      "owner_priority_patch_build_only_no_device_flash": true
     },
     "networking": {
       "commit": "272f18ae64e8d8f531d8d03b0a0ae8574d66b45b",
