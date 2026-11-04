@@ -1,5 +1,7 @@
 // S1 narrow, one-use SQL boundary. Source only. No provider calls.
 import {readFileSync} from 'node:fs';
+import {NOV03_SCORED_RECEIPT} from './udisc-nov03-reconciliation.mjs';
+import {NOV3_LAYOUT} from './nov03-event-source.mjs';
 export const SCORED_XLSX_SHA256='29ed49f19ee3b9c9cb8b12043e9beeb111b0c156ac3cc89a90a9dc54669f86f8';
 const quoted=s=>"'"+String(s).replaceAll("'","''")+"'";
 const hash=s=>typeof s==='string'&&/^[a-f0-9]{64}$/.test(s);
@@ -17,6 +19,37 @@ const gate=g=>{
  const missing=neededS1Gates.filter(k=>g?.[k]!==true);
  if(missing.length)throw Error('S1_NOT_ADMITTED:'+missing.join(','));
 };
+
+// The last-stage release renderer must rebind the *actual 72 hole values*,
+// eight canonical participant identities and PAR59, not merely trust mutable
+// "source verified" flags copied from a review JSON. It reuses the identical
+// scored receipt already checked by the XLSX read-only reconciling planner.
+export function verifyScoredNov03Week(week) {
+ const canonical=[['Fox','Jason'],['Andrew','Matt'],['Kyle','Dylan'],['Karl','Tony Howell']];
+ const actual=week?.players, cards=week?.cards,pars=week?.scorecardText?.holePars;
+ if(!Array.isArray(actual)||actual.length!==4||!Array.isArray(cards)||
+    cards.length!==1||!Array.isArray(cards[0]?.players)||cards[0].players.length!==4)
+   throw Error('S1_REVIEW_TEAM_CARD_COUNT_INVALID');
+ const ids=new Set();
+ for(let i=0;i<4;i++){
+   const item=actual[i], ref=NOV03_SCORED_RECEIPT[i], pair=canonical[i];
+   if(!item||typeof item.id!=='string'||ids.has(item.id)||
+      !item.id.startsWith('UDISC_20261103_')||
+      item.partner1!==pair[0]||item.partner2!==pair[1]||
+      !Array.isArray(item.scores)||item.scores.length!==18||
+      item.scores.some((value,j)=>String(value)!==String(ref.strokes[j]))||
+      item.scores.reduce((n,v)=>n+Number(v),0)!==ref.total)
+     throw Error('S1_REVIEW_OFFICIAL_SCORES_OR_IDENTITIES_MISMATCH:'+i);
+   ids.add(item.id);
+ }
+ if(cards[0].players.some((item,i)=>item?.id!==actual[i].id))
+   throw Error('S1_REVIEW_CARD_PLAYER_MISMATCH');
+ if(!pars||typeof pars!=='object'||Object.keys(pars).length!==18||
+    NOV3_LAYOUT.holes.some(h=>String(pars[h[0]])!==String(h[4]))||
+    NOV3_LAYOUT.holes.reduce((sum,h)=>sum+Number(pars[h[0]]),0)!==59)
+   throw Error('S1_REVIEW_PAR59_MISMATCH');
+ return true;
+}
 export function buildS1ApplySQL({before,review,gates}){
  gate(gates);check(before);
  if(review?.status!=='ATOMIC_NOV03_SCORE_PROPOSAL_REVIEW_ONLY'||
@@ -27,6 +60,7 @@ export function buildS1ApplySQL({before,review,gates}){
  review?.projectedWeek?.players?.length!==4||
  !review.projectedWeek.players.every(p=>String(p.id||'').startsWith('UDISC_20261103_')&&p.scores?.length===18))
  throw Error('S1_EXACT_ORIGINAL_IMPORT_REVIEW_REQUIRED');
+ verifyScoredNov03Week(review.projectedWeek);
  const root=quoted(before.beforeSha),rev=quoted(before.beforeRevision);
  const old=quoted(JSON.stringify(before.oldWeek)),next=quoted(JSON.stringify(review.projectedWeek));
  const ddl=readFileSync(new URL('./sql/nov03-score-only-guard.sql',import.meta.url),'utf8');
