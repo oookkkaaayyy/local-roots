@@ -71,7 +71,8 @@ test('saved scores survive without a second scoring mutation when the Cart backe
     partner1:'A',partner2:'B',scores:['3',...Array(17).fill('')]
    }]}},
    sourceProvenance:{rowEvidence:[{sourceRow:2,sourceTeam:'A/B',sourceRank:1,sourceRankRaw:'1',
-     relativeScore:0,strokeTotal:3,holeStrokesTotal:3}]},
+     relativeScore:0,strokeTotal:3,holeStrokesTotal:3,
+     holeScores:['3',...Array(17).fill('')]}]},
    issues:{unresolvedIdentityCount:0,duplicateCanonicalTeamRows:0}
   })
  };
