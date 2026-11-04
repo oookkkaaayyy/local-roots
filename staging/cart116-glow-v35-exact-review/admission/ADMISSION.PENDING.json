@@ -32,7 +32,14 @@
       "exact_github_rollback_source_parity": "10/10",
       "ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
       "fresh_readback_source_count": 10,
-      "version": 35
+      "version": 35,
+      "read_only_recheck_20261103": {
+        "edge_active_version": 35,
+        "ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+        "new_overlay_rpc_count": 0,
+        "challenge_table_absent": true,
+        "source": "connected Supabase Edge get + select catalog read only"
+      }
     },
     "rollback": "restore verified provider v35 source bytes with same-manifest bundle; check provider version and sha on next readback",
     "slug": "hbnf-cart-control",
@@ -676,5 +683,18 @@
     "old_direct_ws_connection_epoch_bug": "RED source before correction; 3/3 native acceptance after",
     "actual_iPad_Safari12_reconnect_accepted": false,
     "actual_WAN_failover_accepted": false
+  },
+  "event_night_installed_controls_observation_20261103": {
+    "source": "https://github.com/oookkkaaayyy/local-roots/issues/116#issuecomment-6619078893",
+    "report": "Owner stated 'iPad tests worked' after the single already-installed Owner PWA test involving local connection, selected Matrix/AUX brightness and temporary text with restoration.",
+    "evidence_type": "OWNER_REPORTED_PHYSICAL_FUNCTIONAL_SMOKE_ONLY",
+    "verified_independent_device_telemetry": false,
+    "specific_tap_latency_reconnect_and_ttl_priority": false,
+    "installed_owner_version": "1.0.20",
+    "owner_local_baseline": "RETAIN_EXISTING",
+    "matrix_aux_control_smoke": "OWNER_REPORTED_PASS",
+    "no_firmware_opal_edge_or_sql_install": true,
+    "course_readiness_accepted": false,
+    "no_additional_pre_round_test_requested": true
   }
 }
