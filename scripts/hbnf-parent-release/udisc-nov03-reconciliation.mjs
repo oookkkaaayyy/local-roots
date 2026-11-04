@@ -121,7 +121,7 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
 // XLSX (#115 comment 6627720510), NOT its bytes. Only this exact completed
 // event is eligible for the one-time QI replacement review; an amended
 // official export requires separately reviewed source/correction evidence.
-const NOV03_SCORED_RECEIPT=Object.freeze([
+export const NOV03_SCORED_RECEIPT=Object.freeze([
  {names:['Fox','Jason mintzer'],handles:['mrfox1','jasonmintzer'],
   strokes:[2,2,3,2,3,3,3,3,2,2,4,2,2,2,3,3,4,3],total:48,rank:1},
  {names:['Andrew','Matthew Levinson'],handles:['ookkaayy','thetek'],
