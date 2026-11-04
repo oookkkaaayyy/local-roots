@@ -211,8 +211,7 @@ test('T2 uses existing native Glow finalization in one fenced SQL transaction an
   'ARRAY[48,52,52,57]',"hbnf_finalize_round_tags_v3",
   'T2_NATIVE_GLOW_FINALIZATION_NOT_APPLIED','T2_FINALIZATION_PAYLOAD_MISMATCH',
   'T2_FINAL_CANONICAL_HOLDER_OR_AVAILABLE_CONFLICT','seasonFinalExchangeAudit',
-  'nativeClientEditId','priorBagTags','T2_MIRROR_ROOT_OR_REVISION_MISMATCH',
-  "'jason'","'fox'","'matt'","'andrew'","'dylan'","'kyle'","'tony'","'karl'"
+  'nativeClientEditId','priorBagTags','T2_MIRROR_ROOT_OR_REVISION_MISMATCH'
  ])assert.ok(sql.includes(marker),'missing T2 native provider gate: '+marker);
  assert.match(sql,/v_authority\.revision IS DISTINCT FROM 10/);
  assert.match(sql,/public\.hbnf_finalize_round_tags_v3\(/);
@@ -220,6 +219,7 @@ test('T2 uses existing native Glow finalization in one fenced SQL transaction an
  assert.doesNotMatch(sql,/hbnf_set_current_tag_assignments_v1|DELETE FROM public\.hbnf_round_tag_entries/);
  assert.doesNotMatch(sql,/INSERT INTO public\.hbnf_current_available_tags/);
  assert.doesNotMatch(sql,/UPDATE public\.glow|UPDATE public\.skins/);
+ assert.ok(sql.includes(JSON.stringify(NOV3_FINAL_TAGS.map(x=>({...x,status:'confirmed'})))),'full owner-confirmed eight-holder payload is source-pinned');
  assert.match(sql,/explicit_owner_confirmed_final_post_round/);
  assert.doesNotMatch(sql,/tag.sales|tagSales|cashCollected|paid=No|starterTag/);
 });

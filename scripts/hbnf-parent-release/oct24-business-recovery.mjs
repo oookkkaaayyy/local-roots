@@ -228,7 +228,7 @@ export function prepareSkinsToGlowRollover({confirmedAmountCents,sourceConfirmat
     verifiedPostAceCash?.confirmed!==true||!verifiedPostAceCash?.receiptRef||
     !verifiedPostAceCash?.balances)
   return {status:'CASH_ACE_HISTORY_AND_TRANSFER_AMOUNT_CONFIRMATION_REQUIRED',
-   transferId:id,nominalSkinsBalanceCents:35700,oct27PaidAttendanceUnknown:true,
+   transferId:id,nominalSkinsBalanceCents:35700,oct27RecoveredAceCents:1100,attributableSkinsAceContributionsCents:36800,oct27NoAceOwnerConfirmed:true,oct27AdditionalUnrecordedCashUnknown:true,
    nominalNotVerifiedRealCash:true,ownerConfirmedJasonPaidCents:50000,
    ownerConfirmedJasonOutstandingCents:0,productionWrite:false};
  const before=verifiedPostAceCash.balances;
@@ -249,4 +249,129 @@ export function prepareSkinsToGlowRollover({confirmedAmountCents,sourceConfirmat
   routeToMainCents:carry.toMain,routeToReserveCents:carry.toReserve,
   requires:'atomic once-only CAS, recorded target receipt, verified post-readback',
   priorLedgerUnchanged:true,tagSalesExcluded:true,productionWrite:false};
+}
+
+
+// Nov03 owner-confirmed receipts and winners, not UDisc paid-field inference.
+// These are settled event facts; a source account snapshot is not a bank receipt.
+// Oct27 contributed $11 and had no ace. Combined $368 is ATTRIBUTABLE ONLY;
+// no transfer or actual Glow cash balance follows from those contributions.
+export const NOV03_OWNER_FINANCIAL_FACTS=Object.freeze({
+ eventId:'hb-glow-doubles-tAP8Y5',date:'2026-11-03',
+ evidence:'EXPLICIT_OWNER_CONFIRMATION_2026-11-04',
+ confirmedPayers:Object.freeze(['Fox','Jason','Andrew','Matt','Kyle','Dylan','Tony','Karl']),
+ entryFeeCents:1000,actualCollectedCents:8000,
+ winnerPoolCents:5600,aceContributionCents:2400,
+ winnerPaid:Object.freeze([{name:'Fox',amountCents:2800},{name:'Jason',amountCents:2800}]),
+ winnerOutstandingCents:0,nov03Ace:'NONE_OWNER_CONFIRMED',
+ oct24JasonAcePaymentStatus:'PAID',oct24JasonPaidCents:50000,
+ oct24JasonOutstandingCents:0,
+ oct27NoAce:true,oct27FrontAceContributors:5,oct27BackAceContributors:6,
+ oct27RecoveredAceCents:1100,
+ priorRecordedSkinsAceCents:35700,
+ attributableSkinsAceCents:36800,
+ actualSkinsCashTransferCents:null,
+ verifiedActualGlowMainCents:null,
+ verifiedActualGlowReserveCents:null,
+ tagSalesRevenue:'UNKNOWN_AND_EXCLUDED'
+});
+export function reconcileNov03OwnerFinancialReceipts({priorLedger=[],officialPlayers,verifiedTransfer}={}){
+ const f=NOV03_OWNER_FINANCIAL_FACTS;
+ if(!Array.isArray(priorLedger)||!Array.isArray(officialPlayers))
+  return {status:'NOV03_RECEIPT_LEDGER_INPUTS_REQUIRED',productionWrite:false};
+ const normalized=officialPlayers.map(s=>String(s||'').trim().toLowerCase()).sort();
+ const expected=[...f.confirmedPayers].map(s=>s.toLowerCase()).sort();
+ if(JSON.stringify(normalized)!==JSON.stringify(expected))
+  return {status:'NOV03_EIGHT_ACTUAL_PAYER_IDENTITIES_NOT_RECONCILED',productionWrite:false};
+ const receipts=[
+  ...f.confirmedPayers.map(name=>({
+   id:'glow-2026-11-03-paid-entry-'+name.toLowerCase()+'-v1',
+   kind:'ENTRY_COLLECTED',person:name,amountCents:1000,
+   paymentStatus:'PAID_OWNER_CONFIRMED',outstandingCents:0
+  })),
+  ...f.winnerPaid.map(row=>({
+   id:'glow-2026-11-03-winner-paid-'+row.name.toLowerCase()+'-v1',
+   kind:'WINNER_DISBURSED',person:row.name,amountCents:row.amountCents,
+   paymentStatus:'PAID_OWNER_CONFIRMED',outstandingCents:0
+  })),
+  {id:'glow-2026-11-03-ace-inflow-v1',kind:'INTERNAL_ACE_ALLOCATION',
+   amountCents:2400,paymentStatus:'ALLOCATED_OWNER_CONFIRMED',outstandingCents:0}
+ ].map(row=>({...row,date:f.date,eventId:f.eventId,evidence:f.evidence,
+  bankReceiptRef:null,productionWrite:false}));
+ const existingIds=new Set(),pending=[];
+ for(const row of priorLedger){
+  if(!row||typeof row.id!=='string'||existingIds.has(row.id))
+   return {status:'LEDGER_DUPLICATE_OR_INVALID_EXISTING_RECEIPT',productionWrite:false};
+  existingIds.add(row.id);
+ }
+ for(const item of receipts){
+  const prior=priorLedger.find(x=>x.id===item.id);
+  if(prior){
+   if(prior.kind!==item.kind||prior.amountCents!==item.amountCents||
+      (prior.person||null)!==(item.person||null)||prior.eventId!==item.eventId||
+      prior.paymentStatus!==item.paymentStatus)
+    return {status:'LEDGER_SAME_KEY_AMOUNT_OR_STATUS_CONFLICT',
+     conflictId:item.id,productionWrite:false};
+  }else pending.push(item);
+ }
+ const gross=receipts.filter(r=>r.kind==='ENTRY_COLLECTED').reduce((v,r)=>v+r.amountCents,0);
+ const winners=receipts.filter(r=>r.kind==='WINNER_DISBURSED').reduce((v,r)=>v+r.amountCents,0);
+ const ace=receipts.filter(r=>r.kind==='INTERNAL_ACE_ALLOCATION').reduce((v,r)=>v+r.amountCents,0);
+ if(gross!==8000||winners!==5600||ace!==2400||gross!==winners+ace)
+  throw Error('NOV03_OWNER_RECEIPT_SUMS_CONFLICT');
+ const rollover=verifiedTransfer?.status==='APPLIED'&&
+  verifiedTransfer?.id==='skins-to-glow-2026-11-03-after-oct24-ace-v1'&&
+  Number.isSafeInteger(verifiedTransfer?.amountCents)&&
+  verifiedTransfer.amountCents>=0&&verifiedTransfer.sourceReceiptRef&&
+  verifiedTransfer.targetReceiptRef
+   ?{status:'EXTERNALLY_RECORDED_TRANSFER_TO_REVERIFY',receipt:clone(verifiedTransfer)}
+   :{status:'UNVERIFIED_NOT_TRANSFERRED_BY_THIS_RECONCILIATION',amountCents:null};
+ return {
+  status:pending.length?'OWNER_RECEIPTS_READY_FOR_SEPARATE_LEDGER_ADMISSION':
+   'EXACT_RECEIPTS_ALREADY_PRESENT_IDEMPOTENT_NOOP',
+  source:f.evidence,collectionCents:8000,winnerPaidCents:5600,
+  winnerOutstandingCents:0,aceAllocatedCents:2400,nov03Ace:false,
+  payerCount:8,sourcePlayerIdentityCrosswalk:expected,
+  receipts,pendingReceipts:pending,previousReceiptsUnchanged:true,
+  oct24JasonPaidCents:50000,oct24JasonOutstandingCents:0,
+  oct27NoAce:true,oct27RecoveredAceCents:1100,
+  priorSkinsAttributableCents:35700,totalSkinsAttributableCents:36800,
+  verifiedSkinsToGlowCashTransfer:rollover,
+  actualGlowMainCents:null,actualGlowReserveCents:null,
+  tagSalesNotInferred:true,productionWrite:false
+ };
+}
+export function modelNov03PostAceAndSkinsRollover({
+ modeledPostOct24MainCents,modeledPostOct24ReserveCents,
+ seedAndHistoryVerified=false,transferActuallyApplied=false,transferReceipt=null
+}={}){
+ if(!Number.isSafeInteger(modeledPostOct24MainCents)||
+    !Number.isSafeInteger(modeledPostOct24ReserveCents)||
+    modeledPostOct24MainCents<0||modeledPostOct24ReserveCents<0)
+  return {status:'MODEL_INPUTS_REQUIRED',productionWrite:false};
+ // This source scenario has specific conditional inputs. Do not silently
+ // generalize the $379/$200 prediction to other seeds, prior aces, or cash.
+ if(modeledPostOct24MainCents!==18700||modeledPostOct24ReserveCents!==0)
+  return {status:'POST_OCT24_SOURCE_MODEL_DIFFERS_REVIEW_REQUIRED',productionWrite:false};
+ const base={main:18700,reserve:0,mode:'reserve',mainTarget:18700,reserveTarget:20000};
+ const afterSkins=routeConfirmedAceMoney(base,36800);
+ const afterNov03=routeConfirmedAceMoney(afterSkins,2400);
+ const validated=seedAndHistoryVerified===true&&transferActuallyApplied===true&&
+  typeof transferReceipt==='string'&&transferReceipt.length>=12;
+ return {
+  status:validated?'PROVIDER_CASH_RECEIPT_STILL_REQUIRES_INDEPENDENT_READBACK':
+   'PROJECTED_ONLY_NOT_VERIFIED_TRANSFER_OR_CASH',
+  startingModeledMainCents:18700,startingModeledReserveCents:0,
+  previouslyRecordedSkinsCents:35700,oct27RecoveredCents:1100,
+  attributableSkinsCents:36800,oct27AcePaidCents:0,
+  transferAppliedByPlanner:false,
+  afterSkinsModeledMainCents:afterSkins.main,
+  afterSkinsModeledReserveCents:afterSkins.reserve,
+  skinsRoutedToMainCents:afterSkins.toMain,
+  skinsRoutedToReserveCents:afterSkins.toReserve,
+  nov03ConfirmedAceInflowCents:2400,nov03AcePaidCents:0,
+  afterNov03ModeledMainCents:afterNov03.main,
+  afterNov03ModeledReserveCents:afterNov03.reserve,
+  actualCashVerified:false,requiresIndependentCashReadback:true,productionWrite:false
+ };
 }

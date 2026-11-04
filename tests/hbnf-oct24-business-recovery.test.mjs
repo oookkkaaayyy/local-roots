@@ -4,7 +4,8 @@ import {
  OCT24_OFFICIAL_ROWS,OCT24_VERIFIED_HOLE_ROWS,OCT24_OFFICIAL_PARS,
  prepareOct24HistoricalReconciliation,prepareSkinsToGlowRollover,
  modelOct24AceAfterConfirmedPayment,classifySept02FixtureSnapshot,
- routeConfirmedAceMoney
+ routeConfirmedAceMoney,NOV03_OWNER_FINANCIAL_FACTS,
+ reconcileNov03OwnerFinancialReceipts,modelNov03PostAceAndSkinsRollover
 } from '../scripts/hbnf-parent-release/oct24-business-recovery.mjs';
 const officialAliases=Object.fromEntries(OCT24_OFFICIAL_ROWS.flatMap(r=>r.members)
  .map(n=>[n,({'Matthew Levinson':'Matt','Jason Mintzer':'Jason',
@@ -163,7 +164,10 @@ test('nominal $357 Skins, Oct27 missing roster, and unsupported $523 model never
   oct24AceModelConfirmed:true});
  assert.equal(r.status,'CASH_ACE_HISTORY_AND_TRANSFER_AMOUNT_CONFIRMATION_REQUIRED');
  assert.equal(r.nominalSkinsBalanceCents,35700);
- assert.equal(r.oct27PaidAttendanceUnknown,true);
+ assert.equal(r.oct27RecoveredAceCents,1100);
+ assert.equal(r.attributableSkinsAceContributionsCents,36800);
+ assert.equal(r.oct27NoAceOwnerConfirmed,true);
+ assert.equal(r.oct27AdditionalUnrecordedCashUnknown,true);
  assert.equal(r.ownerConfirmedJasonPaidCents,50000);
  assert.equal(r.productionWrite,false);
 });
@@ -201,4 +205,91 @@ test('source cash router retains reserve/main alternation without treating tag s
   main:18700,reserve:0,mode:'reserve',mainTarget:18700,reserveTarget:20000},35700);
  assert.equal(r.main,34400);assert.equal(r.reserve,20000);
  assert.equal(r.toMain,15700);assert.equal(r.toReserve,20000);
+});
+
+
+test('Nov3 actual owner-paid ledger records exactly eight $10 receipts, two $28 paid winners, one $24 internal ace allocation',()=>{
+ const expected=['Fox','Jason','Andrew','Matt','Kyle','Dylan','Tony','Karl'];
+ assert.deepEqual(NOV03_OWNER_FINANCIAL_FACTS.confirmedPayers,expected);
+ const result=reconcileNov03OwnerFinancialReceipts({priorLedger:[],officialPlayers:expected});
+ assert.equal(result.status,'OWNER_RECEIPTS_READY_FOR_SEPARATE_LEDGER_ADMISSION');
+ assert.equal(result.collectionCents,8000);
+ assert.equal(result.winnerPaidCents,5600);
+ assert.equal(result.winnerOutstandingCents,0);
+ assert.equal(result.aceAllocatedCents,2400);
+ assert.equal(result.nov03Ace,false);
+ assert.equal(result.receipts.length,11);
+ assert.equal(result.pendingReceipts.length,11);
+ assert.equal(result.receipts.filter(r=>r.kind==='ENTRY_COLLECTED').length,8);
+ assert.equal(result.receipts.filter(r=>r.kind==='WINNER_DISBURSED').length,2);
+ assert.equal(result.receipts.filter(r=>r.kind==='INTERNAL_ACE_ALLOCATION').length,1);
+ assert.deepEqual(result.receipts.filter(r=>r.kind==='WINNER_DISBURSED')
+  .map(r=>[r.person,r.amountCents,r.outstandingCents]),[['Fox',2800,0],['Jason',2800,0]]);
+ assert.equal(result.receipts.every(r=>r.bankReceiptRef===null),true);
+ assert.equal(result.receipts.every(r=>r.productionWrite===false),true);
+ assert.equal(result.oct24JasonPaidCents,50000);
+ assert.equal(result.oct24JasonOutstandingCents,0);
+ assert.equal(result.oct27NoAce,true);
+ assert.equal(result.oct27RecoveredAceCents,1100);
+ assert.equal(result.totalSkinsAttributableCents,36800);
+ assert.equal(result.actualGlowMainCents,null);
+ assert.equal(result.actualGlowReserveCents,null);
+ assert.equal(result.tagSalesNotInferred,true);
+ assert.equal(result.productionWrite,false);
+});
+test('owner-confirmed Nov3 event ledger is idempotent with exact source matching and conflicts on duplicate money',()=>{
+ const players=['Matt','Andrew','Fox','Tony','Dylan','Kyle','Karl','Jason'];
+ const first=reconcileNov03OwnerFinancialReceipts({officialPlayers:players,priorLedger:[]});
+ const replay=reconcileNov03OwnerFinancialReceipts({
+  officialPlayers:players,priorLedger:first.receipts
+ });
+ assert.equal(replay.status,'EXACT_RECEIPTS_ALREADY_PRESENT_IDEMPOTENT_NOOP');
+ assert.equal(replay.pendingReceipts.length,0);
+ assert.equal(replay.productionWrite,false);
+ const bad=[...first.receipts];
+ bad[0]={...bad[0],amountCents:1100};
+ assert.equal(reconcileNov03OwnerFinancialReceipts({
+  officialPlayers:players,priorLedger:bad
+ }).status,'LEDGER_SAME_KEY_AMOUNT_OR_STATUS_CONFLICT');
+ assert.equal(reconcileNov03OwnerFinancialReceipts({
+  officialPlayers:['Jason','Fox'],priorLedger:[]
+ }).status,'NOV03_EIGHT_ACTUAL_PAYER_IDENTITIES_NOT_RECONCILED');
+ assert.equal(reconcileNov03OwnerFinancialReceipts({
+  officialPlayers:players,priorLedger:[...first.receipts,first.receipts[0]]
+ }).status,'LEDGER_DUPLICATE_OR_INVALID_EXISTING_RECEIPT');
+});
+test('Oct27 recovered $11 attributable Skins and Nov3 +$24 project $379 main/$200 reserve but never prove actual cash',()=>{
+ const scenario=modelNov03PostAceAndSkinsRollover({
+  modeledPostOct24MainCents:18700,modeledPostOct24ReserveCents:0
+ });
+ assert.equal(scenario.status,'PROJECTED_ONLY_NOT_VERIFIED_TRANSFER_OR_CASH');
+ assert.equal(scenario.previouslyRecordedSkinsCents,35700);
+ assert.equal(scenario.oct27RecoveredCents,1100);
+ assert.equal(scenario.attributableSkinsCents,36800);
+ assert.equal(scenario.oct27AcePaidCents,0);
+ assert.equal(scenario.skinsRoutedToReserveCents,20000);
+ assert.equal(scenario.skinsRoutedToMainCents,16800);
+ assert.equal(scenario.afterSkinsModeledMainCents,35500);
+ assert.equal(scenario.afterSkinsModeledReserveCents,20000);
+ assert.equal(scenario.nov03ConfirmedAceInflowCents,2400);
+ assert.equal(scenario.nov03AcePaidCents,0);
+ assert.equal(scenario.afterNov03ModeledMainCents,37900);
+ assert.equal(scenario.afterNov03ModeledReserveCents,20000);
+ assert.equal(scenario.actualCashVerified,false);
+ assert.equal(scenario.transferAppliedByPlanner,false);
+ assert.equal(scenario.productionWrite,false);
+ assert.equal(modelNov03PostAceAndSkinsRollover({}).status,'MODEL_INPUTS_REQUIRED');
+ assert.equal(modelNov03PostAceAndSkinsRollover({
+  modeledPostOct24MainCents:18800,modeledPostOct24ReserveCents:0
+ }).status,'POST_OCT24_SOURCE_MODEL_DIFFERS_REVIEW_REQUIRED');
+});
+test('future supplied receipt never causes model to write actual transfer or claim verified cash',()=>{
+ const check=modelNov03PostAceAndSkinsRollover({
+  modeledPostOct24MainCents:18700,modeledPostOct24ReserveCents:0,
+  seedAndHistoryVerified:true,transferActuallyApplied:true,
+  transferReceipt:'externally-verified-receipt-011'
+ });
+ assert.equal(check.status,'PROVIDER_CASH_RECEIPT_STILL_REQUIRES_INDEPENDENT_READBACK');
+ assert.equal(check.actualCashVerified,false);
+ assert.equal(check.transferAppliedByPlanner,false);
 });
