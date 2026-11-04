@@ -43,3 +43,19 @@ test('S1 final SQL admission rejects a tampered real score, identity, card or ho
   assert.throws(()=>buildS1ApplySQL({before,review:altered,gates:good()}),/S1_REVIEW_/);
  }
 });
+
+test('S1 renderer supplies exact event date to installed RPC for live week lacking date fields',()=>{
+ const forward=buildS1ApplySQL({before,review:report,gates:good()});
+ const match=forward.match(/new_week jsonb:='((?:[^']|'')*)'::jsonb;/);
+ assert(match,'actual RPC replacement JSON must be materialized');
+ const prepared=JSON.parse(match[1].replaceAll("''","'"));
+ assert.equal(prepared.date,'2026-11-03');
+ assert.equal(prepared.activeWeek,'2026-11-03');
+ assert.deepEqual(prepared.players,report.projectedWeek.players);
+ assert.deepEqual(prepared.cards,report.projectedWeek.cards);
+ assert.deepEqual(prepared.scorecardText,report.projectedWeek.scorecardText);
+ for(const k of ['date','activeWeek']){
+  const altered=structuredClone(report);altered.projectedWeek[k]='2026-10-24';
+  assert.throws(()=>buildS1ApplySQL({before,review:altered,gates:good()}),/S1_REVIEW_WEEK_DATE_MISMATCH/);
+ }
+});

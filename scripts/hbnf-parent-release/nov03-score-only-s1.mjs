@@ -61,8 +61,16 @@ export function buildS1ApplySQL({before,review,gates}){
  !review.projectedWeek.players.every(p=>String(p.id||'').startsWith('UDISC_20261103_')&&p.scores?.length===18))
  throw Error('S1_EXACT_ORIGINAL_IMPORT_REVIEW_REQUIRED');
  verifyScoredNov03Week(review.projectedWeek);
+ // The live Nov03 week has no redundant date/activeWeek fields. The installed
+ // hbnf_apply_udisc_glow_week RPC rejects a replacement without date even when
+ // all official scores match; normalize only these exact date keys, fail closed
+ // if a supplied key conflicts, and preserve every other projected field.
+ if(['date','activeWeek'].some(k=>review.projectedWeek[k]!==undefined &&
+    review.projectedWeek[k]!=='2026-11-03'))
+   throw Error('S1_REVIEW_WEEK_DATE_MISMATCH');
+ const normalizedWeek={...review.projectedWeek,date:'2026-11-03',activeWeek:'2026-11-03'};
  const root=quoted(before.beforeSha),rev=quoted(before.beforeRevision);
- const old=quoted(JSON.stringify(before.oldWeek)),next=quoted(JSON.stringify(review.projectedWeek));
+ const old=quoted(JSON.stringify(before.oldWeek)),next=quoted(JSON.stringify(normalizedWeek));
  const ddl=readFileSync(new URL('./sql/nov03-score-only-guard.sql',import.meta.url),'utf8');
  return ['BEGIN;',"SET LOCAL lock_timeout='5s';","SET LOCAL statement_timeout='30s';",
  'LOCK TABLE public.league_state IN SHARE ROW EXCLUSIVE MODE;',ddl,
