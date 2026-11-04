@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {inspectAux22DdpWithOffPwm,proposeNativeOverlayOnly,R6_OWNER_PRIORITY_RELEASE} from '../candidate-source/matrix-overlay-safe-review.mjs';
 import {captureOverlayProfile,overlayPreimageHash} from '../candidate-source/glow-overlay-v1-handler.mjs';
 import {assessRelayRuntimeOrigin,HISTORICAL_SKINS_PATHS,PROPOSED_GLOW_PATHS} from '../opal/relay-startup-origin.mjs';
@@ -122,4 +123,45 @@ test('wrong/mismatched build marker and missing/forged feature are never accepte
   const forgedOld=clone(base);
   forgedOld.build.features=['native-overlay-owner-text-priority-v1'];
   assert.equal(proposal(forgedOld).reason,'installed_r6_owner_text_priority_not_enforced');
+});
+
+test('DORA C1 Opal helper binds corrected R6 only and keeps both actuation locks closed',()=>{
+ const sh=readFileSync(new URL('../opal/hbnf-glow-overlay-v1.sh',import.meta.url),'utf8');
+ assert.match(sh,/HBNF_OVERLAY_V1_SOURCE_ADMITTED=false/);
+ assert.match(sh,/HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED=false/);
+ assert.match(sh,/\[ "\$HBNF_OVERLAY_V1_SOURCE_ADMITTED" = true \]/);
+ assert.match(sh,/\[ "\$HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED" = true \]/);
+ assert.ok(sh.includes("native_owner_safe_release='"+R6_OWNER_PRIORITY_RELEASE+"'"));
+ assert.ok(sh.includes('build.json" -e \'@.release_id\')'));
+ assert.ok(sh.includes('state.json" -e \'@.HBNF.candidate\')'));
+ assert.ok(!sh.includes("= 'hbnf-cart2-phase2-r6-skins-readable-20261014'"));
+ assert.ok(!sh.includes('curl -X POST http://192.168.77.11'));
+});
+test('genuine four-team Nov 3 standing is OFFLINE fixture only; no scoreboard actuation',()=>{
+ // Source: #115 issuecomment-6627720510, original scored organizer XLSX.
+ // Not a live league_state readback, payment, ace, rank write, or activation.
+ const rows=[
+  {team:'Fox & Jason mintzer',holes:[2,2,3,2,3,3,3,3,2,2,4,2,2,2,3,3,4,3],strokes:48,relative:-11,rank:1},
+  {team:'Andrew & Matthew Levinson',holes:[3,2,3,3,4,2,2,2,2,3,4,2,2,3,3,3,5,4],strokes:52,relative:-7,rank:2},
+  {team:'Kyle Gundlach & Dylan Jones',holes:[2,2,3,3,3,3,4,3,2,2,4,2,2,3,3,3,5,3],strokes:52,relative:-7,rank:2},
+  {team:'Zimgirdib & Tony Howell',holes:[3,3,3,3,3,3,2,3,2,3,4,3,3,3,5,3,4,4],strokes:57,relative:-2,rank:4}
+ ];
+ assert.deepEqual(rows.map(r=>r.holes.reduce((a,b)=>a+b,0)),rows.map(r=>r.strokes));
+ assert.deepEqual(rows.map(r=>r.strokes-59),rows.map(r=>r.relative));
+ assert.deepEqual(rows.map(r=>r.rank),[1,2,2,4]);
+ const entries=rows.map(r=>r.team+' '+r.strokes+' ('+r.relative+')');
+ assert.equal(entries.length,4);
+ assert.ok(entries.every(x=>x.length<=63));
+ const x=visibleUnityR6(fixture());
+ x.build.release_id=R6_OWNER_PRIORITY_RELEASE;
+ x.build.features=['native-overlay-owner-text-priority-v1'];
+ x.state.HBNF.candidate=R6_OWNER_PRIORITY_RELEASE;
+ const before=JSON.stringify(x);
+ const result=proposeNativeOverlayOnly({matrixInfo:x.info,matrixState:x.state,matrixBuild:x.build,
+  auxInfo:x.auxInfo,auxState:x.auxState,auxConfig:x.auxConfig,
+  ownerPriorityClear:true,overlay:{id:'hbnf-'+'b'.repeat(32),kind:'scoreboard',label:'GLOW',entries,ttlMs:12000}});
+ assert.equal(result.eligible,false);
+ assert.equal(result.mutationAuthorized,false);
+ assert.equal(result.reason,'native_owner_priority_source_gate_not_admitted');
+ assert.equal(JSON.stringify(x),before);
 });
