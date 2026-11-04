@@ -8,6 +8,9 @@ export const AUX_IP = '192.168.77.11';
 export const MATRIX_MAC = '704bca5b345c';
 export const AUX_MAC = '8c94df55c34c';
 export const R6_RELEASE = 'hbnf-cart2-phase2-r6-skins-readable-20261014';
+// Exact Track C review BIN 85796804... advertises a DISTINCT release ID.
+// This source marker alone is neither installation proof nor write admission.
+export const R6_OWNER_PRIORITY_RELEASE = 'hbnf-cart2-r6-native-overlay-owner-safe-review-20261103';
 
 const mac = value => String(value ?? '').toLowerCase().replaceAll(':', '');
 const integer = value => Number.isInteger(value);
@@ -65,9 +68,13 @@ export function proposeNativeOverlayOnly({ matrixInfo, matrixState, matrixBuild,
       Number(matrixInfo?.leds?.count) !== 534 ||
       auxInfo?.ip !== AUX_IP) return blocked('target_or_topology_mismatch');
   if (!String(matrixInfo?.ver ?? '').startsWith('16.0.1')) return blocked('wled_version_unproven');
-  if (matrixBuild?.release_id !== R6_RELEASE ||
-      matrixState?.HBNF?.candidate !== R6_RELEASE ||
-      matrixState?.HBNF?.schema !== 'foundation-v1') return blocked('installed_release_not_verified');
+  // Read-only recognition of historical R6 and the reproducible Owner-safe
+  // successor; require build/state agreement, never alias both identities.
+  const nativeRelease=matrixBuild?.release_id;
+  if (![R6_RELEASE,R6_OWNER_PRIORITY_RELEASE].includes(nativeRelease) ||
+      matrixState?.HBNF?.candidate !== nativeRelease ||
+      matrixState?.HBNF?.schema !== 'foundation-v1')
+    return blocked('installed_release_not_verified');
   if (matrixState?.on !== true || !integer(matrixState?.HBNF?.effectId) ||
       ![-1,60].includes(matrixState?.ps)) return blocked('matrix_active_profile_not_verified');
   const segments = matrixState?.seg;
@@ -108,9 +115,16 @@ export function proposeNativeOverlayOnly({ matrixInfo, matrixState, matrixBuild,
   // Owner TEXT; its malformed parser may clear TEXT. The separately tested
   // 4af57d... firmware patch is NOT built or installed. A backend owner check
   // cannot serialize a later direct-WS Owner command with a cloud POST.
+  // Original R6 still cannot enforce local Owner TEXT over delayed GLOW.
+  // The successor must report its unique patched feature at readback; even
+  // that does not certify raw installed image SHA or authorize actuation.
+  if (nativeRelease !== R6_OWNER_PRIORITY_RELEASE ||
+      !Array.isArray(matrixBuild?.features) ||
+      !matrixBuild.features.includes('native-overlay-owner-text-priority-v1'))
+    return blocked('installed_r6_owner_text_priority_not_enforced');
   const NATIVE_OWNER_TEXT_PRIORITY_INSTALLED_AND_ACCEPTED=false;
   if (!NATIVE_OWNER_TEXT_PRIORITY_INSTALLED_AND_ACCEPTED)
-    return blocked('installed_r6_owner_text_priority_not_enforced');
+    return blocked('native_owner_priority_source_gate_not_admitted');
   // Explicitly omit every WLED core key, segment/effect/brightness/preset,
   // HBNF scene/Vibe/palette/tuning key, and all AUX writes.
   const payload = { HBNF: { overlay: {
@@ -121,7 +135,7 @@ export function proposeNativeOverlayOnly({ matrixInfo, matrixState, matrixBuild,
     eligible: true, reviewOnly: true, mutationAuthorized: false,
     reason: 'source_contract_only_not_connected_to_v35_relay',
     payload, expectedOverlayId: overlay.id,
-    baseline: { releaseId: R6_RELEASE, preset: matrixState.ps, effectId: fx,
+    baseline: { releaseId: nativeRelease, preset: matrixState.ps, effectId: fx,
       segmentIds: [0, 1], matrixMac: MATRIX_MAC, auxMac: AUX_MAC }
   };
 }
