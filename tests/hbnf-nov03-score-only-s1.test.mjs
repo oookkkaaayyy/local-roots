@@ -11,8 +11,8 @@ const report={status:'ATOMIC_NOV03_SCORE_PROPOSAL_REVIEW_ONLY',projectedStatus:'
  projectedWeek:{players:[1,2,3,4].map(n=>({id:'UDISC_20261103_0'+n,scores:Array(18).fill('3')})),cards:[{id:'C1'}]}};
 const good=()=>Object.fromEntries(neededS1Gates.map(k=>[k,true]));
 test('server guard freezes four Nov03 scoring source fields without ACL or sign-in changes',()=>{
- for(const k of ['CREATE TRIGGER','BEFORE UPDATE OF state_json','UDISC_20261103_','v_old->\\'players\\'',
- 'v_old->\\'cards\\'','scorecardText,holePars','udiscSync,latest','ERRCODE=\\'23514\\''])assert(sql.includes(k),k);
+ for(const k of ['CREATE TRIGGER','BEFORE UPDATE OF state_json','UDISC_20261103_',
+ "v_old->'players'","v_old->'cards'",'scorecardText,holePars','udiscSync,latest',"ERRCODE='23514'"])assert(sql.includes(k),k);
  assert.doesNotMatch(sql,/^REVOKE |^ALTER POLICY |^DROP POLICY /m);
 });
 test('release generation refuses every unadmitted gate',()=>{
