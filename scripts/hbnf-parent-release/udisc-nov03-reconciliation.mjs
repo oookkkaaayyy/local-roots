@@ -102,11 +102,66 @@ export async function prepareNov3Reconciliation({root,revision,snapshot,decision
     eventId:EVENT_ID,weekDate:DATE,serverRevision:revision,
     sourceSignature:prepared.signature,teamCount:proposed.players.length,
     observedChanges:changes,manualOverrides,
+    proposedWeek:cloned(proposed),proposedWeekSha256:digest(Buffer.from(stable(proposed))),
     preservedProtection:'Existing week scorecards, tags, historical scores, winner/ace/financial fields are never overwritten by this audit',
     productionWrite:false,
     requiresBeforeImport:['fresh same-week source/revision readback','exact owner-reviewed identity mappings',
       'release-admitted guarded hbnf_apply_udisc_glow_week CAS with one scoring writer',
       'independent post-CAS full-week readback and conflict-free acceptance']
+  };
+}
+
+/**
+ * Build an *isolated* one-transaction review of the real Nov03 week.
+ * A qualified QI preimage is archived, not deleted; the authentic UDisc
+ * result is projected only against a CLONE of the quarantined week.
+ * No live write, admission, settlement, or UDisc organizer attestation.
+ */
+export async function prepareNov3AtomicRecoveryReview({root,revision,snapshot,decisions={},sourceProof={}}) {
+  const untouched=stable(root);
+  if(!snapshot?.rows?.length)throw Error('NONEMPTY_SCORED_EXPORT_REQUIRED');
+  const original=prepareNov3TestOnlyQuarantine({root,revision});
+  if(original.status!=='SOURCE_QUALIFIED_QUARANTINE_REVIEW_ONLY')
+    return {status:'QUARANTINE_PREIMAGE_NOT_ADMITTED',quarantineStatus:original.status,
+      serverRevision:revision,productionWrite:false};
+  const staging=cloned(root),stageState=staging?.state_json||staging;
+  const stageWeek=stageState.glow.weeks[DATE];
+  stageWeek.players=[];
+  stageWeek.cards[0].players=[];
+  if(stable(stageWeek)!==stable(original.proposedWeek))
+    throw Error('QUARANTINE_STAGE_MISMATCH');
+  const projected=await prepareNov3Reconciliation({root:staging,revision,snapshot,decisions});
+  if(stable(root)!==untouched)throw Error('ATOMIC_REVIEW_MUTATED_ORIGINAL_ROOT');
+  const originalXlsxVerified=sourceProof.originalBytesRead===true &&
+    sourceProof.sha256==='29ed49f19ee3b9c9cb8b12043e9beeb111b0c156ac3cc89a90a9dc54669f86f8' &&
+    sourceProof.byteCount===22424;
+  const ready=projected.status==='READY_FOR_SEPARATE_ADMITTED_CAS_REVIEW';
+  return {
+    status:ready?'ATOMIC_NOV03_SCORE_PROPOSAL_REVIEW_ONLY':'ATOMIC_NOV03_IMPORT_REVIEW_BLOCKED',
+    eventId:EVENT_ID,weekDate:DATE,serverRevision:revision,
+    originalWeekSha256:original.oldWeekSha256,
+    quarantinedWeekSha256:original.newWeekSha256,
+    preservedRehearsalArchive:original.sourceArchive,
+    quarantinedIds:original.sourceArchive.players.map(p=>p.id),
+    changedPaths:['glow.weeks.2026-11-03.cards[0].players',
+                  'glow.weeks.2026-11-03.players',
+                  ...(ready?['glow.weeks.2026-11-03.udiscSync']:[])],
+    officialSource:{claimedSha256:sourceProof.sha256||null,
+      originalXlsxVerified,organizerEventBinding:'NOT_IN_XLSX_REQUIRE_EXTERNAL_PROOF',
+      exportedStartTime:'DO_NOT_EQUATE_WITH_LOCAL_5_30_PM_EVENT_START'},
+    projectedStatus:projected.status,projectedWeek:ready?projected.proposedWeek:null,
+    projectedWeekSha256:ready?projected.proposedWeekSha256:null,
+    projectedSummary:ready?{teams:projected.teamCount,changes:projected.observedChanges.length}:null,
+    identityReview:projected.identityReview||null,
+    issues:projected.issues||null,
+    preconditions:['fresh one-time CAS revision and complete unchanged root preimage',
+      'original organizer XLSX bytes independently verified and durably retained',
+      'official tAP8Y5 event, round-one layout 150408 and team provenance confirmed',
+      'explicit reviewed eight-username canonical crosswalk',
+      'entire source and rollback downloaded back and same-manifest release admitted',
+      'one atomic replacement of only proven Nov03 QI rows, CAS ACK and independent readback',
+      'no money, ace, payout, ranking or tag mutation without separate evidence'],
+    productionWrite:false,admission:'NOT_ADMITTED'
   };
 }
 
@@ -131,7 +186,11 @@ export async function prepareNov3FromFiles({xlsxFile,stateFile,decisionsFile,rep
    if(err?.code!=='EMPTY_EXPORT_NO_SCORES' && err?.message!=='UDisc workbook has no results.')throw err;
    snapshot={eventId:EVENT_ID,weekDate:DATE,rows:[]};
  }
- const preview=await prepareNov3Reconciliation({root,revision,snapshot,decisions});
+ const proof={sha256:digest(raw),byteCount:raw.length,originalBytesRead:true};
+ const week=(root?.state_json||root)?.glow?.weeks?.[DATE];
+ const preview=snapshot.rows.length && classifyNov3TestEntries(week).contaminated
+   ?await prepareNov3AtomicRecoveryReview({root,revision,snapshot,decisions,sourceProof:proof})
+   :await prepareNov3Reconciliation({root,revision,snapshot,decisions});
  const receipt={...preview,udiscXlsxSha256:digest(raw),stateSnapshotSha256:digest(stateRaw),
    stateSnapshotBytes:stateRaw.length,sourceProvenance:'Official organizer XLSX, locally opened read-only'};
  if(reportFile)await writeFile(reportFile,JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});
