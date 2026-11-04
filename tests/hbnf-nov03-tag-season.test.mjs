@@ -141,3 +141,112 @@ test('T1 post-commit undo is guarded by fresh postimage, restores archive, prese
  assert.doesNotMatch(sql,/revision=9/,'undo must not rewind CAS revision');
  assert.equal((sql.match(/\bCOMMIT;/g)||[]).length,1);
 });
+
+
+import {NOV3_FINAL_TAGS,prepareNov3OwnerFinalTagExchange,prepareNov3OwnerFinalTagUndo} from '../scripts/hbnf-parent-release/nov03-final-tag-exchange-sql.mjs';
+const s1Source='verified-S1-original-XLSX-29ed49f19ee3b9c9';
+const approvedT2={
+ expectedLeagueUpdatedAt:'2026-11-04T22:50:01.123456Z',
+ expectedRootMd5:'123456789abcdef0123456789abcdef0',
+ authorityRevision:10,
+ currentOwners:[
+  {player_key:'matt',player_name:'Matt',tag_number:1},
+  {player_key:'jason',player_name:'Jason',tag_number:2},
+  {player_key:'andrew',player_name:'Andrew',tag_number:3}
+ ],
+ currentAvailableTags:[],
+ verifiedS1Receipt:s1Source,
+ verifiedT1Receipt:'verified-T1-rev10-canonical-three-seed',
+ verifiedBackupReceipt:'downloadback-verified-sha256-and-rollback',
+ existingRoundEntries:0,existingGlowFinalization:false
+};
+
+test('T2 source records exact owner-confirmed eight final tags without inventing starting tags or extra tag revenue',()=>{
+ assert.deepEqual(NOV3_FINAL_TAGS.map(x=>[x.player_name,x.tag_number]),[
+ ['Jason',1],['Fox',2],['Matt',3],['Andrew',4],
+ ['Dylan',5],['Kyle',6],['Tony',7],['Karl',8]]);
+ assert.equal(new Set(NOV3_FINAL_TAGS.map(x=>x.player_key)).size,8);
+ assert.equal(new Set(NOV3_FINAL_TAGS.map(x=>x.tag_number)).size,8);
+ const t2=prepareNov3OwnerFinalTagExchange(approvedT2);
+ assert.equal(t2.status,'REVIEW_ONLY_T2_NATIVE_FINALIZATION_SQL_NOT_ADMITTED');
+ assert.equal(t2.productionWrite,false);
+ assert.equal(t2.expectedAuthorityRevision,10);
+ assert.equal(t2.expectedResultRevision,11);
+ assert.deepEqual(t2.expectedAvailableTags,[]);
+ assert.deepEqual(t2.ownerConfirmedFinal,NOV3_FINAL_TAGS);
+ assert.deepEqual(t2.initialSeeds.map(x=>[x.player_name,x.tag_number]),
+ [['Matt',1],['Jason',2],['Andrew',3]]);
+ assert.equal(t2.historicalRounds,'PRESERVE_UNCHANGED_EXCEPT_NOV03_GLOW_FINALIZATION');
+ assert.equal(t2.completeExchange,'OWNER_FINAL_ASSIGNMENTS_ONLY_NO_INVENTED_INTERMEDIATE_HOLDERS');
+});
+test('T2 exact post-T1 root and canonical admission blocks old holders, absent S1 receipts, existing round tags and replay',()=>{
+ const testArgs=[
+ [{...approvedT2,authorityRevision:9},'T2_REQUIRES_EXACT_POST_T1_THREE_SEED_CANONICAL_STATE_REV10'],
+ [{...approvedT2,currentOwners:oldSeasonOwners},'T2_REQUIRES_EXACT_POST_T1_THREE_SEED_CANONICAL_STATE_REV10'],
+ [{...approvedT2,currentAvailableTags:oldAvailable},'T2_REQUIRES_EXACT_POST_T1_THREE_SEED_CANONICAL_STATE_REV10'],
+ [{...approvedT2,verifiedS1Receipt:undefined},'T2_SOURCE_BOUND_S1_T1_BACKUP_RECEIPTS_REQUIRED'],
+ [{...approvedT2,verifiedT1Receipt:null},'T2_SOURCE_BOUND_S1_T1_BACKUP_RECEIPTS_REQUIRED'],
+ [{...approvedT2,verifiedBackupReceipt:undefined},'T2_SOURCE_BOUND_S1_T1_BACKUP_RECEIPTS_REQUIRED'],
+ [{...approvedT2,expectedRootMd5:'bad'},'T2_FRESH_POST_T1_LEAGUE_STATE_REVISION_AND_HASH_REQUIRED'],
+ [{...approvedT2,existingRoundEntries:1},'T2_EXISTING_NOV3_TAG_ACTIVITY_REQUIRES_ADJUDICATION'],
+ [{...approvedT2,existingGlowFinalization:true},'T2_EXISTING_NOV3_TAG_ACTIVITY_REQUIRES_ADJUDICATION']
+ ];
+ for(const [input,status] of testArgs){
+  const output=prepareNov3OwnerFinalTagExchange(input);
+  assert.equal(output.status,status);
+  assert.equal(output.productionWrite,false);
+ }
+});
+test('T2 uses existing native Glow finalization in one fenced SQL transaction and independently checks all eight canonical/mirror owners',()=>{
+ const sql=prepareNov3OwnerFinalTagExchange(approvedT2).applySql;
+ assert.equal(sql.startsWith('BEGIN;\nDO $hbnf_t2_final$\n'),true);
+ assert.equal(sql.endsWith('\n$hbnf_t2_final$;\nCOMMIT;'),true);
+ assert.equal((sql.match(/\bCOMMIT;/g)||[]).length,1);
+ for(const marker of [
+  'FOR UPDATE','public.hbnf_tag_authority_state','SHARE ROW EXCLUSIVE MODE',
+  'T2_ROOT_OR_TAG_REVISION_CONFLICT','T2_CART_AUTO_LIVE_NOT_QUALIFIED',
+  'T2_T1_SEASON_ARCHIVE_MISSING_OR_REPLAY','T2_POST_T1_CANONICAL_MIRROR_OR_HISTORY_CONFLICT',
+  'T2_REQUIRES_INDEPENDENTLY_SAVED_FOUR_TEAM_S1',
+  'T2_SCORE_SLOTS_NOT_FULLY_VERIFIED','T2_GENUINE_SCORES_NOT_YET_MATCHED',
+  'ARRAY[48,52,52,57]',"hbnf_finalize_round_tags_v3",
+  'T2_NATIVE_GLOW_FINALIZATION_NOT_APPLIED','T2_FINALIZATION_PAYLOAD_MISMATCH',
+  'T2_FINAL_CANONICAL_HOLDER_OR_AVAILABLE_CONFLICT','seasonFinalExchangeAudit',
+  'nativeClientEditId','priorBagTags','T2_MIRROR_ROOT_OR_REVISION_MISMATCH',
+  "'jason'","'fox'","'matt'","'andrew'","'dylan'","'kyle'","'tony'","'karl'"
+ ])assert.ok(sql.includes(marker),'missing T2 native provider gate: '+marker);
+ assert.match(sql,/v_authority\.revision IS DISTINCT FROM 10/);
+ assert.match(sql,/public\.hbnf_finalize_round_tags_v3\(/);
+ assert.match(sql,/v_reply->>'applied_current'/);
+ assert.doesNotMatch(sql,/hbnf_set_current_tag_assignments_v1|DELETE FROM public\.hbnf_round_tag_entries/);
+ assert.doesNotMatch(sql,/INSERT INTO public\.hbnf_current_available_tags/);
+ assert.doesNotMatch(sql,/UPDATE public\.glow|UPDATE public\.skins/);
+ assert.match(sql,/explicit_owner_confirmed_final_post_round/);
+ assert.doesNotMatch(sql,/tag.sales|tagSales|cashCollected|paid=No|starterTag/);
+});
+test('T2 guarded undo restores pre-exchange seed only on exact post-image; does not rewind revision or destroy old season',()=>{
+ assert.equal(prepareNov3OwnerFinalTagUndo({authorityRevision:10}).status,
+  'T2_UNDO_REQUIRES_EXACT_POST_FINALIZATION_REV11_PREIMAGE');
+ const undo=prepareNov3OwnerFinalTagUndo({
+  authorityRevision:11,expectedFinalizationRevision:1,
+  expectedLeagueUpdatedAt:'2026-11-04T23:15:00.000Z',
+  expectedRootMd5:'0123456789abcdef0123456789abcdef'
+ });
+ assert.equal(undo.status,'REVIEW_ONLY_T2_GUARDED_UNDO_NOT_ADMITTED');
+ assert.equal(undo.productionWrite,false);
+ assert.equal(undo.expectedPostUndoRevision,12);
+ const sql=undo.undoSql;
+ assert.equal(sql.startsWith('BEGIN;\nDO $hbnf_t2_undo$\n'),true);
+ assert.equal(sql.endsWith('\n$hbnf_t2_undo$;\nCOMMIT;'),true);
+ for(const marker of [
+  'T2_UNDO_REVISION_IDENTITY_OR_ARCHIVE_CONFLICT',
+  'T2_UNDO_CURRENT_TAG_PREIMAGE_DRIFT',
+  'T2_UNDO_LATER_TAG_ACTIVITY_BLOCKS',
+  'T2_UNDO_FINALIZATION_NOT_EXACT',
+  'T2_UNDO_SEED_MIRROR_OR_SCORE_BRANCH_CONFLICT',
+  'priorBagTags','priorLatestFinalizedRound','latest_finalization_order',
+  'revision=revision+1','WHERE id=1 AND revision=11'
+ ])assert.ok(sql.includes(marker),'missing undo safeguard: '+marker);
+ assert.doesNotMatch(sql,/DELETE FROM public\.hbnf_round_tag_finalizations\s+WHERE round_date<DATE/);
+ assert.doesNotMatch(sql,/revision=10/);
+ assert.equal((sql.match(/\bCOMMIT;/g)||[]).length,1);
+});
