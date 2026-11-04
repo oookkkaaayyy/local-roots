@@ -33,7 +33,7 @@ permissions:
   contents: read
 jobs:
   review-only:
-    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'S1:')
+    if: github.event_name != 'push' || (!startsWith(github.event.head_commit.message, 'S1:') && !startsWith(github.event.head_commit.message, 'TSQL:'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -154,3 +154,32 @@ jobs:
           { cat tests/hbnf-s1-pg17-pre.sql; cat scripts/hbnf-parent-release/sql/nov03-score-only-guard.sql; cat tests/hbnf-s1-pg17-post.sql; } |
             docker exec -i "$cid" psql -U postgres -v ON_ERROR_STOP=1
 
+
+
+  tag-sql-native-only:
+    # Exactly this narrow PostgreSQL test; no provider credentials, no S1 / review suite duplication.
+    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'TSQL:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: hbnf_tsql_ephemeral_pg17_fixture_only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: PostgreSQL 17 isolated T1 and T2 exact generated SQL apply/undo acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -n 1)"
+          test -n "$cid"
+          HBNF_TEST_PG_CID="$cid" node tests/hbnf-t1-t2-pg17.test.mjs

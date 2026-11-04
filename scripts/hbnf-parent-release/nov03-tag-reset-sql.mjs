@@ -27,7 +27,7 @@ const coreAvailable=tags=>tags.map(x=>({
 
 export function prepareNov3AtomicTagReset({
  expectedLeagueUpdatedAt,expectedRootMd5,authorityRevision,
- currentOwners,currentAvailableTags,verifiedBackupReceipt,alreadyFinalized=false
+ currentOwners,currentAvailableTags,verifiedBackupReceipt,verifiedS1Receipt,alreadyFinalized=false
 }={}) {
  const existing=prepareNov3TagSeasonReset({authorityRevision,currentOwners,
   currentAvailableTags,alreadyFinalized});
@@ -37,6 +37,8 @@ export function prepareNov3AtomicTagReset({
   return fail('FRESH_EXACT_LEAGUE_STATE_REVISION_AND_MD5_REQUIRED');
  if(!validReceipt(verifiedBackupReceipt))
   return fail('VERIFIED_DURABLE_PREIMAGE_BACKUP_RECEIPT_REQUIRED');
+ if(!validReceipt(verifiedS1Receipt))
+  return fail('VERIFIED_S1_PROVIDER_SCORE_RECEIPT_REQUIRED');
  const origOwners=coreOwners(currentOwners),origAvailable=coreAvailable(currentAvailableTags);
  // Exact DB schema and trigger path observed in public Supabase on Nov4.
  // Readback must still reverify this fingerprint after S1 before admission.
@@ -44,7 +46,7 @@ export function prepareNov3AtomicTagReset({
  'DECLARE',
  ' v_state jsonb; v_updated timestamptz; v_revision bigint;',
  ' v_owners jsonb; v_available jsonb; v_full_owners jsonb; v_full_available jsonb;',
- ' v_archive jsonb; v_next jsonb; v_after jsonb;',
+ ' v_archive jsonb; v_next jsonb; v_after jsonb; v_week jsonb; v_scores integer[]; v_par integer;',
  'BEGIN',
  ' SELECT state_json,updated_at INTO STRICT v_state,v_updated FROM public.league_state WHERE id=1 FOR UPDATE;',
  ' SELECT revision INTO STRICT v_revision FROM public.hbnf_tag_authority_state WHERE id=1 FOR UPDATE;',
@@ -66,6 +68,35 @@ export function prepareNov3AtomicTagReset({
  ' SELECT coalesce(jsonb_agg(jsonb_build_object('+literal('tag')+',tag_number,'+literal('source')+',source,'+literal('notes')+',notes) ORDER BY tag_number),'+literal('[]')+'::jsonb),',
  '        coalesce(jsonb_agg(to_jsonb(a) ORDER BY tag_number),'+literal('[]')+'::jsonb)',
  '   INTO v_available,v_full_available FROM public.hbnf_current_available_tags a;',
+ ' v_week=v_state#>'+literal('{glow,weeks,2026-11-03}')+';',
+ ' IF v_state#>>'+literal('{glow,activeWeek}')+' IS DISTINCT FROM '+literal(DATE)+' OR',
+ '    jsonb_typeof(v_week->'+literal('players')+') IS DISTINCT FROM '+literal('array')+' OR',
+ '    jsonb_array_length(v_week->'+literal('players')+')<>4 OR',
+ '    EXISTS(SELECT 1 FROM jsonb_array_elements(v_week->'+literal('players')+') p',
+ '       WHERE coalesce(p->>'+literal('id')+','+literal('')+') LIKE '+literal('QI_%')+' OR',
+ '       jsonb_typeof(p->'+literal('scores')+') IS DISTINCT FROM '+literal('array')+' OR',
+ '       jsonb_array_length(p->'+literal('scores')+')<>18)',
+ '    THEN RAISE EXCEPTION '+literal('T1_REQUIRES_VERIFIED_S1_FOUR_TEAM_SCORE_SOURCE')+'; END IF;',
+ ' IF EXISTS(SELECT 1 FROM jsonb_array_elements(v_week->'+literal('players')+') p',
+ '   CROSS JOIN LATERAL jsonb_array_elements_text(p->'+literal('scores')+') score(stroke)',
+ '   WHERE score.stroke !~ '+literal('^[1-9][0-9]?$')+')',
+ '   THEN RAISE EXCEPTION '+literal('T1_REQUIRES_VERIFIED_S1_FOUR_TEAM_SCORE_SOURCE')+'; END IF;',
+ ' SELECT array_agg(t.total ORDER BY t.total) INTO v_scores FROM (',
+ '  SELECT sum(score.stroke::int)::int total FROM jsonb_array_elements(v_week->'+literal('players')+') p,',
+ '  LATERAL jsonb_array_elements_text(p->'+literal('scores')+') score(stroke)',
+ '  GROUP BY p->>'+literal('id')+') t;',
+ ' IF v_scores IS DISTINCT FROM ARRAY[48,52,52,57]',
+ '   THEN RAISE EXCEPTION '+literal('T1_REQUIRES_VERIFIED_S1_FOUR_TEAM_SCORE_SOURCE')+'; END IF;',
+ ' IF jsonb_typeof(v_week#>'+literal('{scorecardText,holePars}')+') IS DISTINCT FROM '+literal('object')+' OR',
+ '    (SELECT count(*) FROM jsonb_each_text(v_week#>'+literal('{scorecardText,holePars}')+'))<>18',
+ '    THEN RAISE EXCEPTION '+literal('T1_REQUIRES_VERIFIED_S1_PAR59')+'; END IF;',
+ ' IF EXISTS(SELECT 1 FROM jsonb_each_text(v_week#>'+literal('{scorecardText,holePars}')+') hole',
+ '   WHERE hole.value !~ '+literal('^[1-9][0-9]?$')+')',
+ '   THEN RAISE EXCEPTION '+literal('T1_REQUIRES_VERIFIED_S1_PAR59')+'; END IF;',
+ ' SELECT sum(hole.value::int)::int INTO v_par',
+ '   FROM jsonb_each_text(v_week#>'+literal('{scorecardText,holePars}')+') hole;',
+ ' IF v_par IS DISTINCT FROM 59',
+ '   THEN RAISE EXCEPTION '+literal('T1_REQUIRES_VERIFIED_S1_PAR59')+'; END IF;',
  ' IF v_owners IS DISTINCT FROM '+json(origOwners)+' OR v_available IS DISTINCT FROM '+json(origAvailable),
  '    THEN RAISE EXCEPTION '+literal('T1_EXACT_OLD_TAG_OWNERS_OR_AVAILABLE_14_CHANGED')+'; END IF;',
  ' v_archive=jsonb_build_object('+literal('id')+','+literal(RESET_ID)+','+literal('effectiveDate')+','+literal(DATE)+',',
@@ -107,7 +138,7 @@ export function prepareNov3AtomicTagReset({
   expectedLeagueUpdatedAt,expectedRootMd5,expectedAuthorityRevision:9,
   previousOwners:origOwners,previousAvailable:origAvailable,
   proposedOwners:existing.proposedCurrentOwners,proposedAvailable:[],
-  preservesPriorRounds:true,requiresFreshPostS1Readback:true,productionWrite:false,
+  preservesPriorRounds:true,requiresFreshPostS1Readback:true,verifiedS1Receipt,productionWrite:false,
   expectedPostConditions:{
    authorityRevision:10,seasonStartDate:DATE,
    owners:[['Matt',1],['Jason',2],['Andrew',3]],available:[],

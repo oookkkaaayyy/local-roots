@@ -62,7 +62,8 @@ const admittedFixture={
  expectedLeagueUpdatedAt:'2026-11-04 07:30:01.546079+00',
  expectedRootMd5:'a4fb5d8606f7f6a7a7ae1e96026e78af',
  authorityRevision:9,currentOwners:oldSeasonOwners,currentAvailableTags:oldAvailable,
- verifiedBackupReceipt:'original-manifest-downloadback-SHA256-verified-01'
+ verifiedBackupReceipt:'original-manifest-downloadback-SHA256-verified-01',
+ verifiedS1Receipt:'verified-S1-real-Nov03-four-team-PAR59'
 };
 
 test('T1 SQL requires exact rev9 / nine holders / available14 / fresh root CAS and remote backup receipt',()=>{
