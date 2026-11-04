@@ -4,7 +4,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import {verifyNov3Layout,classifyNov3TestEntries,prepareNov3TestOnlyQuarantine} from './nov03-event-source.mjs';
+import {NOV3_LAYOUT,verifyNov3Layout,classifyNov3TestEntries,prepareNov3TestOnlyQuarantine} from './nov03-event-source.mjs';
 import { parseUdiscWorkbook, buildGlowProposal, validateIdentityEvidence, prepareGlowWeekSync } from '../../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync-runner.mjs';
 
 const EVENT_ID='hb-glow-doubles-tAP8Y5';
@@ -136,6 +136,25 @@ export async function prepareNov3AtomicRecoveryReview({root,revision,snapshot,de
     sourceProof.sha256==='29ed49f19ee3b9c9cb8b12043e9beeb111b0c156ac3cc89a90a9dc54669f86f8' &&
     sourceProof.byteCount===22424;
   const ready=projected.status==='READY_FOR_SEPARATE_ADMITTED_CAS_REVIEW';
+  // Live Nov03 has all 18 scorecardText.holePars blank. Leaving that intact
+  // would publish an incorrect relative-to-par leaderboard despite 72 valid
+  // strokes. Admit only the exact owner-provided PAR59 event-hole layout.
+  let completedWeek=null;
+  if(ready){
+    completedWeek=cloned(projected.proposedWeek);
+    const existing=completedWeek.scorecardText?.holePars;
+    if(!existing||typeof existing!=='object'||Array.isArray(existing))
+      throw Error('NOV03_PAR_LAYOUT_PREIMAGE_REQUIRED');
+    const official=Object.fromEntries(NOV3_LAYOUT.holes.map(h=>[String(h[0]),String(h[4])]));
+    for(const [key,value] of Object.entries(existing)){
+      if(!(key in official) || (String(value??'').trim()!=='' &&
+          String(value).trim()!==official[key]))
+        throw Error('NOV03_PAR_LAYOUT_PREIMAGE_CONFLICT:'+key);
+    }
+    completedWeek.scorecardText={...completedWeek.scorecardText,holePars:official};
+    if(Object.values(official).reduce((sum,v)=>sum+Number(v),0)!==59)
+      throw Error('NOV03_PAR_LAYOUT_SUM_INVALID');
+  }
   return {
     status:ready?'ATOMIC_NOV03_SCORE_PROPOSAL_REVIEW_ONLY':'ATOMIC_NOV03_IMPORT_REVIEW_BLOCKED',
     eventId:EVENT_ID,weekDate:DATE,serverRevision:revision,
@@ -145,12 +164,13 @@ export async function prepareNov3AtomicRecoveryReview({root,revision,snapshot,de
     quarantinedIds:original.sourceArchive.players.map(p=>p.id),
     changedPaths:['glow.weeks.2026-11-03.cards[0].players',
                   'glow.weeks.2026-11-03.players',
-                  ...(ready?['glow.weeks.2026-11-03.udiscSync']:[])],
+                  ...(ready?['glow.weeks.2026-11-03.udiscSync',
+                    'glow.weeks.2026-11-03.scorecardText.holePars']:[])],
     officialSource:{claimedSha256:sourceProof.sha256||null,
       originalXlsxVerified,organizerEventBinding:'NOT_IN_XLSX_REQUIRE_EXTERNAL_PROOF',
       exportedStartTime:'DO_NOT_EQUATE_WITH_LOCAL_5_30_PM_EVENT_START'},
-    projectedStatus:projected.status,projectedWeek:ready?projected.proposedWeek:null,
-    projectedWeekSha256:ready?projected.proposedWeekSha256:null,
+    projectedStatus:projected.status,projectedWeek:completedWeek,
+    projectedWeekSha256:completedWeek?digest(Buffer.from(stable(completedWeek))):null,
     projectedSummary:ready?{teams:projected.teamCount,changes:projected.observedChanges.length}:null,
     identityReview:projected.identityReview||null,
     issues:projected.issues||null,
