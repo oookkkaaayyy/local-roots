@@ -101,3 +101,36 @@ jobs:
           path: release-capsule/
           if-no-files-found: error
           retention-days: 7
+
+  dora-e1-native-postgres:
+    name: DORA E1 isolated PostgreSQL 16 native test
+    if: github.event_name == 'pull_request' && github.event.pull_request.number == 169
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - name: Checkout exact E1 PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Test quarantined fixture vs genuine round and restore
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          test -n "$PG_CONTAINER"
+          docker cp supabase/migrations/20261104140100_dora_e1_exact_fixture_write_barrier.sql "$PG_CONTAINER:/tmp/dora-e1-invariant.sql"
+          docker cp scripts/dora-e1-exact-fixture-restore.sql "$PG_CONTAINER:/tmp/dora-e1-rollback.sql"
+          docker cp tests/dora-e1-postgres-native.sql "$PG_CONTAINER:/tmp/dora-e1-test.sql"
+          docker exec "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -U postgres -d postgres -f /tmp/dora-e1-test.sql
