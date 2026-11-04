@@ -6,7 +6,6 @@ on:
   pull_request:
     paths:
       - 'scripts/hbnf-parent-release/**'
-      - 'tests/hbnf-nov03-score-only-s1.test.mjs'
       - 'tests/hbnf-parent-release-driver.test.mjs'
       - 'tests/hbnf-cloudflare-recovery.test.mjs'
       - 'tests/hbnf-live-release-boundary.test.mjs'
@@ -34,6 +33,7 @@ permissions:
   contents: read
 jobs:
   review-only:
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'S1:')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -71,86 +71,23 @@ jobs:
           fallback_changes="$(git diff --name-only 825e6ec1e57ca4697b831e281cbef5ca7133268a HEAD)"
           fallback_outside="$(printf '%s\n' "$fallback_changes" | grep -Ev '^(scripts/hbnf-parent-release/udisc-nov03-reconciliation\.mjs|tests/hbnf-udisc-nov03-reconciliation\.test\.mjs|\.github/workflows/hbnf-parent-release-review\.yml)$' || true)"
           if [ -z "$fallback_outside" ] && [ -n "$fallback_changes" ]; then echo "fallback_only=true" >> "$GITHUB_OUTPUT"; else echo "fallback_only=false" >> "$GITHUB_OUTPUT"; fi
-          git fetch --no-tags --depth=1 origin a0e457433c1e525cee4ccb35f8b9c4a195121e82
-          s1_changes="$(git diff --name-only a0e457433c1e525cee4ccb35f8b9c4a195121e82 HEAD)"
-          s1_outside="$(printf '%s\n' "$s1_changes" | grep -Ev '^(scripts/hbnf-parent-release/(nov03-score-only-s1\.mjs|sql/nov03-score-only-guard\.sql)|tests/hbnf-nov03-score-only-s1\.test\.mjs|\.github/workflows/hbnf-parent-release-review\.yml)
-        run: node --test tests/hbnf-cloudflare-recovery.test.mjs
-      - name: Focused authenticated provider/recovery boundary tests (fake credentials only)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.fallback_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        run: node --test tests/hbnf-live-release-boundary.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
-      - name: October 24 exact-history, Jason ace and nominal-vs-cash rollover safeguards
-        if: steps.scope.outputs.s1_only != 'true'
-        run: node --test tests/hbnf-oct24-business-recovery.test.mjs
-      - name: November 3 offline UDisc source preservation and reconciliation test
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.provider_only != 'true'
-        run: node --test tests/hbnf-udisc-nov03-reconciliation.test.mjs tests/hbnf-nov03-tag-season.test.mjs
-      - name: Exact provider artifact/route verification (synthetic provider, no network credentials)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        run: node --test tests/hbnf-provider-artifact.test.mjs
-      - name: Actual Glow financial settlement source behavior (no state writes)
-        if: steps.scope.outputs.s1_only != 'true'
-        run: node --test tests/hbnf-glow-financial-settlement.test.mjs
-      - name: Actual prior handler RED then corrected handler GREEN
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        shell: bash
-        run: |
-          git show 6ce83a5f791dd42a14521a04ab870f5c9341f5b6:public/glow.html > /tmp/hbnf-prior-glow.html
-          if HBNF_QUICK_IMPORT_SOURCE=/tmp/hbnf-prior-glow.html node --test tests/hbnf-glow-quick-import.test.mjs > /tmp/hbnf-quick-red.log 2>&1; then
-            echo "UNSAFE_BASELINE_UNEXPECTEDLY_GREEN" >&2
-            exit 1
-          fi
-          node --test tests/hbnf-glow-quick-import.test.mjs
-      - name: Verify review-only parent gate and cutover source invariants (no secrets)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.quick_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-server-tag-projection.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
-      - name: Verify exact UDisc latest source blobs (read only)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        run: |
-          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js)" = "05f45f267c068ed3f1b8e17404cb792e76d5c539"
-          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs)" = "ed61c8af1884ec89c5ec3f8206c8b32333c218b5"
-          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync.mjs)" = "91aa80174e1e46db28ee8d6779e077b2d287080f"
-          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync-runner.mjs)" = "87e08205538bab9ead8f48a7e40e1efaeb21376c"
-      - name: Fetch exact installed v48 source (read only)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        run: git fetch --no-tags --depth=1 origin 44612c09677f59b84bece7de655af7bb011b51e7
-      - name: Assemble reproducible REVIEW_ONLY site asset package
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        run: node scripts/hbnf-parent-release/build-review-only-assets.mjs
-      - name: Attach unadmitted candidate (not a deployment)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: HBNF-P0-public-assets-REVIEW_ONLY
-          path: |
-            build/HBNF-P0-public-assets-REVIEW_ONLY.zip
-            build/HBNF-P0-public-assets-review-result.json
-          if-no-files-found: error
-          retention-days: 14
-
- || true)"
-          if [ -z "$s1_outside" ] && [ -n "$s1_changes" ]; then echo "s1_only=true" >> "$GITHUB_OUTPUT"; else echo "s1_only=false" >> "$GITHUB_OUTPUT"; fi
-      - name: Focused S1 legacy writer and rollback source only
-        run: node --test tests/hbnf-nov03-score-only-s1.test.mjs
       - name: Cloudflare-only no-Drive-token source and drift verification
-        if: steps.scope.outputs.s1_only != 'true'
         run: node --test tests/hbnf-cloudflare-recovery.test.mjs
       - name: Focused authenticated provider/recovery boundary tests (fake credentials only)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.fallback_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        if: steps.scope.outputs.fallback_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         run: node --test tests/hbnf-live-release-boundary.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
       - name: October 24 exact-history, Jason ace and nominal-vs-cash rollover safeguards
-        if: steps.scope.outputs.s1_only != 'true'
         run: node --test tests/hbnf-oct24-business-recovery.test.mjs
       - name: November 3 offline UDisc source preservation and reconciliation test
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.provider_only != 'true'
+        if: steps.scope.outputs.provider_only != 'true'
         run: node --test tests/hbnf-udisc-nov03-reconciliation.test.mjs tests/hbnf-nov03-tag-season.test.mjs
       - name: Exact provider artifact/route verification (synthetic provider, no network credentials)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        if: steps.scope.outputs.nov3_only != 'true'
         run: node --test tests/hbnf-provider-artifact.test.mjs
       - name: Actual Glow financial settlement source behavior (no state writes)
-        if: steps.scope.outputs.s1_only != 'true'
         run: node --test tests/hbnf-glow-financial-settlement.test.mjs
       - name: Actual prior handler RED then corrected handler GREEN
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         shell: bash
         run: |
           git show 6ce83a5f791dd42a14521a04ab870f5c9341f5b6:public/glow.html > /tmp/hbnf-prior-glow.html
@@ -160,23 +97,23 @@ jobs:
           fi
           node --test tests/hbnf-glow-quick-import.test.mjs
       - name: Verify review-only parent gate and cutover source invariants (no secrets)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.quick_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        if: steps.scope.outputs.quick_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-server-tag-projection.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
       - name: Verify exact UDisc latest source blobs (read only)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        if: steps.scope.outputs.nov3_only != 'true'
         run: |
           test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js)" = "05f45f267c068ed3f1b8e17404cb792e76d5c539"
           test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs)" = "ed61c8af1884ec89c5ec3f8206c8b32333c218b5"
           test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync.mjs)" = "91aa80174e1e46db28ee8d6779e077b2d287080f"
           test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync-runner.mjs)" = "87e08205538bab9ead8f48a7e40e1efaeb21376c"
       - name: Fetch exact installed v48 source (read only)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         run: git fetch --no-tags --depth=1 origin 44612c09677f59b84bece7de655af7bb011b51e7
       - name: Assemble reproducible REVIEW_ONLY site asset package
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         run: node scripts/hbnf-parent-release/build-review-only-assets.mjs
       - name: Attach unadmitted candidate (not a deployment)
-        if: steps.scope.outputs.s1_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: HBNF-P0-public-assets-REVIEW_ONLY
@@ -186,3 +123,15 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+
+  s1-source-only:
+    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'S1:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify focused score-only guard and conditional rollback
+        run: node --test tests/hbnf-nov03-score-only-s1.test.mjs
