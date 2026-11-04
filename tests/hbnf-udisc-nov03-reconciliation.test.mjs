@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {prepareNov3Reconciliation} from '../scripts/hbnf-parent-release/udisc-nov03-reconciliation.mjs';
+import {prepareNov3Reconciliation,prepareNov3AtomicRecoveryReview} from '../scripts/hbnf-parent-release/udisc-nov03-reconciliation.mjs';
 const DATE='2026-11-03', EVENT_ID='hb-glow-doubles-tAP8Y5';
 const team=(id,one,two,scores)=>({id,name:one+' / '+two,partner1:one,partner2:two,cardId:'C1',scores,removed:false});
 const base=()=>({
@@ -193,4 +193,102 @@ test('season reset rejects concurrent tag authority changes and preserves manual
  'BLOCKED_TAG_SEASON_PREIMAGE_DRIFT');
  assert.equal(prepareNov3TagSeasonReset({authorityRevision:9,currentOwners:entries,currentAvailableTags,alreadyFinalized:true}).status,
  'BLOCKED_TAG_SEASON_AUTHORITY_OR_FINALIZATION_CHANGED');
+});
+
+
+// Secondary score transcription from #115 official scored-XLSX receipt 6627720510.
+// These arrays test math/identity/source boundaries; they are NOT the original XLSX.
+const NOV03_RECEIPT_ROWS=[
+ {members:['Fox','Jason mintzer'],usernames:['mrfox1','jasonmintzer'],rank:1,strokes:[2,2,3,2,3,3,3,3,2,2,4,2,2,2,3,3,4,3],total:48},
+ {members:['Andrew','Matthew Levinson'],usernames:['ookkaayy','thetek'],rank:2,strokes:[3,2,3,3,4,2,2,2,2,3,4,2,2,3,3,3,5,4],total:52},
+ {members:['Kyle Gundlach','Dylan Jones'],usernames:['bogeybillbrasky','drjfuu'],rank:2,strokes:[2,2,3,3,3,3,4,3,2,2,4,2,2,3,3,3,5,3],total:52},
+ {members:['Zimgirdib','Tony Howell'],usernames:['zimgirdib','orion3'],rank:4,strokes:[3,3,3,3,3,3,2,3,2,3,4,3,3,3,5,3,4,4],total:57}
+];
+const receiptSnapshot=()=>({eventId:EVENT_ID,weekDate:DATE,observedAtLocal:'2026-11-04T09:32:00Z',
+ rows:NOV03_RECEIPT_ROWS.map((row,i)=>({
+  sourceRow:i+2,sourceTeam:row.members.join(' & '),members:[...row.members],
+  usernames:[...row.usernames],memberAlignment:true,
+  scores:row.strokes.map(String),holesCompleted:18,holesComplete:true,
+  sourceRank:row.rank,sourceRankRaw:String(row.rank),
+  division:'GEN',strokeTotal:row.total,holeStrokesTotal:row.total,
+  relativeScore:row.total-59
+ }))});
+function configuredOfficialRoot(){
+ const root=realNov3TestState();
+ root.state_json.glow.playerAliases={
+  'J Fox':'Fox','Jason mintzer':'Jason','Andrew':'Andrew',
+  'Matthew Levinson':'Matt','Kyle Gundlach':'Kyle','Dylan Jones':'Dylan',
+  'Zimgirdib':'Karl','Tony Howell':'Tony Howell'
+ };
+ root.state_json.glow.weeks['2026-10-24']={players:[team('OLD','Fox','Jason',Array(18).fill(''))],archived:true};
+ return root;
+}
+const reviewedNames={
+ 'udisc:mrfox1':{canonicalName:'Fox'},'udisc:jasonmintzer':{canonicalName:'Jason'},
+ 'udisc:ookkaayy':{canonicalName:'Andrew'},'udisc:thetek':{canonicalName:'Matt'},
+ 'udisc:bogeybillbrasky':{canonicalName:'Kyle'},'udisc:drjfuu':{canonicalName:'Dylan'},
+ 'udisc:zimgirdib':{canonicalName:'Karl'},'udisc:orion3':{canonicalName:'Tony Howell'}
+};
+test('authentic Nov03 scored export receipt verifies all 72 strokes, totals, PAR59 and T2',()=>{
+ const rows=receiptSnapshot().rows;
+ assert.deepEqual(rows.map(r=>r.strokeTotal),[48,52,52,57]);
+ assert.deepEqual(rows.map(r=>r.sourceRank),[1,2,2,4]);
+ for(const row of rows){
+  assert.equal(row.scores.length,18);
+  assert.equal(row.scores.reduce((sum,n)=>sum+Number(n),0),row.strokeTotal);
+  assert.equal(row.relativeScore,row.strokeTotal-59);
+  assert.equal(row.memberAlignment,true);
+  assert.equal(new Set(row.usernames).size,2);
+ }
+});
+test('atomic read-only review isolates exact QI and stages all four real teams without touching historical money/tags',async()=>{
+ const root=configuredOfficialRoot(),before=JSON.stringify(root);
+ const report=await prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
+  snapshot:receiptSnapshot(),decisions:reviewedNames,
+  sourceProof:{sha256:'29ed49f19ee3b9c9cb8b12043e9beeb111b0c156ac3cc89a90a9dc54669f86f8',
+    byteCount:22424,originalBytesRead:false}});
+ assert.equal(report.status,'ATOMIC_NOV03_SCORE_PROPOSAL_REVIEW_ONLY');
+ assert.equal(report.projectedStatus,'READY_FOR_SEPARATE_ADMITTED_CAS_REVIEW');
+ assert.equal(report.admission,'NOT_ADMITTED');
+ assert.equal(report.productionWrite,false);
+ assert.equal(report.officialSource.originalXlsxVerified,false);
+ assert.equal(report.preservedRehearsalArchive.players.length,3);
+ assert.equal(report.quarantinedIds.length,3);
+ assert.equal(report.projectedSummary.teams,4);
+ assert.equal(report.projectedSummary.changes,72);
+ assert.deepEqual(report.projectedWeek.players.map(p=>[p.partner1,p.partner2]),
+  [['Fox','Jason'],['Andrew','Matt'],['Kyle','Dylan'],['Karl','Tony Howell']]);
+ assert.deepEqual(report.projectedWeek.players.map(p=>p.scores.reduce((a,v)=>a+Number(v),0)),
+   [48,52,52,57]);
+ assert.deepEqual(root.state_json.glow.weeks[DATE].players.map(p=>p.id),
+  ['QI_1793572411877_1','QI_1793572411877_2','QI_1793572411877_3']);
+ assert.equal(JSON.stringify(root),before);
+ assert.deepEqual(root.state_json.glow.weeks['2026-10-24'].players[0].partner1,'Fox');
+ assert.deepEqual(root.state_json.glow.weeks[DATE].acePots,{main:500,reserve:200});
+});
+test('uncorroborated UDisc usernames fail closed, preserving QI and all history',async()=>{
+ const root=configuredOfficialRoot(),before=JSON.stringify(root);
+ const r=await prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
+   snapshot:receiptSnapshot(),decisions:{}});
+ assert.equal(r.status,'ATOMIC_NOV03_IMPORT_REVIEW_BLOCKED');
+ assert.equal(r.projectedStatus,'IDENTITY_REVIEW_REQUIRED');
+ assert.equal(r.projectedWeek,null);
+ assert.equal(r.identityReview.length,8);
+ assert.equal(JSON.stringify(root),before);
+});
+test('drifted rehearsal rows cannot be erased by atomic recovery preparation',async()=>{
+ const root=configuredOfficialRoot(),before=JSON.stringify(root);
+ root.state_json.glow.weeks[DATE].players[0].scores[3]='2';
+ const expected=JSON.stringify(root);
+ const r=await prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
+    snapshot:receiptSnapshot(),decisions:reviewedNames});
+ assert.equal(r.status,'QUARANTINE_PREIMAGE_NOT_ADMITTED');
+ assert.equal(r.quarantineStatus,'BLOCKED_TEST_PREIMAGE_DRIFT_OR_GENUINE_SCORE');
+ assert.equal(JSON.stringify(root),expected);
+ assert.notEqual(before,expected);
+});
+test('empty scored export cannot begin Nov03 atomic replacement',async()=>{
+ const root=configuredOfficialRoot();
+ await assert.rejects(()=>prepareNov3AtomicRecoveryReview({root,revision:root.updated_at,
+   snapshot:{eventId:EVENT_ID,weekDate:DATE,rows:[]}}),/NONEMPTY_SCORED_EXPORT_REQUIRED/);
 });
