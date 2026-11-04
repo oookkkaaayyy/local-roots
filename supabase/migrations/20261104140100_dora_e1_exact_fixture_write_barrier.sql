@@ -23,7 +23,7 @@ BEGIN
  FROM public.lr_results WHERE event_id=e.id;
  IF n<>6 OR qualified<>6 THEN RAISE EXCEPTION 'E1 six-row identity mismatch'; END IF;
  -- Counts/IDs are a local safety check, NOT the separately required full-byte preimage comparison.
-END $pre$;
+END; $pre$;
 CREATE OR REPLACE FUNCTION public.lr_dora_e1_event_write_barrier()
 RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,public
 AS $event$
@@ -46,7 +46,7 @@ BEGIN
   RETURN NULL;
  END IF;
  RETURN NEW;
-END $event$;
+END; $event$;
 CREATE OR REPLACE FUNCTION public.lr_dora_e1_dependent_write_barrier()
 RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,public
 AS $dependent$
@@ -61,7 +61,7 @@ BEGIN
  END IF;
  IF OLD.event_id=target OR NEW.event_id=target THEN RETURN NULL; END IF;
  RETURN NEW;
-END $dependent$;
+END; $dependent$;
 REVOKE ALL ON FUNCTION public.lr_dora_e1_event_write_barrier() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lr_dora_e1_dependent_write_barrier() FROM PUBLIC;
 DROP TRIGGER IF EXISTS lr_events_01_dora_e1_write_barrier ON public.lr_events;
@@ -84,5 +84,5 @@ DO $post$ BEGIN
  OR (SELECT count(*) FROM public.lr_event_sources
   WHERE event_id='5e87e132-dfe9-41e5-8087-80d4b881caa0'::uuid)<>1
  THEN RAISE EXCEPTION 'E1 atomic postcheck failure'; END IF;
-END $post$;
+END; $post$;
 COMMIT;

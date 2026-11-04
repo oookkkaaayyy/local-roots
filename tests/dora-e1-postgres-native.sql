@@ -9,7 +9,7 @@ CREATE TABLE public.lr_results (id uuid PRIMARY KEY,event_id uuid NOT NULL
  REFERENCES public.lr_events(id),source_id uuid NOT NULL,player_name text,
  place integer,total_score integer,updated_at timestamptz DEFAULT now());
 CREATE FUNCTION public.lr_touch_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$
- BEGIN NEW.updated_at=clock_timestamp(); RETURN NEW; END $$;
+ BEGIN NEW.updated_at=clock_timestamp(); RETURN NEW; END; $;
 CREATE TRIGGER lr_events_touch_updated_at BEFORE UPDATE ON public.lr_events
  FOR EACH ROW EXECUTE FUNCTION public.lr_touch_updated_at();
 CREATE TRIGGER lr_event_sources_touch_updated_at BEFORE UPDATE ON public.lr_event_sources
@@ -33,11 +33,11 @@ INSERT INTO public.lr_results(id,event_id,source_id,player_name,place,total_scor
  VALUES('44444444-4444-4444-8444-444444444444',
  '11111111-1111-4111-8111-111111111111',
  'd77cfae0-8597-475a-8e05-ae96e2dbee6f','Real player',1,58);
-CREATE TEMP TABLE e1_before_event AS SELECT to_jsonb(e)-'published'-'updated_at' row FROM public.lr_events e
+CREATE TEMP TABLE e1_before_event AS SELECT to_jsonb(e)-'published'-'updated_at' event_snapshot FROM public.lr_events e
  WHERE slug='hbnf-glow-2026-09-02';
-CREATE TEMP TABLE e1_before_links AS SELECT to_jsonb(es) row FROM public.lr_event_sources es
+CREATE TEMP TABLE e1_before_links AS SELECT to_jsonb(es) source_snapshot FROM public.lr_event_sources es
  WHERE external_id='hbnf:glow:2026-09-02';
-CREATE TEMP TABLE e1_before_results AS SELECT jsonb_agg(to_jsonb(r) ORDER BY r.id) rows FROM public.lr_results r
+CREATE TEMP TABLE e1_before_results AS SELECT jsonb_agg(to_jsonb(r) ORDER BY r.id) results_snapshot FROM public.lr_results r
  WHERE event_id='5e87e132-dfe9-41e5-8087-80d4b881caa0';
 
 \i /tmp/dora-e1-invariant.sql
@@ -64,23 +64,23 @@ BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.lr_events WHERE slug='hbnf-glow-2026-09-02'
   AND published=false AND status='completed') THEN RAISE EXCEPTION 'synthetic republished or misclassified'; END IF;
  IF (SELECT to_jsonb(e)-'published'-'updated_at' FROM public.lr_events e WHERE slug='hbnf-glow-2026-09-02')
-    IS DISTINCT FROM (SELECT row FROM e1_before_event) THEN RAISE EXCEPTION 'event field drift'; END IF;
+    IS DISTINCT FROM (SELECT event_snapshot FROM e1_before_event) THEN RAISE EXCEPTION 'event field drift'; END IF;
  IF (SELECT to_jsonb(es) FROM public.lr_event_sources es WHERE external_id='hbnf:glow:2026-09-02')
-    IS DISTINCT FROM (SELECT row FROM e1_before_links) THEN RAISE EXCEPTION 'provenance mutated'; END IF;
+    IS DISTINCT FROM (SELECT source_snapshot FROM e1_before_links) THEN RAISE EXCEPTION 'provenance mutated'; END IF;
  IF (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.id) FROM public.lr_results r
   WHERE event_id='5e87e132-dfe9-41e5-8087-80d4b881caa0')
-    IS DISTINCT FROM (SELECT rows FROM e1_before_results) THEN RAISE EXCEPTION 'fixture result history lost'; END IF;
+    IS DISTINCT FROM (SELECT results_snapshot FROM e1_before_results) THEN RAISE EXCEPTION 'fixture result history lost'; END IF;
  IF NOT EXISTS(SELECT 1 FROM public.lr_events WHERE slug='real-hbnf-played' AND published=false)
   OR NOT EXISTS(SELECT 1 FROM public.lr_results WHERE player_name='Real corrected')
   OR NOT EXISTS(SELECT 1 FROM public.lr_event_sources WHERE external_id='hbnf:skins:2026-10-20'
    AND source_payload->>'genuine'='true') THEN RAISE EXCEPTION 'real event blocked'; END IF;
-END $check$;
+END; $check$;
 CREATE TEMP TABLE e1_timestamp AS SELECT updated_at stamp FROM public.lr_events WHERE slug='hbnf-glow-2026-09-02';
 \i /tmp/dora-e1-invariant.sql
 DO $check$ BEGIN
  IF (SELECT updated_at FROM public.lr_events WHERE slug='hbnf-glow-2026-09-02')
   IS DISTINCT FROM (SELECT stamp FROM e1_timestamp) THEN RAISE EXCEPTION 'idempotent reapply touched timestamp'; END IF;
-END $check$;
+END; $check$;
 \i /tmp/dora-e1-rollback.sql
 \i /tmp/dora-e1-rollback.sql
 DO $check$
@@ -88,9 +88,9 @@ BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.lr_events WHERE slug='hbnf-glow-2026-09-02' AND status='completed' AND published=true)
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.id) FROM public.lr_results r
   WHERE event_id='5e87e132-dfe9-41e5-8087-80d4b881caa0')
-  IS DISTINCT FROM (SELECT rows FROM e1_before_results)
+  IS DISTINCT FROM (SELECT results_snapshot FROM e1_before_results)
   OR EXISTS(SELECT 1 FROM pg_trigger WHERE tgname IN (
     'lr_events_01_dora_e1_write_barrier','lr_event_sources_00_dora_e1_write_barrier',
     'lr_results_00_dora_e1_write_barrier')) THEN RAISE EXCEPTION 'rollback failed'; END IF;
-END $check$;
+END; $check$;
 SELECT 'PASS: exact UUID quarantine, six immutable rows, provenance, genuine-event behavior, idempotency, restore' AS e1_native_result;

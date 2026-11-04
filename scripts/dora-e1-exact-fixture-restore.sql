@@ -16,7 +16,7 @@ DO $pre$ BEGIN
   source_id='d77cfae0-8597-475a-8e05-ae96e2dbee6f'::uuid AND
   player_name ~* '^Fixture([[:space:]]|$)')<>6
  THEN RAISE EXCEPTION 'E1 restore requires exactly admitted historical identity'; END IF;
-END $pre$;
+END; $pre$;
 DROP TRIGGER IF EXISTS lr_results_00_dora_e1_write_barrier ON public.lr_results;
 DROP TRIGGER IF EXISTS lr_event_sources_00_dora_e1_write_barrier ON public.lr_event_sources;
 DROP TRIGGER IF EXISTS lr_events_01_dora_e1_write_barrier ON public.lr_events;
@@ -35,5 +35,5 @@ DO $post$ BEGIN
     'lr_event_sources_00_dora_e1_write_barrier',
     'lr_results_00_dora_e1_write_barrier') AND NOT tgisinternal)
  THEN RAISE EXCEPTION 'E1 rollback postcheck failed'; END IF;
-END $post$;
+END; $post$;
 COMMIT;
