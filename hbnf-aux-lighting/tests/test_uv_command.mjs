@@ -159,13 +159,15 @@ test("follow modes carry independent caps without retained MQTT actuation", asyn
     { id: 1, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: 128, col: [[0, 0, 0, 255]] },
     { id: 2, bri: 255, fx: UV_FOLLOW_EFFECT_ID, ix: 64, col: [[0, 0, 0, 255]] },
   ]);
+  let vibePublishes = 0;
   const vibe = await executeUvRequest({
     request: { mode: "VIBE_REACTIVE", brightnessBySegment: { main: 128, short: 64 }, vibeEnvelope: 0 },
     state: gates, auxEnabled: true, uvEnabled: true, uvOutputsVerified: true, hardware: verifiedHardware,
-    publish: async () => {},
+    publish: async () => { vibePublishes++; },
   });
-  assert.deepEqual(vibe.body.caps, { main: 128, short: 64 });
-  assert.equal(vibe.body.localAudioFollow, true);
+  assert.equal(vibe.status, 400, "offline vibe simulation has no qualified live command path");
+  assert.equal(vibe.body.mutationIssued, false);
+  assert.equal(vibePublishes, 0);
 });
 
 test("missing mode defaults OFF without waking WLED or retaining a command", async () => {
