@@ -1,0 +1,54 @@
+# UV U3 — two independently dimmable AUX UV channels (source review, NOT installable)
+
+**Authority:** GitHub #116 UV lane, owner wiring correction #6652041394 and U2 handoff #6648810247. This is one **separate UV installation/recovery/acceptance path after Controls releases the shared Cart**, not a Controls C7 source or live deployment. **Current as-wired UV illuminates when AUX power is enabled**; older statements of physically disconnected UV are historical and cannot prove today's cutoff or PWM path.
+
+## Intended actual functionality
+
+Keep existing Matrix, AUX/underglow, router and the installed Owner PWA intact. When physically commissioned, retain independent saved Cart/rim `main` and Bar/charger `short` slider caps (0–255), plus Manual, OFF and Follow Matrix. Manual maps WLED UV segment 1 → SP803E PWM3/GPIO25 → Cart/rim; segment 2 → PWM2/GPIO26 → Bar/charger. Follow Matrix uses AUX-local AudioReactive/WLED effect 248 for both channels, each with its own `ix` cap, not a browser audio timer or an unapproved UDisc/Cart relay. Segment 0 remains the 22-group 12V WS2811/DDP underglow on GPIO16. WLED command transport is not a replacement for a physical UV cutoff.
+
+## Hardware decision — prefer one rated, isolated CV PWM repeater without repowering SP803E
+
+**REVIEW CANDIDATE:** LTECH LT-3040-5A four-channel CV PWM power repeater, use only channels 1 and 2. Manufacturer document: https://www.ltech.cn/uploads/pdf/en/LED-Controller/LT-3040-5A.pdf . It specifies **5–24V DC**, **5A/channel**, **PWM 200–2000Hz**, and **3kV optical isolation of signal input/output**, and shows one controller signal input driving separate load-side power supplies. Physical size approximately **175 × 44 × 30mm**. Do not infer whole-system galvanic isolation if the existing TOBSUN input/output grounds are connected. This is not a purchase recommendation without final fit/price/terminal verification, or proof that this particular input socket correctly accepts the installed SP803E common-positive low-side PWM waveform.
+
+**Existing candidate reusable parts, subject to as-wired identification:** SP803E as currently 12V-fed, 22-group 12V WS2811 on GPIO16, existing TOBSUN EA50-5V converter feeding historical 5V UV lamps, two strips (previously measured short 0.52A and rim 0.80A at 5V), INIU single 12V/3A PD output, existing protected connectors/enclosure and previously recorded fuse. Existing 5A fuse cannot be assumed suitable for smaller branches/contacts. Current connection of 5V UV strips to AUX power is **owner-reported illuminated**, but as-built +/– distribution and polarity are NOT independently documented. Do not reuse the old disconnected label.
+
+**Needed unless already owned and independently rated:** one electrically rated two-or-more-channel optoisolated 12V PWM-input/5V CV-output repeater (above is the source-backed candidate), manual **normally-open UV supply cutoff** physically interrupting the entire 5V UV power rail, separately qualified charger cover/UV exposure interlock and shielding, branch short-circuit protection rated against the smallest wire/connector, plus an independently fail-OFF/no-voltage-restart mechanism if the manual cutoff may remain ON through a battery restart. A latching ON rocker alone does **not** prove reset-OFF. Confirm actual enclosure fit and thermal room before any purchase; do not assume a bare GPIO or SP803E 12V PWM screw terminal can safely switch an independent 5V supply.
+
+## Logical interconnection ONLY — not terminal-to-terminal wiring authorization
+
+The desired **power-separated signal path** after unpowered as-built inspection is:
+
+```text
+Existing INIU 12V PD (one port) ─┬─ existing SP803E VCC/GND, unchanged
+                                 ├─ existing 12V WS2811 + and GND, GPIO16 data unchanged
+                                 └─ existing TOBSUN 12V→5V converter
+                                        └─ approved 5V UV fuse + normally-OFF manual cutoff
+                                             + exposure interlock/no-voltage-release gate
+                                             └─ repeater load-side 5V supply / UV positives
+SP803E 12V-side PWM3 (GPIO25) ── repeater INPUT channel 1 ── 5V switched rim UV negative
+SP803E 12V-side PWM2 (GPIO26) ── repeater INPUT channel 2 ── 5V switched charger UV negative
+(repeater input/common terminal pinout and optical isolation to be confirmed from actual unit)
+```
+
+**Do not execute this drawing as wiring instructions** until measured rails and manufacturer's *actual* PWM input common/polarity/current and terminal legend are accepted. In particular, do not tie the new repeater's 5V load outputs to the controller's 12V VCC, do not connect UV negatives to the old constant-ground bypass, do not bridge 12V+ to 5V+, and do not repower the SP803E at 5V to simplify the driver unless GPIO16/12V WS2811 interoperability is independently qualified. With currently unswitched UV power, merely configuring WLED segments will **not** dim or switch the strips.
+
+## Source integration already prepared (not installed)
+
+- `hbnf-aux-lighting/backend/aux_uv_policy_spec.json`: two fixed channels; default OFF; MQTT nonretained; proposed isolated CV PWM repeater with 12V nominal controller signal and 5V UV output, 200–2000Hz.
+- `uv_hardware_profile.json`: corrected owner observation and historical-as-wired distinction; `verified=false`, `physicalSafety.*=false`, no pretend electrical confirmation.
+- `aux_uv_command.mjs` + `staging/coordinated-backend/opal/owner-local-control/uv_runtime.lua`: enforce the same eight `requiredPhysicalSafetyGates` and switching topology/voltage/PWM-frequency contract in **both** cloud and local Owner command paths. Never mark `switching.isolated=true` for a bare low-side MOSFET.
+- `hbnf-final-controller/hbnf-cart-features.mjs` and `hbnf-cart.html`: REVIEW-ONLY Owner UI changes ensure missing device readiness locks commissioning tests; independent slider caps remain saveable and the current AUX-tied UV reality is visible. These files are **not** a new PWA release; Controls C7 and installed Owner files are untouched.
+- `configure_uv_pwm_outputs.py` and its U2 boot tests: existing reviewed OFF+zero-brightness boot logic, not applied.
+
+## Minimal evidence and release/rollback protocol
+
+**Only indispensable owner-side preflight evidence:** one clear **power-OFF photo set of the current as-wired AUX/UV assembly** showing the SP803E terminals and input voltage label, the TOBSUN input/output +/– and fuse, and where *both strips' red/black pairs actually land*. If one photo cannot show both ends, two close-ups suffice. This replaces asking for a new general diagnosis or repeating already accepted 5V current measurements. Confirm exact installed repeater model/terminal map and fit once selected; no purchase yet. A photo is not proof of rail voltage or output OFF.
+
+**Separate UV admission after Controls C7 finalizes its current same-manifest release:**
+
+1. **Phase 0, fully unpowered:** Controls relinquishes shared target; preserve/independently download back original AUX `/json/info`, `/json/state`, `/json/cfg`, `/json/pins`, presets, physical connection photos, battery/buck/underglow baseline, firmware/OTA and rollback source identity. Resolve original live 12V and 5V path, screw terminal pinout, black sleeve continuity, no unintended +rail bridges, independently rated protection, manual OFF and optical interlock. **Stop if unknown.** Agree one UV transaction manifest, candidate hashes, exact preimages and rollback.
+2. **Phase 1, still no UV loads:** with UV physically disconnected and manual cutoff OPEN, controlled physical installation by qualified worker under UV-specific authorization; preserve existing SP803E/WS2811. Verify voltages, polarity, input PWM waveform/rated current/frequency, output channel identity, no backfeed, no output on boot/restart/brownout/fault/Wi-Fi loss. Validate real no-voltage-restart cutoff, interlock and direct-/json/state bypass while UV rail is dead using a safe dummy indicator/load. Stop on unexpected output, heat, brownout or 12V/5V coupling.
+3. **Phase 2, only separately authorized after Phase 1 PASS:** rated shielded supervised UV-on proof Cart-only, Bar-only, both at bounded brightness, independent sliders, OFF, 0 output, Follow Matrix music, reduced/lost audio and sustained simultaneous underglow; actual measured peak/steady 12V+5V demands, thermal and exposure; verify real physical OFF under each error/restart and unauthorized direct WLED command; compare exact WLED/Opal readback (readback alone insufficient).
+4. **Closeout:** write one immutable same-manifest result with measured voltage/power, input/output identities, evidence of interlock/manual cutoff, install/file hashes, ON/OFF/failure checks, original-source recovery and independent downloaded-back closeout. On any failure disconnect UV via manual cutoff, do not assume software OFF, restore the original power/wiring and firmware/profile with all power removed and independently verify baseline. Never roll back across a live Controls operation.
+
+**Release gate NOW:** UV unqualified; all physicalSafety flags FALSE; no wiring/config/firmware/device/power/service/Controls C7 mutation authorized. No purchases or physical/UV tests. Keep the running AUX-powered illumination as user-reported rather than claiming UV dark while WLED OFF.
