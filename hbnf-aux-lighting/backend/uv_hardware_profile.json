@@ -4,10 +4,14 @@
   "evidence": null,
   "ownerReported": {
     "physicalIntegrationReview": "PASS_owner-confirmed_from_dedicated_coordinator",
-    "moduleStatus": "assembled_off_cart_disconnected_unpowered",
+    "moduleStatus": "current_owner_reports_uv_illuminates_with_aux_power_not_pwm_switched",
     "converter": "TOBSUN EA50-5V",
     "sharedInlineFuseRatingMa": 5000,
-    "unpoweredMeterChecks": "complete_without_numeric_readings_or_receipt"
+    "unpoweredMeterChecks": "complete_without_numeric_readings_or_receipt",
+    "historicalModuleStatus": "assembled_off_cart_disconnected_unpowered",
+    "currentAsWiredObservation": "Both UV strips reportedly light whenever AUX power is on. Actual source rails, terminal connections, and switched OFF state have not been independently verified.",
+    "currentPhysicalDisconnectVerified": false,
+    "currentWiringEvidence": "https://github.com/oookkkaaayyy/local-roots/issues/116#issuecomment-6652041394"
   },
   "runtimeGates": {
     "auxEnabled": false,
@@ -27,8 +31,14 @@
     "mixed_load_verified": false
   },
   "supplyByChannel": {
-    "main": { "outputVoltageV": null, "currentLimitMa": 0 },
-    "short": { "outputVoltageV": null, "currentLimitMa": 0 }
+    "main": {
+      "outputVoltageV": null,
+      "currentLimitMa": 0
+    },
+    "short": {
+      "outputVoltageV": null,
+      "currentLimitMa": 0
+    }
   },
   "sharedSupply": {
     "topology": "one_converter_one_inline_fuse_shared_by_both_uv_strips",
@@ -45,11 +55,39 @@
     "controlInputMaxVoltage": 0,
     "channels": 0,
     "maxChannelCurrentMa": 0,
-    "maxTotalCurrentMa": 0
+    "maxTotalCurrentMa": 0,
+    "method": null,
+    "pwmFrequencyHz": null,
+    "inputVoltageV": null,
+    "outputVoltageV": null
   },
   "maxBrightness": 0,
   "channels": {
-    "main": { "gpio": 25, "segmentId": 1, "loadVoltageV": 5, "loadCurrentMa": 0, "fuseRatingMa": 0, "wireCurrentRatingMa": 0 },
-    "short": { "gpio": 26, "segmentId": 2, "loadVoltageV": 5, "loadCurrentMa": 0, "fuseRatingMa": 0, "wireCurrentRatingMa": 0 }
+    "main": {
+      "gpio": 25,
+      "segmentId": 1,
+      "loadVoltageV": 5,
+      "loadCurrentMa": 0,
+      "fuseRatingMa": 0,
+      "wireCurrentRatingMa": 0
+    },
+    "short": {
+      "gpio": 26,
+      "segmentId": 2,
+      "loadVoltageV": 5,
+      "loadCurrentMa": 0,
+      "fuseRatingMa": 0,
+      "wireCurrentRatingMa": 0
+    }
+  },
+  "physicalSafety": {
+    "externalSignalToLoadIsolationVerified": false,
+    "separate5vUvAnd12vAuxRailsVerified": false,
+    "physicalTwoChannelOffVerified": false,
+    "manualCutoffVerified": false,
+    "opticalProtectionAndInterlockVerified": false,
+    "bootBrownoutAndFaultOffVerified": false,
+    "directWledBypassProtected": false,
+    "branchFuseAndConductorProtectionVerified": false
   }
 }
