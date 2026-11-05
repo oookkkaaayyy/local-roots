@@ -2736,9 +2736,9 @@
     "problem_closed_in_source": "Previously C8 active Cart planner and SQL accepted UDisc event XLSX export with caller-flaggable fresh marker, incompatible with Scoring's legitimate udiscLive lineage and manual/export safety boundary. New source requires explicitly authorized in-round lineage, event/time/binding, permission reference, cursor, digest/source signature, accepted scored holes, matching timestamps, canonical saved root revision and existing Cart fence.",
     "preview": "Historical S1 XLSX read-only preview remains a distinct mode; must never actuate Cart even if status fresh",
     "touched_review_git_blobs": {
-      "planner": "2211797490e146fd2ed8b03c2d4a92cc56275598",
-      "sql_up": "efb4ce78dbb4a1883c9658559bfaf6ce8f57e6cd",
-      "node_contract_fixture": "491638bd2a31129c94de88269f0f97aeca39ce2b",
+      "planner": "cb40cfaa1e912b971ed5941d9226cf2b39445e8e",
+      "sql_up": "4b077668e481e1a08315e4baa0e3670299ecd64f",
+      "node_contract_fixture": "e188689349fabae05a9486a332a5cc8651d97bb2",
       "pg17_contract_fixture": "667e51d64f1c8adc8116c3c043ec53828bc75c5a"
     },
     "tested_scope": "C8 new live-source exact code Node 11/11 PASS; native PG17 contract PASS (isolated); new immutable C8 digest 4/4 changed +4/4 retained source PASS; legacy C6 restore validator unchanged and its historical archived package intentionally NOT compatible.",
@@ -2771,6 +2771,13 @@
       "physical_profile": "14/14 PASS and 3 BusyBox ash syntax PASS",
       "installed": false,
       "live_source_authorized": false
+    },
+    "results_only_cursor_correction_20261105": {
+      "scope": "C8 review source only, no provider or device writes",
+      "scoring_source_ref": "PR151 8943633631848844faf14f4f4fd6e9ec4b1ea7fe (read-only review)",
+      "rule": "Latest source cursor must own at least one valid accepted hole; prior holes alone cannot qualify result-only cursor",
+      "tested": "PENDING exact-head CI",
+      "sql_provider": "NOT_INSTALLED"
     }
   }
 }
