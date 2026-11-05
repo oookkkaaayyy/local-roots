@@ -24,6 +24,46 @@ const DYE_STUDIO_NATIVE_ROLLBACK_SCOPES = Object.freeze({
   }),
 });
 const DYE_STUDIO_PR156_RELEASE_ID = 'local-roots-dye-studio-pr-156-2026-10-30-r1';
+// Events P0's migration reverse captures the 37 schedule-reconciliation rows,
+// not HBNF runtime publication changes. A combined migration+Edge admission
+// would incorrectly claim recovery of the Sep 2 synthetic Glow quarantine.
+// Only a separately scoped migration-only release is admissible here; the Edge
+// sync needs its own target-bounded recovery/admission before deployment.
+const EVENTS_P0_RELEASE_ID = /^local-roots-events-pr163-production-events-p0-\d{4}-\d{2}-\d{2}-r\d+$/;
+const EVENTS_P0_MIGRATIONS = Object.freeze([
+  '20261101070000_event_detail_fields_and_provenance.sql',
+  '20261101080000_reconcile_verified_schedule_fields.sql',
+]);
+const EVENTS_P0_MIGRATION_ROUTE = 'EVENTS_P0_MIGRATIONS_ONLY_NO_EDGE_SYNC';
+
+function requireEventsP0ReleaseBoundary(receipt) {
+  if (!EVENTS_P0_RELEASE_ID.test(receipt.releaseId)) return;
+  const scope = receipt.releaseScope;
+  const expectedKeys = ['edgeFunctionDeployment', 'migrations', 'mode', 'projectId', 'runtimeSync'];
+  if (!scope || typeof scope !== 'object' ||
+      JSON.stringify(Object.keys(scope).sort()) !== JSON.stringify(expectedKeys) ||
+      scope.mode !== 'migration-only' ||
+      scope.projectId !== 'wtymjxscneufjlkkywyg' ||
+      JSON.stringify(scope.migrations) !== JSON.stringify(EVENTS_P0_MIGRATIONS) ||
+      scope.edgeFunctionDeployment !== false || scope.runtimeSync !== false) {
+    throw new Error('Events P0 admission requires exact migration-only recovery scope; Edge/quarantine runtime changes require a separate recovered release');
+  }
+  if (receipt.source?.repository !== 'oookkkaaayyy/local-roots' ||
+      receipt.source?.ref !== 'refs/pull/163/head' ||
+      receipt.baseline?.provider !== 'supabase' ||
+      receipt.baseline?.target !== scope.projectId ||
+      receipt.deployment?.provider !== 'supabase' ||
+      receipt.deployment?.target !== scope.projectId ||
+      receipt.deployment?.plannedRoute !== EVENTS_P0_MIGRATION_ROUTE) {
+    throw new Error('Events P0 migration-only admission must bind the exact repository, PR, Supabase target and no-Edge deployment route');
+  }
+  const ids = receipt.acceptance?.criteria?.map(item => item.id) ?? [];
+  if (!ids.includes('pre-migration-guard') || !ids.includes('rollback') ||
+      ids.includes('edge-sync') || ids.includes('public-readback')) {
+    throw new Error('Events P0 migration-only admission cannot claim Edge sync or public runtime acceptance');
+  }
+}
+
 const DYE_STUDIO_PR156_PROVIDER_CONFIG_PATHS = Object.freeze([
   'dist/_headers', 'dist/_redirects', 'dist/_routes.json',
 ]);
@@ -50,6 +90,7 @@ function admissionProjection(receipt, hashes = {}) {
       ? { recoveryMode: receipt.recoveryMode }
       : {}),
     source: receipt.source,
+    ...(EVENTS_P0_RELEASE_ID.test(receipt.releaseId) ? { releaseScope: receipt.releaseScope } : {}),
     build: receipt.build,
     baseline: {
       provider: receipt.baseline.provider,
@@ -439,6 +480,18 @@ async function verifyAdmissionEvidence(root, receipt, expectedManifest, { requir
   return admission;
 }
 
+// A different path is not an independent recovered file if it is a hard link
+// to the original artifact. realpath alone detects symlinks but not hard links.
+async function sameFileIdentity(root, first, second) {
+  const [a, b] = await Promise.all([
+    realpath(path.resolve(root, first)),
+    realpath(path.resolve(root, second)),
+  ]);
+  if (a === b) return true;
+  const [aStat, bStat] = await Promise.all([stat(a), stat(b)]);
+  return aStat.dev === bStat.dev && aStat.ino === bStat.ino;
+}
+
 async function checkedFile(root, relativePath, label) {
   requireString(relativePath, `${label}.path`);
   if (path.isAbsolute(relativePath)) throw new Error(`${label}.path must be relative to the receipt root`);
@@ -470,6 +523,7 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     throw new Error('schemaVersion must be 1');
   }
   requireString(receipt.releaseId, 'releaseId');
+  requireEventsP0ReleaseBoundary(receipt);
 
   const source = receipt.source;
   requireString(source?.repository, 'source.repository');
@@ -610,6 +664,10 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     if (recoveredRollback.sha256 !== rollbackFile.sha256 || recoveredRollback.bytes !== rollbackFile.bytes) {
       throw new Error('rollback.recovery.downloadBack must byte-match the rollback artifact');
     }
+    if (EVENTS_P0_RELEASE_ID.test(receipt.releaseId) &&
+        await sameFileIdentity(root, rollbackRecovery.downloadBack.path, receipt.rollback.artifact.path)) {
+      throw new Error('Events P0 rollback download-back must be a separate recovered file');
+    }
   }
 
   const deployment = receipt.deployment;
@@ -683,6 +741,10 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   const recovered = await verifyFile(root, recovery?.downloadBack, 'recovery.downloadBack');
   if (recovered.sha256 !== packageFile.sha256 || recovered.bytes !== packageFile.bytes) {
     throw new Error('recovery.downloadBack must byte-match the release package');
+  }
+  if (EVENTS_P0_RELEASE_ID.test(receipt.releaseId) &&
+      await sameFileIdentity(root, recovery.downloadBack.path, receipt.package.path)) {
+    throw new Error('Events P0 candidate download-back must be a separate recovered file');
   }
   if (nativeRollback && path.resolve(root, recovery.downloadBack.path) === path.resolve(root, receipt.package.path)) {
     throw new Error('candidate package recovery must be a separate downloaded-back file');

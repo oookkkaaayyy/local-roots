@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Shell } from '../components/Shell';
 import { callFunction, supabase } from '../lib/supabase';
-import { downloadEventCalendar, eventDateRange, eventTitle, HBNF_EVENT_LINKS, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
+import { downloadEventCalendar, eventDateRange, eventFeeLabel, eventTimeLabel, eventTitle, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
 import { parseOrganizerResultsText, type OrganizerScoreType } from '../lib/resultsSubmission';
 import type { PublicEventDetail, PublicResult } from '../types';
 
@@ -19,6 +19,14 @@ function groupResults(results:PublicResult[]) {
     grouped.set(result.division_code,rows);
   }
   return Array.from(grouped.entries());
+}
+
+function registrationWindow(event:PublicEventDetail) {
+  const format=(value:string)=>new Intl.DateTimeFormat('en-US',{timeZone:event.timezone,month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value));
+  if(event.registration_opens_at&&event.registration_closes_at)return `${format(event.registration_opens_at)} – ${format(event.registration_closes_at)}`;
+  if(event.registration_opens_at)return `Opens ${format(event.registration_opens_at)}`;
+  if(event.registration_closes_at)return `Closes ${format(event.registration_closes_at)}`;
+  return null;
 }
 
 function ResultsSubmission({event}:{event:PublicEventDetail}) {
@@ -141,17 +149,33 @@ export function EventDetailPage({slug}:{slug:string}) {
   const tdNames=event.td_names??[];
   const resultGroups=groupResults(event.all_results??[]);
   const hbnfEvent=isHbnfEvent(event);
-  const canShowOfficialInfo=Boolean(event.official_url&&!hbnfEvent&&event.official_url!==event.registration_url&&event.official_url!==event.results_url);
+  const canShowOfficialInfo=Boolean(event.official_url&&event.official_url!==event.registration_url&&event.official_url!==event.results_url);
+  const canShowSource=Boolean(event.source_url&&event.source_url!==event.registration_url&&event.source_url!==event.results_url&&event.source_url!==event.official_url&&!hbnfEvent);
+  const timeLabel=eventTimeLabel(event);
+  const feeLabel=eventFeeLabel(event);
+  const location=[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ');
+  const registrationDetails=registrationWindow(event);
+  const formatDetails=Object.entries(event.format_details??{}).filter(([,value])=>['string','number','boolean'].includes(typeof value)||Array.isArray(value));
 
   return <Shell><main className="content narrow event-detail-page">
     <a className="event-back-link" href={returnPath}>← Events</a>
     <article className="event-detail-card">
-      <div className="event-detail-heading"><div><p className="eyebrow">{eventDateRange(event.start_date,event.end_date)}</p><h1>{event.name}</h1><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span></div>
-      <div className="event-tags"><span>{eventTitle(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
+      <div className="event-detail-heading"><div><p className="eyebrow">{eventDateRange(event.start_date,event.end_date)}{timeLabel?` · ${timeLabel}`:''}</p><h1>{event.name}</h1>{location?<p className="event-location">{location}</p>:null}</div><span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span></div>
+      <div className="event-tags">{event.event_type?<span>{eventTitle(event.event_type)}</span>:null}{event.sanctioned===true?<span>{event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'}</span>:event.sanctioned===false?<span>Unsanctioned</span>:null}{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
+      <dl className="event-detail-facts">
+        {event.venue_address?<div><dt>Address</dt><dd>{event.venue_address}</dd></div>:null}
+        {event.course_url?<div><dt>Course</dt><dd><a href={event.course_url} target="_blank" rel="noreferrer">{event.course_name||'Course map'} (opens in new tab)</a></dd></div>:null}
+        {feeLabel?<div><dt>Entry</dt><dd>{feeLabel}</dd></div>:null}
+        {event.fee_breakdown?.length?<div><dt>Fee breakdown</dt><dd>{event.fee_breakdown.map((item,index)=><span key={`${item.label}-${index}`}>{item.label}: {new Intl.NumberFormat('en-US',{style:'currency',currency:item.currency||event.entry_fee_currency||'USD'}).format(item.amount)}{index<event.fee_breakdown.length-1?' · ':''}</span>)}</dd></div>:null}
+        {registrationDetails?<div><dt>Registration</dt><dd>{registrationDetails}</dd></div>:null}
+        {event.registration_capacity!=null?<div><dt>Capacity</dt><dd>{event.registration_available!=null?`${event.registration_available} of ${event.registration_capacity} spots available`:`${event.registration_capacity} spots`}</dd></div>:null}
+        {event.registration_status?<div><dt>Registration status</dt><dd>{eventTitle(event.registration_status)}</dd></div>:null}
+        {event.additional_fees_note?<div><dt>Other fees</dt><dd>{event.additional_fees_note}</dd></div>:null}
+        {formatDetails.map(([key,value])=><div key={key}><dt>{eventTitle(key)}</dt><dd>{Array.isArray(value)?value.join(', '):String(value)}</dd></div>)}
+      </dl>
       {event.club_host?<p className="event-organizer">Hosted by {event.club_host}{tdNames.length?` · TD: ${tdNames.join(', ')}`:''}</p>:tdNames.length?<p className="event-organizer">TD: {tdNames.join(', ')}</p>:null}
-      {hbnfEvent?<nav className="event-resource-links" aria-label={`HB Night Flyers links for ${event.name}`}>{HBNF_EVENT_LINKS.map(link=><a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={`${link.label} for ${event.name} (opens in new tab)`}>{link.label}</a>)}</nav>:null}
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
-      <div className="event-detail-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{canShowOfficialInfo?<a className="button ghost" href={event.official_url!} target="_blank" rel="noreferrer" aria-label={`Official info for ${event.name} (opens in new tab)`}>Official Info</a>:null}{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)} aria-label={`Add ${event.name} to calendar`}>Add to Calendar</button>:null}<button type="button" className="button ghost" onClick={share}>Share</button>{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
+      <div className="event-detail-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{canShowOfficialInfo?<a className="button ghost" href={event.official_url!} target="_blank" rel="noreferrer" aria-label={`Official event information for ${event.name} (opens in a new tab)`}>Event info</a>:null}{canShowSource?<a className="button ghost" href={event.source_url!} target="_blank" rel="noreferrer" aria-label={`Organizer source for ${event.name} (opens in a new tab)`}>Source</a>:null}{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)} aria-label={`Add ${event.name} to calendar`}>Add to Calendar</button>:null}<button type="button" className="button ghost" onClick={share}>Share</button>{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in a new tab)`}>{resultLabel}</a>:null}</div>
       {shareState?<div className="results-parse-status" role="status">{shareState}</div>:null}
 
       {resultGroups.length?<section id="results" className="event-detail-results" aria-labelledby="event-results-heading"><h2 id="event-results-heading">Results</h2>{resultGroups.map(([division,rows])=><div className="result-division" key={division}><h3>{division}</h3><div className="result-table-wrap"><table className="result-table"><thead><tr><th>Place</th><th>Player / team</th><th>Score</th></tr></thead><tbody>{rows.map(result=><tr key={`${result.division_code}-${result.place}-${result.player_name}`}><td>{result.place}</td><td>{result.player_name}</td><td><strong>{resultValue(result)}</strong></td></tr>)}</tbody></table></div></div>)}</section>:null}

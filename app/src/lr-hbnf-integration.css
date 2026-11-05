@@ -36,6 +36,13 @@
 .public-brand-shell .hbnf-events-state{margin:0;padding:11px 0 6px;color:rgba(244,233,214,.78);font-size:.84rem}
 @media(max-width:720px){
  .public-brand-shell .events-page .events-layout{grid-template-columns:minmax(0,1fr);gap:12px;padding-top:14px}
+ .public-brand-shell .events-page,.public-brand-shell .events-page .events-layout,.public-brand-shell .events-page .event-list,.public-brand-shell .events-page .event-card,.public-brand-shell .events-page .event-main{min-width:0;max-width:100%;width:100%}
+ .public-brand-shell .events-page .event-card{display:block;box-sizing:border-box}
+ .public-brand-shell .events-page .event-date-block{display:flex;min-width:0;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:3px;width:100%}
+ .public-brand-shell .events-page .event-date-block strong{min-width:0;overflow-wrap:anywhere}
+ .public-brand-shell .events-page .event-date-block span{min-width:0;max-width:100%;margin-top:0;text-align:left;white-space:normal;overflow-wrap:anywhere}
+ .public-brand-shell .events-page .event-heading-row>div{min-width:0;max-width:100%}
+ .public-brand-shell .events-page .event-main h3,.public-brand-shell .events-page .event-location,.public-brand-shell .events-page .event-organizer{overflow-wrap:anywhere}
  .public-brand-shell .events-page .filters-dialog:not([open]){display:none}
  .public-brand-shell .events-page .filters-dialog[open]:modal{position:fixed;inset:auto 0 0;display:block;width:min(560px,100%);max-width:100%;max-height:min(84dvh,720px);margin:0 auto;padding:0;overflow:hidden;border:1px solid rgba(91,58,36,.24);border-bottom:0;border-radius:16px 16px 0 0;background:#fbf5ea;color:var(--root);box-shadow:0 -16px 48px rgba(41,33,25,.2)}
  .public-brand-shell .events-page .filters-dialog[open]:modal::backdrop{background:rgba(25,22,18,.56);backdrop-filter:blur(2px)}

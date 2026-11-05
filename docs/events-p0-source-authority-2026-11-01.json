@@ -1,0 +1,415 @@
+{
+  "as_of": "2026-11-01",
+  "sources": [
+    {
+      "key": "califlwr_eventbrite_manual",
+      "name": "CALI FLWR organizer Eventbrite — manual verification",
+      "notes": "Current manually verified rendering lists Sunday 2026-09-20 at Pico Rivera Golf Club. An older cached rendering of the same Eventbrite event ID showed 2026-10-17 / location TBD; newer organizer listing plus independent current Nick Andrade Linktree point to 2026-09-20.",
+      "enabled": true,
+      "base_url": "https://www.eventbrite.com/e/cali-flwr-disc-fest-tickets-1992784825056?aff=oddtdtcreator",
+      "source_type": "manual",
+      "access_method": "Manual factual verification only; no automated crawling enabled",
+      "permission_basis": "Public organizer-managed Eventbrite listing by Sammy Elliott. Local Roots stores limited factual event metadata and the outbound registration link after manual verification.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "name",
+        "start_date",
+        "end_date",
+        "city",
+        "venue_name",
+        "course_name",
+        "event_type",
+        "registration_status",
+        "registration_url",
+        "td_names"
+      ]
+    },
+    {
+      "key": "city_ontario_whispering_lakes_manual",
+      "name": "City of Ontario — Whispering Lakes Golf Course",
+      "notes": "Narrow first-party venue/city corroboration only.",
+      "enabled": true,
+      "base_url": "https://www.ontarioca.gov/government/communitylife/recreation-community-services/parks/whispering-lakes-golf-course",
+      "source_type": "manual",
+      "access_method": "Manual verification of the City of Ontario public first-party facility page; no automated crawling.",
+      "permission_basis": "Official City of Ontario public information may be used for narrow city and facility identity/location facts for Whispering Lakes Golf Course. It does not establish tournament dates, sanctioning, registration, results, or organizer details.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "city",
+        "course_name"
+      ]
+    },
+    {
+      "key": "city_thousand_oaks_manual",
+      "name": "City of Thousand Oaks — official city information",
+      "notes": "Narrow first-party geography corroboration only.",
+      "enabled": true,
+      "base_url": "https://toaks.gov/about",
+      "source_type": "manual",
+      "access_method": "Manual verification of the City of Thousand Oaks public first-party website; no automated crawling.",
+      "permission_basis": "The official City of Thousand Oaks About page states that Thousand Oaks is located in Ventura County. Use only for narrow city/county geography corroboration; it does not establish disc-golf event facts.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "county",
+        "city"
+      ]
+    },
+    {
+      "key": "conejo_disc_golf_club_direct",
+      "name": "Conejo Disc Golf Club direct source",
+      "notes": "Coverage target for Ventura County and Sapwi conflict resolution. Direct club evidence is required to resolve the current 2026 Sapwi date conflict.",
+      "enabled": false,
+      "base_url": "https://www.crpd.org/agreements",
+      "source_type": "club",
+      "access_method": "Pending direct organizer submission/feed or explicit permission; no automated retrieval enabled",
+      "permission_basis": "Conejo Recreation & Park District officially identifies Conejo Disc Golf Club as its partner for support, maintenance, operation and promotion of disc golf at Rabbit Flats and Sapwi Trails. This establishes organizer identity but not current event dates.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "crpd_rabbit_flats_direct",
+      "name": "Conejo Recreation & Park District — Rabbit Flats Disc Golf",
+      "notes": "CRPD states the Disc Golf Drop-In Program runs the first Saturday of each month at 10:00am at Rabbit Flats.",
+      "enabled": true,
+      "base_url": "https://www.crpd.org/disc-golf",
+      "source_type": "manual",
+      "access_method": "Manual factual verification of the public CRPD disc-golf program page.",
+      "permission_basis": "First-party public municipal recreation source. May establish the Rabbit Flats Drop-In Program recurrence, location, host and event-format facts published by CRPD.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "name",
+        "start_date",
+        "end_date",
+        "city",
+        "course_name",
+        "format",
+        "club_host"
+      ]
+    },
+    {
+      "key": "crpd_sapwi_manual",
+      "name": "Conejo Recreation & Park District — Sapwi Trails Community Park",
+      "notes": "Narrow first-party venue/course corroboration only.",
+      "enabled": true,
+      "base_url": "https://www.crpd.org/disc-golf-abd7a7f6-309d-44e5-876a-d0aa63d5f4e6",
+      "source_type": "manual",
+      "access_method": "Manual verification of CRPD public first-party park/disc-golf pages; no automated crawling.",
+      "permission_basis": "Conejo Recreation & Park District is the public park operator and identifies Sapwi Trails Community Park as a disc-golf facility. Its public agreements page separately identifies Conejo Disc Golf Club as the district partner supporting, operating and promoting disc golf at Sapwi Trails and Rabbit Flats. Use only for narrow venue/course/operator relationship facts, not tournament dates, sanctioning, registration or event-specific hosting unless explicitly stated.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "venue_name",
+        "course_name"
+      ]
+    },
+    {
+      "key": "dgs_manual_discovery_only",
+      "name": "Disc Golf Scene — manual discovery leads only",
+      "notes": "Discovery bookkeeping only. This source cannot publish, update, verify, or satisfy provenance/freshness/sanction-basis gates. Do not treat a discovery item title, date, location, tier, registration state, or URL as canonical evidence.",
+      "enabled": false,
+      "base_url": "https://www.discgolfscene.com/tournaments/CA",
+      "source_type": "other",
+      "access_method": "Manual discovery from public search/index results only; no automated crawling, ingestion, or field promotion",
+      "permission_basis": "User explicitly permits Disc Golf Scene only as a discovery lead. It is never production authority: every event fact must be independently corroborated by a permitted first-party/organizer/venue/club/public source before canonical publication.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "discgolfvr360_manual",
+      "name": "DiscGolfVR360 organizer pages",
+      "notes": "Direct organizer provenance source. Current verified example: 2026 Sky High Showdown page confirming Aug 22-23, Pro B / Am C tier split, and Inland Flight Club host.",
+      "enabled": true,
+      "base_url": "https://discgolfvr360.com/",
+      "source_type": "manual",
+      "access_method": "Manual factual verification of organizer-owned public event pages; no automated crawling",
+      "permission_basis": "Organizer-owned public event pages used only for limited factual event metadata and source links; no article prose copied and no automated ingestion enabled without separate permission.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "name",
+        "start_date",
+        "end_date",
+        "format",
+        "sanctioned",
+        "tier",
+        "club_host"
+      ]
+    },
+    {
+      "key": "dog_haus_disc_golf_direct",
+      "name": "Dog Haus Disc Golf Shop direct source",
+      "notes": "Coverage target for San Diego County. Use a direct organizer page/feed or Local Roots submission before publishing Dog Haus events; do not substitute Disc Golf Scene scraping.",
+      "enabled": false,
+      "base_url": "https://doghausdg.com/",
+      "source_type": "club",
+      "access_method": "Pending organizer-owned event page/feed or explicit submission; no automated event extraction enabled",
+      "permission_basis": "Dog Haus operates the Mast Park disc-golf concession under a City of Santee agreement and is a recurring local event organizer. Its public storefront currently does not expose a reliable event calendar suitable for ingestion.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "first_throw_eventbrite_manual",
+      "name": "First Throw Disc Golf organizer Eventbrite — manual verification",
+      "notes": "Current organizer channel establishes First Throw as a San Diego disc-golf event organizer. No current/future event is promoted merely from source registration; each event still requires a current organizer-controlled listing. Do not use PDGA, Disc Golf Scene, or UDisc fallback facts.",
+      "enabled": true,
+      "base_url": "https://www.eventbrite.com/o/first-throw-disc-golf-121205994150",
+      "source_type": "manual",
+      "access_method": "Manual factual verification of organizer-managed public Eventbrite listings only; no automated crawling enabled",
+      "permission_basis": "First-party organizer-managed Eventbrite channel for First Throw Disc Golf, a San Diego-based disc golf organizer. Local Roots may store only event facts visible on current organizer-controlled listings after manual verification.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "name",
+        "start_date",
+        "end_date",
+        "city",
+        "venue_name",
+        "course_name",
+        "event_type",
+        "registration_status",
+        "registration_url",
+        "club_host"
+      ]
+    },
+    {
+      "key": "hbnf_internal_schedule",
+      "name": "HB Night Flyers",
+      "notes": "First permitted production adapter. HBNF remains a separate backend; Local Roots stores only normalized event/provenance/result data needed for the event calendar. Provenance URL rule: HBNF is a first-party aggregate source. Use the real public HBNF site URL for provenance/location and the source-scoped external_id for stable event identity; do not fabricate Local Roots-only URL fragments.\n2026-08-26: Future Sep/Oct 2026 Glow schedule completeness may be derived inside the established HBNF adapter boundary from the user-established club recurrence rule. Derived provenance must be explicitly labeled schedule-derived, use lower confidence than an observed league_state row, and reuse the same hbnf:glow:YYYY-MM-DD external identity so later observed state updates rather than duplicates the event.\\n2026-10-19: Owner-confirmed schedule is now represented as explicit organizer schedule evidence (not league_state observation). Stable hbnf:glow:YYYY-MM-DD identities prevent duplicate events; unconfirmed schedule placeholders remain unpublished.",
+      "enabled": true,
+      "base_url": "https://hbnightflyers.com",
+      "source_type": "internal",
+      "access_method": "Automated read of user-controlled HBNF league_state plus the exact owner-confirmed Oct 24, 2026 Glow event and the confirmed Tuesday Glow recurrence beginning Nov 3, 2026, emitted as organizer schedule provenance independently of participant or score rows.",
+      "permission_basis": "First-party HBNF system is authorized for Local Roots event calendar integration. The owner directly confirmed Oct 24 as the final monthly Glow and Tuesday Glow replacing the prior format after Oct 27; only dates computed from that recurrence are emitted, with no assumed time or gameplay details. HBNF league_state supersedes the schedule row when it contains substantive participants or finalized cards.",
+      "refresh_schedule": "Daily at 05:00 America/Los_Angeles",
+      "authoritative_fields": [
+        "name",
+        "start_date",
+        "end_date",
+        "county",
+        "city",
+        "course_name",
+        "rounds_text",
+        "event_type",
+        "format",
+        "sanctioned",
+        "status",
+        "club_host"
+      ]
+    },
+    {
+      "key": "isaca_san_diego_eventbrite_manual",
+      "name": "ISACA San Diego Chapter — organizer Eventbrite",
+      "notes": "One-off community disc golf event at Morley Field on 2026-10-17.",
+      "enabled": true,
+      "base_url": "https://www.eventbrite.com/e/isaca-san-diego-disc-golf-community-event-tickets-2000904029816",
+      "source_type": "manual",
+      "access_method": "Manual factual verification of the organizer-published public Eventbrite event page.",
+      "permission_basis": "Organizer-authored public event listing. Use only the event facts ISACA San Diego Chapter itself publishes on this listing.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "name",
+        "start_date",
+        "end_date",
+        "city",
+        "course_name",
+        "format",
+        "registration_url",
+        "club_host"
+      ]
+    },
+    {
+      "key": "la_county_parks_castaic_manual",
+      "name": "Los Angeles County Parks — Castaic Lake State Recreation Area",
+      "notes": "Narrow location corroboration source only. Event schedule facts must come from a permitted event/organizer source.",
+      "enabled": true,
+      "base_url": "https://parks.lacounty.gov/castaic-lake-state-recreation-area-2/",
+      "source_type": "manual",
+      "access_method": "Manual verification of the public first-party park page / LA County facility locator; no automated crawling.",
+      "permission_basis": "Official Los Angeles County Parks public information may be used for narrow venue/location facts such as facility identity, Castaic city/address, and Los Angeles County location. It does not establish tournament dates, sanctioning, registration, or organizer details.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "county",
+        "city",
+        "venue_name"
+      ]
+    },
+    {
+      "key": "ladgc_cdgs_series_direct",
+      "name": "Los Angeles Disc Golf Club — California Disc Golf Series direct page",
+      "notes": "High-value direct route for LA OPEN, KEN MALLOY, MT PRIDE and THROW. Keep disabled/non-authoritative until readable first-party event details can be verified. The separate public LADGC 2026 CDGS points workbook remains authoritative for name identity only. Do not use PDGA, Disc Golf Scene, or UDisc facts to fill missing date/location/tier fields.",
+      "enabled": false,
+      "base_url": "https://losangelesdg.com/Losangelesdiscgol/shop/page/californiadiscgolfseries",
+      "source_type": "club",
+      "access_method": "Manual first-party route; current page is publicly reachable but its event text is not reliably extractable by the verification client, so no event facts are promoted from it yet",
+      "permission_basis": "First-party Los Angeles Disc Golf Club California Disc Golf Series page linked from the organizer’s current event materials. Registration records the direct route only; it does not authorize automated crawling or establish any event field until the page content can be independently read and verified.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "ladgc_cdgs_standings_manual",
+      "name": "Los Angeles Disc Golf Club — 2026 CDGS points workbook",
+      "notes": "The 2026 CDGS LEADERBOARD header currently includes LA OPEN, KEN MALLOY, MT PRIDE, and THROW after completed series events. This source does not establish dates, venues, tiers, sanction status, registration state, or organizer/TD details. Do not combine its event-name evidence with PDGA, Disc Golf Scene, or UDisc discovery facts to publish unsupported fields; obtain independent permitted date/location evidence first.",
+      "enabled": true,
+      "base_url": "https://docs.google.com/spreadsheets/d/1c1RNeEiyhnJaBk6qx_cD3mvu76iuJoxfWpCn0Jdrb0g/edit",
+      "source_type": "manual",
+      "access_method": "Manual verification of the publicly accessible organizer-maintained Google Sheet; no automated crawling or third-party fallback facts",
+      "permission_basis": "First-party Los Angeles Disc Golf Club / California Disc Golf Series public standings workbook linked from the series ecosystem. It can establish current CDGS event identity/series inclusion only where the workbook itself shows the event label.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "name"
+      ]
+    },
+    {
+      "key": "local_roots_submissions",
+      "name": "Local Roots organizer submissions",
+      "notes": "Milestone 4 source. Submissions are never treated as authoritative until an administrator explicitly reviews them.",
+      "enabled": true,
+      "base_url": "https://localrootsdg.com",
+      "source_type": "organizer_submission",
+      "access_method": "Local Roots public event submission form",
+      "permission_basis": "Direct event or organizer-owned results submission to Local Roots. Nothing publishes automatically: Local Roots administrative review is required, and result submitters must attest that the supplied standings come from their own authorized records rather than copied third-party standings.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "murrieta_mrdgc_direct",
+      "name": "City of Murrieta / MRDGC direct route",
+      "notes": "Riverside County coverage route for Mountain Pride Park. Useful independent first-party corroboration for venue/operator identity behind the Mountain Pride Open discovery lead, but does not identify that event by name or establish date, tier, sanction status, registration, or TD facts. Keep disabled/non-authoritative until a specific current first-party/organizer event-level source is found. Do not use PDGA, Disc Golf Scene, or UDisc discovery facts to fill missing fields.",
+      "enabled": false,
+      "base_url": "https://www.murrietaca.gov/DocumentCenter/View/15873/Spring-2026-Field-Use-Summary",
+      "source_type": "manual",
+      "access_method": "Manual first-party municipal route; no automated retrieval enabled",
+      "permission_basis": "Official City of Murrieta Spring 2026 Field Use Summary identifies the Mountain Pride Park Disc Golf Course allocation to MRDGC from 2026-01-18 through 2026-12-27 and states MRDGC hosts monthly disc-golf events and supplies updated tournament schedules to Community Services staff. This establishes venue/operator routing only, not any specific tournament date or permission for automated ingestion.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "nadgt_direct",
+      "name": "National Amateur Disc Golf Tour direct source",
+      "notes": "Coverage target for San Diego County and future NADGT events. Keep disabled with no authoritative fields unless a current organizer-controlled NADGT page independently exposes event-level facts. Do not promote PDGA, Disc Golf Scene, or UDisc facts through this route.",
+      "enabled": false,
+      "base_url": "https://nadgt.com/",
+      "source_type": "manual",
+      "access_method": "Manual verification of organizer-controlled NADGT pages only; no automated crawling enabled",
+      "permission_basis": "Official National Amateur Disc Golf Tour website. The current 2026 Schedule link delegates to Disc Golf Scene, which remains discovery-only under Local Roots source rules, so the direct NADGT site does not presently establish event-level production facts for the California Premier.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "nick_andrade_linktree_manual",
+      "name": "Nick Andrade public Linktree — manual corroboration",
+      "notes": "Corroborating source for CALI FLWR Disc Fest 2026; not used to infer sanctioning, tier, or unsupported fields.",
+      "enabled": true,
+      "base_url": "https://linktr.ee/nickandradefitness",
+      "source_type": "manual",
+      "access_method": "Manual factual corroboration only; no automated crawling enabled",
+      "permission_basis": "Public current Linktree controlled by Nick Andrade. It links the CALI FLWR Disc Fest Eventbrite ticket page and labels the event Sunday, September 20; used only as corroboration of date/registration destination.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "start_date",
+        "registration_url"
+      ]
+    },
+    {
+      "key": "oak_grove_disc_golf_club_direct",
+      "name": "Oak Grove Disc Golf Club — official events page",
+      "notes": "Added 2026-09-27 to expand permitted Southern California event coverage from first-party organizer sources. Official EVENTS page also publishes current weekly recurrence details and special-event dates.",
+      "enabled": true,
+      "base_url": "https://oakgrovediscgolf.com/",
+      "source_type": "club",
+      "access_method": "Manual factual verification of the public first-party Oak Grove Disc Golf Club events page; no automated crawling or third-party event-field promotion.",
+      "permission_basis": "First-party public club/organizer website. Local Roots may store narrowly verified event facts that the club itself publishes on its EVENTS page. Third-party PDGA, Disc Golf Scene, and UDisc facts are not promoted through this source.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "name",
+        "start_date",
+        "end_date",
+        "city",
+        "course_name",
+        "format",
+        "club_host"
+      ]
+    },
+    {
+      "key": "riverside_parks_martha_direct",
+      "name": "City of Riverside Parks / Martha McLean direct route",
+      "notes": "Riverside future coverage remains weak. Route through City Parks to the current Martha McLean tournament organizer/club. Do not substitute PDGA, Disc Golf Scene, or UDisc scraping.",
+      "enabled": false,
+      "base_url": "https://www.riversideca.gov/park_rec/",
+      "source_type": "club",
+      "access_method": "Pending direct organizer submission/feed or explicit permission; no automated event retrieval enabled",
+      "permission_basis": "City of Riverside Parks, Recreation and Community Services formally operates Martha McLean Memorial Park and its published fee schedule includes a Martha McLean Disc Golf Tournament category. This establishes a first-party routing/venue authority path only; it does not establish current tournament dates or grant automation permission.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "san_bernardino_county_ontario_manual",
+      "name": "San Bernardino County — Ontario geography",
+      "notes": "Narrow first-party geography corroboration only.",
+      "enabled": true,
+      "base_url": "https://main.sbcounty.gov/2024/12/05/san-bernardino-county-history-ontario/",
+      "source_type": "manual",
+      "access_method": "Manual verification of the San Bernardino County public first-party page; no automated crawling.",
+      "permission_basis": "Official San Bernardino County public information identifies Ontario as a city in San Bernardino County. Use only for narrow county/city geography corroboration; it does not establish disc-golf event facts.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "county",
+        "city"
+      ]
+    },
+    {
+      "key": "san_diego_aces_direct",
+      "name": "San Diego Aces direct source",
+      "notes": "Coverage target for San Diego County. Existing outreach draft requests a current event source/feed. The stale official Upcoming Events page is not suitable for production scheduling.",
+      "enabled": false,
+      "base_url": "https://sandiegoaces.com/",
+      "source_type": "club",
+      "access_method": "Pending direct organizer submission/feed; official site is currently stale and must not be treated as a live schedule",
+      "permission_basis": "San Diego Aces official website provides club leadership/contact paths and explicitly asks for current event details, but its displayed Upcoming Events page is still a 2021 schedule. A direct current feed/submission is required before automation.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    },
+    {
+      "key": "socal_dgc_manual_calendar",
+      "name": "Southern California Disc Golf Club 2026 event calendar",
+      "notes": "Regional factual schedule source. Disc Golf Scene / PDGA links shown by the source may be stored as outbound links but are not scraped by this integration. Series-year warning: the page can begin with November/December events from the prior calendar year before January of the named series year. Never infer calendar year from the page title alone; validate each event date against chronology/current source context before promotion. Example: the Dec. 20 Cowtown Christmas Classic shown ahead of January 2026 had already been played by the club's Jan. 21, 2026 update and must not be created as a Dec. 2026 future event. Provenance URL rule: aggregate/calendar source pages may legitimately support multiple events, so source_url is not an identity key. Use source-scoped external_id for stable identity; do not fabricate deep-link fragments solely to make provenance URLs unique.",
+      "enabled": true,
+      "base_url": "https://socaldiscgolfclub.com/upcoming-events/",
+      "source_type": "regional_calendar",
+      "access_method": "Manual factual verification only; automated crawling disabled pending explicit permission or an approved structured feed",
+      "permission_basis": "The calendar states that its event information is provided by tournament directors and compiled/updated by SoCal DGC volunteers. Local Roots stores only limited factual event metadata and links after manual verification; no article prose is copied and automation requires separate permission.",
+      "refresh_schedule": null,
+      "authoritative_fields": [
+        "name",
+        "start_date",
+        "end_date",
+        "city",
+        "course_name",
+        "sanctioned",
+        "td_names",
+        "registration_url"
+      ]
+    },
+    {
+      "key": "socal_dgc_rss",
+      "name": "SoCal Disc Golf Club RSS",
+      "notes": "Supplemental discovery sentinel. First run establishes the current feed watermark without creating historical alerts. New feed posts create review items only.",
+      "enabled": true,
+      "base_url": "https://socaldiscgolfclub.com/feed/",
+      "source_type": "feed",
+      "access_method": "Public WordPress RSS feed; discovery-only change detection",
+      "permission_basis": "RSS syndication endpoint intentionally exposed by the source site. Used only to detect new posts for human review; it cannot publish or modify events.",
+      "refresh_schedule": "Every 6 hours; review-only",
+      "authoritative_fields": []
+    },
+    {
+      "key": "ventura_disc_golf_club_direct",
+      "name": "Ventura Disc Golf Club direct source",
+      "notes": "Coverage target for Ventura County. Current official Lake Casitas page states that all disc-golf events there are managed by Ventura Disc Golf Club. A City of Ventura Parks & Recreation supplemental packet for the 2025-06-25 meeting contains a Ventura Disc Golf Club board-member statement that the club signed an MOU with Casitas Municipal Water District in 2006 to operate and maintain Coyote Point, hosts two tournaments there each year, and identifies the Coyote Classic as its fall tournament. This strengthens organizer/source identity only and does not establish any 2026 event date, tier, registration state, or permission for automated retrieval. Existing outreach remains deferred/unsent. Do not populate event facts from Disc Golf Scene, PDGA, or UDisc while this source remains pending.\nSOURCE-INTEGRITY WARNING 2026-08-26: the historical domain venturadiscgolf.com is no longer a Ventura Disc Golf Club source; current public content is unrelated golf-betting material. Do not use, cite, crawl, or treat that domain as organizer evidence. The current first-party routing authority remains the official Lake Casitas / Casitas Municipal Water District disc-golf page and other independently verified municipal/club-controlled public evidence.",
+      "enabled": false,
+      "base_url": "https://www.casitaswater.org/disc-golf",
+      "source_type": "club",
+      "access_method": "Pending direct organizer submission/feed or explicit permission; no automated retrieval enabled",
+      "permission_basis": "Official Lake Casitas page states that all disc-golf events there are managed by the Ventura Disc Golf Club and directs event questions to the club. This establishes organizer/source identity but not specific event dates.",
+      "refresh_schedule": null,
+      "authoritative_fields": []
+    }
+  ]
+}

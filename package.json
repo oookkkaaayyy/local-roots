@@ -5,13 +5,17 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test:release-receipt": "node --test tests/release-receipt.test.mjs",
+    "test:events-adapters": "node --test supabase/functions/lr-sync-hbnf/*.test.mjs tests/event-calendar-timing-regressions.test.mjs tests/event-schema-migration-contract.test.mjs tests/events-p0-rollback-scope.test.mjs tests/hbnf-confirmed-glow-schedule.test.mjs tests/hbnf-glow-e3-presentation-contract.test.mjs tests/hbnf-glow-e3-source-authority.test.mjs tests/hbnf-glow-e3-native-promotion.test.mjs",
+    "test:events-preimage": "python3 -m unittest discover -s tests -p test_events_p0_rollback_preimages.py",
     "release:admit": "node scripts/validate-release-receipt.mjs",
     "release:verify": "node scripts/validate-release-receipt.mjs",
-    "test:m2": "rm -rf dist && tsc && mkdir -p dist/tests/fixtures && cp tests/fixtures/events.json dist/tests/fixtures/events.json && node --test dist/tests/*.test.js",
-    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && node --test tests/package-dye-studio-candidate.test.mjs",
+    "test:m2": "rm -rf dist && tsc && mkdir -p dist/tests/fixtures dist/app/src/lib && cp tests/fixtures/events.json dist/tests/fixtures/events.json && cp app/src/lib/eventCalendar.mjs dist/app/src/lib/eventCalendar.mjs && node --test dist/tests/*.test.js",
+    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && npm run test:events-adapters && npm run test:events-sql && npm run test:events-preimage && node --test tests/package-dye-studio-candidate.test.mjs",
+    "test:events-sql": "node --test tests/event-schema-migration-runtime.test.mjs tests/event-p0-rollback-runtime.test.mjs tests/morley-first-party-coverage.test.mjs",
     "release:audit-workflows": "node scripts/audit-release-workflows.mjs"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.3.14",
     "@types/node": "^22.10.0",
     "typescript": "^5.8.0"
   }

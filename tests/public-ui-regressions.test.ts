@@ -149,11 +149,13 @@ test("event detail failures do not expose backend errors and invalid slugs are n
 
 test("calendar downloads are all-day ICS files with exclusive end dates and canonical event URLs", () => {
   const presentation = source("lib/eventPresentation.ts");
-  assert.ok(presentation.includes("'BEGIN:VCALENDAR'"));
-  assert.ok(presentation.includes('`DTSTART;VALUE=DATE:${calendarDate(event.start_date)}`'));
-  assert.ok(presentation.includes('`DTEND;VALUE=DATE:${calendarDate(addDays(event.end_date,1))}`'));
-  assert.ok(presentation.includes('`UID:${event.id}@localrootsdg.com`'));
-  assert.ok(presentation.includes("`${PUBLIC_ORIGIN}${eventDetailPath(event)}`"));
+  const calendar = source("lib/eventCalendar.mjs");
+  assert.ok(presentation.includes("import { buildCalendarFile } from './eventCalendar.mjs'"));
+  assert.ok(calendar.includes("'BEGIN:VCALENDAR'"));
+  assert.ok(calendar.includes('`DTSTART;VALUE=DATE:${calendarDate(event.start_date)}`'));
+  assert.ok(calendar.includes('`DTEND;VALUE=DATE:${calendarDate(addDays(event.end_date, 1))}`'));
+  assert.ok(calendar.includes('`UID:${event.id}@localrootsdg.com`'));
+  assert.ok(calendar.includes('`URL:${detailUrl}`'));
   assert.ok(presentation.includes("anchor.download=`${event.slug||'local-roots-event'}.ics`"));
 });
 
@@ -186,8 +188,10 @@ test("events page polish is scoped and HBNF cards expose first-party resources",
   assert.ok(events.includes('<main className={`events-page ${landing?\'events-landing\':\'\'}`}>'));
   assert.ok(events.includes('>Details</a>'));
   assert.ok(events.includes("{filtered.length} shown · {viewEvents.length} {view==='upcoming'?'upcoming':'past'}"));
-  assert.ok(events.includes('className="event-resource-links"'));
-  assert.ok(detail.includes('className="event-resource-links"'));
+  assert.equal(events.includes('className="event-resource-links"'), false, "cards keep official info in the action row");
+  assert.equal(detail.includes('className="event-resource-links"'), false, "details keep official info in the action row");
+  assert.equal((events.match(/>Event info<\/a>/g) ?? []).length, 1);
+  assert.equal((detail.match(/>Event info<\/a>/g) ?? []).length, 1);
   assert.ok(presentation.includes("https://hbnightflyers.com/"));
   assert.ok(presentation.includes("https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule"));
   assert.ok(presentation.includes("https://www.instagram.com/hbnightflyers/"));
@@ -202,10 +206,10 @@ test("event cards and detail pages expose permitted first-party official info wi
   const types = source("types.ts");
   assert.ok(types.includes("official_url: string | null"));
   assert.ok(events.includes("event.official_url&&!hbnfEvent"));
-  assert.ok(events.includes(">Official Info</a>"));
-  assert.ok(events.includes("aria-label={`Official info for ${event.name} (opens in new tab)`}"));
+  assert.ok(events.includes(">Event info</a>"));
+  assert.ok(events.includes("aria-label={`Official event information for ${event.name} (opens in a new tab)`}"));
   assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
-  assert.ok(detail.includes(">Official Info</a>"));
+  assert.ok(detail.includes(">Event info</a>"));
 });
 
 test("the Local Roots landing page is the event utility, not the old three-card hub", () => {

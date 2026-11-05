@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { link, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -68,7 +68,7 @@ async function fixture() {
     downloadBackVerified: true,
     downloadBack: { path: 'evidence/admission-download.json', bytes: manifestBytes.length, sha256: hash(manifestBytes) },
   };
-  return { root, receipt, cleanup: () => rm(root, { recursive: true, force: true }) };
+  return { root, receipt, preflight, cleanup: () => rm(root, { recursive: true, force: true }) };
 }
 
 test('candidate packager hashes every build file into the exact archived ZIP', async () => {
@@ -981,4 +981,78 @@ test('rejects baseline artifact size or hash metadata that differs from its byte
       await assert.rejects(validateReleaseReceipt(f.receipt, f.root), expected);
     } finally { await f.cleanup(); }
   }
+});
+
+
+// This regression is deliberately specific to Events PR #163. The migration
+// reverse does not capture the HBNF Sep 2 fixture publication transition.
+// A generic hash-valid receipt must never admit that combined runtime scope.
+test('Events P0 admission refuses combined Edge/runtime rollback and binds migration-only scope', async () => {
+  const f = await fixture();
+  try {
+    const receipt = structuredClone(f.preflight);
+    receipt.releaseId = 'local-roots-events-pr163-production-events-p0-2026-11-02-r6';
+    receipt.source.repository = 'oookkkaaayyy/local-roots';
+    receipt.source.ref = 'refs/pull/163/head';
+    receipt.baseline.provider = 'supabase';
+    receipt.baseline.target = 'wtymjxscneufjlkkywyg';
+    receipt.deployment.provider = 'supabase';
+    receipt.deployment.target = 'wtymjxscneufjlkkywyg';
+    receipt.deployment.plannedRoute = 'EVENTS_P0_MIGRATIONS_ONLY_NO_EDGE_SYNC';
+    receipt.acceptance.criteria = ['pre-migration-guard', 'rollback'].map(id => ({
+      id, status: 'PENDING', description: 'Scoped migration recovery',
+      method: 'Exact target-bound readback', expectedOutcome: 'No uncovered mutation',
+    }));
+    await assert.rejects(validateReleaseReceipt(receipt, f.root, { phase: 'admission' }),
+      /exact migration-only recovery scope/);
+    receipt.releaseScope = {
+      mode: 'migration-only', projectId: 'wtymjxscneufjlkkywyg',
+      migrations: [
+        '20261101070000_event_detail_fields_and_provenance.sql',
+        '20261101080000_reconcile_verified_schedule_fields.sql',
+      ],
+      edgeFunctionDeployment: false, runtimeSync: false,
+    };
+    const accepted = await validateReleaseReceipt(receipt, f.root, { phase: 'admission' });
+    assert.deepEqual(accepted.admissionManifest.releaseScope, receipt.releaseScope,
+      'same-manifest closeout must bind the exact mutation boundary');
+    // A matching SHA is not independent download-back when the source file is reused.
+    for (const [mutate, expected] of [
+      [r => { r.recovery.downloadBack.path = r.package.path; }, /Events P0 candidate download-back must be a separate recovered file/],
+      [r => { r.rollback.recovery.downloadBack.path = r.rollback.artifact.path; }, /Events P0 rollback download-back must be a separate recovered file/],
+    ]) {
+      const invalid = structuredClone(receipt);
+      mutate(invalid);
+      await assert.rejects(validateReleaseReceipt(invalid, f.root, { phase: 'admission' }), expected);
+    }
+    // Hard links have different realpaths but the same inode; they are not
+    // independent download-back artifacts and must fail the same gate.
+    for (const [original, recovered, expected] of [
+      [receipt.package.path, receipt.recovery.downloadBack.path, /Events P0 candidate download-back must be a separate recovered file/],
+      [receipt.rollback.artifact.path, receipt.rollback.recovery.downloadBack.path, /Events P0 rollback download-back must be a separate recovered file/],
+    ]) {
+      const originalPath = path.join(f.root, original);
+      const recoveredPath = path.join(f.root, recovered);
+      await rm(recoveredPath);
+      await link(originalPath, recoveredPath);
+      try {
+        await assert.rejects(validateReleaseReceipt(receipt, f.root, { phase: 'admission' }), expected);
+      } finally {
+        await rm(recoveredPath);
+        await writeFile(recoveredPath, await readFile(originalPath));
+      }
+    }
+    for (const mutation of [
+      r => { r.releaseScope.edgeFunctionDeployment = true; },
+      r => { r.releaseScope.runtimeSync = true; },
+      r => { r.releaseScope.migrations.pop(); },
+      r => { r.deployment.plannedRoute = 'Deploy lr-sync-hbnf after migrations'; },
+      r => { r.acceptance.criteria.push({ id: 'edge-sync', status: 'PENDING' }); },
+    ]) {
+      const invalid = structuredClone(receipt);
+      mutation(invalid);
+      await assert.rejects(validateReleaseReceipt(invalid, f.root, { phase: 'admission' }),
+        /Events P0/);
+    }
+  } finally { await f.cleanup(); }
 });

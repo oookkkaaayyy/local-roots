@@ -1,0 +1,1228 @@
+{
+  "as_of": "2026-11-01",
+  "project": "wtymjxscneufjlkkywyg",
+  "events": [
+    {
+      "id": "4e92001d-bb43-4dce-99b9-735835ad6e84",
+      "city": null,
+      "name": "HB Night Flyers Glow",
+      "slug": "hbnf-glow-2026-11-03",
+      "venue": null,
+      "format": null,
+      "sources": [
+        {
+          "key": "hbnf_internal_schedule",
+          "url": "https://hbnightflyers.com/",
+          "date": "2026-11-03",
+          "mode": "glow",
+          "role": "organizer_confirmed",
+          "origin": "organizer_confirmed_schedule",
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-11-03",
+      "event_type": "other",
+      "start_date": "2026-11-03",
+      "registration_url": null
+    },
+    {
+      "id": "d2507505-1495-44fa-a002-91747fe38730",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-11-03",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-11-03",
+      "event_type": "league",
+      "start_date": "2026-11-03",
+      "registration_url": null
+    },
+    {
+      "id": "8aea7cf2-840d-404a-9abb-5d470cd363d6",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-11-04",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-11-04",
+      "event_type": "doubles",
+      "start_date": "2026-11-04",
+      "registration_url": null
+    },
+    {
+      "id": "718273bd-8d9e-4be4-9da9-b2e257a78788",
+      "city": "Pasadena",
+      "name": "Friday Doubles",
+      "slug": "oak-grove-friday-doubles-2026-11-06",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Fridays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-11-06",
+      "event_type": "doubles",
+      "start_date": "2026-11-06",
+      "registration_url": null
+    },
+    {
+      "id": "63c77c28-2cbb-4459-aaca-99978b0e5e71",
+      "city": "Pasadena",
+      "name": "OGDGC Weekly",
+      "slug": "oak-grove-ogdgc-weekly-2026-11-07",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Saturdays (unless there is a monthly)",
+          "time_local": null,
+          "published_time": "1 PM Check-in, 2 PM Shotgun start"
+        }
+      ],
+      "end_date": "2026-11-07",
+      "event_type": "league",
+      "start_date": "2026-11-07",
+      "registration_url": null
+    },
+    {
+      "id": "6819f933-35cf-455a-8389-96ed68a3ca2b",
+      "city": "Thousand Oaks",
+      "name": "Rabbit Flats Disc Golf Drop-In",
+      "slug": "rabbit-flats-disc-golf-drop-in-2026-11-07",
+      "venue": "Rabbit Flats Disc Golf Course",
+      "format": "Drop-In Program · 10:00 AM",
+      "sources": [
+        {
+          "key": "crpd_rabbit_flats_direct",
+          "url": "https://www.crpd.org/disc-golf",
+          "date": null,
+          "mode": null,
+          "role": "official",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "first Saturday monthly",
+          "time_local": "10:00",
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-11-07",
+      "event_type": "community",
+      "start_date": "2026-11-07",
+      "registration_url": null
+    },
+    {
+      "id": "dd7bb16b-9429-4122-b698-3f50e14e16fa",
+      "city": null,
+      "name": "HB Night Flyers Glow",
+      "slug": "hbnf-glow-2026-11-10",
+      "venue": null,
+      "format": null,
+      "sources": [
+        {
+          "key": "hbnf_internal_schedule",
+          "url": "https://hbnightflyers.com/",
+          "date": "2026-11-10",
+          "mode": "glow",
+          "role": "organizer_confirmed",
+          "origin": "organizer_confirmed_schedule",
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-11-10",
+      "event_type": "other",
+      "start_date": "2026-11-10",
+      "registration_url": null
+    },
+    {
+      "id": "a6e4ebae-7524-483c-8d7a-4d6c98773753",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-11-10",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-11-10",
+      "event_type": "league",
+      "start_date": "2026-11-10",
+      "registration_url": null
+    },
+    {
+      "id": "2636cb93-3c71-4848-99f8-61383d01eb00",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-11-11",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-11-11",
+      "event_type": "doubles",
+      "start_date": "2026-11-11",
+      "registration_url": null
+    },
+    {
+      "id": "82fa5fb2-fdfa-4018-a911-393efcad291c",
+      "city": "Pasadena",
+      "name": "Friday Doubles",
+      "slug": "oak-grove-friday-doubles-2026-11-13",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Fridays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-11-13",
+      "event_type": "doubles",
+      "start_date": "2026-11-13",
+      "registration_url": null
+    },
+    {
+      "id": "992a456e-8bd5-4def-8f61-39a07d938b50",
+      "city": "Pasadena",
+      "name": "OGDGC Weekly",
+      "slug": "oak-grove-ogdgc-weekly-2026-11-14",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Saturdays (unless there is a monthly)",
+          "time_local": null,
+          "published_time": "1 PM Check-in, 2 PM Shotgun start"
+        }
+      ],
+      "end_date": "2026-11-14",
+      "event_type": "league",
+      "start_date": "2026-11-14",
+      "registration_url": null
+    },
+    {
+      "id": "3e6719c2-e817-4285-b2fb-7abb34a2283c",
+      "city": "La Quinta",
+      "name": "The Helix Open",
+      "slug": "the-helix-open-2026",
+      "venue": "Palm Royal Country Club",
+      "format": null,
+      "sources": [
+        {
+          "key": "socal_dgc_manual_calendar",
+          "url": "https://socaldiscgolfclub.com/upcoming-events/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": "the-helix-open",
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-11-15",
+      "event_type": "tournament",
+      "start_date": "2026-11-14",
+      "registration_url": "https://www.discgolfscene.com/tournament/The_Helix_Open_2026_Presented_by_Helix_Disc_Golf_and_Innova"
+    },
+    {
+      "id": "dc0afffe-0f7f-4f4e-a8a7-24a708e20f49",
+      "city": null,
+      "name": "HB Night Flyers Glow",
+      "slug": "hbnf-glow-2026-11-17",
+      "venue": null,
+      "format": null,
+      "sources": [
+        {
+          "key": "hbnf_internal_schedule",
+          "url": "https://hbnightflyers.com/",
+          "date": "2026-11-17",
+          "mode": "glow",
+          "role": "organizer_confirmed",
+          "origin": "organizer_confirmed_schedule",
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-11-17",
+      "event_type": "other",
+      "start_date": "2026-11-17",
+      "registration_url": null
+    },
+    {
+      "id": "8b0550e6-9209-476b-8e11-39b9d69a14c7",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-11-17",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-11-17",
+      "event_type": "league",
+      "start_date": "2026-11-17",
+      "registration_url": null
+    },
+    {
+      "id": "f99034bf-5a38-41e1-98dd-dccb1138cd88",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-11-18",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-11-18",
+      "event_type": "doubles",
+      "start_date": "2026-11-18",
+      "registration_url": null
+    },
+    {
+      "id": "6c521674-e893-4446-9eb2-47ba3b35957b",
+      "city": "Pasadena",
+      "name": "Friday Doubles",
+      "slug": "oak-grove-friday-doubles-2026-11-20",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Fridays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-11-20",
+      "event_type": "doubles",
+      "start_date": "2026-11-20",
+      "registration_url": null
+    },
+    {
+      "id": "36dce9e6-02f2-458f-bf09-0dbb4f909e3b",
+      "city": "Vista",
+      "name": "2026 So Cal Championships Presented by Innova & Legacy – Ams",
+      "slug": "2026-socal-championships-amateurs",
+      "venue": "Brengle Terrace, Kit Carson, and TBD 3rd Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "socal_dgc_manual_calendar",
+          "url": "https://socaldiscgolfclub.com/upcoming-events/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": "2026-socal-championships-amateurs",
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-11-22",
+      "event_type": "tournament",
+      "start_date": "2026-11-21",
+      "registration_url": "https://www.discgolfscene.com/tournament/2026_Socal_Disc_Golf_Championships_supported_by_Innova_Disc_Golf_and_Legacy_Discs_Amateur_Divisions_2026"
+    },
+    {
+      "id": "a6b231c9-9c34-4803-8cef-d387d3cf073d",
+      "city": "Pasadena",
+      "name": "OGDGC Weekly",
+      "slug": "oak-grove-ogdgc-weekly-2026-11-21",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Saturdays (unless there is a monthly)",
+          "time_local": null,
+          "published_time": "1 PM Check-in, 2 PM Shotgun start"
+        }
+      ],
+      "end_date": "2026-11-21",
+      "event_type": "league",
+      "start_date": "2026-11-21",
+      "registration_url": null
+    },
+    {
+      "id": "792a76a5-c450-46ac-8a21-6db8c46569a3",
+      "city": null,
+      "name": "HB Night Flyers Glow",
+      "slug": "hbnf-glow-2026-11-24",
+      "venue": null,
+      "format": null,
+      "sources": [
+        {
+          "key": "hbnf_internal_schedule",
+          "url": "https://hbnightflyers.com/",
+          "date": "2026-11-24",
+          "mode": "glow",
+          "role": "organizer_confirmed",
+          "origin": "organizer_confirmed_schedule",
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-11-24",
+      "event_type": "other",
+      "start_date": "2026-11-24",
+      "registration_url": null
+    },
+    {
+      "id": "20fce11b-2eb4-4ff0-9a2e-064b3f18bfea",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-11-24",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-11-24",
+      "event_type": "league",
+      "start_date": "2026-11-24",
+      "registration_url": null
+    },
+    {
+      "id": "ceae87ee-a254-475e-8435-d4e1b4d9ef64",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-11-25",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-11-25",
+      "event_type": "doubles",
+      "start_date": "2026-11-25",
+      "registration_url": null
+    },
+    {
+      "id": "037f8049-6cbf-40c0-b58b-9f02bf7c6e50",
+      "city": "Pasadena",
+      "name": "Friday Doubles",
+      "slug": "oak-grove-friday-doubles-2026-11-27",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Fridays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-11-27",
+      "event_type": "doubles",
+      "start_date": "2026-11-27",
+      "registration_url": null
+    },
+    {
+      "id": "28aab56c-0f46-47d3-b2ec-390a9036c98c",
+      "city": "Yucaipa",
+      "name": "Billy Goat ~ Fallen Disc Golfers Memorial",
+      "slug": "billy-goat-fallen-disc-golfers-memorial-2026",
+      "venue": "Yucaipa Regional Park",
+      "format": null,
+      "sources": [
+        {
+          "key": "socal_dgc_manual_calendar",
+          "url": "https://socaldiscgolfclub.com/upcoming-events/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-11-28",
+      "event_type": "tournament",
+      "start_date": "2026-11-28",
+      "registration_url": "https://www.discgolfscene.com/tournament/Billy_Goat_Fallen_Disc_Golfers_Memorial_Presented_by_Innova_Champion_Discs_2026"
+    },
+    {
+      "id": "03608e7c-955f-456f-acbe-fd2d89f7450c",
+      "city": "Pasadena",
+      "name": "OG Monthly & Disc Swap",
+      "slug": "oak-grove-og-monthly-disc-swap-2026-11-28",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Generally the last Saturday of the month",
+          "time_local": null,
+          "published_time": "1 PM Check-in, 2 PM start; Disc Swap 11:30 AM to 5:30 PM"
+        }
+      ],
+      "end_date": "2026-11-28",
+      "event_type": "community",
+      "start_date": "2026-11-28",
+      "registration_url": null
+    },
+    {
+      "id": "f079176b-3594-40c2-ba68-77f589ee9996",
+      "city": null,
+      "name": "HB Night Flyers Glow",
+      "slug": "hbnf-glow-2026-12-01",
+      "venue": null,
+      "format": null,
+      "sources": [
+        {
+          "key": "hbnf_internal_schedule",
+          "url": "https://hbnightflyers.com/",
+          "date": "2026-12-01",
+          "mode": "glow",
+          "role": "organizer_confirmed",
+          "origin": "organizer_confirmed_schedule",
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-12-01",
+      "event_type": "other",
+      "start_date": "2026-12-01",
+      "registration_url": null
+    },
+    {
+      "id": "5be558c8-fd5e-41d5-9e7d-c33cf1c2f15a",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-12-01",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-12-01",
+      "event_type": "league",
+      "start_date": "2026-12-01",
+      "registration_url": null
+    },
+    {
+      "id": "2dcd856d-420c-4528-9b79-932de61fed16",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-12-02",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-02",
+      "event_type": "doubles",
+      "start_date": "2026-12-02",
+      "registration_url": null
+    },
+    {
+      "id": "5cf958c5-1e97-4252-82b4-b476aace55e8",
+      "city": "Pasadena",
+      "name": "Friday Doubles",
+      "slug": "oak-grove-friday-doubles-2026-12-04",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Fridays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-04",
+      "event_type": "doubles",
+      "start_date": "2026-12-04",
+      "registration_url": null
+    },
+    {
+      "id": "c92eac57-0970-4952-a92d-418f13fc41f0",
+      "city": "Pasadena",
+      "name": "OGDGC Weekly",
+      "slug": "oak-grove-ogdgc-weekly-2026-12-05",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Saturdays (unless there is a monthly)",
+          "time_local": null,
+          "published_time": "1 PM Check-in, 2 PM Shotgun start"
+        }
+      ],
+      "end_date": "2026-12-05",
+      "event_type": "league",
+      "start_date": "2026-12-05",
+      "registration_url": null
+    },
+    {
+      "id": "d5a31a30-e0d8-4664-beb7-840afd16584d",
+      "city": "Thousand Oaks",
+      "name": "Rabbit Flats Disc Golf Drop-In",
+      "slug": "rabbit-flats-disc-golf-drop-in-2026-12-05",
+      "venue": "Rabbit Flats Disc Golf Course",
+      "format": "Drop-In Program · 10:00 AM",
+      "sources": [
+        {
+          "key": "crpd_rabbit_flats_direct",
+          "url": "https://www.crpd.org/disc-golf",
+          "date": null,
+          "mode": null,
+          "role": "official",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "first Saturday monthly",
+          "time_local": "10:00",
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-12-05",
+      "event_type": "community",
+      "start_date": "2026-12-05",
+      "registration_url": null
+    },
+    {
+      "id": "72edeb30-083e-4caf-ab9b-7e07f60237e3",
+      "city": null,
+      "name": "HB Night Flyers Glow",
+      "slug": "hbnf-glow-2026-12-08",
+      "venue": null,
+      "format": null,
+      "sources": [
+        {
+          "key": "hbnf_internal_schedule",
+          "url": "https://hbnightflyers.com/",
+          "date": "2026-12-08",
+          "mode": "glow",
+          "role": "organizer_confirmed",
+          "origin": "organizer_confirmed_schedule",
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-12-08",
+      "event_type": "other",
+      "start_date": "2026-12-08",
+      "registration_url": null
+    },
+    {
+      "id": "6ca11b3f-90e9-4798-953b-c889cf96512f",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-12-08",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-12-08",
+      "event_type": "league",
+      "start_date": "2026-12-08",
+      "registration_url": null
+    },
+    {
+      "id": "0e2096ca-cf92-4284-bc86-c6fc86881dfd",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-12-09",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-09",
+      "event_type": "doubles",
+      "start_date": "2026-12-09",
+      "registration_url": null
+    },
+    {
+      "id": "b823337c-2aa8-4d43-b211-d5bb620b57f1",
+      "city": "Pasadena",
+      "name": "Friday Doubles",
+      "slug": "oak-grove-friday-doubles-2026-12-11",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Fridays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-11",
+      "event_type": "doubles",
+      "start_date": "2026-12-11",
+      "registration_url": null
+    },
+    {
+      "id": "080a4203-fe34-4ffe-8d13-3ebb68a8f94e",
+      "city": "Pasadena",
+      "name": "OGDGC Weekly",
+      "slug": "oak-grove-ogdgc-weekly-2026-12-12",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Saturdays (unless there is a monthly)",
+          "time_local": null,
+          "published_time": "1 PM Check-in, 2 PM Shotgun start"
+        }
+      ],
+      "end_date": "2026-12-12",
+      "event_type": "league",
+      "start_date": "2026-12-12",
+      "registration_url": null
+    },
+    {
+      "id": "8add3a05-2fa5-424d-aa7b-d9f3d78d2980",
+      "city": null,
+      "name": "HB Night Flyers Glow",
+      "slug": "hbnf-glow-2026-12-15",
+      "venue": null,
+      "format": null,
+      "sources": [
+        {
+          "key": "hbnf_internal_schedule",
+          "url": "https://hbnightflyers.com/",
+          "date": "2026-12-15",
+          "mode": "glow",
+          "role": "organizer_confirmed",
+          "origin": "organizer_confirmed_schedule",
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-12-15",
+      "event_type": "other",
+      "start_date": "2026-12-15",
+      "registration_url": null
+    },
+    {
+      "id": "457e5130-62e9-4d70-bc61-5a678629a234",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-12-15",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-12-15",
+      "event_type": "league",
+      "start_date": "2026-12-15",
+      "registration_url": null
+    },
+    {
+      "id": "82bfabfc-8a66-4445-89df-03301862e95e",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-12-16",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-16",
+      "event_type": "doubles",
+      "start_date": "2026-12-16",
+      "registration_url": null
+    },
+    {
+      "id": "4f4a731b-0e88-40e9-b302-bce44852e430",
+      "city": "Pasadena",
+      "name": "Friday Doubles",
+      "slug": "oak-grove-friday-doubles-2026-12-18",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Fridays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-18",
+      "event_type": "doubles",
+      "start_date": "2026-12-18",
+      "registration_url": null
+    },
+    {
+      "id": "71a6384d-5003-4fc3-9db4-ebefe302cacd",
+      "city": "Pasadena",
+      "name": "OGDGC Weekly",
+      "slug": "oak-grove-ogdgc-weekly-2026-12-19",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Saturdays (unless there is a monthly)",
+          "time_local": null,
+          "published_time": "1 PM Check-in, 2 PM Shotgun start"
+        }
+      ],
+      "end_date": "2026-12-19",
+      "event_type": "league",
+      "start_date": "2026-12-19",
+      "registration_url": null
+    },
+    {
+      "id": "25612b51-ee8a-4254-ad0f-37ce406453ac",
+      "city": null,
+      "name": "HB Night Flyers Glow",
+      "slug": "hbnf-glow-2026-12-22",
+      "venue": null,
+      "format": null,
+      "sources": [
+        {
+          "key": "hbnf_internal_schedule",
+          "url": "https://hbnightflyers.com/",
+          "date": "2026-12-22",
+          "mode": "glow",
+          "role": "organizer_confirmed",
+          "origin": "organizer_confirmed_schedule",
+          "event_slug": null,
+          "recurrence": null,
+          "time_local": null,
+          "published_time": null
+        }
+      ],
+      "end_date": "2026-12-22",
+      "event_type": "other",
+      "start_date": "2026-12-22",
+      "registration_url": null
+    },
+    {
+      "id": "fa1b5bf0-8d2d-4ac6-a2dd-7d860be36ddd",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-12-22",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-12-22",
+      "event_type": "league",
+      "start_date": "2026-12-22",
+      "registration_url": null
+    },
+    {
+      "id": "fe475857-acd7-4ccd-9585-99d93b045065",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-12-23",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-23",
+      "event_type": "doubles",
+      "start_date": "2026-12-23",
+      "registration_url": null
+    },
+    {
+      "id": "71b8c789-b42e-4dea-ab5c-eafa82351dba",
+      "city": "Pasadena",
+      "name": "Friday Doubles",
+      "slug": "oak-grove-friday-doubles-2026-12-25",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Fridays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-25",
+      "event_type": "doubles",
+      "start_date": "2026-12-25",
+      "registration_url": null
+    },
+    {
+      "id": "acf2ba36-c8a2-4cb8-b508-21ce5265991a",
+      "city": "Pasadena",
+      "name": "OG Monthly & Disc Swap",
+      "slug": "oak-grove-og-monthly-disc-swap-2026-12-26",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": null,
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Generally the last Saturday of the month",
+          "time_local": null,
+          "published_time": "1 PM Check-in, 2 PM start; Disc Swap 11:30 AM to 5:30 PM"
+        }
+      ],
+      "end_date": "2026-12-26",
+      "event_type": "community",
+      "start_date": "2026-12-26",
+      "registration_url": null
+    },
+    {
+      "id": "7389662c-8994-4ca2-8f34-9f120ece1e49",
+      "city": "Pasadena",
+      "name": "Howard's Weekly",
+      "slug": "oak-grove-howards-weekly-2026-12-29",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "3 hours before sunset",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Tuesdays",
+          "time_local": null,
+          "published_time": "3 hours before sunset"
+        }
+      ],
+      "end_date": "2026-12-29",
+      "event_type": "league",
+      "start_date": "2026-12-29",
+      "registration_url": null
+    },
+    {
+      "id": "51d1e3aa-afe3-4eec-a96b-0a3a1c0d7aba",
+      "city": "Pasadena",
+      "name": "Wednesday Doubles",
+      "slug": "oak-grove-wednesday-doubles-2026-12-30",
+      "venue": "Oak Grove Disc Golf Course",
+      "format": "Show up around 5 PM",
+      "sources": [
+        {
+          "key": "oak_grove_disc_golf_club_direct",
+          "url": "https://oakgrovediscgolf.com/",
+          "date": null,
+          "mode": null,
+          "role": "organizer_confirmed",
+          "origin": null,
+          "event_slug": null,
+          "recurrence": "Wednesdays",
+          "time_local": null,
+          "published_time": "Show up around 5 PM"
+        }
+      ],
+      "end_date": "2026-12-30",
+      "event_type": "doubles",
+      "start_date": "2026-12-30",
+      "registration_url": null
+    }
+  ]
+}

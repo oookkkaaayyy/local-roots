@@ -10,7 +10,7 @@ const REQUIRED_FRONTEND_MARKERS = [
   "Past events & results",
   "Upcoming events",
   "Add to Calendar",
-  "PDGA Results ↗",
+  "PDGA Results",
   "On Local Roots",
   "Official link",
   "Full Results",
@@ -53,6 +53,15 @@ Deno.serve(async (req) => {
   const verified = await service.rpc("lr_verify_integrity_sync_secret", { p_token: token });
   if (verified.error || verified.data !== true) return json({ error: "unauthorized" }, 401);
 
+  // Add the same durable, deduplicated event-field checks used by the admin
+  // review queue before launch readiness can fail. This keeps completeness
+  // findings actionable even while another readiness check blocks launch.
+  const fieldReviews = await service.rpc("lr_enqueue_event_field_reviews", { p_horizon_days: 60 });
+  if (fieldReviews.error) {
+    console.error("lr-integrity-watch event-field-review", fieldReviews.error.message);
+    return json({ error: "event_field_review_failed" }, 500);
+  }
+
   const readiness = await service.rpc("lr_launch_readiness");
   if (readiness.error || !readiness.data) {
     console.error("lr-integrity-watch readiness", readiness.error?.message);
@@ -75,7 +84,7 @@ Deno.serve(async (req) => {
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
@@ -97,7 +106,7 @@ Deno.serve(async (req) => {
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
@@ -111,7 +120,7 @@ Deno.serve(async (req) => {
     if (shellOk && cssMatch?.[1]) {
       cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
       const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
         redirect: "follow",
       });
       if (cssResponse.ok) {
@@ -154,6 +163,7 @@ Deno.serve(async (req) => {
     css_bundle_url: cssBundleUrl,
     missing_css_markers: missingCssMarkers,
     staging_ok: stagingOk,
+    event_field_reviews_created: Number(fieldReviews.data ?? 0),
     integrity: recorded.data,
   });
 });
