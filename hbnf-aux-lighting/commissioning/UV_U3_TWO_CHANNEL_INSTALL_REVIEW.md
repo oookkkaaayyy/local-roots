@@ -2,11 +2,44 @@
 
 **Authority:** GitHub #116 UV lane, owner wiring correction #6652041394 and U2 handoff #6648810247. This is one **separate UV installation/recovery/acceptance path after Controls releases the shared Cart**, not a Controls C7 source or live deployment. **Current as-wired UV illuminates when AUX power is enabled**; older statements of physically disconnected UV are historical and cannot prove today's cutoff or PWM path.
 
+## 2026-11-05 engineering correction — choose a compatible switching path, NOT the 200–2000 Hz repeater
+
+**Verified source incompatibility:** LTECH LT-3040-5A specifies 200–2000 Hz input PWM (manufacturer PDF below). The stock WLED ESP32 PWM clock choices are approximately 6.51, 9.77, 19.53, 39.06, or 58.59 kHz (WLED: https://kno.wled.ge/features/settings/). This branch's `configure_uv_pwm_outputs.py` currently proposes `freq:0` for both ESP32 PWM outputs, and no released low-frequency WLED or measured compatible waveform has been established. Thus the LTECH unit is **NOT compatible on existing frequency evidence** and must **NOT** be purchased, wired or enabled under the existing 12V→repeater→5V profile. Its mixed-rail input is also not manufacturer-qualified. This supersedes the conditional preference described in the historical review section below.
+
+**Preferred lowest-parts conditional architecture:** retain the existing 12V WS2811 strip supply and GPIO16 data, but feed the manufacturer's 5–24V-rated SP803E **from the existing protected 5V TOBSUN converter**; feed the two measured 5V UV loads from that **same 5V rail** through a UV-only hard cutoff/interlock, with each negative return controlled by the SP803E's onboard PWM3 (GPIO25, Cart/rim) or PWM2 (GPIO26, Bar/charger). This avoids an extra incompatible PWM repeater and mixed-voltage switching. It is a **design candidate, NOT an established as-built wiring instruction**. The exact board revision, top-VCC continuity, 5V startup/peak capacity, controller GPIO16 data-level compatibility to 12V WS2811, grounding and absence of 12V/5V backfeed must first be proven off-load/off-device. The manufacturer's nominal SP803E 5–24V supply rating alone does not prove this complete mixed-rail topology. Current Opal/backend policy intentionally accepts only the historical isolated-repeater topology; a future same-5V-rail source adaptation must be integrated and separately tested before runtime enablement. No software flags may be switched ON to bypass that mismatch.
+
+**Functional power-separated schematic (conceptual, not a terminal pinout):**
+
+```text
+INIU 12V source ─┬── current-protected existing 12V WS2811 V+ (22 groups, unchanged)
+                 └── existing rated TOBSUN 12V→5V converter
+                         ├── protected SP803E 5V input (controller/underglow DATA stays alive)
+                         └── UV-only branch fuse(s) → normally OPEN UV cutoff
+                                   → lid/optical interlock and no-voltage-release stage
+                                   ├── Cart/rim UV 5V+  (historical 0.80 A @ 5V)
+                                   └── Bar/charger UV 5V+ (historical 0.52 A @ 5V)
+
+SP803E GPIO16 DATA ───────────────→ existing 12V WS2811 DIN
+SP803E PWM3/GPIO25 sinking return ← Cart/rim UV negative
+SP803E PWM2/GPIO26 sinking return ← Bar/charger UV negative
+12V WS2811 return, TOBSUN return and SP803E return: one verified common reference.
+The 12V positive must NEVER be connected to SP803E 5V VCC or either UV positive.
+Old UV constant-ground returns must NOT bypass the switched returns.
+```
+
+**Mechanical/thermal requirements:** the UV supply cutoff should be normally-open and independent of firmware, with a readily accessible manual OPEN position; the lid/exposure interlock must also interrupt UV power. A manually latched switch alone is NOT a power-loss-release mechanism. For true default-OFF on every battery restart, specify and verify a rated no-voltage-release stage whose UV-only contacts return OPEN on loss of input; do not put the underglow or controller behind that UV cutoff. A separate independent watchdog/rearm may be needed to ensure OFF during **controller-only reset** while 5V rail remains energized. Provide opaque shielding and approved photobiological assessment before any UV-on test. Size contact, fuse, wire and connector ratings to measured peak/inrush and actual converter fault-current behavior; the historical 5A fuse and nominal 1.32A summed load do not justify branch fuse selections.
+
+**Power-OFF verification first:** document actual incoming +12V and converted +5V lines, SP803E supply versus output-VCC path, whether UV negatives currently run to common ground, SP803E PWM sink polarity and cold-boot impedance, rail-to-rail continuity, output fuse contact/wire sizes, optical interlock switch state and physical-fit photos. No power-on or PWM pulse until original release/backups are preserved and Controls yields device ownership. With strips disconnected, independently verify 5V-controller/12V-WS2811 operation, **UV-only hard-cutoff terminal voltage zero in all unarmed states**, absence of backfeed, both PWM channels OFF during power on/boot/restart/brownout/Wi-Fi loss and no interference with existing DDP22, using a non-UV indicator. Any unexpected output, 12V appearance on the 5V rail, reset or overheating is a STOP.
+
+**Audio fault correction (source only):** reviewed AUX effect248 now requests zero intensity when synced audio is stale/missing, and at true zero audio energy; it no longer holds an illuminated cap on a lost audio feed. Independent per-channel limits are preserved. This is firmware SOURCE behavior, not a measured physical UV OFF guarantee. The existing WLED/Opal/Controls/UV activation flags and physical acceptance remain OFF.
+
+**Fallback if same-5V controller architecture fails qualification:** select a specifically rated two-channel PWM-to-5V driver accepting the **actual measured** SP803E output voltage, low-side polarity and ESP32 WLED frequency; require published 12V control/5V load supply permission plus boot/fault OFF performance. This is a hardware-selection decision, not authorization to buy a repeater or create a second release stream.
+
 ## Intended actual functionality
 
 Keep existing Matrix, AUX/underglow, router and the installed Owner PWA intact. When physically commissioned, retain independent saved Cart/rim `main` and Bar/charger `short` slider caps (0–255), plus Manual, OFF and Follow Matrix. Manual maps WLED UV segment 1 → SP803E PWM3/GPIO25 → Cart/rim; segment 2 → PWM2/GPIO26 → Bar/charger. Follow Matrix uses AUX-local AudioReactive/WLED effect 248 for both channels, each with its own `ix` cap, not a browser audio timer or an unapproved UDisc/Cart relay. Segment 0 remains the 22-group 12V WS2811/DDP underglow on GPIO16. WLED command transport is not a replacement for a physical UV cutoff.
 
-## Hardware decision — prefer one rated, isolated CV PWM repeater without repowering SP803E
+## Historical repeater candidate — superseded by 2026-11-05 frequency correction
 
 **REVIEW CANDIDATE:** LTECH LT-3040-5A four-channel CV PWM power repeater, use only channels 1 and 2. Manufacturer document: https://www.ltech.cn/uploads/pdf/en/LED-Controller/LT-3040-5A.pdf . It specifies **5–24V DC**, **5A/channel**, **PWM 200–2000Hz**, and **3kV optical isolation of signal input/output**, and shows one controller signal input driving separate load-side power supplies. Physical size approximately **175 × 44 × 30mm**. Do not infer whole-system galvanic isolation if the existing TOBSUN input/output grounds are connected. This is not a purchase recommendation without final fit/price/terminal verification, or proof that this particular input socket correctly accepts the installed SP803E common-positive low-side PWM waveform. **The manufacturer diagrams show isolated signal and load supplies but illustrate matching 12V/12V or 24V/24V examples; the exact proposed 12V controller PWM input with 5V lamp power is NOT explicitly manufacturer-qualified.** The signal-side `5–24V` product specification alone does not establish this mixed-rail use. If input polarity, reference and independent 5V load permission cannot be verified from the specific unit's rated instructions, do not connect; select a driver whose manufacturer explicitly qualifies those inputs instead. The SP803E terminals are MOSFET switched negative outputs, not bare 3.3V GPIO drive.
 
@@ -43,7 +76,7 @@ SP803E 12V-side PWM2 (GPIO26) ── repeater INPUT channel 2 ── 5V switched
 - `hbnf-aux-lighting/backend/aux_uv_policy.mjs`: uncommissioned, all-zero or invalid UV patches no longer set global WLED `on:true`, preserving existing underglow state rather than inadvertently waking AUX.
 - `hbnf-aux-lighting/backend/aux_control.ts`: both modern `uv_policy` and legacy `uv` paths now evaluate full hardware + commissioning evidence **AND current AUX runtime MQTT identity/build profile immediately before any publish**, requiring effect248 output-verified firmware. Review profile stays FALSE and cannot actuate. No hard-coded permanently-false future runtime path; subsequent separately admitted firmware/profile can be verified without a new alternate control writer. Broker ACK remains **not device readback** and direct WLED remains a hardware-interlock risk.
 - **Command-mode parity:** `OFF`, `MANUAL`, `FOLLOW_MATRIX` are the only executable Opal/cloud modes. The former `VIBE_REACTIVE` mathematical simulation helper is not a separately supported device action; it is rejected at the real command boundary to avoid false promises. `FOLLOW_MATRIX` is the actual synchronized local effect248 path.
-- `staging/coordinated-backend/opal/owner-local-control/uv_status_access.lua` + Owner UI: segment readback is explicitly tagged `WLED_LOGICAL_SEGMENTS_ONLY`, `physicalUvOffVerified=false`; neither the UI nor backend treats JSON as switched 5V output evidence. **Audio follow** uses the pinned AUX-local effect248, Matrix-provided audio freshness, independent per-segment intensity cap and no new cloud relay. Missing/stale synced audio presently falls back to each saved cap; that behavior is source-design, not verified in UV hardware.
+- `staging/coordinated-backend/opal/owner-local-control/uv_status_access.lua` + Owner UI: segment readback is explicitly tagged `WLED_LOGICAL_SEGMENTS_ONLY`, `physicalUvOffVerified=false`; neither the UI nor backend treats JSON as switched 5V output evidence. **Audio follow** uses the pinned AUX-local effect248, Matrix-provided audio freshness, independent per-segment intensity cap and no new cloud relay. Missing/stale synced audio requests zero PWM in FOLLOW_MATRIX after the source-only correction; OFF remains unverified at the physical terminal.
 
 ## Minimal evidence and release/rollback protocol
 
