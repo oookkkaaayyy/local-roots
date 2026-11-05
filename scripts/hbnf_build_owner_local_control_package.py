@@ -87,6 +87,23 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         raise ValueError("UV runtime gate contract changed; update Opal gate implementation and package admission")
     if policy_spec.get("requiredCommissioningGates") != list(hardware_profile.get("commissioningGates", {})):
         raise ValueError("UV commissioning gates do not match the shared profile")
+    physical = policy_spec.get("requiredPhysicalSafetyGates")
+    gates = hardware_profile.get("physicalSafety")
+    if not isinstance(physical, list) or len(physical) != 8 or len(set(physical)) != 8:
+        raise ValueError("UV requires eight distinct physical safety admission gates")
+    if not isinstance(gates, dict) or set(gates) != set(physical) or any(v is not False for v in gates.values()):
+        raise ValueError("UV physical safety profile incomplete or not hard-closed")
+    switch = policy_spec.get("switching", {})
+    profile_switch = hardware_profile.get("switching", {})
+    if (switch.get("controlVoltage") != 12 or switch.get("loadVoltage") != 5
+        or switch.get("method") != "opto_isolated_cv_pwm_repeater"
+        or switch.get("pwmFrequencyHz") != {"minimum": 200, "maximum": 2000}
+        or profile_switch.get("verified") is not False or profile_switch.get("isolated") is not False):
+        raise ValueError("UV isolated PWM/5V load contract drifted or was prematurely commissioned")
+    if (hardware_profile.get("ownerReported", {}).get("currentPhysicalDisconnectVerified") is not False
+        or "uv_illuminates_with_aux_power_not_pwm_switched" not in
+        hardware_profile.get("ownerReported", {}).get("moduleStatus", "")):
+        raise ValueError("UV current owner as-wired observation missing or falsely marked disconnected")
     if source_base.get("opal_rollback_transport_sha256") != EXPECTED_ROLLBACK:
         raise ValueError("recorded exact Opal rollback identity changed")
     exposure = source_base.get("owner_accepted_network_exposure") or {}
