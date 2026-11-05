@@ -80,6 +80,13 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   assert.match(packageBuilder, /"uv_hardware_profile\.json"/);
   assert.match(packageBuilder, /"uv_status_access\.lua"/);
   assert.match(packageBuilder, /"uv_runtime\.lua"/);
+  assert.match(packageBuilder, /requiredPhysicalSafetyGates/);
+  assert.match(packageBuilder, /UV physical safety profile incomplete or not hard-closed/);
+  assert.match(packageBuilder, /UV current owner as-wired observation missing or falsely marked disconnected/);
+  assert.match(packageBuilder, /opto_isolated_cv_pwm_repeater/);
+  assert.match(localUvRuntime, /ipairs\(policy\.requiredPhysicalSafetyGates\)/);
+  assert.match(localUvRuntime, /profile\.physicalSafety\[key\] ~= true/);
+  assert.match(localUvRuntime, /switching\.method ~= switchingSpec\.method/);
 });
 
 test("current UV profile fails closed and never publishes manual brightness", async () => {
