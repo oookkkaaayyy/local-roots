@@ -124,10 +124,12 @@ test("Opal and shared backend point at the same declarative UV policy contract",
   assert.match(uvRuntime, /tonumber\(color\[4\]\) ~= expected\.col\[4\]/);
   assert.match(uvStatus, /response\.outputMode = "FOLLOW_MATRIX"/);
   assert.match(uvStatus, /response\.outputMode = "UNKNOWN"/);
-  assert.match(uvStatus, /commissioningTestAvailable = current ~= nil/);
+  assert.match(uvStatus, /commissioningTestAvailable = false/);
+  assert.match(uvStatus, /commissioningBlockedReason = "uv_electrical_qualification_not_admitted"/);
   assert.match(opal, /mode == "COMMISSIONING_TEST"/);
-  assert.match(opal, /ngx\.sleep\(3\)/);
-  assert.match(opal, /outputOffConfirmed = off_confirmed/);
+  assert.doesNotMatch(opal, /ngx\.sleep\(3\)/, "UV commissioning must not pulse an unqualified output");
+  assert.match(opal, /mutationIssued = false/);
+  assert.doesNotMatch(opal, /outputOffConfirmed = off_confirmed/, "no unobserved physical OFF assertion");
   assert.match(opal, /if mode ~= "OFF" then[\s\S]*runtime\.profile_ready\(\)/);
   assert.match(uvRuntime, /segments\[1\]\.start\) ~= 22/);
   const localRoute = nginx.match(/location = \/api\/aux\/uv-policy \{([\s\S]*?)\n    \}/)?.[1] || "";
