@@ -58,12 +58,12 @@ test('E3 native transaction promotes 8 exact-linked manual candidates and revers
  const db=await fixture();
  try{
   const old=await counts(db);
-  await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;');
+  try { await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;'); } catch(e) { throw new Error('E3 forward phase: '+e.message); }
   assert.deepEqual(await counts(db),{links:8,candidates:8,runs:1,pins:16,e1_results:6,e1_hidden:1,original_links:8,enriched:8});
   const rows=(await db.query("SELECT official_url,registration_url,fee_breakdown FROM lr_events WHERE name='HB Night Flyers Glow Doubles' ORDER BY start_date")).rows;
   assert.equal(rows.length,8);
   assert.ok(rows.every(r=>r.official_url.endsWith('/about')&&r.registration_url===null&&r.fee_breakdown.reduce((a,b)=>a+b.amount,0)===10));
-  await db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;');
+  try { await db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'); } catch(e) { throw new Error('E3 rollback phase: '+e.message); }
   assert.deepEqual(await counts(db),old);
  }finally{await db.close();}
 });
@@ -80,7 +80,7 @@ test('E3 changed target refuses same-manifest promotion before any source candid
 test('E3 rollback refuses subsequent new real results without removing the enrichment',async()=>{
  const db=await fixture();
  try{
-  await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;');
+  try { await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;'); } catch(e) { throw new Error('E3 forward phase: '+e.message); }
   await db.query("INSERT INTO lr_results(event_id,player_name) SELECT id,'New real participant' FROM lr_events WHERE slug='hbnf-glow-2026-12-01'");
   await assert.rejects(db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'),/event gained results/);
   await db.exec('ROLLBACK;');
