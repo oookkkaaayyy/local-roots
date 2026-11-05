@@ -8,6 +8,7 @@ const SCHEDULE_URL = 'https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule'
 const MAX_EXPORT_BYTES = 12 * 1024 * 1024;
 const MAX_SCHEDULE_BYTES = 2 * 1024 * 1024;
 const GLOW_SYNC_PATH = '/internal/udisc-glow-sync';
+const ORGANIZER_IMPORT_PATH = '/internal/udisc-glow-organizer-import';
 
 const errorResponse = (status, message, extraHeaders = {}) => new Response(`${message}\n`, {
   status,
@@ -156,8 +157,13 @@ export async function runGlowSync(env, deps = {}) {
 }
 
 export default {
-  fetch(request, env) {
+  async fetch(request, env) {
     const path = new URL(request.url).pathname;
+    if (path === ORGANIZER_IMPORT_PATH) {
+      if (env?.HBNF_UDISC_OPERATOR_IMPORT_ENABLED !== 'true') return errorResponse(404, 'Not found.');
+      const {handleOrganizerImportRequest} = await import('./udisc-glow-organizer-http.review.mjs');
+      return handleOrganizerImportRequest(request,env);
+    }
     if (path === EXPORT_PATH || path === EVENTS_PATH || path === GLOW_SYNC_PATH) return errorResponse(404, 'Not found.');
     return env.ASSETS.fetch(request);
   },
