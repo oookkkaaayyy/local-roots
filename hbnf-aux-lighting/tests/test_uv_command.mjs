@@ -340,3 +340,51 @@ test("AUX UV audio follower cannot enable PWM via only one compile flag", async 
   assert.ok(status.includes("physicalUvOffVerified = false"),
     "WLED JSON cannot prove a physical disconnect or switched output");
 });
+
+test("AUX Edge requires electrical and actual runtime proof before sending either UV route", async () => {
+  const edge = await readFile(new URL("../backend/aux_control.ts", import.meta.url), "utf8");
+  const begin = edge.indexOf("function uvRuntimeOutputAttested(st:any)");
+  const end = edge.indexOf("async function publish(payload:any", begin);
+  assert.ok(begin > 0 && end > begin, "extract exact actual UV runtime gate source");
+  const runtimeGateSource = edge.slice(begin, end)
+    .replaceAll("st:any", "st")
+    .replaceAll("c:any,enabled:boolean", "c,enabled");
+  let probes = 0;
+  const status = {
+    runtimeTrusted: true,
+    auxRuntime: { uvOutputsVerified: 1, uvBuildProfile: "uv-follow-output-capable-v1" },
+  };
+  const getGate = (envEnabled, hardwareReady, commissioned, observed = status) =>
+    new Function(
+      "ENV_UV_ENABLED", "uvHardwareReady", "UV_HARDWARE_CONFIG",
+      "uvCommissioningReady", "passiveStatus",
+      runtimeGateSource + "return uvOutputGate;"
+    )(envEnabled, () => hardwareReady, {}, () => commissioned, async () => {
+      probes++;
+      return observed;
+    });
+  for (const args of [[false,true,true],[true,false,true],[true,true,false]]) {
+    probes = 0;
+    assert.equal(await getGate(...args)({}, true), false);
+    assert.equal(probes, 0, "no MQTT status probe when any base admission gate is closed");
+  }
+  probes = 0;
+  assert.equal(await getGate(true, true, true)({}, true), true);
+  assert.equal(probes, 1);
+  for (const bad of [
+    { ...status, runtimeTrusted: false },
+    { ...status, auxRuntime: { ...status.auxRuntime, uvOutputsVerified: 0 } },
+    { ...status, auxRuntime: { ...status.auxRuntime, uvBuildProfile: "uv-follow-fail-dark-v1" } },
+    { runtimeTrusted: true, auxRuntime: null },
+  ]) {
+    assert.equal(await getGate(true, true, true, bad)({}, true), false);
+  }
+  assert.equal(edge.split("uvOutputsVerified:await uvOutputGate(c,enabled)").length - 1, 2,
+    "modern UV and legacy UV actions must both re-check device identity");
+  assert.ok(edge.includes('expectedUvBuildProfile=expectedUvOutputsVerified===1?'),
+    "runtime identity must not trust output claims from mismatched firmware builds");
+  assert.ok(edge.includes('uvFollow:{effectId:248,outputsVerified:ENV_UV_ENABLED&&uvHardwareReady(UV_HARDWARE_CONFIG)}'),
+    "output activation may become eligible only after verified hardware and explicit UV enable");
+  assert.ok(!edge.includes('uvOutputsVerified:R3.uvFollow.outputsVerified===true,hardware'),
+    "hardcoded command-time build flag must not bypass the live AUX check");
+});
