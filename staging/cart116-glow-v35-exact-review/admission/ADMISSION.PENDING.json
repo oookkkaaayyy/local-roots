@@ -2229,7 +2229,7 @@
       "tests": {
         "changed_only_node": "tests/native-release/c7-source-intent-contract.test.mjs",
         "node_count": 9,
-        "head": "b2249e0da51eb4a676d752aa9cffeb9e735b3f8b",
+        "head": "0a196f0be040ffb39116a9f2138188e31496276f",
         "node_current_CI": "PASS_9_OF_9_EXACT_SHA_0a196f0be040ffb39116a9f2138188e31496276f_GITHUB_RUN_41981417931",
         "narrow_pg": "tests/native-release/c7-pg-source-cas.sh",
         "pg_current_CI": "PASS_NATIVE_PG17_EPHEMERAL_AUTHORITY_FINGERPRINT_EVENT_TIME_SOURCE_CAS_REPLAY_OWNER_NEGATIVES_GUARDED_INVERSE_GITHUB_RUN_41981417931",
@@ -2237,7 +2237,9 @@
         "no_accepted_suite_rerun_intended": true,
         "hosted_CI_run_id": 41981417931,
         "hosted_CI_job_id": 127092129375,
-        "existing_accepted_PG_Deno_C1_rerun": false
+        "existing_accepted_PG_Deno_C1_rerun": false,
+        "changed_only_tested_source_head": "0a196f0be040ffb39116a9f2138188e31496276f",
+        "hosted_CI_result": "SUCCESS run 41981417931 C7-only Node 9/9, isolated PG17 source/fingerprint/CAS/inverse, exact-source validator; old isolated suite SKIPPED"
       },
       "protected_files": {
         "opal_four_c3_sha": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
@@ -2270,7 +2272,7 @@
         "one_use_source_enabled_postimage_sha": null,
         "no_SQL_Edge_Opal_R6_PWA_AUX_or_UV_live_mutation": true,
         "closeout": "C7 PG/source PASS is not live; prechange provider/device readback, physical safe OTA, real future fresh event, one combined field session and same-manifest recovery still needed",
-        "first_hard_blocker": "CURRENT_AUTHENTICATED_CART_LAN_READBACK_AND_SAFE_R6_OTA_RESTORE_ROUTE_NOT_AVAILABLE_TO_CHAT; PROVIDER/SQL_C7_CANDIDATE_NOT_DEPLOYED",
+        "first_hard_blocker": "No authenticated current Cart-LAN prechange / R6 safe OTA rollback readback in this Chat; source qualified, production six SQL functions missing and Edge v35 old 10-source live. Must not mutate providers before same-manifest global phase-0 including device access.",
         "next_independent": "Preserve exact 15-file reviewed Edge candidate/10-file v35 source-equivalent rollback and versioned SQL up/down, original R6 candidate+rollback and four-new-Opal absent-state backup. Next installation requires actual connected device prechange identity and one exact approved one-use manifest, then sequential SQL/Edge inert phase plus native/Opal and single owner-present field acceptance using genuinely fresh Scoring P0 event; fail closed on any mismatch.",
         "live_provider_gates": {
           "sql_live_deployed": false,
@@ -2283,7 +2285,9 @@
           "wifi_router_or_uv_change": false,
           "no_unadmitted_mutation": true
         },
-        "resumption_trigger": "Authenticated owner-present Cart-LAN availability for same-manifest prechange Matrix/Opal/OTA restore checks, with next eligible freshly scored authorized event for final live display; source gate alone never starts physical stage."
+        "resumption_trigger": "Authenticated owner-present Cart-LAN availability for same-manifest prechange Matrix/Opal/OTA restore checks, with next eligible freshly scored authorized event for final live display; source gate alone never starts physical stage.",
+        "temporal_source_dependency": "Historical S1 Nov03 remains read-only; next valid real event must be genuinely authorized, saved and within binding window/status fresh <=10m before any live scoreboard.",
+        "no_live_activation_from_historical_preview": true
       }
     }
   }
