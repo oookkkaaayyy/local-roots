@@ -88,14 +88,15 @@
     "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_ONLY: original packet20_diag R6-target Owner priority binary 85796804... independently reproducible; original ps=-1 FX142 and audio/DDP code preserved; installed native renderer/priority/physical display unverified; no preset60 forcing.",
     "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted",
     "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute",
-    "provider_compiled_edge_candidate_and_rollback": "STILL BLOCKED: connected get_edge_function exposes only 10 v35 source and deployed bundle digest metadata; not actual compiled v35 ESZIP body nor candidate compiled body with independent offprovider recovery",
+    "provider_compiled_edge_candidate_and_rollback": "BLOCKED STRICT BYTE-EQUIVALENCE: provider v35 10/10 original source bytes match immutable Git tree 74dd1d..., config and dependency pinned, 15-file candidate graph source-closed; compiled ESZip original and candidate not retrieved; proposed source-equivalent restore requires formally accepted control-plane alternate criterion and runtime/restore validation. No provider write.",
     "versioned_sql_and_edge": "new overlay V1 functions not applied, Edge active v35; no destructive old Glow writer permitted",
     "new_service_start_and_conflict_audit": "C3 PRE-INSTALL READ-ONLY ABSENCE/NO-CONFLICT PASS AS CAPTURED (0 bridge/0 legacy, procd not listed, locks absent); new service never installed nor started; eventual authenticated post-install service and Owner WS acceptance NOT_RUN.",
     "manifest_one_time_approval": "NULL, no approval requested until independent recovery and native Owner priority gate pass",
     "phase1_phase2": "PENDING_NOT_ADMITTED; all source gates false and release includes no production changes",
-    "native_owner_priority_installed_r6": "BLOCKED: exact-original-build-target patched BIN 85796804... reproduced twice and archived with original rollback; no installed raw-image SHA/parity, same-manifest firmware approval or flash; original R6 Owner TEXT-vs-stale Glow race remains on device. Earlier max-target BIN d577813d... is not equivalent.",
+    "native_owner_priority_installed_r6": "REVIEW ONLY corrected firmware 85796804... not installed and Owner TEXT priority not physically accepted. ORIGINAL R6 installed baseline provenance NOW PASS via exact October14 upload transaction, original bin de38221... and November3 same device release readback per AKS witness exception. Future device prechange route and same-manifest flash/restore acceptance remain required.",
     "actual_owner_selected_brightness": "LATEST READBACK MATRIX HBNF.matrixBrightness=0; render black, do not change automatically; visible Glow acceptance only upon naturally selected nonzero normal operation",
-    "network_reconnect_20261103": "SOURCE_INTEGRATED CI 41741222537 SUCCESS 5/5 native + exact hashes; NO LIVE IPAD/SAFARI12/WAN/POWER FIELD ACCEPTANCE; replace old d380 package not install prior digest"
+    "network_reconnect_20261103": "SOURCE_INTEGRATED CI 41741222537 SUCCESS 5/5 native + exact hashes; NO LIVE IPAD/SAFARI12/WAN/POWER FIELD ACCEPTANCE; replace old d380 package not install prior digest",
+    "native_matrix_installed_baseline_witness": "PASS per AKS original October14 successful firmware upload+runtime release and Oct26 durable exact archive; original source/build/install receipts distinct from full physical acceptance; raw installed flash SHA unavailable by WLED; new corrected patch is still NOT installed, no firmware flash authorized."
   },
   "installer_included": true,
   "ordered_release": [
@@ -1614,13 +1615,284 @@
     "no_conflict_bridge_preinstall": "BOUNDED_PASS",
     "seven_owner_www_files": "EXCLUDED_PRESERVE_INSTALLED_PWA_V1.0.20",
     "installer_or_live_source_admitted": false,
-    "next_hard_blocker": "EXACT_COMPILED_EDGE_V35_AND_CANDIDATE_RECOVERY_OR_FORMALLY_APPROVED_EQUIVALENT_SOURCE_RESTORE_NOT_YET_ACCEPTED",
-    "next_independent": "Document/qualify source-equivalent Edge restore from immutable 10-file source + verify_jwt false and deno.json, requiring formal same-manifest acceptance and independent recovery probe; firmware device restore identity still distinct",
-    "firmware_restoration": "ARCHIVE_SHA_VERIFIED_BUT_ACTUAL_DEVICE_FLASH_IDENTITY_AND_RESTORE_NOT_VERIFIED",
+    "next_hard_blocker": "EDGE_COMPILED_BYTE_ROLLBACK_ABSENT; SOURCE_EQUIVALENT_ALT_TEST_CRITERION_PREPARED_NOT_OWNER_OR_CONTROL_PLANE_APPROVED; NO_RELEASE",
+    "next_independent": "Retain immutable 10-file provider rollback Git tree and 15-file review candidate tree, require exact prechange v35 source/digest/config, select either actual compiled ESZip recovery or formally approved source-equivalent same-project restore, verify firmware prechange OTA route and candidate/rollback, then single owner one-time approval and one combined field acceptance.",
+    "firmware_restoration": "R6_ORIGINAL_INSTALLED_BASELINE_WITNESS_ACCEPTED_VIA_20261014_TRANSACTION_AND_AKS_EXCEPTION; RAW_FLASH_SHA_UNAVAILABLE; FUTURE_PRECHANGE_OTA_AND_RESTORE_ADMISSION_STILL_REQUIRED",
     "scoring_p0": "ORIGINAL_NOV03_4_TEAMS_NOT_PERSISTED_VERIFIED",
     "same_manifest_phase1_owner_approval": null,
     "one_combined_physical_acceptance": "NOT_STARTED",
     "no_Owner_PWA_change": true,
-    "no_device_or_provider_mutation": true
+    "no_device_or_provider_mutation": true,
+    "source_head_last_reviewed": "b3776d6c141eea9c4bb604282b8427b5e67eccd3",
+    "score_state": "S1_PRODUCTION_INSTALLED_ACCEPTED_115_6647464211_4_TEAMS_QI_ZERO; SCORE_ACTUATION_STILL_FALSE"
+  },
+  "dora_c6_20261104": {
+    "schema": "cart116-20261104-conditional-source-restore-and-original-r6-install-witness-v1",
+    "authority": "existing Github #116 Track A and single admission/ADMISSION.PENDING.json; S1 scoring source #115 comment 6647464211",
+    "parent_source_HEAD": "b3776d6c141eea9c4bb604282b8427b5e67eccd3",
+    "disposition": "SOURCE_RECOVERY_EVIDENCE_CLOSED_REVIEW; COMPILED_SOURCE_EQUIVALENT_RECOVERY_APPROVAL_AND_RELEASE_STILL_BLOCKED",
+    "operational_mutations": "NONE",
+    "exact_provider_v35_existing_installed": {
+      "project": "phcpbvuqibyarpfrftgx",
+      "function_slug": "hbnf-cart-control",
+      "status": "ACTIVE",
+      "version": 35,
+      "ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+      "source_tree_git_SHA1": "74dd1d687de44eacb20eff8e3960d9129948ef88",
+      "source_file_count": 10,
+      "provider_10_versus_exact_git_blob_10": "PASS_ALL_10_DIRECT_BYTE_STRING_EQUAL_NO_NORMALIZATION",
+      "original_file_shas": [
+        [
+          "deno.json",
+          "1d245785ce55817c7e0265a28d12968b754aac5f",
+          175
+        ],
+        [
+          "guest-command.ts",
+          "50e38cad043c4f4fcf1990d779671010365a0e45",
+          17603
+        ],
+        [
+          "index.ts",
+          "017eea939643850fd38182a5ecd3404167cb4b27",
+          19354
+        ],
+        [
+          "live.ts",
+          "b5f72cc38269bfdad3feea8446ea32e389eea345",
+          8240
+        ],
+        [
+          "matrix-relay-auth.ts",
+          "49225ac466f562706abd44809ce9cf3d5af68e22",
+          363
+        ],
+        [
+          "matrix-relay-projection.ts",
+          "5b60dd7fd2def68a186d6c77b6f08c035153213d",
+          8840
+        ],
+        [
+          "matrix-relay.ts",
+          "8b4eccf738c2f76faead74589897f5f2fe2a89f8",
+          7540
+        ],
+        [
+          "pairing-expiry.mjs",
+          "0c87ee5b711eb6e74a2079df080bfc4a5e7315b8",
+          513
+        ],
+        [
+          "runtime-vibe.ts",
+          "c41f0ff6cf7f92615f3d75f712edb7309e82912a",
+          1361
+        ],
+        [
+          "skins_scoring.ts",
+          "c7b773d11fdb4b8099d83aba01d22eb148432c57",
+          9681
+        ]
+      ],
+      "off_provider_durable_recovery": "PASS_IMMUTABLE_GITHUB_TREE_AND_ALL_10_BLOBS_RETRIEVED_MATCH_CURRENT_CONNECTED_PROVIDER_SOURCE",
+      "entrypoint": "index.ts",
+      "import_map_path": "deno.json",
+      "verify_jwt": false,
+      "import_map": true,
+      "dependency": "npm:@supabase/supabase-js@2.57.0 pinned in actual index.ts, matrix-relay.ts and deno.json",
+      "expected_env_name_categories": "existing project/service secrets and settings must be preserved; no values read or recorded",
+      "compiled_ESZip_original_bytes_sha256": null,
+      "deployed_bundle_metadata_digest_distinct_from_source_tree": true,
+      "exact_compiled_ESZip_recovery_proven": false
+    },
+    "narrow_compiled_edge_successor_source": {
+      "reviewed_candidate_tree_git_SHA1": "7c5ddec5c06a25e9187e98663db7210038449404",
+      "total_exact_review_sources": 15,
+      "added": [
+        [
+          "glow-intent-service.mjs",
+          "70d1493b7981f74f58228b2cbd14e507a115e11a"
+        ],
+        [
+          "glow-overlay-v1-handler.mjs",
+          "0d52dfa2f41f162c85948f80f5a01da07f14cf47"
+        ],
+        [
+          "glow-relay-preservation.mjs",
+          "d8b118b4e04b2054c63d706e1e9e5e1d3747f231"
+        ],
+        [
+          "hbnf-glow-cart-intent.mjs",
+          "509dbe62229d48579594cdd378217e4476ad13e7"
+        ],
+        [
+          "matrix-overlay-safe-review.mjs",
+          "b9a15f43606e8734c2bc34f98e08eebad090f9ec"
+        ]
+      ],
+      "modified": [
+        [
+          "index.ts",
+          "017eea939643850fd38182a5ecd3404167cb4b27",
+          "597711058b2965f60ec26f2c593c1f7872038f09"
+        ],
+        [
+          "matrix-relay.ts",
+          "8b4eccf738c2f76faead74589897f5f2fe2a89f8",
+          "cd689948a7b77073af035bf5623e159e22a13b86"
+        ]
+      ],
+      "identical_unchanged_eight": [
+        "deno.json",
+        "guest-command.ts",
+        "live.ts",
+        "matrix-relay-auth.ts",
+        "matrix-relay-projection.ts",
+        "pairing-expiry.mjs",
+        "runtime-vibe.ts",
+        "skins_scoring.ts"
+      ],
+      "all_local_relative_imports_resolved": "PASS_15_EDGES_ZERO_MISSING_IN_EXISTING_GIT_TREE",
+      "exact_existing_test_evidence": "PG17_41694282141_step_PASS;Deno_41694531461_SUCCESS;C1_41808438162_and_41811101246_SUCCESS; no rerun",
+      "source_gates_initially": false,
+      "compiled_successor_ESZip_bytes_sha256": null,
+      "candidate_source_qualified_not_deploy_admitted": true
+    },
+    "alternative_edge_recovery_formal_criterion": {
+      "label": "REVIEW_PROPOSAL_EDGE_SOURCE_EQUIVALENT_RESTORE_V35_V1",
+      "current_disposition": "NOT_ADMITTED_NO_CONTROL_PLANE_PROMOTION_NO_OWNER_POLICY_CONSENT",
+      "grounded_authority": "AKS Master Router live-build exact candidate+installed baseline+rollback and fail-closed gate; Canonical HBNF Release Engineering protocol says if bit-for-bit reproducibility cannot be achieved, document and verify equivalent source/config/toolchain identity; this does NOT silently override mandatory baseline/rollback or one-use approvals.",
+      "primary_provider_docs": [
+        "https://supabase.com/docs/guides/functions/architecture",
+        "https://supabase.com/docs/guides/functions/deploy",
+        "https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore"
+      ],
+      "provider_tool_support": "Connected mcp__Supabase__deploy_edge_function accepts named function source files+entrypoint_path+import_map_path+verify_jwt, performs ACTUAL LIVE VERSION REPLACEMENT; DO NOT CALL BEFORE ADMISSION",
+      "baseline_recovery_candidate": "Read all ten immutable Git blobs from tree 74dd1d... with pin exact per-file sizes/SHA, config index.ts+deno.json and verify_jwt=false; ensure provider v35 source+digest unchanged at pre-change; current source manifest is off-provider, durable and independently verified",
+      "expected_nonidentities": "Source equivalence is not original compiled ESZip byte equality, does not restore same provider version number nor guarantee identical runtime dependency cache/instance; keep deployed SHA as observed metadata only",
+      "prior_to_promotion": [
+        "Obtain express release-governance decision that this reviewed source-equivalent rollback route is acceptable in place of byte-exact compiled ESZip; otherwise STOP. Never infer source parity alone meets mandatory exact deployed artifact rollback",
+        "Document accepted dependency/runtime closure and same Slug/project/verify_jwt=false/import map/entrypoint/config; preserve existing provider environment without exposing credentials or creating new secrets",
+        "Pin full candidate 15-file Git tree and all original 10-file per-blob SHA identities to one immutable one-use cutover manifest, plus Opal 4 ABSENT targets, Matrix R6 original install+backup, SQL guarded inverse",
+        "Prechange reread provider version=35/ezbr SHA and full 10 source file identities; recheck no concurrent provider mutation, SQL challenge unresolved, device owner overlay interference or hardware drift",
+        "Release and rollback must use same authenticated allowed tool only after one-time owner+control-plane approval; inverse must restore original 10 files and config on same project/slug, then independent readback exact ten-source tree, accepted status and nonmutating functional/owner/legacy-route probes",
+        "If postrestore source or permitted behaviors differ, report FAIL, maintain secure provider fail-closed state and do not assert recovery or repeat deployments blindly"
+      ],
+      "formal_controls_validator_verified_for_proposed_waiver": false,
+      "production_restore_rehearsed": false,
+      "authorized_live_deploy": false,
+      "approval_token": null
+    },
+    "original_r6_installed_source_build_transaction_witness": {
+      "source": "AKS Master Router mandatory installed-baseline invariant (2026-10-26), Live Build Backup index, owner-private Drive firmware baseline recovery manifest, archived Oct14 build+install receipt; read-only current device runtime from Nov3",
+      "source_install_archive_drive_id": "1bFqrpj7h07Iej4uRXX_NPh_CnePbz-yv",
+      "source_install_archive_name": "MATRIX_FIRMWARE_BUILD_INSTALL_EVIDENCE_2026-10-26.zip",
+      "source_install_archive_bytes": 37348,
+      "source_install_archive_sha256": "d69aaf09ff233f02b8517e9ab8230b4fcabe1cd7a8915eb0e9770df78071876c",
+      "source_install_archive_crc": "PASS",
+      "internal_install_receipt_name": "TRANSACTION_RESULT.json",
+      "internal_install_receipt_sha256": "cf11c91fa3751d58fd946dffdab87b664bf33c7a32943a5e33d279af6a601a76",
+      "internal_install_receipt_status": "PROVISIONAL_INSTALL_SMOKE_PASS_NOT_FULLY_QUALIFIED",
+      "candidate_install_attempts": 1,
+      "firmware_upload_attempts": 1,
+      "firmware_upload_confirmed": true,
+      "firmware_upload_http_status": 200,
+      "runtime_resolution_installed": true,
+      "observed_new_release": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+      "staged_original_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "staged_original_bytes": 1506032,
+      "original_source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+      "original_build_target": "hbnf_matrix_wled16_packet20_diag",
+      "provisional_smoke": {
+        "duration_seconds": 300,
+        "pass": true,
+        "settings_restored": true,
+        "feature_screen_and_full_physical_acceptance": "DEFERRED"
+      },
+      "current_runtime_continuity": "2026-11-03 owner-authenticated MAC 704bca5b345c /json info and hbnf build still original R6 marker (ps=-1, FX142), consistent with historical install",
+      "baseline_restore_drive_bin_id": "1YX2B4XG60FOy6SjI7xV_f6DC8QWidUIj",
+      "baseline_restore_drive_manifest_id": "1QnFrMxy_Vx3Sqg68YF3U9xWhUNf5JENJ",
+      "rollback_artifact_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "rollback_artifact_bytes": 1506032,
+      "original_target_corrected_candidate_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "original_target_corrected_candidate_bytes": 1505968,
+      "original_target_flash_ota_partition_bytes": 1572864,
+      "original_target_headroom_bytes": 66896,
+      "exact_candidate_and_original_private_package_sha256": "9c126ccf09b135fcb3347d069f9661df335531dd2cce3332da3c2a3e3492d102",
+      "original_archive_recovery_and_candidate_downloadback": "PASS_PREVIOUSLY_22_OF_22_AND_C3_FRESH_LIVE_LIBRARY",
+      "gate_result": "BASELINE_SOURCE_BUILD_EXACT_INSTALL_TRANSACTION_WITNESS_PASS_PER_AKS_BYTES_NOT_READABLE_DEVICE_EXCEPTION; EXACT_INSTALLED_RAW_FLASH_DIGEST_UNAVAILABLE_DECLARED",
+      "remaining_device_specific_prechange": "Immediately before future authorized flash: authenticated Matrix same MAC/release/slot/OTA access, source features and owner state; confirm previously used OTA update route still available and rescue/reflash fallback physically possible without erasing working Owner settings. One combined owner-present postinstall field acceptance.",
+      "actual_device_rollback_from_new_candidate_tested": false,
+      "installed_raw_flash_sha256": null,
+      "firmware_flash_authorized": false
+    },
+    "score_dependency": {
+      "issue115_receipt": 6647464211,
+      "S1_exact_postrevision": "2026-11-05T01:43:35.537984Z",
+      "S1_exact_postroot_sha256": "e539a1444a5ca4fd6ad3a8f468ac70fb5a9655ae06f740733897efb3b615fad1",
+      "S1_week_md5": "90494f540fc2ae184fdd142d70b99334",
+      "independently_rechecked_provider_week": "4 teams, zero QI rehearsal match, protected scoring guard remains sole #115 writer; direct read-only 2026-11-04 PST",
+      "official_results": "48/52/52/57 PAR59, ranks 1/T2/T2/4",
+      "status": "PRODUCTION_SCORE_DEPENDENCY_PASS; CART_AUTO_SCORE_ACTUATION_NOT_ADMITTED",
+      "live_overlay_v1_SQL_RPC_count": 0,
+      "challenge_table_installed": false,
+      "Matrix_auto_live": false
+    },
+    "immutable_minimal_release_scope": {
+      "candidate_disposition": "FROZEN_REVIEW_SOURCE_SNAPSHOTS_NOT_COMPILED_TRANSACTION_INSTALLABLE",
+      "one_controlling_manifest": "staging/cart116-glow-v35-exact-review/admission/ADMISSION.PENDING.json",
+      "matrix_firmware": {
+        "candidate_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+        "original_rollback_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d"
+      },
+      "SQL": {
+        "up_git_blob": "e03daecfd23f8431758551f0a0efe1f4bcb77eef",
+        "down_git_blob": "f093047c8c69096e5529cffce4733d94b12be459",
+        "source_tests": "prior PG17/Deno pass",
+        "applied_live": false
+      },
+      "edge": {
+        "existing_source_tree": "74dd1d687de44eacb20eff8e3960d9129948ef88",
+        "review_candidate_source_tree": "7c5ddec5c06a25e9187e98663db7210038449404",
+        "existing_v35_metadata_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+        "compiled_new_candidate_sha256": null,
+        "restore_alternative": "REVIEW_ONLY_NOT_APPROVED"
+      },
+      "opal": {
+        "original_all_four": "ABSENT_AND_INDEPENDENT_PRIVATE_DOWNLOADBACK_PASS",
+        "original_config": "ABSENT_NO_SECRET_BYTES",
+        "candidate_postimages": [
+          [
+            "usr/libexec/hbnf-cart-glow-bridge",
+            "97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dc9faaf8b2e3a2c"
+          ],
+          [
+            "etc/init.d/hbnf-cart-glow-bridge",
+            "e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7"
+          ],
+          [
+            "usr/libexec/hbnf-cart-glow-provision",
+            "fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20"
+          ],
+          [
+            "usr/lib/hbnf-glow-overlay-v1.sh",
+            "de51e9ace05f876124886089b841c6f5858b91ee4d42a3260f7e8f1788146538"
+          ]
+        ],
+        "original_capture_zip_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a"
+      },
+      "excluded_seven_existing_owner_PWA_target_replacements": true,
+      "exclude_other_hardware_and_UI": "No AUX/DDP/UV/networking/router/Guest/UI/WAN or finances/tags changes, no legacy full-state relay",
+      "one_time_manifest_id": null,
+      "owner_approval": null,
+      "release_candidate_installable": false,
+      "field_acceptance_source": "existing dora_c2_20261104 same-manifest one combined instrumented acceptance; not duplicated",
+      "postinstall_pass_condition": "Provider Edge v1 one-use challenge and exact true S1 revision, visible 4-team scoreboard, immediate Owner TEXT priority, iPad Safari reconnect, native TTL expiry restores original FX142/ps=-1/WOW MAX/Vibe/audio/brightness, 22RGB DDP and two OFF PWM plus UV always off, exact same-manifest provider/device/file rollback if any discrepancy"
+    },
+    "first_hard_blocker": {
+      "name": "EDGE_ROLLBACK_COMPILED_BYTES_UNAVAILABLE; FORMAL SOURCE_EQUIVALENT_ALTERNATIVE_NOT_YET_ADMITTED",
+      "necessary_change_in_evidence": "Approved explicit same-manifest alternative recovery criterion plus passing mechanical receipt validator or direct authenticated compiled ESZip baseline+candidate extraction/recovery. No silent waiver.",
+      "independent_next_ready_action": "No additional physical capture. After policy decision, complete offline exact source+configuration rollback admission binding and one-use immutable prechange readbacks, including firmware OTA safe route; then single combined owner-present field session only after authorization. No live change now."
+    },
+    "original_controls_false_gates_unchanged": true
   }
 }
