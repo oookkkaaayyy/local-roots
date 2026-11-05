@@ -73,6 +73,8 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   assert.match(localUvRuntime, /key ~= "hardwareReady"/);
   assert.match(localUvStatus, /mutationIssued = false/);
   assert.match(localUvStatus, /outputOn =/);
+  assert.match(localUvStatus, /outputStateScope = "WLED_LOGICAL_SEGMENTS_ONLY"/);
+  assert.match(localUvStatus, /physicalUvOffVerified = false/);
   assert.match(localUvStatus, /return ngx\.exit\(200\)/);
   assert.match(installer, /"\$PKG\/uv_status_access\.lua"/);
   assert.match(installer, /"\$PKG\/uv_runtime\.lua"/);
