@@ -89,8 +89,8 @@
     "new_service_conflicts": "C3 bounded no-conflict pre-install READBACK PASS: bridge process 0, legacy named relay process 0, procd bridge NOT_LISTED, 3 lockouts ABSENT, root-only protected config ABSENT. Legacy old relay init/executable absent on separate Nov3 prior receipt. This does not prove complete system process inventory or future post-install no-conflict behavior; recheck immediately before change.",
     "independent_installed_preimage_backup_download_back": "FOUR-NEW-OPAL-TARGETS ONLY CLOSED: 4/4 ABSENT + protected config absent, 693B private ZIP SHA 6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a; independently uploaded, re-downloaded, exact byte equality and CRC. No raw target bytes exist to archive. Seven installed Owner PWA assets EXCLUDED; Matrix firmware/provider own recovery gates remain BLOCKED.",
     "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_ONLY: original packet20_diag R6-target Owner priority binary 85796804... independently reproducible; original ps=-1 FX142 and audio/DDP code preserved; installed native renderer/priority/physical display unverified; no preset60 forcing.",
-    "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted",
-    "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute",
+    "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted; owner-reported UV lamps illuminate whenever AUX power is applied. WLED PWM segments OFF does NOT establish physically unpowered UV, proven isolation, or independent switching. C8 makes no AUX/UV electrical changes.",
+    "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute; offline-vs-upstream-connected Matrix animation variety/speed/music responsiveness must be physically compared under matched local settings in the SAME combined field session; offline degradation is an acceptance FAIL.",
     "provider_compiled_edge_candidate_and_rollback": "C7 METHOD ACCEPTED CONDITIONAL: original Edge v35 ten exact source files match immutable off-provider Git tree and deployment config. Provider's compiled ESZip bytes unavailable; source-equivalent recovery is bounded and does NOT claim compiled-byte equality. Existing exact candidate 15-file tree C7 source-review qualified, deployed candidate identity and restoration runtime untested; no provider write.",
     "versioned_sql_and_edge": "C7 REVIEW SOURCE INTEGRATION PASS: snapshot and canonical Cart intent commit RPCs declared in existing versioned SQL alongside four challenge RPCs. Exact-head hosted 41981417931 new Node 9/9 and isolated PG17 CAS/replay/inverse PASS; static source gate PASS. PRODUCTION SQL still no C7/v1 RPCs deployed, Edge installed remains v35; live event source freshness and device/owner physical actuation not accepted.",
     "new_service_start_and_conflict_audit": "C3 PRE-INSTALL READ-ONLY ABSENCE/NO-CONFLICT PASS AS CAPTURED (0 bridge/0 legacy, procd not listed, locks absent); new service never installed nor started; eventual authenticated post-install service and Owner WS acceptance NOT_RUN.",
@@ -106,7 +106,7 @@
     {
       "order": 1,
       "phase": "0_readback",
-      "action": "Authenticate Opal exact model/LAN, 11 target current SHA/mode/owner or confirmed absence, one dynamic config absence, original relay absence and process inventory, lockouts and 21 Owner hashes; fresh Matrix ps-minus-one/fx142, native overlay renderer and GPIO16 22RGB + two OFF PWM geometry; fail closed on drift."
+      "action": "Authenticate Opal exact model/LAN, 11 target current SHA/mode/owner or confirmed absence, one dynamic config absence, original relay absence and process inventory, lockouts and 21 Owner hashes; fresh Matrix ps-minus-one/fx142, native overlay renderer and GPIO16 22RGB + two software-OFF PWM geometry (not UV physical OFF), owner-reported UV energized when AUX powered; fail closed on drift."
     },
     {
       "order": 2,
@@ -121,7 +121,7 @@
     {
       "order": 4,
       "phase": "0_transaction",
-      "action": "Freeze SAME manifest including 11 packaged postimage hashes, dynamic credential target, exact preimages and absence, both source gates explicit candidate, one unique transaction and approved backup SHA, one immutable source/build/rollback/field plan. Obtain manifest-specific one-time owner authorization; no previously spent approval reused."
+      "action": "Freeze SAME manifest including 11 packaged postimage hashes, dynamic credential target, exact preimages and absence, both source gates explicit candidate, one unique transaction and approved backup SHA, one immutable source/build/rollback/field plan. Bind existing standing authorization to this exact frozen postimage and require every live/restore gate; no additional per-attempt permission stop or inferred physical approval."
     },
     {
       "order": 5,
@@ -141,7 +141,7 @@
     {
       "order": 8,
       "phase": "2_integrated_acceptance",
-      "action": "One owner-observed physical session: Safari12/iPad start/reconnect, actual saved Glow scores visible, Owner direct WS immediate preemption, native overlay ID ACK and TTL restore exact ps-minus-one/fx142, audio/Energy/Variation/Motion/brightness/Vibe, DDP22 and OFF PWM25/26, UV off; no source test counts as field acceptance."
+      "action": "One owner-observed physical session: Safari12/iPad start/reconnect, actual saved Glow scores visible, Owner direct WS immediate preemption, native overlay ID ACK and TTL restore exact ps-minus-one/fx142, audio/Energy/Variation/Motion/brightness/Vibe, DDP22 and software OFF PWM25/26; preserve reported energized UV as-wired state without assuming physical isolation; no source test counts as field acceptance."
     },
     {
       "order": 9,
@@ -189,13 +189,15 @@
   "readback_acceptance": {
     "device": [
       "Matrix ps=-1 active FX142 both segments and native overlay independent renderer must be proved without forcing preset60",
-      "AUX configured 24: 22 RGB DDP GPIO16, PWM1 GPIO25 and GPIO26 both segment OFF; no AUX/PWM writes",
+      "AUX configured 24: 22 RGB DDP GPIO16, PWM1 GPIO25 and GPIO26 both segment OFF; no AUX/PWM writes SOFTWARE OFF ONLY, physical UV power not verified; owner reports UV illumination with AUX power.",
       "WLED matrix brightness/auxBrightness and audio/energy/variation/motion may be zero and must be restored exactly",
       "Matrix exact MAC 704bca5b345c and R6 build",
       "no AUX write or UV change",
       "Owner overlay immediate precedence",
       "GLOW visible with saved scores",
-      "native TTL autoexpires and restores exact baseline energy/variation/motion/audio/brightness/Vibe/palette"
+      "native TTL autoexpires and restores exact baseline energy/variation/motion/audio/brightness/Vibe/palette",
+      "UV current as-wired baseline: OWNER REPORT lamps illuminate with AUX supply. NO control/wiring/power changes in C8; never claim physical OFF from GPIO25/26 WLED states. If electrical isolation is needed for safety, fail closed until verified.",
+      "Matrix visuals retain full custom FX/Vibe/audio/speed/music responsiveness without Opal upstream Wi-Fi; observational comparison with upstream-connected state when naturally available, same settings and no forced outage. FAIL if degraded offline."
     ],
     "physical_checked": false,
     "software": [
@@ -1627,7 +1629,8 @@
     "no_Owner_PWA_change": true,
     "no_device_or_provider_mutation": true,
     "source_head_last_reviewed": "b3776d6c141eea9c4bb604282b8427b5e67eccd3",
-    "score_state": "S1_PRODUCTION_INSTALLED_ACCEPTED_115_6647464211_4_TEAMS_QI_ZERO; SCORE_ACTUATION_STILL_FALSE"
+    "score_state": "S1_PRODUCTION_INSTALLED_ACCEPTED_115_6647464211_4_TEAMS_QI_ZERO; SCORE_ACTUATION_STILL_FALSE",
+    "superseded_current_status_by": "dora_c8_20261104; preserve this historical pre-C7 assessment for provenance"
   },
   "dora_c6_20261104": {
     "schema": "cart116-20261104-conditional-source-restore-and-original-r6-install-witness-v1",
@@ -2290,5 +2293,79 @@
         "no_live_activation_from_historical_preview": true
       }
     }
+  },
+  "dora_c8_20261104": {
+    "schema": "hbnf-cart116-controls-c8-read-only-provider-and-uv-offline-admission-correction-v1",
+    "scope": "Same #116 Controls branch and sole ADMISSION.PENDING.json. Source-only admission/checklist correction; no executable source, release package, credentials, provider, firmware, Opal, PWA, AUX, UV, WAN or database writes.",
+    "observed_on": "2026-11-04 PST",
+    "source_parent_head": "970699df4253c59839a8f3f102b2cee54c4adf1a",
+    "source_test_provenance": "C7 unchanged production candidate source/SQL: Git blobs SQL up e14ccfa3dba0eaace825aafa7c14f22454720c49, down 7d5271d1aaa7a1acaf5dcce16448030c79ff3e3b; Edge index 4d7d978e1e9312693a6b48d7fe9c5c572cd487cc; targeted CI 41981417931 SUCCESS 9 focused and PG17 source integration. Not rerun because this update is documentation/manifest only.",
+    "provider_read_only": {
+      "project_id": "phcpbvuqibyarpfrftgx",
+      "edge_slug": "hbnf-cart-control",
+      "active_edge_version": 35,
+      "active_edge_source_file_count": 10,
+      "verify_jwt": false,
+      "original_compiled_digest": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+      "six_new_rpc_installed_count": 0,
+      "challenge_table_present": false,
+      "existing_cart_desired_revision": 135,
+      "existing_cart_fence_epoch": 5,
+      "current_saved_glow_active_week": "2026-11-03",
+      "nov03_udisc_sync_status": null,
+      "next_event_week_sync_status": null,
+      "source_bindings_count": 3,
+      "provider_mutated": false
+    },
+    "offline_call_graph": {
+      "edge_service_only_actions": [
+        "glow_scoreboard_intent",
+        "glow_scoreboard_preview"
+      ],
+      "edge_calls": [
+        "public.hbnf_cart_glow_source_snapshot",
+        "public.hbnf_cart_get_context",
+        "public.hbnf_cart_commit_glow_intent"
+      ],
+      "overlay_calls": [
+        "public.hbnf_cart_glow_overlay_v1_issue",
+        "public.hbnf_cart_glow_overlay_v1_authorize",
+        "public.hbnf_cart_glow_overlay_v1_ack",
+        "public.hbnf_cart_glow_overlay_v1_restored"
+      ],
+      "service_role_privilege_source_qualified": true,
+      "source_planner_hard_live_gate_false": true,
+      "new_opal_outbound_bridge_hard_live_gate_false": true,
+      "new_opal_overlay_helper_hard_live_gates_false": true,
+      "native_corrected_r6_installed": false,
+      "actual_Cloudflare_Worker_to_Edge_automatic_producer": "NOT_VERIFIED",
+      "authenticated_Opal_to_native_physical_implementation": "NOT_INSTALLED_OR_OBSERVED",
+      "status": "SOURCE_CONTRACT_REVIEWED_ONLY; NOT E2E INSTALLED ACCEPTED"
+    },
+    "uv_owner_correction": {
+      "source": "#116 comment 6652041394",
+      "owner_report": "UV lamps illuminate whenever AUX is powered",
+      "software_pwm": "GPIO25/26 WLED segments OFF, no current electrical isolation proof",
+      "actual_hardware_topology": "UNKNOWN; separate UV specialist owns qualification",
+      "physical_uv_off": "NOT_ASSERTED",
+      "c8_changes_to_uv_power_or_control": false,
+      "safety_gate": "If safe cutover requires physically dark UV, stop until a non-energizing verified isolation method is available; do not energize or alter wiring."
+    },
+    "offline_matrix_quality": {
+      "source": "#116 comment 6651646564",
+      "owner_report": "Visual variety, dynamic speed and music responsiveness much worse without upstream Wi-Fi while LAN still connected",
+      "cause": "NOT_IDENTIFIED",
+      "acceptance": "Matched local-setting observable comparison in existing combined field session; offline visuals must be equally high-quality. Router tether alone not accepted.",
+      "forced_wan_outage": false,
+      "owner_retest_requested_now": false
+    },
+    "inert_provider_stage": {
+      "independently_admissible_now": false,
+      "reason": "GLOBAL_PRECHANGE requires current authenticated Cart-LAN Matrix/Opal identity, known safe native R6 OTA/restore route, same-manifest recovery/installed baseline and future genuinely fresh authorized event source. Six SQL RPCs and candidate Edge code must never be installed as an uncoordinated partial package.",
+      "c7_source_equivalent_edge_rollback": "METHOD_ACCEPTED_CONDITIONAL; original compiled ESZip exact equality not claimed"
+    },
+    "hard_gate_status": "PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION",
+    "execution_priority": "Keep working Owner PWA and installed original R6 unchanged; no premature provider stage. One combined owner-present field session only when connected device access plus full same-manifest candidate/recovery gating and an independently eligible genuine current scored event are available.",
+    "owner_action_now": "NONE; Cart-LAN physical presence becomes indispensable only at the admitted combined field session."
   }
 }
