@@ -22,13 +22,39 @@ export function planSavedGlowOverlay({liveStatus,week,binding,cartContext,at,pri
      !Array.isArray(week?.cards)||week.cards.some(c=>c?.finalized===true))
     return fail('WEEK_NOT_ADMISSIBLE');
   const sync=week?.udiscSync;
+  const lineage=week?.udiscLive;
   const signature=sync?.latest?.signature;
   const success=Date.parse(sync?.status?.lastSuccessAt??'');
+  const updated=Date.parse(lineage?.sourceUpdatedAt??'');
   const revision=String(liveStatus?.updated_at??'');
-  // A verified independent readback is required; caller sets the source state
-  // revision from the returned league_state row, NOT an arbitrary UI label.
-  if(sync?.source!=='UDisc event XLSX export'||sync?.eventId!==binding.eventId||
-     sync?.weekDate!==date||sync?.status?.state!=='fresh'||!SIG.test(signature??'')||
+  // A manual XLSX export is always a historical/fallback source, NEVER live Cart
+  // actuation even if some other writer copied "fresh" into its status object.
+  // Scoring's explicitly authorized delta adapter alone may persist this
+  // source lineage after a trusted provider receipt, guarded CAS, and GET.
+  const scored=Object.values(lineage?.acceptedHoles||{}).some(holes=>
+    holes&&typeof holes==='object'&&Object.values(holes).some(v=>
+      v&&Number.isInteger(Number(v.strokes))&&Number(v.strokes)>=1&&Number(v.strokes)<=99));
+  // Controls independently rechecks the saved lineage/event/permission reference,
+  // timestamps, cursor, signature and revision; persisted flags by themselves
+  // are not independent proof of UDisc permission or a native device release.
+  if(sync?.source!=='UDisc explicitly authorized live source'||
+     sync?.eventId!==binding.eventId||sync?.weekDate!==date||
+     sync?.status?.state!=='fresh'||!SIG.test(signature??'')||
+     sync?.latest?.liveSourceReceipt!==true||
+     lineage?.schema!=='hbnf.udisc.live-lineage.v1'||
+     lineage?.eventId!==binding.eventId||lineage?.weekDate!==date||
+     lineage?.sourceIdentity!==binding.eventId||
+     lineage?.sourceMode!=='EXPLICITLY_AUTHORIZED_IN_ROUND'||
+     lineage?.sourceFreshness!=='VERIFIED_PROVIDER_RECENT'||
+     !/^[A-Za-z0-9._:/-]{5,128}$/.test(String(lineage?.permissionReference??''))||
+     !/^[A-Za-z0-9_-]{1,100}$/.test(String(lineage?.roundId??''))||
+     !Number.isSafeInteger(lineage?.cursor)||lineage.cursor<1||
+     sync?.latest?.sourceCursor!==lineage.cursor||
+     sync?.latest?.sourceUpdatedAt!==lineage.sourceUpdatedAt||
+     sync?.latest?.observedAt!==sync?.status?.lastSuccessAt||
+     lineage?.receivedAt!==sync?.status?.lastSuccessAt||
+     lineage?.envelopeDigest!==signature||!scored||
+     !Number.isFinite(updated)||updated<start||updated>end||updated>now||now-updated>10*60_000||
      !Number.isFinite(success)||success>now||now-success>10*60_000||
      !revision||revision!==String(binding?.verifiedLeagueRevision??''))
     return fail('SAVED_SOURCE_REVISION_NOT_CONFIRMED');

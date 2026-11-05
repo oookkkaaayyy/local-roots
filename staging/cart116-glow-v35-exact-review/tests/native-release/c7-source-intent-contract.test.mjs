@@ -15,11 +15,21 @@ const bindings={
   window_end:'2026-11-11T07:30:00.000000Z'
 };
 function fixture({fresh=true,event=eventId,changedRevision=false,history=false}={}){
- const w={date,cards:[],scoresLocked:false,udiscSync:{
-   source:'UDisc event XLSX export',eventId:event,weekDate:date,
-   latest:{signature,rows:[{sourceTeam:'Team A',sourceRank:'1',strokeTotal:48,relativeScore:-11}]},
-   ...(fresh?{status:{state:'fresh',lastSuccessAt:'2026-11-11T01:59:00Z'}}:{})
- }};
+ const t='2026-11-11T01:59:00Z';
+ const w={date,cards:[],scoresLocked:false};
+ if(history){
+   w.udiscSync={source:'UDisc event XLSX export',eventId:event,weekDate:date,
+      latest:{signature,rows:[{sourceTeam:'Team A',sourceRank:'1',strokeTotal:48,relativeScore:-11}]}};
+ }else{
+   w.udiscLive={schema:'hbnf.udisc.live-lineage.v1',eventId:event,weekDate:date,
+     sourceIdentity:event,sourceMode:'EXPLICITLY_AUTHORIZED_IN_ROUND',
+     sourceFreshness:'VERIFIED_PROVIDER_RECENT',roundId:'round1',cursor:8,
+     sourceUpdatedAt:t,receivedAt:t,permissionReference:'udisc-permit-1234',
+     envelopeDigest:signature,acceptedHoles:{teamA:{hole1:{strokes:'3'}}}};
+   w.udiscSync={source:'UDisc explicitly authorized live source',eventId:event,weekDate:date,
+     latest:{signature,sourceUpdatedAt:t,observedAt:t,sourceCursor:8,liveSourceReceipt:true},
+     ...(fresh?{status:{state:'fresh',lastSuccessAt:t}}:{})};
+ }
  return {...bindings,delivery_policy:history?'HISTORICAL_PREVIEW_ONLY_NO_ACTUATION':'WINDOW_OPEN_SOURCE_FRESHNESS_STILL_REQUIRED',
    fingerprint,source_revision:changedRevision?'2026-11-11T01:58:00.000000Z':revision,
    week:w,state_json:{glow:{activeWeek:date,weeks:{[date]:w}}}};
@@ -116,6 +126,31 @@ test('C7: expired event window and mismatched event ID reject prior to reducer',
  assert.equal(cross.calls.commit,0);
 });
 
+
+test('C8: manual organizer XLSX marked fresh can NEVER become a live Cart command',async()=>{
+ const f=fixture();f.week.udiscSync.source='UDisc event XLSX export';
+ const d=dependencies(f);
+ const r=await invoke(d);
+ assert.equal(r.status,409);assert.equal(r.body.reason,'SAVED_SOURCE_REVISION_NOT_CONFIRMED');
+ assert.equal(d.calls.commit,0);
+});
+
+test('C8: cursor, provider permission, observed digest or source timestamp mismatch rejects live intent',async()=>{
+ for(const change of [
+   f=>f.week.udiscLive.permissionReference='',
+   f=>f.week.udiscSync.latest.sourceCursor=9,
+   f=>f.week.udiscLive.envelopeDigest='a'.repeat(64),
+   f=>f.week.udiscLive.sourceUpdatedAt='2026-11-10T00:00:00Z',
+   f=>f.week.udiscLive.acceptedHoles={},
+   f=>f.week.udiscSync.latest.liveSourceReceipt=false
+ ]){
+   const f=fixture();change(f);
+   const d=dependencies(f);const r=await invoke(d);
+   assert.equal(r.status,409);assert.equal(r.body.reason,'SAVED_SOURCE_REVISION_NOT_CONFIRMED');
+   assert.equal(d.calls.commit,0);
+ }
+});
+
 test('C7: Owner text priority and inactive native release prevent score actuation',async()=>{
  const d=dependencies();
  d.deps.cart=async()=>({desired:{...cart.desired,
@@ -145,6 +180,12 @@ test('C7: versioned SQL creates exact required RPC names and guarded reverse',()
   "FROM public.league_state WHERE id=1 FOR SHARE",
   "md5(v_week::text) IS DISTINCT FROM p_fingerprint",
   "v_week#>>'{udiscSync,status,state}' IS DISTINCT FROM 'fresh'",
+  "v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc explicitly authorized live source'",
+  "v_week#>>'{udiscLive,sourceMode}' IS DISTINCT FROM 'EXPLICITLY_AUTHORIZED_IN_ROUND'",
+  "v_week#>>'{udiscLive,envelopeDigest}' IS DISTINCT FROM p_signature",
+  "v_week#>>'{udiscSync,latest,liveSourceReceipt}' IS DISTINCT FROM 'true'",
+  "historical_source_not_qualified",
+  "live_provider_timestamp_stale",
   "v_now NOT BETWEEN v_event.window_start AND v_event.window_end",
   "p_fence_epoch","p_cart_revision","p_intent_key",
   "hbnf_internal.hbnf_cart_commit_command","manual_or_owner_overlay_active",

@@ -207,9 +207,30 @@ BEGIN
  IF jsonb_typeof(v_week) IS DISTINCT FROM 'object' OR
     v_week#>>'{udiscSync,eventId}' IS DISTINCT FROM v_event.event_id OR
     v_week#>>'{udiscSync,weekDate}' IS DISTINCT FROM p_week_date OR
-    v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc event XLSX export' OR
     v_week#>>'{udiscSync,latest,signature}' !~ '^[0-9a-f]{64}$'
  THEN RAISE EXCEPTION 'authoritative_event_or_signature_mismatch' USING ERRCODE='22023'; END IF;
+ -- Historical XLSX remains readable only outside its event window. An XLSX
+ -- record marked "fresh" must never be a LIVE Cart command source.
+ IF v_now BETWEEN v_event.window_start AND v_event.window_end THEN
+   IF v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc explicitly authorized live source' OR
+      v_week#>>'{udiscLive,schema}' IS DISTINCT FROM 'hbnf.udisc.live-lineage.v1' OR
+      v_week#>>'{udiscLive,eventId}' IS DISTINCT FROM v_event.event_id OR
+      v_week#>>'{udiscLive,weekDate}' IS DISTINCT FROM p_week_date OR
+      v_week#>>'{udiscLive,sourceIdentity}' IS DISTINCT FROM v_event.event_id OR
+      v_week#>>'{udiscLive,sourceMode}' IS DISTINCT FROM 'EXPLICITLY_AUTHORIZED_IN_ROUND' OR
+      v_week#>>'{udiscLive,sourceFreshness}' IS DISTINCT FROM 'VERIFIED_PROVIDER_RECENT' OR
+      coalesce(v_week#>>'{udiscLive,permissionReference}','') !~ '^[A-Za-z0-9._:/-]{5,128}$' OR
+      coalesce(v_week#>>'{udiscLive,cursor}','') !~ '^[1-9][0-9]{0,15}$' OR
+      v_week#>>'{udiscSync,latest,sourceCursor}' IS DISTINCT FROM v_week#>>'{udiscLive,cursor}' OR
+      v_week#>>'{udiscSync,latest,sourceUpdatedAt}' IS DISTINCT FROM v_week#>>'{udiscLive,sourceUpdatedAt}' OR
+      v_week#>>'{udiscSync,latest,liveSourceReceipt}' IS DISTINCT FROM 'true' OR
+      v_week#>>'{udiscLive,envelopeDigest}' IS DISTINCT FROM v_week#>>'{udiscSync,latest,signature}' OR
+      jsonb_typeof(v_week#>'{udiscLive,acceptedHoles}') IS DISTINCT FROM 'object'
+   THEN RAISE EXCEPTION 'live_source_lineage_not_verified' USING ERRCODE='22023'; END IF;
+ ELSE
+   IF v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc event XLSX export'
+   THEN RAISE EXCEPTION 'historical_source_not_qualified' USING ERRCODE='22023'; END IF;
+ END IF;
  v_revision:=to_char(v_updated AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"');
  RETURN jsonb_build_object(
    'state_json',v_state,'week',v_week,'fingerprint',md5(v_week::text),
@@ -254,14 +275,29 @@ BEGIN
     v_revision IS DISTINCT FROM p_source_revision OR md5(v_week::text) IS DISTINCT FROM p_fingerprint OR
     v_state#>>'{glow,activeWeek}' IS DISTINCT FROM p_week_date OR
     v_week#>>'{udiscSync,weekDate}' IS DISTINCT FROM p_week_date OR
-    v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc event XLSX export' OR
+    v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc explicitly authorized live source' OR
     v_week#>>'{udiscSync,latest,signature}' IS DISTINCT FROM p_signature OR
+    v_week#>>'{udiscSync,latest,liveSourceReceipt}' IS DISTINCT FROM 'true' OR
+    v_week#>>'{udiscLive,schema}' IS DISTINCT FROM 'hbnf.udisc.live-lineage.v1' OR
+    v_week#>>'{udiscLive,eventId}' IS DISTINCT FROM v_week#>>'{udiscSync,eventId}' OR
+    v_week#>>'{udiscLive,weekDate}' IS DISTINCT FROM p_week_date OR
+    v_week#>>'{udiscLive,sourceMode}' IS DISTINCT FROM 'EXPLICITLY_AUTHORIZED_IN_ROUND' OR
+    v_week#>>'{udiscLive,sourceFreshness}' IS DISTINCT FROM 'VERIFIED_PROVIDER_RECENT' OR
+    coalesce(v_week#>>'{udiscLive,permissionReference}','') !~ '^[A-Za-z0-9._:/-]{5,128}$' OR
+    coalesce(v_week#>>'{udiscLive,cursor}','') !~ '^[1-9][0-9]{0,15}$' OR
+    v_week#>>'{udiscSync,latest,sourceCursor}' IS DISTINCT FROM v_week#>>'{udiscLive,cursor}' OR
+    v_week#>>'{udiscSync,latest,sourceUpdatedAt}' IS DISTINCT FROM v_week#>>'{udiscLive,sourceUpdatedAt}' OR
+    v_week#>>'{udiscLive,envelopeDigest}' IS DISTINCT FROM p_signature OR
+    v_week#>>'{udiscLive,receivedAt}' IS DISTINCT FROM v_week#>>'{udiscSync,status,lastSuccessAt}' OR
+    v_week#>>'{udiscSync,latest,observedAt}' IS DISTINCT FROM v_week#>>'{udiscSync,status,lastSuccessAt}' OR
+    jsonb_typeof(v_week#>'{udiscLive,acceptedHoles}') IS DISTINCT FROM 'object' OR
     coalesce(v_week->>'scoresLocked','false')<>'false'
  THEN RAISE EXCEPTION 'stale_or_untrusted_score_source' USING ERRCODE='40001'; END IF;
  SELECT event_date,event_id,window_start,window_end INTO v_event
  FROM public.hbnf_udisc_glow_event_bindings
  WHERE event_date=p_week_date::date FOR SHARE;
  IF NOT FOUND OR v_week#>>'{udiscSync,eventId}' IS DISTINCT FROM v_event.event_id OR
+    v_week#>>'{udiscLive,sourceIdentity}' IS DISTINCT FROM v_event.event_id OR
     v_now NOT BETWEEN v_event.window_start AND v_event.window_end
  THEN RAISE EXCEPTION 'historical_or_cross_event_source_not_live' USING ERRCODE='40001'; END IF;
  IF v_week#>>'{udiscSync,status,state}' IS DISTINCT FROM 'fresh' OR
@@ -271,6 +307,13 @@ BEGIN
  v_success:=(v_week#>>'{udiscSync,status,lastSuccessAt}')::timestamptz;
  IF v_success>v_now OR v_success<v_now-interval '10 minutes'
  THEN RAISE EXCEPTION 'live_source_stale' USING ERRCODE='40001'; END IF;
+ IF v_week#>>'{udiscLive,sourceUpdatedAt}' IS NULL OR
+    v_week#>>'{udiscLive,sourceUpdatedAt}' !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}T'
+ THEN RAISE EXCEPTION 'live_provider_timestamp_missing' USING ERRCODE='40001'; END IF;
+ v_success:=(v_week#>>'{udiscLive,sourceUpdatedAt}')::timestamptz;
+ IF v_success>v_now OR v_success<v_now-interval '10 minutes'
+    OR v_success NOT BETWEEN v_event.window_start AND v_event.window_end
+ THEN RAISE EXCEPTION 'live_provider_timestamp_stale' USING ERRCODE='40001'; END IF;
  v_ms:=floor(extract(epoch FROM v_now)*1000)::bigint;
  v_expected_key:='glow-'||replace(p_week_date,'-','')||'-'||left(p_signature,20)||'-'||floor(v_ms::numeric/240000)::bigint::text;
  IF p_intent_key IS DISTINCT FROM v_expected_key

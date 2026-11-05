@@ -2707,5 +2707,34 @@
     "device_write_authorized": false,
     "CI": "PENDING_CHANGETARGET_CI",
     "independent_recapture_session": "PROHIBITED"
+  },
+  "dora_c8_scoring_live_provenance_20261105": {
+    "schema": "cart116-c8-live-udisc-scoring-provenance-review-v1",
+    "authority": "#116 sole Controls branch and SAME ADMISSION.PENDING.json; Scoring #115 remains sole score writer",
+    "status": "SOURCE_REVIEW_ONLY_NOT_INSTALLABLE",
+    "source_parent_head": "d03fbf762ad736bd18d7f544b3cc9d7b90088067",
+    "scoring_source": {
+      "pr": 151,
+      "head_review": "8573ad087c14dd669ac58648268835a629ebdaf2",
+      "module": "source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-live-delta.review.mjs",
+      "git_blob": "c3d31843bdc03e119d31f03a4f98d7615f62461a",
+      "source_from": "#115 comment 6654544203, Scoring 14/14 source-only CI"
+    },
+    "problem_closed_in_source": "Previously C8 active Cart planner and SQL accepted UDisc event XLSX export with caller-flaggable fresh marker, incompatible with Scoring's legitimate udiscLive lineage and manual/export safety boundary. New source requires explicitly authorized in-round lineage, event/time/binding, permission reference, cursor, digest/source signature, accepted scored holes, matching timestamps, canonical saved root revision and existing Cart fence.",
+    "preview": "Historical S1 XLSX read-only preview remains a distinct mode; must never actuate Cart even if status fresh",
+    "touched_review_git_blobs": {
+      "planner": "2211797490e146fd2ed8b03c2d4a92cc56275598",
+      "sql_up": "efb4ce78dbb4a1883c9658559bfaf6ce8f57e6cd",
+      "node_contract_fixture": "491638bd2a31129c94de88269f0f97aeca39ce2b",
+      "pg17_contract_fixture": "667e51d64f1c8adc8116c3c043ec53828bc75c5a"
+    },
+    "tested_scope": "PENDING exact-head Node+isolated PG17 changed-only CI; NO C9 tests repeated",
+    "source_trust_limit": "Persisted source/permissionReference fields are NOT independent UDisc provider authorization; future release must validate actual provider access/permit and installed Scoring adapter after authenticated source; UDISC_GLOW_ACCESS_APPROVED remains FALSE",
+    "live_state": "No authorized live source, active new round or fresh in-round readback accepted",
+    "c8_installed_runtime": "Supabase six RPCs remain absent; Edge v35 old; Opal bridge disabled; no provider/deployment/device writes",
+    "c8_old_archive": "STALE after SQL/planner changes: MUST rebuild/package/recover exact new source and inverse in SAME C8 authority before any provider install",
+    "c9_independence": "Paired C9 Owner-first then R6 hardware route, existing six target hashes and field acceptance UNCHANGED; no UDisc or six-RPC dependency for C9",
+    "admission_flags": "firmware.matrix_flash=false; transaction.source_gate_change_admitted=false; nativeOverlayAdmitted=false",
+    "next_condition": "Node+PG17 PASS, formal source-equivalent provider recovery and latest 10-source v35 equality, six installed function absence recheck, auth permit, dedicated C8 package/hash and one-manifest provider prechange, no fake device field acceptance"
   }
 }

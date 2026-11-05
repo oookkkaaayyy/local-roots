@@ -68,6 +68,7 @@ BEGIN
 END $check$;
 DO $setup$
 DECLARE d text:=current_date::text;
+ t text:=to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"');
 BEGIN
  INSERT INTO public.hbnf_udisc_glow_event_bindings VALUES(
   current_date,'hb-glow-doubles-Ab123Z',clock_timestamp()-interval '1 hour',
@@ -75,13 +76,35 @@ BEGIN
  UPDATE public.league_state SET
  state_json=jsonb_build_object('glow',jsonb_build_object('activeWeek',d,
  'weeks',jsonb_build_object(d,jsonb_build_object('date',d,'scoresLocked',false,
- 'udiscSync',jsonb_build_object('source','UDisc event XLSX export',
- 'eventId','hb-glow-doubles-Ab123Z','weekDate',d,
- 'latest',jsonb_build_object('signature',repeat('b',64)),
- 'status',jsonb_build_object('state','fresh',
- 'lastSuccessAt',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'))))))),
+ 'udiscLive',jsonb_build_object('schema','hbnf.udisc.live-lineage.v1',
+  'eventId','hb-glow-doubles-Ab123Z','weekDate',d,
+  'sourceIdentity','hb-glow-doubles-Ab123Z','roundId','round1',
+  'sourceMode','EXPLICITLY_AUTHORIZED_IN_ROUND','sourceFreshness','VERIFIED_PROVIDER_RECENT',
+  'cursor',8,'sourceUpdatedAt',t,'receivedAt',t,
+  'permissionReference','udisc-permit-1234','envelopeDigest',repeat('b',64),
+  'acceptedHoles',jsonb_build_object('teamA',jsonb_build_object('hole1',
+    jsonb_build_object('strokes','3')))),
+ 'udiscSync',jsonb_build_object('source','UDisc explicitly authorized live source',
+  'eventId','hb-glow-doubles-Ab123Z','weekDate',d,
+  'latest',jsonb_build_object('signature',repeat('b',64),
+    'liveSourceReceipt',true,'sourceCursor',8,'sourceUpdatedAt',t,'observedAt',t),
+  'status',jsonb_build_object('state','fresh','lastSuccessAt',t)))))),
  updated_at=clock_timestamp() WHERE id=1;
 END $setup$;
+DO $manual_source_must_fail$
+DECLARE d text:=current_date::text; held jsonb;
+BEGIN
+ SELECT state_json INTO held FROM public.league_state WHERE id=1;
+ UPDATE public.league_state SET
+  state_json=jsonb_set(held,ARRAY['glow','weeks',d,'udiscSync','source'],
+    '"UDisc event XLSX export"'::jsonb,false),
+  updated_at=clock_timestamp() WHERE id=1;
+ BEGIN
+  PERFORM public.hbnf_cart_glow_source_snapshot(d);
+  RAISE EXCEPTION 'manual_xlsx_marked_fresh_was_accepted';
+ EXCEPTION WHEN SQLSTATE '22023' THEN NULL; END;
+ UPDATE public.league_state SET state_json=held,updated_at=clock_timestamp() WHERE id=1;
+END $manual_source_must_fail$;
 DO $check$
 DECLARE d text:=current_date::text;snap jsonb;cmd uuid:=gen_random_uuid();
         ms bigint;k text;next_state jsonb;returned jsonb;old_md5 text;
