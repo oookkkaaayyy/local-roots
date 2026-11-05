@@ -10,6 +10,7 @@ on:
       - staging/cart116-glow-v35-exact-review/tests/new_bridge_ci_contract.test.mjs
       - staging/cart116-glow-v35-exact-review/tests/trackA-networking-reconnect-accepted.test.mjs
       - staging/cart116-glow-v35-exact-review/tests/trackA-netfix2-served-identity.test.mjs
+      - staging/cart116-glow-v35-exact-review/tests/trackA-c9-paired-owner-compat.test.mjs
 permissions:
   contents: read
 concurrency:
