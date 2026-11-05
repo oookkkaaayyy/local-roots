@@ -108,6 +108,29 @@ def audit(m, work):
         demand(actual[dest]==digest, "source SHA-256 mismatch: "+dest)
     demand(s["excluded_seven_existing_owner_PWA_target_replacements"] is True,
            "Owner PWA preservation not declared")
+    # The pre-existing transaction is now four-target ONLY; no /www entries.
+    # Old eleven-target capsules must fail this source contract.
+    tsv = read_file(work/"release/TARGETS.PENDING.tsv").decode("utf-8").splitlines()
+    demand(len(tsv)==4, "four-target TSV source contract mismatch")
+    observed = {}
+    for row in tsv:
+        cols = row.split("\t")
+        demand(len(cols)==5, "release TSV row shape mismatch")
+        dest, relative, digest, old, mode = cols
+        demand(dest in exact and dest not in observed, "unexpected/duplicate Opal target")
+        demand(relative=="candidate/opal/"+dest.lstrip("/") and digest==actual[dest]
+               and old=="ABSENT" and mode==("755" if dest.endswith("hbnf-cart-glow-bridge") else "700"),
+               "four-target TSV candidate/absence/permission drift")
+        observed[dest]=digest
+    demand(set(observed)==set(exact), "four-target TSV missing member")
+    transaction = read_file(work/"release/cart116-opal-transaction.sh").decode("utf-8")
+    allowed = transaction.split("valid_target(){",1)[1].split("check_targets(){",1)[0]
+    demand("/www/mission-control-local/" not in allowed, "Owner PWA write allowlist reintroduced")
+    demand('[ "$count" -eq 4 ]' in transaction, "review transaction still eleven-target")
+    demand("HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED=true" in transaction
+           and "HBNF_CART_GLOW_SOURCE_ADMITTED=true" in transaction
+           and "HBNF_OVERLAY_V1_SOURCE_ADMITTED=true" in transaction,
+           "three-gate admission incomplete")
     p=m["installed_opal_c3_capture_20261104"]
     demand(p["zip_sha256"]==C3_CAPTURE and
            p["independent_downloadback"]["byte_equal_to_owner_uploaded"] is True,
