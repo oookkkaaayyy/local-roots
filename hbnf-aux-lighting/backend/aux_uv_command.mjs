@@ -29,6 +29,13 @@ export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
   const supplyMainMa = Number(config?.supplyByChannel?.main?.currentLimitMa) || 0;
   const supplyShortMa = Number(config?.supplyByChannel?.short?.currentLimitMa) || 0;
   const loadsMa = (Number(main?.loadCurrentMa) || 0) + (Number(short?.loadCurrentMa) || 0);
+  // A fully rated PWM driver is insufficient without independently verified
+  // power isolation, physical cutoff, UV interlock, and fault-OFF behavior.
+  const physicalSafetyReady = Array.isArray(UV_POLICY_SPEC.requiredPhysicalSafetyGates)
+    && UV_POLICY_SPEC.requiredPhysicalSafetyGates.length > 0
+    && UV_POLICY_SPEC.requiredPhysicalSafetyGates.every(key => config?.physicalSafety?.[key] === true);
+  const frequency = Number(config?.switching?.pwmFrequencyHz);
+  const frequencyLimits = UV_POLICY_SPEC.switching.pwmFrequencyHz;
   // The installed cartridge uses one converter and one upstream fuse for
   // both branches. Per-channel limits alone can therefore approve an unsafe
   // combined load; require the shared rail and every branch wire to be rated
@@ -44,6 +51,12 @@ export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
     && channel.fuseRatingMa <= supplyMa
     && Number(channel?.wireCurrentRatingMa) >= channel.fuseRatingMa;
   return config?.verified === true
+    && physicalSafetyReady
+    && config?.switching?.method === UV_POLICY_SPEC.switching.method
+    && config?.switching?.inputVoltageV === UV_POLICY_SPEC.switching.controlVoltage
+    && config?.switching?.outputVoltageV === UV_POLICY_SPEC.switching.loadVoltage
+    && Number.isFinite(frequency)
+    && frequency >= frequencyLimits.minimum && frequency <= frequencyLimits.maximum
     && typeof config.evidence === "string" && config.evidence.trim().length > 0
     && channelSafe(main, config.supplyByChannel?.main, supplyMainMa)
     && channelSafe(short, config.supplyByChannel?.short, supplyShortMa)
