@@ -192,6 +192,17 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
     incomingRecords.push({id, player, names, evidence, sourceIndex:index, match});
   }
 
+  // Full exports can omit a team after an organizer correction or transient
+  // provider inconsistency. Never silently accept a missing source-owned scored
+  // team as a complete reconciled snapshot; retain the last saved state.
+  for (const row of priorImportedRows.values()) {
+    if (used.has(text(row.glowTeamId))) continue;
+    const accepted = row.acceptedHoleScores || row.holeScores;
+    if (Array.isArray(accepted) && accepted.some(score => text(score) !== '')) {
+      throw Error('A previously scored UDisc team is absent from the full export; owner review required.');
+    }
+  }
+
   if (newTeams.length && base.cards.every(card => card.finalized)) throw Error('No editable Glow card is available for a new team.');
   const editableTarget = base.cards.find(card => !card.finalized) || base.cards[0];
   for (const team of newTeams) {
