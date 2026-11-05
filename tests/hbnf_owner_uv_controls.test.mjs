@@ -23,6 +23,8 @@ assert.match(html, /<strong>Cart<\/strong>[\s\S]*aria-label="Cart brightness"[\s
 assert.match(html, /Levels are saved on this iPad/);
 assert.match(html, /Current UV strips illuminate when AUX is powered and are not yet under software switching/);
 assert.match(features, /AUX power may still illuminate the strips/);
+assert.match(features, /AUX WLED segments: Cart/);
+assert.match(features, /Physical UV output is not proven by software readback/);
 const ui = read("hbnf-final-controller/hbnf-cart-ui-v6.mjs");
 assert.match(ui, /details\[aria-label="Fine tuning"\]/);
 assert.match(ui, /if \(fineTuning\) views\.system\.appendChild\(fineTuning\)/);
