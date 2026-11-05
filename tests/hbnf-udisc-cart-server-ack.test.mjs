@@ -145,3 +145,21 @@ test('unchanged full XLSX snapshot refuses to bless an owner-edited accepted hol
  await assert.rejects(prepareGlowWeekSync(drift,proposal),/accepted UDisc hole was changed/);
  assert.equal(drift.players[0].scores[0],'4');
 });
+
+test('full XLSX snapshot missing a previously scored source team fails closed',async()=>{
+ const {prepareGlowWeekSync}=await import('../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync.mjs');
+ const row=(a,b,s)=>({partner1:a,partner2:b,scores:[s,...Array(17).fill('')]});
+ const proposal=(players)=>({
+  schema:'hbnf.glow.proposed-week.v1',disposition:'PROPOSED_ONLY_NOT_DELIVERED',
+  event:{eventId,weekDate,observedAtLocal:'2026-11-04T02:00:00Z'},
+  destination:{week:{date:weekDate,activeWeek:weekDate,players}},
+  sourceProvenance:{rowEvidence:players.map((p,i)=>({sourceRow:i+2,sourceTeam:p.partner1+' / '+p.partner2,sourceRank:i+1,holeScores:p.scores}))},
+  issues:{duplicateCanonicalTeamRows:0}
+ });
+ const base={date:weekDate,cards:[{id:'C1',finalized:false,players:[]}],players:[],scoresLocked:false};
+ const first=await prepareGlowWeekSync(base,proposal([row('A','B','3'),row('C','D','4')]));
+ const preserved=structuredClone(first.week);
+ await assert.rejects(prepareGlowWeekSync(preserved,proposal([row('A','B','3')])),/previously scored UDisc team is absent/);
+ assert.equal(preserved.players.length,2);
+ assert.equal(preserved.players.find(p=>p.partner1==='C').scores[0],'4');
+});
