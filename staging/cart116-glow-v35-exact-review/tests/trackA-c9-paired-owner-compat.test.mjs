@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {createHash} from "node:crypto";
 import {LocalMatrixTransport,MATRIX_MAC,SUPPORTED_RELEASE,REVIEW_OWNER_SAFE_RELEASE,acceptedDirectRelease} from "../opal/owner-v1201-7target/mission-control-local/local-transport.js";
 // The seven staged Owner release assets omit unchanged hbnf-cart-net.js.
 // Evaluate the actual staged adapter after replacing only that unavailable import;
@@ -64,7 +65,7 @@ test("C9 same manifest holds exact 6 targets, original rollback and all live gat
 });
 
 test("C9 six approved on-disk candidate byte hashes and exact /www boundary agree with SAME manifest",()=>{
- const {createHash}=require("node:crypto");
+
  const m=JSON.parse(readFileSync(new URL("../admission/ADMISSION.PENDING.json",import.meta.url),"utf8"));
  const lane=m.dora_c9_paired_owner_release_20261105;
  const expected=[
