@@ -55,12 +55,20 @@ test("missing or malformed brightness caps are rejected without an implicit zero
   }
 });
 
-test("owner-reported 5V UV strip voltage is recorded without enabling an unverified path", () => {
+test("owner-measured 5V UV and historical 12V underglow remain distinct and uncommissioned", async () => {
   assert.equal(UV_HARDWARE_CONFIG.channels.main.loadVoltageV, 5);
   assert.equal(UV_HARDWARE_CONFIG.channels.short.loadVoltageV, 5);
   assert.equal(UV_HARDWARE_CONFIG.supplyByChannel.main.outputVoltageV, null);
   assert.equal(UV_HARDWARE_CONFIG.supplyByChannel.short.outputVoltageV, null);
+  assert.equal(UV_HARDWARE_CONFIG.switching.verified, false);
+  assert.equal(UV_HARDWARE_CONFIG.switching.isolated, false);
+  assert.equal(UV_HARDWARE_CONFIG.sharedSupply.verified, false);
   assert.equal(uvHardwareReady(UV_HARDWARE_CONFIG), false);
+  const edge = await readFile(new URL("../backend/aux_control.ts", import.meta.url), "utf8");
+  assert.match(edge, /digital:\{gpio:16,type:"WS2811",volts:12\}/);
+  // The historical 12V AUX feed is NOT proof that its GPIO25/26 PWM stages
+  // may switch separately powered 5V UV loads. Hardware remains UV OFF.
+  assert.match(edge, /uvMain:\{gpio:25,type:"PWM White"\},uvShort:\{gpio:26,type:"PWM White"\}/);
 });
 
 test("verified two-channel request maps independent sliders and reports only broker acknowledgment", async () => {
