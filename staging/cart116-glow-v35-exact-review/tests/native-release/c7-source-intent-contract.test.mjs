@@ -25,7 +25,7 @@ function fixture({fresh=true,event=eventId,changedRevision=false,history=false}=
      sourceIdentity:event,sourceMode:'EXPLICITLY_AUTHORIZED_IN_ROUND',
      sourceFreshness:'VERIFIED_PROVIDER_RECENT',roundId:'round1',cursor:8,
      sourceUpdatedAt:t,receivedAt:t,permissionReference:'udisc-permit-1234',
-     envelopeDigest:signature,acceptedHoles:{teamA:{hole1:{strokes:'3'}}}};
+     envelopeDigest:signature,acceptedHoles:{teamA:{hole1:{strokes:'3',cursor:8}}}};
    w.udiscSync={source:'UDisc explicitly authorized live source',eventId:event,weekDate:date,
      latest:{signature,sourceUpdatedAt:t,observedAt:t,sourceCursor:8,liveSourceReceipt:true},
      ...(fresh?{status:{state:'fresh',lastSuccessAt:t}}:{})};
@@ -126,6 +126,19 @@ test('C7: expired event window and mismatched event ID reject prior to reducer',
  assert.equal(cross.calls.commit,0);
 });
 
+
+test('C8: latest results-only cursor cannot requalify older scored holes for Cart',async()=>{
+ const f=fixture();
+ f.week.udiscLive.cursor=9;
+ f.week.udiscSync.latest.sourceCursor=9;
+ // Previously accepted hole belongs to cursor 8; a rank-only snapshot
+ // at cursor 9 must never trigger another native overlay.
+ const d=dependencies(f);
+ const r=await invoke(d);
+ assert.equal(r.status,409);
+ assert.equal(r.body.reason,'SAVED_SOURCE_REVISION_NOT_CONFIRMED');
+ assert.equal(d.calls.commit,0);
+});
 
 test('C8: manual organizer XLSX marked fresh can NEVER become a live Cart command',async()=>{
  const f=fixture();f.week.udiscSync.source='UDisc event XLSX export';
