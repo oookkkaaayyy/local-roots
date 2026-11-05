@@ -122,7 +122,7 @@ jobs:
         run: |
           test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js)" = "05f45f267c068ed3f1b8e17404cb792e76d5c539"
           test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs)" = "c8c8b675fd6b5f7ee599437104b4390aea554251"
-          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync.mjs)" = "743d3b8ab77d891f1b22d1b17d663520ca6d968f"
+          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync.mjs)" = "5712a79f54b7f1917ac40195c9f96a60b8c06a65"
           test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync-runner.mjs)" = "87e08205538bab9ead8f48a7e40e1efaeb21376c"
       - name: Fetch exact installed v48 source (read only)
         if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
