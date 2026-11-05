@@ -13,6 +13,13 @@ const deepFreeze = value => {
 export const UV_HARDWARE_CONFIG = deepFreeze(UV_HARDWARE_PROFILE);
 
 export const UV_FOLLOW_EFFECT_ID = UV_POLICY_SPEC.followEffectId;
+
+// A missing configured key must never authorize UV activation, even if the
+// request happens to contain the syntactically matching empty Bearer header.
+export function uvServiceTokenAuthorized(header, configuredKey) {
+  return typeof configuredKey === "string" && configuredKey.length > 0
+    && typeof header === "string" && header === `Bearer ${configuredKey}`;
+}
 const REQUIRED_COMMISSIONING_GATES = UV_POLICY_SPEC.requiredCommissioningGates;
 export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
   const main = config?.channels?.main;
@@ -106,12 +113,17 @@ export async function executeUvRequest({ request = {}, state = {}, auxEnabled = 
     // so RGB-only white leaves the physical PWM value at zero. Drive W explicitly.
     return { id, on: true, bri: cap, fx: 0, ix: cap, sel: false, col: [[0,0,0,255]] };
   };
-  const payload = { on: true, mainseg: 0, seg: [
+  // OFF and zero-cap requests must not turn the entire AUX/WLED root back ON.
+  // A deliberate nonzero ON request still needs the WLED global power gate.
+  const deliberateOn = mode !== "OFF" && (caps.main > 0 || caps.short > 0);
+  const payload = { ...(deliberateOn ? { on: true } : {}), mainseg: 0, seg: [
     { id: 0, sel: true },
     segment(hardware.channels.main.segmentId, mode === "OFF" ? 0 : caps.main),
     segment(hardware.channels.short.segmentId, mode === "OFF" ? 0 : caps.short),
   ] };
-  await publish(payload, UV_POLICY_SPEC.publish.retain);
+  // Actuation permission and MQTT retain policy are independent arguments.
+  // A future qualified request must remain authorized but never retained.
+  await publish(payload, true, UV_POLICY_SPEC.publish.retain);
   return { status: 200, body: {
     ok: true, action: "uv_policy", mutationIssued: true, preview: false,
     mode, requested, caps, localAudioFollow: followsAudio, payload,
