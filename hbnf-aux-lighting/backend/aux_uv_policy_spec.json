@@ -78,5 +78,13 @@
     "bootBrownoutAndFaultOffVerified",
     "directWledBypassProtected",
     "branchFuseAndConductorProtectionVerified"
+  ],
+  "commandModes": [
+    "OFF",
+    "MANUAL",
+    "FOLLOW_MATRIX"
+  ],
+  "offlineSimulationOnlyModes": [
+    "VIBE_REACTIVE"
   ]
 }
