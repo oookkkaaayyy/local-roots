@@ -15,6 +15,8 @@ local response = {
   commissioningBlockedReason = "uv_electrical_qualification_not_admitted",
   uvControlEnabled = current ~= nil and profile_ready == true,
   mutationIssued = false,
+  outputStateScope = "WLED_LOGICAL_SEGMENTS_ONLY",
+  physicalUvOffVerified = false, -- /json/state never reads the actual switched 5V UV rail.
   reason = reason or profile_reason,
   hardwareProfileReady = profile_ready == true,
 }
