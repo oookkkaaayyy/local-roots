@@ -2627,6 +2627,25 @@
       },
       "independent_accepted_reconnect": "3/3 PASS in initial run 42061812831; not repeated unchanged",
       "source_change_vs_installed": "SOURCE_PASS_ONLY; Opal/Owner PWA and Matrix DEVICE_NOT_INSTALLED_OR_TESTED"
+    },
+    "gui_and_preimage_recheck_20261105": {
+      "actual_opal_access": "NOT_AVAILABLE_Browser requires originating browser context",
+      "actual_six_installed_target_sha_read": "NOT_CHECKED",
+      "current_six_target_mode_owner": "NOT_CHECKED",
+      "original_bytes_private_download_back": "NOT_CHECKED",
+      "historical_owner_21file_archive": {
+        "first_drive_id": "1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB",
+        "duplicate_drive_id": "1gTfM3VUCQrlJ8RJsTiJMh3JisZGFWOsk",
+        "both_current_drive_metadata_accessible": true,
+        "each_bytes": 849344,
+        "accepted_historical_sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
+        "asof": "2026-10-31",
+        "admissible_as_CURRENT_installed_preimage": false
+      },
+      "existing_opal_transaction_script": "release/cart116-opal-transaction.sh permits exactly four NEW glow-service paths and explicitly excludes all Owner /www; not a C9 install/restore route",
+      "GUI_supported_six_asset_atomic_restore": "NOT_QUALIFIED",
+      "matrix_nonbooting_GUI_recovery": "NOT_VERIFIED",
+      "release_disposition": "NO LIVE MUTATION; PHASE0 CLOSED"
     }
   },
   "dora_c9_c8_marker_source_review_20261105": {
@@ -2667,5 +2686,26 @@
     ],
     "actual_firmware_overlay_device_qa": "NOT_RUN",
     "provider_sql_edge_opal_installed": false
+  },
+  "dora_c9_one_session_parity_source_20261105": {
+    "schema": "cart116-c9-one-owner-session-matrix-network-diagnostic-v1",
+    "state": "SOURCE_REVIEW_ONLY",
+    "authority": "GitHub #116 Controls sole admission; not separate QA/release owner",
+    "parent_head": "44d9765b9d48df7547b47a98040084277901ba3c",
+    "exact_track_c_source_blob": "d7360ad7cf5b346bb6ecb6a80b20b8306447a215",
+    "exact_track_c_source_reference": "review/cart116-matrix-r6-owner-text-priority-v1-20261103:tools/hbnf-matrix-offline-parity-review.cjs",
+    "staged_tool_path": "staging/cart116-glow-v35-exact-review/admission/hbnf-matrix-offline-parity-review.cjs",
+    "aggregator_path": "staging/cart116-glow-v35-exact-review/admission/c9-combined-field-readonly-review.cjs",
+    "test_path": "staging/cart116-glow-v35-exact-review/tests/c9-one-session-parity.test.mjs",
+    "diagnostic_scope": "ONE existing owner-present field session; naturally observed WAN/noWAN, sanitized WLED state/info audio/variant/FPS, Network Owner WS reconnect and kmwan/iPad HTTPS forwarding only if naturally observed, six actual served Owner source hashes and owner perceptual quality",
+    "no_auto_acceptance": true,
+    "physical_quality": "NOT_CHECKED",
+    "network_wan_failover": "NOT_CHECKED",
+    "actual_owner_pwa_served_6_sha": "NOT_CHECKED",
+    "other_safety": "As-wired UV lamps energize when AUX powered; do not infer software OFF physical UV dark; preserve original FX142 ps=-1, WOW MAX, all 28, DDP22",
+    "changed_target_count": 0,
+    "device_write_authorized": false,
+    "CI": "PENDING_CHANGETARGET_CI",
+    "independent_recapture_session": "PROHIBITED"
   }
 }

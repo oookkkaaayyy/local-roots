@@ -14,6 +14,20 @@ Controls #116 maintains ONE `ADMISSION.PENDING.json` manifest and ONE owner-pres
 
 **One combined phase 2 physical check:** actual Owner TEXT priority and normal tuning restart persistence, WOW MAX/Vibe, 28 effects, AUX DDP22, UV owner-reported AUX-powered as-wired condition, music response and naturally comparable WAN/no-WAN parity. No invented physical UV isolation. Backup and same-manifest closeout/readback required. **Current status SOURCE REVIEW ONLY; all install/flash/field gates false.**
 
+### Unified C9 field evidence — Matrix + Network, same original owner session (source-only)
+
+Two source-only read-only utilities in this SAME Controls candidate: admission/hbnf-matrix-offline-parity-review.cjs is an exact copy of Track C reviewed blob d7360ad7cf5b346bb6ecb6a80b20b8306447a215; admission/c9-combined-field-readonly-review.cjs is the single-session aggregator. Both consume sanitized already-captured JSON and do not contact Opal, WAN, Matrix, AUX, UDisc or provider. A consistent diagnostic is NEVER an installed/physical release PASS.
+
+Phase0, before anything mutable: the actual current six Opal Owner /www target original BYTES, SHA, owner/mode and full protected 21-file inventory must be authenticated and privately backed up with independent durable download-back. The Oct31 historical v1.0.20 21-file backup (Drive 1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB, SHA from prior receipt d717ab5d...) is independently located but is NOT proof of current live preimage. The existing C8 four-new-service-target transaction script explicitly EXCLUDES Owner /www and must NOT be used for C9. A real supported no-Terminal browser GUI route for exactly these six replacements and exact rollback remains NOT PROVEN. Preserve original working Owner/Matrix and stop before changes if these gates are absent.
+
+Phase1A (only if admitted): install six paired-compatibility Owner assets FIRST. Prove independently served postimage SHAs, 17-member checksum closure and actual iPad Mini2/Safari12 local Owner text and brightness on the original R6. In the SAME session, background/foreground exactly once, verify WebSocket old epoch waiters/commands are not replayed and independent current-state command ACK. On failure reverse exact captured live preimages, no firmware flash.
+
+Phase1B (only after 1A and proven nonbooting firmware recovery): flash exact C9 R6 via verified WLED GUI. Independent physical build/HBNF.candidate, Owner text priority, persistent Motion/Audio Response/scene after normal boot, native FX142 ps=-1, WOW MAX, 28 effects, current AUX DDP22 and UV-as-wired baseline; no UV physical OFF claim. Compensation only via proven original firmware rollback.
+
+One natural A/B acceptance, no new trip: Opal LAN-without-WAN versus home-repeater under identical actual Matrix HBNF/effect/brightness/Motion/Audio Response settings, verified actual audio mic source and sync mode, at least three sanitized WLED /json/state + /json/info samples per mode and enough normal dwell for native variant rotation. Compare bass/mid/treble activity, FPS, visual variety/speed and OWNER-VISIBLE excellence offline. Offline significantly worse = fail; no naturally paired A/B evidence = NOT CHECKED, not manufactured. Same iPad local PWA direct WS noWAN and (only if naturally present) actual Opal kmwan state, iPad forwarded HTTPS and automatic WAN loss/recovery with NO manual Connect; USB tether cannot prove offline Matrix quality.
+
+Both diagnostics require a single common sessionRef, never upload unredacted WLED /json/cfg or Wi-Fi secrets, never infer actual WAN from WLED RSSI. Report source/telemetry versus Owner/device/physical separately; READONLY_DIAGNOSTICS_CONSISTENT_NOT_RELEASE_ACCEPTANCE cannot set an admission gate. Existing one combined checklist below remains authoritative, while its earlier full C8 SQL/Edge/Opal stages are deferred and not prerequisites to paired C9.
+
 ---
 
 # CART #116 — ONE combined Owner-present release acceptance (C8 clarified; C7 source unchanged)
