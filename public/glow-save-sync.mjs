@@ -98,7 +98,12 @@ export function createGlowSaveCoordinator({storage, onStatus = () => {}, now = (
       }
 
       const nextRoot = {...clone(current.root), glow: clone(submitted.branchState)};
-      const write = await compareAndSwap(current.updatedAt, nextRoot);
+      // A rejected transport promise can occur after the server committed.
+      // Handle it like an ambiguous response: one independent readback, never
+      // a second CAS within this flush.
+      let write;
+      try { write = await compareAndSwap(current.updatedAt, nextRoot); }
+      catch { write = {error: {message: 'ambiguous transport outcome'}}; }
       const returnedRows = Array.isArray(write?.rows) ? write.rows : (write?.row ? [write.row] : []);
       if (!write || write.error || returnedRows.length !== 1) {
         current = await readCurrent();
