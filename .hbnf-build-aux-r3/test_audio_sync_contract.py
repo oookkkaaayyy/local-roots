@@ -41,11 +41,13 @@ assert 'void mode_HbnfUvFollow()' in anim
 assert 'strip.addEffect(248, &mode_HbnfUvFollow' in anim
 assert 'uvFollowEffectId"] = 248' in anim
 assert 'hbnfUvFollowRegistered = true' in anim
-assert 'uvOutputsVerified"] = HBNF_UV_OUTPUTS_VERIFIED' in anim
+assert 'uvOutputsVerified"] = (HBNF_UV_OUTPUTS_VERIFIED && HBNF_UV_PWM_OUTPUT_ADMITTED)' in anim
 assert 'HBNF_UV_OUTPUTS_VERIFIED\n#define HBNF_UV_OUTPUTS_VERIFIED 0' in anim
+assert 'HBNF_UV_PWM_OUTPUT_ADMITTED\n#define HBNF_UV_PWM_OUTPUT_ADMITTED 0' in anim
 assert 'uvFollowLevel(anim.hbnfEnergy(), SEGMENT.intensity, anim.hbnfFresh(), true)' in anim
+assert 'uvBuildProfile"] = (HBNF_UV_OUTPUTS_VERIFIED && HBNF_UV_PWM_OUTPUT_ADMITTED)' in anim
 assert 'SEGMENT.fill(RGBW32(level,level,level,level))' in anim
-assert '#if HBNF_UV_OUTPUTS_VERIFIED' in anim and '#else\n  SEGMENT.fill(0);' in anim
+assert '#if HBNF_UV_OUTPUTS_VERIFIED && HBNF_UV_PWM_OUTPUT_ADMITTED' in anim and '#else\n  SEGMENT.fill(0);' in anim
 
 # Pinned WLED has a one-channel PWM bus type, but this Cart's physical 5V
 # switching and segment allocation remain explicitly unverified and fail-closed.
