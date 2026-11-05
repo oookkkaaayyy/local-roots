@@ -65,7 +65,7 @@ jobs:
 
   dye-studio-candidate-package:
     name: Exact Dye Studio candidate archive
-    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'dye-studio/')
+    if: github.event_name == 'pull_request' && (startsWith(github.head_ref, 'dye-studio/') || (github.event.pull_request.number == 170 && github.head_ref == 'review/du62-photo-base-evidence-20261104'))
     needs: [release-evidence, test]
     runs-on: ubuntu-latest
     timeout-minutes: 15
