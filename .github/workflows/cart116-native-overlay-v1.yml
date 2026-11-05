@@ -7,6 +7,10 @@ on:
       - .github/workflows/cart116-native-overlay-v1.yml
       - staging/cart116-glow-v35-exact-review/tests/native-release/**
       - staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql
+      - staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql
+      - staging/cart116-glow-v35-exact-review/candidate-source/glow-intent-service.mjs
+      - staging/cart116-glow-v35-exact-review/candidate-source/hbnf-glow-cart-intent.mjs
+      - staging/cart116-glow-v35-exact-review/candidate-source/index.ts
       - staging/cart116-glow-v35-exact-review/candidate-source/glow-overlay-v1-handler.mjs
       - staging/cart116-glow-v35-exact-review/candidate-source/matrix-overlay-safe-review.mjs
 permissions:
@@ -16,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   isolated:
-    if: github.repository == 'oookkkaaayyy/local-roots' && !contains(github.event.head_commit.message, '[trackA-source-only]')
+    if: github.repository == 'oookkkaaayyy/local-roots' && !contains(github.event.head_commit.message, '[trackA-source-only]') && !contains(github.event.head_commit.message, '[trackA-c7-sql]')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     services:
@@ -53,3 +57,39 @@ jobs:
           cd staging/cart116-glow-v35-exact-review
           deno test --no-check tests/native-release/deno-native.test.ts
           deno check --node-modules-dir=auto --no-lock candidate-source/matrix-relay.ts
+
+  c7_intent_contract_only:
+    # Runs ONLY new snapshot/CAS and service/event negative contracts.
+    if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c7-sql]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      pg:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: cart116_ephemeral_ci_only
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Changed-only backend intent / historical-preview negative contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          node --test tests/native-release/c7-source-intent-contract.test.mjs
+      - name: Isolated native PostgreSQL 17 source snapshot / CAS / replay / guarded inverse
+        shell: bash
+        env:
+          PG_CONTAINER: ${{ job.services.pg.id }}
+        run: |
+          set -euo pipefail
+          bash staging/cart116-glow-v35-exact-review/tests/native-release/c7-pg-source-cas.sh
+      - name: Exact-source C7 fail-closed manifest contract only
+        run: |
+          set -euo pipefail
+          python3 staging/cart116-glow-v35-exact-review/admission/check_c6_source_restore.py --phase source
