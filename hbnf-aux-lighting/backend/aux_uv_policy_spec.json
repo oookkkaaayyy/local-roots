@@ -1,29 +1,82 @@
 {
   "schema": "hbnf-aux-uv-policy-spec-v1",
-  "modes": ["OFF", "MANUAL", "FOLLOW_MATRIX", "VIBE_REACTIVE"],
+  "modes": [
+    "OFF",
+    "MANUAL",
+    "FOLLOW_MATRIX",
+    "VIBE_REACTIVE"
+  ],
   "defaultMode": "OFF",
-  "followModes": ["FOLLOW_MATRIX", "VIBE_REACTIVE"],
+  "followModes": [
+    "FOLLOW_MATRIX",
+    "VIBE_REACTIVE"
+  ],
   "followEffectId": 248,
   "brightness": {
     "minimum": 0,
     "maximum": 255,
-    "requiredChannels": ["main", "short"],
+    "requiredChannels": [
+      "main",
+      "short"
+    ],
     "requestValuesMustBeIntegers": true
   },
   "requiredCommissioningGates": [
-    "hardware_wired", "power_verified", "gpio_verified", "current_limit_verified", "segments_verified",
-    "uv_main_verified", "uv_short_verified", "uv_full_verified", "thermal_verified", "mixed_load_verified"
+    "hardware_wired",
+    "power_verified",
+    "gpio_verified",
+    "current_limit_verified",
+    "segments_verified",
+    "uv_main_verified",
+    "uv_short_verified",
+    "uv_full_verified",
+    "thermal_verified",
+    "mixed_load_verified"
   ],
-  "requiredRuntimeGates": ["auxEnabled", "uvEnabled", "uvOutputsVerified", "hardwareReady"],
+  "requiredRuntimeGates": [
+    "auxEnabled",
+    "uvEnabled",
+    "uvOutputsVerified",
+    "hardwareReady"
+  ],
   "channels": {
-    "main": { "gpio": 25, "segmentId": 1 },
-    "short": { "gpio": 26, "segmentId": 2 }
+    "main": {
+      "gpio": 25,
+      "segmentId": 1
+    },
+    "short": {
+      "gpio": 26,
+      "segmentId": 2
+    }
   },
-  "switching": { "channels": 2, "controlVoltage": 3.3 },
-  "publish": { "retain": false, "qos": 1 },
+  "switching": {
+    "channels": 2,
+    "controlVoltage": 12,
+    "method": "opto_isolated_cv_pwm_repeater",
+    "loadVoltage": 5,
+    "pwmFrequencyHz": {
+      "minimum": 200,
+      "maximum": 2000
+    },
+    "controlSource": "SP803E_12V_COMMON_POSITIVE_PWM_LOW_SIDE_TERMINALS"
+  },
+  "publish": {
+    "retain": false,
+    "qos": 1
+  },
   "networkBoundary": {
     "directWledRouteAllowed": false,
     "ownerAuthenticationRequired": true,
     "missingReadbackIsSuccess": false
-  }
+  },
+  "requiredPhysicalSafetyGates": [
+    "externalSignalToLoadIsolationVerified",
+    "separate5vUvAnd12vAuxRailsVerified",
+    "physicalTwoChannelOffVerified",
+    "manualCutoffVerified",
+    "opticalProtectionAndInterlockVerified",
+    "bootBrownoutAndFaultOffVerified",
+    "directWledBypassProtected",
+    "branchFuseAndConductorProtectionVerified"
+  ]
 }
