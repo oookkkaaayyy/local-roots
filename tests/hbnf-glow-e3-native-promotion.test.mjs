@@ -47,7 +47,20 @@ async function fixture(){
  const e1='5e87e132-dfe9-41e5-8087-80d4b881caa0';
  await db.query("INSERT INTO lr_events(id,slug,name,start_date,end_date,status,published,event_type) VALUES($1,'hbnf-glow-2026-09-02','Synthetic','2026-09-02','2026-09-02','completed',false,'doubles')",[e1]);
  for(let i=0;i<6;i++)await db.query("INSERT INTO lr_results(event_id,player_name) VALUES($1,$2)",[e1,'Fixture '+i]);
+ // Native replay of four EXISTING real-world November 3 results. Generic player
+ // labels avoid including real names in review fixtures; values are never reset.
+ const november3='11111111-1111-4111-8111-000000000001';
+ for(let i=0;i<4;i++)await db.query("INSERT INTO lr_results(id,event_id,player_name) VALUES($1,$2,$3)",[
+   '22222222-2222-4222-8222-'+String(i+1).padStart(12,'0'),november3,'Existing Played Team '+(i+1)]);
  return db;
+}
+async function e3OriginalResultsSha(db) {
+ const q=await db.query("SELECT encode(pg_catalog.sha256(convert_to(coalesce(jsonb_agg(to_jsonb(r) ORDER BY r.id),'[]'::jsonb)::text,'UTF8')),'hex') AS h FROM lr_results r WHERE r.event_id IN (SELECT id FROM lr_events WHERE slug LIKE 'hbnf-glow-2026-11-%' OR slug LIKE 'hbnf-glow-2026-12-%')");
+ return q.rows[0].h;
+}
+function admittedRestoreSql(originalResultsSha) {
+ assert.match(originalResultsSha,/^[0-9a-f]{64}$/);
+ return "BEGIN;\nSELECT set_config('localroots.e3_prechange_results_sha256','"+originalResultsSha+"',true);\n"+reverse+"\n"+reversePolicy+"\nCOMMIT;";
 }
 async function counts(db){
  const r=await db.query("SELECT (SELECT count(*)::int FROM lr_event_sources WHERE source_id=$1) links,(SELECT count(*)::int FROM lr_source_candidates WHERE source_id=$1) candidates,(SELECT count(*)::int FROM lr_source_runs WHERE source_id=$1) runs,(SELECT count(*)::int FROM lr_manual_overrides) pins,(SELECT count(*)::int FROM lr_results WHERE event_id='5e87e132-dfe9-41e5-8087-80d4b881caa0') e1_results,(SELECT count(*)::int FROM lr_events WHERE slug='hbnf-glow-2026-09-02' AND published=false) e1_hidden,(SELECT count(*)::int FROM lr_event_sources WHERE source_id=$2) original_links,(SELECT count(*)::int FROM lr_events WHERE name='HB Night Flyers Glow Doubles' AND event_type='doubles' AND entry_fee_amount=10 AND published) enriched",[manual,internal]);
@@ -56,6 +69,7 @@ async function counts(db){
 
 test('E3 native transaction promotes 8 exact-linked manual candidates and reverses only that release',async()=>{
  const db=await fixture();
+ const expectedResultsSha=await e3OriginalResultsSha(db);
  try{
   const old=await counts(db);
   try { await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;'); } catch(e) { throw new Error('E3 forward phase: '+e.message); }
@@ -63,12 +77,13 @@ test('E3 native transaction promotes 8 exact-linked manual candidates and revers
   const rows=(await db.query("SELECT official_url,registration_url,fee_breakdown FROM lr_events WHERE name='HB Night Flyers Glow Doubles' ORDER BY start_date")).rows;
   assert.equal(rows.length,8);
   assert.ok(rows.every(r=>r.official_url.endsWith('/about')&&r.registration_url===null&&r.fee_breakdown.reduce((a,b)=>a+b.amount,0)===10));
-  try { await db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'); } catch(e) { throw new Error('E3 rollback phase: '+e.message); }
+  try { await db.exec(admittedRestoreSql(expectedResultsSha)); } catch(e) { throw new Error('E3 rollback phase: '+e.message); }
   assert.deepEqual(await counts(db),old);
  }finally{await db.close();}
 });
 test('E3 changed target refuses same-manifest promotion before any source candidate writes',async()=>{
  const db=await fixture();
+ const expectedResultsSha=await e3OriginalResultsSha(db);
  try{
   await db.query("UPDATE lr_events SET name='Changed' WHERE slug='hbnf-glow-2026-12-08'");
   const before=await counts(db);
@@ -79,10 +94,11 @@ test('E3 changed target refuses same-manifest promotion before any source candid
 });
 test('E3 rollback refuses subsequent new real results without removing the enrichment',async()=>{
  const db=await fixture();
+ const expectedResultsSha=await e3OriginalResultsSha(db);
  try{
   try { await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;'); } catch(e) { throw new Error('E3 forward phase: '+e.message); }
   await db.query("INSERT INTO lr_results(event_id,player_name) SELECT id,'New real participant' FROM lr_events WHERE slug='hbnf-glow-2026-12-01'");
-  await assert.rejects(db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'),/event gained results/);
+  await assert.rejects(db.exec(admittedRestoreSql(expectedResultsSha)),/event gained results/);
   await db.exec('ROLLBACK;');
   const x=await counts(db);
   assert.equal(x.enriched,8);
@@ -101,11 +117,12 @@ test('E3 Nov 3 source attribution distinguishes owner event start from UDisc rou
 
 test('E3 rollback never overwrites a later verified venue correction',async()=>{
  const db=await fixture();
+ const expectedResultsSha=await e3OriginalResultsSha(db);
  try {
   await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;');
   await db.query("UPDATE lr_events SET course_name='Newly Verified Course' WHERE slug='hbnf-glow-2026-12-08'");
   const prior=await counts(db);
-  await assert.rejects(db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'),/restored targets\/provenance changed/);
+  await assert.rejects(db.exec(admittedRestoreSql(expectedResultsSha)),/restored targets\/provenance changed/);
   await db.exec('ROLLBACK;');
   assert.deepEqual(await counts(db),prior);
   const x=(await db.query("SELECT course_name FROM lr_events WHERE slug='hbnf-glow-2026-12-08'")).rows[0];
@@ -114,13 +131,35 @@ test('E3 rollback never overwrites a later verified venue correction',async()=>{
 });
 test('E3 rollback refuses orphaned manual-source evidence with NULL candidate ID',async()=>{
  const db=await fixture();
+ const expectedResultsSha=await e3OriginalResultsSha(db);
  try {
   await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;');
   await db.query("INSERT INTO lr_event_field_evidence(source_id,source_candidate_id,event_id,field_name) SELECT $1::uuid,NULL,id,'start_time_local' FROM lr_events WHERE slug='hbnf-glow-2026-12-08'",[manual]);
   const prior=await counts(db);
-  await assert.rejects(db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'),/release sources acquired new dependent data/);
+  await assert.rejects(db.exec(admittedRestoreSql(expectedResultsSha)),/release sources acquired new dependent data/);
   await db.exec('ROLLBACK;');
   assert.deepEqual(await counts(db),prior);
   assert.equal((await db.query("SELECT count(*)::int AS n FROM lr_event_field_evidence WHERE source_id=$1",[manual])).rows[0].n,9);
+ }finally{await db.close();}
+});
+
+test('E3 rollback refuses no session-bound result beforeimage digest even when four real played rows are preserved',async()=>{
+ const db=await fixture();
+ try {
+  await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;');
+  await assert.rejects(db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'),/original result fingerprint missing/);
+  await db.exec('ROLLBACK;');
+  assert.equal((await db.query("SELECT count(*)::int AS n FROM lr_results WHERE event_id IN (SELECT id FROM lr_events WHERE slug='hbnf-glow-2026-11-03')")).rows[0].n,4);
+ }finally{await db.close();}
+});
+test('E3 rollback refuses a correction to one of four previously-existing real score rows',async()=>{
+ const db=await fixture();
+ const expectedResultsSha=await e3OriginalResultsSha(db);
+ try {
+  await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;');
+  await db.query("UPDATE lr_results SET player_name='Later corrected team' WHERE id='22222222-2222-4222-8222-000000000001'");
+  await assert.rejects(db.exec(admittedRestoreSql(expectedResultsSha)),/changed baseline rows/);
+  await db.exec('ROLLBACK;');
+  assert.equal((await db.query("SELECT player_name FROM lr_results WHERE id='22222222-2222-4222-8222-000000000001'")).rows[0].player_name,'Later corrected team');
  }finally{await db.close();}
 });

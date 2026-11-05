@@ -47,10 +47,81 @@ BEGIN
         AND (SELECT count(*) FROM public.lr_event_sources s2
            WHERE s2.event_id=e.id AND s2.source_id<>sid)=1)<>8
  THEN RAISE EXCEPTION 'E3 restored targets/provenance changed'; END IF;
- IF EXISTS (SELECT 1 FROM public.lr_results r WHERE r.event_id IN
-      (SELECT e.id FROM public.lr_events e JOIN public.lr_event_sources s
-       ON e.id=s.event_id WHERE s.source_id=sid))
- THEN RAISE EXCEPTION 'E3 event gained results; do not erase'; END IF;
+ -- The real November 3 event already had four genuine results before E3.
+ -- Compare the complete original E3 result JSON rows to the SHA-256 recorded in
+ -- the SAME admitted release manifest. The invoking managed transaction must
+ -- set localroots.e3_prechange_results_sha256 from that independently
+ -- downloaded baseline BEFORE running this restore. Fail closed if absent.
+ -- This restore NEVER updates or deletes an lr_results row.
+ IF nullif(current_setting('localroots.e3_prechange_results_sha256',true),'') IS NULL
+    OR current_setting('localroots.e3_prechange_results_sha256',true) !~ '^[0-9a-f]{64}
+ IF EXISTS (SELECT 1 FROM public.lr_review_queue q WHERE q.source_candidate_id IN
+      (SELECT c.id FROM public.lr_source_candidates c WHERE c.source_run_id=runid))
+ OR EXISTS (SELECT 1 FROM public.lr_event_field_evidence f WHERE f.source_id=sid
+      AND NOT EXISTS (SELECT 1 FROM public.lr_source_candidates c
+        WHERE c.id=f.source_candidate_id AND c.source_run_id=runid
+          AND c.match_event_id=f.event_id))
+ OR EXISTS (SELECT 1 FROM public.lr_event_change_log l WHERE l.source_id=sid
+      AND NOT EXISTS (SELECT 1 FROM public.lr_source_candidates c
+        WHERE c.id=l.source_candidate_id AND c.source_run_id=runid
+          AND c.match_event_id=l.event_id))
+ THEN RAISE EXCEPTION 'E3 release sources acquired new dependent data'; END IF;
+END; $e3_restore_pre$;
+
+DELETE FROM public.lr_manual_overrides mo WHERE mo.active
+ AND mo.reason LIKE 'E3 exact organizer UDisc manual source %'
+ AND mo.event_id IN (SELECT event_id FROM public.lr_event_sources
+     WHERE source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid);
+DELETE FROM public.lr_event_field_evidence f
+ WHERE f.source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid;
+DELETE FROM public.lr_event_change_log l
+ WHERE l.source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid;
+
+UPDATE public.lr_events e SET
+ name='HB Night Flyers Glow',event_type='other',
+ format=NULL,format_details='{}'::jsonb,city=NULL,course_name=NULL,
+ course_id=NULL,course_url=NULL,start_time_local=NULL,end_time_local=NULL,
+ entry_fee_amount=NULL,entry_fee_currency=NULL,entry_fee_unit=NULL,
+ fee_breakdown='[]'::jsonb,additional_fees_note=NULL,official_url=NULL
+WHERE e.id IN (SELECT s.event_id FROM public.lr_event_sources s
+ WHERE s.source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid);
+
+DELETE FROM public.lr_event_sources
+ WHERE source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid;
+DELETE FROM public.lr_source_candidates
+ WHERE source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid;
+DELETE FROM public.lr_source_runs
+ WHERE source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid;
+
+DO $e3_restore_post$
+BEGIN
+ IF EXISTS (SELECT 1 FROM public.lr_event_sources
+  WHERE source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid)
+ OR EXISTS (SELECT 1 FROM public.lr_event_field_evidence
+  WHERE source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid)
+ OR EXISTS (SELECT 1 FROM public.lr_source_candidates
+  WHERE source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid)
+ OR EXISTS (SELECT 1 FROM public.lr_source_runs
+  WHERE source_id='a54e0b0e-0c4b-41a8-bf6b-7aca76c9baa3'::uuid)
+ OR (SELECT count(*) FROM public.lr_events
+  WHERE slug IN ('hbnf-glow-2026-11-03','hbnf-glow-2026-11-10','hbnf-glow-2026-11-17',
+   'hbnf-glow-2026-11-24','hbnf-glow-2026-12-01','hbnf-glow-2026-12-08',
+   'hbnf-glow-2026-12-15','hbnf-glow-2026-12-22')
+  AND published AND name='HB Night Flyers Glow' AND event_type='other'
+  AND city IS NULL AND course_name IS NULL AND start_time_local IS NULL
+  AND entry_fee_amount IS NULL AND official_url IS NULL)<>8
+ THEN RAISE EXCEPTION 'E3 logical rollback postcheck mismatch'; END IF;
+END; $e3_restore_post$;
+
+ THEN RAISE EXCEPTION 'E3 original result fingerprint missing from admitted recovery'; END IF;
+ IF (SELECT encode(pg_catalog.sha256(convert_to(
+         coalesce(jsonb_agg(to_jsonb(r) ORDER BY r.id),'[]'::jsonb)::text,
+         'UTF8')),'hex')
+       FROM public.lr_results r WHERE r.event_id IN
+       (SELECT e.id FROM public.lr_events e JOIN public.lr_event_sources s
+        ON e.id=s.event_id WHERE s.source_id=sid))
+    IS DISTINCT FROM current_setting('localroots.e3_prechange_results_sha256',true)
+ THEN RAISE EXCEPTION 'E3 event gained results or changed baseline rows; do not erase'; END IF;
  IF EXISTS (SELECT 1 FROM public.lr_review_queue q WHERE q.source_candidate_id IN
       (SELECT c.id FROM public.lr_source_candidates c WHERE c.source_run_id=runid))
  OR EXISTS (SELECT 1 FROM public.lr_event_field_evidence f WHERE f.source_id=sid
