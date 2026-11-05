@@ -26,7 +26,7 @@ const verifiedHardware = Object.freeze({
     channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300,
   },
   physicalSafety: Object.fromEntries([
-    "externalSignalToLoadIsolationVerified", "separate5vUvAnd12vAuxRailsVerified",
+    "externalSignalToLoadIsolationVerified", "pwmInputFrequencyMeasuredAndCompatible", "separate5vUvAnd12vAuxRailsVerified",
     "physicalTwoChannelOffVerified", "manualCutoffVerified", "opticalProtectionAndInterlockVerified",
     "bootBrownoutAndFaultOffVerified", "directWledBypassProtected",
     "branchFuseAndConductorProtectionVerified",
@@ -189,6 +189,7 @@ test("missing mode defaults OFF without waking WLED or retaining a command", asy
 
 test("hardware mapping requires reviewed facts and exact proposed GPIO/segment pairing", () => {
   assert.equal(uvHardwareReady(verifiedHardware), true);
+  assert.equal(uvHardwareReady({ ...verifiedHardware, physicalSafety: { ...verifiedHardware.physicalSafety, pwmInputFrequencyMeasuredAndCompatible: false } }), false, "unmeasured WLED-to-repeater PWM frequency must fail closed");
   assert.equal(uvCommissioningReady(gates), true);
   assert.equal(uvHardwareReady({ ...verifiedHardware, channels: { ...verifiedHardware.channels, short: { ...verifiedHardware.channels.short, segmentId: 1 } } }), false);
   assert.equal(uvHardwareReady({ ...verifiedHardware, supplyByChannel: { ...verifiedHardware.supplyByChannel, short: { ...verifiedHardware.supplyByChannel.short, outputVoltageV: 12 } } }), false);
