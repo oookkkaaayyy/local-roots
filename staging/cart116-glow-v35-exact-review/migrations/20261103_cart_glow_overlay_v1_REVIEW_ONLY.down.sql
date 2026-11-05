@@ -9,6 +9,9 @@ BEGIN
  THEN RAISE EXCEPTION 'unresolved_overlay_v1_challenge_requires_device_recovery' USING ERRCODE='55000';
  END IF;
 END $rollback_guard$;
+-- Reverse the source-intent contract first. No league_state/Cart state is deleted.
+DROP FUNCTION IF EXISTS public.hbnf_cart_commit_glow_intent(text,text,text,text,bigint,bigint,text,uuid,text,jsonb);
+DROP FUNCTION IF EXISTS public.hbnf_cart_glow_source_snapshot(text);
 DROP FUNCTION IF EXISTS public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text);
 DROP FUNCTION IF EXISTS public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text);
 DROP FUNCTION IF EXISTS public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text);
