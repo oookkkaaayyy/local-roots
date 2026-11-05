@@ -2465,6 +2465,14 @@
   "dora_c9_paired_owner_release_20261105": {
     "schema": "cart116-c9-paired-matrix-r6-and-owner-pwa-v1",
     "status": "SOURCE_INTEGRATED_REVIEW_ONLY_NOT_INSTALLABLE",
+    "source_verification_six_raw_bytes_ci_20261105": {
+      "test_source_commit": "cd726fcb169f000808708be3865f497127f0359e",
+      "workflow_trigger_commit": "73a99ca075840765ddd6f871aaf969fdaae930b5",
+      "workflow_run": 42108180332,
+      "job": 127528461779,
+      "result": "8/8 PASS, 0 FAIL; sixth test new: all six actual Git staged raw-byte SHA256 = exact manifest C9 postimages",
+      "scope": "SOURCE_ONLY; no installed Opal preimage, GUI transfer, backup, Matrix recovery, phase0, release admission or field acceptance"
+    },
     "authority": "#116 Controls only; SAME ADMISSION.PENDING.json, same owner-present field session",
     "source_parent_head": "d52b7d3f3098ded6b25484f7f21764910bc376a1",
     "network_source_commit": "865a8c29d7078d6a9a55069d48065bd23b0076f6",
