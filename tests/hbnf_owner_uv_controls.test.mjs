@@ -21,6 +21,8 @@ assert.match(html, /id="uvSystemControls"[^>]*aria-label="UV controls"/);
 assert.match(html, /aria-label="Both UV channels brightness" aria-describedby="uvLevelHelp"/);
 assert.match(html, /<strong>Cart<\/strong>[\s\S]*aria-label="Cart brightness"[\s\S]*<strong>Bar<\/strong>[\s\S]*aria-label="Bar brightness"/);
 assert.match(html, /Levels are saved on this iPad/);
+assert.match(html, /Current UV strips illuminate when AUX is powered and are not yet under software switching/);
+assert.match(features, /AUX power may still illuminate the strips/);
 const ui = read("hbnf-final-controller/hbnf-cart-ui-v6.mjs");
 assert.match(ui, /details\[aria-label="Fine tuning"\]/);
 assert.match(ui, /if \(fineTuning\) views\.system\.appendChild\(fineTuning\)/);
@@ -103,10 +105,12 @@ assert.match(features, /async function checkUvReadiness\(updateStatus = true\)[\
 const uvReadiness = features.match(/async function checkUvReadiness\(updateStatus = true\)[\s\S]*?\n}\n\nasync function sendUv/)?.[0];
 assert.ok(uvReadiness, "UV readiness handler remains inspectable");
 assert.doesNotMatch(uvReadiness, /sendUv\(\s*["']OFF["']\s*\)/, "status/link failure must never issue implicit UV OFF");
-assert.match(uvReadiness, /setUvCommissioningTestReady\(true\)/,
-  "the bounded commissioning tests remain reachable when only the status read fails");
-assert.match(uvReadiness, /Cart status is unavailable\. \$\{uvLevelSavedMessage\(\)\} A bounded Cart\/Bar test is available below\./);
-assert.match(uvReadiness, /UV commands are locked until safety checks pass\. \$\{uvLevelSavedMessage\(\)\} No command was sent\./);
+assert.match(uvReadiness, /setUvCommissioningTestReady\(false\)/,
+  "missing readiness must lock commissioning even if the UI still saves brightness caps");
+assert.doesNotMatch(uvReadiness, /setUvCommissioningTestReady\(true\)/,
+  "no test pulse while status is unavailable");
+assert.match(uvReadiness, /Cart UV status is unavailable\. \$\{uvLevelSavedMessage\(\)\} Commands and UV tests remain locked/);
+assert.match(uvReadiness, /UV controls are not electrically commissioned\. \$\{uvLevelSavedMessage\(\)\} No command was sent/);
 assert.doesNotMatch(uvReadiness, /(?:output|UV)\s+(?:is|was)\s+(?:confirmed\s+)?off/i, "readiness failure must not claim output is confirmed off");
 const uvSend = features.match(/async function sendUv\(mode\)[\s\S]*?\n}\n\n\["uvMainBrightness"/)?.[0];
 assert.ok(uvSend, "UV command handler remains inspectable");
