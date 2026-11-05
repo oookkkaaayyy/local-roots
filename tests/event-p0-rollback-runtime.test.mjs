@@ -11,7 +11,7 @@ const root = new URL("../", import.meta.url);
 const migrationDir = new URL("../supabase/migrations/", import.meta.url);
 const migration700 = "20261101070000_event_detail_fields_and_provenance.sql";
 const migration800 = "20261101080000_reconcile_verified_schedule_fields.sql";
-const excluded = /(?:_du_|du_|fix_du|harden_du|gallery_legacy|migrate_du|fill_socal_championship_course|harden_remaining_public_helper_execute|hbnf_owner_confirmed_glow_schedule|20261105002000|20261105080000|20261101080000|20261101070000)/i;
+const excluded = /(?:_du_|du_|fix_du|harden_du|gallery_legacy|migrate_du|fill_socal_championship_course|harden_remaining_public_helper_execute|hbnf_owner_confirmed_glow_schedule|20261105002000|20261105080000|20261105090000|20261101080000|20261101070000)/i;
 
 async function baseline() {
   const db = new PGlite();
