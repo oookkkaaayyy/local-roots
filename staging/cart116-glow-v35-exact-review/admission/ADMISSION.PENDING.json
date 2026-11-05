@@ -2728,13 +2728,22 @@
       "node_contract_fixture": "491638bd2a31129c94de88269f0f97aeca39ce2b",
       "pg17_contract_fixture": "667e51d64f1c8adc8116c3c043ec53828bc75c5a"
     },
-    "tested_scope": "PENDING exact-head Node+isolated PG17 changed-only CI; NO C9 tests repeated",
-    "source_trust_limit": "Persisted source/permissionReference fields are NOT independent UDisc provider authorization; future release must validate actual provider access/permit and installed Scoring adapter after authenticated source; UDISC_GLOW_ACCESS_APPROVED remains FALSE",
+    "tested_scope": "EXACT-HEAD Node 11/11 PASS, native isolated PG17 source/CAS/idempotence/inverse PASS in run 42105043665; third step intentionally failed historical frozen C6/C7 blob/tree checker after C8 source changes; old release package remains noninstallable; new C8-only digest source checker pending",
+    "source_trust_limit": "Persisted source/permissionReference fields are NOT independent UDisc provider authorization; future release must validate actual provider access/permit and installed Scoring adapter after authenticated source; UDISC_GLOW_ACCESS_APPROVED remains FALSE CI fake live lineage is fixture-only; no authorized provider output was checked.",
     "live_state": "No authorized live source, active new round or fresh in-round readback accepted",
     "c8_installed_runtime": "Supabase six RPCs remain absent; Edge v35 old; Opal bridge disabled; no provider/deployment/device writes",
     "c8_old_archive": "STALE after SQL/planner changes: MUST rebuild/package/recover exact new source and inverse in SAME C8 authority before any provider install",
     "c9_independence": "Paired C9 Owner-first then R6 hardware route, existing six target hashes and field acceptance UNCHANGED; no UDisc or six-RPC dependency for C9",
     "admission_flags": "firmware.matrix_flash=false; transaction.source_gate_change_admitted=false; nativeOverlayAdmitted=false",
-    "next_condition": "Node+PG17 PASS, formal source-equivalent provider recovery and latest 10-source v35 equality, six installed function absence recheck, auth permit, dedicated C8 package/hash and one-manifest provider prechange, no fake device field acceptance"
+    "next_condition": "Node+PG17 PASS, formal source-equivalent provider recovery and latest 10-source v35 equality, six installed function absence recheck, auth permit, dedicated C8 package/hash and one-manifest provider prechange, no fake device field acceptance",
+    "first_exact_head_ci": {
+      "run_id": 42105043665,
+      "source_head": "e4ce816c75d206154ede3218c7808fb12911ba28",
+      "node": "11/11 PASS",
+      "isolated_pg17": "PASS PG17 source,event,role,fingerprint,CAS,idempotence,inverse",
+      "overall": "FAIL_OLD_IMMUTABLE_C6_TREE_EXPECTED_DRIFT_FROM_C8",
+      "existing_legacy_restore_checker": "UNCHANGED_RETAIN_AS_FROZEN_C7_RELEASE_GUARD; do NOT waive its historical package mismatch",
+      "c8_new_digest_checker": "PENDING"
+    }
   }
 }

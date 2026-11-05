@@ -14,6 +14,7 @@ on:
       - staging/cart116-glow-v35-exact-review/candidate-source/index.ts
       - staging/cart116-glow-v35-exact-review/candidate-source/glow-overlay-v1-handler.mjs
       - staging/cart116-glow-v35-exact-review/candidate-source/matrix-overlay-safe-review.mjs
+      - staging/cart116-glow-v35-exact-review/admission/check_c8_live_source_digest.py
 permissions:
   contents: read
 concurrency:
@@ -94,3 +95,19 @@ jobs:
         run: |
           set -euo pipefail
           python3 staging/cart116-glow-v35-exact-review/admission/check_c6_source_restore.py --phase source
+
+  c8_lineage_source_digest_only:
+    # One pass for C8's new immutable review source. The original C6/C7
+    # source-equivalent rollback validator remains frozen and intentionally
+    # fails if mistakenly used against the newly changed C8 candidate tree.
+    if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c8-digest]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Exact C8 live lineage and C9 no-install SHA closure only
+        run: |
+          set -euo pipefail
+          python3 staging/cart116-glow-v35-exact-review/admission/check_c8_live_source_digest.py
+      # Source-only read; no UDisc access, SQL/Edge/Opal writes, or device commands.
