@@ -225,7 +225,196 @@ BEGIN
       v_week#>>'{udiscSync,latest,sourceUpdatedAt}' IS DISTINCT FROM v_week#>>'{udiscLive,sourceUpdatedAt}' OR
       v_week#>>'{udiscSync,latest,liveSourceReceipt}' IS DISTINCT FROM 'true' OR
       v_week#>>'{udiscLive,envelopeDigest}' IS DISTINCT FROM v_week#>>'{udiscSync,latest,signature}' OR
-      jsonb_typeof(v_week#>'{udiscLive,acceptedHoles}') IS DISTINCT FROM 'object'
+      jsonb_typeof(v_week#>'{udiscLive,acceptedHoles}') IS DISTINCT FROM 'object' OR
+      -- A results-only latest cursor must not inherit prior accepted strokes.
+      NOT EXISTS (
+        SELECT 1 FROM jsonb_each(
+          CASE WHEN jsonb_typeof(v_week#>'{udiscLive,acceptedHoles}')='object'
+            THEN v_week#>'{udiscLive,acceptedHoles}' ELSE '{}'::jsonb END
+        ) AS team(team_id,holes)
+        CROSS JOIN LATERAL jsonb_each(
+          CASE WHEN jsonb_typeof(team.holes)='object'
+            THEN team.holes ELSE '{}'::jsonb END
+        ) AS hole(hole_id,score)
+        WHERE score->>'cursor'=v_week#>>'{udiscLive,cursor}'
+          AND score->>'strokes' ~ '^[0-9]{1,2} USING ERRCODE='22023'; END IF;
+ ELSE
+   IF v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc event XLSX export'
+   THEN RAISE EXCEPTION 'historical_source_not_qualified' USING ERRCODE='22023'; END IF;
+ END IF;
+ v_revision:=to_char(v_updated AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"');
+ RETURN jsonb_build_object(
+   'state_json',v_state,'week',v_week,'fingerprint',md5(v_week::text),
+   'source_revision',v_revision,'event_date',v_event.event_date::text,
+   'event_id',v_event.event_id,
+   'window_start',to_char(v_event.window_start AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+   'window_end',to_char(v_event.window_end AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+   'delivery_policy',CASE WHEN v_now BETWEEN v_event.window_start AND v_event.window_end
+     THEN 'WINDOW_OPEN_SOURCE_FRESHNESS_STILL_REQUIRED' ELSE 'HISTORICAL_PREVIEW_ONLY_NO_ACTUATION' END
+ );
+END $snapshot$;
+
+CREATE FUNCTION public.hbnf_cart_commit_glow_intent(
+ p_week_date text,p_source_revision text,p_fingerprint text,p_signature text,
+ p_cart_revision bigint,p_fence_epoch bigint,p_release_id text,
+ p_command_id uuid,p_intent_key text,p_next_state jsonb
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $commit$
+DECLARE v_state jsonb;v_week jsonb;v_updated timestamptz;v_event record;
+        v_fence record;v_desired record;v_now timestamptz:=clock_timestamp();
+        v_ms bigint;v_signature text;v_revision text;v_success timestamptz;
+        v_expected_key text;v_overlay jsonb;v_old_active jsonb;v_new_other jsonb;
+        v_receipt record;v_out record;
+BEGIN
+ IF coalesce(current_setting('request.jwt.claim.role',true),'')<>'service_role'
+    AND coalesce(nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'role','')<>'service_role'
+ THEN RAISE EXCEPTION 'service_role_required' USING ERRCODE='42501'; END IF;
+ IF p_week_date IS NULL OR p_week_date !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}$'
+    OR p_source_revision IS NULL OR p_source_revision !~ '^20[0-9]{2}-'
+    OR p_fingerprint !~ '^[0-9a-f]{32}$' OR p_signature !~ '^[0-9a-f]{64}$'
+    OR p_command_id IS NULL OR p_intent_key IS NULL OR p_intent_key !~ '^glow-[0-9]{8}-[0-9a-f]{20}-[0-9]+$'
+    OR p_cart_revision IS NULL OR p_fence_epoch IS NULL OR coalesce(p_release_id,'')=''
+    OR jsonb_typeof(p_next_state) IS DISTINCT FROM 'object'
+ THEN RAISE EXCEPTION 'invalid_glow_intent_arguments' USING ERRCODE='22023'; END IF;
+ -- Lock the source row through the following Cart write. A concurrent scoring
+ -- update cannot slip between source fingerprint validation and commit.
+ SELECT state_json,updated_at INTO v_state,v_updated
+ FROM public.league_state WHERE id=1 FOR SHARE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'authoritative_source_missing' USING ERRCODE='40001'; END IF;
+ v_week:=(v_state#>'{glow,weeks}')->p_week_date;
+ v_revision:=to_char(v_updated AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"');
+ IF jsonb_typeof(v_week) IS DISTINCT FROM 'object' OR
+    v_revision IS DISTINCT FROM p_source_revision OR md5(v_week::text) IS DISTINCT FROM p_fingerprint OR
+    v_state#>>'{glow,activeWeek}' IS DISTINCT FROM p_week_date OR
+    v_week#>>'{udiscSync,weekDate}' IS DISTINCT FROM p_week_date OR
+    v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc explicitly authorized live source' OR
+    v_week#>>'{udiscSync,latest,signature}' IS DISTINCT FROM p_signature OR
+    v_week#>>'{udiscSync,latest,liveSourceReceipt}' IS DISTINCT FROM 'true' OR
+    v_week#>>'{udiscLive,schema}' IS DISTINCT FROM 'hbnf.udisc.live-lineage.v1' OR
+    v_week#>>'{udiscLive,eventId}' IS DISTINCT FROM v_week#>>'{udiscSync,eventId}' OR
+    v_week#>>'{udiscLive,weekDate}' IS DISTINCT FROM p_week_date OR
+    v_week#>>'{udiscLive,sourceMode}' IS DISTINCT FROM 'EXPLICITLY_AUTHORIZED_IN_ROUND' OR
+    v_week#>>'{udiscLive,sourceFreshness}' IS DISTINCT FROM 'VERIFIED_PROVIDER_RECENT' OR
+    coalesce(v_week#>>'{udiscLive,permissionReference}','') !~ '^[A-Za-z0-9._:/-]{5,128}$' OR
+    coalesce(v_week#>>'{udiscLive,cursor}','') !~ '^[1-9][0-9]{0,15}$' OR
+    v_week#>>'{udiscSync,latest,sourceCursor}' IS DISTINCT FROM v_week#>>'{udiscLive,cursor}' OR
+    v_week#>>'{udiscSync,latest,sourceUpdatedAt}' IS DISTINCT FROM v_week#>>'{udiscLive,sourceUpdatedAt}' OR
+    v_week#>>'{udiscLive,envelopeDigest}' IS DISTINCT FROM p_signature OR
+    v_week#>>'{udiscLive,receivedAt}' IS DISTINCT FROM v_week#>>'{udiscSync,status,lastSuccessAt}' OR
+    v_week#>>'{udiscSync,latest,observedAt}' IS DISTINCT FROM v_week#>>'{udiscSync,status,lastSuccessAt}' OR
+    jsonb_typeof(v_week#>'{udiscLive,acceptedHoles}') IS DISTINCT FROM 'object' OR
+    coalesce(v_week->>'scoresLocked','false')<>'false'
+ THEN RAISE EXCEPTION 'stale_or_untrusted_score_source' USING ERRCODE='40001'; END IF;
+ SELECT event_date,event_id,window_start,window_end INTO v_event
+ FROM public.hbnf_udisc_glow_event_bindings
+ WHERE event_date=p_week_date::date FOR SHARE;
+ IF NOT FOUND OR v_week#>>'{udiscSync,eventId}' IS DISTINCT FROM v_event.event_id OR
+    v_week#>>'{udiscLive,sourceIdentity}' IS DISTINCT FROM v_event.event_id OR
+    v_now NOT BETWEEN v_event.window_start AND v_event.window_end
+ THEN RAISE EXCEPTION 'historical_or_cross_event_source_not_live' USING ERRCODE='40001'; END IF;
+ IF v_week#>>'{udiscSync,status,state}' IS DISTINCT FROM 'fresh' OR
+    v_week#>>'{udiscSync,status,lastSuccessAt}' IS NULL OR
+    v_week#>>'{udiscSync,status,lastSuccessAt}' !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}T' 
+ THEN RAISE EXCEPTION 'unverified_live_source_freshness' USING ERRCODE='40001'; END IF;
+ v_success:=(v_week#>>'{udiscSync,status,lastSuccessAt}')::timestamptz;
+ IF v_success>v_now OR v_success<v_now-interval '10 minutes'
+ THEN RAISE EXCEPTION 'live_source_stale' USING ERRCODE='40001'; END IF;
+ IF v_week#>>'{udiscLive,sourceUpdatedAt}' IS NULL OR
+    v_week#>>'{udiscLive,sourceUpdatedAt}' !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}T'
+ THEN RAISE EXCEPTION 'live_provider_timestamp_missing' USING ERRCODE='40001'; END IF;
+ v_success:=(v_week#>>'{udiscLive,sourceUpdatedAt}')::timestamptz;
+ IF v_success>v_now OR v_success<v_now-interval '10 minutes'
+    OR v_success NOT BETWEEN v_event.window_start AND v_event.window_end
+ THEN RAISE EXCEPTION 'live_provider_timestamp_stale' USING ERRCODE='40001'; END IF;
+ v_ms:=floor(extract(epoch FROM v_now)*1000)::bigint;
+ v_expected_key:='glow-'||replace(p_week_date,'-','')||'-'||left(p_signature,20)||'-'||floor(v_ms::numeric/240000)::bigint::text;
+ IF p_intent_key IS DISTINCT FROM v_expected_key
+ THEN RAISE EXCEPTION 'stale_or_forged_glow_intent_key' USING ERRCODE='40001'; END IF;
+ -- Follow existing canonical Cart lock order (fence SHARE, desired UPDATE).
+ -- No second full-state writer and no direct WLED/AUX call.
+ SELECT active,epoch,release_id INTO v_fence FROM hbnf_internal.cart_actuator_fence
+ WHERE cart_id='hbnf-cart' FOR SHARE;
+ SELECT revision,state INTO v_desired FROM hbnf_internal.cart_desired_state
+ WHERE cart_id='hbnf-cart' FOR UPDATE;
+ IF v_fence.active IS DISTINCT FROM true OR
+    v_fence.epoch IS DISTINCT FROM p_fence_epoch OR
+    v_fence.release_id IS DISTINCT FROM p_release_id OR
+    v_desired.state->>'power' IS DISTINCT FROM 'on' OR
+    jsonb_typeof(v_desired.state->'overlays') IS DISTINCT FROM 'array'
+ THEN RAISE EXCEPTION 'cart_release_fence_changed' USING ERRCODE='40001'; END IF;
+ -- Exactly-once retry: a known command may return its old receipt only
+ -- while its immutable source, event, current fence and original dispatch
+ -- cursor still match. No new Cart revision or device command is issued.
+ SELECT * INTO v_receipt FROM hbnf_internal.cart_command_receipts
+ WHERE cart_id='hbnf-cart' AND command_id=p_command_id;
+ IF FOUND THEN
+   IF v_receipt.command_type IS DISTINCT FROM 'OVERLAY_START' OR
+      v_desired.state#>>'{glowScoreIntentCursor,key}' IS DISTINCT FROM p_intent_key OR
+      v_desired.state#>>'{glowScoreIntentCursor,sourceRevision}' IS DISTINCT FROM p_source_revision
+   THEN RAISE EXCEPTION 'intent_replay_or_command_collision' USING ERRCODE='40001'; END IF;
+   RETURN jsonb_build_object('status','DUPLICATE','desired_revision',v_receipt.revision);
+ END IF;
+ IF v_desired.revision IS DISTINCT FROM p_cart_revision
+ THEN RAISE EXCEPTION 'cart_revision_changed' USING ERRCODE='40001'; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(v_desired.state->'overlays') o(x)
+     WHERE (o.x->>'expiresAt')::bigint>v_ms
+       AND coalesce((o.x->>'priority')::integer,0)>=20)
+ THEN RAISE EXCEPTION 'manual_or_owner_overlay_active' USING ERRCODE='40001'; END IF;
+ IF p_next_state->>'cartId' IS DISTINCT FROM 'hbnf-cart' OR
+    p_next_state->>'revision' IS DISTINCT FROM (p_cart_revision+1)::text OR
+    p_next_state->>'lastCommandId' IS DISTINCT FROM p_command_id::text OR
+    p_next_state#>>'{glowScoreIntentCursor,key}' IS DISTINCT FROM p_intent_key OR
+    p_next_state#>>'{glowScoreIntentCursor,sourceRevision}' IS DISTINCT FROM p_source_revision OR
+    jsonb_typeof(p_next_state->'overlays') IS DISTINCT FROM 'array' OR
+    (p_next_state - 'revision' - 'lastCommandId' - 'glowScoreIntentCursor' - 'overlays')
+      IS DISTINCT FROM (v_desired.state - 'revision' - 'lastCommandId' - 'glowScoreIntentCursor' - 'overlays')
+ THEN RAISE EXCEPTION 'non_overlay_canonical_state_change' USING ERRCODE='22023'; END IF;
+ SELECT o.x INTO v_overlay FROM jsonb_array_elements(p_next_state->'overlays') o(x)
+ WHERE o.x->>'id'=p_intent_key AND o.x->>'kind'='scoreboard'
+   AND o.x->>'priority'='20' AND o.x#>>'{payload,label}'='GLOW';
+ IF v_overlay IS NULL OR
+    jsonb_typeof(v_overlay#>'{payload,entries}') IS DISTINCT FROM 'array' OR
+    jsonb_array_length(v_overlay#>'{payload,entries}') NOT BETWEEN 1 AND 12 OR
+    (v_overlay->>'expiresAt')::bigint NOT BETWEEN v_ms+1000 AND v_ms+30000 OR
+    EXISTS(SELECT 1 FROM jsonb_array_elements(v_overlay#>'{payload,entries}') s(v)
+      WHERE jsonb_typeof(s.v) IS DISTINCT FROM 'string' OR length(s.v #>> '{}') NOT BETWEEN 1 AND 48)
+ THEN RAISE EXCEPTION 'invalid_canonical_scoreboard_overlay' USING ERRCODE='22023'; END IF;
+ SELECT coalesce(jsonb_agg(x ORDER BY ord),'[]'::jsonb) INTO v_old_active
+ FROM jsonb_array_elements(v_desired.state->'overlays') WITH ORDINALITY o(x,ord)
+ WHERE (o.x->>'expiresAt')::bigint>v_ms;
+ SELECT coalesce(jsonb_agg(x ORDER BY ord),'[]'::jsonb) INTO v_new_other
+ FROM jsonb_array_elements(p_next_state->'overlays') WITH ORDINALITY o(x,ord)
+ WHERE o.x->>'id' IS DISTINCT FROM p_intent_key;
+ IF v_old_active IS DISTINCT FROM v_new_other
+ THEN RAISE EXCEPTION 'owner_overlay_modified_by_glow' USING ERRCODE='40001'; END IF;
+ -- One atomic internal command receipt+CAS. No league_state mutation.
+ SELECT * INTO v_out FROM hbnf_internal.hbnf_cart_commit_command(
+   'hbnf-cart',p_command_id,'OVERLAY_START',p_cart_revision,p_next_state);
+ IF v_out.accepted IS DISTINCT FROM true OR v_out.duplicate IS DISTINCT FROM false
+ THEN RAISE EXCEPTION 'glow_commit_transaction_not_applied' USING ERRCODE='40001'; END IF;
+ RETURN jsonb_build_object('status','COMMITTED','desired_revision',v_out.result_revision);
+END $commit$;
+
+REVOKE ALL ON FUNCTION public.hbnf_cart_glow_source_snapshot(text)
+ FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.hbnf_cart_commit_glow_intent(text,text,text,text,bigint,bigint,text,uuid,text,jsonb)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_source_snapshot(text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.hbnf_cart_commit_glow_intent(text,text,text,text,bigint,bigint,text,uuid,text,jsonb)
+ TO service_role;
+
+
+REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_issue(text,bigint,bigint,text,text,text,integer,text) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_issue(text,bigint,bigint,text,text,text,integer,text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) TO service_role;
+COMMIT;
+
+          AND (score->>'strokes')::integer BETWEEN 1 AND 99
+      )
    THEN RAISE EXCEPTION 'live_source_lineage_not_verified' USING ERRCODE='22023'; END IF;
  ELSE
    IF v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc event XLSX export'
