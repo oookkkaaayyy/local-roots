@@ -1,0 +1,26 @@
+name: HBNF UDisc live-delta review-only
+on:
+  push:
+    branches:
+      - review/hbnf-four-writer-cas-20261029
+    paths:
+      - 'source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-live-delta.review.mjs'
+      - 'tests/hbnf-udisc-live-delta.test.mjs'
+      - '.github/workflows/hbnf-udisc-live-delta-review.yml'
+  pull_request:
+    paths:
+      - 'source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-live-delta.review.mjs'
+      - 'tests/hbnf-udisc-live-delta.test.mjs'
+      - '.github/workflows/hbnf-udisc-live-delta-review.yml'
+permissions:
+  contents: read
+jobs:
+  live-delta-source-only:
+    name: Qualified source-only live-delta cases (no UDisc calls or provider writes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/hbnf-udisc-live-delta.test.mjs
