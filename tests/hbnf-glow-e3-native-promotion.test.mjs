@@ -98,3 +98,29 @@ test('E3 Nov 3 source attribution distinguishes owner event start from UDisc rou
   assert.match(forward, /UDisc current November 3 Round 1 window begins 12:30 PM/);
   assert.match(forward, /ELSE 'hbnf_udisc_manual' END/);
 });
+
+test('E3 rollback never overwrites a later verified venue correction',async()=>{
+ const db=await fixture();
+ try {
+  await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;');
+  await db.query("UPDATE lr_events SET course_name='Newly Verified Course' WHERE slug='hbnf-glow-2026-12-08'");
+  const prior=await counts(db);
+  await assert.rejects(db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'),/restored targets\/provenance changed/);
+  await db.exec('ROLLBACK;');
+  assert.deepEqual(await counts(db),prior);
+  const x=(await db.query("SELECT course_name FROM lr_events WHERE slug='hbnf-glow-2026-12-08'")).rows[0];
+  assert.equal(x.course_name,'Newly Verified Course');
+ }finally{await db.close();}
+});
+test('E3 rollback refuses orphaned manual-source evidence with NULL candidate ID',async()=>{
+ const db=await fixture();
+ try {
+  await db.exec('BEGIN;\n'+forwardPolicy+'\n'+forward+'\nCOMMIT;');
+  await db.query("INSERT INTO lr_event_field_evidence(source_id,source_candidate_id,event_id,field_name) SELECT $1::uuid,NULL,id,'start_time_local' FROM lr_events WHERE slug='hbnf-glow-2026-12-08'",[manual]);
+  const prior=await counts(db);
+  await assert.rejects(db.exec('BEGIN;\n'+reverse+'\n'+reversePolicy+'\nCOMMIT;'),/release sources acquired new dependent data/);
+  await db.exec('ROLLBACK;');
+  assert.deepEqual(await counts(db),prior);
+  assert.equal((await db.query("SELECT count(*)::int AS n FROM lr_event_field_evidence WHERE source_id=$1",[manual])).rows[0].n,9);
+ }finally{await db.close();}
+});

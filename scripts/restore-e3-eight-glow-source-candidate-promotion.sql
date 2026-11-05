@@ -30,6 +30,19 @@ BEGIN
         AND e.name='HB Night Flyers Glow Doubles' AND e.event_type='doubles'
         AND e.published=true AND e.entry_fee_amount=10
         AND e.official_url=s.source_url
+        -- Every value the reverse UPDATE would overwrite must still be
+        -- the E3-installed value. Otherwise preserve subsequent real edits.
+        AND e.start_date=substring(e.slug from 11)::date AND e.end_date=e.start_date
+        AND e.city='Huntington Beach'
+        AND e.course_name='Huntington Beach Central Park Disc Golf Course'
+        AND e.course_id='A9Fe'
+        AND e.course_url='https://udisc.com/courses/huntington-beach-central-park-A9Fe'
+        AND e.format='Doubles'
+        AND e.format_details='{"registration_mode":"Individual"}'::jsonb
+        AND e.start_time_local='17:30'::time AND e.end_time_local='21:00'::time
+        AND e.entry_fee_currency='USD' AND e.entry_fee_unit='person'
+        AND e.fee_breakdown='[{"label":"Play","amount":7,"currency":"USD"},{"label":"Ace contribution","amount":3,"currency":"USD"}]'::jsonb
+        AND e.additional_fees_note='Standard course fee payable separately; amount not specified.'
         AND e.status=CASE WHEN e.start_date='2026-11-03'::date THEN 'completed' ELSE 'upcoming' END
         AND (SELECT count(*) FROM public.lr_event_sources s2
            WHERE s2.event_id=e.id AND s2.source_id<>sid)=1)<>8
@@ -41,11 +54,13 @@ BEGIN
  IF EXISTS (SELECT 1 FROM public.lr_review_queue q WHERE q.source_candidate_id IN
       (SELECT c.id FROM public.lr_source_candidates c WHERE c.source_run_id=runid))
  OR EXISTS (SELECT 1 FROM public.lr_event_field_evidence f WHERE f.source_id=sid
-      AND f.source_candidate_id NOT IN
-        (SELECT c.id FROM public.lr_source_candidates c WHERE c.source_run_id=runid))
+      AND NOT EXISTS (SELECT 1 FROM public.lr_source_candidates c
+        WHERE c.id=f.source_candidate_id AND c.source_run_id=runid
+          AND c.match_event_id=f.event_id))
  OR EXISTS (SELECT 1 FROM public.lr_event_change_log l WHERE l.source_id=sid
-      AND l.source_candidate_id NOT IN
-        (SELECT c.id FROM public.lr_source_candidates c WHERE c.source_run_id=runid))
+      AND NOT EXISTS (SELECT 1 FROM public.lr_source_candidates c
+        WHERE c.id=l.source_candidate_id AND c.source_run_id=runid
+          AND c.match_event_id=l.event_id))
  THEN RAISE EXCEPTION 'E3 release sources acquired new dependent data'; END IF;
 END; $e3_restore_pre$;
 
