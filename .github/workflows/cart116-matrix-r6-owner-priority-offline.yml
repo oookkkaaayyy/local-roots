@@ -1,4 +1,4 @@
-name: "Cart #116 Matrix R6 owner-priority offline firmware build"
+name: "Cart #116 Matrix R6 owner-priority plus tuning persistence REVIEW_ONLY firmware build"
 on:
   push:
     branches:
@@ -10,7 +10,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: cart116-r6-native-owner-priority-source
+  group: cart116-r6-offline-tuning-persistence-source
   cancel-in-progress: false
 jobs:
   build-exact-r6:
@@ -35,16 +35,16 @@ jobs:
         run: |
           python3 -m pip install --disable-pip-version-check "platformio==6.1.18"
           python3 -m platformio --version
-      - name: Build exact pinned WLED 16.0.1 R6 with one approved minimal patch
+      - name: Build original R6 with accepted Owner priority and separate persistence review patch
         run: |
-          bash staging/cart116-glow-v35-exact-review/track-c-r6-priority/build-exact-r6-offline.sh
+          bash staging/cart116-glow-v35-exact-review/track-c-r6-priority/build-r6-offline-tuning-persistence-review.sh
       - name: Preserve candidate, source bindings, full compile/map or bounded failure evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cart116-matrix-r6-owner-priority-offline-review
+          name: cart116-matrix-r6-owner-safe-tuning-persist-review
           path: |
-            .trackc-r6-build-out/
+            .trackc-r6-persist-build-out/
           if-no-files-found: warn
-          retention-days: 5
+          retention-days: 30
           include-hidden-files: true
