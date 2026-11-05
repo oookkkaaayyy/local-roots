@@ -22,3 +22,30 @@ jobs:
           docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n /src/opal/hbnf-glow-overlay-v1.sh
           docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n /src/opal/hbnf-matrix-relay
           docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n /src/opal/hbnf-matrix-relay.init.REVIEW_ONLY
+
+  c7_source_equivalent_only:
+    # New recovery gate only. Do not rerun the accepted C1/PG17/Deno suites.
+    if: contains(github.event.head_commit.message, '[trackA-c7-recovery-only]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Exact source-equivalent Edge, four Opal targets, firmware witness and S1 gate
+        run: |
+          set -euo pipefail
+          python3 staging/cart116-glow-v35-exact-review/admission/check_c6_source_restore.py --phase source
+      - name: Trusted live admission must remain unavailable from source alone
+        run: |
+          set -euo pipefail
+          set +e
+          python3 staging/cart116-glow-v35-exact-review/admission/check_c6_source_restore.py --phase release
+          got=$?
+          set -e
+          test "$got" -eq 42
+      - name: BusyBox syntax for existing four-target Opal transaction only
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n /src/release/cart116-opal-transaction.sh
