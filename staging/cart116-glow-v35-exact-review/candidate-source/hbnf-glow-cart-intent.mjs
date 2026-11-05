@@ -31,9 +31,14 @@ export function planSavedGlowOverlay({liveStatus,week,binding,cartContext,at,pri
   // actuation even if some other writer copied "fresh" into its status object.
   // Scoring's explicitly authorized delta adapter alone may persist this
   // source lineage after a trusted provider receipt, guarded CAS, and GET.
+  // An old accepted hole is not proof that the LATEST provider snapshot
+  // contained a scored-hole update. A results-only or roster-only cursor must
+  // not renew automatic Cart eligibility, even if old holes remain stored.
   const scored=Object.values(lineage?.acceptedHoles||{}).some(holes=>
     holes&&typeof holes==='object'&&Object.values(holes).some(v=>
-      v&&Number.isInteger(Number(v.strokes))&&Number(v.strokes)>=1&&Number(v.strokes)<=99));
+      v&&v.cursor===lineage?.cursor&&
+      typeof v.strokes==='string'&&/^[0-9]{1,2}$/.test(v.strokes)&&
+      Number(v.strokes)>=1&&Number(v.strokes)<=99));
   // Controls independently rechecks the saved lineage/event/permission reference,
   // timestamps, cursor, signature and revision; persisted flags by themselves
   // are not independent proof of UDisc permission or a native device release.
