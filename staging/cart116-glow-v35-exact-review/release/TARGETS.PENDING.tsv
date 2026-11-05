@@ -1,11 +1,4 @@
-/usr/libexec/hbnf-cart-glow-bridge	candidate/opal/usr/libexec/hbnf-cart-glow-bridge	97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c	UNKNOWN	755
-/etc/init.d/hbnf-cart-glow-bridge	candidate/opal/etc/init.d/hbnf-cart-glow-bridge	e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7	UNKNOWN	755
-/usr/lib/hbnf-glow-overlay-v1.sh	candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh	d97ac46d435edfac0d622fc46503a98f2f4ffab22b91e516aef8b25e46eabe33	ABSENT	700
-/usr/libexec/hbnf-cart-glow-provision	candidate/opal/usr/libexec/hbnf-cart-glow-provision	fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20	UNKNOWN	700
-/www/mission-control-local/local-transport.js	candidate/opal/www/mission-control-local/local-transport.js	b48f5d7a4b3ea850307b13596857d753d2ff2ee4b9991b859e66b41d0338b37a	51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a	644
-/www/mission-control-local/owner-pwa/.hbnf-package-version	candidate/opal/www/mission-control-local/owner-pwa/.hbnf-package-version	c954df07ca147414214c211d894b2a4d920fc4fc740b4a2c196851d173669452	975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191	644
-/www/mission-control-local/owner-pwa/.hbnf-payload.sha256	candidate/opal/www/mission-control-local/owner-pwa/.hbnf-payload.sha256	a32f5a4e25603116400c09eacee0cfd87cd1f8d1d5c22421b1a9d39b20d10c9e	dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab	644
-/www/mission-control-local/owner-pwa/hbnf-cart-features.js	candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-features.js	6dba73caea3046217ee2d44ccabd04b7f601fa3b33bc924f686743cb175169cb	db591fec335897c8448a5571799b4a6ce2b59889b1afeff8a08206532b470d4c	644
-/www/mission-control-local/owner-pwa/hbnf-cart-local.js	candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart-local.js	f2bec69f5d14760d6910c06a57d40288070171814c5affbfe2a9b4baa566e419	9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956	644
-/www/mission-control-local/owner-pwa/hbnf-cart.html	candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.html	cab420a026b31d7ccf7c13aa91814237d7495269f6c72434f4cb26af43acba57	20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f	644
-/www/mission-control-local/owner-pwa/hbnf-cart.js	candidate/opal/www/mission-control-local/owner-pwa/hbnf-cart.js	e3652350ea928585bb29938f758dbc311e337f0620a17715a783b3cb181bf119	9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba	644
+/usr/libexec/hbnf-cart-glow-bridge	candidate/opal/usr/libexec/hbnf-cart-glow-bridge	97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c	ABSENT	755
+/etc/init.d/hbnf-cart-glow-bridge	candidate/opal/etc/init.d/hbnf-cart-glow-bridge	e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7	ABSENT	755
+/usr/lib/hbnf-glow-overlay-v1.sh	candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh	de51e9ace05f876124886089b841c6f5858b91ee4d42a3260f7e8f1788146538	ABSENT	700
+/usr/libexec/hbnf-cart-glow-provision	candidate/opal/usr/libexec/hbnf-cart-glow-provision	fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20	ABSENT	700
