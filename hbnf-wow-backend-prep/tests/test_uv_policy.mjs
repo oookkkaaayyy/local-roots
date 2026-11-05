@@ -33,10 +33,10 @@ test("UV channels keep separate brightness and owner levels while sharing Matrix
   assert.deepEqual(nextUvOutputs({ mode: "MANUAL", manualBrightness: 5, manualBrightnessBySegment: { 1: 18, 2: 63 }, ownerOverrideBySegment: { 2: 27 } }, cfg), [
     { id: 1, brightness: 18 }, { id: 2, brightness: 27 },
   ]);
-  assert.deepEqual(nextUvOutputs({ mode: "VIBE_REACTIVE", manualBrightnessBySegment: { 1: 100, 2: 50 } }, cfg, { vibeEnvelope: 50 }), [
+  assert.deepEqual(nextUvOutputs({ mode: "VIBE_REACTIVE", manualBrightnessBySegment: { 1: 100, 2: 50 } }, cfg, { vibeFresh: true, vibeEnvelope: 50 }), [
     { id: 1, brightness: 20 }, { id: 2, brightness: 10 },
   ]);
-  assert.deepEqual(nextUvOutputs({ mode: "FOLLOW_MATRIX", manualBrightnessBySegment: { 1: 100, 2: 50 } }, cfg, { matrixBrightness: 50 }), [
+  assert.deepEqual(nextUvOutputs({ mode: "FOLLOW_MATRIX", manualBrightnessBySegment: { 1: 100, 2: 50 } }, cfg, { matrixFresh: true, matrixBrightness: 50 }), [
     { id: 1, brightness: 20 }, { id: 2, brightness: 10 },
   ]);
   assert.deepEqual(wledUvStatePatch(cfg, { 1: 18, 2: 63 }).seg.map(({ id, on, bri }) => ({ id, on, bri })), [
