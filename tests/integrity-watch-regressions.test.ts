@@ -44,7 +44,8 @@ test("integrity watch verifies upgraded event-page styles", () => {
 });
 
 test("integrity watch version advances with its deployed contract", () => {
-  assert.ok(watch.includes('LocalRootsIntegrityWatch/10.0'));
+  assert.ok(watch.includes('LocalRootsIntegrityWatch/11.0'));
+  assert.equal(watch.includes('LocalRootsIntegrityWatch/10.0'), false);
   assert.equal(watch.includes('LocalRootsIntegrityWatch/9.0'), false);
 });
 
@@ -58,4 +59,14 @@ test("integrity watch fails closed on staging HTML redirects and validates CSS o
   assert.ok(watch.includes("readCssAsset(cssMatch[1], STAGING_URL"));
   assert.equal(watch.includes('redirect: "follow"'), false);
   assert.ok(watch.includes('redirect: "error"'));
+});
+
+test("preserves installed v12 field-review generation before launch readiness", () => {
+  const a = watch.indexOf('service.rpc("lr_enqueue_event_field_reviews", { p_horizon_days: 60 })');
+  const b = watch.indexOf('service.rpc("lr_launch_readiness")');
+  assert.ok(a > 0 && b > a);
+  assert.ok(watch.includes('return json({ error: "event_field_review_failed" }, 500)'));
+  assert.ok(watch.includes('event_field_reviews_created: Number(fieldReviews.data ?? 0)'));
+  assert.ok(watch.includes('readFrontendGraph(frontendBundleUrl'));
+  assert.ok(watch.includes('readCssAsset(cssMatch[1], STAGING_URL'));
 });

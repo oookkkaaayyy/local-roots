@@ -54,6 +54,15 @@ Deno.serve(async (req) => {
   const verified = await service.rpc("lr_verify_integrity_sync_secret", { p_token: token });
   if (verified.error || verified.data !== true) return json({ error: "unauthorized" }, 401);
 
+  // Add the same durable, deduplicated event-field checks used by the admin
+  // review queue before launch readiness can fail. This keeps completeness
+  // findings actionable even while another readiness check blocks launch.
+  const fieldReviews = await service.rpc("lr_enqueue_event_field_reviews", { p_horizon_days: 60 });
+  if (fieldReviews.error) {
+    console.error("lr-integrity-watch event-field-review", fieldReviews.error.message);
+    return json({ error: "event_field_review_failed" }, 500);
+  }
+
   const readiness = await service.rpc("lr_launch_readiness");
   if (readiness.error || !readiness.data) {
     console.error("lr-integrity-watch readiness", readiness.error?.message);
@@ -78,7 +87,7 @@ Deno.serve(async (req) => {
   try {
     const expectedOrigin = new URL(STAGING_URL).origin;
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
       redirect: "error",
     });
     assertTrustedResponseOrigin(response, expectedOrigin, "staging_html");
@@ -103,7 +112,7 @@ Deno.serve(async (req) => {
       try {
         const graph = await readFrontendGraph(frontendBundleUrl, (url, init) => fetch(url, {
           ...init,
-          headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+          headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
         }), expectedOrigin);
         frontendAssetUrls = graph.urls;
         missingFrontendMarkers = REQUIRED_FRONTEND_MARKERS.filter((marker) => !graph.bundle.includes(marker));
@@ -118,7 +127,7 @@ Deno.serve(async (req) => {
       try {
         const css = await readCssAsset(cssMatch[1], STAGING_URL, (url, init) => fetch(url, {
           ...init,
-          headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
+          headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
         }), expectedOrigin);
         cssBundleUrl = css.url;
         missingCssMarkers = REQUIRED_CSS_MARKERS.filter((marker) => !css.normalizedCss.includes(marker));
@@ -162,6 +171,7 @@ Deno.serve(async (req) => {
     css_bundle_url: cssBundleUrl,
     missing_css_markers: missingCssMarkers,
     staging_ok: stagingOk,
+    event_field_reviews_created: Number(fieldReviews.data ?? 0),
     integrity: recorded.data,
   });
 });
