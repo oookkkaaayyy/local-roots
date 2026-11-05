@@ -84,7 +84,9 @@ BEGIN
    OR event_before.name<>'HB Night Flyers Glow'
    OR event_before.event_type<>'other'
   THEN RAISE EXCEPTION 'E3 date identity changed: %',occurrence.event_date; END IF;
-  expected_url:='https://udisc.com/events/hb-glow-doubles-'||occurrence.udisc_id||'/about';
+  expected_url:=CASE WHEN occurrence.event_date='2026-11-03'
+    THEN 'https://udisc.com/events/hb-night-flyers-hb-glow-doubles-tAP8Y5/about'
+    ELSE 'https://udisc.com/events/hb-glow-doubles-'||occurrence.udisc_id||'/about' END;
 
   INSERT INTO public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,
      is_sanction_basis,source_payload,confidence,last_seen_at)
@@ -112,11 +114,19 @@ BEGIN
    'additional_fees_note','Standard course fee payable separately; amount not specified.',
    'official_url',expected_url);
   SELECT jsonb_object_agg(key,jsonb_build_object(
-    'status','verified','source_key','hbnf_udisc_manual','source_url',
-    CASE WHEN key='course_url' THEN 'https://udisc.com/courses/huntington-beach-central-park-A9Fe'
+    'status','verified','source_key',
+    CASE WHEN occurrence.event_date='2026-11-03' AND key='start_time_local'
+         THEN 'hbnf_internal_schedule' ELSE 'hbnf_udisc_manual' END,
+    'source_url',
+    CASE WHEN occurrence.event_date='2026-11-03' AND key='start_time_local'
+         THEN 'https://github.com/oookkkaaayyy/local-roots/issues/161'
+         WHEN key='course_url' THEN 'https://udisc.com/courses/huntington-beach-central-park-A9Fe'
          ELSE expected_url END,
     'verified_at','2026-11-05T07:21:29Z','refresh_on_sync',false,
-    'notes','Exact organizer-managed dated About page, manually checked; no automated UDisc ingestion.'))
+    'notes',
+    CASE WHEN occurrence.event_date='2026-11-03' AND key='start_time_local'
+         THEN 'Owner-confirmed 5:30 PM event start per issue #161. UDisc current November 3 Round 1 window begins 12:30 PM; not evidence of 5:30 PM event start.'
+         ELSE 'Exact organizer-managed dated About page, manually checked; no automated UDisc ingestion.' END))
    INTO evidence FROM jsonb_object_keys(verified_fields) key;
   payload:=verified_fields || jsonb_build_object('field_evidence',evidence,'source_url',expected_url);
 

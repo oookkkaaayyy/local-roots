@@ -1,7 +1,7 @@
 // Event-specific details below were manually verified from organizer-provided
 // UDisc pages. Do not generalize these details to later weekly dates.
 const VERIFIED_NOVEMBER_GLOW = Object.freeze({
-  "2026-11-03": "https://udisc.com/events/hb-glow-doubles-tAP8Y5/about",
+  "2026-11-03": "https://udisc.com/events/hb-night-flyers-hb-glow-doubles-tAP8Y5/about",
   "2026-11-10": "https://udisc.com/events/hb-glow-doubles-af85rU/about",
   "2026-11-17": "https://udisc.com/events/hb-glow-doubles-C1mFl8/about",
 });
@@ -28,15 +28,23 @@ const COURSE_URL = "https://udisc.com/courses/huntington-beach-central-park-A9Fe
 // Use that dated evidence boundary so a later sync cannot renew manual facts.
 const VERIFIED_AT = "2026-11-01T03:25:36Z";
 
-function evidenceFor(fields, eventUrl, verifiedAt, notes) {
-  return Object.fromEntries(fields.map((field) => [field, {
-    status: "verified",
-    source_key: "hbnf_udisc_manual",
-    source_url: field === "course_url" ? COURSE_URL : eventUrl,
-    verified_at: verifiedAt,
-    refresh_on_sync: false,
-    notes,
-  }]));
+// Nov 3 UDisc's current 12:30 PM value is the round/scoring window, not
+// independent evidence of the owner's 5:30 PM event-start announcement.
+// Keep these two source claims distinct without revising the event time.
+function evidenceFor(fields, eventUrl, verifiedAt, notes, date) {
+  return Object.fromEntries(fields.map((field) => {
+    const ownerTime = date === "2026-11-03" && field === "start_time_local";
+    return [field, {
+      status: "verified",
+      source_key: ownerTime ? "hbnf_internal_schedule" : "hbnf_udisc_manual",
+      source_url: ownerTime ? "https://github.com/oookkkaaayyy/local-roots/issues/161" : (field === "course_url" ? COURSE_URL : eventUrl),
+      verified_at: verifiedAt,
+      refresh_on_sync: false,
+      notes: ownerTime
+        ? "Owner-confirmed 5:30 PM event start in issue #161; the UDisc November 3 Round 1 window shows 12:30 PM and must not be misrepresented as a 5:30 PM source statement."
+        : notes,
+    }];
+  }));
 }
 
 export function verifiedGlowFacts(date) {
@@ -79,7 +87,8 @@ export function verifiedGlowFacts(date) {
     ], evidenceUrl, VERIFIED_NOVEMBER_GLOW[date] ? VERIFIED_AT : FUTURE_VERIFIED_AT,
       VERIFIED_NOVEMBER_GLOW[date]
         ? "Individually verified organizer listing documented in issue #161; sync does not refresh this manual evidence."
-        : "Individually verified exact dated organizer UDisc About page on 2026-11-04 PST; sync does not refresh manual evidence."),
+        : "Individually verified exact dated organizer UDisc About page on 2026-11-04 PST; sync does not refresh manual evidence.",
+      date),
   };
 }
 

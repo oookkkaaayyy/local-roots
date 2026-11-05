@@ -90,3 +90,11 @@ test('E3 rollback refuses subsequent new real results without removing the enric
   assert.equal(x.e1_results,6);
  }finally{await db.close();}
 });
+
+test('E3 Nov 3 source attribution distinguishes owner event start from UDisc round window', () => {
+  assert.match(forward, /hb-night-flyers-hb-glow-doubles-tAP8Y5\/about/);
+  assert.match(forward, /hbnf_internal_schedule/);
+  assert.match(forward, /Owner-confirmed 5:30 PM event start per issue #161/);
+  assert.match(forward, /UDisc current November 3 Round 1 window begins 12:30 PM/);
+  assert.match(forward, /ELSE 'hbnf_udisc_manual' END/);
+});

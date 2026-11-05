@@ -4,7 +4,7 @@ import { knownNovemberGlowDates, knownVerifiedGlowDates, verifiedGlowFacts } fro
 
 test("the three individually verified November Glow listings retain their exact evidence URLs", () => {
   assert.deepEqual(knownNovemberGlowDates(), ["2026-11-03", "2026-11-10", "2026-11-17"]);
-  assert.equal(verifiedGlowFacts("2026-11-03").official_url, "https://udisc.com/events/hb-glow-doubles-tAP8Y5/about");
+  assert.equal(verifiedGlowFacts("2026-11-03").official_url, "https://udisc.com/events/hb-night-flyers-hb-glow-doubles-tAP8Y5/about");
   assert.equal(verifiedGlowFacts("2026-11-10").official_url, "https://udisc.com/events/hb-glow-doubles-af85rU/about");
   assert.equal(verifiedGlowFacts("2026-11-17").official_url, "https://udisc.com/events/hb-glow-doubles-C1mFl8/about");
 });
@@ -93,3 +93,15 @@ test("each verified occurrence is anchored to its own official page, with no inv
   assert.equal(verifiedGlowFacts("2026-12-08").official_url, "https://udisc.com/events/hb-glow-doubles-Jxxe98/about");
 });
 
+
+test("Nov 3 organizer event start and UDisc scoring window are not conflated", () => {
+  const event = verifiedGlowFacts("2026-11-03");
+  assert.equal(event.start_time_local, "17:30");
+  assert.equal(event.official_url, "https://udisc.com/events/hb-night-flyers-hb-glow-doubles-tAP8Y5/about");
+  assert.equal(event.field_evidence.start_time_local.source_key, "hbnf_internal_schedule");
+  assert.equal(event.field_evidence.start_time_local.source_url, "https://github.com/oookkkaaayyy/local-roots/issues/161");
+  assert.match(event.field_evidence.start_time_local.notes, /12:30 PM/);
+  assert.equal(event.field_evidence.official_url.source_key, "hbnf_udisc_manual");
+  assert.equal(event.field_evidence.official_url.source_url, event.official_url);
+  assert.equal(verifiedGlowFacts("2026-11-10").field_evidence.start_time_local.source_key, "hbnf_udisc_manual");
+});
