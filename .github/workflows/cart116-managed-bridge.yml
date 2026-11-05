@@ -11,6 +11,10 @@ on:
       - staging/cart116-glow-v35-exact-review/tests/trackA-networking-reconnect-accepted.test.mjs
       - staging/cart116-glow-v35-exact-review/tests/trackA-netfix2-served-identity.test.mjs
       - staging/cart116-glow-v35-exact-review/tests/trackA-c9-paired-owner-compat.test.mjs
+      - staging/cart116-glow-v35-exact-review/candidate-source/hbnf-glow-cart-intent.mjs
+      - staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql
+      - staging/cart116-glow-v35-exact-review/tests/native-release/c7-source-intent-contract.test.mjs
+      - staging/cart116-glow-v35-exact-review/admission/check_c8_live_source_digest.py
 permissions:
   contents: read
 concurrency:
@@ -68,6 +72,20 @@ jobs:
           done
       # No PostgreSQL/Deno/old 35/35 or 26/26 suites, no live devices,
       # no CI artifact upload, no deployment or any owner secrets.
+
+  c8_latest_scored_cursor_only:
+    if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c8-lineage]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: C8 latest scored-hole cursor and exact review-source digest
+        run: |
+          set -euo pipefail
+          node --test staging/cart116-glow-v35-exact-review/tests/native-release/c7-source-intent-contract.test.mjs
+          python3 staging/cart116-glow-v35-exact-review/admission/check_c8_live_source_digest.py
+      # Source review only. No SQL/Edge deployment or Cart actuation.
 
   c9_paired_compat_only:
     if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c9-paired]')
