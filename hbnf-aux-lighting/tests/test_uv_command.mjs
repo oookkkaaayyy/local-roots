@@ -236,8 +236,8 @@ test("unverified cold start and restart defaults refuse all UV actuation", async
   const boot = await readFile(new URL("../commissioning/configure_uv_pwm_outputs.py", import.meta.url), "utf8");
   assert.match(boot, /def safe_boot_preset_body\(state, preset_id\):/);
   assert.match(boot, /def check_safe_boot_preset\(presets, preset_id, baseline_state=None\):/);
-  assert.match(boot, /segments\\.get\\(i\\) or \\{\\}\\)\\.get\\("on"\\) is False/);
-  assert.match(boot, /segments\\.get\\(i\\) or \\{\\}\\)\\.get\\("bri"\\) == 0/);
+  assert.ok(boot.includes('(segments.get(i) or {}).get("on") is False'));
+  assert.ok(boot.includes('(segments.get(i) or {}).get("bri") == 0'));
   assert.match(boot, /reboot_and_wait\(request\(TARGET_IP, "\/json\/info"/);
 });
 
