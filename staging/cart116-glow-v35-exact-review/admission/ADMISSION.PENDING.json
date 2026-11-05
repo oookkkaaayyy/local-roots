@@ -2705,7 +2705,12 @@
     "other_safety": "As-wired UV lamps energize when AUX powered; do not infer software OFF physical UV dark; preserve original FX142 ps=-1, WOW MAX, all 28, DDP22",
     "changed_target_count": 0,
     "device_write_authorized": false,
-    "CI": "PENDING_CHANGETARGET_CI",
+    "CI": {
+      "source_head": "d03fbf762ad736bd18d7f544b3cc9d7b90088067",
+      "run": 42103943068,
+      "tests": "10/10 PASS, one-session Matrix Track C read-only classifier + Network evidence, always no release pass",
+      "physical": "NOT_CHECKED"
+    },
     "independent_recapture_session": "PROHIBITED"
   },
   "dora_c8_scoring_live_provenance_20261105": {
@@ -2728,7 +2733,7 @@
       "node_contract_fixture": "491638bd2a31129c94de88269f0f97aeca39ce2b",
       "pg17_contract_fixture": "667e51d64f1c8adc8116c3c043ec53828bc75c5a"
     },
-    "tested_scope": "EXACT-HEAD Node 11/11 PASS, native isolated PG17 source/CAS/idempotence/inverse PASS in run 42105043665; third step intentionally failed historical frozen C6/C7 blob/tree checker after C8 source changes; old release package remains noninstallable; new C8-only digest source checker pending",
+    "tested_scope": "C8 new live-source exact code Node 11/11 PASS; native PG17 contract PASS (isolated); new immutable C8 digest 4/4 changed +4/4 retained source PASS; legacy C6 restore validator unchanged and its historical archived package intentionally NOT compatible.",
     "source_trust_limit": "Persisted source/permissionReference fields are NOT independent UDisc provider authorization; future release must validate actual provider access/permit and installed Scoring adapter after authenticated source; UDISC_GLOW_ACCESS_APPROVED remains FALSE CI fake live lineage is fixture-only; no authorized provider output was checked.",
     "live_state": "No authorized live source, active new round or fresh in-round readback accepted",
     "c8_installed_runtime": "Supabase six RPCs remain absent; Edge v35 old; Opal bridge disabled; no provider/deployment/device writes",
@@ -2743,7 +2748,21 @@
       "isolated_pg17": "PASS PG17 source,event,role,fingerprint,CAS,idempotence,inverse",
       "overall": "FAIL_OLD_IMMUTABLE_C6_TREE_EXPECTED_DRIFT_FROM_C8",
       "existing_legacy_restore_checker": "UNCHANGED_RETAIN_AS_FROZEN_C7_RELEASE_GUARD; do NOT waive its historical package mismatch",
-      "c8_new_digest_checker": "PENDING"
+      "c8_new_digest_checker": "PASS NEW REVIEW SOURCE DIGEST, run 42105854189, NOT C6 validator reuse"
+    },
+    "source_ci": {
+      "node_pg_run": 42105043665,
+      "tested_source_head": "e4ce816c75d206154ede3218c7808fb12911ba28",
+      "node_tests": "11/11 PASS",
+      "pg17": "PASS source/event/role/fingerprint/CAS/idempotence/guarded inverse",
+      "historical_c6_validator": "FAIL_BY_DESIGN_AFTER_C8_SOURCE_DIFF, original C6/C7 archive still invalid; never override",
+      "new_digest_run": 42105854189,
+      "final_digest_source_head": "2c738315a72c1c54cff9469fb55606540dc3a8d1",
+      "exact_review_digest": "PASS 4 changed source blobs, 4 retained source/recovery blobs, original C6/C7 guard preserved",
+      "physical_profile_run": 42105854057,
+      "physical_profile": "14/14 PASS and 3 BusyBox ash syntax PASS",
+      "installed": false,
+      "live_source_authorized": false
     }
   }
 }
