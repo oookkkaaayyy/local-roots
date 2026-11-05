@@ -90,8 +90,9 @@ test("event detail migration runs in PostgreSQL and keeps patch, validation, and
     assert.equal((await db.query("select expires_at>now() as current from public.lr_event_field_evidence where event_id=$1 and field_name='format' and source_id=(select id from public.lr_sources where key='oak_grove_disc_golf_club_direct')",[tuesdayEventId])).rows[0].current,true);
     await db.query("update public.lr_event_field_evidence set expires_at=now()-interval '1 minute' where event_id=$1 and field_name='format' and source_id=(select id from public.lr_sources where key='oak_grove_disc_golf_club_direct')",[tuesdayEventId]);
     assert.equal((await db.query(`select verification_status from public.lr_event_field_status where event_id=$1 and field_name='format'`,[tuesdayEventId])).rows[0].verification_status,"stale");
+    const tuesdayStillUpcoming = (await db.query("select start_date >= (now() at time zone 'America/Los_Angeles')::date as upcoming from public.lr_events where id=$1",[tuesdayEventId])).rows[0].upcoming;
     await db.query("select public.lr_enqueue_event_field_reviews(60)");
-    assert.equal((await db.query(`select count(*)::int as n from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='format' and status in ('open','in_review')`,[tuesdayEventId])).rows[0].n,1);
+    assert.equal((await db.query(`select count(*)::int as n from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='format' and status in ('open','in_review')`,[tuesdayEventId])).rows[0].n,tuesdayStillUpcoming ? 1 : 0);
     const correctedOakSaturday=(await db.query(`
       select checkin_time_local::text,start_time_local::text,start_time_note from public.lr_events where slug='oak-grove-ogdgc-weekly-2026-11-07'
     `)).rows[0];
