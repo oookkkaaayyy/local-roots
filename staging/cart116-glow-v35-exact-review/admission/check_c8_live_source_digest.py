@@ -52,10 +52,10 @@ def verify():
   "VERIFIED_PROVIDER_RECENT",
   "permissionReference",
   "liveSourceReceipt",
-  "SAVED_SOURCE_REVISION_NOT_CONFIRMED",
  ]:
   check(marker in planner,"Live planner lineage missing: "+marker)
   check(marker in up,"Live SQL lineage missing: "+marker)
+ check("SAVED_SOURCE_REVISION_NOT_CONFIRMED" in planner,"Live planner rejection missing")
  check("UDisc event XLSX export" not in planner,"Manual XLSX accepted by LIVE planner")
  check("UDisc event XLSX export" in up and "HISTORICAL_PREVIEW_ONLY_NO_ACTUATION" in up,
        "Historical XLSX read-only snapshot mode lost")

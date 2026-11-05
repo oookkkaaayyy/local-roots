@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   isolated:
-    if: github.repository == 'oookkkaaayyy/local-roots' && !contains(github.event.head_commit.message, '[trackA-source-only]') && !contains(github.event.head_commit.message, '[trackA-c7-sql]')
+    if: github.repository == 'oookkkaaayyy/local-roots' && !contains(github.event.head_commit.message, '[trackA-source-only]') && !contains(github.event.head_commit.message, '[trackA-c7-sql]') && !contains(github.event.head_commit.message, '[trackA-c8-digest]')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     services:

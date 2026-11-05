@@ -131,7 +131,10 @@ test('DORA C1 Opal helper binds corrected R6 only and keeps both actuation locks
  assert.match(sh,/HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED=false/);
  assert.match(sh,/\[ "\$HBNF_OVERLAY_V1_SOURCE_ADMITTED" = true \]/);
  assert.match(sh,/\[ "\$HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED" = true \]/);
- assert.ok(sh.includes("native_owner_safe_release='"+R6_OWNER_PRIORITY_RELEASE+"'"));
+ // Two exact independently reviewed Owner-safe R6 release IDs; no prefix match.
+ assert.ok(sh.includes('case "$native_owner_safe_release" in'));
+ assert.ok(sh.includes("'"+R6_OWNER_PRIORITY_RELEASE+"'|'hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104')"));
+ assert.ok(sh.includes('*) return 1 ;;'));
  assert.ok(sh.includes('build.json" -e \'@.release_id\')'));
  assert.ok(sh.includes('state.json" -e \'@.HBNF.candidate\')'));
  assert.ok(!sh.includes("= 'hbnf-cart2-phase2-r6-skins-readable-20261014'"));
