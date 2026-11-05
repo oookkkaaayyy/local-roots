@@ -76,7 +76,7 @@ Deno.serve(async (req: Request) => {
   let request: Record<string, unknown>;
   try { request = await req.json(); } catch { return response({ error: "invalid_json" }, 400); }
   const action = String(request.action ?? "");
-  if (action === "glow_scoreboard_intent") {
+  if (action === "glow_scoreboard_intent" || action === "glow_scoreboard_preview") {
     // Service-role-only backend. No Guest/Owner token reuse and no direct device sender.
     const result = await runGlowIntentAction({
       body: request, authorization: req.headers.get("Authorization") ?? "", serviceKey,
