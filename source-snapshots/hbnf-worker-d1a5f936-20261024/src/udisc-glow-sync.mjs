@@ -92,6 +92,26 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
   const signature = await fingerprint(proposal);
   const prior = base.udiscSync;
   if (prior?.eventId === eventId && prior?.latest?.signature === signature) {
+    // Identical source snapshots cannot acknowledge a manually changed hole as
+    // source-confirmed. Refuse the unchanged fast path if accepted scores drift.
+    const playersById = new Map((base.players || []).map(p => [text(p.id), p]));
+    const rows = prior.latest.rows;
+    if (!Array.isArray(rows) || rows.length !== incoming.length) {
+      throw Error('Unchanged UDisc snapshot has incomplete accepted-score provenance.');
+    }
+    for (const row of rows) {
+      const player = playersById.get(text(row.glowTeamId));
+      const accepted = row.acceptedHoleScores;
+      if (!player || !Array.isArray(accepted) || accepted.length !== 18) {
+        throw Error('Unchanged UDisc snapshot has missing accepted-score provenance.');
+      }
+      for (let hole=0;hole<18;hole++) {
+        const sourceScore=text(accepted[hole]);
+        if (sourceScore && text(player.scores?.[hole]) !== sourceScore) {
+          throw Error('An accepted UDisc hole was changed outside source sync; owner review required.');
+        }
+      }
+    }
     return Object.freeze({changed:false,reason:'same_snapshot',week:currentWeek,signature});
   }
 
