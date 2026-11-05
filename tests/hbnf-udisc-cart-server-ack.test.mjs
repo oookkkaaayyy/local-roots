@@ -85,6 +85,10 @@ test('saved scores survive without a second scoring mutation when the Cart backe
   if(u.includes('/rest/v1/league_state?'))return new Response(JSON.stringify([{
    state_json:root,updated_at:rev}]),{status:200});
   if(u==='https://udisc.com/events/'+eventId+'/leaderboard/export'){
+   assert.equal(opts.redirect,'manual');
+   assert.equal(opts.cache,'no-store');
+   assert.equal(opts.signal?.aborted,false);
+   assert.equal(typeof opts.signal?.addEventListener,'function');
    const b=new Uint8Array(24);b[0]=80;b[1]=75;
    return new Response(b,{status:200,headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}});
   }
