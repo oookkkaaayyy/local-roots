@@ -9,7 +9,7 @@ test("integrated UV defaults fail closed with no output or WLED segment targets"
   assert.equal(UV_OFFLINE_CONFIG.maxBrightness, 0);
   assert.deepEqual(UV_MODES, ["OFF", "MANUAL", "FOLLOW_MATRIX", "VIBE_REACTIVE"]);
   assert.equal(nextUvOutput({ mode: "MANUAL", manualBrightness: 255, currentOutput: 42 }), 0);
-  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, 200), { on: true, seg: [] });
+  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, 200), { seg: [] });
 });
 
 test("enabled fixture demonstrates cap, owner override and smooth ramp without changing fail-closed defaults", () => {
@@ -42,24 +42,34 @@ test("UV channels keep separate brightness and owner levels while sharing Matrix
   assert.deepEqual(wledUvStatePatch(cfg, { 1: 18, 2: 63 }).seg.map(({ id, on, bri }) => ({ id, on, bri })), [
     { id: 1, on: true, bri: 18 }, { id: 2, on: true, bri: 63 },
   ]);
-  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { 1: 18, 2: 63 }), { on: true, seg: [] });
+  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { 1: 18, 2: 63 }), { seg: [] });
   const uncommissioned = { ...cfg, enabled: false };
   assert.deepEqual(nextUvOutputs({ mode: "MANUAL", manualBrightnessBySegment: { 1: 100, 2: 50 } }, uncommissioned), [
     { id: 1, brightness: 0 }, { id: 2, brightness: 0 },
   ]);
-  assert.deepEqual(wledUvStatePatch(uncommissioned, { 1: 100, 2: 50 }).seg.map(({ id, on, bri }) => ({ id, on, bri })), [
+  const uncommissionedPatch = wledUvStatePatch(uncommissioned, { 1: 100, 2: 50 });
+  assert.equal(Object.hasOwn(uncommissionedPatch, "on"), false,
+    "uncommissioned UV output must never globally wake AUX");
+  assert.deepEqual(uncommissionedPatch.seg.map(({ id, on, bri }) => ({ id, on, bri })), [
     { id: 1, on: false, bri: 0 }, { id: 2, on: false, bri: 0 },
   ]);
+  for (const values of [0, { 1: 0, 2: 0 }, { 1: NaN, 2: -1 }]) {
+    const offPatch = wledUvStatePatch(cfg, values);
+    assert.equal(Object.hasOwn(offPatch, "on"), false, "zero and invalid levels must not wake AUX");
+    assert.ok(offPatch.seg.every(channel => channel.on === false && channel.bri === 0));
+  }
+  assert.equal(wledUvStatePatch(cfg, { 1: 0, 2: 63 }).on, true,
+    "explicit permitted UV brightness retains deliberate root ON");
   const offlineChannels = { ...UV_OFFLINE_CONFIG, segmentIds: ["main", "short"] };
   assert.deepEqual(nextUvOutputs({ mode: "VIBE_REACTIVE", manualBrightnessBySegment: { main: 255, short: 190 }, ownerOverrideBySegment: { main: 255, short: 255 } }, offlineChannels, { vibeEnvelope: 255 }), [
     { id: "main", brightness: 0 }, { id: "short", brightness: 0 },
   ]);
-  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { main: 255, short: 190 }), { on: true, seg: [] });
+  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { main: 255, short: 190 }), { seg: [] });
   const offlinePreview = { ...UV_OFFLINE_CONFIG, segmentIds: ["main", "short"] };
   assert.deepEqual(nextUvOutputs({ mode: "MANUAL", manualBrightnessBySegment: { main: 255, short: 128 } }, offlinePreview), [
     { id: "main", brightness: 0 }, { id: "short", brightness: 0 },
   ]);
-  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { main: 255, short: 128 }), { on: true, seg: [] });
+  assert.deepEqual(wledUvStatePatch(UV_OFFLINE_CONFIG, { main: 255, short: 128 }), { seg: [] });
 });
 
 test("native font and treatment menu is exact-source-bound and stays unfrozen", async () => {
