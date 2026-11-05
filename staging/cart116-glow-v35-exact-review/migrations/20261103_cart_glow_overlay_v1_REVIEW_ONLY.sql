@@ -338,14 +338,12 @@ COMMIT;
  IF v_fence.active IS DISTINCT FROM true OR
     v_fence.epoch IS DISTINCT FROM p_fence_epoch OR
     v_fence.release_id IS DISTINCT FROM p_release_id OR
-    v_desired.revision IS DISTINCT FROM p_cart_revision OR
     v_desired.state->>'power' IS DISTINCT FROM 'on' OR
     jsonb_typeof(v_desired.state->'overlays') IS DISTINCT FROM 'array'
- THEN RAISE EXCEPTION 'cart_revision_or_release_fence_changed' USING ERRCODE='40001'; END IF;
- IF EXISTS(SELECT 1 FROM jsonb_array_elements(v_desired.state->'overlays') o(x)
-     WHERE (o.x->>'expiresAt')::bigint>v_ms
-       AND coalesce((o.x->>'priority')::integer,0)>=20)
- THEN RAISE EXCEPTION 'manual_or_owner_overlay_active' USING ERRCODE='40001'; END IF;
+ THEN RAISE EXCEPTION 'cart_release_fence_changed' USING ERRCODE='40001'; END IF;
+ -- Exactly-once retry: a known command may return its old receipt only
+ -- while its immutable source, event, current fence and original dispatch
+ -- cursor still match. No new Cart revision or device command is issued.
  SELECT * INTO v_receipt FROM hbnf_internal.cart_command_receipts
  WHERE cart_id='hbnf-cart' AND command_id=p_command_id;
  IF FOUND THEN
@@ -355,6 +353,12 @@ COMMIT;
    THEN RAISE EXCEPTION 'intent_replay_or_command_collision' USING ERRCODE='40001'; END IF;
    RETURN jsonb_build_object('status','DUPLICATE','desired_revision',v_receipt.revision);
  END IF;
+ IF v_desired.revision IS DISTINCT FROM p_cart_revision
+ THEN RAISE EXCEPTION 'cart_revision_changed' USING ERRCODE='40001'; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(v_desired.state->'overlays') o(x)
+     WHERE (o.x->>'expiresAt')::bigint>v_ms
+       AND coalesce((o.x->>'priority')::integer,0)>=20)
+ THEN RAISE EXCEPTION 'manual_or_owner_overlay_active' USING ERRCODE='40001'; END IF;
  IF p_next_state->>'cartId' IS DISTINCT FROM 'hbnf-cart' OR
     p_next_state->>'revision' IS DISTINCT FROM (p_cart_revision+1)::text OR
     p_next_state->>'lastCommandId' IS DISTINCT FROM p_command_id::text OR
