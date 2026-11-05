@@ -19,7 +19,18 @@ const verifiedHardware = Object.freeze({
     short: { outputVoltageV: 5, currentLimitMa: 200 },
   },
   sharedSupply: { topology: "one_converter_one_inline_fuse_shared_by_both_uv_strips", fuseRatingMa: 300, currentLimitMa: 300, verified: true },
-  switching: { verified: true, isolated: true, maxLoadVoltageV: 5, controlInputMinVoltage: 3.0, controlInputMaxVoltage: 3.6, channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300 },
+  switching: {
+    verified: true, isolated: true, method: "opto_isolated_cv_pwm_repeater",
+    inputVoltageV: 12, outputVoltageV: 5, pwmFrequencyHz: 880,
+    maxLoadVoltageV: 5, controlInputMinVoltage: 5, controlInputMaxVoltage: 24,
+    channels: 2, maxChannelCurrentMa: 180, maxTotalCurrentMa: 300,
+  },
+  physicalSafety: Object.fromEntries([
+    "externalSignalToLoadIsolationVerified", "separate5vUvAnd12vAuxRailsVerified",
+    "physicalTwoChannelOffVerified", "manualCutoffVerified", "opticalProtectionAndInterlockVerified",
+    "bootBrownoutAndFaultOffVerified", "directWledBypassProtected",
+    "branchFuseAndConductorProtectionVerified",
+  ].map(key => [key, true])),
   maxBrightness: 180,
   channels: {
     main: { gpio: 25, segmentId: 1, loadVoltageV: 5, loadCurrentMa: 100, fuseRatingMa: 150, wireCurrentRatingMa: 300 },
@@ -63,6 +74,10 @@ test("owner-measured 5V UV and historical 12V underglow remain distinct and unco
   assert.equal(UV_HARDWARE_CONFIG.switching.verified, false);
   assert.equal(UV_HARDWARE_CONFIG.switching.isolated, false);
   assert.equal(UV_HARDWARE_CONFIG.sharedSupply.verified, false);
+  assert.match(UV_HARDWARE_CONFIG.ownerReported.moduleStatus, /uv_illuminates_with_aux_power_not_pwm_switched/);
+  assert.equal(UV_HARDWARE_CONFIG.ownerReported.currentPhysicalDisconnectVerified, false);
+  assert.equal(UV_HARDWARE_CONFIG.physicalSafety.manualCutoffVerified, false);
+  assert.equal(UV_HARDWARE_CONFIG.physicalSafety.physicalTwoChannelOffVerified, false);
   assert.equal(uvHardwareReady(UV_HARDWARE_CONFIG), false);
   const edge = await readFile(new URL("../backend/aux_control.ts", import.meta.url), "utf8");
   assert.match(edge, /digital:\{gpio:16,type:"WS2811",volts:12\}/);
@@ -257,4 +272,51 @@ test("unsupported UV commands and extra fields are not accepted by review paths"
   assert.match(opal, /key ~= "main" and key ~= "short"/);
   assert.match(opal, /mode == "COMMISSIONING_TEST"/);
   assert.match(opal, /uv_electrical_qualification_not_admitted/);
+});
+
+test("the proposed 12V SP803E-to-isolated-repeater / 5V UV path is never admitted by wiring claims alone", () => {
+  assert.equal(uvHardwareReady(verifiedHardware), true, "synthetic fully verified fixture qualifies the target contract");
+  for (const gate of Object.keys(verifiedHardware.physicalSafety)) {
+    assert.equal(uvHardwareReady({
+      ...verifiedHardware, physicalSafety: { ...verifiedHardware.physicalSafety, [gate]: false },
+    }), false, `physical gate ${gate} must block both UV outputs`);
+    assert.equal(uvHardwareReady({
+      ...verifiedHardware, physicalSafety: { ...verifiedHardware.physicalSafety, [gate]: undefined },
+    }), false, `missing physical gate ${gate} must block both UV outputs`);
+  }
+  assert.equal(uvHardwareReady({ ...verifiedHardware, physicalSafety: undefined }), false);
+  for (const switching of [
+    { method: "unisolated_sp803e_mosfet" },
+    { isolated: false },
+    { inputVoltageV: 5 },
+    { outputVoltageV: 12 },
+    { pwmFrequencyHz: 100 },
+    { pwmFrequencyHz: 2500 },
+  ]) {
+    assert.equal(uvHardwareReady({ ...verifiedHardware,
+      switching: { ...verifiedHardware.switching, ...switching } }), false,
+      `invalid switching contract: ${Object.keys(switching)[0]}`);
+  }
+  assert.equal(uvHardwareReady({ ...verifiedHardware, channels: {
+    ...verifiedHardware.channels, main: { ...verifiedHardware.channels.main, loadVoltageV: 12 },
+  } }), false, "historic 12V UV must never silently stand in for the owner-measured 5V load");
+});
+
+test("Opal enforces every physical-safety gate and 12V PWM to 5V isolation contract", async () => {
+  const opal = await readFile(new URL("../../staging/coordinated-backend/opal/owner-local-control/uv_runtime.lua", import.meta.url), "utf8");
+  const spec = await readFile(new URL("../backend/aux_uv_policy_spec.json", import.meta.url), "utf8");
+  const contract = JSON.parse(spec);
+  assert.equal(contract.switching.method, "opto_isolated_cv_pwm_repeater");
+  assert.equal(contract.switching.controlVoltage, 12);
+  assert.equal(contract.switching.loadVoltage, 5);
+  assert.deepEqual(contract.switching.pwmFrequencyHz, { minimum: 200, maximum: 2000 });
+  assert.deepEqual(contract.requiredPhysicalSafetyGates.sort(),
+    Object.keys(verifiedHardware.physicalSafety).sort());
+  assert.match(opal, /ipairs\(policy\.requiredPhysicalSafetyGates\)/);
+  assert.match(opal, /profile\.physicalSafety\[key\] ~= true/);
+  assert.match(opal, /switching\.method ~= switchingSpec\.method/);
+  assert.match(opal, /switching\.inputVoltageV\) ~= tonumber\(switchingSpec\.controlVoltage\)/);
+  assert.match(opal, /switching\.outputVoltageV\) ~= tonumber\(switchingSpec\.loadVoltage\)/);
+  assert.match(opal, /frequency_limits\.minimum/);
+  assert.match(opal, /frequency_limits\.maximum/);
 });
