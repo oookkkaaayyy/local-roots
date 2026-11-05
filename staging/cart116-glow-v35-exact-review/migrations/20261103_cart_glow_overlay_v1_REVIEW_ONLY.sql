@@ -193,16 +193,7 @@ BEGIN
  IF coalesce(current_setting('request.jwt.claim.role',true),'')<>'service_role'
     AND coalesce(nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'role','')<>'service_role'
  THEN RAISE EXCEPTION 'service_role_required' USING ERRCODE='42501'; END IF;
- IF p_week_date IS NULL OR p_week_date !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}(text,bigint,bigint,text,text,text,integer,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_issue(text,bigint,bigint,text,text,text,integer,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) TO service_role;
-COMMIT;
-
+ IF p_week_date IS NULL OR p_week_date !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}$'
  THEN RAISE EXCEPTION 'invalid_event_date' USING ERRCODE='22023'; END IF;
  SELECT event_date,event_id,window_start,window_end INTO v_event
  FROM public.hbnf_udisc_glow_event_bindings
@@ -217,16 +208,7 @@ COMMIT;
     v_week#>>'{udiscSync,eventId}' IS DISTINCT FROM v_event.event_id OR
     v_week#>>'{udiscSync,weekDate}' IS DISTINCT FROM p_week_date OR
     v_week#>>'{udiscSync,source}' IS DISTINCT FROM 'UDisc event XLSX export' OR
-    v_week#>>'{udiscSync,latest,signature}' !~ '^[0-9a-f]{64}(text,bigint,bigint,text,text,text,integer,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_issue(text,bigint,bigint,text,text,text,integer,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) TO service_role;
-COMMIT;
-
+    v_week#>>'{udiscSync,latest,signature}' !~ '^[0-9a-f]{64}$'
  THEN RAISE EXCEPTION 'authoritative_event_or_signature_mismatch' USING ERRCODE='22023'; END IF;
  v_revision:=to_char(v_updated AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"');
  RETURN jsonb_build_object(
@@ -254,46 +236,10 @@ BEGIN
  IF coalesce(current_setting('request.jwt.claim.role',true),'')<>'service_role'
     AND coalesce(nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'role','')<>'service_role'
  THEN RAISE EXCEPTION 'service_role_required' USING ERRCODE='42501'; END IF;
- IF p_week_date IS NULL OR p_week_date !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}(text,bigint,bigint,text,text,text,integer,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_issue(text,bigint,bigint,text,text,text,integer,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) TO service_role;
-COMMIT;
-
+ IF p_week_date IS NULL OR p_week_date !~ '^20[0-9]{2}-[0-9]{2}-[0-9]{2}$'
     OR p_source_revision IS NULL OR p_source_revision !~ '^20[0-9]{2}-'
-    OR p_fingerprint !~ '^[0-9a-f]{32}(text,bigint,bigint,text,text,text,integer,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_issue(text,bigint,bigint,text,text,text,integer,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) TO service_role;
-COMMIT;
- OR p_signature !~ '^[0-9a-f]{64}(text,bigint,bigint,text,text,text,integer,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_issue(text,bigint,bigint,text,text,text,integer,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) TO service_role;
-COMMIT;
-
-    OR p_command_id IS NULL OR p_intent_key IS NULL OR p_intent_key !~ '^glow-[0-9]{8}-[0-9a-f]{20}-[0-9]+(text,bigint,bigint,text,text,text,integer,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_issue(text,bigint,bigint,text,text,text,integer,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_ack(text,uuid,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.hbnf_cart_glow_overlay_v1_restored(text,uuid,text,text) TO service_role;
-COMMIT;
-
+    OR p_fingerprint !~ '^[0-9a-f]{32}$' OR p_signature !~ '^[0-9a-f]{64}$'
+    OR p_command_id IS NULL OR p_intent_key IS NULL OR p_intent_key !~ '^glow-[0-9]{8}-[0-9a-f]{20}-[0-9]+$'
     OR p_cart_revision IS NULL OR p_fence_epoch IS NULL OR coalesce(p_release_id,'')=''
     OR jsonb_typeof(p_next_state) IS DISTINCT FROM 'object'
  THEN RAISE EXCEPTION 'invalid_glow_intent_arguments' USING ERRCODE='22023'; END IF;
