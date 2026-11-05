@@ -120,7 +120,9 @@ def choose_unused_preset_id(presets):
 
 
 def safe_boot_preset_body(state, preset_id):
-    """Capture current underglow state while forcing both UV outputs OFF."""
+    """Preserve the exact global/underglow state while forcing both UV outputs OFF."""
+    if type(state.get("on")) is not bool:
+        raise RuntimeError("existing global ON/OFF state unavailable; refusing UV safe-boot write")
     planned = expected_state(state)
     body = {key: state[key] for key in ("on", "bri") if key in state}
     body.update({"mainseg": 0, "seg": planned["seg"], "ib": True, "sb": True,
@@ -133,8 +135,14 @@ def check_safe_boot_preset(presets, preset_id, baseline_state=None):
     if not isinstance(preset, dict):
         raise RuntimeError("new safe-startup preset was not present in WLED readback")
     segments = {int(s.get("id", n)): s for n, s in enumerate(preset.get("seg") or []) if isinstance(s, dict)}
-    if preset.get("on") is not True or not all((segments.get(i) or {}).get("on") is False for i in (1, 2)):
-        raise RuntimeError("safe-startup preset did not preserve global ON while keeping both UV segments OFF")
+    if type(preset.get("on")) is not bool:
+        raise RuntimeError("safe-startup preset global ON/OFF state is unavailable")
+    if baseline_state is not None:
+        baseline_on = baseline_state.get("on") if isinstance(baseline_state, dict) else None
+        if type(baseline_on) is not bool or preset["on"] is not baseline_on:
+            raise RuntimeError("safe-startup preset changed the captured global ON/OFF state")
+    if not all((segments.get(i) or {}).get("on") is False for i in (1, 2)):
+        raise RuntimeError("safe-startup preset did not keep both UV segments OFF")
     if int(preset.get("mainseg", -1)) != 0:
         raise RuntimeError("safe-startup preset did not retain the underglow main segment")
     if baseline_state is not None:
