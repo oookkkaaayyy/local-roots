@@ -11,8 +11,9 @@ export function planSavedGlowOverlay({liveStatus,week,binding,cartContext,at,pri
   const start=Date.parse(binding?.windowStart??'');
   const end=Date.parse(binding?.windowEnd??'');
   if(!DATE.test(date)||!Number.isFinite(start)||!Number.isFinite(end)||end<=start||
-     now<start||now>end||String(binding?.eventId??'')!== 'hb-glow-doubles-tAP8Y5' ||
-     date!=='2026-11-03')return fail('EVENT_BINDING_NOT_ACTIVE');
+     now<start||now>end||
+     !/^(?:hb-glow-doubles-[A-Za-z0-9]{6}|hb-night-flyers-hb-glow-doubles(?:-[a-z0-9]+)*-[A-Za-z0-9]{6})$/.test(String(binding?.eventId??'')))
+    return fail('EVENT_BINDING_NOT_ACTIVE');
   const live=liveStatus?.live;
   if(live?.active!==true||live.event!=='glow'||live.label!=='GLOW')
     return fail('NO_ACTIVE_GLOW_SCOREBOARD');
