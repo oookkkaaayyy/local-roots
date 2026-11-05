@@ -36,6 +36,26 @@ assert body["seg"][1]["bri"] == body["seg"][2]["bri"] == 0
 
 preset = {"249": {"on": True, "bri": 180, "mainseg": 0, "seg": body["seg"]}}
 module.check_safe_boot_preset(preset, 249, state)
+
+# The existing underglow may intentionally be OFF before a UV configuration
+# transaction. Safe boot may never wake it merely to keep the UV outputs OFF.
+off_state = {**state, "on": False}
+off_body = module.safe_boot_preset_body(off_state, 249)
+assert off_body["on"] is False
+assert off_body["seg"][0] == body["seg"][0], "underglow state changed"
+assert all(off_body["seg"][sid]["on"] is False and off_body["seg"][sid]["bri"] == 0 for sid in (1, 2))
+off_preset = {"249": {**preset["249"], "on": False, "seg": off_body["seg"]}}
+module.check_safe_boot_preset(off_preset, 249, off_state)
+try:
+    module.check_safe_boot_preset({"249": {**off_preset["249"], "on": True}}, 249, off_state)
+    raise AssertionError("unsafe global wake passed safe-boot validation")
+except RuntimeError as error:
+    assert "global" in str(error)
+try:
+    module.safe_boot_preset_body({key: value for key, value in state.items() if key != "on"}, 249)
+    raise AssertionError("missing global on/off state allowed a safe-boot write")
+except RuntimeError as error:
+    assert "global" in str(error)
 bad = {"249": {**preset["249"], "seg": [*body["seg"][:1], {**body["seg"][1], "on": True}, body["seg"][2]]}}
 try:
     module.check_safe_boot_preset(bad, 249, state)
