@@ -141,8 +141,9 @@ def check_safe_boot_preset(presets, preset_id, baseline_state=None):
         baseline_on = baseline_state.get("on") if isinstance(baseline_state, dict) else None
         if type(baseline_on) is not bool or preset["on"] is not baseline_on:
             raise RuntimeError("safe-startup preset changed the captured global ON/OFF state")
-    if not all((segments.get(i) or {}).get("on") is False for i in (1, 2)):
-        raise RuntimeError("safe-startup preset did not keep both UV segments OFF")
+    if not all((segments.get(i) or {}).get("on") is False
+               and (segments.get(i) or {}).get("bri") == 0 for i in (1, 2)):
+        raise RuntimeError("safe-startup preset did not keep both UV segments OFF at zero brightness")
     if int(preset.get("mainseg", -1)) != 0:
         raise RuntimeError("safe-startup preset did not retain the underglow main segment")
     if baseline_state is not None:
