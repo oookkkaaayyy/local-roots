@@ -1,4 +1,5 @@
 name: cart116 isolated native PG17 and Deno overlay-v1
+# C7 exact-head recheck: source snapshot/CAS and historical/live distinction, no device/provider writes.
 on:
   push:
     branches:
