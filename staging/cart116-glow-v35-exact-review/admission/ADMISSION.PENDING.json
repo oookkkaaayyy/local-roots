@@ -2373,7 +2373,7 @@
     "issue_authority": "#116; sole Controls release owner; THIS SAME ADMISSION.PENDING.json, not a second release authority",
     "purpose": "Smallest course-visible R6 native Owner TEXT priority plus Motion/AudioResponse/scene persistence, independent of C8 six-RPC Glow overlay. Candidate does not claim to solve WAN/no-WAN perceptual difference.",
     "lane": "MATRIX_FIRMWARE_ONLY; OPTIONAL FIRST STAGE OF EXISTING ONE FIELD SESSION",
-    "status": "OFFDEVICE_SOURCE_RECOVERY_PASS; PHASE0_PHYSICAL_RECOVERY_PENDING; NOT_APPROVED_FOR_FLASH",
+    "status": "SUPERSEDED_BY_C9_PAIRED_OWNER_CONTROL_COMPATIBILITY; NEVER FLASH_ALONE",
     "exact_scope": {
       "target": "Matrix only, observed fixed LAN target 192.168.77.10, original R6 ESP32 4MB packet20_diag",
       "candidate_release": "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104",
@@ -2459,6 +2459,152 @@
     ],
     "actual_local_execution_capability": "BLOCKED: current Chat Browser connector cannot access originating browser context; no authenticated Cart-LAN path or verified live Matrix device session. Device-local upload and readback require owner-present GUI; cannot honestly claim remote flash.",
     "decision": "FIRMWARE-ONLY INDEPENDENT RELEASE QUALIFIED OFFDEVICE, NOT YET ADMITTED OR INSTALLED. Do not bind false C8 global stage flags to this candidate; do not flip firmware.matrix_flash false until physical gates pass.",
-    "exact_resumption_trigger": "Owner physically at powered Cart with Mac connected to HBNF-Cart and accessible Matrix WLED GUI + safely proven nonbooting recovery path. One combined owner session, no terminal commands. If recovery cannot be proven, no flash."
+    "exact_resumption_trigger": "Owner physically at powered Cart with Mac connected to HBNF-Cart and accessible Matrix WLED GUI + safely proven nonbooting recovery path. One combined owner session, no terminal commands. If recovery cannot be proven, no flash.",
+    "superseded_by": "dora_c9_paired_owner_release_20261105"
+  },
+  "dora_c9_paired_owner_release_20261105": {
+    "schema": "cart116-c9-paired-matrix-r6-and-owner-pwa-v1",
+    "status": "SOURCE_INTEGRATED_REVIEW_ONLY_NOT_INSTALLABLE",
+    "authority": "#116 Controls only; SAME ADMISSION.PENDING.json, same owner-present field session",
+    "source_parent_head": "d52b7d3f3098ded6b25484f7f21764910bc376a1",
+    "network_source_commit": "865a8c29d7078d6a9a55069d48065bd23b0076f6",
+    "network_runtime_tests": "15/15 targeted PASS in Track B; independently repeat Controls exact-head",
+    "firmware_sha256": "429f7f00d1da72fcd926935f10140c0048f78a2aa7340a7cd748029941b1f0fa",
+    "rollback_firmware_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+    "firmware_source_release": "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104",
+    "old_release": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+    "firmware_archive_drive_id": "1V7EX8n_cGsHSvMem2Ic6r5xaFlBbS4w0",
+    "rollback_archive_drive_id": "1YX2B4XG60FOy6SjI7xV_f6DC8QWidUIj",
+    "changed_targets": [
+      {
+        "target": "/www/mission-control-local/local-transport.js",
+        "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/mission-control-local/local-transport.js",
+        "staged_prechange_git_blob_sha1": "9f1f9e5997fc5aa0e3762b53581263c4a9518c64",
+        "staged_prechange_sha256": "b48f5d7a4b3ea850307b13596857d753d2ff2ee4b9991b859e66b41d0338b37a",
+        "candidate_sha256": "928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387",
+        "actual_installed_preimage_sha256": null,
+        "actual_installed_preimage_mode_owner": null,
+        "independent_installed_preimage_downloadback": false,
+        "prechange_live_verified": false,
+        "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE"
+      },
+      {
+        "target": "/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
+        "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js",
+        "staged_prechange_git_blob_sha1": "1d8e43d35b8144d533bbea7d9f60f3003c9e2f86",
+        "staged_prechange_sha256": "f2bec69f5d14760d6910c06a57d40288070171814c5affbfe2a9b4baa566e419",
+        "candidate_sha256": "41eca1c6b77e6cc4304da58df3c1d553971839925b95818107bd046f229314d3",
+        "actual_installed_preimage_sha256": null,
+        "actual_installed_preimage_mode_owner": null,
+        "independent_installed_preimage_downloadback": false,
+        "prechange_live_verified": false,
+        "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE"
+      },
+      {
+        "target": "/www/mission-control-local/owner-pwa/hbnf-cart.js",
+        "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js",
+        "staged_prechange_git_blob_sha1": "36cd62d8268726a50a342dba452e345db4220826",
+        "staged_prechange_sha256": "e3652350ea928585bb29938f758dbc311e337f0620a17715a783b3cb181bf119",
+        "candidate_sha256": "385d17eb4c8766a51e0395d60ebdc90011d5797972d1efad4b938e0370364a9e",
+        "actual_installed_preimage_sha256": null,
+        "actual_installed_preimage_mode_owner": null,
+        "independent_installed_preimage_downloadback": false,
+        "prechange_live_verified": false,
+        "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE"
+      },
+      {
+        "target": "/www/mission-control-local/owner-pwa/hbnf-cart.html",
+        "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.html",
+        "staged_prechange_git_blob_sha1": "755573992835e53c2414e02b8f10c115965576d3",
+        "staged_prechange_sha256": "cab420a026b31d7ccf7c13aa91814237d7495269f6c72434f4cb26af43acba57",
+        "candidate_sha256": "63304d487ee3f56af9601156ef512b183e199fc4b01bb7c4fa2c5474a7736937",
+        "actual_installed_preimage_sha256": null,
+        "actual_installed_preimage_mode_owner": null,
+        "independent_installed_preimage_downloadback": false,
+        "prechange_live_verified": false,
+        "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE"
+      },
+      {
+        "target": "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
+        "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/.hbnf-payload.sha256",
+        "staged_prechange_git_blob_sha1": "26ac5995ed319f2171bb0b082440a2c29bc3ad0c",
+        "staged_prechange_sha256": "a32f5a4e25603116400c09eacee0cfd87cd1f8d1d5c22421b1a9d39b20d10c9e",
+        "candidate_sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee",
+        "actual_installed_preimage_sha256": null,
+        "actual_installed_preimage_mode_owner": null,
+        "independent_installed_preimage_downloadback": false,
+        "prechange_live_verified": false,
+        "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE"
+      },
+      {
+        "target": "/www/mission-control-local/owner-pwa/.hbnf-package-version",
+        "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/.hbnf-package-version",
+        "staged_prechange_git_blob_sha1": "01129dcc10093030ccf95c7bb514e6669a246ad7",
+        "staged_prechange_sha256": "c954df07ca147414214c211d894b2a4d920fc4fc740b4a2c196851d173669452",
+        "candidate_sha256": "1c24bd2ae485f22bc71dd7cefb7751bb867b9ea5fe8bd2cd8723130a29c650f4",
+        "actual_installed_preimage_sha256": null,
+        "actual_installed_preimage_mode_owner": null,
+        "independent_installed_preimage_downloadback": false,
+        "prechange_live_verified": false,
+        "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE"
+      }
+    ],
+    "existing_c8_11target_archive_installable_for_c9": false,
+    "c8_11target_postimage_manifest": "FROZEN_DO_NOT_REUSE; six newly staged /www targets now differ, C8 package requires separate later requalification",
+    "unchanged_owner_assets": "13 other PWA checksum-list members unchanged; remaining installed protected Owner assets unchanged",
+    "exact_accepted_release_markers": [
+      "hbnf-cart2-phase2-r6-skins-readable-20261014",
+      "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104"
+    ],
+    "paired_legacy_path": "OLD_ONLY: waitForState/connect still reject any non-original paired-session firmware",
+    "opal_direct_path": "Old/new exact allowlist, authenticated MAC, current WS state and command-specific matching ACK, session epoch clear on disconnect",
+    "brightness_restore": "OFF saves actual HBNF.candidate; ON requires current firmware candidate matches saved marker, reject old-to-new and new-to-old replay",
+    "import_chain": {
+      "external_transport_sha256": "928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387",
+      "transport_query": "928db9ce9514e7f2",
+      "main_local": "20261105-cart116-c9pair-1",
+      "html_main": "20261105-cart116-c9pair-1",
+      "features_untouched": "20261103-cart116-netfix-1",
+      "package": "1.0.21-c9pair1",
+      "payload_sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee",
+      "payload_members": 17
+    },
+    "same_manifest_sequence": [
+      "PHASE0 current Opal installed six preimages + private backup/downloadback and 21 Owner protected files readback; Matrix MAC/build/OTA lock/board+partition, WLED configuration/presets rollback downloaded-back and nonbooting USB/bootloader browser recovery proven; no writes before all PASS",
+      "PHASE1A GUI install exactly six Owner files first and independently read actual served hashes/cache, verify original R6/iPad Owner direct WS/ACK and brightness unaffected; on failure restore exact six installed preimages, NO FIRMWARE FLASH",
+      "PHASE1B only after 1A and actual nonbooting recovery verified, WLED browser /update exact C9 candidate and installed release+profile+Owner identity readback, original R6 rollback if failed",
+      "PHASE2 one combined Owner-present field acceptance, visible priority, tuning persistence, FX142 ps=-1, WOW MAX, 28 FX, AUX DDP22 and owner-reported UV-as-wired, matched naturally no-WAN visual/audio parity and durable same-manifest readback/rollback"
+    ],
+    "required_missing": [
+      "Six CURRENT installed Opal preimage bytes/mode/SHA and private durable downloadback",
+      "Verified GUI delivery route for updating only six Opal /www assets with atomic SHA readback",
+      "Authenticated Matrix actual preflash identity/OTA slot/config-preset backup",
+      "Proven safe physical nonbooting firmware recovery with correct app partition/offset",
+      "Owner-present supervised same combined session and postinstall physical QA"
+    ],
+    "phase0": {
+      "owner_actual_preimages": false,
+      "opal_gui_served_postimage": false,
+      "matrix_prechange": false,
+      "firmware_nonbooting_restore": false,
+      "source_changed_only_ci": false
+    },
+    "guards": {
+      "firmware_flash": false,
+      "opal_www_write": false,
+      "source_gate_change_admitted": false,
+      "overlay_native": false,
+      "provider_mutation": false
+    },
+    "no_c8_dependency": [
+      "No six new SQL RPC requirement",
+      "No Edge/Opal Glow bridge or current in-round live UDisc requirement"
+    ],
+    "protected_state": [
+      "Working old Owner PWA until old-only acceptance of compatible pre-flash new PWA",
+      "Original FX142 ps=-1, native WOW MAX/Vibe and 28 effects",
+      "AUX DDP22 GPIO16, GPIO25/26/software OFF no proof UV physically OFF",
+      "Router WAN, Scoring, C8 SQL/Edge/Cloudflare unmodified"
+    ]
   }
 }

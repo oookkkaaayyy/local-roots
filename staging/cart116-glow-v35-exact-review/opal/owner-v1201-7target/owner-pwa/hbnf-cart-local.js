@@ -10,6 +10,10 @@ export const LOCAL_AUX_IP = "192.168.77.11";
 export const LOCAL_MATRIX_MAC = "704bca5b345c";
 export const LOCAL_AUX_MAC = "8c94df55c34c";
 export const LOCAL_MATRIX_RELEASE = "hbnf-cart2-phase2-r6-skins-readable-20261014";
+export const LOCAL_MATRIX_OWNER_SAFE_REVIEW_RELEASE = "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104";
+export function acceptedOpalDirectRelease(value) {
+  return value === LOCAL_MATRIX_RELEASE || value === LOCAL_MATRIX_OWNER_SAFE_REVIEW_RELEASE;
+}
 
 function validToken(value) {
   return typeof value === "string" && /^[a-f0-9]{64}$/i.test(value);
@@ -25,7 +29,7 @@ export class LocalOwnerControl {
     const defaultPageOrigin = typeof location !== "undefined" && location ? location.origin : "";
     this.pageOrigin = String(options.pageOrigin || defaultPageOrigin || "");
     this.opalDirect = options.opalDirect === true;
-    this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js?v=b48f5d7a4b3ea850"));
+    this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js?v=928db9ce9514e7f2"));
     this.directStorage = options.storage || (typeof localStorage !== "undefined" ? localStorage : null);
     this.directPowerKey = "hbnf.owner-pwa-opal.power-restore.v1";
     this.fetchFn = options.fetchFn || fetch;
@@ -174,7 +178,7 @@ export class LocalOwnerControl {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
       const release = transport.snapshot && transport.snapshot.HBNF && transport.snapshot.HBNF.candidate;
-      if (release && release !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
+      if (release && !acceptedOpalDirectRelease(release)) throw new Error("Matrix firmware is not the locally approved release.");
       if (transport.snapshotVersion > afterVersion && transport.controlReady()) return transport.snapshot;
       await new Promise(resolve => setTimeout(resolve, 40));
     }
@@ -381,7 +385,7 @@ export class LocalOwnerControl {
     else this.transport.connect();
     const matrixState = await this.waitForFreshState(this.transport, beforeVersion);
     const candidate = matrixState && matrixState.HBNF && matrixState.HBNF.candidate;
-    if (candidate !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
+    if (!acceptedOpalDirectRelease(candidate)) throw new Error("Matrix firmware is not the locally approved release.");
     this.matrixInfo = matrixInfo;
     await this.readAux("");
     return this.snapshot();
@@ -456,7 +460,9 @@ export class LocalOwnerControl {
     if (!this.directStorage) return null;
     try {
       const saved = JSON.parse(this.directStorage.getItem(this.directPowerKey) || "null");
-      if (!saved || saved.mac !== LOCAL_MATRIX_MAC || saved.release !== LOCAL_MATRIX_RELEASE ||
+      if (!saved || saved.mac !== LOCAL_MATRIX_MAC || !acceptedOpalDirectRelease(saved.release) ||
+          (this.transport && this.transport.snapshot && this.transport.snapshot.HBNF &&
+            saved.release !== this.transport.snapshot.HBNF.candidate) ||
           !Number.isInteger(saved.matrixBrightness) || saved.matrixBrightness < 0 || saved.matrixBrightness > 255 ||
           !Number.isInteger(saved.auxBrightness) || saved.auxBrightness < 0 || saved.auxBrightness > 255) return null;
       return saved;
@@ -556,7 +562,7 @@ export class LocalOwnerControl {
           (Number(h.matrixBrightness) === 0 && Number(h.auxBrightness) === 0)) throw new Error("Fresh nonzero brightness readback is required before lights off.");
       this.directStorage.setItem(this.directPowerKey, JSON.stringify({
         mac: LOCAL_MATRIX_MAC,
-        release: LOCAL_MATRIX_RELEASE,
+        release: h.candidate,
         matrixBrightness: Number(h.matrixBrightness),
         auxBrightness: Number(h.auxBrightness),
       }));
@@ -577,7 +583,7 @@ export class LocalOwnerControl {
       local: true,
       revision: this.transport.snapshotVersion,
       acknowledgments: {
-        matrix: { confirmed: true, mac: LOCAL_MATRIX_MAC, release: LOCAL_MATRIX_RELEASE, stateVersion: this.transport.snapshotVersion },
+        matrix: { confirmed: true, mac: LOCAL_MATRIX_MAC, release: state.HBNF.candidate, stateVersion: this.transport.snapshotVersion },
         aux: {
           confirmed: !!(this.auxState && this.auxInfo && this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === LOCAL_MATRIX_IP),
           mac: LOCAL_AUX_MAC,

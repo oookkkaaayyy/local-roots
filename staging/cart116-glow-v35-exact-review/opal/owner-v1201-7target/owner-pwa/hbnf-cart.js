@@ -1,7 +1,7 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
 import { compileSemanticPlan } from "./hbnf-cart-semantic.js?v=20261016-course-ready-ux-v1";
 import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.js?v=20261016-course-ready-ux-v1";
-import { LocalOwnerControl } from "./hbnf-cart-local.js?v=20261103-cart116-netfix-2";
+import { LocalOwnerControl } from "./hbnf-cart-local.js?v=20261105-cart116-c9pair-1";
 import { deviceEvidenceLabel, deviceReadinessChecks, guestDefaultEnableNeeded, localLinkStatusText } from "./hbnf-cart-readiness.js?v=20261024-cart-control-home-r4";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";

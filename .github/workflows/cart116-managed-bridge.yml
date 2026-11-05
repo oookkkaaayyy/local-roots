@@ -67,3 +67,17 @@ jobs:
           done
       # No PostgreSQL/Deno/old 35/35 or 26/26 suites, no live devices,
       # no CI artifact upload, no deployment or any owner secrets.
+
+  c9_paired_compat_only:
+    if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c9-paired]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: C9 exact firmware identity, reconnect, cache, old-only paired and rollback tests
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          node --test tests/trackA-c9-paired-owner-compat.test.mjs tests/trackA-networking-reconnect-accepted.test.mjs tests/trackA-netfix2-served-identity.test.mjs
+      # Review-only source execution; never mutates provider, Opal or Matrix.
