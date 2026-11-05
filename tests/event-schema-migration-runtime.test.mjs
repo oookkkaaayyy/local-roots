@@ -155,11 +155,15 @@ test("event detail migration runs in PostgreSQL and keeps patch, validation, and
     const feeReview = (await db.query(`
       select details from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='entry_fee_amount' and status in ('open','in_review')
     `,[eventId])).rows[0];
-    assert.ok(feeReview);
-    assert.equal(feeReview.details.verification_status,"unverified");
-    assert.ok(feeReview.details.authorized_sources.includes("hbnf_internal_schedule"));
+    if (tuesdayStillUpcoming) {
+      assert.ok(feeReview);
+      assert.equal(feeReview.details.verification_status,"unverified");
+      assert.ok(feeReview.details.authorized_sources.includes("hbnf_internal_schedule"));
+    } else {
+      assert.equal(feeReview,undefined); // The 2026-11-03 fixture is past; reviews are intentionally not enqueued.
+    }
     await db.query("select public.lr_enqueue_event_field_reviews(90)");
-    assert.equal((await db.query(`select count(*)::int as n from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='entry_fee_amount' and status in ('open','in_review')`,[eventId])).rows[0].n,1);
+    assert.equal((await db.query(`select count(*)::int as n from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='entry_fee_amount' and status in ('open','in_review')`,[eventId])).rows[0].n,tuesdayStillUpcoming ? 1 : 0);
 
     const patch = {
       start_time_local: "17:30",
@@ -226,7 +230,8 @@ test("event detail migration runs in PostgreSQL and keeps patch, validation, and
     assert.equal(Number(event.entry_fee_amount), 10);
     assert.equal((await db.query("select verification_status from public.lr_event_field_status where event_id=$1 and field_name='format'", [eventId])).rows.length, 1);
     await db.query("select public.lr_enqueue_event_field_reviews(90)");
-    assert.equal((await db.query(`select status from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='entry_fee_amount'`,[eventId])).rows[0].status,"resolved");
+    const feeReviewAfterPatch = (await db.query(`select status from public.lr_review_queue where issue_type='event_field_verification' and event_id=$1 and details->>'field'='entry_fee_amount'`,[eventId])).rows[0];
+    assert.equal(feeReviewAfterPatch?.status,tuesdayStillUpcoming ? "resolved" : undefined);
 
     const placeholderId = "22222222-2222-4222-8222-222222222222";
     await db.query(`
