@@ -89,7 +89,7 @@
     "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted",
     "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute",
     "provider_compiled_edge_candidate_and_rollback": "BLOCKED STRICT BYTE-EQUIVALENCE: provider v35 10/10 original source bytes match immutable Git tree 74dd1d..., config and dependency pinned, 15-file candidate graph source-closed; compiled ESZip original and candidate not retrieved; proposed source-equivalent restore requires formally accepted control-plane alternate criterion and runtime/restore validation. No provider write.",
-    "versioned_sql_and_edge": "new overlay V1 functions not applied, Edge active v35; no destructive old Glow writer permitted",
+    "versioned_sql_and_edge": "SOURCE RECOVERY PASS, SCORE INTENT INTEGRATION FAIL-CLOSED: hbnf_cart_glow_source_snapshot and hbnf_cart_commit_glow_intent absent from production/SQL up; local Nov03 planner requires fresh 10min UDisc sync within Nov03 window, current accepted S1 history does not satisfy. Do not enable source actuation.",
     "new_service_start_and_conflict_audit": "C3 PRE-INSTALL READ-ONLY ABSENCE/NO-CONFLICT PASS AS CAPTURED (0 bridge/0 legacy, procd not listed, locks absent); new service never installed nor started; eventual authenticated post-install service and Owner WS acceptance NOT_RUN.",
     "manifest_one_time_approval": "NULL, no approval requested until independent recovery and native Owner priority gate pass",
     "phase1_phase2": "PENDING_NOT_ADMITTED; all source gates false and release includes no production changes",
@@ -1615,7 +1615,7 @@
     "no_conflict_bridge_preinstall": "BOUNDED_PASS",
     "seven_owner_www_files": "EXCLUDED_PRESERVE_INSTALLED_PWA_V1.0.20",
     "installer_or_live_source_admitted": false,
-    "next_hard_blocker": "C7 CONDITIONAL SOURCE-EQUIVALENT METHOD ACCEPTED ONLY AS A RECOVERY METHOD, NOT LIVE RESTORE PROOF. Actual rollout not admitted until exact enabled source postimages/4-target executor and fresh Cart-LAN current-state/OTA/one-field-session checks; no live mutation.",
+    "next_hard_blocker": "C7 source-equivalent Edge recovery method + hosted static CI PASS, but actual SCORE→Cart integration fails: two service-role RPCs referenced by Edge missing from both SQL migration/provider, and current historic Nov03 S1 sync status null and planner time window/freshness rejects it. NO SQL/Edge/Opal/firmware deployment until corrected and tested; later device prechange and one field session.",
     "next_independent": "Retain immutable 10-file provider rollback Git tree and 15-file review candidate tree, require exact prechange v35 source/digest/config, select either actual compiled ESZip recovery or formally approved source-equivalent same-project restore, verify firmware prechange OTA route and candidate/rollback, then single owner one-time approval and one combined field acceptance.",
     "firmware_restoration": "R6_ORIGINAL_INSTALLED_BASELINE_WITNESS_ACCEPTED_VIA_20261014_TRANSACTION_AND_AKS_EXCEPTION; RAW_FLASH_SHA_UNAVAILABLE; FUTURE_PRECHANGE_OTA_AND_RESTORE_ADMISSION_STILL_REQUIRED",
     "scoring_p0": "ORIGINAL_NOV03_4_TEAMS_NOT_PERSISTED_VERIFIED",
@@ -1939,10 +1939,16 @@
       ],
       "mechanical_static_gate": {
         "path": "staging/cart116-glow-v35-exact-review/admission/check_c6_source_restore.py",
-        "git_blob": "92a081662dbc8efbdb5ba02ca9934e81b856968b",
+        "git_blob": "467e5b7b1a56ba78aa530023c24b2ded27b4dae2",
         "behavior": "Python standard-library only, no network/device/mutation/credentials; direct file set, Git tree and Git blob checks for 10/15 sources, SQL up/down hashes, 4 exact Opal SHA256/absence, S1 and original R6 witness, Owner exclusion, hard false guards. Exit 0 static source method PASS; exit 43 source/policy mismatch; --phase release EXIT42 while live readback and physical admission missing.",
-        "currently_verified_against_actual_checkout": "NOT_YET_RUN_WITH_ACTUAL_PRIVATE_REPO_FILES",
-        "synthetic_positive_and_two_negative_gates": "SOURCE-LOGIC-ISOLATED_TEST_PASS_CONDITIONAL_NOT_HOSTED_CI"
+        "currently_verified_against_actual_checkout": "PASS_GITHUB_HOSTED_41961828926_CHANGED_ONLY_20261104",
+        "synthetic_positive_and_two_negative_gates": "SOURCE-LOGIC-ISOLATED_TEST_PASS_CONDITIONAL_NOT_HOSTED_CI",
+        "github_run_id": 41961828926,
+        "github_run_head": "44bd0630f7ba18686f24139147d312daf85e9228",
+        "github_source_method_result": "PASS",
+        "github_live_release_negative_test": "EXPECTED_EXIT42_PASS",
+        "github_busybox_existing_four_target_transaction": "PASS",
+        "unchanged_pg_deno_c1_rerun": false
       },
       "deployment_checkpoint_contract": [
         {
@@ -2029,20 +2035,67 @@
       "protected_config_original": "ABSENT_C3_NEVER_READ_CONTENTS",
       "owner_pwa_7_existing_files": "EXCLUDED_NO_REPLACEMENT_OR_INSTALL",
       "legacy_11target_archive": "PRESERVE_HISTORICAL_NOT_C1_COMPATIBLE_NEVER_USE_AS_INSTALLER",
-      "existing_opal_release_TSV_and_executor": "CURRENT_HISTORIC_11_TARGET_REVIEW_FILES_NOT_NARROW_ADMITTED; MUST_FAIL_RELEASE_GUARD_UNTIL FOUR_TARGET_ONLY_IN_PLACE_ADJUSTMENT_VERIFIED",
+      "existing_opal_release_TSV_and_executor": "FOUR_TARGET_ONLY_EXISTING_RELEASE_TSV_AND_TRANSACTION_SOURCE: committed correction, 4/4 exact new paths, all ABSENT original, corrected SHA helper, no Owner /www allowlisted, three independent source actuation flags required; hosted BusyBox shell syntax PASS in 41961828926. Candidate enabled source files/package and local device executor admission still NOT_READY.",
       "enabled_source_review_bytes": "NOT_PRODUCED; source hard guards remain FALSE",
       "immutable_manifest_one_time_release_id": null,
       "independently_retrievable_candidate_stage_package": false,
       "phase1_admitted": false,
-      "phase2_accepted": false
+      "phase2_accepted": false,
+      "opal_tsv_git_blob": "925a586db3525598cc2c4efe8f1e08339e4b2e73",
+      "opal_transaction_git_blob": "d8885f741b9307f1b93c2212809aa6adff648e5b",
+      "opal_transaction_native_syntax": "PASS_GITHUB_41961828926"
     },
     "first_irreducible_remaining_capability": {
-      "name": "AUTHENTICATED_CURRENT_CART_LAN_AND_OWNER_PRESENT_FOR_MATRIX_SAFE_OTA/PRECHANGE_AND_PHYSICAL_VISIBLE_ACCEPTANCE",
-      "outside_connected_tools": "The connected Supabase/GitHub/Drive tools cannot SSH into cart Opal/Matrix LAN, inspect native OTA route or judge visible LED priority. C3 historical capture accepted, but a new fresh prechange readback must occur immediately before physical change; no repeated exploratory read-only exercise.",
-      "current_trigger": "Owner and Cart physically co-present on existing HBNF-Cart LAN, one coordinated field session with known-safe OTA recovery path; freeze exact release postimages and rerun fail-closed prechange gate beforehand.",
-      "should_owner_be_asked_now": false,
-      "no_unconditional_flash": true
+      "name": "SOURCE_SCORE_INTENT_INTEGRATION_NOT_DEPLOYABLE: TWO_MISSING_RPC_CONTRACTS_AND_STALE_NOV03_EVENT_WINDOW",
+      "status": "SOURCE_PATH_FAILURE_VERIFIED_NOT_AN_OPAL_OR_PROVIDER_RECOVERY_GAP",
+      "first_technical_resumption_trigger": "exact service-role score snapshot/commit database contracts + changed-only PG17/Edge source tests; explicit historical S1 display acceptance as non-live preview or future real event; only then fresh Cart/OTA prechange field session",
+      "owner_action_now": false,
+      "separate_later_device_access": "Required only once source stage is deployable; connected tools cannot SSH to 192.168.77.1 or verify physical Matrix/Owner TEXT priority",
+      "no_live_mutation": true
     },
-    "no_live_mutation": true
+    "no_live_mutation": true,
+    "source_runtime_integration_discovered_20261104": {
+      "status": "RELEASE_BLOCKING_REVIEW_SOURCE_PATH_DEFECT_BEFORE_ACTUATION",
+      "actual_production_read_only": {
+        "project_id": "phcpbvuqibyarpfrftgx",
+        "scoring_S1_protected_production_revision": "2026-11-05 01:43:35.537984+00",
+        "scoring_S1_four_unique_real_teams": true,
+        "source_signature": "807e8cb3bc6cf564452d66035b81dd77c8c63225c4f6c74d12e2e98615be6e5e",
+        "latest_event_id": "hb-glow-doubles-tAP8Y5",
+        "active_week": "2026-11-03",
+        "week_cards_count": 1,
+        "udiscSync_source": "UDisc event XLSX export",
+        "udiscSync_status": null,
+        "protected_S1_live_score_acceptance": "PASS_FROM_115_6647464211_NOT_CART_ACTUATION",
+        "overlay_v1_sql_rpcs_installed": 0,
+        "new_score_source_rpc_installed": false,
+        "new_score_commit_rpc_installed": false
+      },
+      "review_source_calls": [
+        {
+          "edge_source": "candidate-source/index.ts:86",
+          "rpc": "public.hbnf_cart_glow_source_snapshot(p_week_date)",
+          "status": "ABSENT_IN_PRODUCTION_AND_NOT_DEFINED_BY_EXISTING_VERSIONED_SQL_UP"
+        },
+        {
+          "edge_source": "candidate-source/index.ts:95",
+          "rpc": "public.hbnf_cart_commit_glow_intent",
+          "status": "ABSENT_IN_PRODUCTION_AND_NOT_DEFINED_BY_EXISTING_VERSIONED_SQL_UP"
+        }
+      ],
+      "review_planner_restrictions": {
+        "file": "candidate-source/hbnf-glow-cart-intent.mjs",
+        "event_date_fixed": "2026-11-03",
+        "active_event_window": "MUST_CONTAIN_RUNTIME_NOW; November3 event window cannot contain current 2026-11-04 PST time",
+        "source_freshness": "udiscSync.status.state MUST equal fresh and lastSuccessAt must be within 10 minutes",
+        "actual_S1_week_sync_status_is_null": true,
+        "decision": "S1 genuine week is an accepted durable historical score source, NOT a permitted currently fresh live Cart actuation source. Do not manufacture a status or widen event window just to pass physical test."
+      },
+      "mechanical_integration_result": "BLOCK_MISSING_2_RPCS_AND_EVENT_WINDOW_FRESHNESS_CONTRACT; C7 provider SOURCE-RECOVERY method static PASS is separate and does not imply runtime SCORE-ACTUATION PASS",
+      "next_source_only_work": "Add both exact service-role-only versioned score snapshot/commit RPCs with source-revision/fingerprint/CAS/nonce guard and inverse, or replace Edge calls with demonstrated existing equivalent. Preserve accepted S1 data and protected guard. Qualify changed-only native PostgreSQL integration. For Nov03 post-event field acceptance, use an expressly authorized non-live S1 preview/test mode or a genuinely new fresh event, never pretend historical scores are live.",
+      "must_not_mutate_scoring_p0": true,
+      "no_production_sql_or_edge_change": true,
+      "owner_action_now": "NONE"
+    }
   }
 }
