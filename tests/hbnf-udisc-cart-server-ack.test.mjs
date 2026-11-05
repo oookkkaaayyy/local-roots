@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   sameLeagueRevision, submitVerifiedGlowCartIntent, runApprovedGlowSync
 } from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs';
-import {runGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js';
+import {runGlowSync} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
 
 const eventId='hb-glow-doubles-tAP8Y5',weekDate='2026-11-03';
 const endpoint='https://fixture.supabase.co/functions/v1/hbnf-cart-control';
@@ -101,7 +101,7 @@ test('saved scores survive without a second scoring mutation when the Cart backe
  const outcome=await runGlowSync({
    UDISC_GLOW_ACCESS_APPROVED:'true',SUPABASE_URL:auth.supabaseUrl,
    SUPABASE_SERVICE_ROLE_KEY:auth.serviceKey
- },{fetch,source,now:()=>new Date('2026-11-04T02:00:00Z'),enableCartBackend:true});
+ },{fetch,source,now:()=>new Date('2026-11-04T02:00:00Z')});
  assert.equal(outcome.disposition,'updated');
  assert.equal(outcome.cartIntent,'NOT_ACCEPTED');
  assert.equal(outcome.updatedAt,sourceRevision);
@@ -112,4 +112,11 @@ test('saved scores survive without a second scoring mutation when the Cart backe
  assert.ok(iSave>=0&&iCart>iSave);
  assert.equal(requests.filter(x=>x===endpoint).length,1);
  assert.equal(requests.filter(x=>x.includes('/rpc/hbnf_record_udisc_glow_sync_status')).length,0);
+});
+
+test('shipping Worker entrypoint rejects disabled provider access before any request',async()=>{
+ let calls=0;
+ const result=await runGlowSync({UDISC_GLOW_ACCESS_APPROVED:'false'},{fetch:async()=>{calls++;throw Error('Unexpected outbound request');}});
+ assert.equal(result.disposition,'source_access_disabled');
+ assert.equal(calls,0);
 });

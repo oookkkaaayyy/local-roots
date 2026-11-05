@@ -151,8 +151,8 @@ export async function handleUdiscExport(request, fetchImpl = fetch) {
 
 /** Authenticated, cron-only live sync. This endpoint is never exposed publicly. */
 export async function runGlowSync(env, deps = {}) {
-  const {runApprovedGlowSync} = await import('./udisc-glow-auto-sync.mjs');
-  return runApprovedGlowSync(env, deps);
+  const {runApprovedGlowSync} = await import('./udisc-glow-auto-sync.review.mjs');
+  return runApprovedGlowSync(env, {...deps,enableCartBackend:true});
 }
 
 export default {
