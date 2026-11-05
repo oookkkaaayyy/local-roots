@@ -2646,7 +2646,15 @@
     "c8_release_archive": "CURRENT old hashes STALE for changed helper; NO INSTALL, must repackage under existing authority only after provider, prechange and physical native acceptance",
     "native_protocol": "C9 physical overlay compatibility not yet verified; qualified source only",
     "independently_releasable": "C9 paired PWA+Matrix does not need any SQL RPCs; C8 still review-only",
-    "focused_ci": "PENDING",
+    "focused_ci": {
+      "workflow_run": 42062811114,
+      "job": 127368800322,
+      "source_head": "aebd1cb350e43a86a89400db4f63ff322b68f279",
+      "conclusion": "SUCCESS",
+      "node_tests": "2/2 PASS",
+      "busybox_ash_syntax": "PASS",
+      "evidence_type": "REVIEW_SOURCE_ONLY_NOT_INSTALLED"
+    },
     "excluded_writes": [
       "Live Opal",
       "Matrix",
@@ -2656,6 +2664,8 @@
       "SQL",
       "Scoring",
       "Owner PWA"
-    ]
+    ],
+    "actual_firmware_overlay_device_qa": "NOT_RUN",
+    "provider_sql_edge_opal_installed": false
   }
 }
