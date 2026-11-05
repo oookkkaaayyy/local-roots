@@ -11,7 +11,7 @@ const importerMatch = source.match(/this\.directTransportLoader\s*=\s*options\.d
 
 // Only new, event-day cache-identity guards. Existing reconnect and B3 tests remain untouched.
 test('actual direct transport blob is the accepted connection-epoch repair', () => {
-  assert.equal(transportDigest, 'b48f5d7a4b3ea850307b13596857d753d2ff2ee4b9991b859e66b41d0338b37a');
+  assert.equal(transportDigest, '928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387');
   assert.match(transport.toString('utf8'), /this\.connectionEpoch\+\+/);
   assert.match(transport.toString('utf8'), /Matrix command superseded by connection change/);
 });

@@ -2,6 +2,12 @@ export const MATRIX_IP = "192.168.77.10";
 export const AUX_IP = "192.168.77.11";
 export const MATRIX_MAC = "704bca5b345c";
 export const SUPPORTED_RELEASE = "hbnf-cart2-phase2-r6-skins-readable-20261014";
+// Review-only compatibility for the uniquely identified Track C Owner-priority/tuning build.
+// Keep the original R6 allowed for a staged PWA-before-firmware rollout.
+export const REVIEW_OWNER_SAFE_RELEASE = "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104";
+export function acceptedDirectRelease(value) {
+ return value === SUPPORTED_RELEASE || value === REVIEW_OWNER_SAFE_RELEASE;
+}
 export const LOCAL_PAGE_URL = "http://192.168.77.1/mission-control-local/index.html";
 export const SCENES = ["course-flow", "field-mix", "hbnf-signature", "quiet-cosmos"];
 export const VIBES = ["chill", "groove", "heavy", "psychedelic", "cosmic", "auto"];
@@ -60,7 +66,7 @@ export class LocalMatrixTransport {
  connect(){if(this.socket&&(this.socket.readyState===0||this.socket.readyState===1))return;if(this.socket){this.connectionEpoch++;for(const w of [...this.waiters]){this.waiters.delete(w);clearTimeout(w.timer);w.reject(new Error("Matrix WebSocket replaced before state confirmation."));}}this.snapshot=null;this.snapshotAt=0;const protocols=this.ownerToken?[ownerWebSocketProtocol(this.ownerToken)]:undefined;const socket=this.socketFactory(this.url,protocols);this.socket=socket;socket.onopen=()=>{if(this.socket!==socket)return;this.onConnection(true);this.requestState();};socket.onmessage=event=>{if(this.socket!==socket||typeof event.data!=="string")return;let msg;try{msg=JSON.parse(event.data)}catch{return}if(!msg||!msg.state||typeof msg.state!=="object")return;this.snapshot=msg.state;this.snapshotVersion++;this.snapshotAt=Date.now();this.onState(this.snapshot);for(const w of [...this.waiters])if(this.snapshotVersion>w.after&&stateMatches(this.snapshot,w.patch)){this.waiters.delete(w);clearTimeout(w.timer);w.resolve(this.snapshot);}};socket.onerror=()=>{try{socket.close()}catch{}};socket.onclose=()=>{if(this.socket!==socket)return;this.socket=null;this.identityVerifiedAt=0;this.snapshot=null;this.snapshotAt=0;this.connectionEpoch++;this.onConnection(false);for(const w of [...this.waiters]){this.waiters.delete(w);clearTimeout(w.timer);w.reject(new Error("Matrix WebSocket disconnected before state confirmation."));}};}
  verifyIdentity(info){const mac=String(info&&info.mac||"").toLowerCase();this.identityVerifiedAt=mac===MATRIX_MAC?Date.now():0;return this.identityVerifiedAt>0;}
  clearIdentity(){this.identityVerifiedAt=0;}
- controlReady(){const h=this.snapshot&&this.snapshot.HBNF;return !!(this.socket&&this.socket.readyState===1&&h&&h.candidate===SUPPORTED_RELEASE&&this.snapshotAt&&Date.now()-this.snapshotAt<=15000&&this.identityVerifiedAt&&Date.now()-this.identityVerifiedAt<=30000);}
+ controlReady(){const h=this.snapshot&&this.snapshot.HBNF;return !!(this.socket&&this.socket.readyState===1&&h&&acceptedDirectRelease(h.candidate)&&this.snapshotAt&&Date.now()-this.snapshotAt<=15000&&this.identityVerifiedAt&&Date.now()-this.identityVerifiedAt<=30000);}
  requestState(){if(!this.socket||this.socket.readyState!==1)throw new Error("Matrix WebSocket is not connected.");this.socket.send('{"v":true}');}
  command(type,payload={}){const epoch=this.connectionEpoch;const run=()=>{if(this.connectionEpoch!==epoch)throw new Error("Matrix command superseded by connection change.");return commandOnce(this,type,payload);},result=this.queue.then(run,run);this.queue=result.catch(()=>{});return result;}
  disconnect(){
