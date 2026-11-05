@@ -124,3 +124,24 @@ test('shipping Worker entrypoint rejects disabled provider access before any req
  assert.equal(result.disposition,'source_access_disabled');
  assert.equal(calls,0);
 });
+
+test('unchanged full XLSX snapshot refuses to bless an owner-edited accepted hole',async()=>{
+ const {prepareGlowWeekSync}=await import('../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync.mjs');
+ const scores=['3',...Array(17).fill('')];
+ const proposal={
+  schema:'hbnf.glow.proposed-week.v1',disposition:'PROPOSED_ONLY_NOT_DELIVERED',
+  event:{eventId,weekDate,observedAtLocal:'2026-11-04T02:00:00Z'},
+  destination:{week:{date:weekDate,activeWeek:weekDate,players:[{partner1:'A',partner2:'B',scores}]}},
+  sourceProvenance:{rowEvidence:[{sourceRow:2,sourceTeam:'A / B',sourceRank:1,sourceRankRaw:'1',holeScores:scores}]},
+  issues:{duplicateCanonicalTeamRows:0}
+ };
+ const original={date:weekDate,cards:[{id:'C1',finalized:false,players:[]}],players:[],scoresLocked:false};
+ const first=await prepareGlowWeekSync(original,proposal);
+ assert.equal(first.changed,true);
+ const identical=await prepareGlowWeekSync(first.week,proposal);
+ assert.equal(identical.changed,false);
+ const drift=structuredClone(first.week);
+ drift.players[0].scores[0]='4';
+ await assert.rejects(prepareGlowWeekSync(drift,proposal),/accepted UDisc hole was changed/);
+ assert.equal(drift.players[0].scores[0],'4');
+});
