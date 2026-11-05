@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { executeUvRequest, UV_FOLLOW_EFFECT_ID, UV_HARDWARE_CONFIG, uvCommissioningReady, uvHardwareReady, uvServiceTokenAuthorized } from "../backend/aux_uv_command.mjs";
+import { nextUvOutputs, nextUvOutput } from "../backend/aux_uv_policy.mjs";
 
 const gates = Object.freeze({
   hardware_wired: true, power_verified: true, gpio_verified: true,
@@ -390,4 +391,22 @@ test("AUX Edge requires electrical and actual runtime proof before sending eithe
     "output activation may become eligible only after verified hardware and explicit UV enable");
   assert.ok(!edge.includes('uvOutputsVerified:R3.uvFollow.outputsVerified===true,hardware'),
     "hardcoded command-time build flag must not bypass the live AUX check");
+});
+
+test("JS FOLLOW_MATRIX and VIBE_REACTIVE independently fail dark on stale, disconnected, silence and malformed envelopes", () => {
+  const config = { enabled: true, hardwareAvailable: true, maxBrightness: 255, rampPerTick: 4, segmentIds: [1, 2] };
+  const state = { mode: "FOLLOW_MATRIX", manualBrightnessBySegment: { 1: 200, 2: 80 }, currentOutputBySegment: { 1: 180, 2: 60 } };
+  const read = (mode, inputs) => nextUvOutputs({ ...state, mode }, config, inputs).map(x => x.brightness);
+  assert.deepEqual(read("FOLLOW_MATRIX", { matrixFresh: false, matrixBrightness: 255 }), [0, 0]);
+  assert.deepEqual(read("FOLLOW_MATRIX", { matrixFresh: true }), [0, 0]);
+  assert.deepEqual(read("FOLLOW_MATRIX", { matrixFresh: true, matrixBrightness: "255" }), [0, 0]);
+  assert.deepEqual(read("FOLLOW_MATRIX", { matrixFresh: true, matrixBrightness: 0 }), [0, 0]);
+  assert.deepEqual(read("VIBE_REACTIVE", { vibeFresh: false, vibeEnvelope: 255 }), [0, 0]);
+  assert.deepEqual(read("VIBE_REACTIVE", { vibeFresh: true, vibeEnvelope: null }), [0, 0]);
+  assert.deepEqual(read("VIBE_REACTIVE", { vibeFresh: true, vibeEnvelope: 0 }), [0, 0]);
+  assert.deepEqual(read("FOLLOW_MATRIX", { matrixFresh: true, matrixBrightness: 255 }), [184, 64]);
+  assert.equal(nextUvOutput({ mode: "OFF", currentOutput: 255 }, config, {}), 0);
+  assert.deepEqual(read("FOLLOW_MATRIX", { matrixFresh: true, matrixBrightness: 127 }), [176, 56]);
+  assert.deepEqual(read("MANUAL", {}), [184, 64]);
+  assert.deepEqual(nextUvOutputs(state, { ...config, hardwareAvailable: false }, { matrixFresh: true, matrixBrightness: 255 }).map(x => x.brightness), [0, 0]);
 });
