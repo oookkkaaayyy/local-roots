@@ -185,3 +185,33 @@ test('traverses valid same-origin JS import with query-string suffix', async () 
   assert.deepEqual(result.urls, [entry, child]);
   assert.ok(result.bundle.includes('PDGA Results'));
 });
+
+test('ignores ordinary page-copy from-literals instead of inventing JS chunks', async () => {
+  const entry = origin + '/assets/index.js';
+  const content = [
+    "const label = \"from './not-a-chunk.js'\";",
+    "const title = 'Unknown from \"./ghost.js\"';",
+    "const summary = \"Information from '../outside.js'\";",
+    'const route = () => import("./real.js");',
+  ].join('\n');
+  const result = await readFrontendGraph(entry, fetcher({
+    [entry]: content,
+    [origin + '/assets/real.js']: 'Past events & results',
+  }), origin);
+  assert.deepEqual(result.urls, [entry, origin + '/assets/real.js']);
+});
+
+test('retains real import and export from-clauses and rejects off-origin targets', () => {
+  const entry = origin + '/assets/index.js';
+  for (const source of [
+    'import{a as b}from"./actual.js"',
+    'export{a}from"./actual.js"',
+    'import alias from "./actual.js"',
+    'import"./actual.js"',
+    'const lazy=()=>import("./actual.js")',
+  ]) {
+    assert.deepEqual(findJsAssetImports(source, entry, origin), [origin + '/assets/actual.js']);
+  }
+  assert.throws(() => findJsAssetImports('export{bad}from"https://untrusted.example/assets/evil.js"', entry, origin),
+    /frontend_import_origin_or_path_mismatch/);
+});

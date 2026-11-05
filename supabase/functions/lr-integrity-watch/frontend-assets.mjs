@@ -3,7 +3,9 @@ const MAX_ASSET_CHARS = 4_000_000;
 const MAX_TOTAL_CHARS = 12_000_000;
 // Inspect every literal import specifier, not only ones ending exactly in .js.
 // Query/hash suffixes, .mjs, and extensionless URLs must not bypass origin checks.
-const JS_IMPORTS = /\bimport\s*\(\s*["']([^"']+)["']\s*\)|\bfrom\s*["']([^"']+)["']|\bimport\s*["']([^"']+)["']/g;
+// Bind static from-clauses to actual module declarations. Rendered copy
+// containing the phrase "from './poster.js'" is not a JavaScript asset.
+const JS_IMPORTS = /\bimport\s*\(\s*["']([^"']+)["']\s*\)|\b(?:import|export)[\w{}*,\s$]*?\bfrom\s*["']([^"']+)["']|\bimport\s*["']([^"']+)["']/g;
 
 export function findJsAssetImports(source, fromUrl, expectedOrigin) {
   const urls = new Set();
