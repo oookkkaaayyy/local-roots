@@ -978,7 +978,7 @@ async function checkUvReadiness(updateStatus = true) {
         : uvFollowActive === null
           ? "Cart output mode is unconfirmed. No command was sent; use Apply levels or Follow Matrix to choose a mode."
         : outputOn && typeof outputOn.main === "boolean" && typeof outputOn.short === "boolean"
-          ? `Cart reports UV output ${outputOn.main ? "on" : "off"}; Bar reports ${outputOn.short ? "on" : "off"}. No new command was sent.`
+          ? `AUX WLED segments: Cart ${outputOn.main ? "on" : "off"}, Bar ${outputOn.short ? "on" : "off"}. Physical UV output is not proven by software readback.`
           : "UV controls are ready. Current output state is unavailable; no output command was sent. Choose Apply levels, Follow Matrix, or UV off.";
     } else {
       uvReadiness = "unsafe";
