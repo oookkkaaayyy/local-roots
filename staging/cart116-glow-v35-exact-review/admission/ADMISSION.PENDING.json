@@ -2587,7 +2587,7 @@
       "opal_gui_served_postimage": false,
       "matrix_prechange": false,
       "firmware_nonbooting_restore": false,
-      "source_changed_only_ci": false,
+      "source_changed_only_ci": true,
       "first_exact_head_ci_run": {
         "run_id": 42061812831,
         "head_sha": "1d77998bbbcf40afd2a9df3c932518055be2fc47",
@@ -2611,6 +2611,22 @@
       "Original FX142 ps=-1, native WOW MAX/Vibe and 28 effects",
       "AUX DDP22 GPIO16, GPIO25/26/software OFF no proof UV physically OFF",
       "Router WAN, Scoring, C8 SQL/Edge/Cloudflare unmodified"
-    ]
+    ],
+    "source_verification": {
+      "qualified_source_head": "be5a5380f030665829944b7956c89350fff60012",
+      "focused_workflow_run": 42062127620,
+      "focused_job": 127366412030,
+      "exact_head": "be5a5380f030665829944b7956c89350fff60012",
+      "conclusion": "SUCCESS",
+      "tests": "7/7 PASS, 0 FAIL; exact dual markers/identity/fresh ACK/stored OFF-ON rollback guard/paired legacy guard/4 C8-only service targets/17 checksum cache",
+      "first_run_failure_and_correction": {
+        "failed_run": 42061812831,
+        "reason": "isolated staged module imported unstaged unchanged hbnf-cart-net.js; obsolete C8 11-target test expected 11 instead of 4",
+        "fix_head": "be5a5380f030665829944b7956c89350fff60012",
+        "does_not_mask": "only missing unchanged static import replaced in test isolated runtime; production adapter unmodified by correction"
+      },
+      "independent_accepted_reconnect": "3/3 PASS in initial run 42061812831; not repeated unchanged",
+      "source_change_vs_installed": "SOURCE_PASS_ONLY; Opal/Owner PWA and Matrix DEVICE_NOT_INSTALLED_OR_TESTED"
+    }
   }
 }
