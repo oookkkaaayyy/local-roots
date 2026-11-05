@@ -192,3 +192,64 @@ test('ambiguous transport error with unchanged cloud state stops after one CAS a
   assert.deepEqual(createGlowSaveCoordinator({storage:s}).pending.branchState,{scores:['2']});
   assert.deepEqual(remote.root.skins,{weekly:'intact'});
 });
+
+test('thrown Glow transport after server commit reconciles by independent GET, never replays and clears only confirmed draft',async()=>{
+  const s=storage(), statuses=[], coordinator=createGlowSaveCoordinator({storage:s,onStatus:x=>statuses.push(x)});
+  let remote={root:{glow:{hole1:''},skins:{winner:'Mason'},bagTags:{Jason:1},history:{saved:true}},updatedAt:'rev-20'};
+  const initial=structuredClone(remote.root);
+  let writes=0,reads=0;
+  coordinator.queue({hole1:'3'},'rev-20',initial.glow);
+  const result=await coordinator.flush({
+    readCurrent:async()=>{reads++;return structuredClone(remote)},
+    compareAndSwap:async(revision,root)=>{
+      writes++;
+      assert.equal(revision,'rev-20');
+      remote={root:structuredClone(root),updatedAt:'rev-21'};
+      throw new Error('synthetic network disconnect after committed write');
+    }
+  });
+  assert.equal(result.status,'saved');
+  assert.equal(writes,1,'a thrown acknowledgement must never trigger a second CAS');
+  assert.equal(reads,2,'an independent GET must reconcile a thrown save');
+  assert.equal(coordinator.hasPending,false);
+  assert.equal(createGlowSaveCoordinator({storage:s}).hasPending,false);
+  for(const key of ['skins','bagTags','history'])assert.deepEqual(remote.root[key],initial[key]);
+  assert.equal(remote.root.glow.hole1,'3');
+  assert.equal(statuses.at(-1),'saved');
+});
+
+test('thrown Glow transport with unchanged server reports conflict and keeps reopenable draft without replay',async()=>{
+  const s=storage(),coordinator=createGlowSaveCoordinator({storage:s});
+  const remote={root:{glow:{hole1:''},skins:{winner:'Mason'}},updatedAt:'rev-30'};
+  coordinator.queue({hole1:'4'},'rev-30',remote.root.glow);
+  let writes=0,reads=0;
+  const result=await coordinator.flush({
+    readCurrent:async()=>{reads++;return structuredClone(remote)},
+    compareAndSwap:async()=>{writes++;throw new Error('synthetic rejected fetch')}
+  });
+  assert.equal(result.status,'conflict');
+  assert.equal(writes,1);
+  assert.equal(reads,2);
+  assert.deepEqual(coordinator.pending.branchState,{hole1:'4'});
+  assert.deepEqual(createGlowSaveCoordinator({storage:s}).pending.branchState,{hole1:'4'});
+  assert.equal(remote.root.glow.hole1,'');
+});
+
+test('thrown Glow transport and unavailable independent read fails without clearing or replaying draft',async()=>{
+  const s=storage(),coordinator=createGlowSaveCoordinator({storage:s});
+  coordinator.queue({hole1:'5'},'rev-40',{hole1:''});
+  let reads=0,writes=0;
+  const result=await coordinator.flush({
+    readCurrent:async()=>{
+      reads++;
+      if(reads===1)return{root:{glow:{hole1:''},skins:{history:true}},updatedAt:'rev-40'};
+      throw new Error('synthetic readback offline');
+    },
+    compareAndSwap:async()=>{writes++;throw new Error('synthetic timeout')}
+  });
+  assert.equal(result.status,'failed');
+  assert.equal(writes,1);
+  assert.equal(reads,2);
+  assert.equal(coordinator.hasPending,true);
+  assert.equal(createGlowSaveCoordinator({storage:s}).pending.branchState.hole1,'5');
+});
