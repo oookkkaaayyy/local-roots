@@ -62,3 +62,37 @@ test("C9 same manifest holds exact 6 targets, original rollback and all live gat
  assert.equal(m.firmware.matrix_flash,false);assert.equal(m.transaction.source_gate_change_admitted,false);
  for(const t of p.changed_targets){assert.equal(t.actual_installed_preimage_sha256,null);assert.equal(t.prechange_live_verified,false);}
 });
+
+test("C9 six approved on-disk candidate byte hashes and exact /www boundary agree with SAME manifest",()=>{
+ const {createHash}=require("node:crypto");
+ const m=JSON.parse(readFileSync(new URL("../admission/ADMISSION.PENDING.json",import.meta.url),"utf8"));
+ const lane=m.dora_c9_paired_owner_release_20261105;
+ const expected=[
+  "/www/mission-control-local/local-transport.js",
+  "/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
+  "/www/mission-control-local/owner-pwa/hbnf-cart.js",
+  "/www/mission-control-local/owner-pwa/hbnf-cart.html",
+  "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
+  "/www/mission-control-local/owner-pwa/.hbnf-package-version"
+ ];
+ assert.deepEqual(lane.changed_targets.map(t=>t.target),expected);
+ const prefix="staging/cart116-glow-v35-exact-review/";
+ const seen=new Set();
+ for(const t of lane.changed_targets){
+  assert.equal(seen.has(t.source_path),false,"duplicate source path");
+  seen.add(t.source_path);
+  assert.ok(t.source_path.startsWith(prefix+"opal/owner-v1201-7target/"),"source outside exact staged Owner tree");
+  const source=readFileSync(new URL("../"+t.source_path.slice(prefix.length),import.meta.url));
+  const actual=createHash("sha256").update(source).digest("hex");
+  assert.equal(actual,t.candidate_sha256,"manifest candidate SHA does not match raw staged bytes: "+t.target);
+  assert.equal(t.actual_installed_preimage_sha256,null,"must not substitute source for live preimage");
+  assert.equal(t.actual_installed_preimage_mode_owner,null,"live mode and owner still unknown");
+  assert.equal(t.independent_installed_preimage_downloadback,false,"no authenticated private download-back yet");
+  assert.equal(t.prechange_live_verified,false,"no live prechange equality claim");
+ }
+ assert.equal(lane.guards.opal_www_write,false);
+ assert.equal(lane.guards.firmware_flash,false);
+ assert.equal(lane.guards.source_gate_change_admitted,false);
+ assert.equal(m.firmware.matrix_flash,false);
+ assert.equal(m.transaction.source_gate_change_admitted,false);
+});
