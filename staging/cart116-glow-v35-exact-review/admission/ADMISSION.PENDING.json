@@ -82,15 +82,15 @@
     "uv_switch": false
   },
   "hard_gates": {
-    "new_service_current_11_target_preimages": "3 NEW executable/init/provision target preimages UNKNOWN; seven original Owner/transport known at capture time; helper observed ABSENT; require fresh exact originals/absence and ownership/mode before admission",
-    "new_service_conflicts": "original legacy /usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay absent Nov3 #6614401763; complete current named process/procd service and secret-config absence must match at release preflight",
-    "independent_installed_preimage_backup_download_back": "STILL BLOCKED: current actual Opal new managed service/protected config 11 target readback and durable original backup/downloadback not obtained; separate new source candidate Drive backup is NOT an installed-state backup",
+    "new_service_current_11_target_preimages": "FOUR NEW TARGETS ABSENT PASS C3 owner-authenticated capture (4/4), protected config ABSENT, private Library exact ZIP+independent byte downloadback verified. The seven original Owner PWA /www assets are explicitly EXCLUDED from cutover; no new read or change. Fresh pre-change drift/absence and exact postimage checks still required.",
+    "new_service_conflicts": "C3 bounded no-conflict pre-install READBACK PASS: bridge process 0, legacy named relay process 0, procd bridge NOT_LISTED, 3 lockouts ABSENT, root-only protected config ABSENT. Legacy old relay init/executable absent on separate Nov3 prior receipt. This does not prove complete system process inventory or future post-install no-conflict behavior; recheck immediately before change.",
+    "independent_installed_preimage_backup_download_back": "FOUR-NEW-OPAL-TARGETS ONLY CLOSED: 4/4 ABSENT + protected config absent, 693B private ZIP SHA 6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a; independently uploaded, re-downloaded, exact byte equality and CRC. No raw target bytes exist to archive. Seven installed Owner PWA assets EXCLUDED; Matrix firmware/provider own recovery gates remain BLOCKED.",
     "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_ONLY: original packet20_diag R6-target Owner priority binary 85796804... independently reproducible; original ps=-1 FX142 and audio/DDP code preserved; installed native renderer/priority/physical display unverified; no preset60 forcing.",
     "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted",
     "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute",
     "provider_compiled_edge_candidate_and_rollback": "STILL BLOCKED: connected get_edge_function exposes only 10 v35 source and deployed bundle digest metadata; not actual compiled v35 ESZIP body nor candidate compiled body with independent offprovider recovery",
     "versioned_sql_and_edge": "new overlay V1 functions not applied, Edge active v35; no destructive old Glow writer permitted",
-    "new_service_start_and_conflict_audit": "NOT_RUN; require installed service list read-only and unique process no duplicate, no Owner WS regression",
+    "new_service_start_and_conflict_audit": "C3 PRE-INSTALL READ-ONLY ABSENCE/NO-CONFLICT PASS AS CAPTURED (0 bridge/0 legacy, procd not listed, locks absent); new service never installed nor started; eventual authenticated post-install service and Owner WS acceptance NOT_RUN.",
     "manifest_one_time_approval": "NULL, no approval requested until independent recovery and native Owner priority gate pass",
     "phase1_phase2": "PENDING_NOT_ADMITTED; all source gates false and release includes no production changes",
     "native_owner_priority_installed_r6": "BLOCKED: exact-original-build-target patched BIN 85796804... reproduced twice and archived with original rollback; no installed raw-image SHA/parity, same-manifest firmware approval or flash; original R6 Owner TEXT-vs-stale Glow race remains on device. Earlier max-target BIN d577813d... is not equivalent.",
@@ -243,7 +243,10 @@
     "source_gate_change_admitted": false,
     "trusted_admission_receipt": null,
     "one_time_registry_consumed": false,
-    "independent_release_backup_download_verified": false
+    "independent_release_backup_download_verified": false,
+    "opal_four_target_absent_preimage_downloadback_verified": true,
+    "opal_four_target_capture_zip_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
+    "opal_four_target_captured_configuration_absent": true
   },
   "superseded_nine_target_opal_20261103": {
     "status": "SUPERSEDED_REPLACEMENT_MODEL_NOT_INSTALLABLE",
@@ -397,19 +400,23 @@
         "path": "/usr/libexec/hbnf-cart-glow-bridge",
         "zip_member": "candidate/opal/usr/libexec/hbnf-cart-glow-bridge",
         "candidate_sha256": "97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c",
-        "observed_preimage_sha256": "UNKNOWN",
+        "observed_preimage_sha256": "ABSENT",
         "mode": "755",
-        "preimage_verified_current": false,
-        "restore_behavior": "BLOCK_UNTIL_CURRENT_ABSENT_OR_PREIMAGE_VERIFIED"
+        "preimage_verified_current": true,
+        "restore_behavior": "REMOVE_ONLY_EXACT_NEW_CANDIDATE_FILE_AFTER_SAME_MANIFEST_DRIFT_RECHECK_IF_ORIGINAL_ABSENT",
+        "preimage_capture_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
+        "preimage_capture_evidence": "2026-11-04 owner corrected C3 read-only; offdevice private library verified"
       },
       {
         "path": "/etc/init.d/hbnf-cart-glow-bridge",
         "zip_member": "candidate/opal/etc/init.d/hbnf-cart-glow-bridge",
         "candidate_sha256": "e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7",
-        "observed_preimage_sha256": "UNKNOWN",
+        "observed_preimage_sha256": "ABSENT",
         "mode": "755",
-        "preimage_verified_current": false,
-        "restore_behavior": "BLOCK_UNTIL_CURRENT_ABSENT_OR_PREIMAGE_VERIFIED"
+        "preimage_verified_current": true,
+        "restore_behavior": "REMOVE_ONLY_EXACT_NEW_CANDIDATE_FILE_AFTER_SAME_MANIFEST_DRIFT_RECHECK_IF_ORIGINAL_ABSENT",
+        "preimage_capture_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
+        "preimage_capture_evidence": "2026-11-04 owner corrected C3 read-only; offdevice private library verified"
       },
       {
         "path": "/usr/lib/hbnf-glow-overlay-v1.sh",
@@ -418,18 +425,22 @@
         "observed_preimage_sha256": "ABSENT",
         "mode": "700",
         "preimage_verified_current": true,
-        "restore_behavior": "DELETE_ONLY_AFTER_FRESH_ABSENCE_READBACK",
+        "restore_behavior": "REMOVE_ONLY_EXACT_NEW_CANDIDATE_FILE_AFTER_SAME_MANIFEST_DRIFT_RECHECK_IF_ORIGINAL_ABSENT",
         "dora_c1_review_source_blob_after_archive": "2c92c84a7325b548513555c0c8f4d6a3cda83ac6",
-        "dora_c1_in_existing_11_target_archive": false
+        "dora_c1_in_existing_11_target_archive": false,
+        "preimage_capture_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
+        "preimage_capture_evidence": "2026-11-04 owner corrected C3 read-only; offdevice private library verified"
       },
       {
         "path": "/usr/libexec/hbnf-cart-glow-provision",
         "zip_member": "candidate/opal/usr/libexec/hbnf-cart-glow-provision",
         "candidate_sha256": "fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20",
-        "observed_preimage_sha256": "UNKNOWN",
+        "observed_preimage_sha256": "ABSENT",
         "mode": "700",
-        "preimage_verified_current": false,
-        "restore_behavior": "BLOCK_UNTIL_CURRENT_ABSENT_OR_PREIMAGE_VERIFIED"
+        "preimage_verified_current": true,
+        "restore_behavior": "REMOVE_ONLY_EXACT_NEW_CANDIDATE_FILE_AFTER_SAME_MANIFEST_DRIFT_RECHECK_IF_ORIGINAL_ABSENT",
+        "preimage_capture_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
+        "preimage_capture_evidence": "2026-11-04 owner corrected C3 read-only; offdevice private library verified"
       },
       {
         "path": "/www/mission-control-local/local-transport.js",
@@ -497,16 +508,17 @@
     ],
     "additional_dynamic_secret_target": {
       "path": "/etc/hbnf-cart-glow-bridge.conf",
-      "expected_original": "UNKNOWN_MUST_BE_ABSENT_AT_PRECHANGE",
+      "expected_original": "ABSENT_OWNER_AUTHENTICATED_C3_READBACK_20261104; VERIFY_AGAIN_IMMEDIATELY_BEFORE_CHANGE",
       "mode": "root:root 0600",
       "provisioning": "EXISTING_AUTHENTICATED_SSH_STDIN_ONLY_TO_SOURCE_VERIFIED_PROVISIONER",
       "persistent_on_device": true,
       "in_repo": false,
       "in_offdevice_backup": false,
       "rollback": "STOP_NEW_SERVICE_THEN_DELETE_ONLY_IF_MATCHING_ROOT_0600_CREATED_CONFIG_AND_ORIGINAL_VERIFIED_ABSENT",
-      "preimage_verified_current": false
+      "preimage_verified_current": true,
+      "preimage_capture_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a"
     },
-    "historical_absent_origin": "/usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay absent in owner verified #6614401763; NEW targets individually unknown",
+    "historical_absent_origin": "/usr/libexec/hbnf-matrix-relay and /etc/init.d/hbnf-matrix-relay absent in owner verified #6614401763; NEW targets individually unknown; C3 2026-11-04 independently confirms ALL FOUR new file paths and protected configuration ABSENT, no bridge/procd/relay process at capture; capture ZIP private library, SHA 6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
     "owner_ws": "EXISTING_DIRECT_ws://192.168.77.10/ws_NOT_CONTROLLED_OR_RESTARTED_BY_NEW_SERVICE",
     "loop_contract": "ONE_OUTBOUND_ONLY_PROCESS; bounded 4s loop, failure backoff 15s, no old op=next/check or AUX state writes, persistent lockout and cursor; procd START=96; no second service",
     "hard_source_gates": {
@@ -1346,7 +1358,8 @@
       "current_procd_process_lockouts": "UNKNOWN",
       "independent_offdevice_installed_backup_downloadback": "NO_AUTHENTICATED_CAPTURE_TO_VERIFY",
       "no_public_git_commit_of_private_capture": true,
-      "resumption_trigger": "Receive verified ZIP from corrected C3 capture, or authenticated direct Opal readback with identical scope; independently check receipt+tar members, SHA/modes, private durability/download-back; mark missing targets ABSENT if evidence proves absence; no secret content handling."
+      "resumption_trigger": "Receive verified ZIP from corrected C3 capture, or authenticated direct Opal readback with identical scope; independently check receipt+tar members, SHA/modes, private durability/download-back; mark missing targets ABSENT if evidence proves absence; no secret content handling.",
+      "superseded_current_status_by": "installed_opal_c3_capture_20261104"
     },
     "edge_source_equivalent_recovery_decision": {
       "decision": "SUPPORTED_PROVIDER_SOURCE_REDEPLOY_TECHNICALLY_FEASIBLE; REPLACEMENT_FOR_COMPILED_BYTE_IDENTICAL_GATE_NOT_YET_FORMALLY_APPROVED",
@@ -1469,12 +1482,145 @@
     "release_gates": {
       "hard_source_and_actuation_flags": "UNCHANGED_FALSE",
       "owner_approval": "NULL",
-      "first_hard_blocker": "installed four-target Opal private exact preimage+absent-state/authenticated postread/backed-up",
+      "first_hard_blocker": "SUPERSEDED_BY_UPLOADED_C3_OPAL_CAPTURE, SEE installed_opal_c3_capture_20261104; next hard blocker compiled Edge recovery or formally admitted substitute plus firmware restoration; scoring P0 remains unsatisfied",
       "second": "Edge compiled binary archive unsupported; proposed source-equivalent rollback requires formal acceptance and independent live recovery verification",
       "third": "Actual original R6 device-specific restore viability and matched installed raw image not accepted",
       "fourth": "P0 authentic saved November 3 revision not independently present",
       "physical_field_acceptance": "ONE combined owner iPad/Owner TEXT vs Glow/real scoreboard/TTL/reconnect/WOW MAX/Vibe/DDP22/AUX UV OFF/restoration after release gates, not requested now",
       "no_mutations_or_new_artifacts": true
     }
+  },
+  "installed_opal_c3_capture_20261104": {
+    "schema": "cart116-c3-owner-authenticated-four-target-absent-state-readback-v1",
+    "source": "owner-uploaded exact ZIP in current conversation; corrected portable C3 helper; root SSH through known Opal host, local LAN",
+    "observed_as_of": "2026-11-04 owner return; archive does not encode host UTC timestamp",
+    "evidence_category": "DEVICE_OWNER_AUTHENTICATED_READ_ONLY_CAPTURE + INDEPENDENT_PRIVATE_OFFDEVICE_LIBRARY_DOWNLOADBACK",
+    "original_capture_name": "CART116-C3-READONLY-CAPTURE.zip",
+    "zip_size_bytes": 693,
+    "zip_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
+    "zip_crc": "PASS",
+    "archive_contents": [
+      "OPAL-C3-RECEIPT.txt",
+      "SHA256SUMS.txt"
+    ],
+    "source_receipt_sha256": "1b5a88f69d4f450da960ace0399d352e5be5edbb8d5870dcbb6f3ce11f8050e0",
+    "sha256sums_verification": "1/1 PASS; zip file CRC both members PASS",
+    "exact_receipt_format": "CART116_C3_READONLY_V2_PORTABLE|REMOTE_HOST 192.168.77.1|C3_METADATA_END",
+    "private_library_path": "/Cart Upgrades/CART116-C3-READONLY-CAPTURE.zip",
+    "private_library_file_id": "libfile_9e23d62b54cc81918998f4cdb7d514b3",
+    "private_library_file_snapshot_id": "file_00000000d81081fd8674ccc38aaac073",
+    "independent_downloadback": {
+      "saved_to_library": true,
+      "independently_listed_and_materialized": true,
+      "downloaded_bytes": 693,
+      "downloaded_sha256": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
+      "byte_equal_to_owner_uploaded": true,
+      "zip_crc": "PASS",
+      "internal_receipt_checksum": "PASS"
+    },
+    "targets": [
+      {
+        "path": "/usr/libexec/hbnf-cart-glow-bridge",
+        "status": "ABSENT",
+        "current_bytes": null,
+        "current_sha256": null,
+        "owner_mode": "NOT_APPLICABLE_ABSENT",
+        "backup": "ABSENCE_MARKER_ONLY",
+        "rollback": "DELETE_ONLY_AFTER_IDENTIFIED_CANDIDATE_HASH_READBACK_AND_SAME_PRECHANGE_ABSENCE_RECHECK"
+      },
+      {
+        "path": "/etc/init.d/hbnf-cart-glow-bridge",
+        "status": "ABSENT",
+        "current_bytes": null,
+        "current_sha256": null,
+        "owner_mode": "NOT_APPLICABLE_ABSENT",
+        "backup": "ABSENCE_MARKER_ONLY",
+        "rollback": "DELETE_ONLY_AFTER_IDENTIFIED_CANDIDATE_HASH_READBACK_AND_SAME_PRECHANGE_ABSENCE_RECHECK"
+      },
+      {
+        "path": "/usr/libexec/hbnf-cart-glow-provision",
+        "status": "ABSENT",
+        "current_bytes": null,
+        "current_sha256": null,
+        "owner_mode": "NOT_APPLICABLE_ABSENT",
+        "backup": "ABSENCE_MARKER_ONLY",
+        "rollback": "DELETE_ONLY_AFTER_IDENTIFIED_CANDIDATE_HASH_READBACK_AND_SAME_PRECHANGE_ABSENCE_RECHECK"
+      },
+      {
+        "path": "/usr/lib/hbnf-glow-overlay-v1.sh",
+        "status": "ABSENT",
+        "current_bytes": null,
+        "current_sha256": null,
+        "owner_mode": "NOT_APPLICABLE_ABSENT",
+        "backup": "ABSENCE_MARKER_ONLY",
+        "rollback": "DELETE_ONLY_AFTER_IDENTIFIED_CANDIDATE_HASH_READBACK_AND_SAME_PRECHANGE_ABSENCE_RECHECK"
+      }
+    ],
+    "protected_config": {
+      "path": "/etc/hbnf-cart-glow-bridge.conf",
+      "status": "ABSENT",
+      "contents_accessed": false,
+      "secrets_collected": false,
+      "owner_mode": "NOT_APPLICABLE_ABSENT",
+      "recovery": "ON_DEVICE_CREATED_CONFIG_MUST_BE_HASH_ORIGIN_BOUND_AND_REMOVED_ONLY_IF_CONFIRMED_ORIGINALLY_ABSENT"
+    },
+    "process": {
+      "bridge_count": 0,
+      "legacy_relay_count": 0,
+      "scope": "bounded named-path process grep; not full process tree"
+    },
+    "procd": {
+      "bridge": "NOT_LISTED",
+      "scope": "ubus/service-name lookup captured"
+    },
+    "lockouts": [
+      {
+        "path": "/etc/hbnf-glow-overlay-v1.partial-failure",
+        "status": "ABSENT"
+      },
+      {
+        "path": "/etc/hbnf-glow-overlay-v1.pending",
+        "status": "ABSENT"
+      },
+      {
+        "path": "/etc/hbnf-matrix-relay.partial-failure",
+        "status": "ABSENT"
+      }
+    ],
+    "archive_member_count_expected": 2,
+    "archive_member_count_observed": 2,
+    "raw_tar_expected": false,
+    "raw_tar_present": false,
+    "raw_tar_reason": "All four file preimages ABSENT. No installed file bytes to preserve; precise absent-state markers ARE original rollback baseline.",
+    "six_protections": {
+      "no_Opal_or_device_write": true,
+      "no_secret_file_read": true,
+      "no_seven_Owner_www_file_reads_or_writes": true,
+      "no_provider_or_SQL_write": true,
+      "no_firmware_flash": true,
+      "no_router_reset": true
+    },
+    "accepted_scope": "FOUR_TARGETS_AND_CONFIG_PREINSTALL_ABSENT_STATE_CAPTURE_AND_DURABLE_BACKUP_PASS",
+    "requires_fresh_prechange_readback": "YES; device may change after snapshot, do not silently carry snapshot forward as immediate phase1 gate",
+    "later_service_or_physical_acceptance": "NOT_TESTED_NOT_CLOSED",
+    "no_user_repeat_capture_needed_now": true
+  },
+  "current_release_admission_20261104": {
+    "status": "PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION",
+    "last_device_preinstall_readback": "installed_opal_c3_capture_20261104",
+    "opal_absent_and_restore_baseline": "PASS_CAPTURE_AND_DURABLE_DOWNLOADBACK",
+    "four_new_targets": "ALL_FOUR_ABSENT",
+    "secret_config": "ABSENT_AND_CONTENTS_NEVER_READ",
+    "no_conflict_bridge_preinstall": "BOUNDED_PASS",
+    "seven_owner_www_files": "EXCLUDED_PRESERVE_INSTALLED_PWA_V1.0.20",
+    "installer_or_live_source_admitted": false,
+    "next_hard_blocker": "EXACT_COMPILED_EDGE_V35_AND_CANDIDATE_RECOVERY_OR_FORMALLY_APPROVED_EQUIVALENT_SOURCE_RESTORE_NOT_YET_ACCEPTED",
+    "next_independent": "Document/qualify source-equivalent Edge restore from immutable 10-file source + verify_jwt false and deno.json, requiring formal same-manifest acceptance and independent recovery probe; firmware device restore identity still distinct",
+    "firmware_restoration": "ARCHIVE_SHA_VERIFIED_BUT_ACTUAL_DEVICE_FLASH_IDENTITY_AND_RESTORE_NOT_VERIFIED",
+    "scoring_p0": "ORIGINAL_NOV03_4_TEAMS_NOT_PERSISTED_VERIFIED",
+    "same_manifest_phase1_owner_approval": null,
+    "one_combined_physical_acceptance": "NOT_STARTED",
+    "no_Owner_PWA_change": true,
+    "no_device_or_provider_mutation": true
   }
 }
