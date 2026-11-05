@@ -72,15 +72,14 @@ export function wledUvStatePatch(config = UV_OFFLINE_CONFIG, brightness = 0) {
   const levels = brightness && typeof brightness === "object"
     ? brightness
     : Object.fromEntries((Array.isArray(config.segmentIds) ? config.segmentIds : []).map((id) => [id, brightness]));
-  return {
-    on: true,
-    seg: (Array.isArray(config.segmentIds) ? config.segmentIds : []).map((id) => ({
-      id,
-      // Missing, malformed, or uncommissioned values always remain dark.
-      bri: active ? clamp(levels[id], 0, maximum) : 0,
-      on: active && clamp(levels[id], 0, maximum) > 0,
-    })),
-  };
+  const seg = (Array.isArray(config.segmentIds) ? config.segmentIds : []).map((id) => {
+    const bri = active ? clamp(levels[id], 0, maximum) : 0;
+    return { id, bri, on: active && bri > 0 };
+  });
+  // A missing/uncommissioned/zero UV request must never wake the entire AUX
+  // WLED root (and therefore the existing underglow) as a side effect.
+  // Deliberate nonzero UV ON requests still require the full admission path.
+  return { ...(seg.some(channel => channel.on) ? { on: true } : {}), seg };
 }
 
 function clamp(value, minimum, maximum) {
