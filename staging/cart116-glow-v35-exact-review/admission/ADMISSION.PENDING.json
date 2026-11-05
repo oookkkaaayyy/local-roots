@@ -2096,6 +2096,165 @@
       "must_not_mutate_scoring_p0": true,
       "no_production_sql_or_edge_change": true,
       "owner_action_now": "NONE"
+    },
+    "preventative_correction": {
+      "schema": "cart116-20261104-c7-end-to-end-gap-closure-source-only-v1",
+      "parent_HEAD": "c6d10df6477db18abed3a57002f8b631c530a666",
+      "source_branch": "review/cart116-glow-canonical-intent-20261103",
+      "full_path_preflight": {
+        "service_entry": "Supabase Edge hbnf-cart-control: POST glow_scoreboard_intent OR distinct service-only glow_scoreboard_preview; no authenticated Cart worker trigger claimed",
+        "backend_auth": "Authorization: Bearer existing SUPABASE_SERVICE_ROLE_KEY only; no anon, Guest, PWA or open source writes",
+        "snapshot_rpc": "public.hbnf_cart_glow_source_snapshot(p_week_date text) RETURNS jsonb; source+binding read only; 32-hex MD5 of exact canonical week, UTC updated_at microsecond revision, immutable 64-hex XLSX export signature",
+        "original_score": "public.league_state.id=1 glow/weeks/date; S1 4 teams PAR59, accepted authoritative week MD5 90494f540fc2ae184fdd142d70b99334; Nov03 historical only",
+        "event_binding": "public.hbnf_udisc_glow_event_bindings(event_date unique,event_id unique, window_start,window_end); actual 2026-11-03 expired; 2026-11-10 and 2026-11-17 scheduled",
+        "planner": "candidate-source/hbnf-glow-cart-intent.mjs: exact binding ID+week, fresh status and lastSuccessAt <=10m, current event window, active week, source signature+updated_at and Cart desired/fence, priority20 under Owner priority60; no fixed Nov03 live",
+        "commit_rpc": "public.hbnf_cart_commit_glow_intent(text,text,text,text,bigint,bigint,text,uuid,text,jsonb) RETURNS jsonb; source FOR SHARE + fingerprint/signature/event validation; existing Cart fence SHARE, desired UPDATE CAS, existing internal command commit+receipt, no score writes",
+        "relay": "Reviewed Edge matrix-relay.ts remains admitted:false, versioned four challenge RPCs with one open challenge per cart, preimage SHA, 20s TTL, native ID, one-use ACK and explicit restored",
+        "opal": "Only FOUR new exact C1 path postimages, C3 private all-absent baseline+durable download-back; three admission gates FALSE; no legacy relay or Owner /www replacement",
+        "matrix": "Corrected ORIGINAL-target R6 85796804..., old installed R6 rollback de38221f..., native Owner TEXT priority gate not installed/physically accepted, ps=-1 FX142/preset WOW MAX baseline no AUX writes, TTL explicit restoration",
+        "owner": "Seven protected Owner PWA v1.0.20 files unchanged; iPad Safari12 direct WebSocket and reconnect remains installed acceptance, future one-session physical evidence not present",
+        "edge_restore": "C7 prior conditional v35 source-equivalent recovery only (10/10 exact original source/config), compiled ESZip parity never claimed",
+        "network": "Track B accepted source-only, not physically installed; no WAN/router changes in this release",
+        "UV": "U2 source-only fail-OFF, no energization, no AUX/UV writes, two PWM configured OFF"
+      },
+      "migration": {
+        "forward_path": "staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql",
+        "forward_git_blob": "e14ccfa3dba0eaace825aafa7c14f22454720c49",
+        "inverse_path": "staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql",
+        "inverse_git_blob": "7d5271d1aaa7a1acaf5dcce16448030c79ff3e3b",
+        "six_exact_function_names": [
+          "hbnf_cart_glow_source_snapshot",
+          "hbnf_cart_commit_glow_intent",
+          "hbnf_cart_glow_overlay_v1_issue",
+          "hbnf_cart_glow_overlay_v1_authorize",
+          "hbnf_cart_glow_overlay_v1_ack",
+          "hbnf_cart_glow_overlay_v1_restored"
+        ],
+        "rollback": "Guard refuses unresolved native overlay challenges; reverse two new source/commit functions then four versioned overlay functions and challenge table; preserve legacy Cart desired/fence/receipts and S1 league_state",
+        "deployed": false,
+        "provider_rpc_count": 0,
+        "provider_20261104_receipt": "PRODUCTION_STILL_ZERO_BEFORE_C7_SOURCE_CHANGE",
+        "no_secret_values": true
+      },
+      "candidate_source": {
+        "reviewed_candidate_tree_git_SHA1": "b04ab2e8e2673be097f800dc1d31985f63e71381",
+        "total_exact_review_sources": 15,
+        "added": [
+          [
+            "glow-intent-service.mjs",
+            "e99e26ea452f97bda365fe067e93e9462e0bc3ec"
+          ],
+          [
+            "glow-overlay-v1-handler.mjs",
+            "0d52dfa2f41f162c85948f80f5a01da07f14cf47"
+          ],
+          [
+            "glow-relay-preservation.mjs",
+            "d8b118b4e04b2054c63d706e1e9e5e1d3747f231"
+          ],
+          [
+            "hbnf-glow-cart-intent.mjs",
+            "97cbfa61bc142a803cb386e9f4131b5167165ac6"
+          ],
+          [
+            "matrix-overlay-safe-review.mjs",
+            "b9a15f43606e8734c2bc34f98e08eebad090f9ec"
+          ]
+        ],
+        "modified": [
+          [
+            "index.ts",
+            "017eea939643850fd38182a5ecd3404167cb4b27",
+            "4d7d978e1e9312693a6b48d7fe9c5c572cd487cc"
+          ],
+          [
+            "matrix-relay.ts",
+            "8b4eccf738c2f76faead74589897f5f2fe2a89f8",
+            "cd689948a7b77073af035bf5623e159e22a13b86"
+          ]
+        ],
+        "identical_unchanged_eight": [
+          "deno.json",
+          "guest-command.ts",
+          "live.ts",
+          "matrix-relay-auth.ts",
+          "matrix-relay-projection.ts",
+          "pairing-expiry.mjs",
+          "runtime-vibe.ts",
+          "skins_scoring.ts"
+        ],
+        "all_local_relative_imports_resolved": "PASS_15_EDGES_ZERO_MISSING_C7_READ_ONLY_IMPORT_AUDIT",
+        "exact_existing_test_evidence": "PG17_41694282141_step_PASS;Deno_41694531461_SUCCESS;C1_41808438162_and_41811101246_SUCCESS; no rerun",
+        "source_gates_initially": false,
+        "compiled_successor_ESZip_bytes_sha256": null,
+        "candidate_source_qualified_not_deploy_admitted": true,
+        "verification": "SOURCE_GRAPH_GIT_TREE_PINNED_HOSTED_C7_CHANGED_ONLY_TESTS_PENDING"
+      },
+      "historical_preview": {
+        "explicit_action": "glow_scoreboard_preview",
+        "auth": "DEDICATED_SERVICE_ROLE_ONLY",
+        "delivery_policy": "HISTORICAL_PREVIEW_ONLY_NO_ACTUATION",
+        "output": "Read-only authoritative standings/revision/fingerprint, staleForLive=true, actuationAllowed=false, no Cart/reducer/Opal/provider SQL write",
+        "S1_event_id": "hb-glow-doubles-tAP8Y5",
+        "S1_event_date": "2026-11-03",
+        "S1_status_state": "NULL_NOT_FAKE_FRESH",
+        "auto_live_eligible": false,
+        "physical_display_of_historical_S1": "NOT_ADMITTED_NO_DIRECT_DEVICE_PREVIEW_ACTUATION"
+      },
+      "upcoming_live": {
+        "scheduled_bindings": [
+          "2026-11-10:hb-glow-doubles-af85rU",
+          "2026-11-17:hb-glow-doubles-C1mFl8"
+        ],
+        "actual_permitted_next_event_export": "NOT_YET_OBTAINED",
+        "required_real_live_ingestion": "Only authorized Scoring P0 may persist new event XLSX and fresh status/lastSuccessAt, source signature, authoritative revision and event date; no invented live polling or score replay",
+        "independent_worker_invoker": "NOT_CONFIRMED_CURRENT_DEPLOYMENT",
+        "automatic_scoreboard_live_activation": false
+      },
+      "tests": {
+        "changed_only_node": "tests/native-release/c7-source-intent-contract.test.mjs",
+        "node_count": 9,
+        "head": "b2249e0da51eb4a676d752aa9cffeb9e735b3f8b",
+        "node_current_CI": "9_OF_9_PASS_EXACT_HEAD_B224_RUN_41980351143",
+        "narrow_pg": "tests/native-release/c7-pg-source-cas.sh",
+        "pg_current_CI": "FAIL_REPAIR_IN_PROGRESS: initial SQL dollar-anchor text corruption fixed at source commit 83452eea6c6fdac6e79bcddcd4f7306825455af3; new targeted exact-head run not yet complete",
+        "source_validator": "admission/check_c6_source_restore.py; requires update of candidate/SQL pins",
+        "no_accepted_suite_rerun_intended": true
+      },
+      "protected_files": {
+        "opal_four_c3_sha": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
+        "new_services_four_exact_C1_postimages": [
+          [
+            "usr/libexec/hbnf-cart-glow-bridge",
+            "97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c"
+          ],
+          [
+            "etc/init.d/hbnf-cart-glow-bridge",
+            "e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7"
+          ],
+          [
+            "usr/libexec/hbnf-cart-glow-provision",
+            "fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20"
+          ],
+          [
+            "usr/lib/hbnf-glow-overlay-v1.sh",
+            "de51e9ace05f876124886089b841c6f5858b91ee4d42a3260f7e8f1788146538"
+          ]
+        ],
+        "seven_Owner_excluded": true,
+        "firmware_original_sha": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+        "firmware_corrected_sha": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16"
+      },
+      "admission": {
+        "state": "REVIEW_ONLY_C7_SQL_CORRECTION_CHANGED_ONLY_PG_AND_STATIC_VALIDATOR_PENDING",
+        "source_gates_false": true,
+        "installer_generated": false,
+        "one_use_source_enabled_postimage_sha": null,
+        "no_SQL_Edge_Opal_R6_PWA_AUX_or_UV_live_mutation": true,
+        "closeout": "C7 PG/source PASS is not live; prechange provider/device readback, physical safe OTA, real future fresh event, one combined field session and same-manifest recovery still needed",
+        "first_hard_blocker": "OFFLINE_C7_POSTGRES_CAS_CONTRACT_AND_MANIFEST_EXACT_SOURCE_VALIDATOR_NOT_YET_PASSING",
+        "next_independent": "Update exact static manifest/validator source hash pins, run C7-only PG17/Node tests, then finalize prechange gate; no live mutation before pass"
+      }
     }
   }
 }
