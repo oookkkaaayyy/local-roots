@@ -14,7 +14,7 @@ import sys
 
 ROOT = pathlib.Path("staging/cart116-glow-v35-exact-review")
 ORIGINAL = "74dd1d687de44eacb20eff8e3960d9129948ef88"
-CANDIDATE = "7c5ddec5c06a25e9187e98663db7210038449404"
+CANDIDATE = "b04ab2e8e2673be097f800dc1d31985f63e71381"
 C3_CAPTURE = "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a"
 R6_ORIGINAL = "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d"
 R6_REVIEW = "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16"
@@ -59,7 +59,8 @@ def audit(m, work):
            "unexpected installed mutation")
     q=m["dora_c6_20261104"]
     original=q["exact_provider_v35_existing_installed"]
-    candidate=q["narrow_compiled_edge_successor_source"]
+    correction=m["dora_c7_20261104"]["preventative_correction"]
+    candidate=correction["candidate_source"]
     s=q["immutable_minimal_release_scope"]
     demand(original["project"]=="phcpbvuqibyarpfrftgx" and original["function_slug"]=="hbnf-cart-control",
            "wrong provider target")
@@ -88,11 +89,11 @@ def audit(m, work):
            "candidate relative imports not closed")
     verify_tree(work/"rollback-v35",o,ORIGINAL)
     verify_tree(work/"candidate-source",c,CANDIDATE)
-    sql=s["SQL"]
+    sql=correction["migration"]
     demand(git_blob(read_file(work/"migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql")) ==
-           sql["up_git_blob"], "SQL forward source mismatch")
+           sql["forward_git_blob"], "SQL forward source mismatch")
     demand(git_blob(read_file(work/"migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql")) ==
-           sql["down_git_blob"], "SQL inverse source mismatch")
+           sql["inverse_git_blob"], "SQL inverse source mismatch")
     exact={
         "/usr/libexec/hbnf-cart-glow-bridge":"opal/new-service/usr/libexec/hbnf-cart-glow-bridge",
         "/etc/init.d/hbnf-cart-glow-bridge":"opal/new-service/etc/init.d/hbnf-cart-glow-bridge",
@@ -155,6 +156,45 @@ def audit(m, work):
            and edge["status"]=="METHOD_ACCEPTED_CONDITIONAL_LIVE_RECOVERY_NOT_VERIFIED"
            and edge["compiled_eszip_equivalence_claimed"] is False,
            "source-equivalent governance policy absent or overstated")
+    # C7 preventative release-path criterion: both real service RPCs exist
+    # in the reviewed migration, and its inverse removes both. Historical
+    # previews do not travel through the native actuation/fence path.
+    up=read_file(work/"migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql").decode("utf-8")
+    down=read_file(work/"migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.down.sql").decode("utf-8")
+    for name in ["hbnf_cart_glow_source_snapshot","hbnf_cart_commit_glow_intent"]:
+        demand("CREATE FUNCTION public."+name+"(" in up, "missing C7 source RPC: "+name)
+        demand("DROP FUNCTION IF EXISTS public."+name+"(" in down, "missing C7 inverse: "+name)
+        demand("GRANT EXECUTE ON FUNCTION public."+name+"(" in up, "unqualified source RPC privilege: "+name)
+    for keyword in ["FROM public.hbnf_udisc_glow_event_bindings",
+                    "FROM public.league_state WHERE id=1 FOR SHARE",
+                    "md5(v_week::text) IS DISTINCT FROM p_fingerprint",
+                    "hbnf_internal.hbnf_cart_commit_command",
+                    "historical_or_cross_event_source_not_live",
+                    "non_overlay_canonical_state_change",
+                    "manual_or_owner_overlay_active"]:
+        demand(keyword in up, "C7 SQL authorization/revision/event invariant missing: "+keyword)
+    demand("unresolved_overlay_v1_challenge_requires_device_recovery" in down,
+           "SQL inverse drops unresolved active challenge")
+    planner=read_file(work/"candidate-source/hbnf-glow-cart-intent.mjs")
+    source_service=read_file(work/"candidate-source/glow-intent-service.mjs")
+    demand(b"2026-11-03" not in planner and b"2026-11-03" not in source_service,
+           "expired historical week still hardcoded for live scoring")
+    demand(b"status?.state!=='fresh'" in planner and b"now<start||now>end" in planner,
+           "future live event missing verified clock/source freshness")
+    demand(b"glow_scoreboard_preview" in source_service and
+           b"HISTORICAL_READ_ONLY" in source_service and
+           b"actuationAllowed:false" in source_service and
+           b"nativeOverlayAdmitted!==true" in source_service,
+           "historical preview was mixed into actuation")
+    demand(correction["historical_preview"]["auto_live_eligible"] is False,
+           "C7 manifest falsely admits S1 historical live replay")
+    demand(correction["admission"]["source_gates_false"] is True and
+           correction["admission"]["no_SQL_Edge_Opal_R6_PWA_AUX_or_UV_live_mutation"] is True,
+           "C7 manifest falsely promotes installed source")
+    acceptance=read_file(work/"admission/ONE_COMBINED_FIELD_ACCEPTANCE.md").decode("utf-8")
+    demand("ps60" not in acceptance and "nine-target" not in acceptance and
+           "ps=-1" in acceptance and "FX142" in acceptance,
+           "stale field acceptance ps60/nine-target procedure")
     idx=read_file(work/"candidate-source/index.ts")
     relay=read_file(work/"candidate-source/matrix-relay.ts")
     helper=read_file(work/"opal/hbnf-glow-overlay-v1.sh")
