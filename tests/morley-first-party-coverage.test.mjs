@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import {PGlite} from "@electric-sql/pglite";
 
-const forward=await readFile(new URL("../supabase/migrations/20261104170000_add_morley_first_party_course_championships.sql",import.meta.url),"utf8");
+const forward=await readFile(new URL("../supabase/migrations/20261105002000_add_morley_first_party_course_championships.sql",import.meta.url),"utf8");
 const reverse=await readFile(new URL("../scripts/restore-morley-first-party-course-championships-2026.sql",import.meta.url),"utf8");
 const slugs=["morley-field-amateur-course-championships-2026","morley-field-pro-course-championship-2026"];
 

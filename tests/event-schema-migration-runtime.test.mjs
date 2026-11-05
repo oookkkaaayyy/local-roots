@@ -6,7 +6,7 @@ import { PGlite } from "@electric-sql/pglite";
 const migrationDir = new URL("../supabase/migrations/", import.meta.url);
 const candidateMigration = "20261101070000_event_detail_fields_and_provenance.sql";
 const scheduleReconciliationMigration = "20261101080000_reconcile_verified_schedule_fields.sql";
-const excludedBaselineMigration = /(?:_du_|du_|fix_du|harden_du|gallery_legacy|migrate_du|fill_socal_championship_course|harden_remaining_public_helper_execute|hbnf_owner_confirmed_glow_schedule|20261101080000)/i;
+const excludedBaselineMigration = /(?:_du_|du_|fix_du|harden_du|gallery_legacy|migrate_du|fill_socal_championship_course|harden_remaining_public_helper_execute|hbnf_owner_confirmed_glow_schedule|20261105002000|20261101080000)/i;
 
 test("event detail migration runs in PostgreSQL and keeps patch, validation, and override behavior", async () => {
   const db = new PGlite();
