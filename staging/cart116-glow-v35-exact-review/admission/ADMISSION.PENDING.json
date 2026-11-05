@@ -53,9 +53,12 @@
     "matrix_track_c_head": "979e8d729ba2b8bef8a2c8400227fe0b34106e19",
     "networking_final_head": "272f18ae64e8d8f531d8d03b0a0ae8574d66b45b",
     "repo": "oookkkaaayyy/local-roots",
-    "current_review_source_head": "36483c2be61c4792c6657cf8f3f454765530b075",
+    "current_review_source_head": "0a196f0be040ffb39116a9f2138188e31496276f",
     "matrix_owner_priority_review_patch_head": "4af57d8c0d94e0a0966b1735f45f660d769da6a0",
-    "matrix_track_c_exact_r6_reproduced_head": "ea257573f390eef8bd6f42668b25399f2e4ce8cb"
+    "matrix_track_c_exact_r6_reproduced_head": "ea257573f390eef8bd6f42668b25399f2e4ce8cb",
+    "current_review_source_head_kind": "exact source/test commit, NOT the moving branch HEAD following evidence-only manifest commits",
+    "legacy_head_nonblocking_candidate_source_only": true,
+    "legacy_matrix_track_c_head_source_only": true
   },
   "failure_recovery": [
     {
@@ -88,8 +91,8 @@
     "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_ONLY: original packet20_diag R6-target Owner priority binary 85796804... independently reproducible; original ps=-1 FX142 and audio/DDP code preserved; installed native renderer/priority/physical display unverified; no preset60 forcing.",
     "aux_gpio16_22rgb_pwm25_26": "SOURCE_GUARD_PASS_24_LOGICAL_22_RGB_2_OFF_PWM; packet-level DDP and physical PWM off not visually/electrically accepted",
     "physical_owner_priority_autoexpiry_reconnect": "NOT_CHECKED; one combined field session remains required, no HTTP ACK substitute",
-    "provider_compiled_edge_candidate_and_rollback": "BLOCKED STRICT BYTE-EQUIVALENCE: provider v35 10/10 original source bytes match immutable Git tree 74dd1d..., config and dependency pinned, 15-file candidate graph source-closed; compiled ESZip original and candidate not retrieved; proposed source-equivalent restore requires formally accepted control-plane alternate criterion and runtime/restore validation. No provider write.",
-    "versioned_sql_and_edge": "SOURCE RECOVERY PASS, SCORE INTENT INTEGRATION FAIL-CLOSED: hbnf_cart_glow_source_snapshot and hbnf_cart_commit_glow_intent absent from production/SQL up; local Nov03 planner requires fresh 10min UDisc sync within Nov03 window, current accepted S1 history does not satisfy. Do not enable source actuation.",
+    "provider_compiled_edge_candidate_and_rollback": "C7 METHOD ACCEPTED CONDITIONAL: original Edge v35 ten exact source files match immutable off-provider Git tree and deployment config. Provider's compiled ESZip bytes unavailable; source-equivalent recovery is bounded and does NOT claim compiled-byte equality. Existing exact candidate 15-file tree C7 source-review qualified, deployed candidate identity and restoration runtime untested; no provider write.",
+    "versioned_sql_and_edge": "C7 REVIEW SOURCE INTEGRATION PASS: snapshot and canonical Cart intent commit RPCs declared in existing versioned SQL alongside four challenge RPCs. Exact-head hosted 41981417931 new Node 9/9 and isolated PG17 CAS/replay/inverse PASS; static source gate PASS. PRODUCTION SQL still no C7/v1 RPCs deployed, Edge installed remains v35; live event source freshness and device/owner physical actuation not accepted.",
     "new_service_start_and_conflict_audit": "C3 PRE-INSTALL READ-ONLY ABSENCE/NO-CONFLICT PASS AS CAPTURED (0 bridge/0 legacy, procd not listed, locks absent); new service never installed nor started; eventual authenticated post-install service and Owner WS acceptance NOT_RUN.",
     "manifest_one_time_approval": "NULL, no approval requested until independent recovery and native Owner priority gate pass",
     "phase1_phase2": "PENDING_NOT_ADMITTED; all source gates false and release includes no production changes",
@@ -2115,7 +2118,17 @@
         "owner": "Seven protected Owner PWA v1.0.20 files unchanged; iPad Safari12 direct WebSocket and reconnect remains installed acceptance, future one-session physical evidence not present",
         "edge_restore": "C7 prior conditional v35 source-equivalent recovery only (10/10 exact original source/config), compiled ESZip parity never claimed",
         "network": "Track B accepted source-only, not physically installed; no WAN/router changes in this release",
-        "UV": "U2 source-only fail-OFF, no energization, no AUX/UV writes, two PWM configured OFF"
+        "UV": "U2 source-only fail-OFF, no energization, no AUX/UV writes, two PWM configured OFF",
+        "actual_selector": "Existing provider v35 live.ts chooseLive(state) confirmed source branch: LA local today, Glow week active players, returns {active:true,event:'glow',label:'GLOW',entries:glowEntries} from current saved team scores; no separate new scores writer.",
+        "provider_calls_currently_installed": "PRODUCTION Edge ACTIVE v35 original 10 files only; C7 candidate 15 files and six SQL functions are NOT INSTALLED",
+        "verified_source_function_contracts": {
+          "snapshot": "p_week_date text -> jsonb; event_date unique and event_id unique, authoritative lease against league_state id1, source revision updated_at UTC microseconds, MD5 week fingerprint, immutable XLSX signature",
+          "commit": "10 exact arguments ordered weekDate,sourceRevision,fingerprint,signature,cartRevision,fenceEpoch,releaseId,command UUID,intentKey,nextState jsonb; service-role only, source SHARE lock + event/window/fresh<=10m + fingerprint+signature; fence SHARE and desired UPDATE and receipt-backed internal command",
+          "preview": "service_role-only `glow_scoreboard_preview` returns historical read-only standing; no cart/reducer/commit; source S1 November 3 not live",
+          "relay": "separate overlay_v1_issue/authorize/ack/restored RPCs, future stage not installed, prior C7 validated",
+          "historical_time": "2026-11-03 persisted 4 teams source, udiscSync.status null and binding expired, expressly rejected for live command",
+          "future_authorized_delivery": "nov10/nov17 event bindings already present, but only P0 can persist genuine new UDisc event score+fresh status; not assumed available"
+        }
       },
       "migration": {
         "forward_path": "staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql",
@@ -2134,7 +2147,8 @@
         "deployed": false,
         "provider_rpc_count": 0,
         "provider_20261104_receipt": "PRODUCTION_STILL_ZERO_BEFORE_C7_SOURCE_CHANGE",
-        "no_secret_values": true
+        "no_secret_values": true,
+        "current_up_exact_git_blob": "e14ccfa3dba0eaace825aafa7c14f22454720c49"
       },
       "candidate_source": {
         "reviewed_candidate_tree_git_SHA1": "b04ab2e8e2673be097f800dc1d31985f63e71381",
@@ -2188,7 +2202,8 @@
         "source_gates_initially": false,
         "compiled_successor_ESZip_bytes_sha256": null,
         "candidate_source_qualified_not_deploy_admitted": true,
-        "verification": "SOURCE_GRAPH_GIT_TREE_PINNED_HOSTED_C7_CHANGED_ONLY_TESTS_PENDING"
+        "verification": "SOURCE_GRAPH_GIT_TREE_PINNED_HOSTED_C7_CHANGED_ONLY_TESTS_PENDING",
+        "exact_tested_git_tree": "b04ab2e8e2673be097f800dc1d31985f63e71381"
       },
       "historical_preview": {
         "explicit_action": "glow_scoreboard_preview",
@@ -2215,11 +2230,14 @@
         "changed_only_node": "tests/native-release/c7-source-intent-contract.test.mjs",
         "node_count": 9,
         "head": "b2249e0da51eb4a676d752aa9cffeb9e735b3f8b",
-        "node_current_CI": "9_OF_9_PASS_EXACT_HEAD_B224_RUN_41980351143",
+        "node_current_CI": "PASS_9_OF_9_EXACT_SHA_0a196f0be040ffb39116a9f2138188e31496276f_GITHUB_RUN_41981417931",
         "narrow_pg": "tests/native-release/c7-pg-source-cas.sh",
-        "pg_current_CI": "FAIL_REPAIR_IN_PROGRESS: initial SQL dollar-anchor text corruption fixed at source commit 83452eea6c6fdac6e79bcddcd4f7306825455af3; new targeted exact-head run not yet complete",
-        "source_validator": "admission/check_c6_source_restore.py; requires update of candidate/SQL pins",
-        "no_accepted_suite_rerun_intended": true
+        "pg_current_CI": "PASS_NATIVE_PG17_EPHEMERAL_AUTHORITY_FINGERPRINT_EVENT_TIME_SOURCE_CAS_REPLAY_OWNER_NEGATIVES_GUARDED_INVERSE_GITHUB_RUN_41981417931",
+        "source_validator": "PASS_EXACT_SHA_0a196f0be040ffb39116a9f2138188e31496276f_CURRENT_C7_15_SOURCE_TREE_2_NEW_RPCS_FOUR_OPAL_TARGETS_AND_NATIVE_GUARDS",
+        "no_accepted_suite_rerun_intended": true,
+        "hosted_CI_run_id": 41981417931,
+        "hosted_CI_job_id": 127092129375,
+        "existing_accepted_PG_Deno_C1_rerun": false
       },
       "protected_files": {
         "opal_four_c3_sha": "6c8c96385d16b1230730df86f1791b492bca18144df71d2b1bdf521b3c533b2a",
@@ -2246,14 +2264,26 @@
         "firmware_corrected_sha": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16"
       },
       "admission": {
-        "state": "REVIEW_ONLY_C7_SQL_CORRECTION_CHANGED_ONLY_PG_AND_STATIC_VALIDATOR_PENDING",
+        "state": "REVIEW_SOURCE_AND_C7_CHANGED_ONLY_NEGATIVE_TESTS_PASS_NOT_INSTALL_ADMITTED",
         "source_gates_false": true,
         "installer_generated": false,
         "one_use_source_enabled_postimage_sha": null,
         "no_SQL_Edge_Opal_R6_PWA_AUX_or_UV_live_mutation": true,
         "closeout": "C7 PG/source PASS is not live; prechange provider/device readback, physical safe OTA, real future fresh event, one combined field session and same-manifest recovery still needed",
-        "first_hard_blocker": "OFFLINE_C7_POSTGRES_CAS_CONTRACT_AND_MANIFEST_EXACT_SOURCE_VALIDATOR_NOT_YET_PASSING",
-        "next_independent": "Update exact static manifest/validator source hash pins, run C7-only PG17/Node tests, then finalize prechange gate; no live mutation before pass"
+        "first_hard_blocker": "CURRENT_AUTHENTICATED_CART_LAN_READBACK_AND_SAFE_R6_OTA_RESTORE_ROUTE_NOT_AVAILABLE_TO_CHAT; PROVIDER/SQL_C7_CANDIDATE_NOT_DEPLOYED",
+        "next_independent": "Preserve exact 15-file reviewed Edge candidate/10-file v35 source-equivalent rollback and versioned SQL up/down, original R6 candidate+rollback and four-new-Opal absent-state backup. Next installation requires actual connected device prechange identity and one exact approved one-use manifest, then sequential SQL/Edge inert phase plus native/Opal and single owner-present field acceptance using genuinely fresh Scoring P0 event; fail closed on any mismatch.",
+        "live_provider_gates": {
+          "sql_live_deployed": false,
+          "edge_live_deployed": false,
+          "opal_four_targets_installed": false,
+          "matrix_corrected_r6_installed": false,
+          "live_new_event_source_available": false,
+          "native_owner_priority_physically_accepted": false,
+          "seven_protected_owner_pwa_file_writes": false,
+          "wifi_router_or_uv_change": false,
+          "no_unadmitted_mutation": true
+        },
+        "resumption_trigger": "Authenticated owner-present Cart-LAN availability for same-manifest prechange Matrix/Opal/OTA restore checks, with next eligible freshly scored authorized event for final live display; source gate alone never starts physical stage."
       }
     }
   }
