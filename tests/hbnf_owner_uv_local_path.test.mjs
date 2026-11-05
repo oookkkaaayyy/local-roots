@@ -86,6 +86,9 @@ test("WAN-independent Cart control does not send UV requests through raw local W
   assert.match(packageBuilder, /UV physical safety profile incomplete or not hard-closed/);
   assert.match(packageBuilder, /UV current owner as-wired observation missing or falsely marked disconnected/);
   assert.match(packageBuilder, /opto_isolated_cv_pwm_repeater/);
+  assert.match(packageBuilder, /Opal and cloud UV executable modes must remain identical/);
+  assert.match(packageBuilder, /commandModes/);
+  assert.match(packageBuilder, /offlineSimulationOnlyModes/);
   assert.match(localUvRuntime, /ipairs\(policy\.requiredPhysicalSafetyGates\)/);
   assert.match(localUvRuntime, /profile\.physicalSafety\[key\] ~= true/);
   assert.match(localUvRuntime, /switching\.method ~= switchingSpec\.method/);
