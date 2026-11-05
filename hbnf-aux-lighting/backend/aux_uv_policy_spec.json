@@ -71,6 +71,7 @@
   },
   "requiredPhysicalSafetyGates": [
     "externalSignalToLoadIsolationVerified",
+    "pwmInputFrequencyMeasuredAndCompatible",
     "separate5vUvAnd12vAuxRailsVerified",
     "physicalTwoChannelOffVerified",
     "manualCutoffVerified",
