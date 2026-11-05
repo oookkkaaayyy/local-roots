@@ -40,6 +40,19 @@ function M.profile_ready(profile, policy)
     end
   end
 
+  -- The Opal local command path must enforce the same physical UV cutoff,
+  -- isolated signal-to-load power domains, optical interlock, and fail-OFF
+  -- contract as the AUX backend. A profile label alone never enables UV.
+  if type(policy.requiredPhysicalSafetyGates) ~= "table"
+      or #policy.requiredPhysicalSafetyGates == 0 then
+    return false, "uv_physical_safety_contract_missing"
+  end
+  for _, key in ipairs(policy.requiredPhysicalSafetyGates) do
+    if type(profile.physicalSafety) ~= "table"
+        or profile.physicalSafety[key] ~= true then
+      return false, "uv_physical_safety_gate_incomplete"
+    end
+  end
   local hw = profile.hardware or profile
   local main = hw.channels and hw.channels.main
   local short = hw.channels and hw.channels.short
@@ -75,9 +88,16 @@ function M.profile_ready(profile, policy)
   local max_channel = tonumber(switching.maxChannelCurrentMa) or 0
   local max_total = tonumber(switching.maxTotalCurrentMa) or 0
   local max_brightness = tonumber(hw.maxBrightness) or 0
+  local frequency = tonumber(switching.pwmFrequencyHz) or 0
+  local frequency_limits = switchingSpec.pwmFrequencyHz or {}
   if not channel_ready(main, supplies.main or {}, policyChannels.main or {})
       or not channel_ready(short, supplies.short or {}, policyChannels.short or {})
       or switching.verified ~= true or switching.isolated ~= true
+      or switching.method ~= switchingSpec.method
+      or tonumber(switching.inputVoltageV) ~= tonumber(switchingSpec.controlVoltage)
+      or tonumber(switching.outputVoltageV) ~= tonumber(switchingSpec.loadVoltage)
+      or frequency < (tonumber(frequency_limits.minimum) or math.huge)
+      or frequency > (tonumber(frequency_limits.maximum) or 0)
       or (tonumber(switching.maxLoadVoltageV) or 0) < max_load_voltage
       or (tonumber(switching.controlInputMinVoltage) or math.huge) > control_voltage
       or (tonumber(switching.controlInputMaxVoltage) or 0) < control_voltage
