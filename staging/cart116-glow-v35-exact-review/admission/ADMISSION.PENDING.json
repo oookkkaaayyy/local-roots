@@ -2367,5 +2367,98 @@
     "hard_gate_status": "PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION",
     "execution_priority": "Keep working Owner PWA and installed original R6 unchanged; no premature provider stage. One combined owner-present field session only when connected device access plus full same-manifest candidate/recovery gating and an independently eligible genuine current scored event are available.",
     "owner_action_now": "NONE; Cart-LAN physical presence becomes indispensable only at the admitted combined field session."
+  },
+  "dora_c9_firmware_only_20261105": {
+    "schema": "cart116-controls-c9-single-target-firmware-only-admission-v1",
+    "issue_authority": "#116; sole Controls release owner; THIS SAME ADMISSION.PENDING.json, not a second release authority",
+    "purpose": "Smallest course-visible R6 native Owner TEXT priority plus Motion/AudioResponse/scene persistence, independent of C8 six-RPC Glow overlay. Candidate does not claim to solve WAN/no-WAN perceptual difference.",
+    "lane": "MATRIX_FIRMWARE_ONLY; OPTIONAL FIRST STAGE OF EXISTING ONE FIELD SESSION",
+    "status": "OFFDEVICE_SOURCE_RECOVERY_PASS; PHASE0_PHYSICAL_RECOVERY_PENDING; NOT_APPROVED_FOR_FLASH",
+    "exact_scope": {
+      "target": "Matrix only, observed fixed LAN target 192.168.77.10, original R6 ESP32 4MB packet20_diag",
+      "candidate_release": "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104",
+      "firmware_bin_sha256": "429f7f00d1da72fcd926935f10140c0048f78a2aa7340a7cd748029941b1f0fa",
+      "firmware_bytes": 1506192,
+      "ota_slot_bytes": 1572864,
+      "headroom_bytes": 66672,
+      "source_cpp_sha256": "d241e9aba35302527ee326f48bee99c0e4715bfa8b131acff1be9297684af2db",
+      "source_commit": "fcfbaa3c8056ea2b394f849ec6b75b6757db3ac7",
+      "target_build": "hbnf_matrix_wled16_packet20_diag",
+      "new_release_marker_expected_in_build_json": "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104"
+    },
+    "candidate_archival_evidence": {
+      "drive_id": "1V7EX8n_cGsHSvMem2Ic6r5xaFlBbS4w0",
+      "drive_file": "Cart116-R6-OwnerSafe-TuningPersistence-REVIEW_ONLY-20261104.zip",
+      "zip_bytes": 2282608,
+      "zip_sha256": "89bfdb868e1bec87b36d8db46177b57bb16f928bdbea4033e1c86679568690e2",
+      "download_back_current_turn_sha256_exact": true,
+      "zip_crc": "PASS",
+      "embedded_sha256_entries": "9/9 PASS",
+      "build_run": 41989477421,
+      "build_job": 127118000170,
+      "hosted_build_status": "SUCCESS",
+      "focus_cpp17_verbatim_methods": "PASS per #116 comment 6652743326; device persistence NOT TESTED",
+      "physical_install": "NOT_RUN"
+    },
+    "original_rollback": {
+      "drive_id": "1YX2B4XG60FOy6SjI7xV_f6DC8QWidUIj",
+      "file": "hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
+      "file_bytes": 1506032,
+      "file_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "download_back_current_turn_exact_sha256": true,
+      "original_installed_source_install_witness": "ACCEPTED HISTORICAL via #116 6648178391 AKS exception, NOT current prechange physical identity or raw flash SHA",
+      "browser_rollback_if_wled_still_boots": "POSSIBLE ONLY AFTER LIVE CONFIRMATION; upload original BIN via /update and verify old release",
+      "nonbooting_recovery": "NOT VERIFIED: physical accessible ESP32 USB/bootloader, safe WebSerial GUI and custom-app offset/partition map must be proved before flash; do not assume WLED OTA recovers a bricked device"
+    },
+    "independence": {
+      "required_for_firmware_only": [
+        "Same manifest firmware-only phase0 and phase1 PASS",
+        "Current authenticated Matrix build/MAC/board/partition/OTA and original baseline",
+        "Both candidate and original BIN locally present with matching SHA, durable download-back",
+        "Safe device-local GUI OTA upload AND verified recovery if device fails to boot, without Terminal",
+        "Owner-present stable power, same-session prechange and exact postchange readbacks"
+      ],
+      "not_required_for_firmware_only": [
+        "Six uninstalled Cart SQL RPCs",
+        "Edge v35 replacement",
+        "Four new Opal bridge targets or protected config",
+        "Cloudflare UDisc automations or live in-round score",
+        "New source tag/Scoring release"
+      ],
+      "full_overlay_C8_manifest_not_modified": true
+    },
+    "exact_preserve": [
+      "Unchanged seven installed Owner PWA www assets and local direct WS",
+      "Owner TEXT highest priority and no retroactive Glow override",
+      "WLED native two FX142 segments and ps=-1",
+      "WOW MAX, Vibe, Energy, Variation, 28 custom effects, brightness and settings",
+      "32x16 native Matrix plus 22 DDP-companion existing geometry",
+      "AUX GPIO16 DDP22, synchronization, GPIO25/26 software flags only",
+      "Owner-reported physically energized UV when AUX powered; do not alter rails, wiring or PWM",
+      "Router WLAN/WAN settings, Edge, Opal, SQL and Scoring"
+    ],
+    "phase0_evidence": {
+      "upstream_reference": "WLED official /features/subpages (GET /update,/json/state,/json/info); /features/settings and /advanced/ota-lock",
+      "archived_source_and_compilation": "PASS",
+      "archived_candidate_rollback_integrity": "PASS",
+      "physical_ota_and_browser_recovery": "NOT_CHECKED",
+      "current_device_MAC_build_and_OTA_lock": "NOT_CHECKED",
+      "current_config_presets_backup_downloadback": "NOT_CHECKED",
+      "companion_AUX_and_aswired_UV_baseline": "NOT_CHECKED",
+      "owner_standing_no_cost_authorization": true,
+      "technical_admission_frozen": false
+    },
+    "no_terminal_gui_sequence": [
+      "ONLY with powered Cart, Mac joined to original HBNF-Cart LAN, stable power: browser GET Matrix /hbnf/build.json, /json/info, /json/state; confirm current board/release/MAC expected from existing installed original R6, FX142, ps=-1 and actual HBNF controls. Never use guesses as pass.",
+      "Read WLED Config > Security & Updates: current OTA lock and GUI update availability. Export presets+configuration privately; verify two independent local downloaded copies and exact sizes/checksums without exposing WiFi credentials. GET-only verify local direct Owner PWA and AUX baseline. Do not alter any settings now.",
+      "Prove a nonbooting ESP32 can be recovered via physically accessible supported USB WebSerial GUI, known board bootloader and VERIFIED custom-app flash partition/offset; archived original rollback available. If USB path is unavailable/uncertain and no other proven fail-safe, STOP without firmware upload.",
+      "Freeze same-manifest exact target, source, both firmware SHA, read-only device baseline, recovery evidence, power, operator and rollback path; compare immediate prechange and source hashes; only then set scoped phase1 firmware release admitted under owner standing authorization.",
+      "If all technical gates TRUE: in device-local WLED Security & Updates select Update WLED (device /update) and select only candidate SHA 429f7f... .bin. No Opal/provider/UV writes. Power must remain stable. Do not guess an OTA password. Reboot naturally and reread current /hbnf/build.json, /json/state, /json/info and image release identity.",
+      "Owner-present in SAME session verify unchanged working PWA and direct WS, Owner TEXT priority, tuning Motion/AudioResponse/scene persistence after natural restart only (no forced reset for test), effects/WOW MAX/Vibe/FX142/ps=-1/brightness, AUX DDP22 and UV as-wired. Compare naturally available matched WAN-present vs LAN-only quality; no forced WAN outage.",
+      "If failed and WLED remains reachable, restore exact original R6 BIN through admitted device-local GUI route with full postrestore readback. If unreachable, do not attempt blind flash; use only verified USB recovery/bootloader protocol. Secure backups and same-manifest device/owner-visible closeout required."
+    ],
+    "actual_local_execution_capability": "BLOCKED: current Chat Browser connector cannot access originating browser context; no authenticated Cart-LAN path or verified live Matrix device session. Device-local upload and readback require owner-present GUI; cannot honestly claim remote flash.",
+    "decision": "FIRMWARE-ONLY INDEPENDENT RELEASE QUALIFIED OFFDEVICE, NOT YET ADMITTED OR INSTALLED. Do not bind false C8 global stage flags to this candidate; do not flip firmware.matrix_flash false until physical gates pass.",
+    "exact_resumption_trigger": "Owner physically at powered Cart with Mac connected to HBNF-Cart and accessible Matrix WLED GUI + safely proven nonbooting recovery path. One combined owner session, no terminal commands. If recovery cannot be proven, no flash."
   }
 }
