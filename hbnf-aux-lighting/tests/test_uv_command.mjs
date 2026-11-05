@@ -321,3 +321,22 @@ test("Opal enforces every physical-safety gate and 12V PWM to 5V isolation contr
   assert.match(opal, /frequency_limits\.minimum/);
   assert.match(opal, /frequency_limits\.maximum/);
 });
+
+test("AUX UV audio follower cannot enable PWM via only one compile flag", async () => {
+  const build = await readFile(new URL("../../.hbnf-build-aux-r3/apply_aux_r3.py", import.meta.url), "utf8");
+  const gpio = await readFile(new URL("../../.hbnf-build-aux-r3/guard_uv_gpio_admission.py", import.meta.url), "utf8");
+  const status = await readFile(new URL("../../staging/coordinated-backend/opal/owner-local-control/uv_status_access.lua", import.meta.url), "utf8");
+  assert.ok(build.includes("#if HBNF_UV_OUTPUTS_VERIFIED && HBNF_UV_PWM_OUTPUT_ADMITTED"),
+    "effect 248 must require both physical commissioning flags");
+  assert.ok(build.includes('wow["uvOutputsVerified"] = (HBNF_UV_OUTPUTS_VERIFIED && HBNF_UV_PWM_OUTPUT_ADMITTED)'),
+    "AUX telemetry must not claim UV output verified when only one compile flag is enabled");
+  assert.ok(build.includes('wow["uvBuildProfile"] = (HBNF_UV_OUTPUTS_VERIFIED && HBNF_UV_PWM_OUTPUT_ADMITTED)'),
+    "AUX runtime build-profile name must stay fail-dark without both flags");
+  assert.ok(build.includes("#define HBNF_UV_OUTPUTS_VERIFIED 0"));
+  assert.ok(build.includes("#define HBNF_UV_PWM_OUTPUT_ADMITTED 0"));
+  assert.ok(gpio.includes("#if !(HBNF_UV_OUTPUTS_VERIFIED && HBNF_UV_PWM_OUTPUT_ADMITTED)"),
+    "PinManager GPIO25/26 must share the same two-flag admission");
+  assert.ok(status.includes('outputStateScope = "WLED_LOGICAL_SEGMENTS_ONLY"'));
+  assert.ok(status.includes("physicalUvOffVerified = false"),
+    "WLED JSON cannot prove a physical disconnect or switched output");
+});
