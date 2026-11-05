@@ -924,8 +924,8 @@ function uvStateChanged(persist = true) {
       : uvFollowActive === false
         ? `${uvLevelSavedMessage()} Release the Show slider to send both manual levels; Fine tuning keeps its separate Apply button.`
         : `${uvLevelSavedMessage()} Cart output mode is unconfirmed; slider changes stay local. Use Apply levels or Follow Matrix to choose a mode.`;
-    else if (uvReadiness === "unavailable") status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} Use Test Cart or Test Bar for a bounded check.`;
-    else if (uvReadiness === "unsafe") status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
+    else if (uvReadiness === "unavailable") status.textContent = `Cart UV status is unavailable. ${uvLevelSavedMessage()} Commands and UV tests remain locked; AUX power may still illuminate the strips.`;
+    else if (uvReadiness === "unsafe") status.textContent = `UV controls are not electrically commissioned. ${uvLevelSavedMessage()} No command was sent; AUX power may still illuminate the strips.`;
   }
   setUvCommissioningTestReady(uvCommissioningTestAvailable);
 }
@@ -983,16 +983,14 @@ async function checkUvReadiness(updateStatus = true) {
     } else {
       uvReadiness = "unsafe";
       uvFollowActive = false;
-      if (updateStatus) status.textContent = `UV commands are locked until safety checks pass. ${uvLevelSavedMessage()} No command was sent.`;
+      if (updateStatus) status.textContent = `UV controls are not electrically commissioned. ${uvLevelSavedMessage()} No command was sent; AUX power may still illuminate the strips.`;
     }
   } catch (_) {
     uvReadiness = "unavailable";
-    // The commissioning endpoint independently verifies AUX identity, limits
-    // each request to one three-second pulse, and confirms both outputs OFF.
-    // Keep that bounded diagnostic reachable when only the status read fails;
-    // ordinary Apply/Follow controls remain locked.
-    setUvCommissioningTestReady(true);
-    if (updateStatus) status.textContent = `Cart status is unavailable. ${uvLevelSavedMessage()} A bounded Cart/Bar test is available below.`;
+    // Missing readiness is NOT authorization to pulse either physically
+    // connected strip. Actual Opal commissioning remains hard-disabled.
+    setUvCommissioningTestReady(false);
+    if (updateStatus) status.textContent = `Cart UV status is unavailable. ${uvLevelSavedMessage()} Commands and UV tests remain locked; AUX power may still illuminate the strips.`;
   }
 }
 
