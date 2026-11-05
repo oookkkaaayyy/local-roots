@@ -12,9 +12,9 @@ import sys
 
 ROOT=pathlib.Path("staging/cart116-glow-v35-exact-review")
 EXPECTED={
- "planner":("candidate-source/hbnf-glow-cart-intent.mjs","2211797490e146fd2ed8b03c2d4a92cc56275598"),
- "sql_up":("migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql","efb4ce78dbb4a1883c9658559bfaf6ce8f57e6cd"),
- "node_contract_fixture":("tests/native-release/c7-source-intent-contract.test.mjs","491638bd2a31129c94de88269f0f97aeca39ce2b"),
+ "planner":("candidate-source/hbnf-glow-cart-intent.mjs","cb40cfaa1e912b971ed5941d9226cf2b39445e8e"),
+ "sql_up":("migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql","4b077668e481e1a08315e4baa0e3670299ecd64f"),
+ "node_contract_fixture":("tests/native-release/c7-source-intent-contract.test.mjs","e188689349fabae05a9486a332a5cc8651d97bb2"),
  "pg17_contract_fixture":("tests/native-release/c7-pg-source-cas.sh","667e51d64f1c8adc8116c3c043ec53828bc75c5a"),
 }
 STATIC={
@@ -56,6 +56,8 @@ def verify():
   check(marker in planner,"Live planner lineage missing: "+marker)
   check(marker in up,"Live SQL lineage missing: "+marker)
  check("SAVED_SOURCE_REVISION_NOT_CONFIRMED" in planner,"Live planner rejection missing")
+ check("v.cursor===lineage?.cursor" in planner,"C8 latest scored cursor binding missing")
+ check("score->>'cursor'=v_week#>>'{udiscLive,cursor}'" in up,"SQL latest scored cursor binding missing")
  check("UDisc event XLSX export" not in planner,"Manual XLSX accepted by LIVE planner")
  check("UDisc event XLSX export" in up and "HISTORICAL_PREVIEW_ONLY_NO_ACTUATION" in up,
        "Historical XLSX read-only snapshot mode lost")
