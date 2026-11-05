@@ -20,6 +20,8 @@ test('E3 all eight dated source facts produce real Pacific calendar times and ve
       start_date: date,
       end_date: date,
       timezone: facts.timezone,
+      start_time_local: facts.start_time_local,
+      end_time_local: facts.end_time_local,
       course_name: facts.course_name,
       venue_name: null,
       city: facts.city,
