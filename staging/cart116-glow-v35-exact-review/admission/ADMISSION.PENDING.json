@@ -1312,5 +1312,169 @@
       "one_combined_field_session": "ALREADY_IN_C2_SAME_MANIFEST_NOT_REWRITTEN",
       "new_device_test_requests": false
     }
+  },
+  "dora_c5_20261104": {
+    "scope": "CART #116 Track A/C recovery closure only, continuing same manifest and unchanged reviewed source",
+    "evidence_status": "PARTIAL_SOURCE_RECOVERY_FEASIBLE_NO_LIVE_ADMISSION",
+    "inspected_exact_head": "6ab700657b4a9f26d94d6fcf3099e3191e42cee9",
+    "source_ci": "ACCEPTED_UNCHANGED_NO_CI_RERUN",
+    "installed_opal_evidence": {
+      "first_blocker": "NO_AUTHENTICATED_COMPLETE_FOUR_NEW_TARGET_CAPTURE",
+      "physical_owner_attempt": "2026-11-04 original C3 script single owner SSH auth completed but stopped without a target receipt",
+      "attached_stop_receipt": "ssh-response.private.txt; exact only line STOP|MISSING_REQUIRED_REMOTE_TOOL, no target state attested",
+      "original_incomplete_helper": "SUPERSEDED_FOR_CAPTURE_ONLY",
+      "corrected_C3_helper": {
+        "library_path": "/Cart Upgrades/CART116-C3-Opal-ReadOnly-Capture-Tool.zip",
+        "library_id": "libfile_1d0ee1ca5d20819182236877c9744e27",
+        "library_current_file_id": "file_000000003b7c81fdb5d945c9060a2b7a",
+        "bytes": 5380,
+        "sha256": "8fe59693c4a249501d789a98787682672ee714889d8da4589d83751c60df39cb",
+        "verification": "independently materialized library raw ZIP vs existing corrected conversation copy, SHA256 equal, cmp byte identical, ZIP CRC PASS, V2_PORTABLE marker confirmed; no live device run",
+        "filenames": [
+          "CART116-C3-Opal-ReadOnly.command",
+          "CART116-C3-READ-ME.txt"
+        ],
+        "present_file_handling": "BusyBox command-v or BusyBox applet fallback; tar exact allowlisted source files only, base64 or od; never secret config contents",
+        "remote_scope": "4 target presence/bytes/sha256/UID/GID/mode, config presence/mode/UID/GID only, procd presence, process counters, lockout boolean; fail closed on symlink/non-regular/mode/auth/route mismatch",
+        "original_wrong_tool_sha256": "5c34fdd0ae4125bcbbad9e7e0c715962100f0dfe7efe6fb3dd25cf3942b9edbc",
+        "owner_action": "one existing corrected C3 .command run on Mac Cart Wi-Fi; privately attach CART116-C3-READONLY-CAPTURE.zip; no Terminal copy/paste",
+        "all_absence_is_valid": true,
+        "succeeded_on_real_cart": false
+      },
+      "current_installed_files": "UNKNOWN_FOR_ALL_FOUR",
+      "current_protected_config_presence": "UNKNOWN_NO_CONTENTS_REQUESTED",
+      "current_procd_process_lockouts": "UNKNOWN",
+      "independent_offdevice_installed_backup_downloadback": "NO_AUTHENTICATED_CAPTURE_TO_VERIFY",
+      "no_public_git_commit_of_private_capture": true,
+      "resumption_trigger": "Receive verified ZIP from corrected C3 capture, or authenticated direct Opal readback with identical scope; independently check receipt+tar members, SHA/modes, private durability/download-back; mark missing targets ABSENT if evidence proves absence; no secret content handling."
+    },
+    "edge_source_equivalent_recovery_decision": {
+      "decision": "SUPPORTED_PROVIDER_SOURCE_REDEPLOY_TECHNICALLY_FEASIBLE; REPLACEMENT_FOR_COMPILED_BYTE_IDENTICAL_GATE_NOT_YET_FORMALLY_APPROVED",
+      "native_connected_tool": "mcp__Supabase__deploy_edge_function available; performs live version replacement and MUST NOT invoke without full same-manifest admission",
+      "active_provider_readback": {
+        "slug": "hbnf-cart-control",
+        "project_id": "phcpbvuqibyarpfrftgx",
+        "status": "ACTIVE",
+        "version": 35,
+        "ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+        "files_count": 10,
+        "entrypoint": "index.ts",
+        "configuration_file": "deno.json",
+        "import_map": true,
+        "verify_jwt": false,
+        "filenames": [
+          "index.ts",
+          "guest-command.ts",
+          "runtime-vibe.ts",
+          "live.ts",
+          "skins_scoring.ts",
+          "matrix-relay.ts",
+          "matrix-relay-projection.ts",
+          "matrix-relay-auth.ts",
+          "pairing-expiry.mjs",
+          "deno.json"
+        ],
+        "external_dependency": "npm:@supabase/supabase-js@2.57.0, explicit same version in index.ts, matrix-relay.ts and deno.json"
+      },
+      "existing_immutable_git_recovery_source_tree": "74dd1d687de44eacb20eff8e3960d9129948ef88",
+      "existing_source_match_evidence": "10/10 provider-source parity from existing reviewed rollback; same active v35 metadata; do not relabel compiled ESZip digest or independently re-run source parity CI",
+      "official_docs": [
+        "https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore",
+        "https://supabase.com/docs/guides/functions/quickstart-dashboard",
+        "https://supabase.com/docs/reference/api/v1-get-a-function-body"
+      ],
+      "documentation_facts": "Supabase supports function source download then redeploy; CLI export omits import maps and deno.json, so use complete authenticated ten-file source including deno.json; dashboard editor lacks built-in rollbacks.",
+      "compiled_deployment_bytes_obtained": false,
+      "exact_compiled_rollback_identity_attested": false,
+      "exact_compiled_candidate_bytes_obtained": false,
+      "allowed_fallback_proposal_only": {
+        "manifest_gate_name": "EDGE_SOURCE_EQUIVALENT_RESTORE_V35",
+        "current_status": "PROPOSED_NOT_ACCEPTED_NOT_EXECUTED",
+        "eligibility_conditions": [
+          "Current provider v35 and 10/10 source equality independently remain unchanged at immutable prechange gate; all ten files including deno.json retained privately/off-provider, bytes and SHA bound to single manifest",
+          "Restore tool can deploy all ten exact source files, preserve verify_jwt=false, entrypoint index.ts, import_map_path deno.json, runtime/env setting and existing name; no hidden secrets exported",
+          "Source uses explicit npm:@supabase/supabase-js@2.57.0; restoration must not silently upgrade dependency/runtime or mix source epochs; no provider version/hash equals original v35 is claimed after redeployment",
+          "Same-manifest SQL forward/inverse order, unresolved challenge lockout, Owner PWA and Opal/Matrix recovery sequencing qualified; on rollback restore source with native deploy tool",
+          "After a real authorized restore, independently retrieve source to verify exact ten-file bytes and provider deployment status; run narrowly scoped Owner/Guest/relay contract health probes without inducing device actuation or score writes",
+          "Provider restore method and validation must be authorized as a formally approved alternate criterion by sole release authority; do not silently substitute for strict compiled-binary gate"
+        ],
+        "source_equivalence_can_satisfy_current_compiled_binary_requirement": false,
+        "technical_restoration_method_supported": true,
+        "independent_provider_restore_rehearsal_executed": false,
+        "owner_policy_decision_requested_now": false
+      },
+      "separate_compiled_binary_gate_status": "BLOCKED_NO_RETRIEVABLE_ESZIP; no authenticated provider raw bundle download; GET function-body undocumented as ESZip raw and connected read tool does not expose it"
+    },
+    "firmware_recovery": {
+      "exact_original_target_candidate_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "archived_original_R6_rollback_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "original_target_recovery_zip_sha256": "9c126ccf09b135fcb3347d069f9661df335531dd2cce3332da3c2a3e3492d102",
+      "accepted_artifact_validation": "C3 22/22 CRC PASS and independent durable recovery, NOT rerun",
+      "observed_device_runtime": "2026-11-03 HBNF original R6 marker ps=-1 FX142, version-level parity accepted; raw installed flash SHA not observed",
+      "restoration_on_live_device": "NOT_TESTED",
+      "installed_flash_byte_parity": "UNKNOWN",
+      "acceptable_source_equivalence_for_flash": false,
+      "no_new_physical_firmware_test_requested": true
+    },
+    "exact_smallest_candidate_not_yet_installable": {
+      "status": "SOURCE_QUALIFIED_BOUNDARY_ONLY_NO_FINAL_IMMUTABLE_INSTALLABLE_FOUR_TARGET_PACKAGE",
+      "matrix_firmware_candidate_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "matrix_firmware_rollback_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "SQL_source_up_git_blob": "e03daecfd23f8431758551f0a0efe1f4bcb77eef",
+      "SQL_source_down_git_blob": "f093047c8c69096e5529cffce4733d94b12be459",
+      "Edge_candidate": "existing reviewed versioned overlay v1 Edge handler and 10-file historical provider source; compiled candidate not available",
+      "four_Opal_files": [
+        {
+          "target": "/usr/libexec/hbnf-cart-glow-bridge",
+          "source_sha256": "97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c"
+        },
+        {
+          "target": "/etc/init.d/hbnf-cart-glow-bridge",
+          "source_sha256": "e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7"
+        },
+        {
+          "target": "/usr/libexec/hbnf-cart-glow-provision",
+          "source_sha256": "fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20"
+        },
+        {
+          "target": "/usr/lib/hbnf-glow-overlay-v1.sh",
+          "source_sha256": "de51e9ace05f876124886089b841c6f5858b91ee4d42a3260f7e8f1788146538"
+        }
+      ],
+      "credential_file": "/etc/hbnf-cart-glow-bridge.conf root:root 0600 on-device only, dynamically created if verified absent and after admission",
+      "excluded_existing_7_owner_files": [
+        "/www/mission-control-local/local-transport.js",
+        "/www/mission-control-local/owner-pwa/.hbnf-package-version",
+        "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
+        "/www/mission-control-local/owner-pwa/hbnf-cart-features.js",
+        "/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
+        "/www/mission-control-local/owner-pwa/hbnf-cart.html",
+        "/www/mission-control-local/owner-pwa/hbnf-cart.js"
+      ],
+      "no_legacy_11_target_archive_rebuild": true,
+      "no_owner_pwa_mutation": true,
+      "other_exclusions": "no AUX/DDP config change, UV, router/WAN, Guest UI, old full-state replay, score/ace/tag writes or new features",
+      "original_11_target_review_zip_not_C1_helper_compatible": true
+    },
+    "current_scoring_provider_readonly_gate": {
+      "state_updated_at": "2026-11-04T07:30:01.546079+00",
+      "state_md5": "a4fb5d8606f7f6a7a7ae1e96026e78af",
+      "genuine_four_team_saved_revision": false,
+      "current_nov3_player_count": 3,
+      "udisc_sync_state": "failed",
+      "udisc_sync_error": "SOURCE_UNAVAILABLE",
+      "P0_solo_mutation_authority": "GitHub #115/#147 PR151",
+      "Cart_scoreboard_activation": false
+    },
+    "release_gates": {
+      "hard_source_and_actuation_flags": "UNCHANGED_FALSE",
+      "owner_approval": "NULL",
+      "first_hard_blocker": "installed four-target Opal private exact preimage+absent-state/authenticated postread/backed-up",
+      "second": "Edge compiled binary archive unsupported; proposed source-equivalent rollback requires formal acceptance and independent live recovery verification",
+      "third": "Actual original R6 device-specific restore viability and matched installed raw image not accepted",
+      "fourth": "P0 authentic saved November 3 revision not independently present",
+      "physical_field_acceptance": "ONE combined owner iPad/Owner TEXT vs Glow/real scoreboard/TTL/reconnect/WOW MAX/Vibe/DDP22/AUX UV OFF/restoration after release gates, not requested now",
+      "no_mutations_or_new_artifacts": true
+    }
   }
 }
