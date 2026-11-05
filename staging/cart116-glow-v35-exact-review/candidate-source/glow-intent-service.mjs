@@ -2,8 +2,9 @@
 // This module owns NO WLED or MQTT transport, NO polling, NO league_state writes.
 import { planSavedGlowOverlay } from './hbnf-glow-cart-intent.mjs';
 
-const EVENT_DATE = '2026-11-03';
+const DATE = /^20\d{2}-\d{2}-\d{2}$/;
 const ACTION = 'glow_scoreboard_intent';
+const PREVIEW = 'glow_scoreboard_preview';
 
 export function isDedicatedBackend(header, serviceKey) {
   if (!serviceKey || typeof serviceKey !== 'string' || serviceKey.length < 32 || typeof header !== 'string') return false;
@@ -26,12 +27,47 @@ export async function runGlowIntentAction({body, authorization, serviceKey, deps
   // Explicit service-role boundary: do not borrow Owner device tokens, Guest access,
   // public auth sessions, or a generic action=command route.
   if (!isDedicatedBackend(authorization, serviceKey)) return {status:403, body:{error:'backend_service_role_required'}};
-  if (!body || typeof body !== 'object' || Array.isArray(body) || body.action !== ACTION ||
+  if (!body || typeof body !== 'object' || Array.isArray(body) ||
+      (body.action !== ACTION && body.action !== PREVIEW) ||
       Object.keys(body).some(k=>!['action','weekDate'].includes(k)) ||
-      body.weekDate !== EVENT_DATE) return {status:400,body:{error:'invalid_glow_intent_request'}};
+      typeof body.weekDate !== 'string' || !DATE.test(body.weekDate))
+    return {status:400,body:{error:'invalid_glow_intent_request'}};
+  if (body.action === PREVIEW) {
+    // Historical scores are permitted ONLY as a separately labelled read-only
+    // projection of the real persisted export. No Cart context, reducer,
+    // commit, service flag, WLED or Opal is ever consulted.
+    let source;
+    try { source = await deps.source(body.weekDate); }
+    catch { return {status:503,body:{error:'canonical_source_unavailable'}}; }
+    if (!source || source.delivery_policy !== 'HISTORICAL_PREVIEW_ONLY_NO_ACTUATION' ||
+        source.event_date !== body.weekDate || source.week?.udiscSync?.eventId !== source.event_id ||
+        source.week?.udiscSync?.weekDate !== body.weekDate ||
+        source.week?.udiscSync?.source !== 'UDisc event XLSX export' ||
+        !/^[0-9a-f]{64}$/.test(String(source.week?.udiscSync?.latest?.signature??'')) ||
+        !/^[0-9a-f]{32}$/.test(String(source.fingerprint??'')) ||
+        typeof source.source_revision !== 'string')
+      return {status:409,body:{error:'historical_preview_source_unverified'}};
+    const rows=source.week?.udiscSync?.latest?.rows;
+    if (!Array.isArray(rows) || rows.length<1 || rows.length>12 ||
+        rows.some(r=>!r || typeof r.sourceTeam!=='string' ||
+          r.sourceTeam.length<1 || r.sourceTeam.length>80 ||
+          !Number.isSafeInteger(Number(r.strokeTotal)) || Number(r.strokeTotal)<1 ||
+          !Number.isSafeInteger(Number(r.relativeScore)) ||
+          typeof r.sourceRank!=='string' || r.sourceRank.length>8))
+      return {status:409,body:{error:'historical_preview_entries_unverified'}};
+    return {status:200,body:{
+      mode:'HISTORICAL_READ_ONLY',actuationAllowed:false,deviceCommandIssued:false,
+      staleForLive:true,eventDate:source.event_date,eventId:source.event_id,
+      sourceRevision:source.source_revision,scoreFingerprint:source.fingerprint,
+      standings:rows.map(r=>({team:r.sourceTeam,rank:r.sourceRank,
+        strokes:Number(r.strokeTotal),relative:Number(r.relativeScore)}))
+    }};
+  }
   // Exact installed WOW MAX60/Opal paired projection is not yet admitted.
   // A source or manifest label MUST NOT activate GLOW while the relay
   // would replace segments, audio response or AUX on the existing cart.
+  // Never reinterpret a stored historical revision or event window as a
+  // fresh automatic command, even when native actuation is later admitted.
   if(deps?.nativeOverlayAdmitted!==true)return {status:503,body:{error:'glow_native_overlay_release_not_admitted'}};
 
   let source, cart;
@@ -45,7 +81,9 @@ export async function runGlowIntentAction({body, authorization, serviceKey, deps
     return {status:503,body:{error:'canonical_source_invalid'}};
   }
   const state = source.state_json;
-  if (state?.glow?.activeWeek !== body.weekDate ||
+  if (source.delivery_policy !== 'WINDOW_OPEN_SOURCE_FRESHNESS_STILL_REQUIRED' ||
+      source.event_date !== body.weekDate ||
+      state?.glow?.activeWeek !== body.weekDate ||
       state?.glow?.weeks?.[body.weekDate] === undefined) {
     return {status:409,body:{error:'active_week_changed'}};
   }
