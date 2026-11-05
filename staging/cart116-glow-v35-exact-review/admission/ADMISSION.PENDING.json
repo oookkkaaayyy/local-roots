@@ -2781,5 +2781,28 @@
       "ci_source_head": "6fd8ed135f878a17edecc0a81138cdd3af8929e9",
       "source_verified": true
     }
+  },
+  "dora_c8_provider_readback_20261105": {
+    "schema": "cart116-c8-read-only-production-provider-recheck-v1",
+    "source_head_before_receipt": "18e844c0ffede7f4f526df1da933d51718078c3e",
+    "source": "Connected Supabase get_edge_function and SELECT pg_proc/to_regclass; read-only",
+    "project_id": "phcpbvuqibyarpfrftgx",
+    "edge_slug": "hbnf-cart-control",
+    "edge_version": 35,
+    "edge_source_files": 10,
+    "edge_verify_jwt": false,
+    "edge_compiled_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+    "new_c8_rpc_count": 0,
+    "challenge_table_present": false,
+    "legacy_matrix_relay_rpc_count": 5,
+    "provider_mutated": false,
+    "release_admitted": false,
+    "source_only_c8_ci": {
+      "run": 42129277493,
+      "node": "12/12 PASS",
+      "digest": "4 changed+4 retained PASS"
+    },
+    "c9_hardware": "NO CURRENT AUTHENTICATED OPAL/MATRIX READBACK; NO INSTALL",
+    "next": "Only after exact current provider/device recovery and one-manifest admission; no live actuation before genuine source and readback eligibility"
   }
 }
