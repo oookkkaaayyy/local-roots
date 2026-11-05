@@ -1,0 +1,51 @@
+--- a/firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp
++++ b/firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp
+@@ -1424,7 +1424,10 @@
+     JsonObject h=root.createNestedObject("hbnfFoundationV1");
+     h["matrixBrightness"]=runtime.controls().matrixBrightness;
+     h["auxBrightness"]=runtime.controls().auxBrightness;
+-    h["vibe"]=(uint8_t)runtime.controls().vibe;
++    h["vibe"]=(uint8_t)runtime.controls().vibe;
++    h["motion"]=runtime.controls().motion;
++    h["audioResponse"]=runtime.controls().audioResponse;
++    h["scene"]=(uint8_t)runtime.controls().scene;
+   }
+ 
+   bool readFromConfig(JsonObject& root) override {
+@@ -1433,9 +1436,23 @@
+     uint8_t matrix=h["matrixBrightness"] | 24;
+     uint8_t aux=h["auxBrightness"] | 24;
+     runtime.restoreSettings(matrix,aux);
+-    if(!h["vibe"].isNull()&&h["vibe"].is<int>()&&h["vibe"].as<int>()>=0&&h["vibe"].as<int>()<=(int)VIBE_AUTO)
+-      runtime.controls().vibe=(Vibe)h["vibe"].as<int>();
+-    return complete;
++    if(!h["vibe"].isNull()&&h["vibe"].is<int>()&&h["vibe"].as<int>()>=0&&h["vibe"].as<int>()<=(int)VIBE_AUTO)
++      runtime.controls().vibe=(Vibe)h["vibe"].as<int>();
++    // These controls shape the local show even without WAN or an Owner PWA.
++    // Old configs omit them; retain their current/default values in that case.
++    if(h["motion"].is<int>()&&h["motion"].as<int>()>=0&&h["motion"].as<int>()<=100)
++      runtime.controls().motion=(uint8_t)h["motion"].as<int>();
++    if(h["audioResponse"].is<int>()&&h["audioResponse"].as<int>()>=0&&h["audioResponse"].as<int>()<=100)
++      runtime.controls().audioResponse=(uint8_t)h["audioResponse"].as<int>();
++    if(h["scene"].is<int>()&&h["scene"].as<int>()>=0&&h["scene"].as<int>()<=3) {
++      const Scene restoredScene=(Scene)h["scene"].as<int>();
++      if(runtime.controls().scene!=restoredScene) {
++        runtime.controls().scene=restoredScene;
++        runtime.chooseSceneVariant(millis());
++      }
++    }
++    runtime.invalidateFrame();
++    return complete;
+   }
+ 
+   void connected() override {
+@@ -1640,7 +1657,8 @@
+     Scene previous=c.scene;
+     if(!h["scene"].isNull()) c.scene=sceneFrom(h["scene"],c.scene);
+     if(previous!=c.scene) { runtime.chooseSceneVariant(millis()); renderChanged=true; }
+-    if(settingsChanged||vibeChanged) runtime.markConfigDirty(millis());
++    // Persist Motion, Audio Response and scene changes too, debounced in tick().
++    if(settingsChanged||vibeChanged||renderChanged) runtime.markConfigDirty(millis());
+     if(settingsChanged || renderChanged) { runtime.invalidateFrame(); stateChanged=true; }
+     bri=255; briLast=255;
+     strip.setBrightness(255,true);
