@@ -86,7 +86,7 @@ export function uvRuntimeReady({ auxEnabled = false, uvEnabled = false, uvOutput
 
 export async function executeUvRequest({ request = {}, state = {}, auxEnabled = false, uvEnabled = false, uvOutputsVerified = false, hardware = UV_HARDWARE_CONFIG, publish }) {
   const mode = String(request.mode || UV_POLICY_SPEC.defaultMode).toUpperCase();
-  if (!UV_MODES.includes(mode)) {
+  if (!UV_MODES.includes(mode) || !UV_POLICY_SPEC.commandModes.includes(mode)) {
     return { status: 400, body: { ok: false, action: "uv_policy", mutationIssued: false, error: "Unknown UV response mode." } };
   }
   const levels = request.brightnessBySegment;
