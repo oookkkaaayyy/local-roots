@@ -29,7 +29,7 @@ for old,new in [
     s=s.replace(old,new)
 
 include_anchor='#include "hbnf_animartrix_audio_bridge.h"'
-include_replacement=include_anchor+'\n#include "hbnf_uv_audio_follower.h"\n#ifndef HBNF_UV_OUTPUTS_VERIFIED\n #define HBNF_UV_OUTPUTS_VERIFIED 0\n#endif\n#ifndef HBNF_UV_PWM_OUTPUT_ADMITTED\n#define HBNF_UV_PWM_OUTPUT_ADMITTED 0\n#endif\nstatic bool hbnfUvFollowRegistered = false;\nstatic const char _data_FX_mode_HbnfUvFollow[] PROGMEM = "Z HBNF UV Follow@Speed;Cap;1;2";'
+include_replacement=include_anchor+'\n#include "hbnf_uv_audio_follower.h"\n#ifndef HBNF_UV_OUTPUTS_VERIFIED\n#define HBNF_UV_OUTPUTS_VERIFIED 0\n#endif\n#ifndef HBNF_UV_PWM_OUTPUT_ADMITTED\n#define HBNF_UV_PWM_OUTPUT_ADMITTED 0\n#endif\nstatic bool hbnfUvFollowRegistered = false;\nstatic const char _data_FX_mode_HbnfUvFollow[] PROGMEM = "Z HBNF UV Follow@Speed;Cap;1;2";'
 if s.count(include_anchor)!=1:
     raise RuntimeError("AUX UV follower include anchor mismatch")
 s=s.replace(include_anchor,include_replacement,1)
