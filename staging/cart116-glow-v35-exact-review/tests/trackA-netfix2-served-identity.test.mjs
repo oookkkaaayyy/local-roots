@@ -5,15 +5,11 @@ import {createHash} from "node:crypto";
 const root=new URL("../",import.meta.url), read=p=>readFileSync(new URL(p,root));
 const sha=x=>createHash("sha256").update(x).digest("hex");
 const base="opal/owner-v1201-7target/owner-pwa/";
-test("C8 eleven-target package remains frozen and is NOT eligible for C9 paired release",()=>{
+test("C8 four-service-target manifest remains separate from C9 Owner /www release",()=>{
  const rows=read("release/TARGETS.PENDING.tsv").toString().trim().split("\n").map(v=>v.split("\t"));
- assert.equal(rows.length,11);assert.equal(rows.filter(x=>x[0].startsWith("/www/")).length,7);
- const changed=new Set(["local-transport.js","hbnf-cart-local.js","hbnf-cart.js","hbnf-cart.html",".hbnf-payload.sha256",".hbnf-package-version"]);
- for(const [target,_,hash] of rows){if(!target.startsWith("/www/"))continue;
-   const name=target.split("/").at(-1);
-   const staged=target.includes("owner-pwa/")?read(base+name):read("opal/owner-v1201-7target/mission-control-local/local-transport.js");
-   if(changed.has(name))assert.notEqual(hash,sha(staged));else assert.equal(hash,sha(staged));
- }
+ assert.equal(rows.length,4);assert.equal(rows.filter(x=>x[0].startsWith("/www/")).length,0);
+ for(const [target] of rows)assert.match(target,/^\/(?:usr\/libexec\/hbnf-cart-glow|etc\/init\.d\/hbnf-cart-glow|usr\/lib\/hbnf-glow-overlay)/);
+ // The current four-service-target deployment source must remain separate from C9 six Owner /www replacements.
  assert.equal(sha(read("opal/owner-v1201-7target/mission-control-local/local-transport.js")),"928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387");
  assert.equal(read(base+".hbnf-package-version").toString(),"1.0.21-c9pair1\n");
 });

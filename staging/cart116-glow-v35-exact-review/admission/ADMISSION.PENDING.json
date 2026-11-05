@@ -2373,7 +2373,7 @@
     "issue_authority": "#116; sole Controls release owner; THIS SAME ADMISSION.PENDING.json, not a second release authority",
     "purpose": "Smallest course-visible R6 native Owner TEXT priority plus Motion/AudioResponse/scene persistence, independent of C8 six-RPC Glow overlay. Candidate does not claim to solve WAN/no-WAN perceptual difference.",
     "lane": "MATRIX_FIRMWARE_ONLY; OPTIONAL FIRST STAGE OF EXISTING ONE FIELD SESSION",
-    "status": "SUPERSEDED_BY_C9_PAIRED_OWNER_CONTROL_COMPATIBILITY; NEVER FLASH_ALONE",
+    "status": "SUPERSEDED_C9_PAIRED_SOURCE_REVIEW_NOT_FLASH_ADMITTED",
     "exact_scope": {
       "target": "Matrix only, observed fixed LAN target 192.168.77.10, original R6 ESP32 4MB packet20_diag",
       "candidate_release": "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104",
@@ -2550,8 +2550,8 @@
       }
     ],
     "existing_c8_11target_archive_installable_for_c9": false,
-    "c8_11target_postimage_manifest": "FROZEN_DO_NOT_REUSE; six newly staged /www targets now differ, C8 package requires separate later requalification",
-    "unchanged_owner_assets": "13 other PWA checksum-list members unchanged; remaining installed protected Owner assets unchanged",
+    "c8_11target_postimage_manifest": "CURRENT review release/TARGETS.PENDING.tsv is four NEW Opal service targets only; historical prior 11-target C8 full ZIP is separately frozen; NEITHER supplies six paired C9 Owner postimages",
+    "unchanged_owner_assets": "14 other PWA checksum-list members unchanged; remaining installed protected Owner assets unchanged",
     "exact_accepted_release_markers": [
       "hbnf-cart2-phase2-r6-skins-readable-20261014",
       "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104"
@@ -2587,7 +2587,13 @@
       "opal_gui_served_postimage": false,
       "matrix_prechange": false,
       "firmware_nonbooting_restore": false,
-      "source_changed_only_ci": false
+      "source_changed_only_ci": false,
+      "first_exact_head_ci_run": {
+        "run_id": 42061812831,
+        "head_sha": "1d77998bbbcf40afd2a9df3c932518055be2fc47",
+        "conclusion": "FAIL_TEST_HARNESS_ONLY",
+        "details": "staged local module imports unstaged unchanged hbnf-cart-net.js; old test counted 11 while current service TARGETS.PENDING.tsv has 4; passed reconnect 3 and checksum 1; changed source behavior has not been fully tested"
+      }
     },
     "guards": {
       "firmware_flash": false,

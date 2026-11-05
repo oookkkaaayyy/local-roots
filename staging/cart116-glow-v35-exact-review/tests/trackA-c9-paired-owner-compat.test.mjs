@@ -2,7 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {LocalMatrixTransport,MATRIX_MAC,SUPPORTED_RELEASE,REVIEW_OWNER_SAFE_RELEASE,acceptedDirectRelease} from "../opal/owner-v1201-7target/mission-control-local/local-transport.js";
-import {LocalOwnerControl,LOCAL_MATRIX_RELEASE,LOCAL_MATRIX_OWNER_SAFE_REVIEW_RELEASE,acceptedOpalDirectRelease} from "../opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js";
+// The seven staged Owner release assets omit unchanged hbnf-cart-net.js.
+// Evaluate the actual staged adapter after replacing only that unavailable import;
+// the full production adapter source and all release/command methods remain unchanged.
+const adapterSource=readFileSync(new URL("../opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js",import.meta.url),"utf8");
+const dependency='import { fetchWithDeadline, HBNF_API_TIMEOUT_MS } from "./hbnf-cart-net.js?v=20261015-local-owner-v3";';
+assert.equal(adapterSource.split(dependency).length,2,"exact static dependency boundary");
+const adapterForTest=adapterSource.replace(dependency,'const fetchWithDeadline = () => { throw new Error("not in isolated C9 test"); }; const HBNF_API_TIMEOUT_MS=5000;');
+const {LocalOwnerControl,LOCAL_MATRIX_RELEASE,LOCAL_MATRIX_OWNER_SAFE_REVIEW_RELEASE,acceptedOpalDirectRelease}=await import("data:text/javascript;base64,"+Buffer.from(adapterForTest,"utf8").toString("base64"));
 const OLD="hbnf-cart2-phase2-r6-skins-readable-20261014", NEXT="hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104";
 test("C9 paired markers allow exactly old/new and never arbitrary firmware",()=>{
  assert.equal(SUPPORTED_RELEASE,OLD);assert.equal(LOCAL_MATRIX_RELEASE,OLD);

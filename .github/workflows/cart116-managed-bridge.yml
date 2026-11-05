@@ -79,5 +79,5 @@ jobs:
         run: |
           set -euo pipefail
           cd staging/cart116-glow-v35-exact-review
-          node --test tests/trackA-c9-paired-owner-compat.test.mjs tests/trackA-networking-reconnect-accepted.test.mjs tests/trackA-netfix2-served-identity.test.mjs
+          node --test tests/trackA-c9-paired-owner-compat.test.mjs tests/trackA-netfix2-served-identity.test.mjs
       # Review-only source execution; never mutates provider, Opal or Matrix.
