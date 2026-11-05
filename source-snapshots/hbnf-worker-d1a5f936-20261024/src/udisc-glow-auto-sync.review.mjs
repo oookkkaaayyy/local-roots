@@ -223,7 +223,9 @@ export async function runApprovedGlowSync(env, deps = {}) {
   let casAttempted=false;
   try {
     const response = await fetchImpl(`https://udisc.com/events/${binding.eventId}/leaderboard/export`, {
-      headers:{Accept:XLSX_TYPE},redirect:'manual',
+      headers:{Accept:XLSX_TYPE},redirect:'manual',cache:'no-store',
+      // Do not let a stalled event export occupy the scheduled Worker indefinitely.
+      signal:AbortSignal.timeout(8000),
     });
     captureBoundary(deps,'source_http',{status:response.status,xlsxContentType:(response.headers.get('content-type')||'').toLowerCase().includes(XLSX_TYPE)});
     if (!response.ok || response.status >= 300 && response.status < 400 ||
