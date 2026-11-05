@@ -46,7 +46,7 @@ test("each individually verified occurrence retains its own UDisc evidence URL a
     assert.match(event.official_url, /^https:\/\/udisc\.com\/events\/hb-glow-doubles-[A-Za-z0-9]+\/about$/);
     assert.equal(event.field_evidence.official_url.status, "verified");
     assert.equal(event.field_evidence.official_url.source_url, event.official_url);
-    assert.equal(event.field_evidence.start_time_local.verified_at, "2026-11-02T06:55:00Z");
+    assert.equal(event.field_evidence.start_time_local.verified_at, "2026-11-05T07:21:29Z");
     assert.equal(event.registration_url, undefined);
   }
   const later = verifiedGlowFacts("2026-12-29");
@@ -71,3 +71,25 @@ test("manual listing evidence is anchored to its verification record and is not 
   assert.match(evidence.format.notes, /issue #161/);
   assert.equal(evidence.registration_url, undefined);
 });
+
+test("each verified occurrence is anchored to its own official page, with no invented registration URL or scores", () => {
+  const dates = knownVerifiedGlowDates();
+  assert.equal(dates.length, 8);
+  const urls = new Set();
+  for (const date of dates) {
+    const fields = verifiedGlowFacts(date);
+    assert.equal(fields.official_url.endsWith("/about"), true);
+    assert.equal(fields.field_evidence.official_url.source_url, fields.official_url);
+    assert.equal(fields.field_evidence.entry_fee_amount.source_url, fields.official_url);
+    assert.equal(fields.field_evidence.format.source_key, "hbnf_udisc_manual");
+    assert.equal(fields.field_evidence.official_url.refresh_on_sync, false);
+    assert.equal(Object.hasOwn(fields, "registration_url"), false);
+    assert.equal(Object.hasOwn(fields, "results_url"), false);
+    urls.add(fields.official_url);
+  }
+  assert.equal(urls.size, 8);
+  assert.deepEqual(knownVerifiedGlowDates().filter(date => ["2026-12-01", "2026-12-08"].includes(date)), ["2026-12-01", "2026-12-08"]);
+  assert.equal(verifiedGlowFacts("2026-12-01").official_url, "https://udisc.com/events/hb-glow-doubles-1ff5RM/about");
+  assert.equal(verifiedGlowFacts("2026-12-08").official_url, "https://udisc.com/events/hb-glow-doubles-Jxxe98/about");
+});
+

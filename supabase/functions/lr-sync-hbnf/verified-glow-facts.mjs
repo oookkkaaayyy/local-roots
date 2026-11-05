@@ -18,10 +18,10 @@ const VERIFIED_FUTURE_GLOW = Object.freeze({
   "2026-12-22": "https://udisc.com/events/hb-glow-doubles-fFa7Lz/about",
 });
 
-// The earlier issue's permission record limited the first implementation to
-// three listings. These five new organizer-managed pages were independently
-// opened and checked on 2026-11-02; keep their evidence date separate.
-const FUTURE_VERIFIED_AT = "2026-11-02T06:55:00Z";
+// These exact five future dated About pages, including Dec 1 and Dec 8,
+// were independently rechecked on 2026-11-04 PST. This fixed timestamp records
+// that verification, not a recurring Edge-sync freshness claim.
+const FUTURE_VERIFIED_AT = "2026-11-05T07:21:29Z";
 
 const COURSE_URL = "https://udisc.com/courses/huntington-beach-central-park-A9Fe";
 // Issue #161 records the independent verification of these organizer listings.
@@ -79,7 +79,7 @@ export function verifiedGlowFacts(date) {
     ], evidenceUrl, VERIFIED_NOVEMBER_GLOW[date] ? VERIFIED_AT : FUTURE_VERIFIED_AT,
       VERIFIED_NOVEMBER_GLOW[date]
         ? "Individually verified organizer listing documented in issue #161; sync does not refresh this manual evidence."
-        : "Individually verified organizer-managed UDisc event page on 2026-11-02; sync does not refresh this manual evidence."),
+        : "Individually verified exact dated organizer UDisc About page on 2026-11-04 PST; sync does not refresh manual evidence."),
   };
 }
 
