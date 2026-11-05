@@ -2776,8 +2776,10 @@
       "scope": "C8 review source only, no provider or device writes",
       "scoring_source_ref": "PR151 8943633631848844faf14f4f4fd6e9ec4b1ea7fe (read-only review)",
       "rule": "Latest source cursor must own at least one valid accepted hole; prior holes alone cannot qualify result-only cursor",
-      "tested": "PENDING exact-head CI",
-      "sql_provider": "NOT_INSTALLED"
+      "tested": "CI 42129277493 job127601460544: 12/12 Node PASS, exact C8 digest 4/4 changed +4/4 retained PASS; no live provider/device test",
+      "sql_provider": "NOT_INSTALLED",
+      "ci_source_head": "6fd8ed135f878a17edecc0a81138cdd3af8929e9",
+      "source_verified": true
     }
   }
 }
