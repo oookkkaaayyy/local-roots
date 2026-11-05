@@ -1,5 +1,5 @@
 #!/bin/ash
-# Controls #116 install/reverse transaction. REVIEW source, not an approval.
+# Controls #116 four-new-target install/reverse transaction. REVIEW source, not an approval.
 # Actual live execution requires a separately signed-off, exact, one-time
 # source/target/rollback manifest, independent off-device backup download-back,
 # and admitted code revision. This script deliberately has NO skip/check flags.
@@ -36,9 +36,11 @@ PENDING="$ROOT/etc/hbnf-glow-overlay-v1.pending"
 
 # Fixed target allowlist: never permit a manifest-controlled arbitrary root path.
 valid_target(){
+ # Only four new files may be installed. Never admit Owner PWA/www paths.
  case "$1" in
-  /usr/libexec/hbnf-cart-glow-bridge|/usr/libexec/hbnf-cart-glow-provision|/usr/lib/hbnf-glow-overlay-v1.sh|/etc/init.d/hbnf-cart-glow-bridge|/www/mission-control-local/local-transport.js|/www/mission-control-local/owner-pwa/.hbnf-package-version|/www/mission-control-local/owner-pwa/.hbnf-payload.sha256|/www/mission-control-local/owner-pwa/hbnf-cart-features.js|/www/mission-control-local/owner-pwa/hbnf-cart-local.js|/www/mission-control-local/owner-pwa/hbnf-cart.html|/www/mission-control-local/owner-pwa/hbnf-cart.js) return 0;;
-  *) return 1;; esac
+  /usr/libexec/hbnf-cart-glow-bridge|/usr/libexec/hbnf-cart-glow-provision|/usr/lib/hbnf-glow-overlay-v1.sh|/etc/init.d/hbnf-cart-glow-bridge) return 0;;
+  *) return 1;;
+ esac
 }
 check_targets(){
  count=0
@@ -65,20 +67,13 @@ check_targets(){
   fi
   count=$((count+1))
  done < "$PKG/TARGETS.tsv"
- [ "$count" -eq 11 ] || return 95
+ [ "$count" -eq 4 ] || return 95
  actual_paths="$(cut -f1 "$PKG/TARGETS.tsv" | LC_ALL=C sort)" || return 95
  expected_paths="$(printf '%s\n' \
   /etc/init.d/hbnf-cart-glow-bridge \
   /usr/lib/hbnf-glow-overlay-v1.sh \
   /usr/libexec/hbnf-cart-glow-bridge \
-  /usr/libexec/hbnf-cart-glow-provision \
-  /www/mission-control-local/local-transport.js \
-  /www/mission-control-local/owner-pwa/.hbnf-package-version \
-  /www/mission-control-local/owner-pwa/.hbnf-payload.sha256 \
-  /www/mission-control-local/owner-pwa/hbnf-cart-features.js \
-  /www/mission-control-local/owner-pwa/hbnf-cart-local.js \
-  /www/mission-control-local/owner-pwa/hbnf-cart.html \
-  /www/mission-control-local/owner-pwa/hbnf-cart.js | LC_ALL=C sort)" || return 95
+  /usr/libexec/hbnf-cart-glow-provision | LC_ALL=C sort)" || return 95
  [ "$actual_paths" = "$expected_paths" ] || return 95
  # Historical named cloud relay is absent per physical readback; if a new
  # unexpected instance appears, do not replace/kill it.
@@ -117,7 +112,8 @@ write_backup(){
    printf 'ABSENT\t%s\t-\t-\n' "$target" >> "$BASE/metadata.tsv"
   fi
  done < "$PKG/TARGETS.tsv"
- # Preserve all 21 Owner files, not only six changed candidate files.
+ # Preserve the unchanged 21-file Owner tree read-only as recovery evidence.
+ # NO Owner /www path is ever eligible for apply or rollback.
  cp -a "$OLD_OWNER" "$BASE/owner-pwa-full" || return 97
  (cd "$BASE" && tar -czf backup.tar.gz files metadata.tsv owner-pwa-full) || return 97
  sha256sum "$BASE/backup.tar.gz" | awk '{print $1}'
@@ -193,6 +189,7 @@ case "$ACTION" in
   # changed unless a new signed source version activates BOTH hard gates.
   grep -qx 'HBNF_CART_GLOW_SOURCE_ADMITTED=true' "$PKG/candidate/opal/usr/libexec/hbnf-cart-glow-bridge" || exit 104
   grep -qx 'HBNF_OVERLAY_V1_SOURCE_ADMITTED=true' "$PKG/candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh" || exit 104
+  grep -qx 'HBNF_NATIVE_OWNER_TEXT_PRIORITY_ADMITTED=true' "$PKG/candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh" || exit 104
   # One-time registry consumed BEFORE any target file mutation. Never reuse.
   mkdir -p "$(dirname "$REGISTRY")" && mkdir "$REGISTRY" || exit 104
   printf '%s\n' "$MANIFEST_SHA" > "$REGISTRY/manifest.sha256"
