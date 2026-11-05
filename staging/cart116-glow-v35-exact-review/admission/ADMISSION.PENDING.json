@@ -239,7 +239,7 @@
   "transaction": {
     "manifest_specific_one_time_id": null,
     "owner_approval_for_this_exact_postimage": null,
-    "owner_authorization_to_continue": "github-116-comment-6611941325",
+    "owner_authorization_to_continue": "CART CONTROLS C6 standing scope: #116 comment 6648484424 and current owner message 2026-11-04; no fresh per-attempt permission request while exact technical gates pass",
     "release_owner": "Controls Track A only",
     "source_gate_change_admitted": false,
     "trusted_admission_receipt": null,
@@ -1615,7 +1615,7 @@
     "no_conflict_bridge_preinstall": "BOUNDED_PASS",
     "seven_owner_www_files": "EXCLUDED_PRESERVE_INSTALLED_PWA_V1.0.20",
     "installer_or_live_source_admitted": false,
-    "next_hard_blocker": "EDGE_COMPILED_BYTE_ROLLBACK_ABSENT; SOURCE_EQUIVALENT_ALT_TEST_CRITERION_PREPARED_NOT_OWNER_OR_CONTROL_PLANE_APPROVED; NO_RELEASE",
+    "next_hard_blocker": "C7 CONDITIONAL SOURCE-EQUIVALENT METHOD ACCEPTED ONLY AS A RECOVERY METHOD, NOT LIVE RESTORE PROOF. Actual rollout not admitted until exact enabled source postimages/4-target executor and fresh Cart-LAN current-state/OTA/one-field-session checks; no live mutation.",
     "next_independent": "Retain immutable 10-file provider rollback Git tree and 15-file review candidate tree, require exact prechange v35 source/digest/config, select either actual compiled ESZip recovery or formally approved source-equivalent same-project restore, verify firmware prechange OTA route and candidate/rollback, then single owner one-time approval and one combined field acceptance.",
     "firmware_restoration": "R6_ORIGINAL_INSTALLED_BASELINE_WITNESS_ACCEPTED_VIA_20261014_TRANSACTION_AND_AKS_EXCEPTION; RAW_FLASH_SHA_UNAVAILABLE; FUTURE_PRECHANGE_OTA_AND_RESTORE_ADMISSION_STILL_REQUIRED",
     "scoring_p0": "ORIGINAL_NOV03_4_TEAMS_NOT_PERSISTED_VERIFIED",
@@ -1780,7 +1780,8 @@
       "formal_controls_validator_verified_for_proposed_waiver": false,
       "production_restore_rehearsed": false,
       "authorized_live_deploy": false,
-      "approval_token": null
+      "approval_token": null,
+      "superseded_by": "dora_c7_20261104.edge_source_equivalent_governance"
     },
     "original_r6_installed_source_build_transaction_witness": {
       "source": "AKS Master Router mandatory installed-baseline invariant (2026-10-26), Live Build Backup index, owner-private Drive firmware baseline recovery manifest, archived Oct14 build+install receipt; read-only current device runtime from Nov3",
@@ -1894,5 +1895,154 @@
       "independent_next_ready_action": "No additional physical capture. After policy decision, complete offline exact source+configuration rollback admission binding and one-use immutable prechange readbacks, including firmware OTA safe route; then single combined owner-present field session only after authorization. No live change now."
     },
     "original_controls_false_gates_unchanged": true
+  },
+  "dora_c7_20261104": {
+    "schema": "hbnf-cart116-track-a-c7-source-equivalent-edge-and-narrow-release-method-v1",
+    "controlling_record": "staging/cart116-glow-v35-exact-review/admission/ADMISSION.PENDING.json",
+    "supersedes_only": "dora_c6_20261104.alternative_edge_recovery_formal_criterion.current_disposition; preserves C6 provenance, per-target evidence, and historical strict compiled identity as NOT_AVAILABLE",
+    "owner_authority": {
+      "standing_release_work_authorization": [
+        "Current ChatGPT user C6 standing release authorization dated 2026-11-04 PST",
+        "#116 6648484424 Delivery Desk owner policy"
+      ],
+      "interpretation": "Authorizes no-cost routine, reversible source work and completion of already-defined narrow release subject to fail-closed same-manifest gates; does not assert any installed Owner acceptance nor waive physical electrical/firmware safety",
+      "additional_per_attempt_approval_needed": false,
+      "exact_install_artifact_authorization": "ONLY_AFTER manifest-specific candidate and baseline+recovery gate/one-time source postimage identity proven; do not use standing approval as substitute for missing SHA or physical access"
+    },
+    "edge_source_equivalent_governance": {
+      "policy_id": "CART116_EDGE_V35_SOURCE_EQUIVALENT_RESTORE_CONDITIONAL_V1",
+      "status": "METHOD_ACCEPTED_CONDITIONAL_LIVE_RECOVERY_NOT_VERIFIED",
+      "exception_scope": "ONLY hbnf-cart-control Supabase Edge in project phcpbvuqibyarpfrftgx, existing v35 exact 10-file source/config; not a generalized exception for firmware, Owner PWA, SQL, unrelated provider or app",
+      "rationale": "Supabase Edge deploys source bundles as ESZip; deployed original compiled ESZip bytes not exposed by connected provider and GET function-body documentation does not attest binary export. Official Supabase source restore via deploy is supported. Canonical HBNF release engineering explicitly permits source/config/toolchain equivalent identity where bit-for-bit builds unavailable, with limitation recorded. Owner standing authorization permits bounded alternative review; no waiver of exact source/base, rollback/rehydration and verified installed functionality.",
+      "citations": [
+        "https://supabase.com/docs/guides/functions/architecture",
+        "https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore",
+        "https://supabase.com/docs/guides/functions/deploy",
+        "AKS Master Router 2026-10-26 installed-baseline invariant and two-phase admission",
+        "Canonical HBNF Release Engineering protocol 2026-10-02 source-equivalence exception"
+      ],
+      "compiled_eszip_equivalence_claimed": false,
+      "actual_compiled_v35_eszip_bytes_available": false,
+      "original_provider_bundle_ezbr_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+      "original_source_tree_sha1": "74dd1d687de44eacb20eff8e3960d9129948ef88",
+      "reviewed_candidate_source_tree_sha1": "7c5ddec5c06a25e9187e98663db7210038449404",
+      "original_source_verification": "10/10 immutable blob byte-for-byte compared with deployed get_edge_function file content, entrypoint index.ts, deno.json, verify_jwt=false, version=35, original ten blob sizes pinned by C6",
+      "source_candidate_verification": "15 files: 8 unchanged, 2 modified and 5 added; imports 15/15 resolved; existing PG17/Deno/C1 suites accepted, hard actuation flags false",
+      "restoration_method": "same-project connected deploy_edge_function with EXACT original 10 source file contents from immutable Git tree, entrypoint_path=index.ts, import_map_path=deno.json and verify_jwt=false; use provider same existing environment only, no secret migration, and keep original function slug",
+      "expected_result": "NEW provider version allowed; deployed source+config equivalent to recovered original v35 and legacy routes demonstrably operational, NOT same ESZip bytes, provider version=35 or original bundle digest",
+      "objective_prechange_checks": [
+        "Provider hbnf-cart-control ACTIVE v35 and exact prechange ezbr_sha256 377945d8..., 10 source files and 10 Git blob bytes unchanged, entrypoint/index.ts, deno.json and verify_jwt=false; no drift or competing deployment",
+        "Original 10 Git blobs independently retrieved outside provider; candidate 15 source blobs and all relative imports pinned; relevant provider environment variable NAMES retained without exposing values",
+        "One transaction ties provider original/candidate, overlay SQL up/down, original-target R6 candidate+rollback, only four Opal target postimages and their ABSENT original metadata, seven excluded Owner WWW files and current S1 four-team checksum",
+        "Read-only baseline Owner PWA + Matrix MAC/firmware/FX142 ps=-1/brightness/Vibe and AUX 22DDP plus two OFF PWM, Opal four-path absence and process/lockouts, fresh device routing and known OTA restore path; hard reject drift",
+        "Runtime provider rollback plan and SQL inverse proven bounded; source-only test PASS, separate fresh provider/legacy probe capability and recovery checkpoint available BEFORE any provider change"
+      ],
+      "mechanical_static_gate": {
+        "path": "staging/cart116-glow-v35-exact-review/admission/check_c6_source_restore.py",
+        "git_blob": "92a081662dbc8efbdb5ba02ca9934e81b856968b",
+        "behavior": "Python standard-library only, no network/device/mutation/credentials; direct file set, Git tree and Git blob checks for 10/15 sources, SQL up/down hashes, 4 exact Opal SHA256/absence, S1 and original R6 witness, Owner exclusion, hard false guards. Exit 0 static source method PASS; exit 43 source/policy mismatch; --phase release EXIT42 while live readback and physical admission missing.",
+        "currently_verified_against_actual_checkout": "NOT_YET_RUN_WITH_ACTUAL_PRIVATE_REPO_FILES",
+        "synthetic_positive_and_two_negative_gates": "SOURCE-LOGIC-ISOLATED_TEST_PASS_CONDITIONAL_NOT_HOSTED_CI"
+      },
+      "deployment_checkpoint_contract": [
+        {
+          "step": 0,
+          "phase": "GLOBAL_PRECHANGE",
+          "status": "BLOCKED_DEVICE_LAN_AND_EXACT_ENABLED_POSTIMAGES",
+          "condition": "Freeze manifest one time after current provider 10-file identity and live Cart readback. Reconfirm one original current R6 installed witness+OTA route and all 4 Opal paths ABSENT. Verify approved recovery backup remotely available. Do not touch Owner PWA."
+        },
+        {
+          "step": 1,
+          "phase": "SQL_FORWARD_ONLY",
+          "status": "NOT_ATTEMPTED",
+          "condition": "Under exact prechange approval, 0 overlay-v1 RPCs/table, original other SQL grants/legacy RPCs preserved, execute reviewed v1 up once. Immediately verify names/privileges and genuine S1 revision unchanged. If failure, inverse only if no unresolved challenges; no Edge/Opal flash then."
+        },
+        {
+          "step": 2,
+          "phase": "EDGE_INERT_STAGE",
+          "status": "NOT_ATTEMPTED",
+          "condition": "Deploy exact 15-file candidate with ALL source actuation flags FALSE using existing provider. Verify source/config/legacy functionality independently; if failure restore exact ten-source original via same connector and readback, then resolve SQL inverse. Under no circumstances enable automatic Glow yet."
+        },
+        {
+          "step": 3,
+          "phase": "MATRIX_SAFE_NATIVE_FLASH",
+          "status": "NOT_ATTEMPTED",
+          "condition": "Only with original R6 MAC/release/WLED route and actual exact original firmware rollback image available to device, and owner physically present, flash corrected ORIGINAL-TARGET R6 857968..., observe native Owner text precedence and retained FX142/ps=-1/Vibe/brightness, no AUX/UV output writes. On failure use only recognized original rollback de38221... via known OTA route, preserve recovery lockout. No speculative flash."
+        },
+        {
+          "step": 4,
+          "phase": "OPAL_FOUR_NEW_TARGETS",
+          "status": "NOT_ATTEMPTED",
+          "condition": "Only exact 4 C1 sources and protected config generated on device; recheck absence, stage hashes, root ownership, modes and one procd bridge; never write seven Owner PWA files or any legacy relay. Source guards remain disabled until physical Priority/Edge admitted postimages pinned."
+        },
+        {
+          "step": 5,
+          "phase": "ENABLE_VERIFIED_CROSS_STAGE",
+          "status": "NOT_ATTEMPTED",
+          "condition": "Exact approved enabled postimages must explicitly pass new source-gate tests, original firmware corrected release observed, versioned challenge/confirm and owner precedence/fence proven. No flag set solely by PENDING manifest. If not possible leave bridge off and restore inert Edge/SQL or maintain approved inert stage ONLY with separately explicit safe disposition."
+        },
+        {
+          "step": 6,
+          "phase": "ONE_INSTRUMENTED_FIELD_ACCEPTANCE",
+          "status": "NOT_ATTEMPTED",
+          "condition": "Same one owner-present session in dora_c2_20261104: actual S1 48/52/52/57 visible GLOW; one-use challenge+ACK; Owner TEXT immediate precedence; Safari iPad reconnect, TTL ps=-1 FX142 native WOW MAX/Vibe/audio/brightness restored, DDP 22 RGB unchanged, both PWM OFF and UV OFF; timeout or source mismatch STOP, no actuator replay."
+        },
+        {
+          "step": 7,
+          "phase": "SAME_MANIFEST_CLOSEOUT_OR_RECOVERY",
+          "status": "NOT_ATTEMPTED",
+          "condition": "Independent final provider 15-file readback, actual Matrix and four-file hashes, seven original Owner assets unchanged, actual visible owner acceptance and private durable closeout downloaded-back; on failure stop bridge/source admission and restore Opal four originals by ABSENCE, Matrix original R6, Edge original ten files and only then SQL inverse after unresolved challenge cleared, with each fresh reverse checkpoint and no unsafe clear."
+        }
+      ],
+      "rollback_order": {
+        "pre_device_edge_failure": "Re-deploy exact ten original Edge source files; independent readback all 10 source blobs and config + nonmutating legacy status/Owner routes; confirm no one-use overlay challenge; then reviewed guarded SQL down. Neither Opal nor Matrix touched.",
+        "after_Opal_install_failure": "Stop only new bridge procd; safe credential deprovision if originally absent; remove only four matching exact candidate files (and stage files), verify absence and no conflicting owner processes, and preserve seven PWA originals; recover corrected Matrix to archived original R6 only if same-device safe OTA/restore prerequisites hold, then Edge v35 source-equivalent redeploy, finally SQL inverse ONLY if no unresolved challenges.",
+        "after_device_flash_failure": "No blind generic WLED reset or AUX write; isolate Glow bridge, check Matrix state and applied release. If recovery route unverified, freeze/lock out and don't risk flash; otherwise use original R6 binary exactly and verify runtime/owner behavior, then Edge and SQL rollback in guarded order.",
+        "credential_file_safety": "Never retain credential content off-device or in GitHub. New protected config only root:root 0600 under authenticated stdin. Original C3 config ABSENT; delete only if original absence and current release-owned content verified."
+      },
+      "after_restore_success_requires": [
+        "Provider get_edge_function shows ACTIVE under same slug with all ten EXACT original Git source bytes and same entrypoint/index.ts, deno.json, verify_jwt=false; version and compiled ezbr SHA may differ, new values recorded, never compared as equal original",
+        "Nonmutating critical legacy Owner/Guest authorization and status contract passes independent provider response/readback; no protected data or device command.",
+        "SQL has no remaining unresolved new challenge, original S1 scores/guard and existing relay APIs preserved; inverse fails closed if outstanding challenge.",
+        "Opal exact four return ABSENT and config absent if originally absent, new service and lockouts settled; Owner PWA seven files unchanged, Matrix original R6 MAC/release and saved native state restored, AUX/DDP/PWM and UV unchanged.",
+        "One durable same-manifest rollback closeout persisted and independently downloaded-back; no PASS on HTTP200/source identity alone."
+      ],
+      "status_readback_real_live_restore": "NOT_PERFORMED",
+      "supported_method_ready_for_release": "CONDITIONAL_STATIC_ONLY",
+      "one_time_postimage_admitted": false
+    },
+    "exact_source_and_recovery_freeze": {
+      "matrix_corrected_original_target_sha256": "85796804b3436b890918206c3c371973dc6b08337ad4f67bfc7d769b7dc8cb16",
+      "matrix_original_installed_rollback_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "original_verified_firmware_capsule_sha256": "9c126ccf09b135fcb3347d069f9661df335531dd2cce3332da3c2a3e3492d102",
+      "sql_up_git_blob": "e03daecfd23f8431758551f0a0efe1f4bcb77eef",
+      "sql_down_git_blob": "f093047c8c69096e5529cffce4733d94b12be459",
+      "edge_baseline_10file_tree": "74dd1d687de44eacb20eff8e3960d9129948ef88",
+      "edge_review_15file_tree": "7c5ddec5c06a25e9187e98663db7210038449404",
+      "opal_4_new_sha256": {
+        "/usr/libexec/hbnf-cart-glow-bridge": "97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c",
+        "/etc/init.d/hbnf-cart-glow-bridge": "e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7",
+        "/usr/libexec/hbnf-cart-glow-provision": "fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20",
+        "/usr/lib/hbnf-glow-overlay-v1.sh": "de51e9ace05f876124886089b841c6f5858b91ee4d42a3260f7e8f1788146538"
+      },
+      "opal_4_original_preimages": "ABSENT_AT_C3_CAPTURE_REQUIRE_PRECHANGE_DRIFT_READBACK",
+      "protected_config_original": "ABSENT_C3_NEVER_READ_CONTENTS",
+      "owner_pwa_7_existing_files": "EXCLUDED_NO_REPLACEMENT_OR_INSTALL",
+      "legacy_11target_archive": "PRESERVE_HISTORICAL_NOT_C1_COMPATIBLE_NEVER_USE_AS_INSTALLER",
+      "existing_opal_release_TSV_and_executor": "CURRENT_HISTORIC_11_TARGET_REVIEW_FILES_NOT_NARROW_ADMITTED; MUST_FAIL_RELEASE_GUARD_UNTIL FOUR_TARGET_ONLY_IN_PLACE_ADJUSTMENT_VERIFIED",
+      "enabled_source_review_bytes": "NOT_PRODUCED; source hard guards remain FALSE",
+      "immutable_manifest_one_time_release_id": null,
+      "independently_retrievable_candidate_stage_package": false,
+      "phase1_admitted": false,
+      "phase2_accepted": false
+    },
+    "first_irreducible_remaining_capability": {
+      "name": "AUTHENTICATED_CURRENT_CART_LAN_AND_OWNER_PRESENT_FOR_MATRIX_SAFE_OTA/PRECHANGE_AND_PHYSICAL_VISIBLE_ACCEPTANCE",
+      "outside_connected_tools": "The connected Supabase/GitHub/Drive tools cannot SSH into cart Opal/Matrix LAN, inspect native OTA route or judge visible LED priority. C3 historical capture accepted, but a new fresh prechange readback must occur immediately before physical change; no repeated exploratory read-only exercise.",
+      "current_trigger": "Owner and Cart physically co-present on existing HBNF-Cart LAN, one coordinated field session with known-safe OTA recovery path; freeze exact release postimages and rerun fail-closed prechange gate beforehand.",
+      "should_owner_be_asked_now": false,
+      "no_unconditional_flash": true
+    },
+    "no_live_mutation": true
   }
 }
