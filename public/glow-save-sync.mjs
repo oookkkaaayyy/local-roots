@@ -105,17 +105,12 @@ export function createGlowSaveCoordinator({storage, onStatus = () => {}, now = (
         if (current?.root && same(current.root.glow, submitted.branchState)) {
           return settleAcknowledged(submitted, current);
         }
-        if (current?.root && submitted.baseBranchState && same(current.root.glow, submitted.baseBranchState)) {
-          submitted.baseUpdatedAt = current.updatedAt;
-          submitted.baseBranchState = clone(current.root.glow);
-          if (pending?.generation === submitted.generation) persist(submitted);
-          const retry = await compareAndSwap(current.updatedAt, {...clone(current.root),glow:clone(submitted.branchState)});
-          const retryRows = Array.isArray(retry?.rows) ? retry.rows : (retry?.row ? [retry.row] : []);
-          if (!retry || retry.error || retryRows.length !== 1) { status('conflict'); return {status:'conflict',current:await readCurrent()}; }
-        } else {
-          status('conflict');
-          return {status: 'conflict', current};
-        }
+        // A zero-row/error acknowledgement can be ambiguous even when the next
+        // GET still shows the baseline. Never issue a second CAS inside this
+        // same flush. Keep the on-device draft; a later flush must perform its
+        // own fresh server preflight and conditional write.
+        status('conflict');
+        return {status: 'conflict', current};
       }
 
       // UPDATE RETURNING is necessary but not sufficient: independently GET the

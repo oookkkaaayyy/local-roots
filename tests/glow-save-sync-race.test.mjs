@@ -118,3 +118,77 @@ test('actual Glow coordinator refuses a stale second-device overwrite and keeps 
   assert.equal(coordinator.pending.branchState.weeks['2026-11-03'].scores.hole2,'4');
   assert.equal(createGlowSaveCoordinator({storage:s}).pending.branchState.weeks['2026-11-03'].scores.hole2,'4');
 });
+
+// New bounded P0 safety regression: a zero-row/failed CAS acknowledgement may
+// be ambiguous. A single flush must reconcile independently, keep the local
+// draft, and never issue a second write merely because the first reply failed.
+// A later separate flush can make a new fenced attempt after a fresh GET.
+test('unacknowledged Glow CAS cannot be replayed within one flush; draft survives cold restart',async()=>{
+  const s=storage(),statuses=[], coordinator=createGlowSaveCoordinator({storage:s,onStatus:x=>statuses.push(x)});
+  let remote={root:{glow:{hole1:''},skins:{winner:'Mason'},bagTags:{manual:{Jason:6}},__backups:[{id:'old'}]},updatedAt:'rev-1'};
+  const readCurrent=async()=>structuredClone(remote);
+  const draft={hole1:'3'};
+  coordinator.queue(draft,'rev-1',remote.root.glow);
+  let writes=0;
+  const first=await coordinator.flush({readCurrent,compareAndSwap:async()=>{
+    writes++;
+    return {rows:[]}; // ambiguous zero-row acknowledgment; server remained unchanged
+  }});
+  assert.equal(first.status,'conflict');
+  assert.equal(writes,1,'no automatic second CAS in the ambiguous save invocation');
+  assert.equal(statuses.at(-1),'conflict');
+  assert.deepEqual(coordinator.pending.branchState,draft);
+  assert.deepEqual(remote.root.skins,{winner:'Mason'});
+  const reopened=createGlowSaveCoordinator({storage:s});
+  assert.equal(reopened.hasPending,true);
+  assert.deepEqual(reopened.pending.branchState,draft);
+  const second=await reopened.flush({readCurrent,compareAndSwap:async(rev,root)=>{
+    writes++;
+    assert.equal(rev,'rev-1');
+    assert.deepEqual(root.skins,{winner:'Mason'});
+    assert.deepEqual(root.bagTags,{manual:{Jason:6}});
+    assert.deepEqual(root.__backups,[{id:'old'}]);
+    remote={root:structuredClone(root),updatedAt:'rev-2'};
+    return {rows:[{id:1,updated_at:'rev-2'}]};
+  }});
+  assert.equal(second.status,'saved');
+  assert.equal(writes,2,'only a separate flush with a new preflight may attempt CAS');
+  assert.equal(reopened.hasPending,false);
+  assert.deepEqual(remote.root.glow,draft);
+});
+
+test('ambiguous Glow CAS error already committed is verified by independent GET without replay',async()=>{
+  const s=storage(),coordinator=createGlowSaveCoordinator({storage:s});
+  let remote={root:{glow:{hole1:''},skins:{history:'unchanged'}},updatedAt:'rev-1'},writes=0,reads=0;
+  coordinator.queue({hole1:'4'},'rev-1',remote.root.glow);
+  const result=await coordinator.flush({
+    readCurrent:async()=>{reads++;return structuredClone(remote)},
+    compareAndSwap:async(revision,root)=>{
+      writes++;
+      assert.equal(revision,'rev-1');
+      remote={root:structuredClone(root),updatedAt:'rev-2'};
+      return {error:{message:'HTTP 504 after commit'},rows:[]};
+    }
+  });
+  assert.equal(writes,1);
+  assert.equal(reads,2,'server saved state must be verified by independent readback');
+  assert.equal(result.status,'saved');
+  assert.equal(coordinator.hasPending,false);
+  assert.deepEqual(remote.root.skins,{history:'unchanged'});
+});
+
+test('ambiguous transport error with unchanged cloud state stops after one CAS and keeps recovery draft',async()=>{
+  const s=storage(),coordinator=createGlowSaveCoordinator({storage:s});
+  let remote={root:{glow:{scores:['']},skins:{weekly:'intact'}},updatedAt:'rev-7'},writes=0,reads=0;
+  coordinator.queue({scores:['2']},remote.updatedAt,remote.root.glow);
+  const first=await coordinator.flush({
+    readCurrent:async()=>{reads++;return structuredClone(remote)},
+    compareAndSwap:async()=>{writes++;return {error:{message:'HTTP 522 after unknown outcome'}};}
+  });
+  assert.equal(writes,1);
+  assert.equal(reads,2,'one baseline preflight and one post-failure readback');
+  assert.equal(first.status,'conflict');
+  assert.equal(coordinator.hasPending,true);
+  assert.deepEqual(createGlowSaveCoordinator({storage:s}).pending.branchState,{scores:['2']});
+  assert.deepEqual(remote.root.skins,{weekly:'intact'});
+});
