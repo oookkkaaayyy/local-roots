@@ -46,6 +46,15 @@ assert off_body["seg"][0] == body["seg"][0], "underglow state changed"
 assert all(off_body["seg"][sid]["on"] is False and off_body["seg"][sid]["bri"] == 0 for sid in (1, 2))
 off_preset = {"249": {**preset["249"], "on": False, "seg": off_body["seg"]}}
 module.check_safe_boot_preset(off_preset, 249, off_state)
+# A readback without a full baseline must still reject a latent nonzero UV
+# brightness, even if WLED reports the segment "on" field as false.
+latent_bright = {"249": {**off_preset["249"],
+    "seg": [*off_body["seg"][:1], {**off_body["seg"][1], "bri": 255}, off_body["seg"][2]]}}
+try:
+    module.check_safe_boot_preset(latent_bright, 249)
+    raise AssertionError("nonzero UV boot brightness was accepted without baseline evidence")
+except RuntimeError as error:
+    assert "zero brightness" in str(error)
 try:
     module.check_safe_boot_preset({"249": {**off_preset["249"], "on": True}}, 249, off_state)
     raise AssertionError("unsafe global wake passed safe-boot validation")
