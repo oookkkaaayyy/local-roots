@@ -83,6 +83,9 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         for value in group.values()
     ):
         raise ValueError("packaged UV hardware profile must remain default-off")
+    if (policy_spec.get("commandModes") != ["OFF", "MANUAL", "FOLLOW_MATRIX"]
+        or policy_spec.get("offlineSimulationOnlyModes") != ["VIBE_REACTIVE"]):
+        raise ValueError("Opal and cloud UV executable modes must remain identical")
     if policy_spec.get("requiredRuntimeGates") != ["auxEnabled", "uvEnabled", "uvOutputsVerified", "hardwareReady"]:
         raise ValueError("UV runtime gate contract changed; update Opal gate implementation and package admission")
     if policy_spec.get("requiredCommissioningGates") != list(hardware_profile.get("commissioningGates", {})):
