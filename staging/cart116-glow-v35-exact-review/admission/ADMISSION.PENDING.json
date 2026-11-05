@@ -2628,5 +2628,34 @@
       "independent_accepted_reconnect": "3/3 PASS in initial run 42061812831; not repeated unchanged",
       "source_change_vs_installed": "SOURCE_PASS_ONLY; Opal/Owner PWA and Matrix DEVICE_NOT_INSTALLED_OR_TESTED"
     }
+  },
+  "dora_c9_c8_marker_source_review_20261105": {
+    "schema": "cart116-c8-native-overlay-c9-exact-firmware-marker-review-v1",
+    "status": "REVIEW_ONLY_NOT_INSTALLABLE",
+    "authority": "#116 Controls; SAME ADMISSION.PENDING.json",
+    "source_parent_head": "1fa21547077a29018eda2a40db95d01e626b1ea9",
+    "reviewed_helper_previous_blob": "2c92c84a7325b548513555c0c8f4d6a3cda83ac6",
+    "exact_allowed_owner_safe_release_ids": [
+      "hbnf-cart2-r6-native-overlay-owner-safe-review-20261103",
+      "hbnf-cart2-r6-owner-safe-tuning-persist-review-20261104"
+    ],
+    "original_r6_oct14": "NOT_ADMITTED_FOR_SCORE_OVERLAY",
+    "matching_build_and_state": "Must agree on same exact allowlisted release ID; otherwise fail closed",
+    "current_opal_bridge": false,
+    "current_source_flags": false,
+    "c8_release_archive": "CURRENT old hashes STALE for changed helper; NO INSTALL, must repackage under existing authority only after provider, prechange and physical native acceptance",
+    "native_protocol": "C9 physical overlay compatibility not yet verified; qualified source only",
+    "independently_releasable": "C9 paired PWA+Matrix does not need any SQL RPCs; C8 still review-only",
+    "focused_ci": "PENDING",
+    "excluded_writes": [
+      "Live Opal",
+      "Matrix",
+      "AUX",
+      "UV",
+      "Provider",
+      "SQL",
+      "Scoring",
+      "Owner PWA"
+    ]
   }
 }

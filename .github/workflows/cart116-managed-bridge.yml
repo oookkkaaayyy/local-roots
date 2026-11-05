@@ -81,3 +81,21 @@ jobs:
           cd staging/cart116-glow-v35-exact-review
           node --test tests/trackA-c9-paired-owner-compat.test.mjs tests/trackA-netfix2-served-identity.test.mjs
       # Review-only source execution; never mutates provider, Opal or Matrix.
+
+  c8_native_c9_exact_marker_review:
+    if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c8-marker]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: C8 two exact release identities and both disabled admission flags
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          node --test tests/c8-native-approved-releases-review.test.mjs
+      - name: Native ash grammar without device or provider access
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          docker run --rm --network none -v "$(pwd):/src:ro" busybox:1.36 ash -n /src/opal/hbnf-glow-overlay-v1.sh
