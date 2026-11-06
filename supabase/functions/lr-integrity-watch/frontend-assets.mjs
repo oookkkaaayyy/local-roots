@@ -125,7 +125,16 @@ export function findJsAssetImports(source, fromUrl, expectedOrigin) {
     const specifier = match[1] ?? match[2] ?? match[3];
     const url = new URL(specifier, fromUrl);
     if (!expectedOrigin || url.origin !== expectedOrigin || !url.pathname.startsWith('/assets/') || !url.pathname.endsWith('.js')) {
-      throw new Error('frontend_import_origin_or_path_mismatch');
+      const error = new Error('frontend_import_origin_or_path_mismatch');
+      // Diagnostic metadata is private to the caller; keep the error message
+      // and the provider's public response contract unchanged.
+      error.rejectedImport = {
+        source_asset_url: fromUrl,
+        specifier,
+        resolved_url: url.toString(),
+        source_offset: match.index,
+      };
+      throw error;
     }
     urls.add(url.toString());
   }
