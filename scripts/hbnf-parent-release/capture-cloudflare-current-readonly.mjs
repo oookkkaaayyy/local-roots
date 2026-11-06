@@ -38,7 +38,7 @@ async function json(stage,path,token,fetchImpl){
     const v=await r.json();
     if(!v||v.success===false)fail(stage,'API_REJECTED');
     return v.result;
-  }catch(e){if(safe(e?.message).startsWith('CF_'))throw e;fail(stage,'JSON_FORMAT');}
+  }catch(e){if(typeof e?.message==='string'&&/^CF_[A-Z0-9_]+$/.test(e.message))throw e;fail(stage,'JSON_FORMAT');}
 }
 async function deployment(token,fetchImpl){
   const d=await json('DEPLOYMENTS','/accounts/'+ACCOUNT+'/workers/scripts/'+WORKER+'/deployments',token,fetchImpl);
@@ -67,7 +67,7 @@ async function source(token,fetchImpl){
       if(n>MAX_SOURCE_BYTES)fail('SOURCE','TOO_LARGE');
       chunks.push(Buffer.from(value));
     }
-  }catch(e){if(safe(e?.message).startsWith('CF_'))throw e;fail('SOURCE','INTERRUPTED_STREAM');}
+  }catch(e){if(typeof e?.message==='string'&&/^CF_[A-Z0-9_]+$/.test(e.message))throw e;fail('SOURCE','INTERRUPTED_STREAM');}
   finally{reader.releaseLock();}
   if(!n)fail('SOURCE','EMPTY');
   const bytes=Buffer.concat(chunks,n);
