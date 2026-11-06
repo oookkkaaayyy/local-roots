@@ -15,6 +15,11 @@ on:
       - staging/cart116-glow-v35-exact-review/admission/hbnf-matrix-offline-parity-review.cjs
       - staging/cart116-glow-v35-exact-review/release/c9-six-file-transaction.REVIEW_ONLY.sh
       - staging/cart116-glow-v35-exact-review/tests/test_c9_six_file_transaction_rehearsal.py
+      - staging/cart116-glow-v35-exact-review/tests/test_c9_opal_hardkill_recovery.py
+      - staging/cart116-glow-v35-exact-review/tests/test_c9_opal_candidate_transaction.py
+      - staging/cart116-glow-v35-exact-review/tests/test_c9_opal_preflight_readonly.py
+      - staging/cart116-glow-v35-exact-review/release/build_c9_phase1a_review.py
+      - staging/cart116-glow-v35-exact-review/tests/test_c9_review_package.py
       - staging/cart116-glow-v35-exact-review/candidate-source/hbnf-glow-cart-intent.mjs
       - staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql
       - staging/cart116-glow-v35-exact-review/tests/native-release/c7-source-intent-contract.test.mjs
