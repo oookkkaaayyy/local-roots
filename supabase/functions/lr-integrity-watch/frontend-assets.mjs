@@ -9,9 +9,12 @@ const JS_IMPORTS = /\bimport\s*\(\s*["']([^"']+)["']\s*\)|\b(?:import|export)[\w
 
 // Ignore import-shaped text in strings, template copy and comments, while
 // retaining executable imports inside template interpolations (including nested).
-function executableCodeOffsets(source) {
-  const code = new Uint8Array(source.length);
-  const contexts = [{ kind: 'code', interpolation: false, depth: 0 }];
+// Vite bundles contain import-shaped help text inside JS strings. Recognize
+// executable import/export tokens before validating their specifiers. Track
+// regexp literals as well: quotes inside regexps must not alter string state.
+function executableImportStarts(source) {
+  const starts = new Set();
+  const contexts = [{ kind: 'code', interpolation: false, depth: 0, regexpAllowed: true }];
   for (let i = 0; i < source.length; i++) {
     const current = contexts[contexts.length - 1];
     const character = source[i];
@@ -20,48 +23,103 @@ function executableCodeOffsets(source) {
       if (current.interpolation && character === '}') {
         if (current.depth === 0) { contexts.pop(); continue; }
         current.depth--;
-      } else if (current.interpolation && character === '{') {
-        current.depth++;
+        current.regexpAllowed = false;
+        continue;
       }
       if (character === "'" || character === '"') {
-        contexts.push({ kind: 'quoted', quote: character }); continue;
+        current.regexpAllowed = false;
+        contexts.push({ kind: 'quoted', quote: character });
+        continue;
       }
-      if (character === '`') {
-        contexts.push({ kind: 'template' }); continue;
+      if (character === '\x60') {
+        current.regexpAllowed = false;
+        contexts.push({ kind: 'template' });
+        continue;
       }
       if (character === '/' && next === '/') {
-        contexts.push({ kind: 'line-comment' }); i++; continue;
+        contexts.push({ kind: 'line-comment' });
+        i++;
+        continue;
       }
       if (character === '/' && next === '*') {
-        contexts.push({ kind: 'block-comment' }); i++; continue;
+        contexts.push({ kind: 'block-comment' });
+        i++;
+        continue;
       }
-      code[i] = 1;
+      if (character === '/' && current.regexpAllowed) {
+        current.regexpAllowed = false;
+        contexts.push({ kind: 'regexp', inClass: false });
+        continue;
+      }
+      if (character === '/') {
+        current.regexpAllowed = true;
+        continue;
+      }
+      if (/\s/.test(character)) continue;
+      if (/[A-Za-z_$]/.test(character)) {
+        const start = i;
+        while (i + 1 < source.length && /[\w$]/.test(source[i + 1])) i++;
+        const word = source.slice(start, i + 1);
+        if (word === 'import' || word === 'export') starts.add(start);
+        current.regexpAllowed = /^(return|throw|case|else|do|yield|await|typeof|void|delete|in|instanceof|of|new|extends)$/.test(word);
+        continue;
+      }
+      if (/[0-9]/.test(character)) {
+        while (i + 1 < source.length && /[\w.]/.test(source[i + 1])) i++;
+        current.regexpAllowed = false;
+        continue;
+      }
+      if (character === '{') {
+        if (current.interpolation) current.depth++;
+        current.regexpAllowed = true;
+        continue;
+      }
+      if (character === ')' || character === ']' || character === '}') {
+        current.regexpAllowed = false;
+        continue;
+      }
+      if (character === '.') {
+        current.regexpAllowed = false;
+        continue;
+      }
+      current.regexpAllowed = true;
     } else if (current.kind === 'quoted') {
       if (character === '\\') { i++; continue; }
       if (character === current.quote) contexts.pop();
     } else if (current.kind === 'template') {
       if (character === '\\') { i++; continue; }
-      if (character === '`') { contexts.pop(); continue; }
+      if (character === '\x60') { contexts.pop(); continue; }
       if (character === '$' && next === '{') {
-        contexts.push({ kind: 'code', interpolation: true, depth: 0 });
-        i++; continue;
+        contexts.push({ kind: 'code', interpolation: true, depth: 0, regexpAllowed: true });
+        i++;
+        continue;
+      }
+    } else if (current.kind === 'regexp') {
+      if (character === '\\') { i++; continue; }
+      if (character === '[') { current.inClass = true; continue; }
+      if (character === ']') { current.inClass = false; continue; }
+      if (character === '/' && !current.inClass) {
+        contexts.pop();
+        while (i + 1 < source.length && /[a-z]/i.test(source[i + 1])) i++;
+        continue;
       }
     } else if (current.kind === 'line-comment') {
-      if (character === '\n' || character === '\r') {
-        contexts.pop(); code[i] = 1;
-      }
+      if (character === '\n' || character === '\r') contexts.pop();
     } else if (current.kind === 'block-comment') {
       if (character === '*' && next === '/') { contexts.pop(); i++; }
     }
   }
-  return code;
+  if (contexts.length !== 1 || contexts[0].kind !== 'code') {
+    throw new Error('frontend_import_lexical_unclosed');
+  }
+  return starts;
 }
 
 export function findJsAssetImports(source, fromUrl, expectedOrigin) {
   const urls = new Set();
-  const executable = executableCodeOffsets(source);
+  const executable = executableImportStarts(source);
   for (const match of source.matchAll(JS_IMPORTS)) {
-    if (!executable[match.index]) continue;
+    if (!executable.has(match.index)) continue;
     const specifier = match[1] ?? match[2] ?? match[3];
     const url = new URL(specifier, fromUrl);
     if (!expectedOrigin || url.origin !== expectedOrigin || !url.pathname.startsWith('/assets/') || !url.pathname.endsWith('.js')) {
