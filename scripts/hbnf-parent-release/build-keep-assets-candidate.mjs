@@ -21,8 +21,22 @@ export function parseMultipart(bytes){
     if(split<0)throw Error('MULTIPART_PART_INVALID');
     const body=raw.slice(split+4).replace(/\r\n$/, '');
     const content=Buffer.from(body,'latin1');
-    // Wrangler's source endpoint emits base64 module bodies for map parts.
-    const decoded=match[1].endsWith('.map')?Buffer.from(content.toString(),'base64'):content;
+    // Source-map parts can be returned as raw JSON or base64 text by source
+    // capture adapters. Decode only a base64 body that itself contains valid
+    // Source Map v3 JSON; never reinterpret raw JSON bytes as base64.
+    let decoded=content;
+    if(match[1].endsWith('.map')){
+      const validMap=bytes=>{
+        try{return JSON.parse(bytes.toString('utf8'))?.version===3;}catch{return false;}
+      };
+      if(!validMap(content)){
+        const text=content.toString('ascii').trim();
+        if(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(text)){
+          const candidate=Buffer.from(text,'base64');
+          if(validMap(candidate))decoded=candidate;
+        }
+      }
+    }
     parts.set(match[1],decoded);
   }
   if(!parts.has('index.js'))throw Error('WORKER_MODULE_MISSING');

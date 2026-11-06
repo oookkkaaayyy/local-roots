@@ -89,6 +89,17 @@ test('capture module closure is exact and source map bytes are preserved',()=>{
  assert.match(built.module.toString(),/glow-save-sync\.mjs/);
 });
 
+test('multipart parser preserves raw Source Map v3 JSON bytes',()=>{
+ const map=Buffer.from('{"version":3,"sources":["index.js"],"names":[],"mappings":""}');
+ const boundary='raw-source-map-fixture';
+ const body=Buffer.concat([
+  Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="index.js"; filename="index.js"\r\nContent-Type: application/javascript+module\r\n\r\nexport default {};\r\n`),
+  Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="index.js.map"; filename="index.js.map"\r\nContent-Type: application/source-map\r\n\r\n`),map,
+  Buffer.from(`\r\n--${boundary}--\r\n`)
+ ]);
+ assert.deepEqual(parseMultipart(body).parts.get('index.js.map'),map);
+});
+
 test('multipart upload body binds metadata and exact module parts',()=>{
  const body=built.multipart.toString('latin1');
  assert.match(body,/name="metadata"/);
