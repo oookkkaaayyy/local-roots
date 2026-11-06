@@ -2806,7 +2806,7 @@
     "next": "Only after exact current provider/device recovery and one-manifest admission; no live actuation before genuine source and readback eligibility"
   },
   "c8_sql_repair_20261105": {
-    "status": "REPAIRED_FROM_SINGLE_TRANSACTION_CLEAN_BASE_PG_VALIDATION_PENDING",
+    "status": "SOURCE_REPAIRED_NATIVE_SQL_DENO_PASS_REVIEW_ONLY_NOT_DEPLOYED",
     "previous_broken_commits": [
       "7612d036a80c39053c7076879b684cbef0436ed2",
       "341c159843c2006c3facd835418edabf1efd4494",
@@ -2817,7 +2817,20 @@
     "sql_blob": "545c1e5bdbd96f631007f6f9f1fdbc84c47a8bc1",
     "proof": "Structural checks: one COMMIT, one commit RPC, balanced 2 $commit$ delimiters, latest scored-hole guards in both read and CAS; native PG17 not yet accepted",
     "provider_mutated": false,
-    "admitted": false
+    "admitted": false,
+    "runtime_pg_validation": {
+      "run": 42139666356,
+      "exact_ci_head": "4cc39808b2feca24f1f6f166091f7432606247b8",
+      "postgres": "PG17.11 transaction/privilege/single-use/TTL/owner/fence/race/rollback PASS",
+      "deno": "8 passed, 0 failed native FormData WebCrypto and versioned Edge",
+      "provider_mutated": false
+    },
+    "remaining_admission": [
+      "Current independently durable compiled/provider rollback (or explicitly admitted exact-source-equivalent recovery)",
+      "Current SQL signatures/installed state and guarded no-op rollback preflight",
+      "Actual genuine source-readback eligibility and device/Owner approval; no automatic Cart actuation until physical acceptance",
+      "One-manifest phase0/pre-change/post-change/receipt"
+    ]
   },
   "device_evidence_20261105_1640_pacific": {
     "source": "Owner-collected actual HTTP device readback JSON via Mac HBNF-Cart LAN, independently SHA256 verified on attached bytes; user-reported approximate collection time",
