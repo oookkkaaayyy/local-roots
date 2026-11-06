@@ -12,6 +12,15 @@ case "$ROOT" in
 esac
 hex64(){ case "$1" in ''|*[!a-f0-9]*) return 1;; esac; [ "$(printf '%s' "$1" | wc -c | tr -d ' ')" -eq 64 ]; }
 sha(){ sha256sum "$1" | awk '{print $1}'; }
+# BusyBox Opal GL-SFT1200 has no stat applet. Exact ls -ln mode/UID/GID
+# bytes were validated against the authenticated read-only on-device format.
+ownership_ok(){
+ [ -f "$1" ] && [ ! -L "$1" ] || return 1
+ case "$2" in 644) expected='-rw-r--r--';; 600) expected='-rw-------';; *) return 1;; esac
+ ls -ln "$1" | awk -v expected="$expected" '
+   NR==1 && $1==expected && $3=="0" && $4=="0" { accepted=1 }
+   END { exit !accepted }'
+}
 valid(){
  case "$1:$2" in
  /www/mission-control-local/local-transport.js:local-transport.js|\
@@ -22,7 +31,7 @@ valid(){
  /www/mission-control-local/owner-pwa/.hbnf-package-version:.hbnf-package-version) return 0;;
  *) return 1;; esac
 }
-for cmd in sha256sum df stat sort cut wc awk cmp; do
+for cmd in sha256sum df ls sort cut wc awk cmp; do
  command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_BUSYBOX_COMMAND:$cmd" >&2; exit 66; }
 done
 [ -f "$TARGETS" ] && [ ! -L "$TARGETS" ] && [ -d "$SOURCE" ] && [ ! -L "$SOURCE" ] || exit 66
@@ -42,7 +51,7 @@ while IFS="$TAB" read -r dest rel old new mode; do
  [ "$(sha "$ROOT$dest")" = "$old" ] &&
  [ "$(sha "$SOURCE/$rel")" = "$new" ] || exit 72
  if [ "$ROOT" = / ]; then
-  [ "$(stat -c '%u:%g:%a' "$ROOT$dest")" = '0:0:644' ] || exit 73
+  ownership_ok "$ROOT$dest" 644 || exit 73
  fi
  n="$(wc -c < "$SOURCE/$rel")"; bytes=$((bytes+n))
  count=$((count+1))
