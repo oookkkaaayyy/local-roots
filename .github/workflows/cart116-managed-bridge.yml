@@ -157,3 +157,17 @@ jobs:
           docker run --rm --network none -v "$PWD:/src:ro" busybox:1.36 ash -n /src/staging/cart116-glow-v35-exact-review/release/c9-six-file-opal-preflight.REVIEW_ONLY.sh
           docker run --rm --network none -v "$PWD:/src:ro" busybox:1.36 ash -n /src/staging/cart116-glow-v35-exact-review/release/c9-six-file-opal.CANDIDATE.sh
       # REVIEW_ONLY: sandbox path guard forbids live-root and all Opal actions.
+
+  c9_parity_next_review_only:
+    if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c9-parity-next]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Prove paired local TUNE field isolation without altering C9 six-file candidate
+        run: |
+          set -euo pipefail
+          cd staging/cart116-glow-v35-exact-review
+          node --test tests/c9-parity-paired-tune-next.test.mjs
+      # No installed PWA/source-hash rebind, provider call, hardware command or deploy.
