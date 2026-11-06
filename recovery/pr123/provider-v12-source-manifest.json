@@ -1,0 +1,19 @@
+{
+  "purpose": "read-only exact installed provider source rollback checkpoint (NOT release admission)",
+  "provider_project_id": "wtymjxscneufjlkkywyg",
+  "function_slug": "lr-integrity-watch",
+  "installed_version": 12,
+  "status": "ACTIVE",
+  "verify_jwt": false,
+  "import_map": false,
+  "entrypoint": "index.ts",
+  "provider_bundle_sha256": "dbacd3734598727a032853968b542b385cb455f5ecd3a831e018ea5df6970766",
+  "source_backup_branch": "checkpoint/lr-pr123-provider-v12-20261105",
+  "source_backup_path": "recovery/pr123/lr-integrity-watch-v12-provider-index.ts",
+  "source_git_blob_sha1": "206a8ce1226edb833b1853ea82cd9503a9af5a5e",
+  "source_utf8_bytes": 6791,
+  "source_utf8_sha256": "a9f0346efe5bdacb5a2262708522213d4fdc55721b798fa3ba06a14dd5b33865",
+  "provider_readback_matches_archived_source": true,
+  "rollback_route": "Read archived index.ts and deploy it to existing lr-integrity-watch through Supabase Edge deployment with verify_jwt=false only after full release admission and exact target prechange match. Readback installed provider and verify intended identity; do not rely on platform version rollback alone.",
+  "recovery_limits": "Archived source and configuration are verified, but exact installed bundled bytes, independently downloaded provider bundle and complete two-phase release admission are NOT established."
+}
