@@ -18,6 +18,7 @@ on:
       - 'tests/glow-save-sync-race.test.mjs'
       - 'tests/hbnf-glow-preinit-pending.test.mjs'
       - 'tests/hbnf-udisc-cart-server-ack.test.mjs'
+      - 'tests/hbnf-udisc-fetch-gate.test.mjs'
       - 'source-snapshots/hbnf-worker-d1a5f936-20261024/src/**'
       - 'source-snapshots/hbnf-worker-d1a5f936-20261024/worker-private/**'
       - 'tests/skins-pending-review.test.mjs'
@@ -120,7 +121,7 @@ jobs:
           node --test tests/hbnf-glow-quick-import.test.mjs
       - name: Verify review-only parent gate and cutover source invariants (no secrets)
         if: steps.scope.outputs.quick_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
-        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-udisc-snapshot-integration.test.mjs tests/hbnf-server-tag-projection.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
+        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-udisc-snapshot-integration.test.mjs tests/hbnf-udisc-fetch-gate.test.mjs tests/hbnf-server-tag-projection.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
       - name: Verify exact UDisc latest source blobs (read only)
         if: steps.scope.outputs.nov3_only != 'true'
         run: |
