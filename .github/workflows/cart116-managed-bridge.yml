@@ -172,3 +172,15 @@ jobs:
           cd staging/cart116-glow-v35-exact-review
           node --test tests/c9-parity-paired-tune-next.test.mjs
       # No installed PWA/source-hash rebind, provider call, hardware command or deploy.
+  c9_six_target_package_review_only:
+    if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c9-package]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Exact C9 six-target release ZIP source checks and byte-repeatable package
+        run: |
+          set -euo pipefail
+          python3 staging/cart116-glow-v35-exact-review/tests/test_c9_review_package.py
+      # Does not upload a live executable, change Opal, provider or firmware.
