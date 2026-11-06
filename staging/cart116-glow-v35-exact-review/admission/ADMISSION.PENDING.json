@@ -2804,5 +2804,24 @@
     },
     "c9_hardware": "NO CURRENT AUTHENTICATED OPAL/MATRIX READBACK; NO INSTALL",
     "next": "Only after exact current provider/device recovery and one-manifest admission; no live actuation before genuine source and readback eligibility"
+  },
+  "c8_sql_repair_20261105": {
+    "status": "SOURCE_REPAIRED_REVIEW_ONLY_NOT_DEPLOYED",
+    "source_commit": "9ab82af2b02a8d7c54fe9dd3af35d8ed1e4bca1e",
+    "sql_blob": "8f93bedb23230ec61e52d375bb4409b83642f7fc",
+    "findings": [
+      "Malformed current-cursor predicate truncated at strokes regex",
+      "Duplicate CREATE FUNCTION/GRANT block after first COMMIT",
+      "Atomic commit RPC lacked latest scored-hole cursor guard"
+    ],
+    "fixes": [
+      "Restored complete snapshot latest-cursor predicate",
+      "Removed duplicated post-COMMIT tail",
+      "Added equivalent current-cursor scored-hole check at commit CAS"
+    ],
+    "runtime_pg_validation": "NOT_RUN",
+    "provider_mutated": false,
+    "admitted": false,
+    "required_next": "Exact changed-only PG parser/fixture and updated digest checker, rollback provider byte/source verification, one-manifest provider admission before any production write"
   }
 }
