@@ -45,7 +45,11 @@ function fixture({deployable=true,mutate=false,versionDrift=false,asset404=false
     calls.push({url,method:options.method,headers:options.headers,redirect:options.redirect});
     if(parsed.hostname==='hbnightflyers.com'){
       if(asset404)return new Response(null,{status:404});
-      if((canonicalRedirect||crossOriginRedirect)&&p.endsWith('.html')){
+      // Current live evidence redirects eight legacy HTML routes; /hbnf-cart.html
+      // is a ninth HTML asset and returned a normal 200.
+      const canonicalPaths=new Set(['/admin.html','/cart.html','/glow.html',
+        '/index.html','/matrix.html','/random.html','/skills.html','/skins.html']);
+      if((canonicalRedirect||crossOriginRedirect)&&canonicalPaths.has(p)){
         const to=crossOriginRedirect?'https://evil.example.invalid/steal':
           p==='/index.html'?'/':p.slice(0,-5);
         return new Response(null,{status:307,headers:{location:to}});
@@ -169,7 +173,8 @@ test('Cloudflare documented deployable result shape rejects ambiguous legacy arr
 test('canonical HTML 307 redirects stay in one expected same-origin hop',async()=>{
   const {bytes,hash}=captured(),mock=fixture({canonicalRedirect:true});
   const r=await qualify({backupBytes:bytes,token,fetchImpl:mock.fetchImpl,expectedCaptureSha:hash});
-  const html=r.servedStaticAssets.filter(x=>x.path.endsWith('.html'));
+  const html=r.servedStaticAssets.filter(x=>x.path.endsWith('.html')&&
+    (x.redirectTo!==null||x.state==='UNVERIFIED'));
   assert.equal(html.length,8);
   assert(html.every(x=>x.state==='OBSERVED'&&x.redirectTo!==null));
   assert.equal(html.find(x=>x.path==='/index.html').redirectTo,'/');
@@ -180,7 +185,8 @@ test('canonical HTML 307 redirects stay in one expected same-origin hop',async()
 test('cross-origin HTML redirect is never followed and is reported unsafe',async()=>{
   const {bytes,hash}=captured(),mock=fixture({crossOriginRedirect:true});
   const r=await qualify({backupBytes:bytes,token,fetchImpl:mock.fetchImpl,expectedCaptureSha:hash});
-  const html=r.servedStaticAssets.filter(x=>x.path.endsWith('.html'));
+  const html=r.servedStaticAssets.filter(x=>x.path.endsWith('.html')&&
+    (x.redirectTo!==null||x.state==='UNVERIFIED'));
   assert.equal(html.length,8);
   assert(html.every(x=>x.state==='UNVERIFIED'&&x.errorCode==='CF_RESTORE_ASSET_REDIRECT_NOT_CANONICAL'));
   assert(mock.calls.every(x=>!x.url.includes('evil.example.invalid')));
