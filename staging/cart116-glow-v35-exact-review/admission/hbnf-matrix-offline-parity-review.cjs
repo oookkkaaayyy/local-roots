@@ -22,7 +22,17 @@ function summarize(run,label,fail,open){
   if(!Array.isArray(s.state.seg)||s.state.seg.length<2||s.state.seg[0].fx!==142||s.state.seg[1].fx!==142)fail.push(label+":MATRIX_AUX_FX_MISMATCH");
   const seg=s.state.seg||[], m=I.leds?.matrix;
   if(Number(I.leds?.count)!==534||Number(m?.w)!==32||Number(m?.h)!==16||Number(seg[1]?.start)!==512||Number(seg[1]?.stop)!==534)fail.push(label+":GEOMETRY_DDP22_MISMATCH");
-  if(s.state.ps!==-1)fail.push(label+":PRESET_NOT_MINUS_ONE");
+  // Installed original R6 can retain the saved boot preset number in JSON
+  // while its native usermod unloads the playlist. This is a read-only
+  // ambiguity, NOT proof the playlist is running or that the release passed.
+  const originalR6="hbnf-cart2-phase2-r6-skins-readable-20261014";
+  if(s.state.ps!==-1){
+    if(H.candidate===originalR6 && s.state.ps===60 && expectedFx===142
+       && Array.isArray(s.state.seg) && s.state.seg.length>=2
+       && s.state.seg[0].fx===142 && s.state.seg[1].fx===142){
+      open.push(label+":ORIGINAL_R6_PS60_BOOT_PRESET_NOT_PLAYLIST_PROOF");
+    }else fail.push(label+":PRESET_NOT_MINUS_ONE");
+  }
   if(Number(H.matrixBrightness)===0)open.push(label+":OWNER_MATRIX_BRIGHTNESS_ZERO_NOT_VISIBLE");
   if(s.state.AudioReactive?.on!==true)open.push(label+":AUDIOREACTIVE_NOT_CONFIRMED_ON");
   const src=U["Audio Source"],sync=U["UDP Sound Sync"];
@@ -35,7 +45,14 @@ function summarize(run,label,fail,open){
   const audioRanges={};
   for(const k of audioKeys)audioRanges[k]=audioSamples.length?Math.max(...audioSamples.map(a=>Number(a[k])))-Math.min(...audioSamples.map(a=>Number(a[k]))):null;
   const signatures=new Set(samples.map(o=>h(o).variantSignature).filter(v=>v!=null));
-  if(signatures.size<2)open.push(label+":NATIVE_VARIANT_ROTATION_NOT_OBSERVED_IN_WINDOW");
+  const uptimeSamples=samples.map(o=>Number(h(o).timing?.uptimeSec)).filter(Number.isFinite);
+  const dwell=Number(H.variantDwellSeconds);
+  if(signatures.size<2){
+    if(uptimeSamples.length>=2 && Number.isFinite(dwell) && dwell>0
+       && uptimeSamples[uptimeSamples.length-1]-uptimeSamples[0]<dwell)
+      open.push(label+":CAPTURE_SHORTER_THAN_NATIVE_VARIANT_DWELL");
+    else open.push(label+":NATIVE_VARIANT_ROTATION_NOT_OBSERVED_IN_WINDOW");
+  }
   const fps=samples.map(o=>Number(o.info?.leds?.fps)).filter(Number.isFinite).sort((a,b)=>a-b);
   const medianFps=fps.length?fps[Math.floor(fps.length/2)]:null;
   if(medianFps===null)open.push(label+":NO_FPS");
