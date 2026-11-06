@@ -215,3 +215,30 @@ test('retains real import and export from-clauses and rejects off-origin targets
   assert.throws(() => findJsAssetImports('export{bad}from"https://untrusted.example/assets/evil.js"', entry, origin),
     /frontend_import_origin_or_path_mismatch/);
 });
+
+test('ignores import/export examples in quoted strings, comments and template copy without dropping real JS imports', async () => {
+  const entry = origin + '/assets/index.js';
+  const actual = origin + '/assets/real.js';
+  const child = origin + '/assets/from-interpolation.js';
+  const content = [
+    "const docs='import(\"https://external.example/assets/not-executed.js\")';",
+    'const tooltip="export{a}from\'../not-executed.js\'";',
+    '// import("../line-comment.js")',
+    '/* export{b}from"../block-comment.js" */',
+    'const message=`copy import("../template-copy.js") ${import("./from-interpolation.js")}`;',
+    'const lazy=()=>import("./real.js");',
+  ].join('\n');
+  const graph = await readFrontendGraph(entry, fetcher({
+    [entry]: content,
+    [child]: 'Upcoming events',
+    [actual]: 'Past events & results',
+  }), origin);
+  assert.deepEqual(graph.urls, [entry, child, actual]);
+  assert.equal(graph.bundle.includes('Past events & results'), true);
+  assert.equal(graph.bundle.includes('Upcoming events'), true);
+  assert.throws(
+    () => findJsAssetImports('const description="import(\"./fake.js\")"; const bad=()=>import("https://evil.example/assets/real.js");',
+      entry, origin),
+    /frontend_import_origin_or_path_mismatch/,
+  );
+});
