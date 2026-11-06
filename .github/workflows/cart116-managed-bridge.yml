@@ -148,8 +148,10 @@ jobs:
         run: |
           set -euo pipefail
           python3 staging/cart116-glow-v35-exact-review/tests/test_c9_six_file_transaction_rehearsal.py
+          python3 staging/cart116-glow-v35-exact-review/tests/test_c9_opal_preflight_readonly.py
       - name: BusyBox ash syntax, no Cart device/network access
         run: |
           set -euo pipefail
           docker run --rm --network none -v "$PWD:/src:ro" busybox:1.36 ash -n /src/staging/cart116-glow-v35-exact-review/release/c9-six-file-transaction.REVIEW_ONLY.sh
+          docker run --rm --network none -v "$PWD:/src:ro" busybox:1.36 ash -n /src/staging/cart116-glow-v35-exact-review/release/c9-six-file-opal-preflight.REVIEW_ONLY.sh
       # REVIEW_ONLY: sandbox path guard forbids live-root and all Opal actions.
