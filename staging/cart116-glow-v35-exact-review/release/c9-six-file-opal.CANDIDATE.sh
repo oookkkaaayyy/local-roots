@@ -8,14 +8,14 @@ umask 077
 ACTION=$1 ROOT=$2 TARGETS=$3 SOURCE=$4 TX=$5
 case "$ACTION" in preflight|prepare|apply|restore|verify) ;; *) exit 64;; esac
 case "$TX" in ''|*[!A-Za-z0-9_-]*) exit 64;; esac
-[ "$(printf %s "$TX" | wc -c | tr -d ' ')" -ge 20 ] && [ "$(printf %s "$TX" | wc -c | tr -d ' ')" -le 64 ] || exit 64
+[ "$(printf %s "$TX" | wc -c | awk '{print $1}')" -ge 20 ] && [ "$(printf %s "$TX" | wc -c | awk '{print $1}')" -le 64 ] || exit 64
 LIVE=0
 case "$ROOT" in
  /) LIVE=1; [ "$(id -u)" = 0 ] || exit 65;;
  /tmp/cart116-c9-rehearsal-*) [ -d "$ROOT" ] && [ ! -L "$ROOT" ] || exit 65;;
  *) echo 'UNSUPPORTED_C9_ROOT' >&2; exit 65;;
 esac
-for cmd in sha256sum stat df cp mv mkdir cmp awk sort cut wc chmod chown sync rm; do
+for cmd in sha256sum ls df cp mv mkdir cmp awk sort cut wc chmod chown sync rm sed id; do
  command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_OPAL_COMMAND:$cmd" >&2; exit 66; }
 done
 [ -f "$TARGETS" ] && [ ! -L "$TARGETS" ] || exit 67
@@ -23,7 +23,16 @@ for parent in "$ROOT/www" "$ROOT/www/mission-control-local" "$ROOT/www/mission-c
  [ -d "$parent" ] && [ ! -L "$parent" ] || exit 67
 done
 sha(){ sha256sum "$1" | awk '{print $1}'; }
-hex64(){ case "$1" in ''|*[!0-9a-f]*) return 1;; esac; [ "$(printf %s "$1" | wc -c | tr -d ' ')" -eq 64 ]; }
+# BusyBox Opal GL-SFT1200 has no stat applet. Exact ls -ln mode/UID/GID
+# bytes were validated against the authenticated read-only on-device format.
+ownership_ok(){
+ [ -f "$1" ] && [ ! -L "$1" ] || return 1
+ case "$2" in 644) expected='-rw-r--r--';; 600) expected='-rw-------';; *) return 1;; esac
+ ls -ln "$1" | awk -v expected="$expected" '
+   NR==1 && $1==expected && $3=="0" && $4=="0" { accepted=1 }
+   END { exit !accepted }'
+}
+hex64(){ case "$1" in ''|*[!0-9a-f]*) return 1;; esac; [ "$(printf %s "$1" | wc -c | awk '{print $1}')" -eq 64 ]; }
 valid(){
  case "$1:$2" in
  /www/mission-control-local/local-transport.js:local-transport.js|\
@@ -44,7 +53,7 @@ manifest_validate(){
   n=$((n+1))
  done < "$TARGETS"
  [ "$n" -eq 6 ] &&
- [ "$(cut -f1 "$TARGETS" | sort -u | wc -l | tr -d ' ')" -eq 6 ] || return 70
+ [ "$(cut -f1 "$TARGETS" | sort -u | wc -l | awk '{print $1}')" -eq 6 ] || return 70
 }
 candidate_validate(){
  [ -d "$SOURCE" ] && [ ! -L "$SOURCE" ] || return 71
@@ -58,7 +67,7 @@ old_validate(){
   [ -f "$ROOT$dest" ] && [ ! -L "$ROOT$dest" ] &&
   [ "$(sha "$ROOT$dest")" = "$old" ] || return 72
   if [ "$LIVE" = 1 ]; then
-   [ "$(stat -c '%u:%g:%a' "$ROOT$dest")" = '0:0:644' ] || return 72
+   ownership_ok "$ROOT$dest" 644 || return 72
   fi
  done < "$TARGETS"
 }
@@ -66,7 +75,7 @@ live_gate(){
  [ "$LIVE" = 1 ] || return 0
  [ -f "$SOURCE/ADMISSION.RECEIPT" ] && [ ! -L "$SOURCE/ADMISSION.RECEIPT" ] &&
  [ -f "$SOURCE/ADMISSION.PENDING.json" ] && [ ! -L "$SOURCE/ADMISSION.PENDING.json" ] || return 80
- [ "$(stat -c '%u:%g:%a' "$SOURCE/ADMISSION.RECEIPT")" = '0:0:600' ] || return 80
+ ownership_ok "$SOURCE/ADMISSION.RECEIPT" 600 || return 80
  field(){ sed -n "s/^$1=//p" "$SOURCE/ADMISSION.RECEIPT"; }
  [ "$(field C9_PHASE1A_ADMITTED)" = 'YES_SAME_MANIFEST' ] &&
  [ "$(field C9_INSTALLED_PRECHANGE_READBACK)" = PASS ] &&
@@ -136,7 +145,7 @@ case "$ACTION" in
   live_gate && candidate_validate && old_validate && space_gate || exit 86
   [ ! -e "$TXBASE" ] && [ ! -L "$TXBASE" ] &&
   [ ! -e "$REGISTRY" ] && [ ! -L "$REGISTRY" ] || exit 86
-  mkdir -p "$(dirname "$TXBASE")" "$(dirname "$REGISTRY")" || exit 86
+  mkdir -p "${TXBASE%/*}" "${REGISTRY%/*}" || exit 86
   mkdir "$TXBASE" || exit 86
   mkdir "$TXBASE/old" "$TXBASE/new" || exit 86
   cp "$TARGETS" "$TXBASE/manifest.tsv" || exit 86
@@ -162,7 +171,7 @@ case "$ACTION" in
    [ "$(sha "$staged")" = "$new" ] || exit 87
   done < "$TARGETS"
   sync
-  mkdir -p "$(dirname "$REGISTRY")" || exit 88
+  mkdir -p "${REGISTRY%/*}" || exit 88
   mkdir "$REGISTRY" || exit 88
   cp "$TARGETS" "$REGISTRY/manifest.tsv" || exit 88
   : > "$REGISTRY/consumed"
