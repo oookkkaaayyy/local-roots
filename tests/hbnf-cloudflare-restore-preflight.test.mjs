@@ -94,7 +94,10 @@ test('authenticated read-only version retention, routes, cron, config and served
   assert.equal(r.cron.length,1);
   assert.equal(r.routes.length,1);
   assert.equal(r.settings.bindings.length,8);
-  assert.equal(r.servedStaticAssets.length,5);
+  assert.equal(r.servedStaticAssets.length,46);
+  assert.equal(publicReceipt(r).knownAssetInventorySize,46);
+  assert.equal(publicReceipt(r).sampledAssetsObserved,46);
+  assert.equal(publicReceipt(r).sampledAssetsMissing.length,0);
   assert(r.servedStaticAssets.every(x=>x.state==='OBSERVED'&&x.bytes>1));
   assert.equal(r.rollbackProcedure.force,false);
   assert.equal(r.rollbackProcedure.request.strategy,'percentage');
