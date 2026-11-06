@@ -39,7 +39,7 @@ export function parseWranglerTokenJson(raw) {
 
 export function readWranglerToken(wranglerBinary,run=execFileSync){
   if(typeof wranglerBinary!=='string'||!wranglerBinary.startsWith('/')||
-     wranglerBinary.includes('\\n')||wranglerBinary.includes('\\r'))
+     wranglerBinary.includes(String.fromCharCode(10))||wranglerBinary.includes(String.fromCharCode(13)))
     fail('AUTH','WRANGLER_BINARY_PATH_INVALID');
   let stdout;
   try {
