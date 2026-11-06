@@ -3039,5 +3039,85 @@
       "nonbooting_matrix_recovery_proven": false,
       "mutation": false
     }
+  },
+  "matrix_presets_authentic_readback_20261105": {
+    "provenance": "User-provided exact original HTTP GET files collected 2026-11-05 ~17:14–17:55 PST; bytes parsed locally, SHA256 rechecked; do not republish private full JSON",
+    "build_info": {
+      "filename": "matrix-info.json",
+      "bytes": 1514,
+      "sha256": "3477d893623f6bbd1475e2c2af3cf5c1e4030279408687d0d8c291169e12902a",
+      "mac": "704bca5b345c",
+      "ip": "192.168.77.10",
+      "version": "16.0.1",
+      "vid": 2605010,
+      "device": "WLED-Gledopto",
+      "arch": "esp32",
+      "flash_mb": 4,
+      "led_count": 534,
+      "matrix": "32x16",
+      "boot_preset": 60,
+      "info_fps_single_snapshot": 33,
+      "native_wled_fxcount": 220,
+      "bootloader_sha256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+      "app_firmware_sha256": "UNKNOWN; bootloader sha is NOT application identity",
+      "system_clock_unset": "info time 1970-01-01, cannot claim accurate wall clock"
+    },
+    "presets": {
+      "filename": "matrix-presets-original.json",
+      "bytes": 331880,
+      "sha256": "1975d5b97cc0b26f3ae4bb8504955ec965ad425d908b12055e7fdd7422a4e852",
+      "json_valid": true,
+      "preset_root_keys": 179,
+      "playlist_60": {
+        "name": "WOW MAX",
+        "referenced_count": 28,
+        "referenced_ids": "61..88",
+        "missing_ids": [
+          61
+        ],
+        "present_count": 27,
+        "durations_seconds": 28,
+        "every_duration": 180,
+        "transitions_seconds": 12,
+        "unique_first_segment_fx_count": 21,
+        "duplicated_first_segment_fx_ids": [
+          232,
+          234,
+          236,
+          238,
+          241,
+          244
+        ],
+        "first_segment_fx_142_ignored": "WOW MAX own segment is companion from 512 to 534; HBNF engine forces fx142",
+        "preset_child_entries_with_32_segments": 19
+      },
+      "playlist_50": {
+        "name": "FIELD MIX",
+        "missing_referenced_presets": [
+          118,
+          145
+        ]
+      },
+      "native_effects_missing_in_firmware": "NOT_ESTABLISHED"
+    },
+    "provenance_source_comparison": {
+      "original_R6_source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+      "file": "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp",
+      "logic": "ensureFoundationMatrixSegment lines 1284–1289 explicitly unload restored WLED playlist each loop and force native HBNF foundation effect; ensureCompanionSegment lines 1293–1306 pins companion 512–534",
+      "generator": "hbnf_generative_v4.h lines 28–34 EFFECT_FIRST=220 EFFECT_COUNT=28; custom 28 kernels independent of saved WLED playlist definitions",
+      "C9_review_patch": "One-file Owner text priority patch does NOT alter playlist or generator paths",
+      "source_is_installed_binary_proof": false,
+      "disposition": "Independent saved-playlist integrity discrepancies; no demonstrated cause for online/offline visual parity problem; do not alter presets or infer custom kernels missing"
+    },
+    "recovery": {
+      "raw_json_attached_chat": true,
+      "current_preset_bytes_offdevice": true,
+      "private_google_drive_durable_downloadback": "NOT_DONE",
+      "cfg_json_full_not_attached": "UNKNOWN",
+      "nonbooting_recovery": "NOT_PROVEN",
+      "same_manifest_firmware_flash": false,
+      "source_gate_change_admitted": false,
+      "physical_acceptance": false
+    }
   }
 }
