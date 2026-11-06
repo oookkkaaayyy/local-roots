@@ -2938,5 +2938,35 @@
     "recovery_action": "One original Mac folder SSH read-only Opal tar+SHA/mode/owner, strict existing pinned host key; obtain file-type evidence for existing Matrix files. No new network test, no global SSH override.",
     "physical_provider_mutation": false,
     "same_manifest_release_admitted": false
+  },
+  "opal_c9_current_authenticated_inventory_20261105": {
+    "source": "User-attached OPAL-READONLY-METADATA.txt from authenticated pinned-host SSH root on GL-SFT1200; on-device sha256sum and ls -ln",
+    "metadata_sha256": "a9c907ceb6f7ca2a038e75976948966cb6ac7b697cd056ddcc5b5437f3887264",
+    "metadata_bytes": 21179,
+    "host_fingerprint": "SHA256:07dxagHartd/GlxCWxwUooBO8H2CLfqkjFk3dnlablY",
+    "active_owner_pwa_files": 21,
+    "other_active_files": 8,
+    "historical_failed_snapshot_files": 40,
+    "symlinks_reported": 0,
+    "local_tar_sha256_reported": "15d38a444beff828234676992618cc7539d3e39a2d4a25c61ee59b7f684f4ca7",
+    "local_tar_entries": 73,
+    "owner_21_sorted_manifest_digest": "fb74833681da22a6ec8994e0fd2429114da0ccb17511ddd3394fcc89a377aff0",
+    "six_current_preimage_sha256_by_path": {
+      "/www/mission-control-local/local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+      "/www/mission-control-local/owner-pwa/hbnf-cart-local.js": "9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
+      "/www/mission-control-local/owner-pwa/hbnf-cart.js": "9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba",
+      "/www/mission-control-local/owner-pwa/hbnf-cart.html": "20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f",
+      "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256": "dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
+      "/www/mission-control-local/owner-pwa/.hbnf-package-version": "975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191"
+    },
+    "six_modes_owner": "6/6 regular 0644 uid0 gid0",
+    "six_vs_historical_staged": "6/6 observed current SHA differ from staged prechange; NEVER use staged bytes as rollback",
+    "matrix_local_json_files": "info 1514 bytes, cfg 2998 bytes, file-editor cfg 2998 bytes same SHA, presets 331880 bytes; contents not independently parsed",
+    "archive_bytes_independent_verification": "PENDING",
+    "durable_backup_downloadback": "PENDING",
+    "supported_installer_restore": "PENDING",
+    "nonbooting_matrix_recovery": "PENDING",
+    "immediate_prechange_identity": "PENDING",
+    "firmware_and_opal_mutation": false
   }
 }
