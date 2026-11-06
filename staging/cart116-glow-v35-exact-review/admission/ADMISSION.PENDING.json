@@ -261,8 +261,8 @@
       "sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
       "result": "21/21 installed Owner files byte/hash/mode/uid/gid matched independent private Drive download-back"
     },
-    "c9_approval_key_fingerprint": null,
-    "c9_approval_key_der_sha256": null
+    "c9_approval_key_fingerprint": "SHA256:jXRxw44RrIV06wOYm6H7P0QV6PdRDwzwX7kJFTJnHAw",
+    "c9_approval_key_der_sha256": "ccbe5481c51750f93a4fb79724d97516bc6fe1a9812cb0068d53c285414605a9"
   },
   "superseded_nine_target_opal_20261103": {
     "status": "SUPERSEDED_REPLACEMENT_MODEL_NOT_INSTALLABLE",
