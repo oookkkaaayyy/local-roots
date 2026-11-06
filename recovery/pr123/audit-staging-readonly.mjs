@@ -14,7 +14,7 @@ const HELPER_SHA = 'fbdaa1527ff5e81848507d1c6f3c33ff65e587e8';
 const timeoutMs = 10000;
 function gitBlobSha(content) {
   const bytes = Buffer.from(content);
-  return createHash('sha1').update('blob ' + bytes.byteLength + '\\0').update(bytes).digest('hex');
+  return createHash('sha1').update('blob ' + bytes.byteLength).update(Buffer.from([0])).update(bytes).digest('hex');
 }
 const indexSource = readFileSync(SOURCE,'utf8');
 const helperSource = readFileSync(HELPER,'utf8');
@@ -77,7 +77,7 @@ try {
   if(!result.shell_ok) result.failures.push('staging_shell_mismatch');
   if(!result.staging_noindex_ok) result.failures.push('staging_noindex_missing');
   if(!result.staging_headers_ok) result.failures.push('staging_security_headers_missing');
-  const script = html.match(/<script[^>]+src=["']([^"']+\\.js)["']/i);
+  const script = html.match(/<script[^>]+src=["']([^"']+\.js)["']/i);
   if(!script?.[1]) result.failures.push('staging_js_entry_missing');
   else {
     try {
@@ -89,7 +89,7 @@ try {
       if(!result.frontend_bundle_ok) result.failures.push('staging_missing_frontend_markers');
     } catch(e) {result.failures.push('frontend_graph_'+(e?.message??String(e)));}
   }
-  const link = html.match(/<link[^>]+href=["']([^"']+\\.css)["'][^>]*>/i);
+  const link = html.match(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/i);
   if(!link?.[1]) result.failures.push('staging_css_missing');
   else {
     try {
