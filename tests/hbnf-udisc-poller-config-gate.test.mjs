@@ -152,6 +152,18 @@ test('old or mismatched admission is rejected before provider access', async () 
   assert.equal(f.state.reads, 0);
 });
 
+test('missing authenticated release adapters fail before consuming claims or staging a Worker version', async () => {
+  const f = fixture();
+  await assert.rejects(() => disablePoller({
+    manifest, bytes, decision, downloadBack,
+    store: f.store, claims: f.claims,
+  }), /authenticated provider, durable store, or one-time claim adapter is missing/);
+  assert.equal(f.state.reads, 0);
+  assert.equal(f.state.claims.size, 0);
+  assert.equal(f.state.stages, 0);
+  assert.deepEqual(f.state.deployments, []);
+});
+
 test('superseded v1 manifest format cannot be replayed under the revision-bound v2 gate', () => {
   const old = { ...manifest, format: 'hbnf-udisc-poller-disable-restore-v1', schemaVersion: 1 };
   assert.throws(() => validatePollerManifest(old, manifestBytes(old)), /manifest is missing/);

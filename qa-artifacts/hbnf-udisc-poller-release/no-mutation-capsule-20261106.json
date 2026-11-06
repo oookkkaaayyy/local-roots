@@ -1,0 +1,41 @@
+{
+  "format": "hbnf-poller-no-mutation-release-capsule-v1",
+  "createdLocalDate": "2026-11-06",
+  "status": "REVIEW_ONLY_BLOCKED",
+  "source": {
+    "repository": "oookkkaaayyy/local-roots",
+    "branch": "review/hbnf-udisc-nov3-poller-disable-gate-20261102",
+    "baseCommit": "0e08365ec4045e67e230386c644597fc15d7f622",
+    "remote": "https://github.com/oookkkaaayyy/local-roots.git"
+  },
+  "priorRelease": {
+    "releaseId": "hbnf-udisc-nov3-poller-disable-restore-20261102-0e08365e",
+    "manifestSha256": "a502e5e85ea717fab09a12964a5e5226598a8e75deafc7ca2cf0a3d1ffd9994c",
+    "manifestDriveId": "1uX4IvZpErGY_05DuPyqNx6PIU5dVOwhJ",
+    "candidateSha256": "8fa942b400adbc657e11f171299696a0123d264d2fec1547fead506248f3aade",
+    "rollbackWorkerVersion": "48ffa87e-3c83-46d0-a6ca-db7bf0b064e6",
+    "scheduledEvent": "2026-11-03",
+    "eventWindowEndUtc": "2026-11-04T07:30:00Z",
+    "validForNewDeployment": false,
+    "reason": "The manifest is bound to the Nov 3 window and its notBefore/restore timing has passed. It must not be replayed for a later event."
+  },
+  "mechanicalGate": {
+    "disablePollerRequires": ["authenticated provider read/upload/deploy adapters", "durable Drive store", "one-time claim ledger", "exact current ADMISSION_PASS", "fresh baseline matching the manifest"],
+    "restorePollerRequires": ["exact disable receipt", "authenticated provider read/deploy adapters", "durable Drive store", "one-time restore claim", "post-window checks"],
+    "sourceStatus": "The module exposes injectable adapters only; it has no authenticated live provider adapter or executable admission/claim/closeout command.",
+    "priorCloudflareCliObservation": "Wrangler 4.156.0 reported the saved OAuth token expired and could not refresh non-interactively (2026-11-02). This was not retried.",
+    "ownerOnlyGate": "Restore Cloudflare CLI authorization in an interactive local session, then create a new event-specific manifest and admission from fresh provider evidence. Never send or paste credentials into chat."
+  },
+  "proof": {
+    "focusedTest": "node --test --test-name-pattern='missing authenticated release adapters' tests/hbnf-udisc-poller-config-gate.test.mjs",
+    "result": "PASS 1/1",
+    "asserts": "With no authenticated provider adapter, the release gate rejects before provider reads, claim consumption, version staging, or deployment.",
+    "productionMutation": false,
+    "priorEightSourceAndEightNativeDbChecksRepeated": false
+  },
+  "limits": [
+    "No production provider state was queried or changed in this task.",
+    "No credentials were read, copied, or stored.",
+    "This capsule is not an admission or deployment authorization."
+  ]
+}
