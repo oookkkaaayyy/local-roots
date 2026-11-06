@@ -52,7 +52,7 @@ export function checkReleaseReadiness({
       stage.nonWorkerTargetsUnmodified!==true||
       stage.parentContractAllowsIndependentStage!==true||
       stage.targets?.length!==1||stage.targets[0]!=='cloudflare-worker'||
-      stage.operations?.length!==1||stage.operations[0]!=='worker-vnext')
+      stage.operations?.length!==1||stage.operations[0]?.id!=='worker-vnext')
      fail('CLOUDFLARE_ONLY_SCOPE_NOT_SUBORDINATE');
    if(stage.otherTargetReadbacks?.length!==4||
       stage.otherTargetReadbacks.some(x=>!validHex(x.sha256)||x.fresh!==true))
