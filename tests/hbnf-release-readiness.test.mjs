@@ -7,6 +7,7 @@ const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const manifest={
  manifestRevision:10,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
  status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
+ scopedReleaseAuthority:{cloudflareOnlySaveAck:{admittedUnderParent:true}},
  source:{currentScoringReviewHead:REV10_HEAD},
  targets:[
   {id:'supabase-schema'},{id:'edge-tag-editor'},
@@ -82,6 +83,12 @@ test('cloud-only is subordinate and requires exact complete executable/static as
   const candidate=clone(stage);mutation(candidate);
   assert.equal(checked({stage:candidate}).status,'BLOCKED');
  }
+});
+test('a declared stage cannot override absence of Cloudflare-only authority in actual rev10',()=>{
+ const oldManifest=clone(manifest);delete oldManifest.scopedReleaseAuthority;
+ const result=checked({manifest:oldManifest});
+ assert.equal(result.status,'BLOCKED');
+ assert.ok(result.errors.includes('CLOUDFLARE_ONLY_SCOPE_NOT_SUBORDINATE'));
 });
 test('stale actual PR HEAD, missing private manifest, missing rollback and missing closeout all fail',()=>{
  assert.equal(checked({sourceHead:'b'.repeat(40)}).status,'BLOCKED');
