@@ -183,4 +183,13 @@ jobs:
         run: |
           set -euo pipefail
           python3 staging/cart116-glow-v35-exact-review/tests/test_c9_review_package.py
-      # Does not upload a live executable, change Opal, provider or firmware.
+          python3 staging/cart116-glow-v35-exact-review/release/build_c9_phase1a_review.py /tmp/cart116-c9-review-phase1a.zip
+          sha256sum /tmp/cart116-c9-review-phase1a.zip
+      - name: Preserve exact six-file REVIEW_ONLY ZIP for independent private downloadback
+        uses: actions/upload-artifact@v4
+        with:
+          name: CART116-C9-PWA-6FILE-REVIEW_ONLY
+          path: /tmp/cart116-c9-review-phase1a.zip
+          if-no-files-found: error
+          retention-days: 7
+      # No installed PWA, Opal/provider/firmware mutation or live admission.
