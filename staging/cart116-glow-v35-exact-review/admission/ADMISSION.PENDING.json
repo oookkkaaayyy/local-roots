@@ -2917,5 +2917,26 @@
     "provider_changed": false,
     "phase0_admitted": false,
     "release_not_done": true
+  },
+  "opal_ssh_legacy_hostkey_recovery_20261105": {
+    "evidence_source": "Owner local Mac terminal /mnt/data/SHARE-ONLY-metadata.txt; source is diagnostics, no secrets",
+    "observation": "OpenSSH failed host-key negotiation; Opal offered ssh-rsa only; authentication/file read NEVER attempted",
+    "current_mac_route_reported": "HBNF-Cart en0 -> 192.168.77.1",
+    "historical_accepted_authority": "#116 comments 6554673990, 6565340196, 6568758516, 6571886239",
+    "historically_pinned_rsa_fingerprint": "SHA256:07dxagHartd/GlxCWxwUooBO8H2CLfqkjFk3dnlablY",
+    "historical_success_method": "PER-CONNECTION HostKeyAlgorithms=+ssh-rsa and StrictHostKeyChecking=yes, root password-only one local prompt",
+    "live_host_key_20261105": "NOT_YET_REVERIFIED; fail-closed compare to known_hosts fingerprint BEFORE SSH",
+    "actual_six_preimage": "UNKNOWN",
+    "actual_21_file_inventory": "UNKNOWN",
+    "matrix_config_presets_downloads": {
+      "info_sha256": "3477d893623f6bbd1475e2c2af3cf5c1e4030279408687d0d8c291169e12902a",
+      "json_cfg_sha256": "b9ddb7d46cf9b92b4492aca551a9417d661858839cf36810e4a7fae8703d2507",
+      "file_editor_cfg_sha256": "b9ddb7d46cf9b92b4492aca551a9417d661858839cf36810e4a7fae8703d2507",
+      "file_editor_presets_sha256": "1975d5b97cc0b26f3ae4bb8504955ec965ad425d908b12055e7fdd7422a4e852",
+      "content_types_and_json_integrity": "NOT_VERIFIED; identical two cfg route digests do not establish independent backups"
+    },
+    "recovery_action": "One original Mac folder SSH read-only Opal tar+SHA/mode/owner, strict existing pinned host key; obtain file-type evidence for existing Matrix files. No new network test, no global SSH override.",
+    "physical_provider_mutation": false,
+    "same_manifest_release_admitted": false
   }
 }
