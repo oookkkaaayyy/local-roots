@@ -144,12 +144,35 @@ async function captureStaticAssets(fetchImpl){
   const out=[];
   for(const path of ASSETS){
     try{
-      const r=await get('ASSET',PUBLIC+path,null,fetchImpl);
-      const raw=await bounded(r,5*1024*1024);
+      const originalUrl=PUBLIC+path;
+      let response;
+      try{
+        response=await fetchImpl(originalUrl,{method:'GET',redirect:'manual',
+          headers:{Accept:'*/*'},signal:AbortSignal.timeout(12000)});
+      }catch{fail('ASSET_NETWORK_OR_TIMEOUT');}
+      let redirectTo=null;
+      if(response.status===307){
+        // Native Cloudflare HTML canonicalization: .html -> extensionless,
+        // index.html -> root. Never follow arbitrary or cross-origin redirects.
+        if(!path.endsWith('.html'))fail('ASSET_REDIRECT_UNEXPECTED');
+        const expected=path==='/index.html'?'/':path.slice(0,-5);
+        const loc=response.headers?.get?.('location');
+        if(!loc)fail('ASSET_REDIRECT_NO_LOCATION');
+        let target;
+        try{target=new URL(loc,originalUrl);}catch{fail('ASSET_REDIRECT_INVALID');}
+        if(target.origin!==PUBLIC||target.pathname!==expected||
+           target.search||target.hash||target.username||target.password)
+          fail('ASSET_REDIRECT_NOT_CANONICAL');
+        redirectTo=target.pathname;
+        response=await get('ASSET',target.href,null,fetchImpl);
+      }else if(response.status!==200)fail('ASSET_HTTP_'+response.status);
+      const raw=await bounded(response,5*1024*1024);
       if(!raw.length)fail('ASSET_EMPTY');
-      out.push({path,state:'OBSERVED',bytes:raw.length,sha256:sha(raw),
-        contentType:r.headers?.get?.('content-type')??null,
-        bytesBase64:raw.toString('base64')});
+      const finalType=response.headers?.get?.('content-type')??null;
+      if(path.endsWith('.html')&&!/^text\/html(?:\s*;|$)/i.test(finalType??''))
+        fail('ASSET_CONTENT_TYPE_NOT_HTML');
+      out.push({path,state:'OBSERVED',redirectTo,bytes:raw.length,sha256:sha(raw),
+        contentType:finalType,bytesBase64:raw.toString('base64')});
     }catch(e){out.push({path,state:'UNVERIFIED',errorCode:safe(e)});}
   }
   return out;
@@ -179,7 +202,10 @@ export async function qualify({backupBytes,token,fetchImpl=fetch,assets=true,exp
     fail('VERSION_RESOURCES_CHANGED');
   if(version.resources?.script?.etag!==c.version.data.scriptEtag)
     fail('VERSION_SCRIPT_ETAG_CHANGED');
-  const deployable=Array.isArray(list)&&list.some(x=>x.id===c.before.versionId);
+  // Cloudflare's list-versions API returns {items:[...]}, NOT a bare array.
+  // If the response shape drifts, fail rather than silently misclassify rollback.
+  if(!list||!Array.isArray(list.items))fail('DEPLOYABLE_VERSIONS_SHAPE_INVALID');
+  const deployable=list.items.some(x=>x.id===c.before.versionId);
   const routeItems=Array.isArray(routes)?routes.filter(x=>x.script===WORKER)
     .map(x=>({id:x.id??null,pattern:x.pattern,script:x.script,zone_id:x.zone_id??null})):[];
   if(!routeItems.some(x=>x.pattern?.startsWith('hbnightflyers.com')))
