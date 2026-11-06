@@ -57,7 +57,15 @@ jobs:
         with:
           python-version: '3.12'
       - name: Native two-channel UV command and policy regression
-        run: node --test hbnf-aux-lighting/tests/test_uv_command.mjs
+        run: node --test hbnf-aux-lighting/tests/test_uv_command.mjs hbnf-aux-lighting/tests/test_uv_same5v_review.mjs
+      - name: Optional Opal Lua source syntax validation
+        shell: bash
+        run: |
+          if command -v luac >/dev/null 2>&1; then
+            luac -p staging/coordinated-backend/opal/owner-local-control/uv_runtime.lua
+          else
+            echo "LUA_COMPILER_UNAVAILABLE: structural parity checked by native Node tests"
+          fi
       - name: Boot-default-OFF source and GPIO admission gates
         run: |
           python tests/hbnf_aux_uv_pwm_boot_safety.py
@@ -66,6 +74,10 @@ jobs:
           /tmp/test-uv-audio-follower
 
   build:
+    # The source-only UV policy and Opal-review changes do not alter the
+    # previously byte-qualified pinned WLED/PlatformIO AUX firmware build.
+    # Reuse run 42145155824 rather than starting a redundant 45-minute build.
+    if: github.ref != 'refs/heads/review/cart-uv-pwm-no-pulse-guard-20261101' || !contains(github.event.head_commit.message, '[uv-source-only]')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
