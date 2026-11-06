@@ -100,7 +100,53 @@ function parseXml(source,label){
   return root.children[0];
 }
 const children=(node,name)=>node?.children?.filter(item=>item.name===name)||[];
-const content=node=>node?.text+(node?.children||[]).map(content).join('');
+// An XLSX cell with <v></v> is empty, NOT the literal string 'undefined'.
+// Preserve absent username/hole cells as blanks so partial snapshots are safe.
+const content=node=>node ? String(node.text??'')+(node.children||[]).map(content).join('') : '';
+
+// XLSX event results may carry per-card local start_time, but no trusted
+// upstream revision/cursor. Bind embedded dates when present. When absent,
+// the event-specific URL + authenticated HBNF binding remain the authority.
+// A multi-round aggregate cannot be treated as one 18-hole Glow card.
+const normalHeader=value=>String(value??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+function printedEventDay(value){
+  if(value===null||value===undefined||value==='')return null;
+  if(typeof value==='number'&&Number.isFinite(value)&&value>=20000&&value<=80000)
+    return new Date(Date.UTC(1899,11,30)+Math.floor(value)*86400000).toISOString().slice(0,10);
+  const text=String(value).trim();
+  const iso=/^((?:19|20)\d{2}-\d{2}-\d{2})(?:\s|T|$)/.exec(text);
+  if(iso)return iso[1];
+  const names={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const d=/^([A-Za-z]{3})[A-Za-z]*\s+(\d{1,2}),\s*((?:19|20)\d{2})(?:,|\s|$)/.exec(text);
+  if(!d||!names[d[1].toLowerCase()])return null;
+  return `${d[3]}-${String(names[d[1].toLowerCase()]).padStart(2,'0')}-${String(Number(d[2])).padStart(2,'0')}`;
+}
+function validateSingleRoundEventRows(rows,weekDate){
+  const h=rows[0].map(normalHeader),idx=k=>h.indexOf(k);
+  const dateCol=Math.max(idx('start_time'),idx('start_time_per_round'));
+  const roundTotal=idx('round_total_score'),eventTotal=idx('event_total_score');
+  const roundRelative=idx('round_relative_score'),eventRelative=idx('event_relative_score');
+  let checkedStartDates=0,checkedRoundTotals=0;
+  for(const [i,row] of rows.slice(1).entries()){
+    if(!row.some(v=>String(v??'').trim()))continue;
+    const date=dateCol>=0?printedEventDay(row[dateCol]):null;
+    if(date){
+      checkedStartDates++;
+      if(date!==weekDate)throw Object.assign(Error('XLSX scored-card date does not match the bound Glow week.'),{code:'SOURCE_EVENT_DATE_MISMATCH'});
+    }
+    if(roundTotal>=0&&eventTotal>=0&&row[roundTotal]!==''&&row[eventTotal]!==''&&
+       row[roundTotal]!=null&&row[eventTotal]!=null){
+      checkedRoundTotals++;
+      if(Number(row[roundTotal])!==Number(row[eventTotal]))
+        throw Object.assign(Error('Multi-round aggregate XLSX cannot be mapped to one Glow round.'),{code:'SOURCE_ROUND_SCOPE_MISMATCH'});
+    }
+    if(roundRelative>=0&&eventRelative>=0&&row[roundRelative]!==''&&row[eventRelative]!==''&&
+       row[roundRelative]!=null&&row[eventRelative]!=null&&Number(row[roundRelative])!==Number(row[eventRelative]))
+      throw Object.assign(Error('Multi-round relative scores cannot be mapped to one Glow round.'),{code:'SOURCE_ROUND_SCOPE_MISMATCH'});
+  }
+  return Object.freeze({startDatesChecked:checkedStartDates,roundTotalsChecked:checkedRoundTotals,
+    boundEventDate:weekDate,roundScope:checkedRoundTotals?'single_round_consistent':'not_embedded_in_xlsx'});
+}
 
 export async function parseUdiscWorkbook(buffer, {eventId, weekDate, observedAt}) {
   const read=boundedZipReader(buffer);
@@ -143,8 +189,9 @@ export async function parseUdiscWorkbook(buffer, {eventId, weekDate, observedAt}
   if (rows.length<2 || !rows.slice(1).some(row=>row.some(value=>clean(value)!==''))) {
     throw Object.assign(Error('UDisc export has no scored team rows yet.'),{code:'EMPTY_EXPORT_NO_SCORES'});
   }
+  const rowScope=validateSingleRoundEventRows(rows,weekDate);
   const snapshot=sourceParser().parseUdiscAoA(rows,{eventId,observedAtLocal:observedAt});
-  return Object.freeze({...snapshot,weekDate,sourceUpdatedAt:null});
+  return Object.freeze({...snapshot,weekDate,sourceUpdatedAt:null,hbnfEventRowScope:rowScope});
 }
 
 function sourceParser() {

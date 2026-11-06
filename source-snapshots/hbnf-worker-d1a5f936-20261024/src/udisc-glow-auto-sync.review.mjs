@@ -1,6 +1,7 @@
 import {buildGlowProposal, validateIdentityEvidence} from '../worker-private/udisc-glow-reconcile.mjs';
 import {prepareGlowWeekSync} from './udisc-glow-sync.mjs';
 import {selectGlowEventBinding} from './udisc-glow-event-bindings.mjs';
+import {xlsxSha256,attachLocalSnapshotEvidence,shouldPauseForRateLimit} from './udisc-glow-snapshot-mode.review.mjs';
 
 const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 // Release candidate review copy. The historical installed-source snapshot is unchanged.
@@ -218,30 +219,69 @@ export async function runApprovedGlowSync(env, deps = {}) {
   if (existingWeek.scoresLocked || (existingWeek.cards || []).some(card => card.finalized)) {
     return {disposition:'week_locked',date:binding.weekDate};
   }
+  // Provider 429 is not an invitation to retry on every cron tick. Honor an
+  // HBNF-local minimum cool-down recorded through the existing failure RPC.
+  if(shouldPauseForRateLimit(existingWeek,now))return {disposition:'source_backoff',date:binding.weekDate,cartIntent:'NOT_REQUESTED'};
 
   const attemptedAt = now.toISOString();
   let casAttempted=false;
   try {
-    const response = await fetchImpl(`https://udisc.com/events/${binding.eventId}/leaderboard/export`, {
-      headers:{Accept:XLSX_TYPE},redirect:'manual',cache:'no-store',
-      // Do not let a stalled event export occupy the scheduled Worker indefinitely.
-      signal:AbortSignal.timeout(8000),
-    });
-    captureBoundary(deps,'source_http',{status:response.status,xlsxContentType:(response.headers.get('content-type')||'').toLowerCase().includes(XLSX_TYPE)});
-    if (!response.ok || response.status >= 300 && response.status < 400 ||
-        !(response.headers.get('content-type') || '').toLowerCase().includes(XLSX_TYPE)) {
-      throw Object.assign(Error('UDisc score export unavailable.'),{code:'SOURCE_UNAVAILABLE'});
+    // Event-specific, no-cache XLSX snapshots. A transient 502/503/504 or
+    // connection failure receives at most ONE bounded same-run retry; 429 gets
+    // no retry and a persisted local backoff. No undocumented UDisc cadence
+    // or provider revision/cursor is inferred from HTTP response headers.
+    let response;
+    for(let attempt=0; attempt<2; attempt++) {
+      try {
+        response=await fetchImpl(`https://udisc.com/events/${binding.eventId}/leaderboard/export`, {
+          headers:{Accept:XLSX_TYPE},redirect:'manual',cache:'no-store',
+          signal:AbortSignal.timeout(8000),
+        });
+      }catch(error){
+        if(attempt===0){await (deps.sleep|| (ms=>new Promise(resolve=>setTimeout(resolve,ms))))(350);continue;}
+        throw Object.assign(Error('UDisc score export request timed out or failed.'),{code:'SOURCE_UNAVAILABLE'});
+      }
+      if([502,503,504].includes(response.status) && attempt===0){
+        // Honor explicit server back-pressure: do not immediately replay a
+        // request when UDisc supplies Retry-After. The existing failure status
+        // and event/cadence admission still govern any later scheduled attempt.
+        // A longer Retry-After needs independently approved durable hold state
+        // before any unattended production polling is enabled.
+        if(response.headers?.has('retry-after')){
+          throw Object.assign(Error('UDisc deferred this source request with Retry-After; no same-run retry.'),
+            {code:'SOURCE_RATE_LIMITED'});
+        }
+        await (deps.sleep|| (ms=>new Promise(resolve=>setTimeout(resolve,ms))))(350);continue;
+      }
+      break;
     }
+    const mime=(response.headers.get('content-type')||'').split(';',1)[0].trim().toLowerCase();
+    captureBoundary(deps,'source_http',{status:response.status,xlsxContentType:mime===XLSX_TYPE});
+    if(response.status===429)throw Object.assign(Error('UDisc export rate-limited; no same-run retry.'),{code:'SOURCE_RATE_LIMITED'});
+    if(!response.ok || response.status>=300&&response.status<400 || mime!==XLSX_TYPE) {
+      throw Object.assign(Error('UDisc score export unavailable or incorrect content type.'),{code:'SOURCE_UNAVAILABLE'});
+    }
+    const reported=Number(response.headers.get('content-length')||0);
+    if(!Number.isFinite(reported)||reported<0||reported>12*1024*1024)
+      throw Object.assign(Error('UDisc score export size invalid.'),{code:'SOURCE_PARSE_FAILED'});
     let bytes;
     try { bytes = await readBounded(response); }
     catch { throw Object.assign(Error('UDisc score export exceeds the safe size limit.'),{code:'SOURCE_PARSE_FAILED'}); }
     if (bytes.byteLength < 22 || bytes[0] !== 0x50 || bytes[1] !== 0x4b) {
       throw Object.assign(Error('UDisc score export is invalid.'),{code:'SOURCE_PARSE_FAILED'});
     }
+    // HBNF's observation clock is sampled *after* receiving the complete
+    // bounded response. It is NEVER a claimed UDisc score-change timestamp.
+    const receivedAt=deps.now?.() || new Date();
+    if(!(receivedAt instanceof Date)||!Number.isFinite(receivedAt.getTime())||
+       receivedAt.getTime()<Date.parse(binding.windowStart)||receivedAt.getTime()>Date.parse(binding.windowEnd))
+      throw Object.assign(Error('Snapshot response arrived outside its bound event window.'),{code:'SOURCE_WINDOW_EXPIRED'});
+    const locallyObservedAt=receivedAt.toISOString();
+    const rawXlsxSha256=await xlsxSha256(bytes);
     const source = deps.source || await import('./udisc-glow-sync-runner.mjs');
     captureBoundary(deps,'source_xlsx_received',{bytes:bytes.byteLength});
     const workbook = bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength);
-    const snapshot = await source.parseUdiscWorkbook(workbook,{eventId:binding.eventId,weekDate:binding.weekDate,observedAt:attemptedAt});
+    const snapshot = await source.parseUdiscWorkbook(workbook,{eventId:binding.eventId,weekDate:binding.weekDate,observedAt:locallyObservedAt});
     captureBoundary(deps,'parser_succeeded',{eventId:binding.eventId,weekDate:binding.weekDate});
     const history = Object.values(glow.weeks || {}).flatMap(week => (week.players || []).flatMap(player => [player.partner1,player.partner2])).filter(Boolean);
     const evidence = source.validateIdentityEvidence({aliases:glow.playerAliases || {},historicalNames:history,tagEvidence:[]});
@@ -255,7 +295,7 @@ export async function runApprovedGlowSync(env, deps = {}) {
       Array.isArray(row?.holeScores) && row.holeScores.some(score=>score!==null&&score!==''&&score!==undefined));
     if(!anyScoredHole) {
       captureBoundary(deps,'source_no_scores',{date:binding.weekDate,scoreWrite:false,cartIntent:false});
-      return {disposition:'no_scores_yet',date:binding.weekDate,cartIntent:'NOT_REQUESTED'};
+      return {disposition:'no_scores_yet',date:binding.weekDate,rawXlsxSha256,cartIntent:'NOT_REQUESTED'};
     }
     if (proposal.issues?.unresolvedIdentityCount || proposal.issues?.duplicateCanonicalTeamRows) {
       throw Object.assign(Error('Player names need a one-time review before scores can be applied.'),{code:'IDENTITY_REVIEW_REQUIRED'});
@@ -267,22 +307,27 @@ export async function runApprovedGlowSync(env, deps = {}) {
       // backend denial/reconnect using the SAME signed, persisted snapshot.
       // No new score CAS or failure-status mutation is permitted here.
       if(!onVerifiedSaved)
-        return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature};
+        return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature,rawXlsxSha256};
       const rechecked=await readGlow(fetchImpl,config);
       const persistedWeek=rechecked.glow.weeks?.[binding.weekDate];
       if(rechecked.glow.activeWeek!==binding.weekDate||
          !sameJson(persistedWeek,existingWeek)||
          persistedWeek?.udiscSync?.latest?.signature!==prepared.signature) {
         captureBoundary(deps,'cart_intent_deferred',{reason:'source_revision_or_week_changed'});
-        return {disposition:'source_changed_no_write',date:binding.weekDate,cartIntent:'DEFERRED_SOURCE'};
+        return {disposition:'source_changed_no_write',date:binding.weekDate,rawXlsxSha256,cartIntent:'DEFERRED_SOURCE'};
       }
       captureBoundary(deps,'persisted_readback',{verified:true,signature:prepared.signature,revision:rechecked.row.updated_at,casApplied:false});
       const cartIntent=await offerSavedGlowIntent({week:persistedWeek,revision:rechecked.row.updated_at,
-        signature:prepared.signature,binding,now,onVerifiedSaved,deps});
+        signature:prepared.signature,binding,now:deps.now?.() || new Date(),onVerifiedSaved,deps});
       return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature,
         updatedAt:rechecked.row.updated_at,cartIntent};
     }
-    prepared.week.udiscSync.status = {state:'fresh',lastAttemptAt:attemptedAt,lastSuccessAt:attemptedAt,errorCode:null};
+    // HBNF-local ordered revision advances ONLY for materially different
+    // semantic XLSX snapshots that survive the guarded CAS and readback.
+    // Rankings-only snapshots persist results, but never extend scored-hole
+    // freshness or become eligible Cart score intents.
+    const local=attachLocalSnapshotEvidence({before:existingWeek,prepared,sha256:rawXlsxSha256,
+      observedAt:locallyObservedAt,eventId:binding.eventId,weekDate:binding.weekDate});
     casAttempted=true;
     captureBoundary(deps,'cas_requested',{weekDate:binding.weekDate,expectedRevision:row.updated_at});
     const rpc = await fetchImpl(`${config.supabaseUrl}/rest/v1/rpc/hbnf_apply_udisc_glow_week`, {
@@ -311,8 +356,10 @@ export async function runApprovedGlowSync(env, deps = {}) {
     // Saved week was independently reread after CAS; the backend owns a
     // SECOND source/Cart fence check and cannot use this as device acceptance.
     const cartIntent=await offerSavedGlowIntent({week:savedWeek,revision:verified.row.updated_at,
-      signature:prepared.signature,binding,now,onVerifiedSaved,deps});
-    return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at,cartIntent};
+      signature:prepared.signature,binding,now:deps.now?.() || new Date(),onVerifiedSaved,deps});
+    return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,
+      rawXlsxSha256,hbnfLocalSequence:local.sequence,acceptedHoleChanges:local.acceptedChanges.length,
+      teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at,cartIntent};
   } catch (error) {
     const code=String(error?.code||'SYNC_FAILED');
     // UDisc's official first Nov3 event export is an empty A1 sheet. Do not
