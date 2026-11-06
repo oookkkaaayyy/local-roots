@@ -10,7 +10,7 @@ const ORIGIN = new URL(STAGING_URL).origin;
 const SOURCE = new URL('../../supabase/functions/lr-integrity-watch/index.ts', import.meta.url);
 const HELPER = new URL('../../supabase/functions/lr-integrity-watch/frontend-assets.mjs', import.meta.url);
 const INDEX_SHA = 'fde8d8599aa4fefd7b12e42ed849627598f8c097';
-const HELPER_SHA = '659e57fb7710db151d4d7414495e2d03de556007';
+const HELPER_SHA = '02f6237e654b55416925cb38e7d2d3362f62cccf';
 const timeoutMs = 10000;
 function gitBlobSha(content) {
   const bytes = Buffer.from(content);
@@ -30,43 +30,7 @@ function markers(variable) {
 const FRONT = markers('REQUIRED_FRONTEND_MARKERS');
 const CSS = markers('REQUIRED_CSS_MARKERS');
 if (FRONT.length !== 19 || CSS.length !== 8) throw new Error('unrecognized_marker_contract');
-// Diagnostic-only matcher: mirrors qualified helper's import recognizer.
-// It does not fetch rejected URLs or relax trusted-origin/path checks.
-const JS_IMPORT_DIAGNOSTIC = /\bimport\s*\(\s*["']([^"']+)["']\s*\)|\b(?:import|export)[\w{}*,\s$]*?\bfrom\s*["']([^"']+)["']|\bimport\s*["']([^"']+)["']/g;
-const checkedJs = [];
-async function getJsWithReadback(url, init={}) {
-  const response = await get(url, init);
-  if (response.ok && checkedJs.length < 24) {
-    const source = await response.clone().text();
-    checkedJs.push({url, source});
-  }
-  return response;
-}
-function firstUnexpectedImport() {
-  for (const item of checkedJs) {
-    for (const match of item.source.matchAll(JS_IMPORT_DIAGNOSTIC)) {
-      const specifier = match[1] ?? match[2] ?? match[3];
-      let resolved = null;
-      try { resolved = new URL(specifier, item.url); } catch {}
-      if (!resolved || resolved.origin !== ORIGIN ||
-          !resolved.pathname.startsWith('/assets/') || !resolved.pathname.endsWith('.js')) {
-        const start = Math.max(0, match.index - 95);
-        const end = Math.min(item.source.length, match.index + match[0].length + 95);
-        return {
-          source_asset_url: item.url,
-          matched_import: match[0].slice(0, 240),
-          specifier: specifier.slice(0, 240),
-          resolved_url: resolved?.toString() ?? null,
-          source_offset: match.index,
-          surrounding_source: item.source.slice(start, end),
-          note: 'A regex match, not yet proof of an executable JS import'
-        };
-      }
-    }
-  }
-  return null;
-}
-
+// Rejected import diagnostics come from the actual qualified lexer and origin check.
 const result = {
   observed_staging_url: STAGING_URL,
   watchdog_index_blob: INDEX_SHA,
@@ -122,7 +86,7 @@ try {
   else {
     try {
       const entry = new URL(script[1], STAGING_URL).toString();
-      const graph = await readFrontendGraph(entry,getJsWithReadback,ORIGIN);
+      const graph = await readFrontendGraph(entry,get,ORIGIN);
       result.frontend_asset_urls=graph.urls;
       result.missing_frontend_markers=FRONT.filter(m=>!graph.bundle.includes(m));
       result.frontend_bundle_ok=result.missing_frontend_markers.length===0;
@@ -130,7 +94,7 @@ try {
     } catch(e) {
       result.failures.push('frontend_graph_'+(e?.message??String(e)));
       if ((e?.message ?? '') === 'frontend_import_origin_or_path_mismatch') {
-        result.first_rejected_import = firstUnexpectedImport();
+        result.first_rejected_import = e?.rejectedImport ?? null;
       }
     }
   }
