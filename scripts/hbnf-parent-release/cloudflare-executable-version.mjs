@@ -144,17 +144,9 @@ export async function stageExecutableVersion({
   fail(justBefore?.deployments?.[0]?.versions?.[0]?.version_id===baselineVersionId&&
     justBefore.deployments[0].versions[0].percentage===100,'PRECREATE_DRIFT');
   const workerPath='/workers/workers/'+worker.id;
-  // Worker Version Upload API accepts multipart metadata + individual module parts,
-  // NOT a JSON object containing a synthetic modules array. Keep this builder
-  // separate from admission and send no provider request before every parent gate.
-  const versionForm=new FormData();
-  const {modules:versionModules,...metadata}=result.body;
-  versionForm.append('metadata',JSON.stringify(metadata));
-  for(const part of versionModules){
-    versionForm.append(part.name,
-      new Blob([Buffer.from(part.content_base64,'base64')],{type:part.content_type}),part.name);
-  }
-  const newVersion=await c.call(workerPath+'/versions?deploy=false','POST',versionForm);
+  // This is the NEW Workers Beta Versions API: JSON modules with content_base64.
+  // The older /workers/scripts/{name}/versions upload API instead requires multipart.
+  const newVersion=await c.call(workerPath+'/versions?deploy=false','POST',result.body);
   fail(uuid.test(newVersion?.id)&&newVersion.id!==baselineVersionId,'VERSION_CREATE');
   const verified=await c.call(workerPath+'/versions/'+newVersion.id);
   fail(verified?.id===newVersion.id&&verified.compatibility_date===settings.compatibility_date,'VERSION_READBACK');

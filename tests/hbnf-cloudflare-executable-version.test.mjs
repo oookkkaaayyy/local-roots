@@ -61,17 +61,18 @@ test('hash-reuse upload creates undeployed version; old Cart never uploaded',asy
       return response({jwt:'FINAL_COMPLETED_JWT_LONG'},201);
     }
     if(p.endsWith('/workers/workers/'+workerId+'/versions')){
-      // Cloudflare requires a metadata part and separate module file(s), not JSON.
-      assert.equal(init.body instanceof FormData,true);
-      assert.equal(init.headers['Content-Type'],undefined);
-      const data=JSON.parse(init.body.get('metadata'));
+      // New /workers/workers/{id}/versions API uses JSON with base64 modules;
+      // do not confuse it with the older /workers/scripts/{name}/versions API.
+      assert.equal(init.headers['Content-Type'],'application/json');
+      assert.equal(typeof init.body,'string');
+      const data=JSON.parse(init.body);
       assert.equal(data.assets.jwt,'FINAL_COMPLETED_JWT_LONG');
-      assert.equal(data.modules,undefined);
       assert.equal(data.bindings.find(x=>x.name==='SUPABASE_SERVICE_ROLE_KEY').version_id,old);
-      const uploaded=init.body.get('index.js');
-      assert.equal(uploaded instanceof Blob,true);
-      assert.equal(uploaded.type,'application/javascript+module');
-      assert.equal(await uploaded.text(),modules[0].bytes.toString('utf8'));
+      assert.equal(data.main_module,'index.js');
+      assert.equal(data.modules.length,1);
+      assert.equal(data.modules[0].content_type,'application/javascript+module');
+      assert.equal(Buffer.from(data.modules[0].content_base64,'base64').toString('utf8'),
+        modules[0].bytes.toString('utf8'));
       assert.equal(m,'POST');return response({id:next});
     }
     if(p.endsWith('/workers/workers/'+workerId+'/versions/'+next))
