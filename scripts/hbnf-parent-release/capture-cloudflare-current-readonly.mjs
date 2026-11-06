@@ -1,6 +1,7 @@
 // Diagnostic/recovery GETs ONLY. Independent of the historical rev7 pinned baseline.
 // Local PRIVATE source observation, not a durable rollback or release admission.
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {open} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -21,6 +22,32 @@ const safe=x=>typeof x==='string'&&/^[A-Z0-9_]+$/.test(x)?x:'CF_UNCLASSIFIED_LOC
 function tokenCheck(token){
   if(typeof token!=='string'||token.length<15||token.length>4096||/[\s]/.test(token)||token.startsWith('Bearer '))
     fail('AUTH','TOKEN_NOT_PLAIN_SINGLE_LINE');
+}
+
+// Wrangler --json is the documented machine-readable credential output.
+// Never print, persist, or place its raw stdout in an error message.
+export function parseWranglerTokenJson(raw) {
+  let value;
+  try { value=JSON.parse(raw); }
+  catch { fail('AUTH','WRANGLER_JSON_INVALID'); }
+  if(value?.type==='api_key')fail('AUTH','API_KEY_EMAIL_NOT_SUPPORTED');
+  if(value?.type!=='oauth'&&value?.type!=='api_token')
+    fail('AUTH','WRANGLER_TOKEN_TYPE_UNSUPPORTED');
+  tokenCheck(value.token);
+  return value.token;
+}
+
+export function readWranglerToken(wranglerBinary,run=execFileSync){
+  if(typeof wranglerBinary!=='string'||!wranglerBinary.startsWith('/')||
+     wranglerBinary.includes('\\n')||wranglerBinary.includes('\\r'))
+    fail('AUTH','WRANGLER_BINARY_PATH_INVALID');
+  let stdout;
+  try {
+    stdout=run(wranglerBinary,['auth','token','--json'],{
+      encoding:'utf8',timeout:20000,maxBuffer:65536,stdio:['ignore','pipe','pipe']
+    });
+  } catch { fail('AUTH','WRANGLER_COMMAND_FAILED'); }
+  return parseWranglerTokenJson(stdout);
 }
 
 async function request(stage,path,token,fetchImpl){
@@ -137,7 +164,11 @@ if(process.argv[1]&&pathToFileURL(resolve(process.argv[1])).href===import.meta.u
     process.stderr.write('CF_LOCAL_PRIVATE_DOWNLOADS_JSON_PATH_REQUIRED\n');process.exitCode=2;
   }else{
     try{
-      const result=await captureCurrentCloudflareReadOnly({token:process.env.CLOUDFLARE_API_TOKEN});
+      // Existing explicit token still works; on the owner Mac prefer Wrangler's
+      // structured output in memory, not shell command-substitution output.
+      const token=process.env.CLOUDFLARE_API_TOKEN ||
+        readWranglerToken(process.env.WRANGLER_BIN);
+      const result=await captureCurrentCloudflareReadOnly({token});
       const f=await open(out,'wx',0o600);
       try{await f.writeFile(JSON.stringify(result)+'\n');await f.sync();}
       finally{await f.close();}
