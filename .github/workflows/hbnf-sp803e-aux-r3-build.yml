@@ -58,14 +58,14 @@ jobs:
           python-version: '3.12'
       - name: Native two-channel UV command and policy regression
         run: node --test hbnf-aux-lighting/tests/test_uv_command.mjs hbnf-aux-lighting/tests/test_uv_same5v_review.mjs
-      - name: Optional Opal Lua source syntax validation
+      - name: Native Opal Lua syntax and same-5V safety gate tests
         shell: bash
         run: |
-          if command -v luac >/dev/null 2>&1; then
-            luac -p staging/coordinated-backend/opal/owner-local-control/uv_runtime.lua
-          else
-            echo "LUA_COMPILER_UNAVAILABLE: structural parity checked by native Node tests"
-          fi
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends lua5.4
+          luac5.4 -p staging/coordinated-backend/opal/owner-local-control/uv_runtime.lua
+          lua5.4 hbnf-aux-lighting/tests/test_uv_same5v_opal.lua
       - name: Boot-default-OFF source and GPIO admission gates
         run: |
           python tests/hbnf_aux_uv_pwm_boot_safety.py
