@@ -13,7 +13,8 @@ const installedDigests=new Map([['/glow-save-sync.mjs',sha256(Buffer.from('old h
   ['/cart.html',sha256(assets.get('/cart.html'))]]);
 const modules=[{name:'index.js',bytes:Buffer.from('export default {fetch(){return new Response("ok")}}')}];
 const moduleDigests=new Map([['index.js',sha256(modules[0].bytes)]]);
-const settings={compatibility_date:'2026-07-28',bindings:[
+const settings={compatibility_date:'2026-07-28',usage_model:'standard',
+ assetConfig:{base_path:'/',html_handling:'auto-trailing-slash',not_found_handling:'none',run_worker_first:false},bindings:[
   {name:'ASSETS',type:'assets'}, {name:'SUPABASE_SERVICE_ROLE_KEY',type:'secret_text'},
   {name:'SUPABASE_URL',type:'plain_text'}]};
 const args={assets,installedPaths,installedDigests,modules,moduleDigests,settings,baselineVersionId:old};
@@ -65,7 +66,7 @@ test('hash-reuse upload creates undeployed version; old Cart never uploaded',asy
       assert.equal(m,'POST');return response({id:next});
     }
     if(p.endsWith('/workers/workers/'+workerId+'/versions/'+next))
-      return response({id:next,compatibility_date:'2026-07-28',bindings:settings.bindings});
+      return response({id:next,compatibility_date:'2026-07-28',bindings:settings.bindings,assets:{config:settings.assetConfig}});
     throw Error('unexpected '+m+' '+p);
   };
   const result=await stageExecutableVersion({...args,token:'test_token_long_enough',accountId,
