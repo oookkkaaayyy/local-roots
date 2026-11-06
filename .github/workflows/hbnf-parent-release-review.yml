@@ -211,7 +211,7 @@ jobs:
   udisc-gate-pg17:
     # Native DB test runs only for explicit UDGATE: commits; isolated PG17
     # service container, no provider tokens, no live credentials or UDisc GET.
-    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'UDGATE:')
+    if: (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'UDGATE:')) || (github.event_name == 'pull_request' && github.head_ref == 'review/hbnf-four-writer-cas-20261029')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     services:
