@@ -974,7 +974,7 @@ async function checkUvReadiness(updateStatus = true) {
           : null;
       const outputOn = result.outputOn;
       if (updateStatus) status.textContent = uvFollowActive === true
-        ? "Matrix follow is active. Fresh audio scales each selected cap; stale audio falls back to that cap."
+        ? "Matrix follow is active. Fresh audio scales each selected cap; stale or silent audio requests zero UV output. Physical OFF remains unverified."
         : uvFollowActive === null
           ? "Cart output mode is unconfirmed. No command was sent; use Apply levels or Follow Matrix to choose a mode."
         : outputOn && typeof outputOn.main === "boolean" && typeof outputOn.short === "boolean"
@@ -1053,8 +1053,8 @@ async function sendUv(mode) {
       if (mode === "FOLLOW_MATRIX") uvFollowActive = true;
       const localReadback = ack.acceptedByDevice === true && ack.deviceReadback === true;
       status.textContent = localReadback
-        ? (mode === "FOLLOW_MATRIX" ? "Cart confirmed Matrix follow and readback. Stale audio falls back to the selected caps; illumination was not observed." : "Cart confirmed the UV command and readback; illumination was not observed.")
-        : (mode === "FOLLOW_MATRIX" ? "AUX accepted Matrix follow. Stale audio falls back to the selected caps; device output is not confirmed." : "AUX broker accepted the request; device output is not confirmed.");
+        ? (mode === "FOLLOW_MATRIX" ? "Cart confirmed Matrix follow and readback. Stale or silent audio requests UV output zero; physical OFF was not observed." : "Cart confirmed the UV command and readback; illumination was not observed.")
+        : (mode === "FOLLOW_MATRIX" ? "AUX accepted Matrix follow. Stale or silent audio requests UV output zero; device output is not confirmed." : "AUX broker accepted the request; device output is not confirmed.");
     } else {
       if (mode === "FOLLOW_MATRIX") uvFollowActive = false;
       status.textContent = "UV request was not confirmed. Check the Cart connection before retrying.";
