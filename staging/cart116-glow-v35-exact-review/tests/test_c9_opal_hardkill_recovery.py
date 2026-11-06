@@ -66,12 +66,24 @@ printf '%s\n' "$n" > "$C9_KILL_COUNT_PATH"
 if [ "$n" -eq 2 ]; then kill -KILL "$PPID"; fi
 """)
     wrapper.chmod(0o755)
+    # Witness that apply flushed the consumed one-time journal before swap #1.
+    sync_wrapper = fakebin / "sync"
+    sync_wrapper.write_text("""#!/bin/sh
+set -eu
+if [ -f "$C9_CONSUMED_PATH" ]; then : > "$C9_SYNC_WITNESS"; fi
+exec /bin/sync "$@"
+""")
+    sync_wrapper.chmod(0o755)
+    sync_witness = root / "journal-sync-before-swaps"
     env = dict(os.environ)
     env["PATH"] = str(fakebin) + os.pathsep + env.get("PATH", "")
     env["C9_KILL_COUNT_PATH"] = str(marker)
+    env["C9_CONSUMED_PATH"] = str(root / "root/cart116-controls-one-time" / TX / "consumed")
+    env["C9_SYNC_WITNESS"] = str(sync_witness)
     p = subprocess.run(cmd("apply"), env=env, capture_output=True, text=True)
     assert p.returncode != 0, (p.returncode, p.stdout, p.stderr)
     assert marker.read_text().strip() == "2", "exactly two file renames occurred"
+    assert sync_witness.is_file(), "one-time consumed journal must be synced BEFORE first rename"
     for i, (_, path) in enumerate(FILES):
         assert (root / path).read_bytes() == (new[path] if i < 2 else old[path])
     assert protected.read_bytes() == b"do-not-change"
