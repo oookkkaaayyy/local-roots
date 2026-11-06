@@ -5,12 +5,15 @@ on:
     branches:
       - codex/cart-order2-cumulative-20261024
       - codex/cart-uv-local-policy-scaffold-20261026
+      - review/cart-uv-pwm-no-pulse-guard-20261101
       - hbnf-matrix-wow-bundle-r3-20260921
       - hbnf-aux-luminance-v1-source-coupled-20260927
       - hbnf-generative-projection-v4-20260927
       - hbnf-prephase2-final-integration-20260927
     paths:
       - '.hbnf-build-aux-r3/**'
+      - 'hbnf-aux-lighting/backend/**'
+      - 'hbnf-aux-lighting/tests/**'
       - '.hbnf-build-r3max/**'
       - '.github/workflows/hbnf-sp803e-aux-r3-build.yml'
       - 'hbnf-wow-bundle/config/WOW_SCENES_V2.json'
@@ -38,6 +41,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  uv-source-contract:
+    # Executes actual checked-out branch files, not reconstructed snippets.
+    # This source gate never requests a live device or UV-capable build flag.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Native two-channel UV command and policy regression
+        run: node --test hbnf-aux-lighting/tests/test_uv_command.mjs
+      - name: Boot-default-OFF source and GPIO admission gates
+        run: |
+          python tests/hbnf_aux_uv_pwm_boot_safety.py
+          python .hbnf-build-aux-r3/test_uv_gpio_admission.py
+          g++ -std=c++17 -Wall -Wextra -Werror -I.hbnf-build-aux-r3 .hbnf-build-aux-r3/test_uv_audio_follower.cpp -o /tmp/test-uv-audio-follower
+          /tmp/test-uv-audio-follower
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
