@@ -85,7 +85,7 @@ def verify():
  paired=m.get("dora_c9_paired_owner_release_20261105",{})
  check(paired.get("status")=="SOURCE_INTEGRATED_REVIEW_ONLY_NOT_INSTALLABLE"
        and len(paired.get("changed_targets",[]))==6
-       and all(x.get("actual_installed_preimage_sha256") is None for x in paired["changed_targets"]),
+       and all(x.get("actual_installed_preimage_sha256") and x.get("independent_installed_preimage_downloadback") is True and x.get("prechange_live_verified") is False for x in paired["changed_targets"]),
        "C9 hardware installation/preimage status misrepresented")
  check(m.get("dora_c8_scoring_live_provenance_20261105",{}).get("c8_old_archive","").startswith("STALE"),
        "Old C8 packaged candidate not explicitly stale")
