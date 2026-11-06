@@ -3192,5 +3192,68 @@
     "opal_installed": false,
     "firmware_installed": false,
     "old_R6_physical_visual_parity": "NOT_CHECKED"
+  },
+  "c9_phase1a_opal_transaction_candidate_20261105": {
+    "schema": "cart116-c9-phase1a-exact-6-owner-assets-source-review-v1",
+    "status": "REVIEW_ONLY_NOT_INSTALLABLE_LIVE_ADMISSION_PENDING",
+    "source_only": true,
+    "installed_owner_pwa": "v1.0.20 REPORTED and 21/21 independently archived/download-backed; no new post-source live readback this run",
+    "installed_firmware": "original R6; C9 firmware not installed",
+    "source_branch": "review/cart116-glow-canonical-intent-20261103",
+    "source_candidate_commit": "175580e4613636ab7d8ed8a4dba68dbced84c3b3",
+    "review_ci_head": "e257ad56a85621eec87732b0d0a03ad8abdf90c0",
+    "existing_ci_run": "https://github.com/oookkkaaayyy/local-roots/actions/runs/42164544678",
+    "files": {
+      "install_restore_candidate": {
+        "path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal.CANDIDATE.sh",
+        "git_blob_sha": "6f16671fbf7ace3c69c6a273e44b09c8a9e707a5"
+      },
+      "standalone_readonly_preflight": {
+        "path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal-preflight.REVIEW_ONLY.sh",
+        "git_blob_sha": "d1d80efe62c50957955f1e9020faeaa7951306ce"
+      },
+      "native_candidate_lifecycle": {
+        "path": "staging/cart116-glow-v35-exact-review/tests/test_c9_opal_candidate_transaction.py",
+        "git_blob_sha": "02fc62a66a374e08ceaf30d649d41ec3f8dc97f8"
+      },
+      "native_readonly_regression": {
+        "path": "staging/cart116-glow-v35-exact-review/tests/test_c9_opal_preflight_readonly.py",
+        "git_blob_sha": "6676d688bf73d3badb39aac4bdd27cb7ac1745a9"
+      }
+    },
+    "tested": "github native isolated fake root six-file preflight + prepare/apply/verify/replay rejection/third party drift refusal/restore + BusyBox 1.36 ash syntax PASS; no live Opal execution",
+    "source_bound_exact_6_c9_assets": "UNCHANGED from accepted C9 six-target source-hash contract; this release-control-only increment does NOT rebind candidate postimage hashes",
+    "independent_original_21_file_rollback_sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
+    "pwa_only_gates": {
+      "auth_live_opal_busybox_command_and_filesystem_check": "NOT_RUN",
+      "immediate_prechange_6_hash_uid_mode_21_inventory_recheck": "NOT_RUN",
+      "root_only_admission_receipt_exact_manifest_sha_verified": "MISSING",
+      "installed_preimage_durable_restore_route": "OFFDEVICE_21_21_BYTES_PASS; LIVE_RESTORE_EXECUTOR_UNTESTED",
+      "candidate_artifact_durable_download_back": "NOT_DONE",
+      "original_r6_firmware_compatible_local_device_ack": "SOURCE_COMPAT_PASS_NOT_INSTALLED",
+      "live_install": "false",
+      "served_owner_ui_iPad_physical_matrix_confirmation": "NOT_RUN",
+      "same_manifest_release_verify_durable_closeout": "NOT_RUN"
+    },
+    "still_disabled": {
+      "live_opal_file_mutation": true,
+      "matrix_firmware_flash": true,
+      "C8_provider_deployment": true,
+      "UV_switching": true
+    },
+    "transaction_notes": "Six per-file atomic renames, NOT an atomic six-file switch; one-time journal consumes before first rename and rollback refuses unrecognized third-party target bytes. Power-loss/SSH disconnect needs independent resume-and-restore trial on actual target before any admission. Install only Opal PWA assets; no firmware gate coupling.",
+    "next_deliverable": "Authenticated READ-ONLY live Opal BusyBox/df/mount/6 target current identity and candidate/rollback byte audit, controlled isolated restore simulation on matching filesystem with full credentials excluded, followed by same-manifest admission only if PASS."
+  },
+  "c9_gl_mc_001wl_hardware_recovery_review_20261105": {
+    "owner_model": "GLEDOPTO Mini WLED ESP32 GL-MC-001WL / listed LT-GL-MC-001WL, Amazon B0D4TG8Y2Z",
+    "power_and_io": "5V USB ESP32 single-output built-in microphone; manufacturer identifies GL-MC-001WL 5V and GPIO16 default",
+    "hardware_not": "newer multi-output USB-C/UART model",
+    "evidence": [
+      "https://www.manualslib.com/manual/3740199/Gledopto-Gl-Mc-001wl.html",
+      "https://docs.espressif.com/projects/esptool/en/latest/esp32/advanced-topics/boot-mode-selection.html"
+    ],
+    "reset": "OPT 10s restarts WLED-AP; not a ROM serial bootloader nor proof of nonbooting recovery",
+    "firmware_no_go": "Model-specific externally accessible ROM bootloader/backup restore path not demonstrated. Do not flash. No new owner photos/disassembly request.",
+    "safe_independence": "Owner PWA phase1A original R6 compatibility does not depend on proving firmware brick recovery; C9 firmware phase1B independently blocked."
   }
 }
