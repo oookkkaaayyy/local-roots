@@ -186,7 +186,7 @@ test("Opal runtime includes exact same-5V path and never promotes synthetic or h
   assert.match(opal, /shared.addressableDataGpio ~= spec.addressableDataGpio/);
   assert.match(opal, /proof.manualResetNoAutoRearmObserved ~= true/);
   assert.match(opal, /shared.measuredCombinedPeakMa < lamp_peak \+ shared.controllerCurrentMarginMa/);
-  assert.match(opal, /sw.method ~= switchingSpec.method/, "original isolated-repeater path remains closed and unchanged");
+  assert.match(opal, /switching.method ~= switchingSpec.method/, "original isolated-repeater path remains closed and unchanged");
   for (const gate of contract.same5vRequiredSafetyGates)
     assert.equal(UV_HARDWARE_CONFIG.physicalSafety[gate], false, "review profile never claims " + gate);
 });
