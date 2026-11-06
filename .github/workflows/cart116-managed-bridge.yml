@@ -20,6 +20,8 @@ on:
       - staging/cart116-glow-v35-exact-review/tests/test_c9_opal_preflight_readonly.py
       - staging/cart116-glow-v35-exact-review/release/build_c9_phase1a_review.py
       - staging/cart116-glow-v35-exact-review/tests/test_c9_review_package.py
+      - staging/cart116-glow-v35-exact-review/tests/test_c9_overlay_fs_readonly.py
+      - staging/cart116-glow-v35-exact-review/release/c9-opal-overlay-readonly.REVIEW_ONLY.sh
       - staging/cart116-glow-v35-exact-review/candidate-source/hbnf-glow-cart-intent.mjs
       - staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql
       - staging/cart116-glow-v35-exact-review/tests/native-release/c7-source-intent-contract.test.mjs
@@ -199,3 +201,18 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       # No installed PWA, Opal/provider/firmware mutation or live admission.
+  c9_opal_overlay_probe_only:
+    if: github.repository == 'oookkkaaayyy/local-roots' && contains(github.event.head_commit.message, '[trackA-c9-fs-probe]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Exact GL-SFT1200 overlay mount and persistent recovery root read-only fixtures
+        run: |
+          set -euo pipefail
+          python3 staging/cart116-glow-v35-exact-review/tests/test_c9_overlay_fs_readonly.py
+      - name: BusyBox 1.36 ash grammar only - no real Opal access
+        run: |
+          set -euo pipefail
+          docker run --rm --network none -v "$PWD:/src:ro" busybox:1.36 ash -n /src/staging/cart116-glow-v35-exact-review/release/c9-opal-overlay-readonly.REVIEW_ONLY.sh
