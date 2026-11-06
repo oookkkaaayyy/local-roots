@@ -11,7 +11,7 @@ case "$ROOT" in
   MOUNTS="$ROOT/proc/mounts"; MODEL="$ROOT/tmp/sysinfo/model";;
  *) echo C9_REVIEW_ONLY_FIXED_TARGET >&2; exit 65;;
 esac
-for cmd in awk stat df; do command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_C9_PROBE_COMMAND:$cmd" >&2; exit 66; }; done
+for cmd in awk df cat; do command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_C9_PROBE_COMMAND:$cmd" >&2; exit 66; }; done
 [ -f "$MOUNTS" ] && [ ! -L "$MOUNTS" ] && [ -f "$MODEL" ] && [ ! -L "$MODEL" ] || exit 67
 [ -d "$ROOT/root" ] && [ ! -L "$ROOT/root" ] &&
 [ -d "$ROOT/www" ] && [ ! -L "$ROOT/www" ] || exit 67
@@ -27,8 +27,11 @@ esac
 case "$overlay_fs" in jffs2|ubifs|f2fs|ext4|btrfs) : ;; *)
  echo "C9_PERSISTENT_OVERLAY_UNPROVEN" >&2; exit 70;;
 esac
-if [ "$(stat -c '%d' "$ROOT/root")" != "$(stat -c '%d' "$ROOT/www")" ]; then
- echo "C9_RECOVERY_AND_TARGET_FILESYSTEM_DIFFER" >&2; exit 71
+# /root and /www resolve onto the persistent root overlay unless an
+# explicit mount or nested bind/overlay mount overrides either subtree.
+# This rejects different backing filesystems without a missing stat applet.
+if awk '$2=="/root" || index($2,"/root/")==1 || $2=="/www" || index($2,"/www/")==1 { found=1 } END { exit !found }' "$MOUNTS"; then
+ echo "C9_RECOVERY_AND_TARGET_MOUNT_OVERRIDDEN" >&2; exit 71
 fi
 free_root="$(df -k "$ROOT/root" | awk 'END {print $4}')"
 free_www="$(df -k "$ROOT/www" | awk 'END {print $4}')"
