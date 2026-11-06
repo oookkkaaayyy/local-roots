@@ -110,7 +110,7 @@ esac
     def check(mode, output, accept, path=file):
         env = dict(os.environ, PATH=str(fakebin) + os.pathsep + os.environ.get("PATH", ""))
         env["C9_FAKE_LS"] = output
-        p = subprocess.run(["sh", "-c", definition + "ownership_ok \\"$1\\" \\"$2\\"",
+        p = subprocess.run(["sh", "-c", definition + 'ownership_ok "$1" "$2"',
                             "c9", str(path), str(mode)], env=env, capture_output=True, text=True)
         assert (p.returncode == 0) is accept, (mode, output, p.returncode, p.stderr)
     check("644", "original", True)
