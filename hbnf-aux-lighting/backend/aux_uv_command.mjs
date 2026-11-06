@@ -21,7 +21,87 @@ export function uvServiceTokenAuthorized(header, configuredKey) {
     && typeof header === "string" && header === `Bearer ${configuredKey}`;
 }
 const REQUIRED_COMMISSIONING_GATES = UV_POLICY_SPEC.requiredCommissioningGates;
+
+// Independent alternative to the historical opto-repeater acceptance path.
+// This is NOT the current wiring. There is no software substitute for the
+// separately installed, deenergize-to-open, manually rearmed UV cutoff.
+export function uvSame5vHardwareReady(config = UV_HARDWARE_CONFIG) {
+  const spec = UV_POLICY_SPEC.same5vCandidate;
+  const proof = config?.hardwareQualification;
+  const safety = config?.physicalSafety;
+  const supply = config?.sharedSupply;
+  const sw = config?.switching;
+  const main = config?.channels?.main, short = config?.channels?.short;
+  const supplies = config?.supplyByChannel;
+  const positiveInt = value => Number.isSafeInteger(value) && value > 0;
+  const digest = value => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
+  const channelReady = (channel, output, expected) =>
+    channel?.gpio === expected.gpio && channel?.segmentId === expected.segmentId
+    && channel?.loadVoltageV === spec.uvLoadVoltageV
+    && output?.outputVoltageV === spec.uvLoadVoltageV
+    && positiveInt(channel?.loadCurrentMa)
+    && positiveInt(channel?.measuredPeakCurrentMa)
+    && channel.measuredPeakCurrentMa >= channel.loadCurrentMa
+    && positiveInt(channel?.fuseRatingMa)
+    && channel.fuseRatingMa >= channel.measuredPeakCurrentMa
+    && positiveInt(channel?.wireCurrentRatingMa)
+    && channel.wireCurrentRatingMa >= channel.fuseRatingMa
+    && positiveInt(output?.currentLimitMa)
+    && output.currentLimitMa >= channel.measuredPeakCurrentMa;
+  if (!spec || config?.verified !== true
+      || typeof config?.evidence !== "string" || !config.evidence.trim()
+      || config?.topologyId !== spec.schema
+      || !Array.isArray(UV_POLICY_SPEC.same5vRequiredSafetyGates)
+      || UV_POLICY_SPEC.same5vRequiredSafetyGates.length < 10
+      || !UV_POLICY_SPEC.same5vRequiredSafetyGates.every(key => safety?.[key] === true)
+      || !digest(proof?.installedBoardEvidenceSha256)
+      || !digest(proof?.dummyLoadAndOpticalAcceptanceSha256)
+      || typeof proof?.boardRevision !== "string" || !proof.boardRevision.trim()
+      || proof?.manufacturerRatedLowSideOutputs !== true
+      || proof?.manualResetNoAutoRearmObserved !== true
+      || proof?.gpio16AddressableRailPreserved !== true
+      || sw?.verified !== true || sw?.isolated !== false
+      || sw?.method !== spec.method
+      || sw?.inputVoltageV !== spec.controllerSupplyVoltageV
+      || sw?.outputVoltageV !== spec.uvLoadVoltageV
+      || sw?.maxLoadVoltageV < spec.uvLoadVoltageV
+      || sw?.channels !== 2
+      || !positiveInt(sw?.maxChannelCurrentMa)
+      || !positiveInt(sw?.maxTotalCurrentMa)
+      || !positiveInt(sw?.pwmFrequencyHz)
+      || !positiveInt(sw?.measuredPwmFrequencyHz)
+      || Math.abs(sw.pwmFrequencyHz - sw.measuredPwmFrequencyHz) > sw.pwmFrequencyHz * 0.1
+      || supply?.verified !== true
+      || supply?.topology !== spec.sharedSupplyTopology
+      || supply?.converter !== spec.controllerSupply
+      || supply?.controllerInputVoltageV !== spec.controllerSupplyVoltageV
+      || supply?.addressableSupplyVoltageV !== spec.addressableSupplyVoltageV
+      || supply?.addressableDataGpio !== spec.addressableDataGpio
+      || supply?.addressableGroups !== spec.addressableGroups
+      || !positiveInt(supply?.fuseRatingMa)
+      || !positiveInt(supply?.trunkWireCurrentRatingMa)
+      || supply.trunkWireCurrentRatingMa < supply.fuseRatingMa
+      || !positiveInt(supply?.converterOutputContinuousRatingMa)
+      || !positiveInt(supply?.controllerCurrentMarginMa)
+      || !positiveInt(supply?.measuredCombinedPeakMa)
+      || !positiveInt(supply?.currentLimitMa)
+      || supply.currentLimitMa > supply.converterOutputContinuousRatingMa
+      || !channelReady(main, supplies?.main, UV_POLICY_SPEC.channels.main)
+      || !channelReady(short, supplies?.short, UV_POLICY_SPEC.channels.short)) return false;
+  const lampPeaks = main.measuredPeakCurrentMa + short.measuredPeakCurrentMa;
+  return supply.measuredCombinedPeakMa >= lampPeaks + supply.controllerCurrentMarginMa
+    && supply.measuredCombinedPeakMa <= supply.fuseRatingMa
+    && supply.measuredCombinedPeakMa <= supply.currentLimitMa
+    && sw.maxChannelCurrentMa >= Math.max(main.measuredPeakCurrentMa, short.measuredPeakCurrentMa)
+    && sw.maxTotalCurrentMa >= lampPeaks
+    && Number.isSafeInteger(config.maxBrightness) && config.maxBrightness > 0
+    && config.maxBrightness <= UV_POLICY_SPEC.brightness.maximum;
+}
 export function uvHardwareReady(config = UV_HARDWARE_CONFIG) {
+  // Never reinterpret an unisolated common-5V board as a qualified 12V
+  // optoisolated repeater. Both exact topology paths default to false.
+  if (config?.switching?.method === UV_POLICY_SPEC.same5vCandidate?.method)
+    return uvSame5vHardwareReady(config);
   const main = config?.channels?.main;
   const short = config?.channels?.short;
   const switchChannelMa = Number(config?.switching?.maxChannelCurrentMa) || 0;
