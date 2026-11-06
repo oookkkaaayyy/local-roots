@@ -3200,13 +3200,13 @@
     "installed_owner_pwa": "v1.0.20 REPORTED and 21/21 independently archived/download-backed; no new post-source live readback this run",
     "installed_firmware": "original R6; C9 firmware not installed",
     "source_branch": "review/cart116-glow-canonical-intent-20261103",
-    "source_candidate_commit": "716fa7af358701ebdcbbff2cee00b84fdbbb7d85",
+    "source_candidate_commit": "f380e9fcb7a1b95ed4a07fd2fd04f1448b1a807f",
     "review_ci_head": "b66d8b95784d16d87e22e042e4918f50c362641d",
     "existing_ci_run": "https://github.com/oookkkaaayyy/local-roots/actions/runs/42165479957",
     "files": {
       "install_restore_candidate": {
         "path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal.CANDIDATE.sh",
-        "git_blob_sha": "e0d4b60e023faeb816b439e41acb3fab34303b88"
+        "git_blob_sha": "19b925cf8a6a304e40cf46076cd71b5e7e028847"
       },
       "standalone_readonly_preflight": {
         "path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal-preflight.REVIEW_ONLY.sh",
@@ -3229,7 +3229,7 @@
       "immediate_prechange_6_hash_uid_mode_21_inventory_recheck": "NOT_RUN",
       "root_only_admission_receipt_exact_manifest_sha_verified": "MISSING",
       "installed_preimage_durable_restore_route": "OFFDEVICE_21_21_BYTES_PASS; LIVE_RESTORE_EXECUTOR_UNTESTED",
-      "candidate_artifact_durable_download_back": "NOT_DONE",
+      "candidate_artifact_durable_download_back": "PRIOR_REVIEW_PACKAGE_DOWNLOADBACK_PASS; NEW_FLUSHED_JOURNAL_SOURCE_REPACK_AND_DOWNLOADBACK_PENDING",
       "original_r6_firmware_compatible_local_device_ack": "SOURCE_COMPAT_PASS_NOT_INSTALLED",
       "live_install": "false",
       "served_owner_ui_iPad_physical_matrix_confirmation": "NOT_RUN",
@@ -3241,10 +3241,11 @@
       "C8_provider_deployment": true,
       "UV_switching": true
     },
-    "transaction_notes": "Six per-file atomic renames, NOT an atomic six-file switch; one-time journal consumes before first rename and rollback refuses unrecognized third-party target bytes. Power-loss/SSH disconnect needs independent resume-and-restore trial on actual target before any admission. Install only Opal PWA assets; no firmware gate coupling.",
+    "transaction_notes": "Original preimages journal synced after prepare; updated candidate now explicitly syncs one-time consumed registry BEFORE first staged /www file rename. Per-file renames remain non-atomic as group; SIGKILL cold restart restore sandbox CI passes. Actual Opal overlay persistence, reboot/power loss recovery, six live identity and admission remain NOT CHECKED.",
     "next_deliverable": "Authenticated READ-ONLY live Opal BusyBox/df/mount/6 target current identity and candidate/rollback byte audit, controlled isolated restore simulation on matching filesystem with full credentials excluded, followed by same-manifest admission only if PASS.",
     "tests_enhanced": "native source CI PASS: six-file exact source/preflight, BusyBox ash 1.36 syntax; after 2-of-6 renames sandbox forced interruption triggered automatic byte-verified restore, leftover staged files cleanup, one-time transaction burn and explicit restore. No live Opal test.",
-    "power_loss_warning": "Isolated shell EXIT trap is tested for normal process exit. Complete power loss does not run EXIT trap: persistent same-tx journal and explicit restore still need actual Opal no-flash rehearsal after target admission. Six-file swap is not global atomic."
+    "power_loss_warning": "Isolated shell EXIT trap is tested for normal process exit. Complete power loss does not run EXIT trap: persistent same-tx journal and explicit restore still need actual Opal no-flash rehearsal after target admission. Six-file swap is not global atomic.",
+    "source_drift_note": "Supersedes earlier 100057B private REVIEW_ONLY artifact only as a candidate for FUTURE install; prior artifact remains immutable historical evidence. Do not use older candidate script when preparing live Opal release. Preserve full original 21-file backup unmodified."
   },
   "c9_gl_mc_001wl_hardware_recovery_review_20261105": {
     "owner_model": "GLEDOPTO Mini WLED ESP32 GL-MC-001WL / listed LT-GL-MC-001WL, Amazon B0D4TG8Y2Z",
