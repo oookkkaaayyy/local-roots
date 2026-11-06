@@ -12,7 +12,55 @@ const ACCOUNT='e3bc6b78f1104fa0c2a01245084594cf';
 const ZONE='f126298df13dcb1d8b58b62b47f52a20';
 const WORKER='hbnf';
 const PUBLIC='https://hbnightflyers.com';
-const ASSETS=Object.freeze(['/index.html','/glow.html','/glow-save-sync.mjs','/league-state-cas.mjs','/skins.html']);
+const ASSETS=Object.freeze([
+  "/admin.html",
+  "/apple-touch-icon.png",
+  "/bag-tags-prominence.js",
+  "/cart.html",
+  "/config.js",
+  "/fonts/cabin-latin-400.woff2",
+  "/fonts/cabin-latin-700.woff2",
+  "/glow-save-sync.mjs",
+  "/glow.html",
+  "/hbnf-bone-ink-logo.png",
+  "/hbnf-bone-ink-theme.css",
+  "/hbnf-cart-features.mjs",
+  "/hbnf-cart-icon-180.png",
+  "/hbnf-cart-icon-512.png",
+  "/hbnf-cart-manifest.webmanifest",
+  "/hbnf-cart-semantic.mjs",
+  "/hbnf-cart-skins-score.mjs",
+  "/hbnf-cart-ui-v6.css",
+  "/hbnf-cart-ui-v6.mjs",
+  "/hbnf-cart.html",
+  "/hbnf-cart.js",
+  "/hbnf-favicon-32.png",
+  "/hbnf-main-cart-shell.js",
+  "/hbnf-main-icon-180.png",
+  "/hbnf-main-icon-192.png",
+  "/hbnf-main-icon-512.png",
+  "/hbnf-main-manifest.webmanifest",
+  "/hbnf-mobile-ux.js",
+  "/index.html",
+  "/league-state-cas.mjs",
+  "/matrix-apple-touch-icon.png",
+  "/matrix-build.json",
+  "/matrix-control.js",
+  "/matrix-icon-512.png",
+  "/matrix-manifest.webmanifest",
+  "/matrix-quick-controls.js",
+  "/matrix-show-library.json",
+  "/matrix.html",
+  "/random.html",
+  "/round-tags.js",
+  "/skills.html",
+  "/skins-tag-editor.js",
+  "/skins-tag-projection-modal.js",
+  "/skins-tag-tracker.js",
+  "/skins-ux-polish.js",
+  "/skins.html"
+]);
+// Exact bounded 46-path known v48 package inventory. A match does not prove no unseen assets.
 const EXPECTED_ENVELOPE_SHA='ffbfa97c3cbb6f6122220996c9c1b2595106dfd8a2722cde5d9546178f41f2cd';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const fail=code=>{throw Error('CF_RESTORE_'+code);};
@@ -191,8 +239,13 @@ export function publicReceipt(r){
     versionRetainedInDeployableList:r.version.retainedInDeployableList,
     versionMetadataMatch:true,routeCount:r.routes.length,
     cronCount:r.cron.length,bindingCount:r.settings.bindings.length,
-    sampledAssets:r.servedStaticAssets.map(x=>({path:x.path,state:x.state,
-      bytes:x.bytes??null,sha256:x.sha256??null,errorCode:x.errorCode??null})),
+    knownAssetInventorySize:ASSETS.length,
+    sampledAssetsObserved:r.servedStaticAssets.filter(x=>x.state==='OBSERVED').length,
+    sampledAssetsMissing:r.servedStaticAssets.filter(x=>x.state!=='OBSERVED')
+      .map(x=>({path:x.path,errorCode:x.errorCode??null})),
+    sampledBytes:r.servedStaticAssets.reduce((n,x)=>n+(x.bytes||0),0),
+    assetFingerprint:sha(Buffer.from(r.servedStaticAssets.map(x=>
+      [x.path,x.state,x.sha256??'UNVERIFIED'].join('|')).join('\n'))),
     rollbackProcedure:r.rollbackProcedure.status,
     historicalMultipartDiffStillUnresolved:r.sourceMultipart.historicalRawDifferenceUnresolved,
   };
