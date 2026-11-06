@@ -17,6 +17,101 @@ local function read_json(path)
   return cjson.decode(body or "")
 end
 
+-- This is a *different* circuit than the 12V isolated-repeater policy.
+-- Do not treat a 12V-fed as-built SP803E or logical WLED OFF as same-5V proof.
+function M.same5v_profile_ready(profile, policy)
+  local spec = policy.same5vCandidate
+  local required = policy.same5vRequiredSafetyGates
+  local hw = profile.hardware or profile
+  local sw, shared, proof = hw.switching, hw.sharedSupply, hw.hardwareQualification
+  local main = hw.channels and hw.channels.main
+  local short = hw.channels and hw.channels.short
+  local supplies = hw.supplyByChannel
+  local function positive_integer(x)
+    return type(x) == "number" and x > 0 and x % 1 == 0
+  end
+  local function digest(x)
+    return type(x) == "string" and #x == 64 and x:match("^[0-9a-f]+$") ~= nil
+  end
+  if type(spec) ~= "table" or type(required) ~= "table" or #required < 10
+      or profile.verified ~= true or profile.topologyId ~= spec.schema
+      or type(profile.evidence) ~= "string" or profile.evidence == ""
+      or type(proof) ~= "table" or not digest(proof.installedBoardEvidenceSha256)
+      or not digest(proof.dummyLoadAndOpticalAcceptanceSha256)
+      or type(proof.boardRevision) ~= "string" or proof.boardRevision == ""
+      or proof.manufacturerRatedLowSideOutputs ~= true
+      or proof.manualResetNoAutoRearmObserved ~= true
+      or proof.gpio16AddressableRailPreserved ~= true then
+    return false, "uv_same5v_qualification_missing"
+  end
+  for _, key in ipairs(required) do
+    if type(profile.physicalSafety) ~= "table"
+        or profile.physicalSafety[key] ~= true then
+      return false, "uv_same5v_physical_gate_incomplete"
+    end
+  end
+  if type(sw) ~= "table" or type(shared) ~= "table"
+      or type(main) ~= "table" or type(short) ~= "table"
+      or type(supplies) ~= "table"
+      or sw.verified ~= true or sw.isolated ~= false
+      or sw.method ~= spec.method
+      or sw.inputVoltageV ~= spec.controllerSupplyVoltageV
+      or sw.outputVoltageV ~= spec.uvLoadVoltageV
+      or tonumber(sw.maxLoadVoltageV) == nil or sw.maxLoadVoltageV < spec.uvLoadVoltageV
+      or sw.channels ~= 2
+      or not positive_integer(sw.maxChannelCurrentMa)
+      or not positive_integer(sw.maxTotalCurrentMa)
+      or not positive_integer(sw.pwmFrequencyHz)
+      or not positive_integer(sw.measuredPwmFrequencyHz)
+      or math.abs(sw.pwmFrequencyHz - sw.measuredPwmFrequencyHz) > sw.pwmFrequencyHz * 0.1
+      or shared.verified ~= true or shared.topology ~= spec.sharedSupplyTopology
+      or shared.converter ~= spec.controllerSupply
+      or shared.controllerInputVoltageV ~= spec.controllerSupplyVoltageV
+      or shared.addressableSupplyVoltageV ~= spec.addressableSupplyVoltageV
+      or shared.addressableDataGpio ~= spec.addressableDataGpio
+      or shared.addressableGroups ~= spec.addressableGroups
+      or not positive_integer(shared.fuseRatingMa)
+      or not positive_integer(shared.trunkWireCurrentRatingMa)
+      or shared.trunkWireCurrentRatingMa < shared.fuseRatingMa
+      or not positive_integer(shared.converterOutputContinuousRatingMa)
+      or not positive_integer(shared.controllerCurrentMarginMa)
+      or not positive_integer(shared.measuredCombinedPeakMa)
+      or not positive_integer(shared.currentLimitMa)
+      or shared.currentLimitMa > shared.converterOutputContinuousRatingMa
+      or not positive_integer(hw.maxBrightness)
+      or hw.maxBrightness > (tonumber(policy.brightness and policy.brightness.maximum) or 255) then
+    return false, "uv_same5v_topology_unqualified"
+  end
+  local function channel_ok(channel, output, expected)
+    return type(output) == "table"
+      and channel.gpio == expected.gpio and channel.segmentId == expected.segmentId
+      and channel.loadVoltageV == spec.uvLoadVoltageV
+      and output.outputVoltageV == spec.uvLoadVoltageV
+      and positive_integer(channel.loadCurrentMa)
+      and positive_integer(channel.measuredPeakCurrentMa)
+      and channel.measuredPeakCurrentMa >= channel.loadCurrentMa
+      and positive_integer(channel.fuseRatingMa)
+      and channel.fuseRatingMa >= channel.measuredPeakCurrentMa
+      and positive_integer(channel.wireCurrentRatingMa)
+      and channel.wireCurrentRatingMa >= channel.fuseRatingMa
+      and positive_integer(output.currentLimitMa)
+      and output.currentLimitMa >= channel.measuredPeakCurrentMa
+  end
+  if not channel_ok(main, supplies.main, policy.channels.main)
+      or not channel_ok(short, supplies.short, policy.channels.short) then
+    return false, "uv_same5v_channel_unqualified"
+  end
+  local lamp_peak = main.measuredPeakCurrentMa + short.measuredPeakCurrentMa
+  if shared.measuredCombinedPeakMa < lamp_peak + shared.controllerCurrentMarginMa
+      or shared.measuredCombinedPeakMa > shared.fuseRatingMa
+      or shared.measuredCombinedPeakMa > shared.currentLimitMa
+      or sw.maxChannelCurrentMa < math.max(main.measuredPeakCurrentMa, short.measuredPeakCurrentMa)
+      or sw.maxTotalCurrentMa < lamp_peak then
+    return false, "uv_same5v_current_margin_unqualified"
+  end
+  return true
+end
+
 function M.profile_ready(profile, policy)
   profile = profile or read_json(PROFILE_PATH)
   policy = policy or read_json(POLICY_PATH)
@@ -38,6 +133,14 @@ function M.profile_ready(profile, policy)
     if type(profile.commissioningGates) ~= "table" or profile.commissioningGates[key] ~= true then
       return false, "uv_commissioning_gate_incomplete"
     end
+  end
+
+  -- This alternate route has its OWN physical gates and never inherits
+  -- optoisolator evidence or a 12V-controller profile.
+  if type(profile.switching) == "table"
+      and type(policy.same5vCandidate) == "table"
+      and profile.switching.method == policy.same5vCandidate.method then
+    return M.same5v_profile_ready(profile, policy)
   end
 
   -- The Opal local command path must enforce the same physical UV cutoff,
