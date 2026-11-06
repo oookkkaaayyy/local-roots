@@ -303,6 +303,7 @@ jobs:
           cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/test_audio_sync_contract.py .hbnf-build-aux-r3/test_uv_audio_follower.cpp .hbnf-build-aux-r3/hbnf_uv_audio_follower.h .hbnf-build-aux-r3/audit_animartrix_projection.py .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/local_commission.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/configure_uv_pwm_outputs.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/commission_operator.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/commission_guard.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py /tmp/artifacts/
