@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {captureCurrentCloudflareReadOnly,publicReceipt} from '../scripts/hbnf-parent-release/capture-cloudflare-current-readonly.mjs';
+import {captureCurrentCloudflareReadOnly,publicReceipt,parseWranglerTokenJson,readWranglerToken} from '../scripts/hbnf-parent-release/capture-cloudflare-current-readonly.mjs';
 import {createHash} from 'node:crypto';
 
 const current='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -93,4 +93,42 @@ test('no plain single-line Cloudflare credential refuses before any GET',async()
   await assert.rejects(()=>captureCurrentCloudflareReadOnly({token:'bad\ncredential',fetchImpl:m.fetchImpl}),
     /CF_AUTH_TOKEN_NOT_PLAIN_SINGLE_LINE/);
   assert.equal(m.calls.length,0);
+});
+
+test('Wrangler auth --json OAuth and API token formats parse without shell output or logging',()=>{
+  for(const type of ['oauth','api_token']){
+    assert.equal(parseWranglerTokenJson(JSON.stringify({type,token})),token);
+  }
+});
+
+test('Wrangler auth --json rejects malformed output and unsupported API key credentials without leaking them',()=>{
+  assert.throws(()=>parseWranglerTokenJson('☁ Wrangler terminal banner'),/CF_AUTH_WRANGLER_JSON_INVALID/);
+  assert.throws(()=>parseWranglerTokenJson(JSON.stringify({type:'api_key',key:'PRIVATE',email:'hidden@example.com'})),
+    /CF_AUTH_API_KEY_EMAIL_NOT_SUPPORTED/);
+  assert.throws(()=>parseWranglerTokenJson(JSON.stringify({type:'oauth',token:'no'})),
+    /CF_AUTH_TOKEN_NOT_PLAIN_SINGLE_LINE/);
+  assert.throws(()=>parseWranglerTokenJson(JSON.stringify({type:'api_token',token:'a'.repeat(30)+'\\n'})),
+    /CF_AUTH_TOKEN_NOT_PLAIN_SINGLE_LINE/);
+});
+
+test('Wrangler CLI exchange invokes machine-readable credentials in memory and never exposes source token in options',()=>{
+  const fake=(file,args,opts)=>{
+    assert.equal(file,'/safe/install/wrangler');
+    assert.deepEqual(args,['auth','token','--json']);
+    assert.equal(opts.encoding,'utf8');
+    assert.deepEqual(opts.stdio,['ignore','pipe','pipe']);
+    assert.equal(opts.timeout,20000);
+    assert(!JSON.stringify(opts).includes(token));
+    return JSON.stringify({type:'oauth',token});
+  };
+  assert.equal(readWranglerToken('/safe/install/wrangler',fake),token);
+});
+
+test('Wrangler command or unsafe path failure is sanitized before any network',()=>{
+  assert.throws(()=>readWranglerToken('wrangler',()=>{throw Error('must not run')}),
+    /CF_AUTH_WRANGLER_BINARY_PATH_INVALID/);
+  assert.throws(()=>readWranglerToken('/safe/dir\\nwrangler',()=>{throw Error('must not run')}),
+    /CF_AUTH_WRANGLER_BINARY_PATH_INVALID/);
+  assert.throws(()=>readWranglerToken('/safe/install/wrangler',()=>{throw Error('PRIVATE ERROR')}),
+    e=>e.message==='CF_AUTH_WRANGLER_COMMAND_FAILED');
 });
