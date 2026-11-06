@@ -13,6 +13,9 @@ const PATHS={
   nov03:{target:['glow','trophyHistory','2026-11-03'],guard:['glow','weeks','2026-11-03'],pathMd5:'90494f540fc2ae184fdd142d70b99334',trophyAbsent:true},
 };
 const get=(o,p)=>p.reduce((v,k)=>v?.[k],o);
+const SQL_APPLY_NAMES={oct27:'HBNF_OCT27_SCORING_CAS_OR_HISTORY_FENCE_FAILED',
+  oct24:'HBNF_OCT24_SOURCE_PREIMAGE_OR_TAG_FENCE_FAIL',
+  nov03:'HBNF_NOV03_TROPHY_SOURCE_OR_CAS_CONFLICT'};
 
 export function rebindHistoricalSql({kind,sql,snapshot,pgHashes}){
   const spec=PATHS[kind];
@@ -38,6 +41,8 @@ export function rebindHistoricalSql({kind,sql,snapshot,pgHashes}){
   if(spec.trophyMd5&&pgHashes.trophyMd5!==spec.trophyMd5)throw Error('TARGET_TROPHY_PATH_CHANGED');
   if(kind==='oct24'&&pgHashes.nov03Md5!=='90494f540fc2ae184fdd142d70b99334')throw Error('NOV03_SCORE_ROOT_CHANGED');
   const oldRoot='58f2015ef01268d2d00842298e67c390';
+  if(!sql.includes(`RAISE EXCEPTION '${SQL_APPLY_NAMES[kind]}'`))
+    throw Error('UNRECOGNIZED_PRIVATE_SQL_CANDIDATE');
   if(!sql.includes(oldRoot))throw Error('EXPECTED_ORIGINAL_ROOT_GUARD_MISSING');
   const rebound=sql.replaceAll(oldRoot,rootMd5);
   if(rebound===sql||rebound.includes(oldRoot))throw Error('ROOT_CAS_REBIND_FAILED');
