@@ -2,7 +2,7 @@
 // It makes no network calls and does not create a Worker version.
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
-import {basename,resolve} from 'node:path';
+import {resolve} from 'node:path';
 
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const EXPECTED_VERSION='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -54,12 +54,20 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
     throw Error('EXISTING_ASSET_ROUTING_UNVERIFIED');
   if(workerSettings?.runtime?.assets?.serve_directly!==true||workerSettings?.runtime?.assets?.base_path!=='/')
     throw Error('EXISTING_ASSET_RUNTIME_UNVERIFIED');
+  // The legacy multipart endpoint only supports type=inherit ("latest").
+  // Do not assume that "latest" means the active deployment: require an
+  // authenticated immediately-preflight version-list result binding both IDs.
+  if(workerSettings?.activeVersionId!==versionId||workerSettings?.latestVersionId!==versionId||
+     workerSettings?.latestVersionNumber!==348||workerSettings?.newestFirstVerified!==true||
+     workerSettings?.firstListedVersionId!==versionId||workerSettings?.firstListedVersionNumber!==348||
+     workerSettings?.versionListPageSize!==100)
+    throw Error('INHERITED_BINDING_LATEST_NOT_ACTIVE_V348');
   const runWorkerFirst=[...raw.filter(x=>x!=='/glow-save-sync.mjs'),'/glow-save-sync.mjs'];
   const metadata={main_module:'index.js',keep_assets:true,compatibility_date:'2026-07-28',
     compatibility_flags:[],usage_model:'standard',
     assets:{config:{base_path:'/',run_worker_first:runWorkerFirst}},
     bindings:[{name:'ASSETS',type:'assets'},
-      ...workerSettings.bindings.filter(b=>b.name!=='ASSETS').map(b=>({name:b.name,type:'inherit',version_id:'latest'}))]};
+      ...workerSettings.bindings.filter(b=>b.name!=='ASSETS').map(b=>({name:b.name,type:'inherit'}))]};
   const result={schema:'hbnf.cloudflare.keep-assets-candidate.v1',status:'LOCAL_CANDIDATE_NOT_UPLOADED',
     baselineVersionId:versionId,sourceCaptureSha256:capture.source.sha256,
     originalModuleSha256:sha(parts.get('index.js')),originalMapSha256:sha(parts.get('index.js.map')),
@@ -67,12 +75,19 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
     unchangedMap:true,metadata,modules:[{name:'index.js',content_type:'application/javascript+module',content_base64:Buffer.from(patched).toString('base64')},{name:'index.js.map',content_type:'application/source-map',content_base64:parts.get('index.js.map').toString('base64')}],
     API:{method:'POST',path:`/accounts/<account>/workers/scripts/hbnf/versions?bindings_inherit=strict`,encoding:'multipart/form-data',
       deploymentIsSeparateOperation:true,
-      inheritance:'latest with bindings_inherit=strict; immediately-before-upload version-list readback must prove latest is v348',
+    inheritance:'legacy endpoint type=inherit resolves latest; require authenticated latest and active version IDs both equal v348 immediately before version creation',
       metadataFields:{keep_assets:true,assetsConfig:metadata.assets.config},providerRetentionReadbackRequired:true},
     preservation:{assetCollection:'provider-retained via keep_assets; no inventory reconstruction',
       cartAssets:'retained as part of unchanged provider collection; byte identities not independently enumerated',
       otherWorkerPaths:'existing index.js retained except helper dispatch addition; routing list retains /api/* and /internal/*',
       cron:'existing scheduled handler source unchanged',rollbackVersionId:versionId},
+    lineage:{activeVersionId:workerSettings.activeVersionId,latestVersionId:workerSettings.latestVersionId,
+      latestVersionNumber:workerSettings.latestVersionNumber,versionListPageSize:workerSettings.versionListPageSize,
+      versionListCount:workerSettings.versionListCount,totalVersionCount:workerSettings.totalVersionCount,
+      firstListedVersionId:workerSettings.firstListedVersionId,firstListedVersionNumber:workerSettings.firstListedVersionNumber,
+      versionListOrder:workerSettings.versionListOrder,
+      newestFirstVerified:workerSettings.newestFirstVerified===true,
+      latestVersionGuard:'PASS_FOR_CAPTURE_ONLY_RECHECK_BEFORE_VERSION_CREATE'},
     acceptance:{versionCreationEndpointKeepAssetsSemantics:'DOCUMENTED_NOT_LIVE_VERIFIED',
       moduleResponseFixture:'NOT_YET_RUN',retainedRollbackReadback:'NOT_YET_RUN',productionAdmission:'NOT_ADMITTED'}};
   const boundary='hbnf-keep-assets-'+sha(Buffer.from(patched)).slice(0,24);
