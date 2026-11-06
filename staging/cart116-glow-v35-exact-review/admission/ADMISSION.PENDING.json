@@ -3112,12 +3112,85 @@
     "recovery": {
       "raw_json_attached_chat": true,
       "current_preset_bytes_offdevice": true,
-      "private_google_drive_durable_downloadback": "NOT_DONE",
-      "cfg_json_full_not_attached": "UNKNOWN",
+      "private_google_drive_durable_downloadback": "PASS original matrix-presets JSON 331880B SHA1975d5b97cc0b26f3ae4bb8504955ec965ad425d908b12055e7fdd7422a4e852 byte-for-byte after fresh private Drive upload+downloadback",
+      "cfg_json_full_not_attached": "NOT YET RECOVERED; MUST NOT UPLOAD SECRETS INTO ISSUE",
       "nonbooting_recovery": "NOT_PROVEN",
       "same_manifest_firmware_flash": false,
       "source_gate_change_admitted": false,
-      "physical_acceptance": false
+      "physical_acceptance": false,
+      "private_google_drive_file_id": "1nbQeDCqmWA14M6OD0qJxeGstvhxQg8JV",
+      "private_google_drive_info_id": "19LnCt4qplOVqrDAf4UaTqGnlJ0SIlbA4",
+      "private_info_download_back": "PASS original 1514B SHA3477d893623f6bbd1475e2c2af3cf5c1e4030279408687d0d8c291169e12902a byte identical"
     }
+  },
+  "parity_common_cause_review_20261105": {
+    "status": "ROOT_CAUSE_HYPOTHESIS_SOURCE_VERIFIED_DEVICE_A_B_NOT_DONE",
+    "architecture": {
+      "owner_ui": "Installed Opal Owner PWA v1.0.20 and C9 staged: local control path is feature-reduced relative to cloud, with conditional remote fallback for unsupported TUNE fields",
+      "opal": "Opal LAN independently reachable; upstream repeater/tether route not proven causal to visual quality",
+      "command_delivery": "Direct fresh MAC and Matrix WS state-ACK path source inspected; local TUNE only brightness/motion/audioResponse; cloud semantic request includes energy/variation/mic sensitivity",
+      "matrix_native": "Original pinned R6 usermod unloads boot preset playlist and forces FX142; 28 independent internal generative kernels, native variantSignature/dwell",
+      "audio": "PDM digital AudioReactive, same on-device FFT bridge across LAN; single course snapshot has volume71, bass/mid/treble0, no same-audio matched evidence",
+      "led_power_environment": "534 LEDs, 512 Matrix +22 AUX DDP, power-bank voltage/current under load and acoustics not measured across conditions; single 15/33/35 FPS snapshots insufficient"
+    },
+    "highest_leverage_hypotheses": [
+      {
+        "name": "Control-plane feature/route split",
+        "basis": "VERIFIED installed v1.0.20 PWA source direct only 4 TUNE fields; cloud request can include energy/variation/micSensitivity; unsupported Opal-direct TUNE flows to cloud handler",
+        "causal_attribution": "NOT PROVEN"
+      },
+      {
+        "name": "Audio source/ambient difference",
+        "basis": "VERIFIED PDM sound processing and zero bass/mid/treble with nonzero volume71 in one field snapshot; actual matching music/speaker/mic conditions unknown",
+        "causal_attribution": "NOT PROVEN"
+      },
+      {
+        "name": "Power or runtime timebase under load",
+        "basis": "VERIFIED low 15 FPS observation separate from 33/35 FPS snapshots, strong WiFi signal; no sustained matched power/FPS/voltage record",
+        "causal_attribution": "NOT PROVEN"
+      }
+    ],
+    "minimum_discriminator": "Reuse one combined natural A/B with same Cart, battery/power, audio playback, Owner PWA origin and selected scene/brightness. Confirm actual upstream status via Opal read-only, capture Matrix HBNF effective state/variant signatures/audio bands/FPS and AUX DDP in both modes, and owner-visible quality. Do not independently test five UI sliders or mutate WAN during source review.",
+    "source_increment": {
+      "review_fixes": [
+        "Original R6 ps60 is not falsely labeled a running WLED playlist; C9 ps60 remains release FAIL",
+        "Single snapshot window shorter than native variant dwell explicitly INCOMPLETE rather than stalled engine"
+      ],
+      "source_commits": [
+        "b0a16492570c5282fa14e814c12f4cc357016145",
+        "f557573edc9606fabdf566f65981d7effb5134bc",
+        "9c2bef6360b97f16a52419428e3a752edf668efc"
+      ],
+      "exact_ci_run": 42157957432,
+      "exact_ci": "SUCCESS; isolated c9_one_session_parity_review_only, all other jobs skipped"
+    },
+    "owner_field_equivalence": "NOT_CHECKED",
+    "root_cause_fix_installed": false,
+    "router_mutated": false
+  },
+  "c9_six_file_transaction_rehearsal_20261105": {
+    "status": "SOURCE_ONLY_SANDBOX_REHEARSAL_PASS_LIVE_INSTALL_NOT_ADMITTED",
+    "review_script": "staging/cart116-glow-v35-exact-review/release/c9-six-file-transaction.REVIEW_ONLY.sh",
+    "test": "staging/cart116-glow-v35-exact-review/tests/test_c9_six_file_transaction_rehearsal.py",
+    "source_commits": [
+      "085e1aba8e91ddd450df5e104df1c630967d22f6",
+      "85e323b68a4aa4a1999a4ed8f4694d4bd610e808",
+      "d7c4daead3ea3680efce26fed34d66188333eb22"
+    ],
+    "ci_run": 42158591497,
+    "ci_job": "c9_sixfile_sandbox_transaction_review_only",
+    "ci_result": "SUCCESS Python test guarded exact six, third party drift abort, one-time replay reject, prepare/apply/rollback, protected unchanged; BusyBox1.36 ash syntax PASS",
+    "secure_route": "Sandbox root must match /tmp/cart116-c9-rehearsal-*; script refuses / and all real Opal paths. No OTA/Opal/production installation possible.",
+    "real_c9_remaining": [
+      "Root/UID/mode exact stage/restore on genuine Opal BusyBox, adequate storage and one-use receipt",
+      "Fresh immediate Opal six-target readback + independently verified on-target backup/durable downloadback",
+      "Matrix cfg and presets including credentials preserved privately and independently durable backup",
+      "Verified actual board-level nonbooting flash recovery for 4MB Gledopto",
+      "Single admitted owner-present field session"
+    ],
+    "opal_source_files_6_backed_up_private": true,
+    "opal_installed": false,
+    "firmware_installed": false,
+    "old_R6_physical_visual_parity": "NOT_CHECKED"
   }
 }
