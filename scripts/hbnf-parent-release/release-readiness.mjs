@@ -48,7 +48,8 @@ export function checkReleaseReadiness({
    if(stage.targets?.length!==5||stage.operations?.length!==7)
      fail('FIVE_TARGET_DRIVER_REQUIRES_SEVEN_STAGES');
  }else if(stage?.scope==='cloudflare-only'){
-   if(stage.parentManifestId!==ORIGINAL_MANIFEST_ID||stage.parentRevision!==10||
+   if(manifest?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.admittedUnderParent!==true||
+      stage.parentManifestId!==ORIGINAL_MANIFEST_ID||stage.parentRevision!==10||
       stage.nonWorkerTargetsUnmodified!==true||
       stage.parentContractAllowsIndependentStage!==true||
       stage.targets?.length!==1||stage.targets[0]!=='cloudflare-worker'||
