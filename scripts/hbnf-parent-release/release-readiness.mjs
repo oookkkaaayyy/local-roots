@@ -28,6 +28,12 @@ export function checkReleaseReadiness({
  if(manifestFileId!==ORIGINAL_MANIFEST_ID)fail('ORIGINAL_MANIFEST_ID_MISSING');
  if(!synthetic && (!manifestBytes||sha256(manifestBytes)!==REV10_SHA256))
    fail('PRIVATE_REV10_MANIFEST_BYTES_NOT_VERIFIED');
+ if(!synthetic && manifestBytes){
+   try{
+     if(JSON.stringify(JSON.parse(Buffer.from(manifestBytes).toString('utf8')))!==JSON.stringify(manifest))
+       fail('MANIFEST_CONTENT_DIFFERS_FROM_DOWNLOADED_BYTES');
+   }catch{fail('INVALID_MANIFEST_BYTES');}
+ }
  if(manifest?.source?.currentScoringReviewHead!==REV10_HEAD||
     sourceHead!==REV10_HEAD)fail('HEAD_CHANGED_SINCE_REV10');
  const targets=manifest?.targets||[];
@@ -59,6 +65,9 @@ export function checkReleaseReadiness({
     !trueValue(e.moduleClosureVerified)||!trueValue(e.sourceParityVerified)||
     e.privateDriveFileId===REVIEW_ZIP)
    fail('ONEFILE_REVIEW_ZIP_NOT_EXECUTABLE_WORKER');
+ if(e.glowHelperSha256!=='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a'||
+    e.glowHelperGitBlob!=='a355ad13d5026551629f085060c636b60ccb8560')
+   fail('GLOW_HELPER_NOT_BOUND_TO_VERIFIED_PR_SOURCE');
  if(e.assetStrategy!=='complete-manifest-upload'||
     !trueValue(e.providerAssetInventoryExhaustive)||
     !trueValue(e.changedGlowHelperUploaded)||
