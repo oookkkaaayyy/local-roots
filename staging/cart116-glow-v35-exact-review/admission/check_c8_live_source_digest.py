@@ -13,7 +13,7 @@ import sys
 ROOT=pathlib.Path("staging/cart116-glow-v35-exact-review")
 EXPECTED={
  "planner":("candidate-source/hbnf-glow-cart-intent.mjs","cb40cfaa1e912b971ed5941d9226cf2b39445e8e"),
- "sql_up":("migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql","4b077668e481e1a08315e4baa0e3670299ecd64f"),
+ "sql_up":("migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql","8f93bedb23230ec61e52d375bb4409b83642f7fc"),
  "node_contract_fixture":("tests/native-release/c7-source-intent-contract.test.mjs","e188689349fabae05a9486a332a5cc8651d97bb2"),
  "pg17_contract_fixture":("tests/native-release/c7-pg-source-cas.sh","667e51d64f1c8adc8116c3c043ec53828bc75c5a"),
 }
@@ -57,7 +57,39 @@ def verify():
   check(marker in up,"Live SQL lineage missing: "+marker)
  check("SAVED_SOURCE_REVISION_NOT_CONFIRMED" in planner,"Live planner rejection missing")
  check("v.cursor===lineage?.cursor" in planner,"C8 latest scored cursor binding missing")
- check("score->>'cursor'=v_week#>>'{udiscLive,cursor}'" in up,"SQL latest scored cursor binding missing")
+ check(up.count("score->>'cursor'=v_week#>>'{udiscLive,cursor}'")==2,"Snapshot and commit must independently bind latest scored cursor")
+ check(up.count("CREATE FUNCTION public.hbnf_cart_commit_glow_intent(")==1 and up.count("COMMIT;")==1,"C8 SQL duplicated or malformed release boundary")
+ check("AND score->>'strokes' ~ '^[0-9]{1,2}
+ check("UDisc event XLSX export" not in planner,"Manual XLSX accepted by LIVE planner")
+ check("UDisc event XLSX export" in up and "HISTORICAL_PREVIEW_ONLY_NO_ACTUATION" in up,
+       "Historical XLSX read-only snapshot mode lost")
+ check("historical_source_not_qualified" in up and "live_provider_timestamp_stale" in up,
+       "Live/historical SQL transaction guards missing")
+ check("glow_scoreboard_preview" in service and "HISTORICAL_READ_ONLY" in service
+       and "actuationAllowed:false" in service and "nativeOverlayAdmitted!==true" in service,
+       "Read-only historic Edge path became actuating")
+ check("nativeOverlayAdmitted:false" in edge,"Deployed-candidate native overlay source flag not false")
+ check(m.get("state")=="PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION"
+       and m.get("candidate_archive",{}).get("installable") is False,
+       "Old C8 candidate package promoted to installable")
+ check(m.get("firmware",{}).get("matrix_flash") is False
+       and m.get("transaction",{}).get("source_gate_change_admitted") is False,
+       "Physical/provider flags promoted")
+ paired=m.get("dora_c9_paired_owner_release_20261105",{})
+ check(paired.get("status")=="SOURCE_INTEGRATED_REVIEW_ONLY_NOT_INSTALLABLE"
+       and len(paired.get("changed_targets",[]))==6
+       and all(x.get("actual_installed_preimage_sha256") is None for x in paired["changed_targets"]),
+       "C9 hardware installation/preimage status misrepresented")
+ check(m.get("dora_c8_scoring_live_provenance_20261105",{}).get("c8_old_archive","").startswith("STALE"),
+       "Old C8 packaged candidate not explicitly stale")
+ return {"lineage_candidate_blobs":4,"unchanged_recovery_blobs":4,
+         "historical_c6_c7_restore_validator":"PRESERVED_UNCHANGED_NOT_REPINNED",
+         "C8":"REVIEW_SOURCE_ONLY","C9":"NO_DEVICE_INSTALL"}
+if __name__=="__main__":
+ try: print("PASS_C8_LIVE_LINEAGE_SOURCE_DIGEST:",json.dumps(verify(),sort_keys=True))
+ except (AssertionError,KeyError,ValueError,TypeError,OSError) as error:
+  print("FAIL_C8_LINEAGE_INTEGRITY:",str(error));sys.exit(43)
+" in up,"C8 SQL stroke predicate malformed")
  check("UDisc event XLSX export" not in planner,"Manual XLSX accepted by LIVE planner")
  check("UDisc event XLSX export" in up and "HISTORICAL_PREVIEW_ONLY_NO_ACTUATION" in up,
        "Historical XLSX read-only snapshot mode lost")
