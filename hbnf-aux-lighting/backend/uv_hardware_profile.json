@@ -9,9 +9,19 @@
     "sharedInlineFuseRatingMa": 5000,
     "unpoweredMeterChecks": "complete_without_numeric_readings_or_receipt",
     "historicalModuleStatus": "assembled_off_cart_disconnected_unpowered",
-    "currentAsWiredObservation": "Both UV strips reportedly light whenever AUX power is on. Actual source rails, terminal connections, and switched OFF state have not been independently verified.",
+    "currentAsWiredObservation": "Latest explicit Oct 30 arrangement: 12V SP803E, 12V WS2811 GPIO16 DDP22, TOBSUN EA50-5V shared 5A-fused UV-positive feed; long/rim UV negative on 3-port common ground; short/bar negative on TOBSUN OUT-minus. GPIO25/26 not in either UV return. Owner reports unchanged wiring and both lamps illuminate with AUX power. Source report, not independent electrical readback.",
     "currentPhysicalDisconnectVerified": false,
-    "currentWiringEvidence": "https://github.com/oookkkaaayyy/local-roots/issues/116#issuecomment-6652041394"
+    "currentWiringEvidence": "https://github.com/oookkkaaayyy/local-roots/issues/116#issuecomment-6676947827",
+    "currentNegativeReturnByChannel": {
+      "main": "three_port_common_ground_unswitched",
+      "short": "TOBSUN_OUT_MINUS_unswitched"
+    },
+    "currentSp803eSupplyV": 12,
+    "currentUnderglow": {
+      "loadVoltageV": 12,
+      "pixelGroups": 22,
+      "dataGpio": 16
+    }
   },
   "runtimeGates": {
     "auxEnabled": false,
@@ -45,7 +55,15 @@
     "converter": "TOBSUN EA50-5V",
     "fuseRatingMa": 5000,
     "currentLimitMa": 0,
-    "verified": false
+    "verified": false,
+    "controllerInputVoltageV": null,
+    "addressableSupplyVoltageV": 12,
+    "addressableDataGpio": 16,
+    "addressableGroups": 22,
+    "converterOutputContinuousRatingMa": null,
+    "trunkWireCurrentRatingMa": null,
+    "controllerCurrentMarginMa": null,
+    "measuredCombinedPeakMa": null
   },
   "switching": {
     "verified": false,
@@ -59,7 +77,8 @@
     "method": null,
     "pwmFrequencyHz": null,
     "inputVoltageV": null,
-    "outputVoltageV": null
+    "outputVoltageV": null,
+    "measuredPwmFrequencyHz": null
   },
   "maxBrightness": 0,
   "channels": {
@@ -69,7 +88,9 @@
       "loadVoltageV": 5,
       "loadCurrentMa": 0,
       "fuseRatingMa": 0,
-      "wireCurrentRatingMa": 0
+      "wireCurrentRatingMa": 0,
+      "historicalDirectGround": true,
+      "measuredPeakCurrentMa": null
     },
     "short": {
       "gpio": 26,
@@ -77,7 +98,9 @@
       "loadVoltageV": 5,
       "loadCurrentMa": 0,
       "fuseRatingMa": 0,
-      "wireCurrentRatingMa": 0
+      "wireCurrentRatingMa": 0,
+      "historicalDirectGround": true,
+      "measuredPeakCurrentMa": null
     }
   },
   "physicalSafety": {
@@ -89,6 +112,39 @@
     "bootBrownoutAndFaultOffVerified": false,
     "directWledBypassProtected": false,
     "branchFuseAndConductorProtectionVerified": false,
-    "pwmInputFrequencyMeasuredAndCompatible": false
+    "pwmInputFrequencyMeasuredAndCompatible": false,
+    "installedBoardInputAndNmosSinkVerified": false,
+    "controllerAndUv5vSameRailVerified": false,
+    "oldConstantGroundUvBypassesRemoved": false,
+    "separate12vWs2811RailAndGpio16DataVerified": false,
+    "gpio16DataMarginsAndPowerSequencingVerified": false,
+    "crossRailBackfeedAbsentVerified": false,
+    "measuredConverterHeadroomPeakAndInrushVerified": false,
+    "individuallyFusedBranchesAndWiresVerified": false,
+    "dummyLoadTwoIndependentPwmChannelsVerified": false,
+    "uvOnlyNormallyOpenHardCutoffVerified": false,
+    "lidOpticalInterlockAndOpaqueShieldingVerified": false,
+    "controllerResetAndBrownoutWatchdogFailsOpenVerified": false,
+    "faultPowerLossRequiresManualRearmVerified": false,
+    "directWledBypassCannotEnergizeUnarmedUvVerified": false,
+    "physicalUvOffAtBothLoadsVerified": false,
+    "shieldedIndependentDimmingAndMusicFollowVerified": false
+  },
+  "topologyId": null,
+  "hardwareQualification": {
+    "boardRevision": null,
+    "installedBoardEvidenceSha256": null,
+    "dummyLoadAndOpticalAcceptanceSha256": null,
+    "manufacturerRatedLowSideOutputs": false,
+    "manualResetNoAutoRearmObserved": false,
+    "gpio16AddressableRailPreserved": false
+  },
+  "plannedCandidateNotInstalled": {
+    "schema": "hbnf-uv-same-5v-low-side-review-v1",
+    "description": "Power SP803E from verified TOBSUN 5V output with same-rail UV loads, preserve isolated 12V WS2811 positive supply on GPIO16 data, move only UV returns to PWM3/GPIO25 and PWM2/GPIO26 behind verified independent UV-only normally-open manual-rearm cutoff, interlock and watchdog.",
+    "electricalReviewOnly": true,
+    "asBuilt": false,
+    "deviceChangesAuthorized": false,
+    "manufacturerBoardQualified": false
   }
 }
