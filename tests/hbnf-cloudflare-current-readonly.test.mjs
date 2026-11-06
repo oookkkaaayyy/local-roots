@@ -107,7 +107,7 @@ test('Wrangler auth --json rejects malformed output and unsupported API key cred
     /CF_AUTH_API_KEY_EMAIL_NOT_SUPPORTED/);
   assert.throws(()=>parseWranglerTokenJson(JSON.stringify({type:'oauth',token:'no'})),
     /CF_AUTH_TOKEN_NOT_PLAIN_SINGLE_LINE/);
-  assert.throws(()=>parseWranglerTokenJson(JSON.stringify({type:'api_token',token:'a'.repeat(30)+'\\n'})),
+  assert.throws(()=>parseWranglerTokenJson(JSON.stringify({type:'api_token',token:'a'.repeat(30)+String.fromCharCode(10)})),
     /CF_AUTH_TOKEN_NOT_PLAIN_SINGLE_LINE/);
 });
 
@@ -127,7 +127,7 @@ test('Wrangler CLI exchange invokes machine-readable credentials in memory and n
 test('Wrangler command or unsafe path failure is sanitized before any network',()=>{
   assert.throws(()=>readWranglerToken('wrangler',()=>{throw Error('must not run')}),
     /CF_AUTH_WRANGLER_BINARY_PATH_INVALID/);
-  assert.throws(()=>readWranglerToken('/safe/dir\\nwrangler',()=>{throw Error('must not run')}),
+  assert.throws(()=>readWranglerToken('/safe/dir'+String.fromCharCode(10)+'wrangler',()=>{throw Error('must not run')}),
     /CF_AUTH_WRANGLER_BINARY_PATH_INVALID/);
   assert.throws(()=>readWranglerToken('/safe/install/wrangler',()=>{throw Error('PRIVATE ERROR')}),
     e=>e.message==='CF_AUTH_WRANGLER_COMMAND_FAILED');
