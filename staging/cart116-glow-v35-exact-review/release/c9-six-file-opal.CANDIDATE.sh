@@ -15,7 +15,7 @@ case "$ROOT" in
  /tmp/cart116-c9-rehearsal-*) [ -d "$ROOT" ] && [ ! -L "$ROOT" ] || exit 65;;
  *) echo 'UNSUPPORTED_C9_ROOT' >&2; exit 65;;
 esac
-for cmd in sha256sum stat df cp mv mkdir cmp awk sort cut wc chmod chown sync; do
+for cmd in sha256sum stat df cp mv mkdir cmp awk sort cut wc chmod chown sync rm; do
  command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_OPAL_COMMAND:$cmd" >&2; exit 66; }
 done
 [ -f "$TARGETS" ] && [ ! -L "$TARGETS" ] || exit 67
@@ -114,6 +114,15 @@ restore_files(){
   [ "$(sha "$staged")" = "$old" ] || return 83
   mv -f "$staged" "$target" || return 83
  done < "$TARGETS"
+ # Clean only our known candidate staging files after restoring every target.
+ while IFS="$TAB" read -r dest rel old new mode; do
+  leftover="$ROOT$dest.cart116c9-stage-$TX"
+  if [ -e "$leftover" ] || [ -L "$leftover" ]; then
+   [ -f "$leftover" ] && [ ! -L "$leftover" ] &&
+   [ "$(sha "$leftover")" = "$new" ] || return 83
+   rm -f "$leftover" || return 83
+  fi
+ done < "$TARGETS"
  sync
  : > "$TXBASE/restored"
 }
@@ -159,10 +168,14 @@ case "$ACTION" in
   : > "$REGISTRY/consumed"
   FAILED=1
   trap '[ "$FAILED" -eq 0 ] || { restore_files || echo "C9_RESTORE_REQUIRED_STOP" >&2; }' EXIT
+  swapped=0
   while IFS="$TAB" read -r dest rel old new mode; do
    target="$ROOT$dest"; staged="$target.cart116c9-stage-$TX"
    [ "$(sha "$target")" = "$old" ] && [ "$(sha "$staged")" = "$new" ] || exit 88
    mv -f "$staged" "$target" || exit 88
+   swapped=$((swapped+1))
+   # Fault injection is allowed only in the isolated /tmp rehearsal root.
+   if [ "$LIVE" = 0 ] && [ "${C9_SANDBOX_ABORT_AFTER:-0}" = "$swapped" ]; then exit 98; fi
   done < "$TARGETS"
   sync
   while IFS="$TAB" read -r dest rel old new mode; do
