@@ -59,6 +59,12 @@ def verify():
  check("v.cursor===lineage?.cursor" in planner,"C8 latest scored cursor binding missing")
  check(up.count("score->>'cursor'=v_week#>>'{udiscLive,cursor}'")==2,"Snapshot and commit must independently bind latest scored cursor")
  check(up.count("CREATE FUNCTION public.hbnf_cart_commit_glow_intent(")==1 and up.count("\nCOMMIT;\n")==1 and up.count("$commit$")==2 and up.count("$snapshot$")==2,"C8 SQL duplicated or malformed release boundary")
+ check(up.count("CREATE FUNCTION public.hbnf_cart_glow_source_snapshot(")==1 and
+       up.count("CREATE FUNCTION public.hbnf_cart_glow_overlay_v1_issue(")==1 and
+       up.count("CREATE FUNCTION public.hbnf_cart_glow_overlay_v1_authorize(")==1 and
+       up.count("CREATE FUNCTION public.hbnf_cart_glow_overlay_v1_ack(")==1 and
+       up.count("CREATE FUNCTION public.hbnf_cart_glow_overlay_v1_restored(")==1,
+       "C8 duplicate/missing six-RPC SQL boundary")
  check("AND score->>'strokes' ~ '^[0-9]{1,2}
  check("UDisc event XLSX export" not in planner,"Manual XLSX accepted by LIVE planner")
  check("UDisc event XLSX export" in up and "HISTORICAL_PREVIEW_ONLY_NO_ACTUATION" in up,
