@@ -30,6 +30,43 @@ function markers(variable) {
 const FRONT = markers('REQUIRED_FRONTEND_MARKERS');
 const CSS = markers('REQUIRED_CSS_MARKERS');
 if (FRONT.length !== 19 || CSS.length !== 8) throw new Error('unrecognized_marker_contract');
+// Diagnostic-only matcher: mirrors qualified helper's import recognizer.
+// It does not fetch rejected URLs or relax trusted-origin/path checks.
+const JS_IMPORT_DIAGNOSTIC = /\bimport\s*\(\s*["']([^"']+)["']\s*\)|\b(?:import|export)[\w{}*,\s$]*?\bfrom\s*["']([^"']+)["']|\bimport\s*["']([^"']+)["']/g;
+const checkedJs = [];
+async function getJsWithReadback(url, init={}) {
+  const response = await get(url, init);
+  if (response.ok && checkedJs.length < 24) {
+    const source = await response.clone().text();
+    checkedJs.push({url, source});
+  }
+  return response;
+}
+function firstUnexpectedImport() {
+  for (const item of checkedJs) {
+    for (const match of item.source.matchAll(JS_IMPORT_DIAGNOSTIC)) {
+      const specifier = match[1] ?? match[2] ?? match[3];
+      let resolved = null;
+      try { resolved = new URL(specifier, item.url); } catch {}
+      if (!resolved || resolved.origin !== ORIGIN ||
+          !resolved.pathname.startsWith('/assets/') || !resolved.pathname.endsWith('.js')) {
+        const start = Math.max(0, match.index - 95);
+        const end = Math.min(item.source.length, match.index + match[0].length + 95);
+        return {
+          source_asset_url: item.url,
+          matched_import: match[0].slice(0, 240),
+          specifier: specifier.slice(0, 240),
+          resolved_url: resolved?.toString() ?? null,
+          source_offset: match.index,
+          surrounding_source: item.source.slice(start, end),
+          note: 'A regex match, not yet proof of an executable JS import'
+        };
+      }
+    }
+  }
+  return null;
+}
+
 const result = {
   observed_staging_url: STAGING_URL,
   watchdog_pr_head: '57bcd953e477ba13a5576e7099217da0ff7c07bf',
@@ -44,6 +81,7 @@ const result = {
   missing_frontend_markers: [...FRONT],
   missing_css_markers: [...CSS],
   frontend_asset_urls: [],
+  first_rejected_import: null,
   css_bundle_url: null,
   failures: []
 };
@@ -82,12 +120,17 @@ try {
   else {
     try {
       const entry = new URL(script[1], STAGING_URL).toString();
-      const graph = await readFrontendGraph(entry,get,ORIGIN);
+      const graph = await readFrontendGraph(entry,getJsWithReadback,ORIGIN);
       result.frontend_asset_urls=graph.urls;
       result.missing_frontend_markers=FRONT.filter(m=>!graph.bundle.includes(m));
       result.frontend_bundle_ok=result.missing_frontend_markers.length===0;
       if(!result.frontend_bundle_ok) result.failures.push('staging_missing_frontend_markers');
-    } catch(e) {result.failures.push('frontend_graph_'+(e?.message??String(e)));}
+    } catch(e) {
+      result.failures.push('frontend_graph_'+(e?.message??String(e)));
+      if ((e?.message ?? '') === 'frontend_import_origin_or_path_mismatch') {
+        result.first_rejected_import = firstUnexpectedImport();
+      }
+    }
   }
   const link = html.match(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/i);
   if(!link?.[1]) result.failures.push('staging_css_missing');
