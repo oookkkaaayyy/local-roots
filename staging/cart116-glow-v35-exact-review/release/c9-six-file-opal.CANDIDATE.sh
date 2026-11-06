@@ -6,7 +6,7 @@ set -eu
 umask 077
 [ "$#" -eq 5 ] || { echo 'usage: preflight|prepare|apply|restore|verify root six.tsv candidate_dir txid' >&2; exit 64; }
 ACTION=$1 ROOT=$2 TARGETS=$3 SOURCE=$4 TX=$5
-case "$ACTION" in preflight|prepare|apply|restore|verify) ;; *) exit 64;; esac
+case "$ACTION" in preflight|admission-check|prepare|apply|restore|verify) ;; *) exit 64;; esac
 case "$TX" in ''|*[!A-Za-z0-9_-]*) exit 64;; esac
 [ "$(printf %s "$TX" | wc -c | awk '{print $1}')" -ge 20 ] && [ "$(printf %s "$TX" | wc -c | awk '{print $1}')" -le 64 ] || exit 64
 LIVE=0
@@ -73,19 +73,55 @@ old_validate(){
 }
 live_gate(){
  [ "$LIVE" = 1 ] || return 0
- [ -f "$SOURCE/ADMISSION.RECEIPT" ] && [ ! -L "$SOURCE/ADMISSION.RECEIPT" ] &&
- [ -f "$SOURCE/ADMISSION.PENDING.json" ] && [ ! -L "$SOURCE/ADMISSION.PENDING.json" ] || return 80
- ownership_ok "$SOURCE/ADMISSION.RECEIPT" 600 || return 80
- field(){ sed -n "s/^$1=//p" "$SOURCE/ADMISSION.RECEIPT"; }
- [ "$(field C9_PHASE1A_ADMITTED)" = 'YES_SAME_MANIFEST' ] &&
- [ "$(field C9_INSTALLED_PRECHANGE_READBACK)" = PASS ] &&
- [ "$(field C9_21_FILE_ROLLBACK_DURABLE_DOWNLOADBACK)" = PASS ] &&
- [ "$(field C9_RESTORE_ROUTE_VERIFIED)" = PASS ] &&
- [ "$(field C9_OWNER_EXACT_RELEASE_AUTHORIZATION)" = YES ] || return 80
- [ "$(field C9_ROLLBACK_SHA256)" = d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9 ] || return 80
- hex64 "$(field C9_MANIFEST_SHA256)" && hex64 "$(field C9_SIX_TSV_SHA256)" || return 80
- [ "$(sha "$SOURCE/ADMISSION.PENDING.json")" = "$(field C9_MANIFEST_SHA256)" ] &&
- [ "$(sha "$TARGETS")" = "$(field C9_SIX_TSV_SHA256)" ] || return 80
+ admission_evidence_gate
+}
+admission_evidence_gate(){
+ for cmd in jsonfilter openssl; do command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_ADMISSION_VERIFIER:$cmd" >&2; return 80; }; done
+ for file in ADMISSION.PENDING.json C9_RELEASE_APPROVAL.json C9_APPROVAL_MESSAGE.bin C9_APPROVAL_SIGNATURE.raw C9_APPROVAL_PUBKEY.der C9_CANDIDATE.zip; do
+  [ -f "$SOURCE/$file" ] && [ ! -L "$SOURCE/$file" ] || return 80
+ done
+ jsonfield(){ jsonfilter -i "$SOURCE/ADMISSION.PENDING.json" -e "$1" 2>/dev/null; }
+ docfield(){ jsonfilter -i "$SOURCE/C9_RELEASE_APPROVAL.json" -e "$1" 2>/dev/null; }
+ # The broad controlling manifest must remain source-gate closed: this scoped
+ # transaction changes only six Owner PWA assets. C9 admission itself is
+ # explicit, exact-postimage, and transaction-bound inside that same manifest.
+ [ "$(jsonfield '@.transaction.source_gate_change_admitted')" = false ] &&
+ [ "$(jsonfield '@.transaction.manifest_specific_one_time_id')" = "$TX" ] &&
+ [ "$(jsonfield '@.transaction.independent_release_backup_download_verified')" = true ] &&
+ [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.scope')" = 'C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY' ] &&
+ [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.transaction_id')" = "$TX" ] &&
+ [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.status')" = 'OWNER_SIGNATURE_REQUIRED' ] &&
+ [ "$(docfield '@.schema')" = 'hbnf-c9-phase1a-owner-release-v1' ] &&
+ [ "$(docfield '@.scope')" = 'C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY' ] &&
+ [ "$(docfield '@.operation')" = 'install-six-owner-pwa-files-only' ] &&
+ [ "$(docfield '@.original_r6_preservation')" = 'NO_MATRIX_OR_AUX_FIRMWARE_OR_CONFIGURATION_WRITES' ] &&
+ [ "$(docfield '@.transaction_id')" = "$TX" ] &&
+ [ "$(docfield '@.source_branch')" = "$(jsonfield '@.exact_source.branch')" ] &&
+ [ "$(docfield '@.source_commit')" = "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.source_candidate_commit')" ] &&
+ [ "$(docfield '@.verifier_script_sha256')" = "$(sha "$0")" ] &&
+ [ "$(docfield '@.manifest_sha256')" = "$(sha "$SOURCE/ADMISSION.PENDING.json")" ] &&
+ [ "$(docfield '@.review_snapshot_manifest_sha256')" = "$(sha "$SOURCE/ADMISSION.PENDING.json")" ] &&
+ [ "$(docfield '@.six_tsv_sha256')" = "$(sha "$TARGETS")" ] &&
+ [ "$(docfield '@.rollback_sha256')" = 'd717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9' ] || return 80
+ [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.independent_original_21_file_rollback_sha256')" = "$(docfield '@.rollback_sha256')" ] || return 80
+ nested_rollback="$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.rollback_sha256')"
+ [ -z "$nested_rollback" ] || [ "$nested_rollback" = "$(docfield '@.rollback_sha256')" ] || return 80
+ [ "$(sha "$SOURCE/C9_CANDIDATE.zip")" = "$(docfield '@.candidate_zip_sha256')" ] || return 80
+ [ "$(docfield '@.approval_key_der_sha256')" = "$(jsonfield '@.transaction.c9_approval_key_der_sha256')" ] &&
+ [ "$(docfield '@.approval_key_fingerprint')" = "$(jsonfield '@.transaction.c9_approval_key_fingerprint')" ] &&
+ [ -n "$(jsonfield '@.transaction.c9_approval_key_fingerprint')" ] || return 80
+ [ "$(sha "$SOURCE/C9_APPROVAL_PUBKEY.der")" = "$(docfield '@.approval_key_der_sha256')" ] || return 80
+ expected_message="$SOURCE/.c9-approval-message.$TX"
+ [ ! -e "$expected_message" ] && [ ! -L "$expected_message" ] || return 80
+ printf 'SSHSIG\000\000\000\017hbnf-c9-phase1a\000\000\000\000\000\000\000\006sha512\000\000\000@' > "$expected_message"
+ openssl dgst -sha512 -binary "$SOURCE/C9_RELEASE_APPROVAL.json" >> "$expected_message" || return 80
+ cmp -s "$expected_message" "$SOURCE/C9_APPROVAL_MESSAGE.bin" || { rm -f "$expected_message"; return 80; }
+ openssl pkeyutl -verify -pubin -inkey "$SOURCE/C9_APPROVAL_PUBKEY.der" -keyform DER -rawin \
+  -in "$SOURCE/C9_APPROVAL_MESSAGE.bin" -sigfile "$SOURCE/C9_APPROVAL_SIGNATURE.raw" >/dev/null 2>&1 || { rm -f "$expected_message"; return 80; }
+ rm -f "$expected_message"
+ [ "$(docfield '@.recovery_limitations.abrupt_power_loss')" = 'NOT_TESTED' ] &&
+ [ "$(docfield '@.recovery_limitations.partial_active_file_restore')" = 'NOT_FAULT_INJECTED' ] &&
+ [ "$(docfield '@.recovery_limitations.ubifs_process_reentry_restore')" = 'PASS_ACTUAL_ROUTER' ] || return 80
 }
 space_gate(){
  free_kb="$(df -k "$ROOT/www" | awk 'END {print $4}')"
@@ -137,6 +173,10 @@ restore_files(){
 }
 manifest_validate || exit 84
 case "$ACTION" in
+ admission-check)
+  candidate_validate && old_validate && admission_evidence_gate || exit 86
+  echo 'C9_SCOPED_MANIFEST_AND_TRANSACTION_RECEIPT_PASS_READ_ONLY'
+  ;;
  preflight)
   candidate_validate && old_validate && space_gate || exit 85
   echo 'C9_SIX_FILE_PREFLIGHT_READ_ONLY_PASS'
