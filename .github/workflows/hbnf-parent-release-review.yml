@@ -207,3 +207,32 @@ jobs:
           cid="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -n 1)"
           test -n "$cid"
           HBNF_TEST_PG_CID="$cid" node tests/hbnf-t1-t2-pg17.test.mjs
+
+  udisc-gate-pg17:
+    # Native DB test runs only for explicit UDGATE: commits; isolated PG17
+    # service container, no provider tokens, no live credentials or UDisc GET.
+    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'UDGATE:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: hbnf_udisc_ephemeral_pg17_fixture_only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native PG17 durable UDisc gate, exact installed RPC patch and ACL
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -n 1)"
+          test -n "$cid"
+          { cat tests/hbnf-udisc-fetch-gate-pg17-pre.sql; \
+            cat scripts/hbnf-parent-release/sql/udisc-event-fetch-gate.review.sql; \
+            cat tests/hbnf-udisc-fetch-gate-pg17-post.sql; } |
+            docker exec -i "$cid" psql -U postgres -v ON_ERROR_STOP=1
