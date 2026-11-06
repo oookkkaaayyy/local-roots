@@ -21,6 +21,14 @@ export function nextUvOutput(state = {}, config = UV_OFFLINE_CONFIG, inputs = {}
   if (!config.enabled || !config.hardwareAvailable || maximum === 0 || mode === "OFF") return 0;
   if (!UV_MODES.includes(mode)) return 0;
 
+  // Owner override is an intensity choice, not permission to illuminate on
+  // lost or silent live telemetry. Evaluate the fault before override.
+  const audioFault = (mode === "FOLLOW_MATRIX" &&
+    !(inputs.matrixFresh === true && Number.isFinite(inputs.matrixBrightness) && inputs.matrixBrightness > 0)) ||
+    (mode === "VIBE_REACTIVE" &&
+    !(inputs.vibeFresh === true && Number.isFinite(inputs.vibeEnvelope) && inputs.vibeEnvelope > 0));
+  if (audioFault) return 0;
+
   let target;
   if (state.ownerOverride !== undefined && state.ownerOverride !== null) {
     target = clamp(state.ownerOverride, 0, maximum);
