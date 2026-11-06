@@ -93,6 +93,8 @@ jobs:
         run: node --test tests/hbnf-cloudflare-recovery.test.mjs
       - name: Current Cloudflare read-only stage diagnostic regression
         run: node --test tests/hbnf-cloudflare-current-readonly.test.mjs
+      - name: Version-specific Cloudflare restore and served-asset read-only preflight regression
+        run: node --test tests/hbnf-cloudflare-restore-preflight.test.mjs
       - name: Focused authenticated provider/recovery boundary tests (fake credentials only)
         if: steps.scope.outputs.fallback_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
         run: node --test tests/hbnf-live-release-boundary.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
