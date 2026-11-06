@@ -11,6 +11,8 @@ on:
       - staging/cart116-glow-v35-exact-review/tests/trackA-networking-reconnect-accepted.test.mjs
       - staging/cart116-glow-v35-exact-review/tests/trackA-netfix2-served-identity.test.mjs
       - staging/cart116-glow-v35-exact-review/tests/trackA-c9-paired-owner-compat.test.mjs
+      - staging/cart116-glow-v35-exact-review/tests/c9-one-session-parity.test.mjs
+      - staging/cart116-glow-v35-exact-review/admission/hbnf-matrix-offline-parity-review.cjs
       - staging/cart116-glow-v35-exact-review/candidate-source/hbnf-glow-cart-intent.mjs
       - staging/cart116-glow-v35-exact-review/migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql
       - staging/cart116-glow-v35-exact-review/tests/native-release/c7-source-intent-contract.test.mjs
