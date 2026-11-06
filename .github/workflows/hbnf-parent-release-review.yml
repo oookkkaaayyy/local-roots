@@ -19,6 +19,7 @@ on:
       - 'tests/hbnf-glow-preinit-pending.test.mjs'
       - 'tests/hbnf-udisc-cart-server-ack.test.mjs'
       - 'tests/hbnf-udisc-fetch-gate.test.mjs'
+      - 'tests/hbnf-release-readiness.test.mjs'
       - 'source-snapshots/hbnf-worker-d1a5f936-20261024/src/**'
       - 'source-snapshots/hbnf-worker-d1a5f936-20261024/worker-private/**'
       - 'tests/skins-pending-review.test.mjs'
@@ -66,6 +67,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Release route structural acceptance (synthetic execution gate only)
+        run: node --test tests/hbnf-release-readiness.test.mjs
+      - name: BLOCK unadmitted v348 one-file archive before any further implementation tests
+        shell: bash
+        env:
+          PRIVATE_MANIFEST: ${{ secrets.HBNF_PRIVATE_SCORING_RELEASE_MANIFEST_PATH }}
+          RELEASE_STAGE: ${{ secrets.HBNF_SCORING_RELEASE_STAGE_PATH }}
+          PROVIDER_RECEIPT: ${{ secrets.HBNF_SCORING_PROVIDER_READBACK_PATH }}
+          EXECUTOR_RECEIPT: ${{ secrets.HBNF_SCORING_EXECUTOR_PATH }}
+        run: |
+          node scripts/hbnf-parent-release/release-readiness-cli.mjs "$PRIVATE_MANIFEST" "$RELEASE_STAGE" "$PROVIDER_RECEIPT" "$EXECUTOR_RECEIPT"
       - name: Determine focused UDisc qualification scope
         id: scope
         shell: bash
