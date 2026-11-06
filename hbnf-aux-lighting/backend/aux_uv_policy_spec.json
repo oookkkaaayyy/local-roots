@@ -87,5 +87,41 @@
   ],
   "offlineSimulationOnlyModes": [
     "VIBE_REACTIVE"
+  ],
+  "same5vCandidate": {
+    "schema": "hbnf-uv-same-5v-low-side-review-v1",
+    "method": "onboard_sp803e_nmos_same_5v_rail",
+    "controllerSupplyVoltageV": 5,
+    "uvLoadVoltageV": 5,
+    "addressableSupplyVoltageV": 12,
+    "addressableDataGpio": 16,
+    "addressableGroups": 22,
+    "sharedSupplyTopology": "same_regulated_5v_controller_and_uv_branch_with_independent_12v_ws2811",
+    "controllerSupply": "TOBSUN EA50-5V",
+    "switchedReturns": [
+      "PWM3_GPIO25_RIM",
+      "PWM2_GPIO26_BAR"
+    ],
+    "noVoltageReleaseAndManualRearmMandatory": true,
+    "proofDigestFormat": "sha256_hex_64",
+    "status": "REVIEW_ONLY_NOT_AS_BUILT_NOT_ADMITTED"
+  },
+  "same5vRequiredSafetyGates": [
+    "installedBoardInputAndNmosSinkVerified",
+    "controllerAndUv5vSameRailVerified",
+    "oldConstantGroundUvBypassesRemoved",
+    "separate12vWs2811RailAndGpio16DataVerified",
+    "gpio16DataMarginsAndPowerSequencingVerified",
+    "crossRailBackfeedAbsentVerified",
+    "measuredConverterHeadroomPeakAndInrushVerified",
+    "individuallyFusedBranchesAndWiresVerified",
+    "dummyLoadTwoIndependentPwmChannelsVerified",
+    "uvOnlyNormallyOpenHardCutoffVerified",
+    "lidOpticalInterlockAndOpaqueShieldingVerified",
+    "controllerResetAndBrownoutWatchdogFailsOpenVerified",
+    "faultPowerLossRequiresManualRearmVerified",
+    "directWledBypassCannotEnergizeUnarmedUvVerified",
+    "physicalUvOffAtBothLoadsVerified",
+    "shieldedIndependentDimmingAndMusicFollowVerified"
   ]
 }
