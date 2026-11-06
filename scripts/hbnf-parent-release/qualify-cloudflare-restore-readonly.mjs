@@ -106,8 +106,8 @@ async function captureStaticAssets(fetchImpl){
   }
   return out;
 }
-export async function qualify({backupBytes,token,fetchImpl=fetch,assets=true}={}){
-  const c=validateCurrentCapture(backupBytes);
+export async function qualify({backupBytes,token,fetchImpl=fetch,assets=true,expectedCaptureSha=EXPECTED_ENVELOPE_SHA}={}){
+  const c=validateCurrentCapture(backupBytes,expectedCaptureSha);
   if(typeof token!=='string'||token.length<15||/\s/.test(token))fail('TOKEN_FORMAT');
   const suffix='/accounts/'+ACCOUNT+'/workers/scripts/'+WORKER;
   const start=active(await json('DEPLOYMENTS',suffix+'/deployments',token,fetchImpl));
