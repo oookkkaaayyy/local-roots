@@ -70,8 +70,8 @@ test('hash-reuse upload creates undeployed version; old Cart never uploaded',asy
     throw Error('unexpected '+m+' '+p);
   };
   const result=await stageExecutableVersion({...args,token:'test_token_long_enough',accountId,
-    scriptEtag:'etag',fetchImpl,requireParentAdmission:async()=>{},
-    requireProviderCompleteInventory:async()=>{},requireFreshFiveTargetPreimage:async()=>{checked++}});
+    scriptEtag:'etag',fetchImpl,requireParentAdmission:async()=>true,
+    requireProviderCompleteInventory:async()=>true,requireFreshFiveTargetPreimage:async()=>{checked++;return true}});
   assert.equal(result.status,'EXECUTABLE_VERSION_CREATED_NOT_DEPLOYED');
   assert.equal(result.receipt.assetCount,2);assert.equal(checked,2);
   assert.equal(calls.filter(x=>x.endsWith('/deployments')&&x.startsWith('POST')).length,0);
@@ -88,7 +88,7 @@ test('retained version restore conditional readback and ambiguous deploy fail cl
     throw Error('unexpected');
   };
   const inputs={accountId,token:'test_token_long_enough',targetVersionId:old,
-    currentVersionId:next,manifestSha256:'b'.repeat(64),verifyExclusiveParentClaim:async()=>{}};
+    currentVersionId:next,manifestSha256:'b'.repeat(64),verifyExclusiveParentClaim:async()=>true};
   const ok=await deployRetainedVersion({...inputs,fetchImpl});
   assert.equal(ok.versionId,old);assert.equal(postCount,1);
   current=next;
