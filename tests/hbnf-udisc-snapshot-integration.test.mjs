@@ -23,10 +23,10 @@ function model(score='3'){
 test('integrated Worker import and Glow UI recognize local XLSX snapshot provenance',async()=>{
   const worker=await readFile(new URL('../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs',import.meta.url),'utf8');
   const html=await readFile(new URL('../public/glow.html',import.meta.url),'utf8');
-  assert.match(worker,/from '\\.\/udisc-glow-snapshot-mode\\.review\\.mjs'/);
-  assert.match(html,/HBNF_LOCAL_XLSX_OBSERVATION_NOT_UDISC_METADATA/);
-  assert.match(html,/status\\.state==='standings_only'/);
-  assert.match(html,/SOURCE_RATE_LIMITED/);
+  assert.ok(worker.includes("from './udisc-glow-snapshot-mode.review.mjs'"));
+  assert.ok(html.includes('HBNF_LOCAL_XLSX_OBSERVATION_NOT_UDISC_METADATA'));
+  assert.ok(html.includes("status.state==='standings_only'"));
+  assert.ok(html.includes('SOURCE_RATE_LIMITED'));
 });
 
 test('integrated snapshot evidence advances only a real accepted scored-hole change',()=>{
