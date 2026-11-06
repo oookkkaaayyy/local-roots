@@ -34,6 +34,19 @@ on:
 permissions:
   contents: read
 jobs:
+  adapter-four-focused:
+    name: Four focused executable-version regressions (independent)
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run only new Cloudflare executable-version regressions
+        run: node --test tests/hbnf-cloudflare-executable-version.test.mjs
   tag-sql-scope:
     runs-on: ubuntu-latest
     timeout-minutes: 2
