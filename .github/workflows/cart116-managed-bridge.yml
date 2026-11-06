@@ -150,6 +150,7 @@ jobs:
           python3 staging/cart116-glow-v35-exact-review/tests/test_c9_six_file_transaction_rehearsal.py
           python3 staging/cart116-glow-v35-exact-review/tests/test_c9_opal_preflight_readonly.py
           python3 staging/cart116-glow-v35-exact-review/tests/test_c9_opal_candidate_transaction.py
+          python3 staging/cart116-glow-v35-exact-review/tests/test_c9_opal_interrupted_recovery.py
       - name: BusyBox ash syntax, no Cart device/network access
         run: |
           set -euo pipefail
