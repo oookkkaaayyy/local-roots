@@ -2737,7 +2737,7 @@
     "preview": "Historical S1 XLSX read-only preview remains a distinct mode; must never actuate Cart even if status fresh",
     "touched_review_git_blobs": {
       "planner": "cb40cfaa1e912b971ed5941d9226cf2b39445e8e",
-      "sql_up": "8f93bedb23230ec61e52d375bb4409b83642f7fc",
+      "sql_up": "545c1e5bdbd96f631007f6f9f1fdbc84c47a8bc1",
       "node_contract_fixture": "e188689349fabae05a9486a332a5cc8651d97bb2",
       "pg17_contract_fixture": "667e51d64f1c8adc8116c3c043ec53828bc75c5a"
     },
@@ -2806,22 +2806,77 @@
     "next": "Only after exact current provider/device recovery and one-manifest admission; no live actuation before genuine source and readback eligibility"
   },
   "c8_sql_repair_20261105": {
-    "status": "SOURCE_REPAIRED_REVIEW_ONLY_NOT_DEPLOYED",
-    "source_commit": "9ab82af2b02a8d7c54fe9dd3af35d8ed1e4bca1e",
-    "sql_blob": "8f93bedb23230ec61e52d375bb4409b83642f7fc",
-    "findings": [
-      "Malformed current-cursor predicate truncated at strokes regex",
-      "Duplicate CREATE FUNCTION/GRANT block after first COMMIT",
-      "Atomic commit RPC lacked latest scored-hole cursor guard"
+    "status": "REPAIRED_FROM_SINGLE_TRANSACTION_CLEAN_BASE_PG_VALIDATION_PENDING",
+    "previous_broken_commits": [
+      "7612d036a80c39053c7076879b684cbef0436ed2",
+      "341c159843c2006c3facd835418edabf1efd4494",
+      "9ab82af2b02a8d7c54fe9dd3af35d8ed1e4bca1e"
     ],
-    "fixes": [
-      "Restored complete snapshot latest-cursor predicate",
-      "Removed duplicated post-COMMIT tail",
-      "Added equivalent current-cursor scored-hole check at commit CAS"
-    ],
-    "runtime_pg_validation": "NOT_RUN",
+    "clean_source_ref": "e6c889f819db5e16dbd3ae1171a72a27e9876a43",
+    "repair_commit": "d4925304e1ceb118f8657072e29cca5d7b3aba78",
+    "sql_blob": "545c1e5bdbd96f631007f6f9f1fdbc84c47a8bc1",
+    "proof": "Structural checks: one COMMIT, one commit RPC, balanced 2 $commit$ delimiters, latest scored-hole guards in both read and CAS; native PG17 not yet accepted",
     "provider_mutated": false,
-    "admitted": false,
-    "required_next": "Exact changed-only PG parser/fixture and updated digest checker, rollback provider byte/source verification, one-manifest provider admission before any production write"
+    "admitted": false
+  },
+  "device_evidence_20261105_1640_pacific": {
+    "source": "Owner-collected actual HTTP device readback JSON via Mac HBNF-Cart LAN, independently SHA256 verified on attached bytes; user-reported approximate collection time",
+    "files": [
+      {
+        "name": "matrix-build-readonly.json",
+        "bytes": 568,
+        "sha256": "150b4fcacb1bee2fe12c767e5ebbbf4cfbc585454d193e421e5705df53c0031d"
+      },
+      {
+        "name": "matrix-state-readonly.json",
+        "bytes": 2377,
+        "sha256": "86f2954a54b7c2c7b5dc8f0874323a0b90bd985c3371f2f49524b1fb7eafc283"
+      },
+      {
+        "name": "aux-state-readonly.json",
+        "bytes": 2582,
+        "sha256": "37e536b3ab98274844d834f26009426bf4344dd44dfc01210d65257d8b67b5d1"
+      }
+    ],
+    "matrix": {
+      "mac": "70:4b:ca:5b:34:5c",
+      "installed_marker": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+      "native_fx": 142,
+      "preset": 60,
+      "kernel": 26,
+      "scene": 0,
+      "vibe": 2,
+      "motion": 50,
+      "audioResponse": 50,
+      "matrixBrightness": 255,
+      "auxBrightness": 255,
+      "overlayId": null,
+      "timing_fps_in_state": 35,
+      "actual_firmware_flash_hash": "NOT_ATTESTED",
+      "config_presets_raw": "NOT_RECOVERED",
+      "nonbooting_recovery": "NOT_PROVEN"
+    },
+    "aux": {
+      "mac": "8c94df55c34c",
+      "segments": [
+        "0..21:22_underGlow:on",
+        "22..22:1_reserved_off",
+        "23..23:1_reserved_off"
+      ],
+      "fxRegistered": 28,
+      "fxFailed": 0,
+      "fxRange": "220-247",
+      "customProjectionRxActive": false,
+      "customProjectionRxPackets": 0,
+      "projectionPeerKnown": false,
+      "customAudioActive": false,
+      "ddp_lm_live": "USER_SEPARATE_INFO_OBSERVATION_NOT_IN_ATTACHED_STATE"
+    },
+    "admission": "READ_ONLY_DEVICE_IDENTITY_PARTIAL_NO_LIVE_MUTATION",
+    "opal_6_assets": "NO_AUTHENTICATED_READBACK",
+    "opal_21_files": "NO_AUTHENTICATED_READBACK",
+    "private_full_backup_downloadback": false,
+    "one_combined_field": "NOT_PERFORMED",
+    "uv_physical": "AS_WIRED_OWNER_REPORT_BOTH_UV_ON_WHEN_AUX_POWERED"
   }
 }
