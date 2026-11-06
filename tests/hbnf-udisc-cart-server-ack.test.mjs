@@ -58,6 +58,9 @@ test('saved scores survive without a second scoring mutation when the Cart backe
   scorecardText:{holePars:{'1':'3'},holeNotes:{'1':'hole note'}},
   cards:[{id:'C1',finalized:false,players:[]}],players:[]
  };
+ const gateToken='123e4567-e89b-42d3-a456-426614174000';
+ const gate={event_id:eventId,week_date:weekDate,attempt_token:null,
+   next_eligible_at:'2026-11-04T07:31:00Z',last_outcome:null};
  let root={glow:{activeWeek:weekDate,weeks:{[weekDate]:currentWeek},playerAliases:{}}};
  let rev='2026-11-01T22:33:40.372437Z';
  const source={
@@ -79,6 +82,22 @@ test('saved scores survive without a second scoring mutation when the Cart backe
  const fetch=async(url,opts={})=>{
   const u=String(url);
   requests.push(u);
+  if(u.endsWith('/rpc/hbnf_claim_udisc_glow_fetch')){
+   gate.attempt_token=gateToken;
+   return new Response(JSON.stringify({allowed:true,attemptToken:gateToken,
+     eventId,weekDate,failClosedUntil:gate.next_eligible_at}),{status:200});
+  }
+  if(u.endsWith('/rpc/hbnf_finish_udisc_glow_fetch')){
+   const payload=JSON.parse(opts.body);
+   assert.equal(payload.p_attempt_token,gateToken);
+   assert.equal(payload.p_outcome,'SUCCESS');
+   gate.attempt_token=null;gate.last_outcome='SUCCESS';
+   gate.next_eligible_at='2026-11-04T02:05:00Z';
+   return new Response(JSON.stringify({recorded:true,eventId,weekDate,
+     outcome:'SUCCESS',nextEligibleAt:gate.next_eligible_at}),{status:200});
+  }
+  if(u.includes('/rest/v1/hbnf_udisc_glow_fetch_gate?'))
+   return new Response(JSON.stringify([gate]),{status:200});
   if(u.includes('udisc_glow_event_bindings'))return new Response(JSON.stringify([{
    event_id:eventId,event_date:weekDate,window_start:'2026-11-04T01:30:00Z',
    window_end:'2026-11-04T07:30:00Z'}]),{status:200});
