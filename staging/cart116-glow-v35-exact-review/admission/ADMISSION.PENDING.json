@@ -243,7 +243,7 @@
   },
   "state": "PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION",
   "transaction": {
-    "manifest_specific_one_time_id": null,
+    "manifest_specific_one_time_id": "c9-phase1a-e5e417c639b9a0108469226a6bfce367",
     "owner_approval_for_this_exact_postimage": null,
     "owner_authorization_to_continue": "CART CONTROLS C6 standing scope: #116 comment 6648484424 and current owner message 2026-11-04; no fresh per-attempt permission request while exact technical gates pass",
     "release_owner": "Controls Track A only",
@@ -3267,8 +3267,8 @@
     "phase1a_admission": {
       "schema": "hbnf-c9-phase1a-owner-signature-admission-v1",
       "scope": "C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY",
-      "status": "OWNER_KEY_PIN_REQUIRED",
-      "transaction_id": null,
+      "status": "OWNER_SIGNATURE_REQUIRED",
+      "transaction_id": "c9-phase1a-e5e417c639b9a0108469226a6bfce367",
       "rollback_sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
       "recovery_limitations": {
         "ubifs_process_reentry_restore": "PASS_ACTUAL_ROUTER",
