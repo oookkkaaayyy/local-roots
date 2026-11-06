@@ -64,7 +64,8 @@ export function uvSame5vHardwareReady(config = UV_HARDWARE_CONFIG) {
       || sw?.method !== spec.method
       || sw?.inputVoltageV !== spec.controllerSupplyVoltageV
       || sw?.outputVoltageV !== spec.uvLoadVoltageV
-      || sw?.maxLoadVoltageV < spec.uvLoadVoltageV
+      || !positiveInt(sw?.maxLoadVoltageV)
+      || sw.maxLoadVoltageV < spec.uvLoadVoltageV
       || sw?.channels !== 2
       || !positiveInt(sw?.maxChannelCurrentMa)
       || !positiveInt(sw?.maxTotalCurrentMa)
