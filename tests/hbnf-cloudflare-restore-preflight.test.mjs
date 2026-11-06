@@ -35,7 +35,7 @@ function captured(){
   const bytes=Buffer.from(JSON.stringify(c));
   return {bytes,hash:sha(bytes)};
 }
-function fixture({deployable=true,mutate=false,versionDrift=false,asset404=false,scopesMissing=false}={}){
+function fixture({deployable=true,mutate=false,versionDrift=false,asset404=false,scopesMissing=false,canonicalRedirect=false,crossOriginRedirect=false,malformedVersions=false}={}){
   let deploymentReads=0;
   const calls=[];
   const result=v=>new Response(JSON.stringify({success:true,result:v}),{
@@ -43,9 +43,16 @@ function fixture({deployable=true,mutate=false,versionDrift=false,asset404=false
   const fetchImpl=async(url,options)=>{
     const parsed=new URL(url),p=parsed.pathname;
     calls.push({url,method:options.method,headers:options.headers,redirect:options.redirect});
-    if(parsed.hostname==='hbnightflyers.com')
-      return new Response(asset404?null:'<html>test original safe asset</html>',
-        {status:asset404?404:200,headers:{'content-type':'text/html'}});
+    if(parsed.hostname==='hbnightflyers.com'){
+      if(asset404)return new Response(null,{status:404});
+      if((canonicalRedirect||crossOriginRedirect)&&p.endsWith('.html')){
+        const to=crossOriginRedirect?'https://evil.example.invalid/steal':
+          p==='/index.html'?'/':p.slice(0,-5);
+        return new Response(null,{status:307,headers:{location:to}});
+      }
+      return new Response('<html>test original safe asset</html>',{
+        status:200,headers:{'content-type':'text/html'}});
+    }
     if(p.endsWith('/deployments')){
       deploymentReads++;
       const active=mutate&&deploymentReads===2?'11111111-2222-3333-4444-555555555555':v;
@@ -56,7 +63,8 @@ function fixture({deployable=true,mutate=false,versionDrift=false,asset404=false
     if(p.endsWith('/versions/'+v))
       return result({id:v,number:348,resources:versionDrift?{script:{etag:'different'}}:resources});
     if(p.endsWith('/versions'))
-      return result(deployable?[{id:v,number:348}]:[{id:'00000000-1111-2222-3333-444444444444',number:349}]);
+      return result(malformedVersions?[]:{items:deployable?
+        [{id:v,number:348}]:[{id:'00000000-1111-2222-3333-444444444444',number:349}]});
     if(p.endsWith('/settings'))
       return result({bindings:settingsBindings,compatibility_date:'2026-10-30',
         assets:{jwt:'DO_NOT_COPY_ASSET_JWT'},usage_model:'bundled'});
@@ -150,4 +158,32 @@ test('missing settings read permission fails independently without disclosing pr
   await assert.rejects(()=>qualify({backupBytes:bytes,token,fetchImpl:mock.fetchImpl,
     assets:false,expectedCaptureSha:hash}),
     e=>e.message==='CF_RESTORE_SETTINGS_HTTP_403');
+});
+
+test('Cloudflare documented deployable result shape rejects ambiguous legacy array',async()=>{
+  const {bytes,hash}=captured(),mock=fixture({malformedVersions:true});
+  await assert.rejects(()=>qualify({backupBytes:bytes,token,fetchImpl:mock.fetchImpl,
+    assets:false,expectedCaptureSha:hash}),/CF_RESTORE_DEPLOYABLE_VERSIONS_SHAPE_INVALID/);
+  assert(mock.calls.every(x=>x.method==='GET'));
+});
+test('canonical HTML 307 redirects stay in one expected same-origin hop',async()=>{
+  const {bytes,hash}=captured(),mock=fixture({canonicalRedirect:true});
+  const r=await qualify({backupBytes:bytes,token,fetchImpl:mock.fetchImpl,expectedCaptureSha:hash});
+  const html=r.servedStaticAssets.filter(x=>x.path.endsWith('.html'));
+  assert.equal(html.length,8);
+  assert(html.every(x=>x.state==='OBSERVED'&&x.redirectTo!==null));
+  assert.equal(html.find(x=>x.path==='/index.html').redirectTo,'/');
+  assert.equal(html.find(x=>x.path==='/glow.html').redirectTo,'/glow');
+  assert.equal(publicReceipt(r).sampledAssetsObserved,46);
+  assert(mock.calls.every(x=>x.method==='GET'&&x.redirect==='manual'));
+});
+test('cross-origin HTML redirect is never followed and is reported unsafe',async()=>{
+  const {bytes,hash}=captured(),mock=fixture({crossOriginRedirect:true});
+  const r=await qualify({backupBytes:bytes,token,fetchImpl:mock.fetchImpl,expectedCaptureSha:hash});
+  const html=r.servedStaticAssets.filter(x=>x.path.endsWith('.html'));
+  assert.equal(html.length,8);
+  assert(html.every(x=>x.state==='UNVERIFIED'&&x.errorCode==='CF_RESTORE_ASSET_REDIRECT_NOT_CANONICAL'));
+  assert(mock.calls.every(x=>!x.url.includes('evil.example.invalid')));
+  assert.equal(publicReceipt(r).sampledAssetsObserved,38);
+  assert.equal(publicReceipt(r).sampledAssetsMissing.length,8);
 });
