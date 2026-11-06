@@ -143,3 +143,7 @@ export function createAuthenticatedStageAdapter({tx,readAdapter,readArtifact,ver
    async restore(op){return dispatch(op,op.restore,true);}
  });
 }
+
+// Same parent provider adapter owns version preparation; direct upload is never standalone admission.
+export {buildExactVersion,stageExecutableVersion as prepareCloudflareWorkerVersionUnderParent,
+  deployRetainedVersion as deployRetainedCloudflareVersionUnderParent} from './cloudflare-executable-version.mjs';
