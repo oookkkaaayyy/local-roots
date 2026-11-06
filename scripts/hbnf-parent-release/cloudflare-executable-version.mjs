@@ -47,6 +47,13 @@ export function buildExactVersion({assets,installedPaths,installedDigests,change
       content_base64:bytes.toString('base64')};
   });
   fail(settings?.compatibility_date&&/^20\d\d-\d\d-\d\d$/.test(settings.compatibility_date),'COMPAT_DATE');
+  fail(settings.assetConfig&&typeof settings.assetConfig==='object'&&
+    typeof settings.assetConfig.base_path==='string'&&
+    ['auto-trailing-slash','force-trailing-slash','drop-trailing-slash','none'].includes(settings.assetConfig.html_handling)&&
+    ['none','404-page','single-page-application'].includes(settings.assetConfig.not_found_handling)&&
+    (typeof settings.assetConfig.run_worker_first==='boolean'||Array.isArray(settings.assetConfig.run_worker_first)),
+    'CURRENT_ASSET_ROUTING_CONFIG_UNVERIFIED');
+  fail(settings.usage_model==='standard','WORKER_USAGE_MODEL_DRIFT');
   fail(Array.isArray(settings.bindings)&&settings.bindings.some(b=>b.name==='ASSETS'&&b.type==='assets'),'ASSETS_BINDING');
   const seen=new Set();
   const bindings=settings.bindings.map(b=>{
@@ -57,7 +64,8 @@ export function buildExactVersion({assets,installedPaths,installedDigests,change
   fail(typeof assetJwt==='string'&&assetJwt.length>15,'ASSET_JWT');
   return {manifest,body:{main_module:'index.js',modules:parts,
     compatibility_date:settings.compatibility_date,
-    compatibility_flags:settings.compatibility_flags||[],bindings,assets:{jwt:assetJwt},
+    compatibility_flags:settings.compatibility_flags||[],usage_model:settings.usage_model,
+    bindings,assets:{jwt:assetJwt,config:settings.assetConfig},
     annotations:{'workers/message':'HBNF P0 one-file Glow save ACK; rev10 parent admission required'}},
     receipt:{baselineVersionId,changedPath,changedDigest:sha256(assets.get(changedPath)),
       assetCount:paths.length,unchangedCount:paths.length-1,
@@ -140,6 +148,8 @@ export async function stageExecutableVersion({
   fail(uuid.test(newVersion?.id)&&newVersion.id!==baselineVersionId,'VERSION_CREATE');
   const verified=await c.call(workerPath+'/versions/'+newVersion.id);
   fail(verified?.id===newVersion.id&&verified.compatibility_date===settings.compatibility_date,'VERSION_READBACK');
+  fail(JSON.stringify(verified.assets?.config)===JSON.stringify(settings.assetConfig),
+    'VERSION_ASSET_CONFIG_READBACK');
   const actual=(verified.bindings||[]).map(x=>x.name+':'+x.type).sort();
   const expected=settings.bindings.map(x=>x.name+':'+x.type).sort();
   fail(actual.join('|')===expected.join('|'),'BINDING_READBACK');
