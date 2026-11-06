@@ -102,3 +102,38 @@ test("source parser has no device I/O and single manifest gates remain OFF",()=>
  assert.equal(manifest.transaction.source_gate_change_admitted,false);
  assert.equal(manifest.dora_c9_one_session_parity_source_20261105.state,"SOURCE_REVIEW_ONLY");
 });
+
+
+test("original R6 saved boot preset 60 is diagnostic ambiguity, not playlist failure or parity acceptance",()=>{
+ const f=fixture();
+ f.matrixPair.expectedRelease="hbnf-cart2-phase2-r6-skins-readable-20261014";
+ for(const mode of [f.matrixPair.offline,f.matrixPair.repeater])
+  for(const sample of mode.samples){
+   sample.state.ps=60;
+   sample.state.HBNF.candidate=f.matrixPair.expectedRelease;
+  }
+ const out=evaluate(f);
+ assert.ok(out.unknown.includes("OFFLINE:ORIGINAL_R6_PS60_BOOT_PRESET_NOT_PLAYLIST_PROOF"));
+ assert.ok(out.unknown.includes("REPEATER:ORIGINAL_R6_PS60_BOOT_PRESET_NOT_PLAYLIST_PROOF"));
+ assert.equal(out.failures.includes("OFFLINE:PRESET_NOT_MINUS_ONE"),false);
+ assert.equal(out.matrix.physical.startsWith("NOT_VERIFIED"),true);
+ assert.equal(out.releaseAdmitted,false);
+});
+test("new C9 firmware ps60 remains release-blocking despite original R6 exception",()=>{
+ const f=fixture();
+ f.matrixPair.offline.samples[2].state.ps=60;
+ const out=evaluate(f);
+ assert.ok(out.failures.includes("OFFLINE:PRESET_NOT_MINUS_ONE"));
+ assert.equal(out.releaseAdmitted,false);
+});
+test("native dwell longer than snapshot window is not falsely called a stalled generator",()=>{
+ const f=fixture();
+ for(const sample of f.matrixPair.offline.samples){
+  sample.state.HBNF.variantSignature="same";
+  sample.state.HBNF.variantDwellSeconds=56;
+ }
+ const out=evaluate(f);
+ assert.ok(out.unknown.includes("OFFLINE:CAPTURE_SHORTER_THAN_NATIVE_VARIANT_DWELL"));
+ assert.equal(out.unknown.includes("OFFLINE:NATIVE_VARIANT_ROTATION_NOT_OBSERVED_IN_WINDOW"),false);
+ assert.equal(out.releaseAdmitted,false);
+});
