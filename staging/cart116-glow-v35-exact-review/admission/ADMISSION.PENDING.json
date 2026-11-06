@@ -3200,13 +3200,13 @@
     "installed_owner_pwa": "v1.0.20 REPORTED and 21/21 independently archived/download-backed; no new post-source live readback this run",
     "installed_firmware": "original R6; C9 firmware not installed",
     "source_branch": "review/cart116-glow-canonical-intent-20261103",
-    "source_candidate_commit": "175580e4613636ab7d8ed8a4dba68dbced84c3b3",
-    "review_ci_head": "e257ad56a85621eec87732b0d0a03ad8abdf90c0",
-    "existing_ci_run": "https://github.com/oookkkaaayyy/local-roots/actions/runs/42164544678",
+    "source_candidate_commit": "716fa7af358701ebdcbbff2cee00b84fdbbb7d85",
+    "review_ci_head": "b66d8b95784d16d87e22e042e4918f50c362641d",
+    "existing_ci_run": "https://github.com/oookkkaaayyy/local-roots/actions/runs/42165479957",
     "files": {
       "install_restore_candidate": {
         "path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal.CANDIDATE.sh",
-        "git_blob_sha": "6f16671fbf7ace3c69c6a273e44b09c8a9e707a5"
+        "git_blob_sha": "e0d4b60e023faeb816b439e41acb3fab34303b88"
       },
       "standalone_readonly_preflight": {
         "path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal-preflight.REVIEW_ONLY.sh",
@@ -3242,7 +3242,9 @@
       "UV_switching": true
     },
     "transaction_notes": "Six per-file atomic renames, NOT an atomic six-file switch; one-time journal consumes before first rename and rollback refuses unrecognized third-party target bytes. Power-loss/SSH disconnect needs independent resume-and-restore trial on actual target before any admission. Install only Opal PWA assets; no firmware gate coupling.",
-    "next_deliverable": "Authenticated READ-ONLY live Opal BusyBox/df/mount/6 target current identity and candidate/rollback byte audit, controlled isolated restore simulation on matching filesystem with full credentials excluded, followed by same-manifest admission only if PASS."
+    "next_deliverable": "Authenticated READ-ONLY live Opal BusyBox/df/mount/6 target current identity and candidate/rollback byte audit, controlled isolated restore simulation on matching filesystem with full credentials excluded, followed by same-manifest admission only if PASS.",
+    "tests_enhanced": "native source CI PASS: six-file exact source/preflight, BusyBox ash 1.36 syntax; after 2-of-6 renames sandbox forced interruption triggered automatic byte-verified restore, leftover staged files cleanup, one-time transaction burn and explicit restore. No live Opal test.",
+    "power_loss_warning": "Isolated shell EXIT trap is tested for normal process exit. Complete power loss does not run EXIT trap: persistent same-tx journal and explicit restore still need actual Opal no-flash rehearsal after target admission. Six-file swap is not global atomic."
   },
   "c9_gl_mc_001wl_hardware_recovery_review_20261105": {
     "owner_model": "GLEDOPTO Mini WLED ESP32 GL-MC-001WL / listed LT-GL-MC-001WL, Amazon B0D4TG8Y2Z",
@@ -3255,5 +3257,19 @@
     "reset": "OPT 10s restarts WLED-AP; not a ROM serial bootloader nor proof of nonbooting recovery",
     "firmware_no_go": "Model-specific externally accessible ROM bootloader/backup restore path not demonstrated. Do not flash. No new owner photos/disassembly request.",
     "safe_independence": "Owner PWA phase1A original R6 compatibility does not depend on proving firmware brick recovery; C9 firmware phase1B independently blocked."
+  },
+  "c9_paired_local_tune_parity_next_increment_20261105": {
+    "schema": "cart116-owner-pwa-paired-tune-no-silent-partial-ack-v1",
+    "status": "POST_C9_SOURCE_PATCH_ACCEPTED_REVIEW_ONLY_NOT_INSTALLED",
+    "preserve_C9_six_source_hashes": true,
+    "source_patch_path": "staging/cart116-glow-v35-exact-review/release/c9-parity-paired-tune-next.REVIEW_ONLY.mjs",
+    "source_patch_commit": "715ee2cfe7ce2b4051d65da605c149df321852c5",
+    "native_ci_head": "08552b20d1e8d44c043aaa31c6fe4de2bf9a505c",
+    "native_ci": "https://github.com/oookkkaaayyy/local-roots/actions/runs/42165250822",
+    "source_defect": "Cloud paired-local TUNE may have silently selected supported Motion/brightness/audioResponse fields from full composite UI payload while discarding Energy/Variation/micSensitivity; stale other supported fields may also have been transmitted.",
+    "review_fix": "Preserve changedFields for both Opal and remote/paired local, reject unsupported requested fields before command, transmit only changed supported fields, retain cloud fallback and no fake ACK for native R6-unavailable controls.",
+    "native_tests": "PASS paired-local support-negative/positive, no partial ACK or stale companion fields, patched source isolated. Not integrated into six-file Phase1A candidate.",
+    "original_R6_gap": "Energy/Variation are not independent original-R6 native HBNF Controls fields; cannot obtain faithful local semantics from Owner PWA alone. C9 later firmware changes need independently admitted rollback, separate from PWA-only.",
+    "next": "After PWA-only C9 successful same-manifest device acceptance, generate next minimal six-target-recoverable candidate with patch and exact source-hash rebuild; do not silently use stale ZIP or deploy now."
   }
 }
