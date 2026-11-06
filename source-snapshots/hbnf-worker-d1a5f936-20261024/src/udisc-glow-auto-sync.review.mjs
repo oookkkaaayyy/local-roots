@@ -1,7 +1,8 @@
 import {buildGlowProposal, validateIdentityEvidence} from '../worker-private/udisc-glow-reconcile.mjs';
 import {prepareGlowWeekSync} from './udisc-glow-sync.mjs';
-import {selectGlowEventBinding} from './udisc-glow-event-bindings.mjs';
-import {xlsxSha256,attachLocalSnapshotEvidence,shouldPauseForRateLimit} from './udisc-glow-snapshot-mode.review.mjs';
+import {selectGlowEventBinding,isHbnfGlowDoublesEventId} from './udisc-glow-event-bindings.mjs';
+import {claimUdiscEventFetch,completeUdiscEventFetch,providerRetryAfterAt} from './udisc-glow-fetch-gate.review.mjs';
+import {xlsxSha256,attachLocalSnapshotEvidence} from './udisc-glow-snapshot-mode.review.mjs';
 
 const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 // Release candidate review copy. The historical installed-source snapshot is unchanged.
@@ -73,7 +74,12 @@ export function sameLeagueRevision(a,b) {
   return x!==null&&y!==null&&x===y;
 }
 export async function submitVerifiedGlowCartIntent(fetchImpl,config,saved) {
-  if(saved?.eventId!=='hb-glow-doubles-tAP8Y5'||saved?.weekDate!=='2026-11-03'||
+  // Applicable to the verified active event, not hardcoded to the prior Nov3 fixture.
+  // The Cart backend independently rechecks week, source revision and signature.
+  if(!isHbnfGlowDoublesEventId(saved?.eventId)||
+     !/^20\d\d-\d\d-\d\d$/.test(saved?.weekDate||'')||
+     Number.isNaN(Date.parse(saved.weekDate+'T12:00:00Z'))||
+     new Date(saved.weekDate+'T12:00:00Z').getUTCDay()!==2||
      !/^[a-f0-9]{64}$/.test(String(saved?.signature||''))||
      !sameLeagueRevision(saved?.sourceRevision,saved?.sourceRevision)||
      !config?.supabaseUrl?.startsWith('https://')||!config?.serviceKey)
@@ -219,10 +225,16 @@ export async function runApprovedGlowSync(env, deps = {}) {
   if (existingWeek.scoresLocked || (existingWeek.cards || []).some(card => card.finalized)) {
     return {disposition:'week_locked',date:binding.weekDate};
   }
-  // Provider 429 is not an invitation to retry on every cron tick. Honor an
-  // HBNF-local minimum cool-down recorded through the existing failure RPC.
-  if(shouldPauseForRateLimit(existingWeek,now))return {disposition:'source_backoff',date:binding.weekDate,cartIntent:'NOT_REQUESTED'};
-
+  // Atomic, independently readback-verified server-side claim. This uses the
+  // EXISTING cron; the DB gate enforces a >=5m cadence and is held until
+  // event-end by default. Missing schema, RPC, lease or readback = NO UDisc GET.
+  const claim = await claimUdiscEventFetch(fetchImpl,config,binding);
+  if(!claim.allowed) {
+    captureBoundary(deps,'source_gate',{allowed:false,eventId:binding.eventId});
+    return {disposition:'source_backoff',date:binding.weekDate,cartIntent:'NOT_REQUESTED'};
+  }
+  captureBoundary(deps,'source_gate',{allowed:true,eventId:binding.eventId});
+  const completion={outcome:'SOURCE_FAILED',httpStatus:null,retryAfterAt:null};
   const attemptedAt = now.toISOString();
   let casAttempted=false;
   try {
@@ -241,23 +253,27 @@ export async function runApprovedGlowSync(env, deps = {}) {
         if(attempt===0){await (deps.sleep|| (ms=>new Promise(resolve=>setTimeout(resolve,ms))))(350);continue;}
         throw Object.assign(Error('UDisc score export request timed out or failed.'),{code:'SOURCE_UNAVAILABLE'});
       }
+      completion.httpStatus=response.status;
+      // Both 429 and 503 Retry-After are persisted in the server gate, not
+      // inferred as a provider cursor or stored in a Worker global.
+      if((response.status===429||response.status===503)&&response.headers?.has('retry-after')) {
+        completion.outcome='RATE_LIMITED';
+        completion.retryAfterAt=providerRetryAfterAt(
+          response.headers.get('retry-after'),deps.now?.()||new Date(),binding.windowEnd);
+        throw Object.assign(Error('UDisc source deferred this request; no same-run retry.'),
+          {code:'SOURCE_RATE_LIMITED'});
+      }
       if([502,503,504].includes(response.status) && attempt===0){
-        // Honor explicit server back-pressure: do not immediately replay a
-        // request when UDisc supplies Retry-After. The existing failure status
-        // and event/cadence admission still govern any later scheduled attempt.
-        // A longer Retry-After needs independently approved durable hold state
-        // before any unattended production polling is enabled.
-        if(response.headers?.has('retry-after')){
-          throw Object.assign(Error('UDisc deferred this source request with Retry-After; no same-run retry.'),
-            {code:'SOURCE_RATE_LIMITED'});
-        }
         await (deps.sleep|| (ms=>new Promise(resolve=>setTimeout(resolve,ms))))(350);continue;
       }
       break;
     }
     const mime=(response.headers.get('content-type')||'').split(';',1)[0].trim().toLowerCase();
     captureBoundary(deps,'source_http',{status:response.status,xlsxContentType:mime===XLSX_TYPE});
-    if(response.status===429)throw Object.assign(Error('UDisc export rate-limited; no same-run retry.'),{code:'SOURCE_RATE_LIMITED'});
+    if(response.status===429){
+      completion.outcome='RATE_LIMITED';
+      throw Object.assign(Error('UDisc export rate-limited; no same-run retry.'),{code:'SOURCE_RATE_LIMITED'});
+    }
     if(!response.ok || response.status>=300&&response.status<400 || mime!==XLSX_TYPE) {
       throw Object.assign(Error('UDisc score export unavailable or incorrect content type.'),{code:'SOURCE_UNAVAILABLE'});
     }
@@ -295,6 +311,7 @@ export async function runApprovedGlowSync(env, deps = {}) {
       Array.isArray(row?.holeScores) && row.holeScores.some(score=>score!==null&&score!==''&&score!==undefined));
     if(!anyScoredHole) {
       captureBoundary(deps,'source_no_scores',{date:binding.weekDate,scoreWrite:false,cartIntent:false});
+      completion.outcome='SUCCESS';
       return {disposition:'no_scores_yet',date:binding.weekDate,rawXlsxSha256,cartIntent:'NOT_REQUESTED'};
     }
     if (proposal.issues?.unresolvedIdentityCount || proposal.issues?.duplicateCanonicalTeamRows) {
@@ -306,8 +323,10 @@ export async function runApprovedGlowSync(env, deps = {}) {
       // The original planner dedupes each four-minute Cart window; retry a
       // backend denial/reconnect using the SAME signed, persisted snapshot.
       // No new score CAS or failure-status mutation is permitted here.
-      if(!onVerifiedSaved)
+      if(!onVerifiedSaved) {
+        completion.outcome='SUCCESS';
         return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature,rawXlsxSha256};
+      }
       const rechecked=await readGlow(fetchImpl,config);
       const persistedWeek=rechecked.glow.weeks?.[binding.weekDate];
       if(rechecked.glow.activeWeek!==binding.weekDate||
@@ -319,6 +338,7 @@ export async function runApprovedGlowSync(env, deps = {}) {
       captureBoundary(deps,'persisted_readback',{verified:true,signature:prepared.signature,revision:rechecked.row.updated_at,casApplied:false});
       const cartIntent=await offerSavedGlowIntent({week:persistedWeek,revision:rechecked.row.updated_at,
         signature:prepared.signature,binding,now:deps.now?.() || new Date(),onVerifiedSaved,deps});
+      completion.outcome='SUCCESS';
       return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature,
         updatedAt:rechecked.row.updated_at,cartIntent};
     }
@@ -357,6 +377,7 @@ export async function runApprovedGlowSync(env, deps = {}) {
     // SECOND source/Cart fence check and cannot use this as device acceptance.
     const cartIntent=await offerSavedGlowIntent({week:savedWeek,revision:verified.row.updated_at,
       signature:prepared.signature,binding,now:deps.now?.() || new Date(),onVerifiedSaved,deps});
+    completion.outcome='SUCCESS';
     return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,
       rawXlsxSha256,hbnfLocalSequence:local.sequence,acceptedHoleChanges:local.acceptedChanges.length,
       teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at,cartIntent};
@@ -367,6 +388,7 @@ export async function runApprovedGlowSync(env, deps = {}) {
     // no-score event. This is not evidence that organizer setup failed.
     if(code==='EMPTY_EXPORT_NO_SCORES') {
       captureBoundary(deps,'source_no_scores',{date:binding.weekDate,scoreWrite:false,cartIntent:false});
+      completion.outcome='SUCCESS';
       return {disposition:'empty_export_no_scores',date:binding.weekDate,cartIntent:'NOT_REQUESTED'};
     }
     // The CAS may have rejected a concurrent writer, or succeeded but its
@@ -387,5 +409,13 @@ export async function runApprovedGlowSync(env, deps = {}) {
     captureBoundary(deps,'sync_failed',{code,failedStatusMutation:recorded?'recorded':'unverified'});
     if(!recorded)console.error('UDisc Glow failure status was not independently verified.');
     throw error;
+  } finally {
+    // Every claimed attempt releases only through the server's matching
+    // one-time token. A failed finish/readback throws, leaving the pre-request
+    // beyond-window hold intact (never silently retry the next cron minute).
+    const confirmed=await completeUdiscEventFetch(
+      fetchImpl,config,binding,claim.token,completion.outcome,
+      completion.httpStatus,completion.retryAfterAt);
+    captureBoundary(deps,'source_gate_finished',{confirmed:confirmed.confirmed,outcome:completion.outcome});
   }
 }
