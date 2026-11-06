@@ -104,9 +104,9 @@ export async function stageExecutableVersion({
   fail(typeof requireParentAdmission==='function'&&
     typeof requireProviderCompleteInventory==='function'&&
     typeof requireFreshFiveTargetPreimage==='function','PARENT_PROOF_CALLBACKS');
-  await requireParentAdmission(parentRecord);
-  await requireProviderCompleteInventory(installedPaths,installedDigests);
-  await requireFreshFiveTargetPreimage();
+  fail((await requireParentAdmission(parentRecord))===true,'PARENT_NOT_ADMITTED');
+  fail((await requireProviderCompleteInventory(installedPaths,installedDigests))===true,'COMPLETE_ASSETS_NOT_PROVEN');
+  fail((await requireFreshFiveTargetPreimage())===true,'FIVE_TARGET_PREIMAGE_NOT_FRESH');
   const c=apiClient({token,accountId,workerName,fetchImpl});
   const worker=await c.call(c.worker);
   fail(uuid.test(worker?.id)&&worker?.name===workerName,'WORKER_ID');
@@ -139,7 +139,7 @@ export async function stageExecutableVersion({
   fail(completion?.length>15&&(!session.buckets.length||completion!==session.jwt),'UPLOAD_INCOMPLETE');
   const result=buildExactVersion({assets,installedPaths,installedDigests,changedPath,
     modules,moduleDigests,settings,baselineVersionId,assetJwt:completion});
-  await requireFreshFiveTargetPreimage();
+  fail((await requireFreshFiveTargetPreimage())===true,'FIVE_TARGET_PREIMAGE_NOT_FRESH');
   const justBefore=await c.call(c.script+'/deployments');
   fail(justBefore?.deployments?.[0]?.versions?.[0]?.version_id===baselineVersionId&&
     justBefore.deployments[0].versions[0].percentage===100,'PRECREATE_DRIFT');
@@ -160,7 +160,8 @@ export async function deployRetainedVersion({token,accountId,workerName='hbnf',f
   targetVersionId,currentVersionId,manifestSha256,verifyExclusiveParentClaim}){
   fail(hex64.test(manifestSha256||'')&&
     typeof verifyExclusiveParentClaim==='function','PARENT_CLAIM');
-  await verifyExclusiveParentClaim(manifestSha256,currentVersionId,targetVersionId);
+  fail((await verifyExclusiveParentClaim(manifestSha256,currentVersionId,targetVersionId))===true,
+    'EXCLUSIVE_PARENT_CLAIM_NOT_GRANTED');
   const c=apiClient({token,accountId,workerName,fetchImpl});
   const before=await c.call(c.script+'/deployments');
   fail(before?.deployments?.[0]?.versions?.length===1&&
