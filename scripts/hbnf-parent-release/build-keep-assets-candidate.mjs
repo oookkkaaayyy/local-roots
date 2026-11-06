@@ -82,17 +82,20 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
     assets:{config:{base_path:'/',run_worker_first:runWorkerFirst}},
     bindings:[{name:'ASSETS',type:'assets'},
       ...workerSettings.bindings.filter(b=>b.name!=='ASSETS').map(b=>({name:b.name,type:'inherit'}))]};
-  const result={schema:'hbnf.cloudflare.keep-assets-candidate.v1',status:'LOCAL_CANDIDATE_NOT_UPLOADED',
+  const result={schema:'hbnf.cloudflare.keep-assets-candidate.v1',status:'BLOCKED_LEGACY_API_ROUTE_CONFIG_NOT_PROVIDER_VERIFIED',
     baselineVersionId:versionId,sourceCaptureSha256:capture.source.sha256,
     originalModuleSha256:sha(parts.get('index.js')),originalMapSha256:sha(parts.get('index.js.map')),
     helperSha256:sha(Buffer.from(helper)),candidateModuleSha256:sha(Buffer.from(patched)),
     unchangedMap:true,metadata,modules:[{name:'index.js',content_type:'application/javascript+module',content_base64:Buffer.from(patched).toString('base64')},{name:'index.js.map',content_type:'application/source-map',content_base64:parts.get('index.js.map').toString('base64')}],
     API:{method:'POST',path:`/accounts/<account>/workers/scripts/hbnf/versions?bindings_inherit=strict`,encoding:'multipart/form-data',
+      uploadEligible:false,
       deploymentIsSeparateOperation:true,
     inheritance:'legacy endpoint type=inherit resolves latest; require authenticated latest and active version IDs both equal v348 immediately before version creation',
-      metadataFields:{keep_assets:true,assetsConfig:metadata.assets.config},providerRetentionReadbackRequired:true},
-    preservation:{assetCollection:'provider-retained via keep_assets; no inventory reconstruction',
-      cartAssets:'retained as part of unchanged provider collection; byte identities not independently enumerated',
+      metadataFields:{keep_assets:true,assetsConfig:metadata.assets.config},
+      routeConfig:'requested in metadata but not supported by the published legacy endpoint schema; authenticated v349 readback omitted /glow-save-sync.mjs',
+      providerRetentionReadbackRequired:true},
+    preservation:{assetCollection:'keep_assets requested; provider asset identity and file bytes not enumerated',
+      cartAssets:'separate Worker routes; no Cart asset mutation or byte-level verification in this HBNF operation',
       otherWorkerPaths:'existing index.js retained except helper dispatch addition; routing list retains /api/* and /internal/*',
       cron:'existing scheduled handler source unchanged',rollbackVersionId:versionId},
     lineage:{activeVersionId:workerSettings.activeVersionId,latestVersionId:workerSettings.latestVersionId,
@@ -102,8 +105,11 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
       versionListOrder:workerSettings.versionListOrder,
       newestFirstVerified:workerSettings.newestFirstVerified===true,
       latestVersionGuard:'PASS_FOR_CAPTURE_ONLY_RECHECK_BEFORE_VERSION_CREATE'},
-    acceptance:{versionCreationEndpointKeepAssetsSemantics:'DOCUMENTED_NOT_LIVE_VERIFIED',
-      moduleResponseFixture:'NOT_YET_RUN',retainedRollbackReadback:'NOT_YET_RUN',productionAdmission:'NOT_ADMITTED'}};
+    acceptance:{versionCreationEndpointKeepAssetsSemantics:'DOCUMENTED_REQUEST_ACCEPTED; ASSET FILES NOT ENUMERATED',
+      helperWorkerFirstReadback:'FAIL: provider readback omitted /glow-save-sync.mjs',
+      releaseEligible:false,
+      moduleResponseFixture:'LOCAL_FOCUSED_FIXTURE_PASS; NOT PROVIDER OR BROWSER ACCEPTANCE',
+      v348RetainedInVersionList:true,restoreExecution:'NOT_TESTED',productionAdmission:'NOT_ADMITTED'}};
   const boundary='hbnf-keep-assets-'+sha(Buffer.from(patched)).slice(0,24);
   const chunks=[];
   const part=(name,type,body)=>{

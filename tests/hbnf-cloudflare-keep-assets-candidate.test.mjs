@@ -61,9 +61,13 @@ test('other assets and API paths preserve the original Worker ASSETS dispatch',a
  }
 });
 
-test('candidate uses keep_assets metadata, selective routing and exact latest lineage guard',()=>{
- assert.equal(built.result.status,'LOCAL_CANDIDATE_NOT_UPLOADED');
+test('candidate is fail-closed when legacy route metadata cannot activate the helper',()=>{
+ assert.equal(built.result.status,'BLOCKED_LEGACY_API_ROUTE_CONFIG_NOT_PROVIDER_VERIFIED');
  assert.equal(built.result.baselineVersionId,versionId);
+ assert.equal(built.result.API.uploadEligible,false);
+ assert.equal(built.result.acceptance.releaseEligible,false);
+ assert.equal(built.result.acceptance.v348RetainedInVersionList,true);
+ assert.equal(built.result.acceptance.restoreExecution,'NOT_TESTED');
  assert.equal(built.metadata.keep_assets,true);
  assert.deepEqual(built.metadata.assets.config.run_worker_first,['/api/*','/internal/*','/glow-save-sync.mjs']);
  assert.equal(built.metadata.compatibility_date,'2026-07-28');
@@ -72,7 +76,7 @@ test('candidate uses keep_assets metadata, selective routing and exact latest li
  assert.equal(built.result.lineage.activeVersionId,versionId);
  assert.equal(built.result.lineage.latestVersionId,versionId);
  assert.equal(built.result.API.path.endsWith('?bindings_inherit=strict'),true);
- assert.equal(built.result.preservation.cartAssets.includes('not independently enumerated'),true);
+ assert.match(built.result.preservation.cartAssets,/separate Worker routes/);
  assert.equal(built.result.acceptance.productionAdmission,'NOT_ADMITTED');
  assert.throws(()=>buildKeepAssetsCandidate({capture:captureFixture(),helper,
   workerSettings:{...settings,latestVersionId:'0506298c-6cf5-48ea-a5ff-ea3c1bdc4341'}}),/INHERITED_BINDING_LATEST_NOT_ACTIVE_V348/);
