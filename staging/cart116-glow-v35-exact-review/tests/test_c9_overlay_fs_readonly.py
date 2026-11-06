@@ -38,9 +38,19 @@ with tempfile.TemporaryDirectory(dir="/tmp",prefix="cart116-c9-rehearsal-") as d
               "overlayfs:/overlay / overlay rw,noatime,lowerdir=/,upperdir=/overlay/upper,workdir=/overlay/work 0 0\n")
     mounts.write_text(actual)
     assert call(True).returncode == 0
+    # A separate *unrelated* nested mount must NOT block the actual six-file
+    # release. Only the recovery journal or any of the exact six files matters.
+    mounts.write_text(actual + "tmpfs /root/unrelated-cache tmpfs rw 0 0\n")
+    assert call(True).returncode == 0
+    mounts.write_text(actual + "tmpfs /www/unrelated-site tmpfs rw 0 0\n")
+    assert call(True).returncode == 0
     mounts.write_text(actual + "tmpfs /root tmpfs rw 0 0\n")
     call(False)
+    mounts.write_text(actual + "tmpfs /root/cart116-controls-recovery/old tmpfs rw 0 0\n")
+    call(False)
     mounts.write_text(actual + "tmpfs /www/mission-control-local tmpfs rw 0 0\n")
+    call(False)
+    mounts.write_text(actual + "tmpfs /www/mission-control-local/owner-pwa/hbnf-cart.js tmpfs rw 0 0\n")
     call(False)
     mounts.write_text(actual)
     assert call(True).returncode == 0
