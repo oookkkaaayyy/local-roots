@@ -410,3 +410,18 @@ test("JS FOLLOW_MATRIX and VIBE_REACTIVE independently fail dark on stale, disco
   assert.deepEqual(read("MANUAL", {}), [184, 64]);
   assert.deepEqual(nextUvOutputs(state, { ...config, hardwareAvailable: false }, { matrixFresh: true, matrixBrightness: 255 }).map(x => x.brightness), [0, 0]);
 });
+
+
+test("owner override cannot illuminate UV on stale or silent audio", () => {
+  const config = { enabled: true, hardwareAvailable: true, maxBrightness: 255, rampPerTick: 4, segmentIds: [1, 2] };
+  const state = { mode: "FOLLOW_MATRIX", ownerOverrideBySegment: { 1: 200, 2: 100 }, currentOutputBySegment: { 1: 190, 2: 90 } };
+  for (const [mode, inputs] of [
+    ["FOLLOW_MATRIX", { matrixFresh: false, matrixBrightness: 255 }],
+    ["FOLLOW_MATRIX", { matrixFresh: true, matrixBrightness: 0 }],
+    ["FOLLOW_MATRIX", { matrixFresh: true, matrixBrightness: "255" }],
+    ["VIBE_REACTIVE", { vibeFresh: false, vibeEnvelope: 255 }],
+    ["VIBE_REACTIVE", { vibeFresh: true, vibeEnvelope: 0 }],
+  ]) {
+    assert.deepEqual(nextUvOutputs({ ...state, mode }, config, inputs).map(x => x.brightness), [0, 0], mode);
+  }
+});
