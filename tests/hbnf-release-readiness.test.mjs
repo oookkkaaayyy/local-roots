@@ -1,0 +1,94 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+ checkReleaseReadiness,ORIGINAL_MANIFEST_ID,REV10_SHA256,REV10_HEAD
+} from '../scripts/hbnf-parent-release/release-readiness.mjs';
+const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
+const manifest={
+ manifestRevision:10,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
+ status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
+ source:{currentScoringReviewHead:REV10_HEAD},
+ targets:[
+  {id:'supabase-schema'},{id:'edge-tag-editor'},
+  {id:'edge-tags-live'},{id:'edge-watch-score'},
+  {id:'cloudflare-worker',lastAuthenticatedVersionId:workerVersion,
+   lastAuthenticatedScriptEtag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25',
+   candidate:{driveId:'1ZD0it8FgFpgvmlHKUa2byIqeK81bq1_q'}}
+ ]
+};
+const stage={
+ scope:'cloudflare-only',parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:10,
+ nonWorkerTargetsUnmodified:true,parentContractAllowsIndependentStage:true,
+ targets:['cloudflare-worker'],operations:[{id:'worker-vnext'}],
+ otherTargetReadbacks:['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score']
+  .map(id=>({id,sha256:hex,fresh:true})),
+ executable:{
+  format:'cloudflare-worker-version-multipart',sha256:hex,bytes:100,
+  privateDriveFileId:'synthetic-executable-byte-backed',
+  downloadBackVerified:true,moduleClosureVerified:true,sourceParityVerified:true,
+  glowHelperSha256:'674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
+  glowHelperGitBlob:'a355ad13d5026551629f085060c636b60ccb8560',
+  assetStrategy:'complete-manifest-upload',providerAssetInventoryExhaustive:true,
+  changedGlowHelperUploaded:true,eightNewerCartAssetsPreserved:true,
+  completeAssetManifestSha256:hex,assetUploadCompletionVerified:true
+ }
+};
+const provider={
+ version:workerVersion,
+ etag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25',
+ retainedRollbackVersion:true,routesCronBindingsMatch:true,
+ freshAuthenticatedFiveTargetReadback:true
+};
+const adapter={
+ upload:'cloudflare-version-multipart',deploy:'percentage-100',
+ restore:'retained-v348-percentage-100',nonproductionApplyRestoreReadbackPassed:true,
+ authenticationVerified:true,recoveryDownloadBackVerified:true,
+ oneTimeClaimVerified:true,twoPhaseAdmissionVerified:true,
+ immediatePrechangeReadbackVerified:true,
+ oldClientAndReopenAcceptanceReady:true,sameManifestCloseoutReady:true
+};
+const clone=x=>structuredClone(x);
+const checked=(overrides={})=>checkReleaseReadiness({
+ manifest:clone(manifest),manifestFileId:ORIGINAL_MANIFEST_ID,
+ sourceHead:REV10_HEAD,stage:clone(stage),
+ provider:clone(provider),adapter:clone(adapter),synthetic:true,
+ ...overrides
+});
+test('rev10 private source digest is exact immutable preimage, not a CI approval',()=>{
+ assert.equal(REV10_SHA256,'3e47e036c7d901b20815032995533a20d11628c39de8acd646fcf936a3ec6a73');
+ const result=checked();
+ assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
+ assert.equal(result.canMutate,false);
+});
+test('historical five-target driver refuses review ZIP as one worker stage',()=>{
+ const before=clone(stage);
+ before.scope='five-target';before.targets=['cloudflare-worker'];
+ before.executable={...before.executable,privateDriveFileId:'1ZD0it8FgFpgvmlHKUa2byIqeK81bq1_q'};
+ const result=checked({stage:before});
+ assert.equal(result.status,'BLOCKED');
+ assert.ok(result.errors.includes('FIVE_TARGET_DRIVER_REQUIRES_SEVEN_STAGES'));
+ assert.ok(result.errors.includes('ONEFILE_REVIEW_ZIP_NOT_EXECUTABLE_WORKER'));
+});
+test('cloud-only is subordinate and requires exact complete executable/static assets',()=>{
+ for(const mutation of [
+  s=>{s.parentContractAllowsIndependentStage=false;},
+  s=>{s.otherTargetReadbacks.pop();},
+  s=>{s.executable.assetStrategy='keep-assets';},
+  s=>{s.executable.providerAssetInventoryExhaustive=false;},
+  s=>{s.executable.changedGlowHelperUploaded=false;},
+  s=>{s.executable.moduleClosureVerified=false;},
+  s=>{s.executable.glowHelperSha256=hex;}
+ ]) {
+  const candidate=clone(stage);mutation(candidate);
+  assert.equal(checked({stage:candidate}).status,'BLOCKED');
+ }
+});
+test('stale actual PR HEAD, missing private manifest, missing rollback and missing closeout all fail',()=>{
+ assert.equal(checked({sourceHead:'b'.repeat(40)}).status,'BLOCKED');
+ const live=checked({synthetic:false});
+ assert.ok(live.errors.includes('PRIVATE_REV10_MANIFEST_BYTES_NOT_VERIFIED'));
+ const noRollback=clone(provider);noRollback.retainedRollbackVersion=false;
+ assert.equal(checked({provider:noRollback}).status,'BLOCKED');
+ const noCloseout=clone(adapter);noCloseout.sameManifestCloseoutReady=false;
+ assert.equal(checked({adapter:noCloseout}).status,'BLOCKED');
+});
