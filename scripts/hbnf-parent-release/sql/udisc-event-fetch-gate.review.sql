@@ -4,7 +4,7 @@
 -- This gate is used BY THE EXISTING minute cron; it creates NO scheduler.
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS public.hbnf_udisc_glow_fetch_gate (
+CREATE TABLE public.hbnf_udisc_glow_fetch_gate (
   event_id text PRIMARY KEY,
   week_date text NOT NULL UNIQUE,
   attempt_token uuid,
@@ -51,7 +51,7 @@ BEGIN
   SELECT count(*), min(window_start), max(window_end)
     INTO v_matches, v_window_start, v_window_end
     FROM public.hbnf_udisc_glow_event_bindings
-   WHERE event_id=p_event_id AND event_date=p_week_date
+   WHERE event_id=p_event_id AND event_date=p_week_date::date
      AND window_start<=v_now AND window_end>=v_now;
   IF v_matches <> 1 THEN
     RETURN jsonb_build_object('allowed',false,'reason','event_not_active_or_ambiguous');
@@ -105,7 +105,7 @@ BEGIN
   IF p_attempt_token IS NULL
      OR p_outcome NOT IN ('SUCCESS','SOURCE_FAILED','RATE_LIMITED')
      OR p_http_status IS NOT NULL AND (p_http_status<100 OR p_http_status>599)
-     OR p_outcome='RATE_LIMITED' AND p_http_status NOT IN (429,503)
+     OR p_outcome='RATE_LIMITED' AND (p_http_status IS NULL OR p_http_status NOT IN (429,503))
      OR p_retry_after_at IS NOT NULL AND p_outcome<>'RATE_LIMITED' THEN
     RETURN jsonb_build_object('recorded',false,'reason','invalid_completion');
   END IF;
@@ -138,13 +138,39 @@ GRANT EXECUTE ON FUNCTION public.hbnf_claim_udisc_glow_fetch(text,text)
 GRANT EXECUTE ON FUNCTION public.hbnf_finish_udisc_glow_fetch(text,text,uuid,text,integer,timestamptz)
   TO service_role;
 
--- The existing installed failure-status RPC currently silently converts the
--- literal SOURCE_RATE_LIMITED to SYNC_FAILED. Admission must update that RPC's
--- existing four-code allowlist to include SOURCE_RATE_LIMITED, retaining its
--- original owner, arguments, SECURITY DEFINER, grants and complete body.
--- Do NOT publish a broad replacement based on an assumed historical schema.
--- The NEW fetch gate is authoritative for timing; this diagnosis is separately
--- confirmed in the rev8 manifest and must be resolved in its installed RPC
--- before the automated source is enabled.
+-- Update exactly ONE case in the ACTUAL installed failure-status RPC. The
+-- digest is from authenticated read-only pg_get_functiondef on Nov 5; if the
+-- installed body changed, abort the whole transaction with no schema changes.
+-- CREATE OR REPLACE preserves the function's installed ACL and ownership.
+DO $patch$
+DECLARE
+  v_installed text;
+  v_revised text;
+  v_old text := '''SOURCE_UNAVAILABLE'', ''SOURCE_PARSE_FAILED'', ''IDENTITY_REVIEW_REQUIRED'',
+    ''SAVE_CONFLICT'', ''SYNC_FAILED''';
+  v_new text := '''SOURCE_UNAVAILABLE'', ''SOURCE_PARSE_FAILED'', ''IDENTITY_REVIEW_REQUIRED'',
+    ''SOURCE_RATE_LIMITED'', ''SAVE_CONFLICT'', ''SYNC_FAILED''';
+BEGIN
+  SELECT pg_get_functiondef(p.oid) INTO v_installed
+    FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='hbnf_record_udisc_glow_sync_status'
+     AND pg_get_function_identity_arguments(p.oid)=
+       'p_week_date text, p_expected_active_week text, p_attempted_at timestamp with time zone, p_error_code text';
+  IF v_installed IS NULL OR md5(v_installed) <> '636ea2b92a9b1e6339a91e5e2eb9cec6' THEN
+    RAISE EXCEPTION 'UDISC_STATUS_RPC_PREIMAGE_DRIFT_NO_CHANGE';
+  END IF;
+  v_revised := replace(v_installed,v_old,v_new);
+  IF v_revised = v_installed OR position('SOURCE_RATE_LIMITED' in v_installed)>0 THEN
+    RAISE EXCEPTION 'UDISC_STATUS_RPC_ALLOWLIST_AMBIGUOUS_NO_CHANGE';
+  END IF;
+  EXECUTE v_revised;
+  IF NOT has_function_privilege('service_role',
+    'public.hbnf_record_udisc_glow_sync_status(text,text,timestamptz,text)','EXECUTE')
+     OR has_function_privilege('anon',
+    'public.hbnf_record_udisc_glow_sync_status(text,text,timestamptz,text)','EXECUTE') THEN
+    RAISE EXCEPTION 'UDISC_STATUS_RPC_ACL_CHANGED_NO_CHANGE';
+  END IF;
+END
+$patch$;
 
 COMMIT;
