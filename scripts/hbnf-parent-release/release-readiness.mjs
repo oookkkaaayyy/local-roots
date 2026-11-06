@@ -96,3 +96,38 @@ export function checkReleaseReadiness({
  return {status:errors.length?'BLOCKED':synthetic?'SYNTHETIC_ROUTE_TEST_ONLY':'READY_FOR_EXTERNAL_ADMISSION_VERIFICATION',
    canMutate:false,errors};
 }
+
+/** Nonproduction-only executable route drill. Never accepts real provider
+ * adapters or authorizes a live release. Ambiguous deploys restore v348.
+ * A passing result proves control flow only, NOT installed acceptance. */
+export async function exerciseCloudflareStageTestOnly(stage,mock,bytes){
+ if(mock?.testOnly!==true||mock?.noNetwork!==true||
+    ['read','upload','deploy','restore'].some(k=>typeof mock[k]!=='function'))
+   throw Error('NONPRODUCTION_ADAPTER_ONLY');
+ if(sha256(bytes)!==stage?.executable?.sha256)
+   throw Error('EXECUTABLE_PAYLOAD_HASH_MISMATCH');
+ const initial=await mock.read();
+ if(initial?.version!==V348)throw Error('BASELINE_NOT_V348');
+ let deployed=false,disposition='REJECTED';
+ try{
+   const uploaded=await mock.upload(bytes,stage);
+   if(!uploaded?.version||uploaded.version===V348)throw Error('VERSION_UPLOAD_NOT_VERIFIED');
+   deployed=true; // An ambiguous deploy must be treated as potentially applied.
+   await mock.deploy(uploaded.version);
+   const observed=await mock.read();
+   if(observed?.version!==uploaded.version||
+      observed?.scriptSha256!==stage.executable.sha256)
+     throw Error('NEW_VERSION_READBACK_FAILED');
+   disposition='TEST_ONLY_APPLY_VERIFIED';
+ }catch{
+   disposition='TEST_ONLY_APPLY_FAILED';
+ }finally{
+   if(deployed){
+     try{await mock.restore(V348);}
+     catch{throw Error('TEST_ONLY_ROLLBACK_UNCERTAIN');}
+     const restored=await mock.read();
+     if(restored?.version!==V348)throw Error('TEST_ONLY_ROLLBACK_READBACK_FAILED');
+   }
+ }
+ return {status:disposition,restoredTo:V348,productionMutation:false};
+}
