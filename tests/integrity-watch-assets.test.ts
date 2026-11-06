@@ -272,3 +272,22 @@ test('preserves imports inside nested template interpolation and excludes regexp
   ].join('\n');
   assert.deepEqual(findJsAssetImports(sample, entry, origin), [origin + '/assets/nested.js']);
 });
+
+test('genuine rejected import reports the exact executable specifier without reporting string copy', () => {
+  const entry = origin + '/assets/index.js';
+  const source = [
+    "console.warn(\"Add `import '@supabase/supabase-js/tracing'` to your app\");",
+    'const actual=()=>import("https://evil.example/assets/blocked.js");',
+  ].join('');
+  let rejected = null;
+  try { findJsAssetImports(source, entry, origin); }
+  catch (error) {
+    assert.equal(error.message, 'frontend_import_origin_or_path_mismatch');
+    rejected = error.rejectedImport;
+  }
+  assert.ok(rejected, 'expected rejected import details');
+  assert.equal(rejected.source_asset_url, entry);
+  assert.equal(rejected.specifier, 'https://evil.example/assets/blocked.js');
+  assert.equal(rejected.resolved_url, 'https://evil.example/assets/blocked.js');
+  assert.ok(rejected.source_offset > 0);
+});
