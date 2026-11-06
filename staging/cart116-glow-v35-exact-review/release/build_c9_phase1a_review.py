@@ -98,6 +98,6 @@ def emit(out):
 if __name__ == "__main__":
     assert len(sys.argv) == 2, "usage: build_c9_phase1a_review.py /tmp/cart116-c9-review-*.zip"
     target = pathlib.Path(sys.argv[1]).resolve()
-    assert target.parent == pathlib.Path("/tmp") and target.name.startswith("cart116-c9-review-") and target.suffix == ".zip"
+    assert target.parent == pathlib.Path("/tmp").resolve() and target.name.startswith("cart116-c9-review-") and target.suffix == ".zip"
     assert not target.exists(), "refuse overwrite"
     emit(target)
