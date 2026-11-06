@@ -242,3 +242,33 @@ test('ignores import/export examples in quoted strings, comments and template co
     /frontend_import_origin_or_path_mismatch/,
   );
 });
+
+test('accepts real Vite imports while ignoring Supabase tracing warning inside a compiled JS string', async () => {
+  const entry = origin + '/assets/index.js';
+  const lazy = origin + '/assets/LegacyRoutes.js';
+  const source = [
+    'import{r as D}from"./index.js";',
+    "const rx=/[\"']/g;",
+    "console.warn(\"Add `import '@supabase/supabase-js/tracing'` at your application entry point\");",
+    'const route=()=>import("./LegacyRoutes.js");',
+  ].join('');
+  const result = await readFrontendGraph(entry, fetcher({
+    [entry]: source,
+    [lazy]: 'Past events & results; PDGA Results;',
+  }), origin);
+  assert.deepEqual(result.urls, [entry, lazy]);
+  assert.ok(result.bundle.includes('Past events & results'));
+  assert.deepEqual(findJsAssetImports(source, entry, origin), [entry, lazy]);
+  assert.throws(() => findJsAssetImports(source + 'import("https://evil.example/assets/actual.js")', entry, origin),
+    /frontend_import_origin_or_path_mismatch/);
+});
+
+test('preserves imports inside nested template interpolation and excludes regexp and comment copy', () => {
+  const entry = origin + '/assets/index.js';
+  const sample = [
+    'const rx=/import\\("https:\\/\\/evil.example\\/assets\\/ghost.js"\\)/;',
+    'const text=`import("../fake.js") ${({v:`${import("./nested.js")}`}).v}`;',
+    '// import("../ignored.js")',
+  ].join('\n');
+  assert.deepEqual(findJsAssetImports(sample, entry, origin), [origin + '/assets/nested.js']);
+});
