@@ -109,6 +109,8 @@ function executableImportStarts(source) {
       if (character === '*' && next === '/') { contexts.pop(); i++; }
     }
   }
+  // A line comment ending at EOF is valid JavaScript, not an unclosed token.
+  if (contexts[contexts.length - 1].kind === 'line-comment') contexts.pop();
   if (contexts.length !== 1 || contexts[0].kind !== 'code') {
     throw new Error('frontend_import_lexical_unclosed');
   }
