@@ -91,8 +91,7 @@ begin
     where id = 1;
   return jsonb_build_object('recorded', true, 'weekDate', p_week_date);
 end;
-$function$
-
+$function$;
 
 REVOKE EXECUTE ON FUNCTION public.hbnf_record_udisc_glow_sync_status(text,text,timestamptz,text)
  FROM PUBLIC, anon, authenticated;
