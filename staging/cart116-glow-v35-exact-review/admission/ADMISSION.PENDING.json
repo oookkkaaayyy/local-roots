@@ -2830,7 +2830,16 @@
       "Current SQL signatures/installed state and guarded no-op rollback preflight",
       "Actual genuine source-readback eligibility and device/Owner approval; no automatic Cart actuation until physical acceptance",
       "One-manifest phase0/pre-change/post-change/receipt"
-    ]
+    ],
+    "final_validated_source": {
+      "exact_head": "ddc3efab0076bc923cdc17d14fdca1f679dc83ec",
+      "sql_sha1": "545c1e5bdbd96f631007f6f9f1fdbc84c47a8bc1",
+      "ci_native_run": 42140758017,
+      "ci_native_result": "PASS PostgreSQL17.11 guarded race/TTL/role/rollback and Deno 8/8",
+      "ci_focused_run": 42140758115,
+      "ci_focused_result": "PASS 12/12 Node and all changed/retained source Git digest",
+      "release_status": "REVIEW_ONLY; No C8 SQL/Edge installed"
+    }
   },
   "device_evidence_20261105_1640_pacific": {
     "source": "Owner-collected actual HTTP device readback JSON via Mac HBNF-Cart LAN, independently SHA256 verified on attached bytes; user-reported approximate collection time",
@@ -2891,5 +2900,22 @@
     "private_full_backup_downloadback": false,
     "one_combined_field": "NOT_PERFORMED",
     "uv_physical": "AS_WIRED_OWNER_REPORT_BOTH_UV_ON_WHEN_AUX_POWERED"
+  },
+  "c8_provider_recovery_20261105": {
+    "source": "Authenticated current connected Supabase Edge get + public pg_proc/to_regclass read-only and exact existing Git rollback tree compare",
+    "edge_slug": "hbnf-cart-control",
+    "edge_version": 35,
+    "compiled_sha256": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+    "edge_files_source_equivalent": 10,
+    "edge_files_source_exact_match": 10,
+    "git_rollback_root": "staging/cart116-glow-v35-exact-review/rollback-v35/",
+    "compiled_bundle_independent_download_back": false,
+    "provider_source_git_parity": true,
+    "provider_sql_c8_rpc_count": 0,
+    "provider_c8_overlay_challenges_table_present": false,
+    "source_only_rollback_not_byte_identical_binary": true,
+    "provider_changed": false,
+    "phase0_admitted": false,
+    "release_not_done": true
   }
 }
