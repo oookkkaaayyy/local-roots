@@ -13,7 +13,7 @@ import sys
 ROOT=pathlib.Path("staging/cart116-glow-v35-exact-review")
 EXPECTED={
  "planner":("candidate-source/hbnf-glow-cart-intent.mjs","cb40cfaa1e912b971ed5941d9226cf2b39445e8e"),
- "sql_up":("migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql","8f93bedb23230ec61e52d375bb4409b83642f7fc"),
+ "sql_up":("migrations/20261103_cart_glow_overlay_v1_REVIEW_ONLY.sql","545c1e5bdbd96f631007f6f9f1fdbc84c47a8bc1"),
  "node_contract_fixture":("tests/native-release/c7-source-intent-contract.test.mjs","e188689349fabae05a9486a332a5cc8651d97bb2"),
  "pg17_contract_fixture":("tests/native-release/c7-pg-source-cas.sh","667e51d64f1c8adc8116c3c043ec53828bc75c5a"),
 }
@@ -58,7 +58,7 @@ def verify():
  check("SAVED_SOURCE_REVISION_NOT_CONFIRMED" in planner,"Live planner rejection missing")
  check("v.cursor===lineage?.cursor" in planner,"C8 latest scored cursor binding missing")
  check(up.count("score->>'cursor'=v_week#>>'{udiscLive,cursor}'")==2,"Snapshot and commit must independently bind latest scored cursor")
- check(up.count("CREATE FUNCTION public.hbnf_cart_commit_glow_intent(")==1 and up.count("COMMIT;")==1,"C8 SQL duplicated or malformed release boundary")
+ check(up.count("CREATE FUNCTION public.hbnf_cart_commit_glow_intent(")==1 and up.count("\nCOMMIT;\n")==1 and up.count("$commit$")==2 and up.count("$snapshot$")==2,"C8 SQL duplicated or malformed release boundary")
  check("AND score->>'strokes' ~ '^[0-9]{1,2}
  check("UDisc event XLSX export" not in planner,"Manual XLSX accepted by LIVE planner")
  check("UDisc event XLSX export" in up and "HISTORICAL_PREVIEW_ONLY_NO_ACTUATION" in up,
