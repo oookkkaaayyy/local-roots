@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { assertTrustedResponseOrigin, readCssAsset, readFrontendGraph } from "./frontend-assets.mjs";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -10,7 +11,7 @@ const REQUIRED_FRONTEND_MARKERS = [
   "Past events & results",
   "Upcoming events",
   "Add to Calendar",
-  "PDGA Results ↗",
+  "PDGA Results",
   "On Local Roots",
   "Official link",
   "Full Results",
@@ -53,6 +54,15 @@ Deno.serve(async (req) => {
   const verified = await service.rpc("lr_verify_integrity_sync_secret", { p_token: token });
   if (verified.error || verified.data !== true) return json({ error: "unauthorized" }, 401);
 
+  // Add the same durable, deduplicated event-field checks used by the admin
+  // review queue before launch readiness can fail. This keeps completeness
+  // findings actionable even while another readiness check blocks launch.
+  const fieldReviews = await service.rpc("lr_enqueue_event_field_reviews", { p_horizon_days: 60 });
+  if (fieldReviews.error) {
+    console.error("lr-integrity-watch event-field-review", fieldReviews.error.message);
+    return json({ error: "event_field_review_failed" }, 500);
+  }
+
   const readiness = await service.rpc("lr_launch_readiness");
   if (readiness.error || !readiness.data) {
     console.error("lr-integrity-watch readiness", readiness.error?.message);
@@ -68,16 +78,19 @@ Deno.serve(async (req) => {
   let stagingHsts: string | null = null;
   let frontendBundleOk = false;
   let frontendBundleUrl: string | null = null;
+  let frontendAssetUrls: string[] = [];
   let missingFrontendMarkers = [...REQUIRED_FRONTEND_MARKERS];
   let cssBundleOk = false;
   let cssBundleUrl: string | null = null;
   let missingCssMarkers = [...REQUIRED_CSS_MARKERS];
 
   try {
+    const expectedOrigin = new URL(STAGING_URL).origin;
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
-      redirect: "follow",
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
+      redirect: "error",
     });
+    assertTrustedResponseOrigin(response, expectedOrigin, "staging_html");
     stagingStatus = response.status;
     stagingRobotsTag = response.headers.get("x-robots-tag");
     stagingFrameOptions = response.headers.get("x-frame-options");
@@ -96,28 +109,31 @@ Deno.serve(async (req) => {
     const scriptMatch = body.match(/<script[^>]+src=["']([^"']+\.js)["']/i);
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
-      const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
-        redirect: "follow",
-      });
-      if (bundleResponse.ok) {
-        const bundle = await bundleResponse.text();
-        missingFrontendMarkers = REQUIRED_FRONTEND_MARKERS.filter((marker) => !bundle.includes(marker));
+      try {
+        const graph = await readFrontendGraph(frontendBundleUrl, (url, init) => fetch(url, {
+          ...init,
+          headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
+        }), expectedOrigin);
+        frontendAssetUrls = graph.urls;
+        missingFrontendMarkers = REQUIRED_FRONTEND_MARKERS.filter((marker) => !graph.bundle.includes(marker));
         frontendBundleOk = missingFrontendMarkers.length === 0;
+      } catch (error) {
+        console.error("lr-integrity-watch frontend assets", error instanceof Error ? error.message : String(error));
       }
     }
 
     const cssMatch = body.match(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/i);
     if (shellOk && cssMatch?.[1]) {
-      cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
-      const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
-        redirect: "follow",
-      });
-      if (cssResponse.ok) {
-        const normalizedCss = (await cssResponse.text()).replace(/\s+/g, "");
-        missingCssMarkers = REQUIRED_CSS_MARKERS.filter((marker) => !normalizedCss.includes(marker));
+      try {
+        const css = await readCssAsset(cssMatch[1], STAGING_URL, (url, init) => fetch(url, {
+          ...init,
+          headers: { "User-Agent": "LocalRootsIntegrityWatch/11.0" },
+        }), expectedOrigin);
+        cssBundleUrl = css.url;
+        missingCssMarkers = REQUIRED_CSS_MARKERS.filter((marker) => !css.normalizedCss.includes(marker));
         cssBundleOk = missingCssMarkers.length === 0;
+      } catch (error) {
+        console.error("lr-integrity-watch CSS asset", error instanceof Error ? error.message : String(error));
       }
     }
   } catch (error) {
@@ -149,11 +165,13 @@ Deno.serve(async (req) => {
     staging_hsts: stagingHsts,
     frontend_bundle_ok: frontendBundleOk,
     frontend_bundle_url: frontendBundleUrl,
+    frontend_asset_urls: frontendAssetUrls,
     missing_frontend_markers: missingFrontendMarkers,
     css_bundle_ok: cssBundleOk,
     css_bundle_url: cssBundleUrl,
     missing_css_markers: missingCssMarkers,
     staging_ok: stagingOk,
+    event_field_reviews_created: Number(fieldReviews.data ?? 0),
     integrity: recorded.data,
   });
 });
