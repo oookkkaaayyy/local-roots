@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- checkReleaseReadiness,ORIGINAL_MANIFEST_ID,REV10_SHA256,REV10_HEAD
+ checkReleaseReadiness,exerciseCloudflareStageTestOnly,sha256,ORIGINAL_MANIFEST_ID,REV10_SHA256,REV10_HEAD
 } from '../scripts/hbnf-parent-release/release-readiness.mjs';
 const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const manifest={
@@ -98,4 +98,40 @@ test('stale actual PR HEAD, missing private manifest, missing rollback and missi
  assert.equal(checked({provider:noRollback}).status,'BLOCKED');
  const noCloseout=clone(adapter);noCloseout.sameManifestCloseoutReady=false;
  assert.equal(checked({adapter:noCloseout}).status,'BLOCKED');
+});
+
+test('isolated executable-stage upload, deploy, fresh readback and exact v348 rollback',async()=>{
+ const bytes=Buffer.from('synthetic executable Worker module: no network');
+ const executable=clone(stage);executable.executable.sha256=sha256(bytes);
+ const actions=[];
+ let active=workerVersion,activeHash=null;
+ const mock={
+  testOnly:true,noNetwork:true,
+  async read(){actions.push('read');return {version:active,scriptSha256:activeHash};},
+  async upload(data){actions.push('upload');assert.equal(sha256(data),sha256(bytes));
+   return {version:'11111111-1111-4111-8111-111111111111'};},
+  async deploy(version){actions.push('deploy');active=version;activeHash=sha256(bytes);},
+  async restore(version){actions.push('restore');assert.equal(version,workerVersion);active=version;activeHash=null;}
+ };
+ const result=await exerciseCloudflareStageTestOnly(executable,mock,bytes);
+ assert.equal(result.status,'TEST_ONLY_APPLY_VERIFIED');
+ assert.equal(result.productionMutation,false);
+ assert.equal(active,workerVersion);
+ assert.deepEqual(actions,['read','upload','deploy','read','restore','read']);
+});
+test('ambiguous isolated deployment still restores original baseline',async()=>{
+ const bytes=Buffer.from('another synthetic module');
+ const executable=clone(stage);executable.executable.sha256=sha256(bytes);
+ let active=workerVersion,restores=0;
+ const mock={
+  testOnly:true,noNetwork:true,
+  async read(){return {version:active};},
+  async upload(){return {version:'11111111-1111-4111-8111-111111111111'};},
+  async deploy(version){active=version;throw Error('ambiguous response');},
+  async restore(version){active=version;restores++;}
+ };
+ const result=await exerciseCloudflareStageTestOnly(executable,mock,bytes);
+ assert.equal(result.status,'TEST_ONLY_APPLY_FAILED');
+ assert.equal(restores,1);
+ assert.equal(active,workerVersion);
 });
