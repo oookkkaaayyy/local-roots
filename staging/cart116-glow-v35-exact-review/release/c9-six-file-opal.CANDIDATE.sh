@@ -166,6 +166,10 @@ case "$ACTION" in
   mkdir "$REGISTRY" || exit 88
   cp "$TARGETS" "$REGISTRY/manifest.tsv" || exit 88
   : > "$REGISTRY/consumed"
+  # Power loss never runs EXIT traps. Ensure the one-time consumed journal is
+  # flushed before even the first /www rename. Prepare already synced backups.
+  # This is necessary but NOT a proof of Opal flash/overlay power-loss durability.
+  sync
   FAILED=1
   trap '[ "$FAILED" -eq 0 ] || { restore_files || echo "C9_RESTORE_REQUIRED_STOP" >&2; }' EXIT
   swapped=0
