@@ -27,11 +27,27 @@ esac
 case "$overlay_fs" in jffs2|ubifs|f2fs|ext4|btrfs) : ;; *)
  echo "C9_PERSISTENT_OVERLAY_UNPROVEN" >&2; exit 70;;
 esac
-# /root and /www resolve onto the persistent root overlay unless an
-# explicit mount or nested bind/overlay mount overrides either subtree.
-# This rejects different backing filesystems without a missing stat applet.
-if awk '$2=="/root" || index($2,"/root/")==1 || $2=="/www" || index($2,"/www/")==1 { found=1 } END { exit !found }' "$MOUNTS"; then
- echo "C9_RECOVERY_AND_TARGET_MOUNT_OVERRIDDEN" >&2; exit 71
+# Reject mounts that actually intersect the six Owner assets or the
+# persistent recovery journal. Unrelated nested mounts under /root or /www
+# are not evidence that the C9 targets use a different backing filesystem.
+if awk '
+ function intersects(path, mount) {
+   return path == mount || index(path, mount "/") == 1 || index(mount, path "/") == 1
+ }
+ $2 != "/" && $2 != "/overlay" {
+   m=$2
+   if (intersects("/root/cart116-controls-recovery",m) ||
+       intersects("/www/mission-control-local/local-transport.js",m) ||
+       intersects("/www/mission-control-local/owner-pwa/hbnf-cart-local.js",m) ||
+       intersects("/www/mission-control-local/owner-pwa/hbnf-cart.js",m) ||
+       intersects("/www/mission-control-local/owner-pwa/hbnf-cart.html",m) ||
+       intersects("/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",m) ||
+       intersects("/www/mission-control-local/owner-pwa/.hbnf-package-version",m))
+       bad=1
+ }
+ END { exit !bad }
+' "$MOUNTS"; then
+ echo "C9_RECOVERY_OR_ONE_OF_SIX_TARGET_MOUNTS_OVERRIDDEN" >&2; exit 71
 fi
 free_root="$(df -k "$ROOT/root" | awk 'END {print $4}')"
 free_www="$(df -k "$ROOT/www" | awk 'END {print $4}')"
