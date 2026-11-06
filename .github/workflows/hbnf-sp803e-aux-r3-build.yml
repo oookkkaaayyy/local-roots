@@ -61,7 +61,7 @@ jobs:
       - name: Boot-default-OFF source and GPIO admission gates
         run: |
           python tests/hbnf_aux_uv_pwm_boot_safety.py
-          python .hbnf-build-aux-r3/test_uv_gpio_admission.py
+          # GPIO pin admission runs in the full build against patched /tmp/wled.
           g++ -std=c++17 -Wall -Wextra -Werror -I.hbnf-build-aux-r3 .hbnf-build-aux-r3/test_uv_audio_follower.cpp -o /tmp/test-uv-audio-follower
           /tmp/test-uv-audio-follower
 
