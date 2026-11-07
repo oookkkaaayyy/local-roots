@@ -10,7 +10,9 @@ test('1: raw and base64 Source Map v3 upload checks remain explicit', async () =
 test('2: rejected upload requires a changed artifact and bounded verification before retry', () => {
   assert.equal(classifyRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'a', candidateArtifactDigest: 'a' }).action, 'rebuild-correction');
   assert.equal(classifyRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'a', candidateArtifactDigest: 'b', attempts: 0, maxAttempts: 2 }).action, 'verify-corrected-artifact');
-  assert.equal(classifyRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'a', candidateArtifactDigest: 'b', attempts: 2, maxAttempts: 2 }).action, 'stop-retries');
+  assert.equal(classifyRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'a', candidateArtifactDigest: 'b', attempts: 0, maxAttempts: 2, correctedArtifactVerified: true }).action, 'inspect');
+  assert.deepEqual(classifyRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'a', candidateArtifactDigest: 'b', attempts: 0, maxAttempts: 2, correctedArtifactVerified: true, retrySafe: true }), { action: 'retry-operation', retry: true, reason: 'rejection and changed verified artifact establish a bounded safe retry' });
+  assert.equal(classifyRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'a', candidateArtifactDigest: 'b', attempts: 2, maxAttempts: 2, correctedArtifactVerified: true, retrySafe: true }).action, 'stop-retries');
 });
 
 test('3: unrelated permission denial does not block the required operation', () => {
