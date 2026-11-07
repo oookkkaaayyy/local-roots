@@ -1,19 +1,21 @@
 {
   "backend_or_opal_mutated": false,
   "candidate_archive": {
-    "bytes": null,
-    "file_name": "CART116-Controls-Managed-Glow-BC-REVIEW_ONLY-20261103.zip",
-    "independent_download_back_verified": false,
+    "bytes": 243780,
+    "file_name": "CART116-C8-ADMISSION-CANDIDATE-f047af8.zip",
+    "drive_id": "10oBKihY5s3JUQ0jFr3Uetup-DoYeOHMI",
+    "sha256": "e392bd01dacb0556b5539cd572014776d3f912e89258761448a656ffae410bc0",
+    "independent_download_back_verified": true,
     "installable": false,
-    "note": "C8-only deterministic package rebuild in progress from current exact source; old BC archive includes v1.0.20 Owner payloads and must not be reused. Preserve installed C9 v1.0.21-c9pair1.",
-    "sha256": null
+    "note": "33-member C8-only review capsule; local build and private Drive download-back are byte-identical. Contains zero Owner PWA target replacements; review evidence only."
   },
   "edge": {
     "candidate_source": {
       "compiled_provider_candidate_sha256": null,
       "deno_check": "PASS_GITHUB_RUN_41694531461",
       "entrypoint": "staging/cart116-glow-v35-exact-review/candidate-source/index.ts",
-      "independent_candidate_download_back": false
+      "independent_candidate_download_back": true,
+      "download_back_scope": "Complete 33-member review capsule only; compiled provider candidate unavailable and deployment prohibited."
     },
     "provider_preimage": {
       "compiled_bundle_download_back": false,
@@ -466,15 +468,16 @@
   },
   "release_gates": {
     "actual_matrix_aux_owner_field_acceptance": "NOT_CHECKED",
-    "actual_private_installed_preimage_download_back": "MISSING",
-    "compiled_edge_candidate_and_restore": "MISSING",
+    "actual_private_installed_preimage_download_back": "MISSING live Opal/provider preimage archive; no claim from source capsule.",
+    "compiled_edge_candidate_and_restore": "MISSING compiled candidate bytes; accepted v35 recovery is exact deployed source/config-equivalent restore only.",
     "native_overlay_ps_minus_one_renderer": "NOT_PROVED_FAIL_CLOSED",
-    "new_transaction_specific_backup_download_back": "MISSING",
+    "new_transaction_specific_backup_download_back": "MISSING live target/provider preimage archive; capsule download-back is candidate-package evidence only.",
     "old_cloud_named_relay_absent": "PASS at 2026-11-03T20:12Z time scoped",
-    "one_time_manifest_owner_approval": "MISSING",
+    "one_time_manifest_owner_approval": "MISSING for a future exact C8 live postimage; accepted rollback policy is not deployment authorization.",
     "seven_owner_preimages": "MATCHED at 2026-11-03T19:21Z capture, independent durable backup not yet verified",
     "single_service_startup_device": "NOT_CHECKED",
-    "three_new_named_paths_and_dynamic_config": "UNVERIFIED"
+    "three_new_named_paths_and_dynamic_config": "UNVERIFIED",
+    "single_unchanged_manifest_phase1_phase2_closeout": "PENDING; phase1=false, phase2=false, transaction id=null."
   },
   "schema": "hbnf-cart116-controls-track-a-managed-glow-two-phase-admission-v3-bc-integrated",
   "source_corrections_20261103": {
@@ -557,5 +560,59 @@
     "owner_approval_for_this_exact_postimage": null,
     "phase1": false,
     "phase2": false
+  },
+  "c8_recovery_and_review_capsule": {
+    "accepted_source_equivalent_restore_policy": "CART116_EDGE_V35_SOURCE_EQUIVALENT_RESTORE_CONDITIONAL_V1",
+    "owner_acceptance_issue_comment": "6703142723",
+    "restore_capsule_drive_id": "1CRtlicNXYX7_HeFUR-Jy4RVYq2tItIKQ",
+    "restore_capsule_sha256": "3531b70fa159ca78cdc22e5feb0697d725a3e49203e2c3cd1a0e297b45ffcf5f",
+    "restore_scope": "Ten exact deployed v35 Edge source files plus import map/deno config, verify_jwt=false and deployment configuration; source/config-equivalent only, not compiled ESZip identity.",
+    "active_provider_readback": {
+      "project_id": "phcpbvuqibyarpfrftgx",
+      "function": "hbnf-cart-control",
+      "version": 35,
+      "verify_jwt": false,
+      "import_map": true,
+      "compiled_ezbr_sha256_reference": "377945d8c9c930420ac36febd304d2a4d5f632cbcc4c9e3467c8f440aaa04e73",
+      "deployed_source_files": 10,
+      "all_ten_source_bytes_match_recovered_v35": true
+    },
+    "sql_readback": {
+      "existing_c8_functions": [
+        "hbnf_cart_get_context(p_cart_id text)",
+        "hbnf_cart_get_status(p_cart_id text)"
+      ],
+      "new_c8_functions_present": false,
+      "challenge_table_present": false
+    },
+    "opal_readback": {
+      "host": "GL-SFT1200",
+      "owner_marker": "1.0.21-c9pair1",
+      "four_c8_managed_targets": "ABSENT"
+    },
+    "candidate_capsule": {
+      "drive_id": "10oBKihY5s3JUQ0jFr3Uetup-DoYeOHMI",
+      "sha256": "e392bd01dacb0556b5539cd572014776d3f912e89258761448a656ffae410bc0",
+      "bytes": 243780,
+      "members": 33,
+      "local_drive_downloadback_byte_equal": true,
+      "owner_pwa_targets": 0,
+      "live_install_authorized": false
+    },
+    "preserved_c9_baseline": {
+      "frozen_manifest_sha256": "1edbf89beeffad87f412a9b58532957ac270ef71966164c9146393ee542e1bbf",
+      "transaction_id": "c9-phase1a-5518d5434a3b4ec99c573947803d42a6",
+      "owner_marker": "1.0.21-c9pair1",
+      "changed_by_this_record": false
+    },
+    "remaining_live_gates": [
+      "transaction-specific actual preimage backup with independent download-back",
+      "exact candidate compiled-provider identity or accepted source/config recovery path bound to the C8 release",
+      "SQL and Opal dependency admission",
+      "exact C8 one-time owner authorization",
+      "fresh same-manifest prechange reads",
+      "post-deployment route/function/recovery verification"
+    ],
+    "state": "REVIEW_ONLY_NOT_ADMITTED_NOT_DEPLOYED"
   }
 }
