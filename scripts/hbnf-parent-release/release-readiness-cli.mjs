@@ -2,7 +2,7 @@
 // Inputs are exact already-private manifest and independently validated
 // release-stage/provider/adapter receipts. Never prints their contents.
 import {readFile} from 'node:fs/promises';
-import {checkReleaseReadiness,ORIGINAL_MANIFEST_ID} from './release-readiness.mjs';
+import {checkReleaseReadiness,ORIGINAL_MANIFEST_ID,bindSourceHeadToCheckout} from './release-readiness.mjs';
 import {execFileSync} from 'node:child_process';
 const [manifestPath,stagePath,providerPath,adapterPath]=process.argv.slice(2);
 if(!manifestPath||!stagePath||!providerPath||!adapterPath){
@@ -13,7 +13,17 @@ if(!manifestPath||!stagePath||!providerPath||!adapterPath){
   const raw=await readFile(manifestPath);
   const [stage,provider,adapter]=await Promise.all(
    [stagePath,providerPath,adapterPath].map(async p=>JSON.parse(await readFile(p,'utf8'))));
-  const sourceHead=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  const checkoutHead=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  const boundHead=JSON.parse(raw.toString('utf8')).source?.currentScoringReviewHead;
+  let ancestryVerified=checkoutHead===boundHead;
+  if(!ancestryVerified){
+   execFileSync('git',['merge-base','--is-ancestor',boundHead,checkoutHead],{stdio:'ignore'});
+   ancestryVerified=true;
+  }
+  const changedPaths=checkoutHead===boundHead?[]:execFileSync('git',['diff','--name-only',`${boundHead}..${checkoutHead}`],{encoding:'utf8'}).trim().split('\n').filter(Boolean);
+  const trackedChanges=execFileSync('git',['status','--porcelain','--untracked-files=no'],{encoding:'utf8'}).trim();
+  if(trackedChanges)throw Error('TRACKED_WORKTREE_NOT_CLEAN');
+  const sourceHead=bindSourceHeadToCheckout({boundHead,checkoutHead,ancestryVerified,changedPaths});
   const result=checkReleaseReadiness({
    manifest:JSON.parse(raw),manifestBytes:raw,
    manifestFileId:ORIGINAL_MANIFEST_ID,sourceHead,stage,provider,adapter

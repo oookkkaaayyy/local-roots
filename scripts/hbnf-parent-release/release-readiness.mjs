@@ -1,9 +1,28 @@
 // Scoring release preflight. Read-only; never performs provider actions.
 import {createHash} from 'node:crypto';
 export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
-export const REV10_SHA256='3e47e036c7d901b20815032995533a20d11628c39de8acd646fcf936a3ec6a73';
-export const REV10_HEAD='886456b01067631bad3b7a6d930433adc8b7fb1d';
+export const MANIFEST_SHA256='b3a834c38df2b0100b8f0a7094ff1904adb1a375e3f2f790f02a88f2aeb412f3';
+export const MANIFEST_REVISION=11;
+export const BOUND_SOURCE_HEAD='2038bab9423c646d6cc69889f0f13816acb8c3ea';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
+
+const RELEASE_CONTROL_TAIL_PATHS=new Set([
+ 'scripts/hbnf-parent-release/release-readiness.mjs',
+ 'scripts/hbnf-parent-release/release-readiness-cli.mjs',
+ 'tests/hbnf-release-readiness.test.mjs'
+]);
+
+/** A governance-only commit may follow the bound product-source head. Any
+ * other path means the candidate source binding must be amended again. */
+export function bindSourceHeadToCheckout({boundHead,checkoutHead,ancestryVerified,changedPaths=[]}={}){
+ if(boundHead!==BOUND_SOURCE_HEAD||!/^[a-f0-9]{40}$/.test(checkoutHead||''))
+   throw Error('SOURCE_HEAD_IDENTITY_INVALID');
+ if(checkoutHead===boundHead)return boundHead;
+ if(ancestryVerified!==true||!Array.isArray(changedPaths)||
+    changedPaths.some(path=>!RELEASE_CONTROL_TAIL_PATHS.has(path)))
+   throw Error('NON_GOVERNANCE_SOURCE_CHANGED_AFTER_BOUND_HEAD');
+ return boundHead;
+}
 
 const PARENT_TARGETS=['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score','cloudflare-worker'];
 const V348='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -21,21 +40,21 @@ export function checkReleaseReadiness({
   provider,adapter,synthetic=false
 }={}){
  const errors=[],fail=x=>{if(!errors.includes(x))errors.push(x);};
- if(manifest?.manifestRevision!==10||
+ if(manifest?.manifestRevision!==MANIFEST_REVISION||
     manifest?.recordId!=='hbnf-p0-pr151-udisc-20261103-52e120-review-only'||
     manifest?.status!=='PENDING_NOT_ADMITTED'||manifest?.productionMutationAuthorized!==false)
-   fail('REV10_RELEASE_AUTHORITY_DRIFT');
+   fail('SCORING_RELEASE_AUTHORITY_DRIFT');
  if(manifestFileId!==ORIGINAL_MANIFEST_ID)fail('ORIGINAL_MANIFEST_ID_MISSING');
- if(!synthetic && (!manifestBytes||sha256(manifestBytes)!==REV10_SHA256))
-   fail('PRIVATE_REV10_MANIFEST_BYTES_NOT_VERIFIED');
+ if(!synthetic && (!manifestBytes||sha256(manifestBytes)!==MANIFEST_SHA256))
+   fail('PRIVATE_MANIFEST_BYTES_NOT_VERIFIED');
  if(!synthetic && manifestBytes){
    try{
      if(JSON.stringify(JSON.parse(Buffer.from(manifestBytes).toString('utf8')))!==JSON.stringify(manifest))
        fail('MANIFEST_CONTENT_DIFFERS_FROM_DOWNLOADED_BYTES');
    }catch{fail('INVALID_MANIFEST_BYTES');}
  }
- if(manifest?.source?.currentScoringReviewHead!==REV10_HEAD||
-    sourceHead!==REV10_HEAD)fail('HEAD_CHANGED_SINCE_REV10');
+ if(manifest?.source?.currentScoringReviewHead!==BOUND_SOURCE_HEAD||
+    sourceHead!==BOUND_SOURCE_HEAD)fail('SOURCE_HEAD_BINDING_MISMATCH');
  const targets=manifest?.targets||[];
  if(!Array.isArray(targets)||targets.length!==5||
     PARENT_TARGETS.some(x=>!targets.some(y=>y.id===x)))
@@ -49,7 +68,7 @@ export function checkReleaseReadiness({
      fail('FIVE_TARGET_DRIVER_REQUIRES_SEVEN_STAGES');
  }else if(stage?.scope==='cloudflare-only'){
    if(manifest?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.admittedUnderParent!==true||
-      stage.parentManifestId!==ORIGINAL_MANIFEST_ID||stage.parentRevision!==10||
+      stage.parentManifestId!==ORIGINAL_MANIFEST_ID||stage.parentRevision!==MANIFEST_REVISION||
       stage.nonWorkerTargetsUnmodified!==true||
       stage.parentContractAllowsIndependentStage!==true||
       stage.targets?.length!==1||stage.targets[0]!=='cloudflare-worker'||
@@ -69,13 +88,19 @@ export function checkReleaseReadiness({
  if(e.glowHelperSha256!=='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a'||
     e.glowHelperGitBlob!=='a355ad13d5026551629f085060c636b60ccb8560')
    fail('GLOW_HELPER_NOT_BOUND_TO_VERIFIED_PR_SOURCE');
- if(e.assetStrategy!=='complete-manifest-upload'||
-    !trueValue(e.providerAssetInventoryExhaustive)||
-    !trueValue(e.changedGlowHelperUploaded)||
-    !trueValue(e.eightNewerCartAssetsPreserved)||
-    !validHex(e.completeAssetManifestSha256)||
-    !trueValue(e.assetUploadCompletionVerified))
-   fail('ASSET_SET_OR_NEW_HELPER_UPLOAD_UNQUALIFIED');
+ const workerFirst=Array.isArray(e.workerFirstPaths)?e.workerFirstPaths:[];
+ if(e.assetStrategy!=='keep_assets'||
+    !trueValue(e.keepAssetsSemanticsVerified)||
+    !trueValue(e.keepAssetsProviderAccepted)||
+    !trueValue(e.noAssetUpload)||
+    e.knownAssetPathCount!==46||
+    !trueValue(e.knownAssetPathReadbackMatched)||
+    !trueValue(e.eightNewerCartAssetReadbacksMatched)||
+    e.assetInventoryDisclosure!=='KNOWN_46_NONEXHAUSTIVE'||
+    !workerFirst.includes('/api/*')||!workerFirst.includes('/internal/*')||
+    !workerFirst.includes('/glow-save-sync.mjs')||
+    !trueValue(e.correctedHelperServedByWorker))
+   fail('KEEP_ASSETS_OR_HELPER_WORKER_FIRST_UNQUALIFIED');
  if(provider?.version!==V348||provider?.etag!==ETAG||
     !trueValue(provider?.retainedRollbackVersion)||
     !trueValue(provider?.routesCronBindingsMatch)||

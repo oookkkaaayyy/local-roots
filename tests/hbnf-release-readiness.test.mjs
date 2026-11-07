@@ -1,14 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- checkReleaseReadiness,exerciseCloudflareStageTestOnly,sha256,ORIGINAL_MANIFEST_ID,REV10_SHA256,REV10_HEAD
+ checkReleaseReadiness,exerciseCloudflareStageTestOnly,sha256,ORIGINAL_MANIFEST_ID,
+ MANIFEST_SHA256,MANIFEST_REVISION,BOUND_SOURCE_HEAD,bindSourceHeadToCheckout
 } from '../scripts/hbnf-parent-release/release-readiness.mjs';
 const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const manifest={
- manifestRevision:10,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
+ manifestRevision:MANIFEST_REVISION,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
  status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
  scopedReleaseAuthority:{cloudflareOnlySaveAck:{admittedUnderParent:true}},
- source:{currentScoringReviewHead:REV10_HEAD},
+ source:{currentScoringReviewHead:BOUND_SOURCE_HEAD},
  targets:[
   {id:'supabase-schema'},{id:'edge-tag-editor'},
   {id:'edge-tags-live'},{id:'edge-watch-score'},
@@ -18,7 +19,7 @@ const manifest={
  ]
 };
 const stage={
- scope:'cloudflare-only',parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:10,
+ scope:'cloudflare-only',parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:MANIFEST_REVISION,
  nonWorkerTargetsUnmodified:true,parentContractAllowsIndependentStage:true,
  targets:['cloudflare-worker'],operations:[{id:'worker-vnext'}],
  otherTargetReadbacks:['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score']
@@ -29,9 +30,10 @@ const stage={
   downloadBackVerified:true,moduleClosureVerified:true,sourceParityVerified:true,
   glowHelperSha256:'674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
   glowHelperGitBlob:'a355ad13d5026551629f085060c636b60ccb8560',
-  assetStrategy:'complete-manifest-upload',providerAssetInventoryExhaustive:true,
-  changedGlowHelperUploaded:true,eightNewerCartAssetsPreserved:true,
-  completeAssetManifestSha256:hex,assetUploadCompletionVerified:true
+  assetStrategy:'keep_assets',keepAssetsSemanticsVerified:true,keepAssetsProviderAccepted:true,
+  noAssetUpload:true,knownAssetPathCount:46,knownAssetPathReadbackMatched:true,
+  eightNewerCartAssetReadbacksMatched:true,assetInventoryDisclosure:'KNOWN_46_NONEXHAUSTIVE',
+  workerFirstPaths:['/api/*','/internal/*','/glow-save-sync.mjs'],correctedHelperServedByWorker:true
  }
 };
 const provider={
@@ -51,12 +53,13 @@ const adapter={
 const clone=x=>structuredClone(x);
 const checked=(overrides={})=>checkReleaseReadiness({
  manifest:clone(manifest),manifestFileId:ORIGINAL_MANIFEST_ID,
- sourceHead:REV10_HEAD,stage:clone(stage),
+ sourceHead:BOUND_SOURCE_HEAD,stage:clone(stage),
  provider:clone(provider),adapter:clone(adapter),synthetic:true,
  ...overrides
 });
-test('rev10 private source digest is exact immutable preimage, not a CI approval',()=>{
- assert.equal(REV10_SHA256,'3e47e036c7d901b20815032995533a20d11628c39de8acd646fcf936a3ec6a73');
+test('revision 11 source digest is pinned and remains non-admitting',()=>{
+ assert.equal(MANIFEST_SHA256,'b3a834c38df2b0100b8f0a7094ff1904adb1a375e3f2f790f02a88f2aeb412f3');
+ assert.equal(MANIFEST_REVISION,11);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
  assert.equal(result.canMutate,false);
@@ -70,13 +73,16 @@ test('historical five-target driver refuses review ZIP as one worker stage',()=>
  assert.ok(result.errors.includes('FIVE_TARGET_DRIVER_REQUIRES_SEVEN_STAGES'));
  assert.ok(result.errors.includes('ONEFILE_REVIEW_ZIP_NOT_EXECUTABLE_WORKER'));
 });
-test('cloud-only is subordinate and requires exact complete executable/static assets',()=>{
+test('cloud-only is subordinate and requires exact executable and keep-assets routing evidence',()=>{
  for(const mutation of [
   s=>{s.parentContractAllowsIndependentStage=false;},
   s=>{s.otherTargetReadbacks.pop();},
-  s=>{s.executable.assetStrategy='keep-assets';},
-  s=>{s.executable.providerAssetInventoryExhaustive=false;},
-  s=>{s.executable.changedGlowHelperUploaded=false;},
+  s=>{s.executable.assetStrategy='complete-manifest-upload';},
+  s=>{s.executable.knownAssetPathCount=45;},
+  s=>{s.executable.assetInventoryDisclosure='EXHAUSTIVE';},
+  s=>{s.executable.noAssetUpload=false;},
+  s=>{s.executable.workerFirstPaths=['/api/*','/internal/*'];},
+  s=>{s.executable.keepAssetsProviderAccepted=false;},
   s=>{s.executable.moduleClosureVerified=false;},
   s=>{s.executable.glowHelperSha256=hex;}
  ]) {
@@ -84,20 +90,29 @@ test('cloud-only is subordinate and requires exact complete executable/static as
   assert.equal(checked({stage:candidate}).status,'BLOCKED');
  }
 });
-test('a declared stage cannot override absence of Cloudflare-only authority in actual rev10',()=>{
+test('a declared stage cannot override absence of Cloudflare-only authority in the amended parent',()=>{
  const oldManifest=clone(manifest);delete oldManifest.scopedReleaseAuthority;
  const result=checked({manifest:oldManifest});
  assert.equal(result.status,'BLOCKED');
  assert.ok(result.errors.includes('CLOUDFLARE_ONLY_SCOPE_NOT_SUBORDINATE'));
 });
-test('stale actual PR HEAD, missing private manifest, missing rollback and missing closeout all fail',()=>{
+test('stale source HEAD, missing private manifest, missing rollback and missing closeout all fail',()=>{
  assert.equal(checked({sourceHead:'b'.repeat(40)}).status,'BLOCKED');
  const live=checked({synthetic:false});
- assert.ok(live.errors.includes('PRIVATE_REV10_MANIFEST_BYTES_NOT_VERIFIED'));
+ assert.ok(live.errors.includes('PRIVATE_MANIFEST_BYTES_NOT_VERIFIED'));
  const noRollback=clone(provider);noRollback.retainedRollbackVersion=false;
  assert.equal(checked({provider:noRollback}).status,'BLOCKED');
  const noCloseout=clone(adapter);noCloseout.sameManifestCloseoutReady=false;
  assert.equal(checked({adapter:noCloseout}).status,'BLOCKED');
+});
+
+test('only exact source head or release-control-only descendant can satisfy the bound source',()=>{
+ assert.equal(bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:BOUND_SOURCE_HEAD}),BOUND_SOURCE_HEAD);
+ assert.equal(bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:true,
+  changedPaths:['scripts/hbnf-parent-release/release-readiness.mjs','scripts/hbnf-parent-release/release-readiness-cli.mjs','tests/hbnf-release-readiness.test.mjs']}),BOUND_SOURCE_HEAD);
+ assert.throws(()=>bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:true,
+  changedPaths:['public/glow.html']}),/NON_GOVERNANCE_SOURCE_CHANGED_AFTER_BOUND_HEAD/);
+ assert.throws(()=>bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:false,changedPaths:[]}),/NON_GOVERNANCE_SOURCE_CHANGED_AFTER_BOUND_HEAD/);
 });
 
 test('isolated executable-stage upload, deploy, fresh readback and exact v348 rollback',async()=>{
