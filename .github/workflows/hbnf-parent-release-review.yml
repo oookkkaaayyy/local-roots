@@ -262,5 +262,8 @@ jobs:
           test -n "$cid"
           { cat tests/hbnf-udisc-fetch-gate-pg17-pre.sql; \
             cat scripts/hbnf-parent-release/sql/udisc-event-fetch-gate.review.sql; \
+            cat scripts/hbnf-parent-release/sql/udisc-event-fetch-gate-undo.review.sql; \
+            cat tests/hbnf-udisc-fetch-gate-undo-pg17.sql; \
+            cat scripts/hbnf-parent-release/sql/udisc-event-fetch-gate.review.sql; \
             cat tests/hbnf-udisc-fetch-gate-pg17-post.sql; } |
             docker exec -i "$cid" psql -U postgres -v ON_ERROR_STOP=1

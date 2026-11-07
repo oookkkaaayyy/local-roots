@@ -5,7 +5,7 @@
  * authenticated source identity, source timestamp and provider ordering BEFORE
  * invoking this module. No caller-provided "live" flag is trusted.
  */
-import {validateGlowEventBinding} from './udisc-glow-event-bindings.mjs';
+import {validateGlowEventBinding,isHbnfGlowDoublesEventId} from './udisc-glow-event-bindings.mjs';
 
 const MAX_SOURCE_AGE_MS = 10 * 60 * 1000;
 const MAX_CLOCK_SKEW_MS = 30 * 1000;
@@ -34,6 +34,26 @@ const score = v => (Number.isInteger(v) && v>=1 && v<=99) ? String(v) : null;
 const scoreText = v => str(v);
 const same = (a,b) => canonical(a)===canonical(b);
 function fail(code) {return {status:'REJECTED',reason:code,wrote:false,readbackVerified:false,cartIntent:'NOT_REQUESTED'};}
+
+// Build the existing Controls-owned Cart backend proof only from a successful
+// guarded save with independent provider readback and actual UDisc hole scores.
+// This function has no network/device side effects; Scoring never actuates Cart.
+export function buildVerifiedGlowCartProof(result) {
+  const digest=result?.downstream?.signedEnvelopeDigest;
+  if(result?.status!=='SAVED_AND_INDEPENDENTLY_VERIFIED' || result?.wrote!==true ||
+     result?.readbackVerified!==true || result?.hasVerifiedScoredHoles!==true ||
+     result?.downstream?.owner!=='CONTROLS_ONLY' ||
+     result?.downstream?.eligibleForSeparateSourceReview!==true || !HEX64.test(digest||'') ||
+     result?.eventId!==result?.downstream?.eventId ||
+     result?.weekDate!==result?.downstream?.weekDate ||
+     result?.sourceRevision!==result?.downstream?.readbackRevision ||
+     !Number.isFinite(atMs(result?.sourceRevision)) || !isHbnfGlowDoublesEventId(result?.eventId) ||
+     !DATE.test(result?.weekDate) ||
+     new Date(result.weekDate+'T12:00:00Z').getUTCDay()!==2)
+    return {eligible:false,reason:'INDEPENDENT_SCORED_READBACK_REQUIRED'};
+  return {eligible:true,owner:'CONTROLS_ONLY',saved:{eventId:result.eventId,
+    weekDate:result.weekDate,signature:digest,sourceRevision:result.sourceRevision}};
+}
 function checkEnvelope(envelope) {
   if(envelope?.schema!=='hbnf.udisc.authorized-live-delta.v1' || !safeId(envelope.eventId) ||
      !DATE.test(envelope.weekDate) || !safeId(envelope.roundId) ||
@@ -272,7 +292,8 @@ export async function ingestAuthorizedLiveDelta(envelope,deps={}) {
       sourceUpdatedAt:envelope.sourceUpdatedAt,permissionReference:receipt.permissionReference,
       hasVerifiedScoredHoles:plan.hasScored,scoredChanges:plan.scoredChanges,rosterChanges:plan.rosterChanges,
       cartIntent:'NOT_REQUESTED',downstream:{owner:'CONTROLS_ONLY',eligibleForSeparateSourceReview:plan.hasScored,
-        signedEnvelopeDigest:digest,sourceCursor:envelope.cursor,readbackRevision:after.updated_at}};
+        eventId:envelope.eventId,weekDate:envelope.weekDate,signedEnvelopeDigest:digest,
+        sourceCursor:envelope.cursor,readbackRevision:after.updated_at}};
   }catch(error){
     if(writeAttempted)return {status:'POST_WRITE_UNVERIFIED',wrote:null,readbackVerified:false,cartIntent:'NOT_REQUESTED'};
     return fail(String(error?.code||'LIVE_DELTA_REJECTED'));

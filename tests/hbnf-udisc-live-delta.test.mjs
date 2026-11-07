@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ingestAuthorizedLiveDelta} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-live-delta.review.mjs';
+import {ingestAuthorizedLiveDelta,buildVerifiedGlowCartProof} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-live-delta.review.mjs';
+import {submitVerifiedGlowCartIntent} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs';
 // All players, teams, source receipts, and scores below are SYNTHETIC TEST DATA,
 // not an actual Nov10 UDisc feed, approval, signed response, or provider result.
 const date='2026-11-10', eventId='hb-glow-doubles-af85rU';
@@ -53,6 +54,36 @@ test('synthetic authorized source receipt maps roster, per-hole, result, provena
   assert.deepEqual(root.glow.weeks[date].udiscLive.audit.map(x=>({hole:x.hole,to:x.to,correction:x.correction})),[{hole:1,to:'3',correction:false}]);
   assert.equal(root.glow.weeks['2026-11-03'].immutable,'S1 genuine historical source protected');
   assert.deepEqual(root.skins,{fixture:'untouched'});
+});
+test('Controls Cart proof is constructed only from independently read-back scored state',async()=>{
+ const f=setup(),saved=await ingestAuthorizedLiveDelta(envelope(),f.deps);
+ const proof=buildVerifiedGlowCartProof(saved);
+ assert.equal(proof.eligible,true);assert.equal(proof.owner,'CONTROLS_ONLY');
+ assert.equal(proof.saved.eventId,eventId);assert.equal(proof.saved.weekDate,date);
+ assert.equal(proof.saved.sourceRevision,saved.sourceRevision);
+ assert.match(proof.saved.signature,/^[a-f0-9]{64}$/);
+ let cartRequest;
+ const accepted=await submitVerifiedGlowCartIntent(async(url,options)=>{
+   cartRequest={url,options};
+   return new Response(JSON.stringify({status:'COMMITTED',relayStatus:'PENDING_OPAL_PULL',
+     scoreFingerprint:'b'.repeat(32),sourceRevision:proof.saved.sourceRevision}),{status:202});
+ },{supabaseUrl:'https://fixture.supabase.co',serviceKey:'TEST_ONLY_REVIEW_FIXTURE_KEY'},proof.saved);
+ assert.equal(accepted.status,'COMMITTED');
+ assert.equal(cartRequest.url,'https://fixture.supabase.co/functions/v1/hbnf-cart-control');
+ assert.deepEqual(JSON.parse(cartRequest.options.body),{action:'glow_scoreboard_intent',weekDate:date});
+ assert.equal(cartRequest.options.body.includes('TEST_ONLY_REVIEW_FIXTURE_KEY'),false);
+ for(const changed of [
+   {...saved,readbackVerified:false},
+   {...saved,hasVerifiedScoredHoles:false},
+   {...saved,downstream:{...saved.downstream,owner:'SCORING'}},
+   {...saved,sourceRevision:'drift'},
+   {...saved,weekDate:'2026-11-09',downstream:{...saved.downstream,weekDate:'2026-11-09'}},
+   {...saved,downstream:{...saved.downstream,signedEnvelopeDigest:'bad'}},
+ ]) assert.deepEqual(buildVerifiedGlowCartProof(changed),{
+   eligible:false,reason:'INDEPENDENT_SCORED_READBACK_REQUIRED'});
+ const rosterOnly=envelope();rosterOnly.changes=[{kind:'result',sourceTeamId:'fixture-team-1',position:null,total:null,thru:0}];
+ const unscored=await ingestAuthorizedLiveDelta(rosterOnly,setup().deps);
+ assert.equal(buildVerifiedGlowCartProof(unscored).eligible,false);
 });
 test('source cursor duplicate is independently reread but neither score nor freshness timestamp rewritten',async()=>{
   const f=setup();await ingestAuthorizedLiveDelta(envelope(),f.deps);
