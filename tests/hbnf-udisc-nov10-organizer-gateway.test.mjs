@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import worker from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
 import {handleOrganizerImportRequest} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-organizer-http.review.mjs';
+import {importOrganizerGlowXlsx} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-organizer-import.review.mjs';
 import {NOV10_MAIN_LAYOUT} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-nov10-main-layout.review.mjs';
 
 // November 10 identity and event window originate from actual read-only Supabase
@@ -65,6 +67,32 @@ test('pars alone cannot authorize Nov10 XLSX when layout witness identity is wro
   const data=await res.json();
   assert.equal(data.layoutQualified,false);assert.equal(data.uploaderEligible,false);
   assert.ok(data.operatorActions.includes('INITIALIZE_NOV10_WITH_AUTHORIZED_MAIN_LAYOUT_WITNESS'));
+});
+test('fresh export attestation outside the bound event window is rejected before state, CAS, or Cart access',async()=>{
+  const bytes=Uint8Array.from([0x50,0x4b,...Array(22).fill(0)]);
+  let stateReads=0,writes=0,cartCalls=0;
+  const result=await importOrganizerGlowXlsx({upload:{eventId,weekDate,xlsx:bytes,
+    sha256:createHash('sha256').update(bytes).digest('hex'),freshSnapshotConfirmed:true},adapters:{
+    authorize:async()=>true,readBinding:async()=>[binding],receiptTime:()=> '2026-11-11T07:31:00.000Z',
+    readState:async()=>{stateReads++;throw Error('must not read state');},
+    applyWeek:async()=>{writes++;return {applied:true};},
+    onVerifiedSaved:async()=>{cartCalls++;return {status:'COMMITTED',relayStatus:'PENDING_OPAL_PULL'};}
+  }});
+  assert.equal(result.disposition,'FRESH_EXPORT_OUTSIDE_BOUND_EVENT_WINDOW');
+  assert.equal(stateReads,0);assert.equal(writes,0);assert.equal(cartCalls,0);
+});
+test('fresh export for a different event cannot reach state, CAS, or Cart',async()=>{
+  const bytes=Uint8Array.from([0x50,0x4b,...Array(22).fill(0)]);
+  let stateReads=0,writes=0,cartCalls=0;
+  const result=await importOrganizerGlowXlsx({upload:{eventId:'hb-glow-doubles-XxY123',weekDate,
+    xlsx:bytes,sha256:createHash('sha256').update(bytes).digest('hex'),freshSnapshotConfirmed:true},adapters:{
+    authorize:async()=>true,readBinding:async()=>[binding],receiptTime:()=> '2026-11-11T03:30:00.000Z',
+    readState:async()=>{stateReads++;throw Error('must not read state');},
+    applyWeek:async()=>{writes++;return {applied:true};},
+    onVerifiedSaved:async()=>{cartCalls++;return {status:'COMMITTED',relayStatus:'PENDING_OPAL_PULL'};}
+  }});
+  assert.equal(result.disposition,'BINDING_IDENTITY_MISMATCH');
+  assert.equal(stateReads,0);assert.equal(writes,0);assert.equal(cartCalls,0);
 });
 test('missing organizer authentication fails before reading any source, even with event ID',async()=>{
   const upstream=provider();

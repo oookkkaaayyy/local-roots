@@ -1042,7 +1042,7 @@ function renderUdiscFreshness(){
  const week=ctx.state?.weeks?.[ctx.state?.activeWeek]||{};
  const sync=week.udiscSync||{},status=sync.status||{};
  const local=sync.latest?.hbnfLocalSnapshot||{};
- const localProvenance=local.provenance==='HBNF_LOCAL_XLSX_OBSERVATION_NOT_UDISC_METADATA';
+ const localProvenance=local.provenance==='HBNF_LOCAL_XLSX_OBSERVATION_NOT_UDISC_METADATA'||local.provenance==='OPERATOR_ATTESTED_EXPORT_RECEIPT_NOT_UDISC_METADATA';
  const holeObservedAt=local.lastAcceptedHoleObservedAt||status.lastSuccessAt||null;
  const holeMillis=Date.parse(holeObservedAt||'');
  const hasHoleTime=Number.isFinite(holeMillis);
@@ -1060,6 +1060,8 @@ function renderUdiscFreshness(){
   if(!holeTime)message='UDisc XLSX was processed; accepted scored-hole observation time is unknown.';
   else if(Date.now()-holeMillis>5*60_000)
    message='Scores may be out of date. Last accepted scored-hole change observed by HBNF '+holeTime+'.';
+  else if(status.captureAuthority==='authenticated_organizer_immediate_export_attestation')
+   message='Operator-attested fresh UDisc export received by HBNF '+holeTime+'.';
   else message='New UDisc-export scored holes received by HBNF '+holeTime+'.';
  }else if(status.state==='stale'){
   message='UDisc XLSX updates are stale; showing previously saved scores.';

@@ -5,7 +5,8 @@
  */
 import {validateGlowEventBinding} from './udisc-glow-event-bindings.mjs';
 import {parseUdiscWorkbook, validateIdentityEvidence, buildGlowProposal, prepareGlowWeekSync} from './udisc-glow-sync-runner.mjs';
-import {qualifiedGlowScorePars, sameLeagueRevision} from './udisc-glow-auto-sync.review.mjs';
+import {qualifiedGlowScorePars, sameLeagueRevision, offerSavedGlowIntent} from './udisc-glow-auto-sync.review.mjs';
+import {attachLocalSnapshotEvidence} from './udisc-glow-snapshot-mode.review.mjs';
 import {NOV10_MAIN_LAYOUT,qualifyNov10MainWeek} from './udisc-nov10-main-layout.review.mjs';
 
 const MAX_XLSX_BYTES=12*1024*1024;
@@ -56,6 +57,9 @@ export async function importOrganizerGlowXlsx({upload,adapters}={}) {
     binding=validateGlowEventBinding(rows[0]);
   } catch { return stop('BINDING_INVALID_OR_UNAVAILABLE'); }
   if(binding.eventId!==eventId||binding.weekDate!==weekDate)return stop('BINDING_IDENTITY_MISMATCH');
+  const freshAttested=upload?.freshSnapshotConfirmed===true;
+  if(freshAttested&&(Date.parse(receivedAt)<Date.parse(binding.windowStart)||
+      Date.parse(receivedAt)>Date.parse(binding.windowEnd)))return stop('FRESH_EXPORT_OUTSIDE_BOUND_EVENT_WINDOW');
   // Manual post-round exports are legitimate. Do not extend the event window,
   // claim a live score feed, or require receivedAt to fall inside that window.
 
@@ -114,11 +118,22 @@ export async function importOrganizerGlowXlsx({upload,adapters}={}) {
   }
   const pars=qualifiedGlowScorePars(prepared.week);
   if(!pars.ready)return stop('HOLE_PARS_NOT_VERIFIED');
-  const replacement=plain(prepared.week);
-  // A saved organizer file is NOT a current UDisc feed. The Cart backend only
-  // accepts freshly retrieved, separately admitted in-round score snapshots.
-  replacement.udiscSync.status={state:'organizer_upload_persisted',sourceFreshness:'NOT_ASSERTED'};
-  replacement.udiscSync.organizerUpload={sha256,source:'operator_provided',receivedAt};
+  let replacement=plain(prepared.week);
+  if(freshAttested){
+    const evidence=attachLocalSnapshotEvidence({before:existingWeek,prepared:{...prepared,week:replacement},
+      sha256,observedAt:receivedAt,eventId,weekDate});
+    replacement=evidence.week;
+    replacement.udiscSync.status.freshnessBasis='OPERATOR_ATTESTED_EXPORT_RECEIPT_TIME';
+    replacement.udiscSync.status.captureAuthority='authenticated_organizer_immediate_export_attestation';
+    replacement.udiscSync.status.sourceFreshness='OPERATOR_ATTESTED_CAPTURE_TIME';
+    replacement.udiscSync.latest.hbnfLocalSnapshot.provenance='OPERATOR_ATTESTED_EXPORT_RECEIPT_NOT_UDISC_METADATA';
+  }else{
+    // Post-round or unattested exports are persisted for standings only and
+    // cannot become current Cart score intents.
+    replacement.udiscSync.status={state:'organizer_upload_persisted',sourceFreshness:'NOT_ASSERTED'};
+  }
+  replacement.udiscSync.organizerUpload={sha256,source:'operator_provided',receivedAt,
+    freshnessAttested:freshAttested};
   const expectedRoot=plain(before.state_json);
   expectedRoot.glow.weeks[weekDate]=replacement;
 
@@ -135,7 +150,12 @@ export async function importOrganizerGlowXlsx({upload,adapters}={}) {
   try{after=await adapters.readState();}catch{return stop('COMMITTED_READBACK_UNAVAILABLE_NO_RETRY','COMMIT_ACKNOWLEDGED');}
   if(!after?.updated_at||sameLeagueRevision(before.updated_at,after.updated_at)||
      !same(after.state_json,expectedRoot))return stop('COMMITTED_READBACK_MISMATCH_NO_RETRY','COMMIT_ACKNOWLEDGED');
+  const cartIntent=freshAttested&&typeof adapters.onVerifiedSaved==='function'
+    ? await offerSavedGlowIntent({week:after.state_json.glow.weeks[weekDate],revision:after.updated_at,
+      signature:prepared.signature,binding,now:new Date(receivedAt),onVerifiedSaved:adapters.onVerifiedSaved})
+    : 'NOT_REQUESTED';
   return Object.freeze({disposition:'SAVED_AND_READBACK_VERIFIED',stage:'INDEPENDENT_SERVER_READ',wrote:true,readbackVerified:true,
-    source:'organizer_provided_official_xlsx',sourceFreshness:'NOT_ASSERTED',cartIntent:'NOT_REQUESTED',
+    source:'organizer_provided_official_xlsx',
+    sourceFreshness:freshAttested?'OPERATOR_ATTESTED_CAPTURE_TIME':'NOT_ASSERTED',cartIntent,
     eventId,weekDate,sha256,signature:prepared.signature,revision:after.updated_at,scoredHoles:pars.scoredHoles});
 }

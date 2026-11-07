@@ -6,6 +6,7 @@
 import {validateGlowEventBinding} from './udisc-glow-event-bindings.mjs';
 import {importOrganizerGlowXlsx} from './udisc-glow-organizer-import.review.mjs';
 import {NOV10_MAIN_LAYOUT,qualifyNov10MainWeek} from './udisc-nov10-main-layout.review.mjs';
+import {submitVerifiedGlowCartIntent} from './udisc-glow-auto-sync.review.mjs';
 
 export const ORGANIZER_IMPORT_PATH='/internal/udisc-glow-organizer-import';
 const MAX_FILE_BYTES=12*1024*1024;
@@ -81,7 +82,9 @@ function providerAdapters(config,fetchImpl,now){
       throw Error('Guarded scoring acknowledgment invalid');
     return result;
   }
-  return {readBinding,readState,applyWeek,receiptTime:()=>now().toISOString()};
+  return {readBinding,readState,applyWeek,receiptTime:()=>now().toISOString(),
+    onVerifiedSaved:saved=>submitVerifiedGlowCartIntent(fetchImpl,
+      {supabaseUrl:config.url,serviceKey:config.key},saved)};
 }
 
 function validateSelection(eventId,weekDate){
@@ -151,7 +154,9 @@ export async function handleOrganizerImportRequest(request,env,{fetchImpl=fetch,
     return json(415,{disposition:'MULTIPART_XLSX_REQUIRED'});
   let form;
   try{form=await request.formData();}catch{return json(400,{disposition:'UPLOAD_FORM_INVALID'});}
-  if([...form.keys()].some(k=>!['eventId','weekDate','xlsx','reviewedDecisions','officialExportConfirmed'].includes(k)))
+  // This owner attestation is distinct from UDisc metadata: its timestamp is
+  // the server receipt time and is eligible only inside this event's bound window.
+  if([...form.keys()].some(k=>!['eventId','weekDate','xlsx','reviewedDecisions','officialExportConfirmed','freshSnapshotConfirmed'].includes(k)))
     return json(400,{disposition:'UNKNOWN_UPLOAD_FIELD'});
   const eventId=text(form.get('eventId')),weekDate=text(form.get('weekDate'));
   if(!validateSelection(eventId,weekDate)||form.get('officialExportConfirmed')!=='yes')
@@ -170,7 +175,8 @@ export async function handleOrganizerImportRequest(request,env,{fetchImpl=fetch,
   const bytes=new Uint8Array(await file.arrayBuffer());
   const sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),
     b=>b.toString(16).padStart(2,'0')).join('');
-  const result=await importOrganizerGlowXlsx({upload:{eventId,weekDate,xlsx:bytes,sha256,reviewedDecisions},
+  const result=await importOrganizerGlowXlsx({upload:{eventId,weekDate,xlsx:bytes,sha256,reviewedDecisions,
+    freshSnapshotConfirmed:form.get('freshSnapshotConfirmed')==='yes'},
     adapters:{...provider,authorize:()=>true,
       // There is deliberately NO upload-controlled correction authorization.
       authorizeCorrection:()=>false,

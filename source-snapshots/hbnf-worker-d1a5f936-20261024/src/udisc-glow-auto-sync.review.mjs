@@ -165,7 +165,7 @@ async function readBounded(response, maxBytes = 12 * 1024 * 1024) {
 
 // Post-save delivery and reconnect retries share the same saved-source guard.
 // Source freshness is NOT a write: unchanged XLSX must not churn league_state.
-async function offerSavedGlowIntent({week,revision,signature,binding,now,onVerifiedSaved,deps}) {
+export async function offerSavedGlowIntent({week,revision,signature,binding,now,onVerifiedSaved,deps}) {
   if(!onVerifiedSaved)return 'NOT_REQUESTED';
   const sync=week?.udiscSync;
   const success=Date.parse(sync?.status?.lastSuccessAt||'');
