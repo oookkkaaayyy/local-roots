@@ -6,7 +6,10 @@ on:
   pull_request:
     paths:
       - 'scripts/hbnf-parent-release/**'
+      - 'scripts/validate-cloudflare-worker-multipart.mjs'
       - 'tests/hbnf-parent-release-driver.test.mjs'
+      - 'tests/hbnf-cloudflare-executable-version.test.mjs'
+      - 'tests/validate-cloudflare-worker-multipart.test.mjs'
       - 'tests/hbnf-cloudflare-recovery.test.mjs'
       - 'tests/hbnf-live-release-boundary.test.mjs'
       - 'tests/hbnf-provider-artifact.test.mjs'
@@ -46,7 +49,7 @@ jobs:
         with:
           node-version: '22'
       - name: Run only new Cloudflare executable-version regressions
-        run: node --test tests/hbnf-cloudflare-executable-version.test.mjs
+        run: node --test tests/hbnf-cloudflare-executable-version.test.mjs tests/validate-cloudflare-worker-multipart.test.mjs
   tag-sql-scope:
     runs-on: ubuntu-latest
     timeout-minutes: 2

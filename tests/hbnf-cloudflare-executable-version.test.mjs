@@ -44,6 +44,26 @@ test('requires a complete v348 inventory, preserves unchanged bytes and validate
   assert.throws(()=>buildExactVersion({...args,installedPaths:installedPaths.slice(1),assetJwt:'COMPLETED_FAKE_TEST_JWT'}),/INVENTORY_LENGTH/);
 });
 
+test('source map preflight gates the exact Cloudflare JSON module payload before upload',()=>{
+  const map=Buffer.from(JSON.stringify({version:3,file:'index.js',sources:['index.ts'],names:[],mappings:'AAAA'}));
+  const entry=Buffer.from('//# sourceMappingURL=index.js.map\n');
+  const modulesWithMap=[{name:'index.js',bytes:entry},{name:'index.js.map',bytes:map}];
+  const digests=new Map(modulesWithMap.map(module=>[module.name,sha256(module.bytes)]));
+  const result=buildExactVersion({...args,modules:modulesWithMap,moduleDigests:digests,assetJwt:'COMPLETED_FAKE_TEST_JWT'});
+  assert.equal(result.body.modules.find(module=>module.name==='index.js.map').content_type,'application/source-map');
+  assert.equal(Buffer.from(result.body.modules.find(module=>module.name==='index.js.map').content_base64,'base64').toString(),map.toString());
+
+  const malformed=Buffer.from(JSON.stringify({version:3,sources:['index.ts'],names:[],mappings:'A?'}));
+  const invalidModules=[modulesWithMap[0],{name:'index.js.map',bytes:malformed}];
+  assert.throws(()=>buildExactVersion({...args,modules:invalidModules,
+    moduleDigests:new Map(invalidModules.map(module=>[module.name,sha256(module.bytes)])),
+    assetJwt:'COMPLETED_FAKE_TEST_JWT'}),/non-base64 VLQ/);
+  const missingReference=[{name:'index.js',bytes:entry}];
+  assert.throws(()=>buildExactVersion({...args,modules:missingReference,
+    moduleDigests:new Map(missingReference.map(module=>[module.name,sha256(module.bytes)])),
+    assetJwt:'COMPLETED_FAKE_TEST_JWT'}),/references missing source map/);
+});
+
 test('rejects missing/altered assets, stale or partial inventory proof and absent admission before provider access',async()=>{
   const changed=new Map(assets);changed.set('/cart-4.html',Buffer.from('missing asset bucket cannot be masked'));
   assert.throws(()=>buildExactVersion({...args,assets:changed,assetJwt:'COMPLETED_FAKE_TEST_JWT'}),/UNEXPECTED_CHANGE/);

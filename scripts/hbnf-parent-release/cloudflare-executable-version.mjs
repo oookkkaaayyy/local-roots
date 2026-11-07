@@ -4,6 +4,7 @@
 // API: https://developers.cloudflare.com/workers/static-assets/direct-upload/
 import {createHash} from 'node:crypto';
 import {extname} from 'node:path';
+import {validateCloudflareWorkerModules} from '../validate-cloudflare-worker-multipart.mjs';
 
 const uuid=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 const hex64=/^[a-f0-9]{64}$/i;
@@ -82,6 +83,8 @@ export function buildExactVersion({assets,installedPaths,installedDigests,change
       (m.name.endsWith('.map')?'application/source-map':'application/javascript+module'),
       content_base64:bytes.toString('base64')};
   });
+  // Gate the exact JSON/base64 module payload before any Cloudflare upload.
+  validateCloudflareWorkerModules(parts,'index.js');
   fail(settings?.compatibility_date&&/^20\d\d-\d\d-\d\d$/.test(settings.compatibility_date),'COMPAT_DATE');
   fail(settings.assetConfig&&typeof settings.assetConfig==='object'&&
     typeof settings.assetConfig.base_path==='string'&&
