@@ -27,6 +27,23 @@ function requireInventoryWitness(witness,{workerName,baselineVersionId,installed
   return witness;
 }
 
+function normalizeVersionSettings(settings){
+  const runtime=settings?.runtime||settings||{};
+  const assetRuntime=runtime.assets;
+  const assetConfig=settings?.assetConfig||(
+    assetRuntime&&typeof assetRuntime.base_path==='string'&&
+    assetRuntime.static_routing&&assetRuntime.static_routing.user_worker!==undefined
+      ? {base_path:assetRuntime.base_path,run_worker_first:assetRuntime.static_routing.user_worker}
+      : null);
+  return {
+    compatibility_date:settings?.compatibility_date||runtime.compatibility_date,
+    compatibility_flags:settings?.compatibility_flags||runtime.compatibility_flags||[],
+    usage_model:settings?.usage_model||runtime.usage_model,
+    bindings:settings?.bindings,
+    assetConfig,
+  };
+}
+
 function assetConfigWithHelperRoute(config){
   if(config.run_worker_first===true)return {...config};
   const routes=config.run_worker_first===false?[]:config.run_worker_first;
@@ -54,6 +71,7 @@ export function validateAssetBuckets(manifest,buckets){
 export function buildExactVersion({assets,installedPaths,installedDigests,changedPath='/glow-save-sync.mjs',
   modules,moduleDigests,settings,baselineVersionId,assetJwt}) {
   fail(uuid.test(baselineVersionId),'BASE_VERSION');
+  settings=normalizeVersionSettings(settings);
   fail(assets instanceof Map&&Array.isArray(installedPaths)&&assets.size===installedPaths.length,'INVENTORY_LENGTH');
   const paths=[...assets.keys()].sort();
   fail(paths.length>0&&installedPaths.length===new Set(installedPaths).size&&
@@ -88,10 +106,12 @@ export function buildExactVersion({assets,installedPaths,installedDigests,change
   fail(settings?.compatibility_date&&/^20\d\d-\d\d-\d\d$/.test(settings.compatibility_date),'COMPAT_DATE');
   fail(settings.assetConfig&&typeof settings.assetConfig==='object'&&
     typeof settings.assetConfig.base_path==='string'&&
-    ['auto-trailing-slash','force-trailing-slash','drop-trailing-slash','none'].includes(settings.assetConfig.html_handling)&&
-    ['none','404-page','single-page-application'].includes(settings.assetConfig.not_found_handling)&&
     (typeof settings.assetConfig.run_worker_first==='boolean'||Array.isArray(settings.assetConfig.run_worker_first)),
     'CURRENT_ASSET_ROUTING_CONFIG_UNVERIFIED');
+  if(settings.assetConfig.html_handling!==undefined)
+    fail(['auto-trailing-slash','force-trailing-slash','drop-trailing-slash','none'].includes(settings.assetConfig.html_handling),'HTML_HANDLING');
+  if(settings.assetConfig.not_found_handling!==undefined)
+    fail(['none','404-page','single-page-application'].includes(settings.assetConfig.not_found_handling),'NOT_FOUND_HANDLING');
   fail(settings.usage_model==='standard','WORKER_USAGE_MODEL_DRIFT');
   fail(Array.isArray(settings.bindings)&&settings.bindings.some(b=>b.name==='ASSETS'&&b.type==='assets'),'ASSETS_BINDING');
   const seen=new Set();
@@ -141,6 +161,7 @@ export async function stageExecutableVersion({
   changedPath='/glow-save-sync.mjs',modules,moduleDigests,settings,baselineVersionId,scriptEtag,
   parentRecord,requireParentAdmission,requireProviderCompleteInventory,requireFreshFiveTargetPreimage
 }){
+  settings=normalizeVersionSettings(settings);
   fail(typeof requireParentAdmission==='function'&&
     typeof requireProviderCompleteInventory==='function'&&
     typeof requireFreshFiveTargetPreimage==='function','PARENT_PROOF_CALLBACKS');

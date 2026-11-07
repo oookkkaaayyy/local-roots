@@ -16,10 +16,12 @@ const installedPaths=[...assets.keys()];
 const installedDigests=new Map([...assets].map(([p,b])=>[p,sha256(p==='/glow-save-sync.mjs'?Buffer.from('old helper'):b)]));
 const modules=[{name:'index.js',bytes:Buffer.from('export default {fetch(){return new Response("ok")}}')}];
 const moduleDigests=new Map([['index.js',sha256(modules[0].bytes)]]);
-const settings={compatibility_date:'2026-07-28',usage_model:'standard',
- assetConfig:{base_path:'/',html_handling:'auto-trailing-slash',not_found_handling:'none',run_worker_first:['/api/*','/internal/*']},bindings:[
+const settings={runtime:{compatibility_date:'2026-07-28',usage_model:'standard',assets:{
+ static_routing:{user_worker:['/api/*','/internal/*']},serve_directly:true,base_path:'/'}},bindings:[
   {name:'ASSETS',type:'assets'}, {name:'SUPABASE_SERVICE_ROLE_KEY',type:'secret_text'},
-  {name:'SUPABASE_URL',type:'plain_text'}]};
+  {name:'SUPABASE_URL',type:'plain_text'}, {name:'UDISC_GLOW_ACCESS_APPROVED',type:'plain_text'},
+  {name:'UDISC_GLOW_EVENT_DATE',type:'plain_text'}, {name:'UDISC_GLOW_EVENT_ID',type:'plain_text'},
+  {name:'UDISC_GLOW_WINDOW_END',type:'plain_text'}, {name:'UDISC_GLOW_WINDOW_START',type:'plain_text'}]};
 const args={assets,installedPaths,installedDigests,modules,moduleDigests,settings,baselineVersionId:old};
 const witness={complete:true,readOnly:true,workerName:'hbnf',versionId:old,paths:installedPaths,
   digests:Object.fromEntries(installedDigests),inventoryDigest:inventoryDigest(installedPaths,installedDigests)};
@@ -34,7 +36,9 @@ test('requires a complete v348 inventory, preserves unchanged bytes and validate
   assert.equal(result.receipt.unchangedCount,8);
   for(const [p,bytes] of assets)if(p!=='/glow-save-sync.mjs')
     assert.equal(result.manifest[p].hash,assetHash(p,bytes),`${p} must retain its exact bytes`);
-  assert.equal(result.body.bindings.find(x=>x.name==='SUPABASE_SERVICE_ROLE_KEY').version_id,old);
+  assert.equal(result.body.bindings.length,8);
+  assert.deepEqual(result.body.bindings.map(x=>x.name),settings.bindings.map(x=>x.name));
+  assert.ok(result.body.bindings.filter(x=>x.name!=='ASSETS').every(x=>x.type==='inherit'&&x.version_id===old));
   assert.deepEqual(result.body.assets.config.run_worker_first,['/api/*','/internal/*','/glow-save-sync.mjs']);
   const helper=result.manifest['/glow-save-sync.mjs'].hash;
   assert.throws(()=>validateAssetBuckets(result.manifest,[[helper,'f'.repeat(32)]]),/BUCKET_UNRECOGNIZED_HASH/);
@@ -102,18 +106,22 @@ test('Beta route pins inheritance to v348, routes helper Worker-first and create
       const envelope=JSON.parse(init.body);
       assert.deepEqual(Object.keys(envelope),['version']);
       const body=envelope.version;
+      assert.deepEqual(Object.keys(body).sort(),['annotations','assets','bindings','compatibility_date','compatibility_flags','main_module','modules','usage_model'].sort());
+      assert.equal(Object.hasOwn(body,'routes'),false);
+      assert.equal(Object.hasOwn(body,'crons'),false);
       assert.deepEqual(body.assets.config.run_worker_first,['/api/*','/internal/*','/glow-save-sync.mjs']);
-      assert.deepEqual(body.bindings.find(x=>x.name==='SUPABASE_SERVICE_ROLE_KEY'),
-        {name:'SUPABASE_SERVICE_ROLE_KEY',type:'inherit',version_id:old});
+      assert.equal(body.bindings.length,8);
+      assert.deepEqual(body.bindings.map(x=>x.name),settings.bindings.map(x=>x.name));
+      assert.ok(body.bindings.filter(x=>x.name!=='ASSETS').every(x=>x.type==='inherit'&&x.version_id===old));
       assert.equal(body.modules[0].content_type,'application/javascript+module');
       assert.equal(Buffer.from(body.modules[0].content_base64,'base64').toString(),modules[0].bytes.toString());
       return response({id:next});
     }
     if(p.endsWith('/workers/workers/'+workerId+'/versions/'+next))return response({id:next,
       annotations:{'workers/tag':'hbnf-p0-'+sha256(assets.get('/glow-save-sync.mjs')).slice(0,32)},
-      compatibility_date:'2026-07-28',bindings:[{name:'ASSETS',type:'assets'},
-        {name:'SUPABASE_SERVICE_ROLE_KEY',type:'inherit',version_id:old},{name:'SUPABASE_URL',type:'inherit',version_id:old}],
-      assets:{config:{...settings.assetConfig,run_worker_first:['/api/*','/internal/*','/glow-save-sync.mjs']}}});
+      compatibility_date:'2026-07-28',bindings:settings.bindings.map(b=>b.name==='ASSETS'?b:
+        {name:b.name,type:'inherit',version_id:old}),
+      assets:{config:{base_path:'/',run_worker_first:['/api/*','/internal/*','/glow-save-sync.mjs']}}});
     if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old});
     throw Error('unexpected '+m+' '+p);
   };
@@ -124,6 +132,7 @@ test('Beta route pins inheritance to v348, routes helper Worker-first and create
   assert.equal(result.status,'EXECUTABLE_VERSION_CREATED_NOT_DEPLOYED');
   assert.equal(result.versionId,next);assert.equal(result.receipt.assetCount,9);assert.equal(preimages,2);
   assert.equal(calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
+  assert.equal(calls.some(x=>/\/(routes|schedules)(?:\?|$)/.test(x.path)&&x.method!=='GET'),false);
   assert.equal(current,old);
 });
 
@@ -140,8 +149,8 @@ test('ambiguous Beta create is reconciled by version-list readback without retry
     if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='GET')return response({result:[{id:next,annotations:{'workers/tag':'hbnf-p0-'+sha256(assets.get('/glow-save-sync.mjs')).slice(0,32)}}]});
     if(p.endsWith('/workers/workers/'+workerId+'/versions/'+next))return response({id:next,compatibility_date:'2026-07-28',
       annotations:{'workers/tag':'hbnf-p0-'+sha256(assets.get('/glow-save-sync.mjs')).slice(0,32)},
-      bindings:[{name:'ASSETS',type:'assets'},{name:'SUPABASE_SERVICE_ROLE_KEY',type:'inherit',version_id:old},{name:'SUPABASE_URL',type:'inherit',version_id:old}],
-      assets:{config:{...settings.assetConfig,run_worker_first:['/api/*','/internal/*','/glow-save-sync.mjs']}}});
+      bindings:settings.bindings.map(b=>b.name==='ASSETS'?b:{name:b.name,type:'inherit',version_id:old}),
+      assets:{config:{base_path:'/',run_worker_first:['/api/*','/internal/*','/glow-save-sync.mjs']}}});
     if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old});
     throw Error('unexpected '+m+' '+p);
   };
