@@ -457,13 +457,10 @@
     ],
     "physical_checked": false,
     "software": [
-      "21/21 Owner installed unchanged except approved six",
-      "9/9 exact changed target hashes",
-      "17/17 locally served HTTP assets",
-      "no stale queued command after reconnect",
-      "provider Edge candidate exact provider hash",
-      "v1 SQL challenge one-use and restorable",
-      "rollback exact byte equality and independent durable receipts"
+      "C8 active capsule: verify exact four Opal service targets and all packaged Edge/SQL postimages from the same admitted manifest.",
+      "Preserve current C9 Owner PWA marker 1.0.21-c9pair1 and all Owner PWA assets byte-identically; candidate contains zero Owner PWA replacement targets.",
+      "Verify provider function/version/config/routes and SQL objects after an admitted deployment; test conditional source-equivalent restoration against exact source/config and same-project environment.",
+      "Independently retain transaction-specific prechange state and closeout evidence; no success claim from review package or source tests."
     ]
   },
   "release_gates": {
@@ -628,5 +625,58 @@
       },
       "read_only": true
     }
+  },
+  "active_candidate_contract": {
+    "candidate_archive_drive_id": "10oBKihY5s3JUQ0jFr3Uetup-DoYeOHMI",
+    "candidate_archive_sha256": "e392bd01dacb0556b5539cd572014776d3f912e89258761448a656ffae410bc0",
+    "source_commit": "f047af8672694ff606028316525148dbaeb9ea82",
+    "active_scope": "C8 Edge source, its two C8 SQL migration directions, and four managed Opal service targets only.",
+    "explicit_exclusions": [
+      "Owner PWA replacements",
+      "C9 Phase1A",
+      "Matrix firmware",
+      "AUX firmware",
+      "UV",
+      "C8 unrelated SQL",
+      "Scoring",
+      "router networking"
+    ],
+    "opal_targets": [
+      {
+        "target": "/usr/libexec/hbnf-cart-glow-bridge",
+        "preimage": "ABSENT",
+        "postimage_sha256": "97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c",
+        "mode": "755"
+      },
+      {
+        "target": "/etc/init.d/hbnf-cart-glow-bridge",
+        "preimage": "ABSENT",
+        "postimage_sha256": "e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7",
+        "mode": "755"
+      },
+      {
+        "target": "/usr/lib/hbnf-glow-overlay-v1.sh",
+        "preimage": "ABSENT",
+        "postimage_sha256": "0823ec351d5d8f2e107c0197f06eaffa3ea8f55fbb4dc630581eaaab2716efc6",
+        "mode": "700"
+      },
+      {
+        "target": "/usr/libexec/hbnf-cart-glow-provision",
+        "preimage": "ABSENT",
+        "postimage_sha256": "fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20",
+        "mode": "700"
+      }
+    ],
+    "owner_pwa_targets_in_package": 0,
+    "provider_candidate_compiled_digest": "NOT_AVAILABLE; no claim of compiled provider byte identity",
+    "provider_rollback": "Owner-accepted exact ten-file v35 source/config-equivalent restore, import map and verify_jwt=false; preserve same-project environment and verify provider version/routes after restore.",
+    "transaction_admission": {
+      "phase1": false,
+      "phase2": false,
+      "transaction_id": null,
+      "owner_approval_for_exact_postimage": null
+    },
+    "historical_rows": "nine_target_opal, managed_targets, and old mixed-package criteria remain historical provenance and do not define this capsule\u2019s active file list.",
+    "status": "REVIEW_ONLY_NOT_ADMITTED_NOT_DEPLOYED"
   }
 }
