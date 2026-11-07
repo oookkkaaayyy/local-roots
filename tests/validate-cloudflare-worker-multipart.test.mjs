@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateCloudflareWorkerMultipart } from '../scripts/validate-cloudflare-worker-multipart.mjs';
+import { validateCloudflareWorkerModules, validateCloudflareWorkerMultipart } from '../scripts/validate-cloudflare-worker-multipart.mjs';
 
 const sourceMap = JSON.stringify({ version: 3, file: 'worker.js', sources: ['worker.ts'], names: [], mappings: 'AAAA' });
 const mapName = 'worker.js.map';
@@ -69,4 +69,18 @@ test('rejects an invalid source-map media type and an unresolved JavaScript map 
   const noMap = new Request(missing.url, { method: 'POST', body: form });
   const noMapBody = await noMap.arrayBuffer();
   await assert.rejects(() => validateCloudflareWorkerMultipart(noMapBody, noMap.headers.get('content-type')), /references missing source map/);
+});
+
+test('validates the exact JSON/base64 modules used by the Workers Beta Versions API', () => {
+  const modules = [
+    { name: 'index.js', content_type: 'application/javascript+module', content_base64: Buffer.from('//# sourceMappingURL=index.js.map\n').toString('base64') },
+    { name: 'index.js.map', content_type: 'application/source-map', content_base64: Buffer.from(sourceMap).toString('base64') },
+  ];
+  assert.deepEqual(validateCloudflareWorkerModules(modules), { valid: true, sourceMaps: 1, references: 1 });
+  assert.throws(() => validateCloudflareWorkerModules(modules.slice(0, 1)), /references missing source map/);
+  assert.throws(() => validateCloudflareWorkerModules([{ ...modules[1], content_base64: 'not-base64!' }]), /canonical base64/);
+  assert.throws(() => validateCloudflareWorkerModules([{ ...modules[1], content_type: 'application/json' }]), /must use a .map name and content_type/);
+  assert.throws(() => validateCloudflareWorkerModules([
+    modules[0], { ...modules[1], content_base64: Buffer.from('{"version":3,"sources":["worker.ts"],"names":[],"mappings":"A?"}').toString('base64') },
+  ]), /non-base64 VLQ/);
 });

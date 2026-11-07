@@ -134,6 +134,49 @@ function validateMetadataModules(metadata, availableMaps) {
   }
 }
 
+// The current Workers Beta Versions API sends modules as JSON/base64 rather
+// than multipart. Keep the same Source Map rules at that exact request boundary.
+export function validateCloudflareWorkerModules(modules, mainModule = 'index.js') {
+  if (!Array.isArray(modules)) fail('modules must be an array');
+  if (typeof mainModule !== 'string' || mainModule.length === 0) fail('main_module is required');
+  const names = new Set();
+  const availableMaps = new Set();
+  const scripts = [];
+  for (const [index, module] of modules.entries()) {
+    if (!module || typeof module !== 'object' || typeof module.name !== 'string' || module.name.length === 0) {
+      fail(`modules[${index}].name is required`);
+    }
+    if (names.has(module.name)) fail(`duplicate module ${module.name}`);
+    names.add(module.name);
+    const bytes = decodeBase64(module.content_base64, `modules[${index}].content_base64`);
+    const isNamedMap = /\.map$/i.test(module.name);
+    const isTypedMap = module.content_type === SOURCE_MAP_TYPE;
+    if (isNamedMap || isTypedMap) {
+      if (!isNamedMap || !isTypedMap) {
+        fail(`source map ${module.name} must use a .map name and content_type ${SOURCE_MAP_TYPE}`);
+      }
+      parseSourceMap(bytes, `source map ${module.name}`);
+      availableMaps.add(module.name);
+    } else if (/\.(?:m?js|cjs)$/i.test(module.name)) {
+      scripts.push({ name: module.name, source: bytes.toString('utf8') });
+    }
+  }
+  if (!names.has(mainModule)) fail(`main_module ${mainModule} is missing from modules`);
+  const references = [];
+  for (const { name, source } of scripts) {
+    for (const match of source.matchAll(/[#@]\s*sourceMappingURL\s*=\s*([^\s*]+)/g)) {
+      const reference = match[1];
+      if (/^(?:data:|https?:)/i.test(reference)) continue;
+      const resolved = new URL(reference, `https://upload.invalid/${name}`).pathname.slice(1);
+      if (!availableMaps.has(resolved) && !availableMaps.has(reference)) {
+        fail(`${name} references missing source map ${reference}`);
+      }
+      references.push({ script: name, map: reference });
+    }
+  }
+  return { valid: true, sourceMaps: availableMaps.size, references: references.length };
+}
+
 export async function validateCloudflareWorkerMultipart(body, contentType) {
   if (!/^multipart\/form-data\s*;/i.test(contentType || '')) fail('Content-Type must be multipart/form-data with a boundary');
   let form;
