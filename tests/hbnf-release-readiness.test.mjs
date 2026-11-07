@@ -58,7 +58,7 @@ const checked=(overrides={})=>checkReleaseReadiness({
  ...overrides
 });
 test('revision 12 source digest is pinned and remains non-admitting',()=>{
- assert.equal(MANIFEST_SHA256,'c32d70937d096528c5471602d4fd640b315922a5314a341603af6114d44f37b2');
+ assert.equal(MANIFEST_SHA256,'e6c314071ac6526fcc4d1fe60dfada29a78287461687549da9c711fabccb184d');
  assert.equal(MANIFEST_REVISION,12);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
