@@ -243,7 +243,7 @@
   },
   "state": "PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION",
   "transaction": {
-    "manifest_specific_one_time_id": "c9-phase1a-e5e417c639b9a0108469226a6bfce367",
+    "manifest_specific_one_time_id": "c9-phase1a-5518d5434a3b4ec99c573947803d42a6",
     "owner_approval_for_this_exact_postimage": null,
     "owner_authorization_to_continue": "CART CONTROLS C6 standing scope: #116 comment 6648484424 and current owner message 2026-11-04; no fresh per-attempt permission request while exact technical gates pass",
     "release_owner": "Controls Track A only",
@@ -3215,7 +3215,7 @@
     "files": {
       "install_restore_candidate": {
         "path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal.CANDIDATE.sh",
-        "git_blob_sha": "6bd4f01c545bad61059a54b25e544eab25ffb34c"
+        "git_blob_sha": "da0b2d472909e39d3539327c5eeb53aa80f55ff2"
       },
       "standalone_readonly_preflight": {
         "path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal-preflight.REVIEW_ONLY.sh",
@@ -3268,7 +3268,7 @@
       "schema": "hbnf-c9-phase1a-owner-signature-admission-v1",
       "scope": "C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY",
       "status": "OWNER_SIGNATURE_REQUIRED",
-      "transaction_id": "c9-phase1a-e5e417c639b9a0108469226a6bfce367",
+      "transaction_id": "c9-phase1a-5518d5434a3b4ec99c573947803d42a6",
       "rollback_sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
       "recovery_limitations": {
         "ubifs_process_reentry_restore": "PASS_ACTUAL_ROUTER",
@@ -3277,7 +3277,16 @@
         "owner_accepted_bounded_risk": true
       },
       "other_release_scopes_admitted": false,
-      "source_gate_change_admitted": false
+      "source_gate_change_admitted": false,
+      "prior_pre_mutation_attempts": [
+        {
+          "transaction_id": "c9-phase1a-e5e417c639b9a0108469226a6bfce367",
+          "disposition": "REFUSED_BEFORE_PREPARE_OR_ACTIVE_MUTATION",
+          "reason": "Opal OpenSSL 1.1.1i does not support pkeyutl -rawin; corrected verifier uses installed usign with the original pinned owner key",
+          "active_files_mutated": false,
+          "journal_or_registry_created": false
+        }
+      ]
     }
   },
   "c9_gl_mc_001wl_hardware_recovery_review_20261105": {

@@ -77,9 +77,13 @@ class AdmissionTests(unittest.TestCase):
   self.check(); mod.verify_native(self.docp,self.sigp,self.pub,"test-only")
   out=self.d/"capsule";mod.make_capsule(self.docp,self.sigp,self.pub,out)
   self.assertEqual((out/"C9_APPROVAL_PUBKEY.der").stat().st_size,44)
-  p=subprocess.run(["openssl","pkeyutl","-verify","-pubin","-inkey",str(out/"C9_APPROVAL_PUBKEY.der"),
-     "-keyform","DER","-rawin","-in",str(out/"C9_APPROVAL_MESSAGE.bin"),"-sigfile",str(out/"C9_APPROVAL_SIGNATURE.raw")],capture_output=True)
-  self.assertEqual(p.returncode,0,p.stderr.decode())
+  pub=base64.b64decode((out/"C9_APPROVAL_USIGN_PUBKEY").read_text().splitlines()[1],validate=True)
+  sig=base64.b64decode((out/"C9_APPROVAL_USIGN_SIGNATURE").read_text().splitlines()[1],validate=True)
+  self.assertEqual(len(pub),42);self.assertEqual(len(sig),74)
+  self.assertEqual(pub[:2],b"Ed");self.assertEqual(sig[:2],b"Ed")
+  self.assertEqual(pub[2:10],sig[2:10])
+  self.assertEqual(pub[10:],mod.ssh_public_der(self.pub)[-32:])
+  self.assertEqual(sig[10:],mod.parse_sshsig(self.sigp)[1])
  def test_unsigned_forged_signature_rejected(self):
   bad=self.d/"bad.sig";bad.write_text("self populated PASS\n")
   with self.assertRaises(ValueError): mod.parse_sshsig(bad)
@@ -122,6 +126,13 @@ class AdmissionTests(unittest.TestCase):
  def test_unpinned_wrong_signer_rejected_by_native_verifier(self):
   other=self.d/"other";subprocess.run(["ssh-keygen","-q","-t","ed25519","-N","","-f",str(other)],check=True)
   with self.assertRaises(ValueError): mod.verify_native(self.docp,self.sigp,pathlib.Path(str(other)+".pub"),"wrong")
+ def test_test_signers_cannot_become_live_roots_of_trust(self):
+  script=SCRIPT.read_text()
+  pinned="ccbe5481c51750f93a4fb79724d97516bc6fe1a9812cb0068d53c285414605a9"
+  self.assertNotEqual(sha(mod.ssh_public_der(self.pub)),pinned)
+  self.assertIn("C9_OWNER_KEY_DER_SHA256="+pinned,script)
+  self.assertIn('[ "$(docfield \'@.approval_key_der_sha256\')" = "$C9_OWNER_KEY_DER_SHA256" ]',script)
+  self.assertIn('[ "$(jsonfield \'@.transaction.c9_approval_key_der_sha256\')" = "$C9_OWNER_KEY_DER_SHA256" ]',script)
  def test_replay_identifier_refused_by_consumed_registry(self):
   registry=self.d/"registry";registry.mkdir();(registry/"consumed").write_text("burned")
   self.assertTrue((registry/"consumed").exists())

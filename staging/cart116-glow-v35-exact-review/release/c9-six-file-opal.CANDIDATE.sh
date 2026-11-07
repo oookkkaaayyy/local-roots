@@ -4,6 +4,10 @@
 # This script does not touch network, router config, firmware, Edge, SQL or UV.
 set -eu
 umask 077
+# Independent root of trust: this pin is source-controlled in the original
+# Controls authority and deliberately is not learned from the candidate
+# manifest being verified.
+C9_OWNER_KEY_DER_SHA256=ccbe5481c51750f93a4fb79724d97516bc6fe1a9812cb0068d53c285414605a9
 [ "$#" -eq 5 ] || { echo 'usage: preflight|prepare|apply|restore|verify root six.tsv candidate_dir txid' >&2; exit 64; }
 ACTION=$1 ROOT=$2 TARGETS=$3 SOURCE=$4 TX=$5
 case "$ACTION" in preflight|admission-check|prepare|apply|restore|verify) ;; *) exit 64;; esac
@@ -76,8 +80,8 @@ live_gate(){
  admission_evidence_gate
 }
 admission_evidence_gate(){
- for cmd in jsonfilter openssl; do command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_ADMISSION_VERIFIER:$cmd" >&2; return 80; }; done
- for file in ADMISSION.PENDING.json C9_RELEASE_APPROVAL.json C9_APPROVAL_MESSAGE.bin C9_APPROVAL_SIGNATURE.raw C9_APPROVAL_PUBKEY.der C9_CANDIDATE.zip; do
+ for cmd in jsonfilter openssl usign sed tail cmp wc awk; do command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_ADMISSION_VERIFIER:$cmd" >&2; return 80; }; done
+ for file in ADMISSION.PENDING.json C9_RELEASE_APPROVAL.json C9_APPROVAL_MESSAGE.bin C9_APPROVAL_SIGNATURE.raw C9_APPROVAL_PUBKEY.der C9_APPROVAL_USIGN_PUBKEY C9_APPROVAL_USIGN_SIGNATURE C9_CANDIDATE.zip; do
   [ -f "$SOURCE/$file" ] && [ ! -L "$SOURCE/$file" ] || return 80
  done
  jsonfield(){ jsonfilter -i "$SOURCE/ADMISSION.PENDING.json" -e "$1" 2>/dev/null; }
@@ -107,7 +111,8 @@ admission_evidence_gate(){
  nested_rollback="$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.rollback_sha256')"
  [ -z "$nested_rollback" ] || [ "$nested_rollback" = "$(docfield '@.rollback_sha256')" ] || return 80
  [ "$(sha "$SOURCE/C9_CANDIDATE.zip")" = "$(docfield '@.candidate_zip_sha256')" ] || return 80
- [ "$(docfield '@.approval_key_der_sha256')" = "$(jsonfield '@.transaction.c9_approval_key_der_sha256')" ] &&
+ [ "$(docfield '@.approval_key_der_sha256')" = "$C9_OWNER_KEY_DER_SHA256" ] &&
+ [ "$(jsonfield '@.transaction.c9_approval_key_der_sha256')" = "$C9_OWNER_KEY_DER_SHA256" ] &&
  [ "$(docfield '@.approval_key_fingerprint')" = "$(jsonfield '@.transaction.c9_approval_key_fingerprint')" ] &&
  [ -n "$(jsonfield '@.transaction.c9_approval_key_fingerprint')" ] || return 80
  [ "$(sha "$SOURCE/C9_APPROVAL_PUBKEY.der")" = "$(docfield '@.approval_key_der_sha256')" ] || return 80
@@ -116,8 +121,27 @@ admission_evidence_gate(){
  printf 'SSHSIG\000\000\000\017hbnf-c9-phase1a\000\000\000\000\000\000\000\006sha512\000\000\000@' > "$expected_message"
  openssl dgst -sha512 -binary "$SOURCE/C9_RELEASE_APPROVAL.json" >> "$expected_message" || return 80
  cmp -s "$expected_message" "$SOURCE/C9_APPROVAL_MESSAGE.bin" || { rm -f "$expected_message"; return 80; }
- openssl pkeyutl -verify -pubin -inkey "$SOURCE/C9_APPROVAL_PUBKEY.der" -keyform DER -rawin \
-  -in "$SOURCE/C9_APPROVAL_MESSAGE.bin" -sigfile "$SOURCE/C9_APPROVAL_SIGNATURE.raw" >/dev/null 2>&1 || { rm -f "$expected_message"; return 80; }
+ pub_bin="$SOURCE/.c9-usign-pub.$TX"
+ sig_bin="$SOURCE/.c9-usign-sig.$TX"
+ der_raw="$SOURCE/.c9-der-raw.$TX"
+ pub_raw="$SOURCE/.c9-pub-raw.$TX"
+ [ ! -e "$pub_bin" ] && [ ! -L "$pub_bin" ] && [ ! -e "$sig_bin" ] && [ ! -L "$sig_bin" ] &&
+ [ ! -e "$der_raw" ] && [ ! -L "$der_raw" ] && [ ! -e "$pub_raw" ] && [ ! -L "$pub_raw" ] || { rm -f "$expected_message"; return 80; }
+ sed -n '2p' "$SOURCE/C9_APPROVAL_USIGN_PUBKEY" | openssl base64 -d -A > "$pub_bin" 2>/dev/null || { rm -f "$expected_message" "$pub_bin" "$sig_bin" "$der_raw" "$pub_raw"; return 80; }
+ sed -n '2p' "$SOURCE/C9_APPROVAL_USIGN_SIGNATURE" | openssl base64 -d -A > "$sig_bin" 2>/dev/null || { rm -f "$expected_message" "$pub_bin" "$sig_bin" "$der_raw" "$pub_raw"; return 80; }
+ [ "$(wc -c < "$pub_bin" | awk '{print $1}')" -eq 42 ] &&
+ [ "$(wc -c < "$sig_bin" | awk '{print $1}')" -eq 74 ] &&
+ tail -c 32 "$SOURCE/C9_APPROVAL_PUBKEY.der" > "$der_raw" &&
+ tail -c 32 "$pub_bin" > "$pub_raw" && cmp -s "$der_raw" "$pub_raw" || {
+  rm -f "$expected_message" "$pub_bin" "$sig_bin" "$der_raw" "$pub_raw"; return 80;
+ }
+ pub_fp="$(usign -F -p "$SOURCE/C9_APPROVAL_USIGN_PUBKEY" 2>/dev/null)" || { rm -f "$expected_message" "$pub_bin" "$sig_bin" "$der_raw" "$pub_raw"; return 80; }
+ sig_fp="$(usign -F -x "$SOURCE/C9_APPROVAL_USIGN_SIGNATURE" 2>/dev/null)" || { rm -f "$expected_message" "$pub_bin" "$sig_bin" "$der_raw" "$pub_raw"; return 80; }
+ [ -n "$pub_fp" ] && [ "$pub_fp" = "$sig_fp" ] &&
+ usign -V -q -m "$SOURCE/C9_APPROVAL_MESSAGE.bin" -p "$SOURCE/C9_APPROVAL_USIGN_PUBKEY" -x "$SOURCE/C9_APPROVAL_USIGN_SIGNATURE" || {
+  rm -f "$expected_message" "$pub_bin" "$sig_bin" "$der_raw" "$pub_raw"; return 80;
+ }
+ rm -f "$pub_bin" "$sig_bin" "$der_raw" "$pub_raw"
  rm -f "$expected_message"
  [ "$(docfield '@.recovery_limitations.abrupt_power_loss')" = 'NOT_TESTED' ] &&
  [ "$(docfield '@.recovery_limitations.partial_active_file_restore')" = 'NOT_FAULT_INJECTED' ] &&

@@ -205,6 +205,18 @@ def make_capsule(doc_path: pathlib.Path, sig_path: pathlib.Path, pub_path: pathl
     (outdir / "C9_APPROVAL_MESSAGE.bin").write_bytes(signed_preimage(doc_path.read_bytes()))
     (outdir / "C9_APPROVAL_SIGNATURE.raw").write_bytes(raw_sig)
     (outdir / "C9_APPROVAL_PUBKEY.der").write_bytes(pinned_der)
+    # OpenWrt's installed usign verifies Ed25519, while the router's OpenSSL
+    # 1.1.1i lacks pkeyutl -rawin. Package signify-compatible structs. The
+    # eight-byte identifier is deterministic; trust remains anchored by the
+    # separately pinned DER public key and the signature itself.
+    key_id = hashlib.sha256(raw_pub).digest()[:8]
+    def usign_file(body: bytes, comment: str) -> bytes:
+        return (f"untrusted comment: {comment}\n" +
+                base64.b64encode(b"Ed" + key_id + body).decode("ascii") + "\n").encode("ascii")
+    (outdir / "C9_APPROVAL_USIGN_PUBKEY").write_bytes(
+        usign_file(raw_pub, "C9 pinned owner approval public key"))
+    (outdir / "C9_APPROVAL_USIGN_SIGNATURE").write_bytes(
+        usign_file(raw_sig, "C9 owner release signature"))
 
 def main():
     ap = argparse.ArgumentParser()
