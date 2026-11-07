@@ -42,17 +42,21 @@ test('synthetic organizer XLSX passes event-bound guarded import, becomes Glow s
     }
     throw Error(`Unexpected provider operation ${method} ${u}`);
   };
-  const form=new FormData();
-  form.append('xlsx',new File([bytes],'synthetic-nov10.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
-  form.append('eventId',eventId);form.append('weekDate',weekDate);form.append('officialExportConfirmed','yes');
-  form.append('reviewedDecisions',JSON.stringify({
-    'udisc:fixture a':{canonicalName:'Fixture A'},'udisc:fixture b':{canonicalName:'Fixture B'}
-  }));
-  const response=await handleOrganizerImportRequest(new Request('https://hbnf.example/internal/udisc-glow-organizer-import',{
-    method:'POST',headers:{Authorization:`Bearer ${token}`},body:form
-  }),{HBNF_UDISC_OPERATOR_IMPORT_ENABLED:'true',HBNF_UDISC_ORGANIZER_IMPORT_TOKEN:token,
-    SUPABASE_URL:'https://fixture.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'TEST_ONLY_NON_PRODUCTION_PROVIDER_SERVICE_ROLE_SECRET'},
-    {fetchImpl,now:()=>new Date('2026-11-11T03:30:00.000Z')});
+  const env={HBNF_UDISC_OPERATOR_IMPORT_ENABLED:'true',HBNF_UDISC_ORGANIZER_IMPORT_TOKEN:token,
+    SUPABASE_URL:'https://fixture.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'TEST_ONLY_NON_PRODUCTION_PROVIDER_SERVICE_ROLE_SECRET'};
+  const uploadRequest=()=>{
+    const form=new FormData();
+    form.append('xlsx',new File([bytes],'synthetic-nov10.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    form.append('eventId',eventId);form.append('weekDate',weekDate);form.append('officialExportConfirmed','yes');
+    form.append('reviewedDecisions',JSON.stringify({
+      'udisc:fixture a':{canonicalName:'Fixture A'},'udisc:fixture b':{canonicalName:'Fixture B'}
+    }));
+    return new Request('https://hbnf.example/internal/udisc-glow-organizer-import',{
+      method:'POST',headers:{Authorization:`Bearer ${token}`},body:form
+    });
+  };
+  const options={fetchImpl,now:()=>new Date('2026-11-11T03:30:00.000Z')};
+  const response=await handleOrganizerImportRequest(uploadRequest(),env,options);
   assert.equal(response.status,200);
   const receipt=await response.json();
   assert.equal(receipt.disposition,'SAVED_AND_READBACK_VERIFIED');
@@ -63,10 +67,21 @@ test('synthetic organizer XLSX passes event-bound guarded import, becomes Glow s
   const saved=state.glow.weeks[weekDate];
   assert.equal(saved.players.length,1);assert.equal(saved.players[0].scores.reduce((n,x)=>n+Number(x),0),54);
   assert.equal(saved.udiscSync.status.state,'organizer_upload_persisted');
+  assert.equal(saved.scorecardText.holePars['18'],'3');
+  assert.equal(saved.udiscSync.status.sourceFreshness,'NOT_ASSERTED');
+  const duplicate=await handleOrganizerImportRequest(uploadRequest(),env,options);
+  assert.equal(duplicate.status,200);
+  assert.equal((await duplicate.json()).disposition,'DUPLICATE_VERIFIED');
+  assert.equal(requests.filter(x=>x.method==='POST').length,1,'same source snapshot must not cause a second CAS');
   const snapshot=await parseUdiscWorkbook(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),
     {eventId,weekDate,observedAt:'2026-11-11T03:30:00.000Z'});
   const rows=standingsForPreview({eventId,snapshots:[snapshot]},{'Fixture A':'Fixture A','Fixture B':'Fixture B'});
   assert.equal(rows.length,1);assert.equal(rows[0].team,'Fixture A / Fixture B');assert.equal(rows[0].strokeTotal,54);
-  assert.deepEqual(requests.map(x=>x.method),['GET','GET','POST','GET']);
+  const glowHtml=await readFile(new URL('../public/glow.html',import.meta.url),'utf8');
+  assert.match(glowHtml,/function renderScoring\(\)/);
+  assert.match(glowHtml,/function renderStandings\(\)/);
+  assert.match(glowHtml,/function renderGlowDashboard\(\)/);
+  assert.match(glowHtml,/const weekRows=standingsForWeek\(getWeek\(\)\)/);
+  assert.deepEqual(requests.map(x=>x.method),['GET','GET','POST','GET','GET','GET','GET']);
   assert.equal(requests.some(x=>x.url.includes('cart')),false,'organizer upload must not generate live Cart output');
 });
