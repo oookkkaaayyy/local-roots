@@ -97,6 +97,14 @@ function readiness({row,binding,weekDate}){
   const locked=week?.scoresLocked===true||week?.cards?.some(c=>c?.finalized===true)===true;
   const active=glow.activeWeek===weekDate;
   const sourceEventMatched=!week?.udiscSync?.eventId||week.udiscSync.eventId===binding.eventId;
+  const operatorActions=[];
+  if(!week)operatorActions.push('INITIALIZE_EVENT_WEEK_THROUGH_EXISTING_SCORING_ADMIN');
+  if(week&&!active)operatorActions.push('SELECT_BOUND_EVENT_WEEK_THROUGH_EXISTING_SCORING_ADMIN');
+  if(week&&!parsQualified)operatorActions.push('VERIFY_ALL_18_EVENT_HOLE_PARS');
+  if(locked)operatorActions.push('RESOLVE_WEEK_LOCK_WITH_EXISTING_SCORING_AUTHORITY');
+  if(!sourceEventMatched)operatorActions.push('RESOLVE_EVENT_SOURCE_MISMATCH_WITH_SCORING_AUTHORITY');
+  if(week&&active&&parsQualified&&!locked&&sourceEventMatched)
+    operatorActions.push('UPLOAD_ORGANIZER_AUTHORIZED_OFFICIAL_XLSX');
   return {
     source:'AUTHENTICATED_PERSISTED_PROVIDER',eventId:binding.eventId,weekDate:binding.weekDate,
     windowStart:binding.windowStart,windowEnd:binding.windowEnd,
@@ -104,7 +112,7 @@ function readiness({row,binding,weekDate}){
     weekInitialized:!!week,weekActive:active,parCount:parEntries.filter(s=>/^[1-9]$/.test(s)).length,
     parsQualified,locked,sourceEventMatched,teamCount:Array.isArray(week?.players)?week.players.length:0,
     uploaderEligible:!!week&&active&&parsQualified&&!locked&&sourceEventMatched,
-    sourceFreshness:'NOT_ASSERTED',cartIntent:'NOT_REQUESTED'
+    sourceFreshness:'NOT_ASSERTED',cartIntent:'NOT_REQUESTED',operatorActions
   };
 }
 

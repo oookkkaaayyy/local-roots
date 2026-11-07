@@ -54,6 +54,7 @@ test('authenticated readiness uses exact persisted Nov10 binding but refuses to 
   assert.equal(data.teamCount,0);assert.equal(data.uploaderEligible,false);
   assert.equal(data.sourceFreshness,'NOT_ASSERTED');
   assert.equal(data.cartIntent,'NOT_REQUESTED');
+  assert.deepEqual(data.operatorActions,['INITIALIZE_EVENT_WEEK_THROUGH_EXISTING_SCORING_ADMIN']);
   assert.deepEqual(upstream.requests.map(x=>x.method),['GET','GET']);
 });
 test('authenticated upload cannot score uninitialized Nov10; no parser, RPC or Cart writes',async()=>{

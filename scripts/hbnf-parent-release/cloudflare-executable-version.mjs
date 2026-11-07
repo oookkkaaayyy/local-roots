@@ -11,6 +11,42 @@ const goodPath=p=>typeof p==='string'&&p.startsWith('/')&&!p.includes('..')&&!p.
 const fail=(condition,message)=>{if(!condition)throw Error('P0_CLOUDFLARE_'+message);};
 export const sha256=b=>createHash('sha256').update(b).digest('hex');
 export const assetHash=(path,bytes)=>sha256(Buffer.from(Buffer.from(bytes).toString('base64')+extname(path).slice(1))).slice(0,32);
+export const inventoryDigest=(paths,digests)=>sha256(Buffer.from(paths.slice().sort()
+  .map(p=>`${p}\0${digests.get(p)}\n`).join('')));
+
+function requireInventoryWitness(witness,{workerName,baselineVersionId,installedPaths,installedDigests}){
+  fail(witness&&witness.complete===true&&witness.workerName===workerName&&
+    witness.versionId===baselineVersionId&&witness.readOnly===true,'COMPLETE_ASSETS_NOT_PROVEN');
+  fail(Array.isArray(witness.paths)&&witness.paths.length===installedPaths.length&&
+    witness.paths.slice().sort().every((p,i)=>p===installedPaths.slice().sort()[i]),'INVENTORY_WITNESS_PATHS');
+  fail(witness.digests instanceof Object,'INVENTORY_WITNESS_DIGESTS');
+  for(const p of installedPaths)fail(hex64.test(witness.digests[p]||'')&&
+    witness.digests[p]===installedDigests.get(p),'INVENTORY_WITNESS_HASH_'+p);
+  fail(witness.inventoryDigest===inventoryDigest(installedPaths,installedDigests),'INVENTORY_WITNESS_DIGEST');
+  return witness;
+}
+
+function assetConfigWithHelperRoute(config){
+  if(config.run_worker_first===true)return {...config};
+  const routes=config.run_worker_first===false?[]:config.run_worker_first;
+  fail(Array.isArray(routes)&&routes.every(x=>typeof x==='string'&&x.startsWith('/')),
+    'WORKER_FIRST_ROUTES');
+  return {...config,run_worker_first:[...new Set([...routes,'/glow-save-sync.mjs'])]};
+}
+
+export function validateAssetBuckets(manifest,buckets){
+  fail(Array.isArray(buckets),'BUCKET_SHAPE');
+  const allowed=new Set(Object.values(manifest).map(x=>x.hash));
+  const seen=new Set();
+  for(const bucket of buckets){
+    fail(Array.isArray(bucket)&&bucket.length>0,'BUCKET_SHAPE');
+    for(const hash of bucket){
+      fail(allowed.has(hash)&&!seen.has(hash),'BUCKET_UNRECOGNIZED_HASH');
+      seen.add(hash);
+    }
+  }
+  return seen;
+}
 
 // No partial ZIP, stale historic archive, or inferred asset completeness is accepted.
 // assetDigests are hashes of original installed BYTES, not redirected HTML responses.
@@ -65,8 +101,9 @@ export function buildExactVersion({assets,installedPaths,installedDigests,change
   return {manifest,body:{main_module:'index.js',modules:parts,
     compatibility_date:settings.compatibility_date,
     compatibility_flags:settings.compatibility_flags||[],usage_model:settings.usage_model,
-    bindings,assets:{jwt:assetJwt,config:settings.assetConfig},
-    annotations:{'workers/message':'HBNF P0 one-file Glow save ACK; rev10 parent admission required'}},
+    bindings,assets:{jwt:assetJwt,config:assetConfigWithHelperRoute(settings.assetConfig)},
+    annotations:{'workers/message':'HBNF P0 one-file Glow save ACK; rev10 parent admission required',
+      'workers/tag':'hbnf-p0-'+sha256(assets.get(changedPath)).slice(0,32)}},
     receipt:{baselineVersionId,changedPath,changedDigest:sha256(assets.get(changedPath)),
       assetCount:paths.length,unchangedCount:paths.length-1,
       manifestDigest:sha256(Buffer.from(JSON.stringify(manifest))),
@@ -98,18 +135,20 @@ function apiClient({token,accountId,workerName,fetchImpl}){
 // or injected "approved" field alone is not authorization.
 export async function stageExecutableVersion({
   token,accountId,workerName='hbnf',fetchImpl=fetch,assets,installedPaths,installedDigests,
-  changedPath,modules,moduleDigests,settings,baselineVersionId,scriptEtag,
+  changedPath='/glow-save-sync.mjs',modules,moduleDigests,settings,baselineVersionId,scriptEtag,
   parentRecord,requireParentAdmission,requireProviderCompleteInventory,requireFreshFiveTargetPreimage
 }){
   fail(typeof requireParentAdmission==='function'&&
     typeof requireProviderCompleteInventory==='function'&&
     typeof requireFreshFiveTargetPreimage==='function','PARENT_PROOF_CALLBACKS');
   fail((await requireParentAdmission(parentRecord))===true,'PARENT_NOT_ADMITTED');
-  fail((await requireProviderCompleteInventory(installedPaths,installedDigests))===true,'COMPLETE_ASSETS_NOT_PROVEN');
+  requireInventoryWitness(await requireProviderCompleteInventory(installedPaths,installedDigests),
+    {workerName,baselineVersionId,installedPaths,installedDigests});
   fail((await requireFreshFiveTargetPreimage())===true,'FIVE_TARGET_PREIMAGE_NOT_FRESH');
   const c=apiClient({token,accountId,workerName,fetchImpl});
   const worker=await c.call(c.worker);
   fail(uuid.test(worker?.id)&&worker?.name===workerName,'WORKER_ID');
+  const workerPath='/workers/workers/'+worker.id;
   const active=await c.call(c.script+'/deployments');
   fail(active?.deployments?.[0]?.versions?.length===1&&
     active.deployments[0].versions[0].version_id===baselineVersionId&&
@@ -118,10 +157,18 @@ export async function stageExecutableVersion({
   fail(oldVersion?.id===baselineVersionId&&oldVersion?.resources?.script?.etag===scriptEtag,'SCRIPT_DRIFT');
   const placeholder=buildExactVersion({assets,installedPaths,installedDigests,changedPath,
     modules,moduleDigests,settings,baselineVersionId,assetJwt:'PLACEHOLDER_STAGING_TOKEN'});
-  const session=await c.call(c.script+'/assets-upload-session','POST',{manifest:placeholder.manifest});
+  let session;
+  try{session=await c.call(c.script+'/assets-upload-session','POST',{manifest:placeholder.manifest});}
+  catch(e){
+    // There is no documented read endpoint for an upload session. Read the
+    // version inventory once, then stop; never repeat an ambiguous POST.
+    try{await c.call(workerPath+'/versions?per_page=100');}catch{}
+    throw Object.assign(Error('P0_CLOUDFLARE_AMBIGUOUS_ASSET_SESSION_NO_RETRY'),{cause:e});
+  }
   fail(typeof session?.jwt==='string'&&Array.isArray(session?.buckets),'SESSION');
   const byHash=new Map(Object.entries(placeholder.manifest).map(([p,v])=>[v.hash,p]));
   const used=new Set();let completion=session.jwt;
+  validateAssetBuckets(placeholder.manifest,session.buckets);
   for(const bucket of session.buckets){
     fail(Array.isArray(bucket)&&bucket.length>0,'BUCKET_SHAPE');
     const form=new FormData();
@@ -133,7 +180,14 @@ export async function stageExecutableVersion({
         p.endsWith('.webmanifest')?'application/manifest+json':'application/octet-stream';
       form.append(h,new Blob([Buffer.from(assets.get(p)).toString('base64')],{type:mime}));
     }
-    const uploaded=await c.call('/workers/assets/upload?base64=true','POST',form,session.jwt);
+    let uploaded;
+    try{uploaded=await c.call('/workers/assets/upload?base64=true','POST',form,session.jwt);}
+    catch(e){
+      // Read version state for evidence, but asset-upload has no documented
+      // per-session readback. A second upload is never attempted here.
+      try{await c.call(workerPath+'/versions?per_page=100');}catch{}
+      throw Object.assign(Error('P0_CLOUDFLARE_AMBIGUOUS_ASSET_UPLOAD_NO_RETRY'),{cause:e});
+    }
     if(uploaded?.jwt)completion=uploaded.jwt;
   }
   fail(completion?.length>15&&(!session.buckets.length||completion!==session.jwt),'UPLOAD_INCOMPLETE');
@@ -143,18 +197,38 @@ export async function stageExecutableVersion({
   const justBefore=await c.call(c.script+'/deployments');
   fail(justBefore?.deployments?.[0]?.versions?.[0]?.version_id===baselineVersionId&&
     justBefore.deployments[0].versions[0].percentage===100,'PRECREATE_DRIFT');
-  const workerPath='/workers/workers/'+worker.id;
   // This is the NEW Workers Beta Versions API: JSON modules with content_base64.
   // The older /workers/scripts/{name}/versions upload API instead requires multipart.
-  const newVersion=await c.call(workerPath+'/versions?deploy=false','POST',result.body);
+  let newVersion;
+  try{newVersion=await c.call(workerPath+'/versions?deploy=false','POST',result.body);}
+  catch(e){
+    // Reconcile the unique candidate marker through the read-only version list;
+    // if it cannot be uniquely identified, stop without a second create.
+    const list=await c.call(workerPath+'/versions?per_page=100');
+    const tag=result.body.annotations['workers/tag'];
+    const matches=(list?.result||list?.versions||[]).filter(v=>v.annotations?.['workers/tag']===tag);
+    fail(matches.length===1,'AMBIGUOUS_VERSION_CREATE_UNRESOLVED');
+    newVersion=matches[0];
+    if(!newVersion.id)throw Object.assign(Error('P0_CLOUDFLARE_AMBIGUOUS_VERSION_CREATE_UNRESOLVED'),{cause:e});
+  }
   fail(uuid.test(newVersion?.id)&&newVersion.id!==baselineVersionId,'VERSION_CREATE');
   const verified=await c.call(workerPath+'/versions/'+newVersion.id);
-  fail(verified?.id===newVersion.id&&verified.compatibility_date===settings.compatibility_date,'VERSION_READBACK');
-  fail(JSON.stringify(verified.assets?.config)===JSON.stringify(settings.assetConfig),
+  fail(verified?.id===newVersion.id&&verified.compatibility_date===settings.compatibility_date&&
+    verified.annotations?.['workers/tag']===result.body.annotations['workers/tag'],'VERSION_READBACK');
+  fail(JSON.stringify(verified.assets?.config)===JSON.stringify(result.body.assets.config),
     'VERSION_ASSET_CONFIG_READBACK');
-  const actual=(verified.bindings||[]).map(x=>x.name+':'+x.type).sort();
-  const expected=settings.bindings.map(x=>x.name+':'+x.type).sort();
+  const actual=(verified.bindings||[]).map(x=>{
+    if(x.type==='inherit')fail(x.version_id===baselineVersionId,'BINDING_INHERITANCE_VERSION');
+    return x.name+':'+x.type;
+  }).sort();
+  const expected=result.body.bindings.map(x=>x.name+':'+x.type).sort();
   fail(actual.join('|')===expected.join('|'),'BINDING_READBACK');
+  const after=await c.call(c.script+'/deployments');
+  fail(after?.deployments?.[0]?.versions?.length===1&&
+    after.deployments[0].versions[0].version_id===baselineVersionId&&
+    after.deployments[0].versions[0].percentage===100,'ACTIVE_TRAFFIC_CHANGED');
+  const retained=await c.call(c.script+'/versions/'+baselineVersionId);
+  fail(retained?.id===baselineVersionId,'ROLLBACK_VERSION_NOT_RETAINED');
   return {status:'EXECUTABLE_VERSION_CREATED_NOT_DEPLOYED',versionId:newVersion.id,receipt:result.receipt};
 }
 // Called only inside the same rev10 admitted saga; no separate deployment driver.
@@ -175,7 +249,11 @@ export async function deployRetainedVersion({token,accountId,workerName='hbnf',f
     await c.call(c.script+'/deployments','POST',{strategy:'percentage',
       versions:[{version_id:targetVersionId,percentage:100}]});
   }catch(e){
-    throw Object.assign(Error('P0_CLOUDFLARE_AMBIGUOUS_DEPLOY_PARENT_RECOVERY_REQUIRED'),{cause:e});
+    const observed=await c.call(c.script+'/deployments');
+    const versions=observed?.deployments?.[0]?.versions||[];
+    if(versions.length===1&&versions[0].version_id===targetVersionId&&versions[0].percentage===100)
+      return {status:'VERSION_DEPLOY_READBACK_RECONCILED',versionId:targetVersionId,manifestSha256};
+    throw Object.assign(Error('P0_CLOUDFLARE_AMBIGUOUS_DEPLOY_READBACK_REQUIRED_NO_RETRY'),{cause:e});
   }
   const after=await c.call(c.script+'/deployments');
   fail(after?.deployments?.[0]?.versions?.length===1&&
