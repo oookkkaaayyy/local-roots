@@ -613,6 +613,20 @@
       "fresh same-manifest prechange reads",
       "post-deployment route/function/recovery verification"
     ],
-    "state": "REVIEW_ONLY_NOT_ADMITTED_NOT_DEPLOYED"
+    "state": "REVIEW_ONLY_NOT_ADMITTED_NOT_DEPLOYED",
+    "fresh_opal_readback": {
+      "observed_at_utc": "2026-11-07T07:41:10Z",
+      "connection": "new pinned-host SSH connection; BatchMode; ControlMaster disabled",
+      "uid": 0,
+      "host": "GL-SFT1200",
+      "owner_marker": "1.0.21-c9pair1",
+      "four_c8_managed_targets": {
+        "/usr/libexec/hbnf-cart-glow-bridge": "ABSENT",
+        "/etc/init.d/hbnf-cart-glow-bridge": "ABSENT",
+        "/usr/lib/hbnf-glow-overlay-v1.sh": "ABSENT",
+        "/usr/libexec/hbnf-cart-glow-provision": "ABSENT"
+      },
+      "read_only": true
+    }
   }
 }
