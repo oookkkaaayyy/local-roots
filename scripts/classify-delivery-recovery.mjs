@@ -1,4 +1,24 @@
 const terminalStatuses = new Set(['completed', 'failed', 'cancelled', 'expired']);
+const acceptanceTargets = new Set(['source', 'provider', 'device', 'owner']);
+
+function nonEmpty(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+/** A label or dispatched prompt is not evidence that a receiving worker ran. */
+function hasExecutionReadback(execution) {
+  if (!execution || !nonEmpty(execution.runId) || execution.observedBy !== 'independent-run-readback') return false;
+  if (execution.status === 'inProgress') return nonEmpty(execution.startedAt);
+  return terminalStatuses.has(execution.status) && nonEmpty(execution.startedAt) &&
+    nonEmpty(execution.completedAt) && nonEmpty(execution.actualResult);
+}
+
+/** Evidence references must be explicit; this pure function does not fetch or authenticate them. */
+function hasAcceptanceReceipt(receipt, target) {
+  return receipt?.target === target && receipt?.outcome === 'PASS' &&
+    receipt?.observedBy === 'independent-readback' &&
+    nonEmpty(receipt?.sourceRef) && nonEmpty(receipt?.evidenceRef);
+}
 
 /** Classify one failed operation without authorizing an unsafe retry. */
 export function classifyRecovery(event) {
@@ -18,6 +38,9 @@ export function classifyRecovery(event) {
         return { action: 'gather-evidence', retry: false, reason: 'permission failure is not mapped to the required operation' };
       }
       if (event.deniedOperation !== event.requiredOperation) {
+        if (Array.isArray(event.requiredGateOperations) && event.requiredGateOperations.includes(event.deniedOperation)) {
+          return { action: 'blocked-required-gate', retry: false, reason: 'denied read is a mandatory independent release or cost gate' };
+        }
         return { action: 'continue-independent', retry: false, reason: 'denied permission is unrelated to the required operation' };
       }
       return { action: 'blocked-required-operation', retry: false, reason: 'the required operation is explicitly denied' };
@@ -42,17 +65,25 @@ export function assessDeliveryEvidence(evidence) {
   const sourceTests = checks.sourceTests === true;
   const provider = checks.providerReadback === true;
   const device = checks.deviceReadback === true;
+  const owner = checks.ownerAcceptance === true;
   const releaseGate = checks.releaseGate === true;
   const execution = evidence?.receivingWorker ?? {};
-  const workerStarted = execution.status === 'inProgress' || (terminalStatuses.has(execution.status) && Boolean(execution.actualResult));
-  const workerCompleted = execution.status === 'completed' && Boolean(execution.actualResult);
+  const target = evidence?.acceptanceTarget;
+  const validTarget = acceptanceTargets.has(target);
+  const observedExecution = hasExecutionReadback(execution);
+  const workerCompleted = observedExecution && execution.status === 'completed';
+  const receipt = validTarget && hasAcceptanceReceipt(evidence?.acceptanceReceipt, target);
+  const targetAccepted = target === 'source' ? sourceTests :
+    target === 'provider' ? sourceTests && releaseGate && provider :
+    target === 'device' ? sourceTests && releaseGate && device :
+    target === 'owner' ? sourceTests && releaseGate && owner : false;
 
   return {
     sourceVerified: sourceTests,
-    providerAccepted: provider && releaseGate,
-    deviceAccepted: device && releaseGate,
-    handoffExecuted: workerStarted,
-    complete: sourceTests && releaseGate && (evidence.acceptanceTarget === 'provider' ? provider : evidence.acceptanceTarget === 'device' ? device : true) && workerCompleted,
+    providerAccepted: provider && releaseGate && hasAcceptanceReceipt(evidence?.acceptanceReceipt, 'provider'),
+    deviceAccepted: device && releaseGate && hasAcceptanceReceipt(evidence?.acceptanceReceipt, 'device'),
+    handoffExecuted: observedExecution,
+    complete: validTarget && Boolean(receipt) && Boolean(targetAccepted) && workerCompleted,
   };
 }
 
@@ -74,5 +105,14 @@ export function resumeAfterContextLoss(checkpoint) {
 
 /** Keep unrelated work flowing while one lane is blocked. */
 export function routeReadyWork(workItems = []) {
-  return workItems.filter(item => item?.status === 'ready' && item?.authorized === true && item?.dependenciesMet === true).map(item => item.id);
+  const busy = new Set(workItems.filter(item => hasExecutionReadback(item?.receivingWorker) &&
+    item.receivingWorker.status === 'inProgress').map(item => item.target ?? item.id));
+  const seen = new Set();
+  return workItems.filter(item => {
+    if (!item || item.status !== 'ready' || item.authorized !== true || item.dependenciesMet !== true || !nonEmpty(item.id)) return false;
+    const key = item.target ?? item.id;
+    if (busy.has(key) || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).map(item => item.id);
 }
