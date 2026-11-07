@@ -203,12 +203,13 @@ export async function stageExecutableVersion({
   // This is the NEW Workers Beta Versions API: JSON modules with content_base64.
   // The older /workers/scripts/{name}/versions upload API instead requires multipart.
   let newVersion;
-  try{newVersion=await c.call(workerPath+'/versions?deploy=false','POST',result.body);}
+  const requestBody={version:result.body};
+  try{newVersion=await c.call(workerPath+'/versions?deploy=false','POST',requestBody);}
   catch(e){
     // Reconcile the unique candidate marker through the read-only version list;
     // if it cannot be uniquely identified, stop without a second create.
     const list=await c.call(workerPath+'/versions?per_page=100');
-    const tag=result.body.annotations['workers/tag'];
+    const tag=requestBody.version.annotations['workers/tag'];
     const matches=(list?.result||list?.versions||[]).filter(v=>v.annotations?.['workers/tag']===tag);
     fail(matches.length===1,'AMBIGUOUS_VERSION_CREATE_UNRESOLVED');
     newVersion=matches[0];
@@ -218,13 +219,13 @@ export async function stageExecutableVersion({
   const verified=await c.call(workerPath+'/versions/'+newVersion.id);
   fail(verified?.id===newVersion.id&&verified.compatibility_date===settings.compatibility_date&&
     verified.annotations?.['workers/tag']===result.body.annotations['workers/tag'],'VERSION_READBACK');
-  fail(JSON.stringify(verified.assets?.config)===JSON.stringify(result.body.assets.config),
+  fail(JSON.stringify(verified.assets?.config)===JSON.stringify(requestBody.version.assets.config),
     'VERSION_ASSET_CONFIG_READBACK');
   const actual=(verified.bindings||[]).map(x=>{
     if(x.type==='inherit')fail(x.version_id===baselineVersionId,'BINDING_INHERITANCE_VERSION');
     return x.name+':'+x.type;
   }).sort();
-  const expected=result.body.bindings.map(x=>x.name+':'+x.type).sort();
+  const expected=requestBody.version.bindings.map(x=>x.name+':'+x.type).sort();
   fail(actual.join('|')===expected.join('|'),'BINDING_READBACK');
   const after=await c.call(c.script+'/deployments');
   fail(after?.deployments?.[0]?.versions?.length===1&&

@@ -99,7 +99,9 @@ test('Beta route pins inheritance to v348, routes helper Worker-first and create
     if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='POST'){
       assert.equal(u.search,'?deploy=false');
       assert.equal(init.headers['Content-Type'],'application/json');
-      const body=JSON.parse(init.body);
+      const envelope=JSON.parse(init.body);
+      assert.deepEqual(Object.keys(envelope),['version']);
+      const body=envelope.version;
       assert.deepEqual(body.assets.config.run_worker_first,['/api/*','/internal/*','/glow-save-sync.mjs']);
       assert.deepEqual(body.bindings.find(x=>x.name==='SUPABASE_SERVICE_ROLE_KEY'),
         {name:'SUPABASE_SERVICE_ROLE_KEY',type:'inherit',version_id:old});
