@@ -1,4 +1,4 @@
 /usr/libexec/hbnf-cart-glow-bridge	candidate/opal/usr/libexec/hbnf-cart-glow-bridge	97aa4265438c002ab8aee280496aeb19c72cf87bdd64b74dcba9faaf8b2e3a2c	ABSENT	755
 /etc/init.d/hbnf-cart-glow-bridge	candidate/opal/etc/init.d/hbnf-cart-glow-bridge	e9ed15ddb7080f50e60d4032efa13e70e129985d646177ecbb4135ea27a697b7	ABSENT	755
-/usr/lib/hbnf-glow-overlay-v1.sh	candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh	de51e9ace05f876124886089b841c6f5858b91ee4d42a3260f7e8f1788146538	ABSENT	700
+/usr/lib/hbnf-glow-overlay-v1.sh	candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh	0823ec351d5d8f2e107c0197f06eaffa3ea8f55fbb4dc630581eaaab2716efc6	ABSENT	700
 /usr/libexec/hbnf-cart-glow-provision	candidate/opal/usr/libexec/hbnf-cart-glow-provision	fcbd8ccfa21e737620a60eae67abbbc93f5e2d587a106dd62005763e126afd20	ABSENT	700

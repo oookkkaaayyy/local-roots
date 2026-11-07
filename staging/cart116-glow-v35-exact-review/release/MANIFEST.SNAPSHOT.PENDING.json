@@ -5,7 +5,7 @@
     "file_name": "CART116-Controls-Managed-Glow-BC-REVIEW_ONLY-20261103.zip",
     "independent_download_back_verified": false,
     "installable": false,
-    "note": "netfix2 source snapshot; exact 11-target package SHA/Drive recovery bound separately in controlling admission. Firmware 85796804... is separate durable REVIEW_ONLY candidate, NOT packaged/installed; original 21-file Owner rollback unchanged.",
+    "note": "C8-only deterministic package rebuild in progress from current exact source; old BC archive includes v1.0.20 Owner payloads and must not be reused. Preserve installed C9 v1.0.21-c9pair1.",
     "sha256": null
   },
   "edge": {
@@ -66,7 +66,7 @@
     "active_relay_startup_and_preimage": "UNKNOWN: source init calls /usr/libexec/hbnf-matrix-relay; no current procd or bytes for that path",
     "aux_24_configured_vs_22_ddp": "SOURCE_GEOMETRY_GUARD_22_RGB_GPIO16_PLUS_TWO_OFF_TYPE41_PWM_GPIO25_26; NO_PACKET_OR_ELECTRICAL_PROOF",
     "brightness_visibility": "OWNER_SELECTED_HBNF_MATRIX_BRIGHTNESS_ZERO_20261103; no visual GLOW acceptance until naturally nonzero, never force it",
-    "compiled_edge_candidate_and_rollback_offprovider_downloadback": "MISSING_COMPILED_PROVIDER_BYTES; v35 deployed source 10/10 parity, ezbr_sha256 pinned but not a downloaded compiled bundle",
+    "compiled_edge_candidate_and_rollback_offprovider_downloadback": "OWNER ACCEPTED source/config-equivalent recovery for deployed v35 rollback only (issue 6703142723); compiled v35 digest remains reference, candidate source/package exactness and independent download-back still required.",
     "exact_current_opal_main_and_all_other_eight_preimages": "7/9 VERIFIED LAST CAPTURE; 1 HELPER ABSENT; CORRECT MAIN PATH UNVERIFIED",
     "expected_actual_opal_main_path": "/usr/libexec/hbnf-matrix-relay HISTORICAL PROCD SOURCE; CURRENT DEVICE NOT CAPTURED",
     "fresh_device_matrix_ps60_effect_id_and_aux_parity": "ps=-1 effectId142 both fx142 VERIFIED; PS60 NOT OBSERVED; NATIVE RENDERER FAIL_CLOSED",
@@ -83,7 +83,8 @@
     "physical_owner_safari12_matrix_aux_acceptance": "NOT_ACCEPTED; one combined field test after exact manifest approval; UV OFF",
     "single_unchanged_manifest_phase1_phase2_closeout": "PENDING",
     "native_owner_priority_installed_r6": "Review-only exact original R6 packet20_diag build 85796804... now reproducible and durably archived; installed raw-image parity, native Owner priority on device, same-manifest device preimage/rollback and one-use approval NOT PROVEN; no flash.",
-    "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_ONLY exact R6-target reviewed firmware built/reproduced, not installed; preserve native FX142 ps=-1, DDP22 and audio; no physical renderer acceptance."
+    "native_matrix_ps_minus_one_fx142_renderer": "SOURCE_ONLY exact R6-target reviewed firmware built/reproduced, not installed; preserve native FX142 ps=-1, DDP22 and audio; no physical renderer acceptance.",
+    "c9_1_0_21_baseline": "PRESERVE: installed marker 1.0.21-c9pair1; C8 package must contain zero Owner PWA target replacements."
   },
   "installer_included": true,
   "legacy_nine_target_opal_status": "SUPERSEDED_HISTORY_ONLY",
@@ -145,10 +146,10 @@
     },
     {
       "candidate": "candidate/opal/usr/lib/hbnf-glow-overlay-v1.sh",
-      "candidate_bytes": 12161,
-      "candidate_sha256": "d97ac46d435edfac0d622fc46503a98f2f4ffab22b91e516aef8b25e46eabe33",
+      "candidate_bytes": 12757,
+      "candidate_sha256": "0823ec351d5d8f2e107c0197f06eaffa3ea8f55fbb4dc630581eaaab2716efc6",
       "mode": "700",
-      "preimage_evidence": "6614401763",
+      "preimage_evidence": "fresh authenticated Opal read-only prechange 2026-11-07",
       "preimage_expected_sha256_or_status": "ABSENT",
       "target": "/usr/lib/hbnf-glow-overlay-v1.sh"
     },
