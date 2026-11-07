@@ -41,14 +41,41 @@ export function assessDeliveryEvidence(evidence) {
   const releaseGate = checks.releaseGate === true;
   const execution = evidence?.receivingWorker ?? {};
   const workerStarted = execution.status === 'inProgress' || (terminalStatuses.has(execution.status) && Boolean(execution.actualResult));
+  const workerCompleted = execution.status === 'completed' && Boolean(execution.actualResult);
 
   return {
     sourceVerified: sourceTests,
     providerAccepted: provider && releaseGate,
     deviceAccepted: device && releaseGate,
     handoffExecuted: workerStarted,
-    complete: sourceTests && releaseGate && (evidence.acceptanceTarget === 'provider' ? provider : evidence.acceptanceTarget === 'device' ? device : true) && workerStarted,
+    complete: sourceTests && releaseGate && (evidence.acceptanceTarget === 'provider' ? provider : evidence.acceptanceTarget === 'device' ? device : true) && workerCompleted,
   };
+}
+
+/** Fail closed when a proposed operation falls outside an explicit standing scope. */
+export function authorizeOperation(proposal, standingScope) {
+  const allowed = standingScope?.authorized === true
+    && standingScope.provider === proposal?.provider
+    && standingScope.target === proposal?.target
+    && Array.isArray(standingScope.operations)
+    && standingScope.operations.includes(proposal?.operation);
+  return { allowed, action: allowed ? 'proceed-to-release-gates' : 'refuse', reason: allowed ? 'proposal matches the explicit standing scope' : 'proposal is outside explicit standing authorization' };
+}
+
+/** Require the complete recovery and acceptance contract before release admission. */
+export function validateReleaseManifest(manifest) {
+  const required = [
+    ['source', manifest?.source],
+    ['target', manifest?.target],
+    ['baseline', manifest?.baseline],
+    ['candidate', manifest?.candidate],
+    ['rollback', manifest?.rollback],
+    ['recoveryReadback', manifest?.recoveryReadback],
+    ['mutationRoute', manifest?.mutationRoute],
+    ['acceptanceCriteria', Array.isArray(manifest?.acceptanceCriteria) && manifest.acceptanceCriteria.length > 0],
+  ];
+  const missing = required.filter(([, value]) => value == null || value === '' || value === false).map(([name]) => name);
+  return { admitted: missing.length === 0, missing };
 }
 
 /** Keep unrelated work flowing while one lane is blocked. */

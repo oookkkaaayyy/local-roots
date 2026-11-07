@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assessDeliveryEvidence, classifyRecovery, routeReadyWork } from '../scripts/classify-delivery-recovery.mjs';
+import { assessDeliveryEvidence, authorizeOperation, classifyRecovery, routeReadyWork, validateReleaseManifest } from '../scripts/classify-delivery-recovery.mjs';
 
 test('1: raw and base64 Source Map v3 upload checks remain explicit', async () => {
   const { validateCloudflareWorkerMultipart } = await import('../scripts/validate-cloudflare-worker-multipart.mjs');
@@ -36,11 +36,13 @@ test('7: a terminated worker counts only with an actual result to resume from', 
 });
 
 test('8: source success cannot compensate for a missing release gate', () => {
+  assert.deepEqual(validateReleaseManifest({ source: 'sha', target: 'provider/project', baseline: 'version', candidate: 'sha256:candidate', rollback: 'sha256:rollback', mutationRoute: 'controlled', acceptanceCriteria: ['readback'] }), { admitted: false, missing: ['recoveryReadback'] });
   assert.equal(assessDeliveryEvidence({ acceptanceTarget: 'provider', checks: { sourceTests: true, providerReadback: true, releaseGate: false }, receivingWorker: { status: 'completed', actualResult: 'readback' } }).complete, false);
 });
 
 test('9: an unapproved or unmet-dependency operation is not routed', () => {
   assert.deepEqual(routeReadyWork([{ id: 'a', status: 'ready', authorized: false, dependenciesMet: true }, { id: 'b', status: 'ready', authorized: true, dependenciesMet: false }]), []);
+  assert.equal(authorizeOperation({ provider: 'cloudflare', target: 'prod', operation: 'deploy' }, { authorized: true, provider: 'cloudflare', target: 'prod', operations: ['read'] }).allowed, false);
 });
 
 test('10: a blocked lane does not suppress independent ready work', () => {
@@ -57,5 +59,6 @@ test('11: green source tests without provider or device readback are not accepte
 
 test('12: a sent handoff without receiving-worker execution cannot close the handoff', () => {
   assert.equal(assessDeliveryEvidence({ checks: { sourceTests: true, releaseGate: true }, receivingWorker: { status: 'queued' } }).complete, false);
+  assert.equal(assessDeliveryEvidence({ checks: { sourceTests: true, releaseGate: true }, receivingWorker: { status: 'inProgress' } }).complete, false);
   assert.equal(assessDeliveryEvidence({ checks: { sourceTests: true, releaseGate: true }, receivingWorker: { status: 'inProgress' } }).handoffExecuted, true);
 });
