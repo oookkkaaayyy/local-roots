@@ -80,6 +80,50 @@ export function classifyRecovery(event) {
   return { action: 'inspect', retry: false, reason: 'failure evidence does not establish a safe recovery action' };
 }
 
+/** Execute bounded recovery steps through explicit adapters, then resume the original task. */
+export async function executeRecovery(event, adapters) {
+  let current = event;
+  let steps = 0;
+  const maxSteps = 5;
+  while (steps < maxSteps) {
+    const decision = classifyRecovery(current);
+    const dispatch = {
+      'verify-current-state': 'readback',
+      readback: 'readback',
+      'continue-after-readback': 'continueTask',
+      'continue-independent': 'continueTask',
+      'rebuild-correction': 'rebuildArtifact',
+      'verify-corrected-artifact': 'verifyArtifact',
+      'retry-operation': 'retryOperation',
+    }[decision.action];
+    if (!dispatch) return { ...decision, executed: steps > 0, resumed: false, steps };
+    const operation = adapters?.[dispatch];
+    if (typeof operation !== 'function') {
+      return { ...decision, action: 'blocked-adapter', executed: steps > 0, resumed: false, steps,
+        reason: `required recovery adapter is unavailable: ${dispatch}` };
+    }
+    let result;
+    try {
+      result = await operation(current);
+    } catch (error) {
+      return { ...decision, action: 'recovery-step-failed', executed: true, resumed: false, steps: steps + 1,
+        reason: `recovery adapter threw: ${String(error)}` };
+    }
+    steps += 1;
+    if (result?.ok !== true) {
+      return { ...decision, action: 'recovery-step-failed', executed: true, resumed: false, steps, result };
+    }
+    if (dispatch === 'continueTask') return { ...decision, executed: true, resumed: true, steps, result };
+    if (!result.event || typeof result.event !== 'object') {
+      return { ...decision, action: 'recovery-evidence-required', executed: true, resumed: false, steps,
+        reason: `adapter ${dispatch} succeeded without returning current evidence for the next decision` };
+    }
+    current = result.event;
+  }
+  return { action: 'stop-recovery', retry: false, executed: true, resumed: false, steps,
+    reason: 'bounded recovery step limit reached; task must be inspected before further action' };
+}
+
 /** Check that evidence is sufficient for the specific claim being made. */
 export function assessDeliveryEvidence(evidence) {
   const checks = evidence?.checks ?? {};

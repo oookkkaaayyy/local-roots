@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assessDeliveryEvidence, authorizeOperation, classifyRecovery, resumeAfterContextLoss, routeReadyWork } from '../scripts/classify-delivery-recovery.mjs';
+import { assessDeliveryEvidence, authorizeOperation, classifyRecovery, executeRecovery, resumeAfterContextLoss, routeReadyWork } from '../scripts/classify-delivery-recovery.mjs';
 
 test('1: raw and base64 Source Map v3 upload checks remain explicit', async () => {
   const { validateCloudflareWorkerMultipart } = await import('../scripts/validate-cloudflare-worker-multipart.mjs');
@@ -130,4 +130,36 @@ test('19: owner acceptance is separate from source and device evidence', () => {
 test('20: a working label without run ID and start readback is NOT actual execution', () => {
   assert.equal(assessDeliveryEvidence({ receivingWorker: { status: 'inProgress' } }).handoffExecuted, false);
   assert.equal(assessDeliveryEvidence({ receivingWorker: { status: 'inProgress', runId: 'run-1', observedBy: 'independent-run-readback', startedAt: '2026-11-06T10:00:00Z' } }).handoffExecuted, true);
+});
+
+test('21: consumer reads an ambiguous target, retries only verified non-application, then resumes', async () => {
+  const calls = [];
+  const result = await executeRecovery({ operationState: 'ambiguous', target: 'worker-v12' }, {
+    readback: async () => { calls.push('readback'); return { ok: true, event: { operationState: 'ambiguous', target: 'worker-v12', readbackVerified: true, readbackTargetMatches: true, readbackState: 'not-applied', retrySafe: true, attempts: 0, maxAttempts: 1 } }; },
+    retryOperation: async () => { calls.push('retry'); return { ok: true, event: { operationState: 'rejected', failureClass: 'permission', requiredOperation: 'worker.upload', deniedOperation: 'billing.read' } }; },
+    continueTask: async () => { calls.push('resume'); return { ok: true, nextAction: 'continue-upload-workflow' }; },
+  });
+  assert.deepEqual(calls, ['readback', 'retry', 'resume']);
+  assert.equal(result.resumed, true);
+});
+
+test('consumer fails closed when readback adapter cannot establish current state', async () => {
+  const result = await executeRecovery({ operationState: 'ambiguous' }, {
+    readback: async () => ({ ok: true }),
+    retryOperation: async () => assert.fail('must not retry without readback evidence'),
+  });
+  assert.equal(result.action, 'recovery-evidence-required');
+  assert.equal(result.resumed, false);
+});
+
+test('consumer rebuilds, verifies, retries a changed artifact, then resumes', async () => {
+  const calls = [];
+  const result = await executeRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'old', candidateArtifactDigest: 'old', attempts: 0, maxAttempts: 2 }, {
+    rebuildArtifact: async () => { calls.push('rebuild'); return { ok: true, event: { operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'old', candidateArtifactDigest: 'new', attempts: 0, maxAttempts: 2 } }; },
+    verifyArtifact: async () => { calls.push('verify'); return { ok: true, event: { operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'old', candidateArtifactDigest: 'new', correctedArtifactVerified: true, retrySafe: true, attempts: 0, maxAttempts: 2 } }; },
+    retryOperation: async () => { calls.push('retry'); return { ok: true, event: { operationState: 'rejected', failureClass: 'permission', requiredOperation: 'worker.upload', deniedOperation: 'billing.read' } }; },
+    continueTask: async () => { calls.push('resume'); return { ok: true }; },
+  });
+  assert.deepEqual(calls, ['rebuild', 'verify', 'retry', 'resume']);
+  assert.equal(result.resumed, true);
 });
