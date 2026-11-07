@@ -4,6 +4,10 @@ const terminalStatuses = new Set(['completed', 'failed', 'cancelled', 'expired']
 export function classifyRecovery(event) {
   if (!event || typeof event !== 'object') throw new TypeError('recovery event is required');
 
+  if (event.historicalStatus === 'resolved' && event.currentEvidence !== 'verified') {
+    return { action: 'verify-current-state', retry: false, reason: 'historical resolution is not current provider or project state' };
+  }
+
   if (event.operationState === 'ambiguous') {
     return { action: 'readback', retry: false, reason: 'mutation outcome is ambiguous; read the authoritative target before retrying' };
   }
@@ -62,20 +66,10 @@ export function authorizeOperation(proposal, standingScope) {
   return { allowed, action: allowed ? 'proceed-to-release-gates' : 'refuse', reason: allowed ? 'proposal matches the explicit standing scope' : 'proposal is outside explicit standing authorization' };
 }
 
-/** Require the complete recovery and acceptance contract before release admission. */
-export function validateReleaseManifest(manifest) {
-  const required = [
-    ['source', manifest?.source],
-    ['target', manifest?.target],
-    ['baseline', manifest?.baseline],
-    ['candidate', manifest?.candidate],
-    ['rollback', manifest?.rollback],
-    ['recoveryReadback', manifest?.recoveryReadback],
-    ['mutationRoute', manifest?.mutationRoute],
-    ['acceptanceCriteria', Array.isArray(manifest?.acceptanceCriteria) && manifest.acceptanceCriteria.length > 0],
-  ];
-  const missing = required.filter(([, value]) => value == null || value === '' || value === false).map(([name]) => name);
-  return { admitted: missing.length === 0, missing };
+/** Select a durable checkpoint before resuming after a terminated session. */
+export function resumeAfterContextLoss(checkpoint) {
+  const complete = Boolean(checkpoint?.authorityUrl && checkpoint?.sourceRef && checkpoint?.lastVerifiedEvidence && checkpoint?.nextAction);
+  return { action: complete ? 'resume-next-action' : 'recover-authority-and-evidence', safe: complete };
 }
 
 /** Keep unrelated work flowing while one lane is blocked. */

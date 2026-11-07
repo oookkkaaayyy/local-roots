@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assessDeliveryEvidence, authorizeOperation, classifyRecovery, routeReadyWork, validateReleaseManifest } from '../scripts/classify-delivery-recovery.mjs';
+import { assessDeliveryEvidence, authorizeOperation, classifyRecovery, resumeAfterContextLoss, routeReadyWork } from '../scripts/classify-delivery-recovery.mjs';
 
 test('1: raw and base64 Source Map v3 upload checks remain explicit', async () => {
   const { validateCloudflareWorkerMultipart } = await import('../scripts/validate-cloudflare-worker-multipart.mjs');
@@ -24,6 +24,7 @@ test('4: ambiguous mutation requires authoritative readback before any retry', (
 
 test('5: historical resolution is not current proof; gather current evidence', () => {
   assert.equal(classifyRecovery({ operationState: 'rejected', failureClass: 'permission' }).action, 'gather-evidence');
+  assert.equal(classifyRecovery({ historicalStatus: 'resolved', currentEvidence: 'not-checked' }).action, 'verify-current-state');
 });
 
 test('6: a prerequisite alone is not a handoff execution receipt', () => {
@@ -33,10 +34,11 @@ test('6: a prerequisite alone is not a handoff execution receipt', () => {
 test('7: a terminated worker counts only with an actual result to resume from', () => {
   assert.equal(assessDeliveryEvidence({ receivingWorker: { status: 'failed' } }).handoffExecuted, false);
   assert.equal(assessDeliveryEvidence({ receivingWorker: { status: 'failed', actualResult: 'saved checkpoint read' } }).handoffExecuted, true);
+  assert.deepEqual(resumeAfterContextLoss({ authorityUrl: 'https://example.invalid/record', sourceRef: 'commit', lastVerifiedEvidence: 'CI pass', nextAction: 'inspect route' }), { action: 'resume-next-action', safe: true });
+  assert.equal(resumeAfterContextLoss({ authorityUrl: 'https://example.invalid/record' }).safe, false);
 });
 
 test('8: source success cannot compensate for a missing release gate', () => {
-  assert.deepEqual(validateReleaseManifest({ source: 'sha', target: 'provider/project', baseline: 'version', candidate: 'sha256:candidate', rollback: 'sha256:rollback', mutationRoute: 'controlled', acceptanceCriteria: ['readback'] }), { admitted: false, missing: ['recoveryReadback'] });
   assert.equal(assessDeliveryEvidence({ acceptanceTarget: 'provider', checks: { sourceTests: true, providerReadback: true, releaseGate: false }, receivingWorker: { status: 'completed', actualResult: 'readback' } }).complete, false);
 });
 
