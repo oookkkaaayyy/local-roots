@@ -465,10 +465,10 @@
   },
   "release_gates": {
     "actual_matrix_aux_owner_field_acceptance": "NOT_CHECKED",
-    "actual_private_installed_preimage_download_back": "MISSING live Opal/provider preimage archive; no claim from source capsule.",
+    "actual_private_installed_preimage_download_back": "PASS candidate-scoped archive: current 21 Owner PWA files, C9 local transport, ten actual provider source/config files, four absent Opal targets and SQL catalog state; refresh immediately before any mutation.",
     "compiled_edge_candidate_and_restore": "MISSING compiled candidate bytes; accepted v35 recovery is exact deployed source/config-equivalent restore only.",
     "native_overlay_ps_minus_one_renderer": "NOT_PROVED_FAIL_CLOSED",
-    "new_transaction_specific_backup_download_back": "MISSING live target/provider preimage archive; capsule download-back is candidate-package evidence only.",
+    "new_transaction_specific_backup_download_back": "CANDIDATE-SCOPE ARCHIVE PASS; exact transaction ID binding and immediate prechange refresh remain required before phase1 admission.",
     "old_cloud_named_relay_absent": "PASS at 2026-11-03T20:12Z time scoped",
     "one_time_manifest_owner_approval": "MISSING for a future exact C8 live postimage; accepted rollback policy is not deployment authorization.",
     "seven_owner_preimages": "MATCHED at 2026-11-03T19:21Z capture, independent durable backup not yet verified",
@@ -603,12 +603,11 @@
       "changed_by_this_record": false
     },
     "remaining_live_gates": [
-      "transaction-specific actual preimage backup with independent download-back",
-      "exact candidate compiled-provider identity or accepted source/config recovery path bound to the C8 release",
-      "SQL and Opal dependency admission",
-      "exact C8 one-time owner authorization",
-      "fresh same-manifest prechange reads",
-      "post-deployment route/function/recovery verification"
+      "final approved transaction identity and immediate same-manifest provider/device prechange reread",
+      "same-project provider environment/config parity required by accepted source-equivalent restore",
+      "exact owner authorization for the frozen C8 postimage and one-use transaction",
+      "provider deployment and post-deployment version/routes/health readback",
+      "SQL and Opal sequencing, transaction recovery validation, and independent same-manifest closeout"
     ],
     "state": "REVIEW_ONLY_NOT_ADMITTED_NOT_DEPLOYED",
     "fresh_opal_readback": {
@@ -624,6 +623,27 @@
         "/usr/libexec/hbnf-cart-glow-provision": "ABSENT"
       },
       "read_only": true
+    },
+    "candidate_preimage_readback_archive": {
+      "drive_id": "16XMJKO0HzzGyO2H51mPN6gP71U8lPawD",
+      "file_name": "CART116-C8-PREIMAGE-READBACK-20261107.zip",
+      "sha256": "60f963e5bcaad7d006d2701754921f8010186ed1fa3e910cbb6d478f41fb1c4e",
+      "bytes": 888359,
+      "members": 35,
+      "internal_sha256_entries": 34,
+      "independent_download_back_byte_equal": true,
+      "contents": {
+        "active_v35_provider_source_files": 10,
+        "current_owner_pwa_files": 21,
+        "current_c9_local_transport_file": 1,
+        "c8_opal_target_states": "four ABSENT",
+        "sql_preimage": "new C8 functions and challenge table absent; two pre-existing context/status RPC identities recorded"
+      },
+      "six_frozen_c9_postimage_hashes_match": true,
+      "observed_at_utc": "2026-11-07T07:54:44Z",
+      "scope": "candidate-scoped pre-admission readback and recovery bytes; not a final transaction archive, release approval, or installation authorization",
+      "secrets_included": false,
+      "final_transaction_id_bound_refresh_required": true
     }
   },
   "active_candidate_contract": {
@@ -677,6 +697,12 @@
       "owner_approval_for_exact_postimage": null
     },
     "historical_rows": "nine_target_opal, managed_targets, and old mixed-package criteria remain historical provenance and do not define this capsule\u2019s active file list.",
-    "status": "REVIEW_ONLY_NOT_ADMITTED_NOT_DEPLOYED"
+    "status": "REVIEW_ONLY_NOT_ADMITTED_NOT_DEPLOYED",
+    "candidate_preimage_readback_archive": {
+      "drive_id": "16XMJKO0HzzGyO2H51mPN6gP71U8lPawD",
+      "sha256": "60f963e5bcaad7d006d2701754921f8010186ed1fa3e910cbb6d478f41fb1c4e",
+      "independent_download_back_byte_equal": true,
+      "transaction_id_bound": false
+    }
   }
 }
