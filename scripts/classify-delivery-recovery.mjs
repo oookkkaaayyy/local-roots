@@ -29,7 +29,22 @@ export function classifyRecovery(event) {
   }
 
   if (event.operationState === 'ambiguous') {
-    return { action: 'readback', retry: false, reason: 'mutation outcome is ambiguous; read the authoritative target before retrying' };
+    if (event.readbackVerified !== true || event.readbackTargetMatches !== true) {
+      return { action: 'readback', retry: false, reason: 'mutation outcome is ambiguous; read the authoritative target before retrying' };
+    }
+    if (event.readbackState === 'applied') {
+      return { action: 'continue-after-readback', retry: false, reason: 'authoritative target readback confirms the mutation already applied' };
+    }
+    if (event.readbackState !== 'not-applied') {
+      return { action: 'inspect', retry: false, reason: 'authoritative readback did not establish whether the mutation applied' };
+    }
+    const attempts = Number.isInteger(event.attempts) && event.attempts >= 0 ? event.attempts : 0;
+    const maxAttempts = Number.isInteger(event.maxAttempts) && event.maxAttempts > 0 ? event.maxAttempts : 1;
+    if (attempts >= maxAttempts) return { action: 'stop-retries', retry: false, reason: 'bounded retry limit reached after confirmed non-application' };
+    if (event.retrySafe !== true) {
+      return { action: 'inspect', retry: false, reason: 'automatic retry safety is not established for this operation' };
+    }
+    return { action: 'retry-operation', retry: true, reason: 'authoritative target readback confirms non-application and bounded retry is safe' };
   }
 
   if (event.operationState === 'rejected') {

@@ -22,6 +22,11 @@ test('3: unrelated permission denial does not block the required operation', () 
 
 test('4: ambiguous mutation requires authoritative readback before any retry', () => {
   assert.deepEqual(classifyRecovery({ operationState: 'ambiguous' }), { action: 'readback', retry: false, reason: 'mutation outcome is ambiguous; read the authoritative target before retrying' });
+  assert.equal(classifyRecovery({ operationState: 'ambiguous', readbackVerified: true, readbackTargetMatches: true, readbackState: 'applied' }).action, 'continue-after-readback');
+  assert.equal(classifyRecovery({ operationState: 'ambiguous', readbackVerified: true, readbackTargetMatches: true, readbackState: 'not-applied', retrySafe: true, attempts: 0, maxAttempts: 2 }).retry, true);
+  assert.equal(classifyRecovery({ operationState: 'ambiguous', readbackVerified: true, readbackTargetMatches: false, readbackState: 'not-applied', retrySafe: true }).action, 'readback');
+  assert.equal(classifyRecovery({ operationState: 'ambiguous', readbackVerified: true, readbackTargetMatches: true, readbackState: 'not-applied', retrySafe: true, attempts: 2, maxAttempts: 2 }).action, 'stop-retries');
+  assert.equal(classifyRecovery({ operationState: 'ambiguous', readbackVerified: true, readbackTargetMatches: true, readbackState: 'unknown', retrySafe: true }).action, 'inspect');
 });
 
 test('5: historical resolution is not current proof; gather current evidence', () => {
@@ -51,6 +56,13 @@ test('9: an unapproved or unmet-dependency operation is not routed', () => {
 
 test('10: a blocked lane does not suppress independent ready work', () => {
   assert.deepEqual(routeReadyWork([{ id: 'blocked', status: 'blocked', authorized: true, dependenciesMet: true }, { id: 'ready', status: 'ready', authorized: true, dependenciesMet: true }]), ['ready']);
+});
+
+test('a newly satisfied prerequisite makes that work item routable on the next readback', () => {
+  const waiting = { id: 'upload', status: 'blocked', authorized: true, dependenciesMet: false };
+  assert.deepEqual(routeReadyWork([waiting]), []);
+  const resumed = { ...waiting, status: 'ready', dependenciesMet: true };
+  assert.deepEqual(routeReadyWork([resumed]), ['upload']);
 });
 
 test('11: green source tests without provider or device readback are not accepted at those levels', () => {
