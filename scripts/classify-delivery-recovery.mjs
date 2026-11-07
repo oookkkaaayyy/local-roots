@@ -52,7 +52,13 @@ export function classifyRecovery(event) {
       const maxAttempts = Number.isInteger(event.maxAttempts) && event.maxAttempts > 0 ? event.maxAttempts : 1;
       if (!changed) return { action: 'rebuild-correction', retry: false, reason: 'rebuild a corrected artifact before retrying the rejected upload' };
       if (attempts >= maxAttempts) return { action: 'stop-retries', retry: false, reason: 'bounded retry limit reached' };
-      return { action: 'verify-corrected-artifact', retry: false, reason: 'corrected bytes exist; verify them before the next upload attempt' };
+      if (event.correctedArtifactVerified !== true) {
+        return { action: 'verify-corrected-artifact', retry: false, reason: 'corrected bytes exist; verify them before the next upload attempt' };
+      }
+      if (event.retrySafe !== true) {
+        return { action: 'inspect', retry: false, reason: 'automatic retry safety is not established for this rejected operation' };
+      }
+      return { action: 'retry-operation', retry: true, reason: 'rejection and changed verified artifact establish a bounded safe retry' };
     }
   }
 
