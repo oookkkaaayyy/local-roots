@@ -23,6 +23,10 @@ function evaluate(record){
  const id=record.sessionRef;
  if(typeof id!=="string"||!id||id.length>120)unknown.push("ONE_OWNER_SESSION_REFERENCE_MISSING");
  const pair=record.matrixPair;
+ if(pair?.sessionRef!==id){
+  if(typeof pair?.sessionRef!=="string"||!pair.sessionRef)unknown.push("MATRIX_PAIR_SESSION_REFERENCE_MISSING");
+  else failures.push("MATRIX_PAIR_NOT_SAME_OWNER_SESSION");
+ }
  const m=analyze(pair);
  if(pair?.expectedRelease!==p.firmware_source_release)failures.push("EXACT_C9_RELEASE_NOT_PINNED");
  failures.push(...(m.fail||[]));

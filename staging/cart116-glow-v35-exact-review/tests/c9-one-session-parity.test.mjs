@@ -27,7 +27,7 @@ const state=(n,fps=43)=>({
 function fixture(){
  const sessionRef="synthetic-C9-single-session";
  return {schema:"cart116-c9-one-session-observation-v1",sessionRef,
-  matrixPair:{schema:"hbnf-matrix-readonly-pair-v1",expectedRelease:RELEASE,
+  matrixPair:{schema:"hbnf-matrix-readonly-pair-v1",sessionRef,expectedRelease:RELEASE,
    offline:{upstreamObserved:"none",samples:[state(1),state(2),state(3)]},
    repeater:{upstreamObserved:"home_repeater",samples:[state(4),state(5),state(6)]}},
   network:{sessionRef,...Object.fromEntries(networkKeys.map(k=>[k,true])),
@@ -52,6 +52,20 @@ test("reconnect stale-command replay reported false is a release-critical mismat
  const o=evaluate(f);assert.equal(o.verdict,"OBSERVED_MISMATCH_NO_RELEASE");
  assert.ok(o.failures.includes("NETWORK_BACKGROUNDFOREGROUNDRECONNECTNOREPLAY_FAILED"));
  assert.match(o.purpose,/ONE_FIELD_SESSION_ONLY/);
+});
+test("offline and repeater Matrix captures must bind to the same owner session",()=>{
+ const f=fixture();f.matrixPair.sessionRef="different-field-session";
+ const o=evaluate(f);
+ assert.equal(o.verdict,"OBSERVED_MISMATCH_NO_RELEASE");
+ assert.ok(o.failures.includes("MATRIX_PAIR_NOT_SAME_OWNER_SESSION"));
+ assert.equal(o.releaseAdmitted,false);
+});
+test("unbound Matrix pair remains incomplete instead of implying a same-session comparison",()=>{
+ const f=fixture();delete f.matrixPair.sessionRef;
+ const o=evaluate(f);
+ assert.equal(o.verdict,"OBSERVATIONAL_EVIDENCE_INCOMPLETE");
+ assert.ok(o.unknown.includes("MATRIX_PAIR_SESSION_REFERENCE_MISSING"));
+ assert.equal(o.releaseAdmitted,false);
 });
 test("wrong new firmware marker across the two network modes is never accepted",()=>{
  const f=fixture();f.matrixPair.repeater.samples[2].state.HBNF.candidate="wrong-release";
