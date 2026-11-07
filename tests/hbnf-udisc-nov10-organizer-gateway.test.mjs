@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.js';
 import {handleOrganizerImportRequest} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-organizer-http.review.mjs';
+import {NOV10_MAIN_LAYOUT} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-nov10-main-layout.review.mjs';
 
 // November 10 identity and event window originate from actual read-only Supabase
 // readback + UDisc public event page. These are not fake participants or scores.
@@ -16,7 +17,7 @@ const baseEnv={HBNF_UDISC_OPERATOR_IMPORT_ENABLED:'true',HBNF_UDISC_ORGANIZER_IM
 const snapshot={state_json:{glow:{activeWeek:'2026-11-03',weeks:{'2026-11-03':{date:'2026-11-03',players:[]}}},
   skins:{original:'untouched'},bagTags:{protected:'untouched'}},updated_at:'2026-11-05T01:43:35.537984+00:00'};
 const secretHeaders={Authorization:`Bearer ${token}`};
-function provider(){
+function provider(state=snapshot){
   const requests=[];
   const fetchImpl=async(u,options={})=>{
     requests.push({url:String(u),method:options.method||'GET'});
@@ -25,7 +26,7 @@ function provider(){
       assert.match(String(u),/event_date=eq\.2026-11-10/);
       return new Response(JSON.stringify([binding]),{status:200});
     }
-    if(String(u).includes('/league_state?id=eq.1'))return new Response(JSON.stringify([snapshot]),{status:200});
+    if(String(u).includes('/league_state?id=eq.1'))return new Response(JSON.stringify([state]),{status:200});
     throw Error('Unexpected provider write or query in no-score preflight');
   };
   return {requests,fetchImpl};
@@ -35,6 +36,35 @@ test('actual shipping entrypoint hides disabled import route without asset fallb
     ...baseEnv,HBNF_UDISC_OPERATOR_IMPORT_ENABLED:'false'});
   assert.equal(res.status,404);
   assert.match(await res.text(),/Not found/);
+});
+test('verified Main layout is backend-ready before any participant roster exists',async()=>{
+  const week={date:weekDate,eventId,eventWindow:{start:NOV10_MAIN_LAYOUT.windowStart,end:NOV10_MAIN_LAYOUT.windowEnd},
+    parLayout:{layoutId:NOV10_MAIN_LAYOUT.layoutId,layoutName:NOV10_MAIN_LAYOUT.layoutName,
+      courseId:NOV10_MAIN_LAYOUT.courseId,evidenceSha256:NOV10_MAIN_LAYOUT.evidenceSha256,
+      layoutSha256:NOV10_MAIN_LAYOUT.layoutSha256},
+    scorecardText:{holePars:Object.fromEntries(NOV10_MAIN_LAYOUT.holes.map(h=>[String(h.number),String(h.par)]))},
+    players:[],cards:[],scoresLocked:false};
+  const state={state_json:{glow:{activeWeek:weekDate,weeks:{[weekDate]:week}},skins:{original:'untouched'},bagTags:{protected:'untouched'}},
+    updated_at:'2026-11-06T18:00:00.000Z'};
+  const upstream=provider(state);
+  const res=await handleOrganizerImportRequest(new Request(url+'?eventId='+eventId+'&weekDate='+weekDate,{headers:secretHeaders}),baseEnv,upstream);
+  const data=await res.json();
+  assert.equal(res.status,200);assert.equal(data.layoutQualified,true);
+  assert.equal(data.parCount,18);assert.equal(data.teamCount,0);assert.equal(data.uploaderEligible,true);
+  assert.equal(data.sourceFreshness,'NOT_ASSERTED');assert.equal(data.cartIntent,'NOT_REQUESTED');
+  assert.deepEqual(upstream.requests.map(x=>x.method),['GET','GET']);
+});
+test('pars alone cannot authorize Nov10 XLSX when layout witness identity is wrong',async()=>{
+  const week={date:weekDate,eventId,eventWindow:{start:NOV10_MAIN_LAYOUT.windowStart,end:NOV10_MAIN_LAYOUT.windowEnd},
+    parLayout:{layoutId:14840,layoutName:'Main',courseId:'A9Fe',evidenceSha256:'f'.repeat(64),layoutSha256:'8'.repeat(64)},
+    scorecardText:{holePars:Object.fromEntries(NOV10_MAIN_LAYOUT.holes.map(h=>[String(h.number),String(h.par)]))},
+    players:[],cards:[],scoresLocked:false};
+  const state={state_json:{glow:{activeWeek:weekDate,weeks:{[weekDate]:week}}},updated_at:'2026-11-06T18:00:00.000Z'};
+  const upstream=provider(state);
+  const res=await handleOrganizerImportRequest(new Request(url+'?eventId='+eventId+'&weekDate='+weekDate,{headers:secretHeaders}),baseEnv,upstream);
+  const data=await res.json();
+  assert.equal(data.layoutQualified,false);assert.equal(data.uploaderEligible,false);
+  assert.ok(data.operatorActions.includes('INITIALIZE_NOV10_WITH_AUTHORIZED_MAIN_LAYOUT_WITNESS'));
 });
 test('missing organizer authentication fails before reading any source, even with event ID',async()=>{
   const upstream=provider();

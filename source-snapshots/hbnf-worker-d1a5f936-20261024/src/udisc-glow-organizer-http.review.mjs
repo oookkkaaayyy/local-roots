@@ -5,6 +5,7 @@
  */
 import {validateGlowEventBinding} from './udisc-glow-event-bindings.mjs';
 import {importOrganizerGlowXlsx} from './udisc-glow-organizer-import.review.mjs';
+import {NOV10_MAIN_LAYOUT,qualifyNov10MainWeek} from './udisc-nov10-main-layout.review.mjs';
 
 export const ORGANIZER_IMPORT_PATH='/internal/udisc-glow-organizer-import';
 const MAX_FILE_BYTES=12*1024*1024;
@@ -94,6 +95,8 @@ function readiness({row,binding,weekDate}){
   const pars=week?.scorecardText?.holePars;
   const parEntries=Array.from({length:18},(_,i)=>text(pars?.[String(i+1)]).trim());
   const parsQualified=parEntries.every(s=>/^[1-9]$/.test(s));
+  const mainLayoutRequired=binding.eventId===NOV10_MAIN_LAYOUT.eventId&&weekDate===NOV10_MAIN_LAYOUT.date;
+  const layoutQualified=!mainLayoutRequired||qualifyNov10MainWeek({eventId:binding.eventId,weekDate,week});
   const locked=week?.scoresLocked===true||week?.cards?.some(c=>c?.finalized===true)===true;
   const active=glow.activeWeek===weekDate;
   const sourceEventMatched=!week?.udiscSync?.eventId||week.udiscSync.eventId===binding.eventId;
@@ -101,17 +104,18 @@ function readiness({row,binding,weekDate}){
   if(!week)operatorActions.push('INITIALIZE_EVENT_WEEK_THROUGH_EXISTING_SCORING_ADMIN');
   if(week&&!active)operatorActions.push('SELECT_BOUND_EVENT_WEEK_THROUGH_EXISTING_SCORING_ADMIN');
   if(week&&!parsQualified)operatorActions.push('VERIFY_ALL_18_EVENT_HOLE_PARS');
+  if(week&&!layoutQualified)operatorActions.push('INITIALIZE_NOV10_WITH_AUTHORIZED_MAIN_LAYOUT_WITNESS');
   if(locked)operatorActions.push('RESOLVE_WEEK_LOCK_WITH_EXISTING_SCORING_AUTHORITY');
   if(!sourceEventMatched)operatorActions.push('RESOLVE_EVENT_SOURCE_MISMATCH_WITH_SCORING_AUTHORITY');
-  if(week&&active&&parsQualified&&!locked&&sourceEventMatched)
+  if(week&&active&&parsQualified&&layoutQualified&&!locked&&sourceEventMatched)
     operatorActions.push('UPLOAD_ORGANIZER_AUTHORIZED_OFFICIAL_XLSX');
   return {
     source:'AUTHENTICATED_PERSISTED_PROVIDER',eventId:binding.eventId,weekDate:binding.weekDate,
     windowStart:binding.windowStart,windowEnd:binding.windowEnd,
     stateRevision:row.updated_at,activeWeek:glow.activeWeek,
     weekInitialized:!!week,weekActive:active,parCount:parEntries.filter(s=>/^[1-9]$/.test(s)).length,
-    parsQualified,locked,sourceEventMatched,teamCount:Array.isArray(week?.players)?week.players.length:0,
-    uploaderEligible:!!week&&active&&parsQualified&&!locked&&sourceEventMatched,
+    parsQualified,layoutQualified,locked,sourceEventMatched,teamCount:Array.isArray(week?.players)?week.players.length:0,
+    uploaderEligible:!!week&&active&&parsQualified&&layoutQualified&&!locked&&sourceEventMatched,
     sourceFreshness:'NOT_ASSERTED',cartIntent:'NOT_REQUESTED',operatorActions
   };
 }

@@ -2,17 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { NOV10_EVENT, prepareNov10WeekInitialization,
-  prepareNov10WeekInitializationUndo } from '../scripts/hbnf-parent-release/nov10-week-initialization.mjs';
+  prepareNov10WeekInitializationUndo, loadNov10MainLayoutWitness } from '../scripts/hbnf-parent-release/nov10-week-initialization.mjs';
 
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-const witness = {
-  ...NOV10_EVENT,
-  authority: 'fixture:authorized-event-layout-record',
-  sourceUrl: 'https://example.invalid/authorized-layout-record',
-  sourceSha256: 'a'.repeat(64),
-  verified: true,
-  holes: Array.from({ length: 18 }, (_, i) => ({ number: i + 1, par: 3 })),
-};
+const witness = await loadNov10MainLayoutWitness();
 const root = { glow: { activeWeek: '2026-11-03', weeks: {
   '2026-11-03': { date: '2026-11-03', players: [{ id: 'preserve' }], tagsRevision: 11 },
 } }, skins: { protected: true }, bagTags: { revision: 11 } };
@@ -22,7 +15,8 @@ test('rejects absent, wrong-event, wrong-window, incomplete, or malformed author
     { ...witness, windowEnd: '2026-11-12T07:30:00Z' },
     { ...witness, holes: witness.holes.slice(0, 17) },
     { ...witness, holes: witness.holes.map((h, i) => i === 8 ? { ...h, number: 10 } : h) },
-    { ...witness, sourceSha256: 'not-a-hash' }]) {
+    { ...witness, evidenceSha256: 'f'.repeat(64) },
+    { ...witness, holes: witness.holes.map((h, i) => i === 17 ? { ...h, par: 4 } : h) }]) {
     assert.throws(() => prepareNov10WeekInitialization({ root, updatedAt: 'fresh', witness: bad }));
   }
 });
@@ -31,6 +25,10 @@ test('initializes only the bound Nov10 week and selects it, preserving Nov03 and
   const p = prepareNov10WeekInitialization({ root, updatedAt: 'fresh-root-token', witness });
   assert.equal(p.status, 'READY_FOR_EXISTING_ADMIN_CAS_REVIEW');
   assert.equal(p.parTotal, 54);
+  assert.equal(witness.layoutName, 'Main');
+  assert.equal(witness.layoutId, 14840);
+  assert.equal(witness.holes.length, 18);
+  assert.ok(witness.holes.every(hole => hole.par === 3));
   assert.deepEqual(p.changedPaths, ['glow.weeks.2026-11-10', 'glow.activeWeek']);
   assert.deepEqual(p.proposedRoot.glow.weeks['2026-11-10'].scorecardText.holePars,
     Object.fromEntries(Array.from({ length: 18 }, (_, i) => [String(i + 1), '3'])));

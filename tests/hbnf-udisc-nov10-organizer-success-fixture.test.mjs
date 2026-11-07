@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {handleOrganizerImportRequest} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-organizer-http.review.mjs';
 import {parseUdiscWorkbook} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync-runner.mjs';
 import {standingsForPreview} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/worker-private/udisc-glow-preview.mjs';
+import {NOV10_MAIN_LAYOUT} from '../source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-nov10-main-layout.review.mjs';
 
 const eventId='hb-glow-doubles-af85rU',weekDate='2026-11-10';
 const binding={event_id:eventId,event_date:weekDate,
@@ -12,12 +13,16 @@ const binding={event_id:eventId,event_date:weekDate,
 const token='TEST_ONLY_NON_PRODUCTION_SCORING_OPERATOR_SECRET_0123456789abcdef';
 const fixture=new URL('./fixtures/hbnf-udisc-nov10-synthetic.xlsx',import.meta.url);
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
-const pars=Object.fromEntries(Array.from({length:18},(_,i)=>[String(i+1),'3']));
+const pars=Object.fromEntries(NOV10_MAIN_LAYOUT.holes.map(hole=>[String(hole.number),String(hole.par)]));
+const parLayout={layoutId:NOV10_MAIN_LAYOUT.layoutId,layoutName:NOV10_MAIN_LAYOUT.layoutName,
+  courseId:NOV10_MAIN_LAYOUT.courseId,evidenceSha256:NOV10_MAIN_LAYOUT.evidenceSha256,
+  layoutSha256:NOV10_MAIN_LAYOUT.layoutSha256};
 
 test('synthetic organizer XLSX passes event-bound guarded import, becomes Glow standings data, and emits no live Cart intent',async()=>{
   const bytes=await readFile(fixture);
   let state={glow:{activeWeek:weekDate,playerAliases:{'Fixture A':'Fixture A','Fixture B':'Fixture B'},
-    weeks:{[weekDate]:{date:weekDate,scoresLocked:false,scorecardText:{holePars:pars},
+    weeks:{[weekDate]:{date:weekDate,eventId,eventWindow:{start:NOV10_MAIN_LAYOUT.windowStart,end:NOV10_MAIN_LAYOUT.windowEnd},
+      parLayout,scoresLocked:false,scorecardText:{holePars:pars},
       cards:[{id:'C1',finalized:false,players:[]}],players:[]}}}};
   let updatedAt='2026-11-06T18:00:00.000Z';
   const requests=[];

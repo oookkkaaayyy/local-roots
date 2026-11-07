@@ -6,6 +6,7 @@
 import {validateGlowEventBinding} from './udisc-glow-event-bindings.mjs';
 import {parseUdiscWorkbook, validateIdentityEvidence, buildGlowProposal, prepareGlowWeekSync} from './udisc-glow-sync-runner.mjs';
 import {qualifiedGlowScorePars, sameLeagueRevision} from './udisc-glow-auto-sync.review.mjs';
+import {NOV10_MAIN_LAYOUT,qualifyNov10MainWeek} from './udisc-nov10-main-layout.review.mjs';
 
 const MAX_XLSX_BYTES=12*1024*1024;
 const S1_IMMUTABLE_DATE='2026-11-03'; // Existing protected historical recovery; NOT a new-event routing default.
@@ -64,6 +65,9 @@ export async function importOrganizerGlowXlsx({upload,adapters}={}) {
   if(!before?.updated_at||!glow||glow.activeWeek!==weekDate)return stop('ACTIVE_GLOW_WEEK_MISMATCH');
   const existingWeek=glow.weeks?.[weekDate];
   if(!existingWeek)return stop('WEEK_NOT_INITIALIZED');
+  if(eventId===NOV10_MAIN_LAYOUT.eventId&&weekDate===NOV10_MAIN_LAYOUT.date&&
+     !qualifyNov10MainWeek({eventId,weekDate,week:existingWeek}))
+    return stop('NOV10_MAIN_LAYOUT_NOT_QUALIFIED');
   if(existingWeek.scoresLocked||existingWeek.cards?.some(c=>c?.finalized))return stop('WEEK_LOCKED');
   if(existingWeek.udiscSync?.eventId && existingWeek.udiscSync.eventId!==eventId)return stop('EXISTING_SOURCE_EVENT_MISMATCH');
 
