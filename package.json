@@ -7,8 +7,11 @@
     "test:release-receipt": "node --test tests/release-receipt.test.mjs",
     "release:admit": "node scripts/validate-release-receipt.mjs",
     "release:verify": "node scripts/validate-release-receipt.mjs",
+    "test:cloudflare-worker-multipart": "node --test tests/validate-cloudflare-worker-multipart.test.mjs",
+    "test:delivery-recovery": "node --test tests/classify-delivery-recovery.test.mjs",
+    "preflight:cloudflare-worker-multipart": "node scripts/validate-cloudflare-worker-multipart.mjs",
     "test:m2": "rm -rf dist && tsc && mkdir -p dist/tests/fixtures && cp tests/fixtures/events.json dist/tests/fixtures/events.json && node --test dist/tests/*.test.js",
-    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && node --test tests/package-dye-studio-candidate.test.mjs",
+    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && npm run test:cloudflare-worker-multipart && npm run test:delivery-recovery && node --test tests/package-dye-studio-candidate.test.mjs",
     "release:audit-workflows": "node scripts/audit-release-workflows.mjs"
   },
   "devDependencies": {
