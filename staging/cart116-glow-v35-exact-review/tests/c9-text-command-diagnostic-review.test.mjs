@@ -11,8 +11,20 @@ const base="../opal/owner-v1201-7target/";
 const transportRel=base+"mission-control-local/local-transport.js";
 const appRel=base+"owner-pwa/hbnf-cart.js";
 const localRel=base+"owner-pwa/hbnf-cart-local.js";
+const featuresRel=base+"owner-pwa/hbnf-cart-features.js";
 const patchPath=new URL("./fixtures/c9-text-command-diagnostic.REVIEW_ONLY.patch",import.meta.url);
 const inTree=rel=>"staging/cart116-glow-v35-exact-review/"+rel.replace(/^\.\.\//,"");
+
+test("Safari 12 text feature module keeps its click handler parseable",()=>{
+ const features=readFileSync(new URL(featuresRel,import.meta.url),"utf8");
+ const start=features.indexOf("function setUvCommissioningTestReady(");
+ const end=features.indexOf("\nfunction ",start+1);
+ assert.ok(start>=0&&end>start,"UV readiness helper must remain present");
+ const helper=features.slice(start,end);
+ assert.match(helper,/const slider = \$\(sliderId\);[\s\S]*Number\(slider\.value\)/);
+ assert.doesNotMatch(helper,/\?\./,"optional chaining breaks the whole module on the supported Safari 12 iPad");
+ assert.match(features,/bind\("featureSendText",sendText\);/);
+});
 
 test("review-only diagnostics locate text failures without retaining message or credentials",async()=>{
  const scratch=mkdtempSync(join(tmpdir(),"c9-text-diag-"));
