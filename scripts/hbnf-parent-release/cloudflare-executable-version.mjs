@@ -8,6 +8,7 @@ import {validateCloudflareWorkerModules} from '../validate-cloudflare-worker-mul
 import {readWranglerToken} from './capture-cloudflare-current-readonly.mjs';
 
 const uuid=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
+const workerIdPattern=/^(?:[a-f0-9]{32}|[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})$/i;
 const hex64=/^[a-f0-9]{64}$/i;
 const P0_ACCOUNT='e3bc6b78f1104fa0c2a01245084594cf';
 const P0_WORKER='hbnf';
@@ -180,7 +181,7 @@ export async function stageExecutableVersion({
   fail((await requireFreshFiveTargetPreimage())===true,'FIVE_TARGET_PREIMAGE_NOT_FRESH');
   const c=apiClient({token,accountId,workerName,fetchImpl});
   const worker=await c.call(c.worker);
-  fail(uuid.test(worker?.id)&&worker?.name===workerName,'WORKER_ID');
+  fail(workerIdPattern.test(worker?.id||'')&&worker?.name===workerName,'WORKER_ID');
   const workerPath='/workers/workers/'+worker.id;
   const active=await c.call(c.script+'/deployments');
   fail(active?.deployments?.[0]?.versions?.length===1&&
@@ -339,7 +340,7 @@ export async function stageInheritedBetaVersion({
     'INHERITED_STAGE_A_ATOMIC_CLAIM');
   const c=apiClient({token,accountId,workerName,fetchImpl});
   const worker=await c.call(c.worker);
-  fail(uuid.test(worker?.id)&&worker?.name===workerName,'INHERITED_WORKER_ID');
+  fail(workerIdPattern.test(worker?.id||'')&&worker?.name===workerName,'INHERITED_WORKER_ID');
   const workerPath='/workers/workers/'+worker.id;
   const active=await c.call(c.script+'/deployments');
   fail(active?.deployments?.length===1&&active.deployments[0]?.versions?.length===1&&

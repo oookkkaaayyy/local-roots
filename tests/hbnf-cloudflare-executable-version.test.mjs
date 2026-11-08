@@ -7,7 +7,7 @@ import {readFile} from 'node:fs/promises';
 
 const old='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const next='66a779c0-d8fd-4449-a154-7b6eab9aebeb';
-const workerId='09111111-2222-4333-8444-555555555555';
+const workerId='eeac337b989f4378bd38a555833f5dbb';
 const accountId='e3bc6b78f1104fa0c2a01245084594cf';
 const assets=new Map([
   ['/glow-save-sync.mjs',Buffer.from('new valid one-file save ACK')],
