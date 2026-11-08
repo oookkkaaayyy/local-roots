@@ -86,7 +86,7 @@ const verifiedInventory = items => ({
   observedBy: 'independent-readback',
   sourceRef: 'https://docs.google.com/document/d/180CdeHe03Y9mFs3TB-t6kFSEoUvKyts8xEeZffa6E-4/edit',
   evidenceRef: 'https://docs.google.com/document/d/180CdeHe03Y9mFs3TB-t6kFSEoUvKyts8xEeZffa6E-4/edit',
-  itemIds: items.map(item => item.id),
+  itemIds: items.map(item => item?.id ?? ''),
 });
 const assessContinuation = items => assessCoordinatorContinuation(items, verifiedInventory(items));
 
