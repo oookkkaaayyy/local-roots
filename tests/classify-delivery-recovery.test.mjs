@@ -83,7 +83,7 @@ const verifiedInventory = items => ({
   evidenceRef: 'https://docs.google.com/document/d/180CdeHe03Y9mFs3TB-t6kFSEoUvKyts8xEeZffa6E-4/edit',
   itemIds: items.map(item => item?.id ?? ''),
 });
-const assessContinuation = items => assessCoordinatorContinuation(items, verifiedInventory(items));
+const assessContinuation = (items, waitPolicy = null) => assessCoordinatorContinuation(items, verifiedInventory(items), waitPolicy);
 
 test('13: missing or unknown acceptance target cannot count as DONE', () => {
   for (const target of [undefined, 'done', '', null]) {
@@ -179,11 +179,31 @@ test('recovery retry requires exact explicit standing authorization', async () =
   assert.equal(result.resumed, false);
 });
 
-test('coordinator cannot exit after a bounded wait while a worker is executing', () => {
+test('active work yields without a direct dependency and one bounded wait', () => {
   const active = { id: 'controls', target: 'controls', status: 'inProgress',
     receivingWorker: { ...observedRun, status: 'inProgress' } };
-  assert.deepEqual(assessContinuation([{ ...active, waitTimedOut: true }]),
-    { action: 'wait-for-active-work', canExit: false, activeWorkIds: ['controls'], readyWorkIds: [] });
+  const items = [active];
+  const receipt = verifiedInventory(items);
+  const yielded = assessContinuation(items);
+  assert.deepEqual(yielded, {
+    action: 'yield-active-work', canExit: true, streamComplete: false,
+    activeWorkIds: ['controls'], readyWorkIds: [],
+    resumptionTrigger: 'a completion or needs-attention event on an exact active thread; explicitly resume the coordinator because no automatic resumption is available',
+    reason: 'no evidence-backed direct dependency and one bounded wait are authorized'
+  });
+  const waitPolicy = {
+    completionIsDirectDependency: true, dependencyIds: ['controls'], maxWaitMs: 30_000,
+    maxWaits: 1, waitsUsed: 0, inventorySourceRef: receipt.sourceRef,
+    inventoryEvidenceRef: receipt.evidenceRef,
+  };
+  assert.deepEqual(assessCoordinatorContinuation(items, receipt, waitPolicy), {
+    action: 'wait-for-active-work', canExit: false, activeWorkIds: ['controls'], readyWorkIds: [],
+    wait: { maxWaitMs: 30_000, maxWaits: 1, waitsUsed: 1 }
+  });
+  assert.equal(assessCoordinatorContinuation(items, receipt, { ...waitPolicy, waitsUsed: 1 }).action, 'yield-active-work');
+  assert.equal(assessCoordinatorContinuation(items, receipt, { ...waitPolicy, maxWaitMs: 60_001 }).action, 'yield-active-work');
+  assert.equal(assessCoordinatorContinuation(items, receipt, { ...waitPolicy, inventoryEvidenceRef: 'stale' }).action, 'yield-active-work');
+  assert.equal(assessCoordinatorContinuation(items, receipt, { ...waitPolicy, dependencyIds: ['other'] }).action, 'yield-active-work');
 });
 
 test('coordinator routes independent ready work before waiting on an active lane', () => {
