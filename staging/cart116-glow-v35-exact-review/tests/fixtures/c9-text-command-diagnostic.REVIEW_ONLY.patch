@@ -1,0 +1,176 @@
+diff --git a/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/mission-control-local/local-transport.js b/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/mission-control-local/local-transport.js
+index a12183a7..b4feb478 100644
+--- a/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/mission-control-local/local-transport.js
++++ b/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/mission-control-local/local-transport.js
+@@ -60,10 +60,31 @@ export function stateMatches(state,patch) {
+  });
+ }
+ export function auxStatus(info,state){if(!info||!state||!info.mac||!Number.isFinite(Number(state.bri)))return{reachable:false,label:"AUX state not verified",ddp:false,physical:"unverified"};const ddp=info.live===true&&info.lm==="DDP"&&info.lip===MATRIX_IP;return{reachable:true,mac:String(info.mac).toLowerCase(),brightness:Number(state.bri),on:state.on===true,ddp,label:ddp?`WLED reachable · brightness ${Number(state.bri)}`:`WLED reachable · brightness ${Number(state.bri)} · DDP source not confirmed`,physical:"unverified"};}
+-function commandOnce(transport,type,payload){if(!transport.socket||transport.socket.readyState!==1)return Promise.reject(new Error("Matrix WebSocket is not connected."));if(!transport.controlReady())return Promise.reject(new Error("Fresh Matrix release, device identity, and state are required; no control was sent."));const patch=buildPatch(type,payload),after=transport.snapshotVersion;return new Promise((resolve,reject)=>{const w={patch,after,resolve,reject,timer:null};w.timer=setTimeout(()=>{transport.waiters.delete(w);reject(new Error("Matrix did not return matching state readback."));},transport.timeoutMs);transport.waiters.add(w);try{transport.socket.send(JSON.stringify({HBNF:patch}));transport.requestState();}catch(error){transport.waiters.delete(w);clearTimeout(w.timer);reject(error);}});}
++function commandOnce(transport,type,payload){
++ const textOverlay=type==="OVERLAY_START"&&payload&&payload.kind==="text";
++ const note=(phase,error)=>{if(textOverlay)transport.recordTextCommandDiagnostic(phase,error);};
++ if(!transport.socket||transport.socket.readyState!==1){note("socket-not-open");return Promise.reject(new Error("Matrix WebSocket is not connected."));}
++ if(!transport.controlReady()){note("preflight-rejected");return Promise.reject(new Error("Fresh Matrix release, device identity, and state are required; no control was sent."));}
++ let patch;
++ try{patch=buildPatch(type,payload);}catch(error){note("payload-rejected",error);return Promise.reject(error);}
++ const after=transport.snapshotVersion;
++ return new Promise((resolve,reject)=>{
++  const w={patch,after,resolve,reject,timer:null,textOverlay};
++  w.timer=setTimeout(()=>{transport.waiters.delete(w);note("readback-timeout");reject(new Error("Matrix did not return matching state readback."));},transport.timeoutMs);
++  transport.waiters.add(w);
++  try{
++   note("frame-send-started");
++   transport.socket.send(JSON.stringify({HBNF:patch}));
++   note("frame-sent");
++   transport.requestState();
++   note("awaiting-state");
++  }catch(error){transport.waiters.delete(w);clearTimeout(w.timer);note("socket-send-error",error);reject(error);}
++ });
++}
+ export class LocalMatrixTransport {
+- constructor({url=`ws://${MATRIX_IP}/ws`,ownerToken="",socketFactory=(u,protocols)=>protocols?new WebSocket(u,protocols):new WebSocket(u),onState=()=>{},onConnection=()=>{},timeoutMs=2500}={}){if(ownerToken&&!/^wss:\/\//i.test(String(url)))throw new Error("Owner credentials may only be sent over certificate-verified WSS.");this.url=url;this.ownerToken=ownerToken;this.socketFactory=socketFactory;this.onState=onState;this.onConnection=onConnection;this.timeoutMs=timeoutMs;this.socket=null;this.snapshot=null;this.snapshotVersion=0;this.snapshotAt=0;this.identityVerifiedAt=0;this.waiters=new Set();this.queue=Promise.resolve();this.connectionEpoch=0;}
+- connect(){if(this.socket&&(this.socket.readyState===0||this.socket.readyState===1))return;if(this.socket){this.connectionEpoch++;for(const w of [...this.waiters]){this.waiters.delete(w);clearTimeout(w.timer);w.reject(new Error("Matrix WebSocket replaced before state confirmation."));}}this.snapshot=null;this.snapshotAt=0;const protocols=this.ownerToken?[ownerWebSocketProtocol(this.ownerToken)]:undefined;const socket=this.socketFactory(this.url,protocols);this.socket=socket;socket.onopen=()=>{if(this.socket!==socket)return;this.onConnection(true);this.requestState();};socket.onmessage=event=>{if(this.socket!==socket||typeof event.data!=="string")return;let msg;try{msg=JSON.parse(event.data)}catch{return}if(!msg||!msg.state||typeof msg.state!=="object")return;this.snapshot=msg.state;this.snapshotVersion++;this.snapshotAt=Date.now();this.onState(this.snapshot);for(const w of [...this.waiters])if(this.snapshotVersion>w.after&&stateMatches(this.snapshot,w.patch)){this.waiters.delete(w);clearTimeout(w.timer);w.resolve(this.snapshot);}};socket.onerror=()=>{try{socket.close()}catch{}};socket.onclose=()=>{if(this.socket!==socket)return;this.socket=null;this.identityVerifiedAt=0;this.snapshot=null;this.snapshotAt=0;this.connectionEpoch++;this.onConnection(false);for(const w of [...this.waiters]){this.waiters.delete(w);clearTimeout(w.timer);w.reject(new Error("Matrix WebSocket disconnected before state confirmation."));}};}
++ constructor({url=`ws://${MATRIX_IP}/ws`,ownerToken="",socketFactory=(u,protocols)=>protocols?new WebSocket(u,protocols):new WebSocket(u),onState=()=>{},onConnection=()=>{},timeoutMs=2500}={}){if(ownerToken&&!/^wss:\/\//i.test(String(url)))throw new Error("Owner credentials may only be sent over certificate-verified WSS.");this.url=url;this.ownerToken=ownerToken;this.socketFactory=socketFactory;this.onState=onState;this.onConnection=onConnection;this.timeoutMs=timeoutMs;this.socket=null;this.snapshot=null;this.snapshotVersion=0;this.snapshotAt=0;this.identityVerifiedAt=0;this.waiters=new Set();this.queue=Promise.resolve();this.connectionEpoch=0;this.lastTextCommandDiagnostic=null;}
++ recordTextCommandDiagnostic(phase,error){const d={version:1,phase:String(phase),at:Date.now()};if(error&&typeof error.name==="string"){const name=error.name.replace(/[^A-Za-z0-9_.-]/g,"").slice(0,32);if(name)d.errorName=name;}this.lastTextCommandDiagnostic=d;}
++ connect(){if(this.socket&&(this.socket.readyState===0||this.socket.readyState===1))return;if(this.socket){this.connectionEpoch++;for(const w of [...this.waiters]){this.waiters.delete(w);clearTimeout(w.timer);if(w.textOverlay)this.recordTextCommandDiagnostic("socket-replaced");w.reject(new Error("Matrix WebSocket replaced before state confirmation."));}}this.snapshot=null;this.snapshotAt=0;const protocols=this.ownerToken?[ownerWebSocketProtocol(this.ownerToken)]:undefined;const socket=this.socketFactory(this.url,protocols);this.socket=socket;socket.onopen=()=>{if(this.socket!==socket)return;this.onConnection(true);this.requestState();};socket.onmessage=event=>{if(this.socket!==socket||typeof event.data!=="string")return;let msg;try{msg=JSON.parse(event.data)}catch{return}if(!msg||!msg.state||typeof msg.state!=="object")return;this.snapshot=msg.state;this.snapshotVersion++;this.snapshotAt=Date.now();this.onState(this.snapshot);for(const w of [...this.waiters])if(this.snapshotVersion>w.after&&stateMatches(this.snapshot,w.patch)){this.waiters.delete(w);clearTimeout(w.timer);if(w.textOverlay)this.recordTextCommandDiagnostic("matching-readback");w.resolve(this.snapshot);}};socket.onerror=()=>{try{socket.close()}catch{}};socket.onclose=()=>{if(this.socket!==socket)return;this.socket=null;this.identityVerifiedAt=0;this.snapshot=null;this.snapshotAt=0;this.connectionEpoch++;this.onConnection(false);for(const w of [...this.waiters]){this.waiters.delete(w);clearTimeout(w.timer);if(w.textOverlay)this.recordTextCommandDiagnostic("socket-closed");w.reject(new Error("Matrix WebSocket disconnected before state confirmation."));}};}
+  verifyIdentity(info){const mac=String(info&&info.mac||"").toLowerCase();this.identityVerifiedAt=mac===MATRIX_MAC?Date.now():0;return this.identityVerifiedAt>0;}
+  clearIdentity(){this.identityVerifiedAt=0;}
+  controlReady(){const h=this.snapshot&&this.snapshot.HBNF;return !!(this.socket&&this.socket.readyState===1&&h&&acceptedDirectRelease(h.candidate)&&this.snapshotAt&&Date.now()-this.snapshotAt<=15000&&this.identityVerifiedAt&&Date.now()-this.identityVerifiedAt<=30000);}
+diff --git a/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js b/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js
+index 98ff375c..d0bd11b4 100644
+--- a/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js
++++ b/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js
+@@ -29,6 +29,7 @@ let tuneDispatchPromise = null;
+ let tuneTimer = null;
+ let hydrating = false;
+ let canonicalCapabilities = {};
++let lastTextCommandDiagnostic = {version:1,phase:"page-ready",route:OPAL_LOCAL_PWA?"opal-direct":"unresolved",at:Date.now()};
+ const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
+ let localControlActive = false;
+ let localPathStatus = OPAL_LOCAL_PWA ? "checking" : "not_checked";
+@@ -37,6 +38,31 @@ let lastCloudPairValidationAt = 0;
+ let guestDefaultMigrationInFlight = false;
+ 
+ const $ = id => document.getElementById(String(id).replace(/^#/, ""));
++function noteTextCommandDiagnostic(phase, route, error) {
++  const diagnostic={version:1,phase:String(phase),route:String(route||"unresolved"),at:Date.now()};
++  if(error&&typeof error.name==="string"){
++    const name=error.name.replace(/[^A-Za-z0-9_.-]/g,"").slice(0,32);
++    if(name)diagnostic.errorName=name;
++  }
++  lastTextCommandDiagnostic=diagnostic;
++}
++function textCommandRoute(){return OPAL_LOCAL_PWA?"opal-direct":(localControlActive?"paired-local":"cloud");}
++const textSendButton=$("#featureSendText");
++if(textSendButton)document.addEventListener("click",event=>{
++  const target=event.target&&typeof event.target.closest==="function"?event.target.closest("#featureSendText"):null;
++  if(target!==textSendButton)return;
++  const value=String($("#featureText").value||"").trim();
++  noteTextCommandDiagnostic("button-click",textCommandRoute());
++  lastTextCommandDiagnostic.inputValid=value.length>0&&value.length<=63;
++},true);
++const textStatusNode=$("#textActionStatus");
++if(textStatusNode&&typeof MutationObserver==="function")new MutationObserver(()=>{
++  const status=String(textStatusNode.textContent||"");
++  if(status==="Sending text command…")noteTextCommandDiagnostic("handler-entered",textCommandRoute());
++  else if(status==="Enter a message before sending.")noteTextCommandDiagnostic("input-validation-failed",textCommandRoute());
++  else if(status.indexOf("Text command not confirmed.")===0)noteTextCommandDiagnostic("handler-rejected",textCommandRoute());
++  else if(status.indexOf("Text command acknowledged")===0||status.indexOf("Text command accepted")===0)noteTextCommandDiagnostic("handler-returned",textCommandRoute());
++}).observe(textStatusNode,{childList:true,characterData:true,subtree:true});
+ const statusNode = $("#status");
+ const truthBadge = $("#truthBadge");
+ const authPanel = $("#authPanel");
+@@ -288,11 +314,24 @@ async function call(body) {
+   if (OPAL_LOCAL_PWA && body.action === "command") {
+     const localType = OPAL_LOCAL_COMMANDS.has(body.type);
+     const localTune = body.type === "TUNE" && Array.isArray(body.changedFields) && body.changedFields.length > 0 && body.changedFields.every(key => OPAL_LOCAL_TUNE_FIELDS.has(key));
++    const textOverlay=body.type==="OVERLAY_START"&&body.payload&&body.payload.kind==="text";
+     if (localType || localTune) {
+-      if (!localOwnerControl.supports(body.type, body.payload, body.changedFields)) throw new Error("Local Matrix connection is not ready; no cloud fallback was sent for this control.");
++      if(textOverlay)noteTextCommandDiagnostic("opal-direct-selected", "opal-direct");
++      if (!localOwnerControl.supports(body.type, body.payload, body.changedFields)) {
++        if(textOverlay)noteTextCommandDiagnostic("local-command-rejected", "opal-direct", new Error("UnsupportedCommand"));
++        throw new Error("Local Matrix connection is not ready; no cloud fallback was sent for this control.");
++      }
+       localControlActive = true;
+       if (backendHealth) backendHealth.textContent = "Connected";
+-      return localOwnerControl.command("", body.type, body.payload, body.changedFields);
++      if(textOverlay)noteTextCommandDiagnostic("local-dispatch-started", "opal-direct");
++      try {
++        const result=await localOwnerControl.command("", body.type, body.payload, body.changedFields);
++        if(textOverlay)noteTextCommandDiagnostic("local-dispatch-returned", "opal-direct");
++        return result;
++      } catch(error) {
++        if(textOverlay)noteTextCommandDiagnostic("local-dispatch-rejected", "opal-direct", error);
++        throw error;
++      }
+     }
+   }
+   const cloudBody = Object.assign({}, body);
+@@ -702,6 +741,8 @@ async function command(type, payload = {}) {
+   const sourceButton = payload && payload._sourceButton;
+   const safePayload = Object.assign({}, payload);
+   delete safePayload._sourceButton;
++  const textOverlay=type==="OVERLAY_START"&&safePayload.kind==="text";
++  if(textOverlay)noteTextCommandDiagnostic("canonical-command-entered",textCommandRoute());
+   const originalDisabled = sourceButton ? sourceButton.disabled : false;
+   const duplicatePayload = Object.assign({}, safePayload);
+   if (type === "OVERLAY_START") delete duplicatePayload.overlayId;
+@@ -718,12 +759,16 @@ async function command(type, payload = {}) {
+   let deviceAckWaitMs = 0;
+   try {
+   const tuneStartedAt = performance.now();
+-  await flushTune({ waitForApplied: false });
++  if(textOverlay)noteTextCommandDiagnostic("tune-flush-started",textCommandRoute());
++  try{await flushTune({ waitForApplied: false });}
++  catch(error){if(textOverlay)noteTextCommandDiagnostic("tune-flush-rejected",textCommandRoute(),error);throw error;}
++  if(textOverlay)noteTextCommandDiagnostic("tune-flush-complete",textCommandRoute());
+   tuneFlushMs = performance.now() - tuneStartedAt;
+ 
+   for (let attempt = 0; attempt < 2; attempt++) {
+     try {
+       const submitStartedAt = performance.now();
++      if(textOverlay)noteTextCommandDiagnostic("transport-dispatch-started",textCommandRoute());
+       const result = await call({
+         action: "command",
+         commandId: newCommandId(),
+@@ -731,6 +776,7 @@ async function command(type, payload = {}) {
+         payload: Object.assign({}, safePayload, payload && payload.overlayId ? { overlayId: payload.overlayId } : {}),
+         expectedRevision: revision,
+       });
++      if(textOverlay)noteTextCommandDiagnostic("transport-dispatch-returned",textCommandRoute());
+       submitMs += performance.now() - submitStartedAt;
+       if (result && result.accepted === false) throw new Error(result.error || "Cart did not accept the command.");
+       revision = result.revision;
+@@ -762,6 +808,7 @@ async function command(type, payload = {}) {
+       };
+       return outcome;
+     } catch (error) {
++      if(textOverlay)noteTextCommandDiagnostic("transport-dispatch-rejected",textCommandRoute(),error);
+       if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
+         await refresh({ hydrate: false });
+         continue;
+@@ -790,6 +837,7 @@ window.HBNFCanonical = {
+   },
+   overlay: function(kind, data, ttlMs) {
+     const duration = Number.isFinite(Number(ttlMs)) ? Math.max(1000, Math.min(30000, Math.round(Number(ttlMs)))) : (kind === "scoreboard" ? 22000 : 8000);
++    if(kind==="text")noteTextCommandDiagnostic("overlay-api-entered",textCommandRoute());
+     return command("OVERLAY_START", {
+       overlayId: newCommandId(),
+       kind: kind,
+@@ -797,6 +845,14 @@ window.HBNFCanonical = {
+       ttlMs: duration,
+       data: data || {}
+     });
++  },
++  getLastTextCommandDiagnostic: function(){
++    const transport=localOwnerControl.transport&&localOwnerControl.transport.lastTextCommandDiagnostic;
++    return {
++      page:lastTextCommandDiagnostic?Object.assign({},lastTextCommandDiagnostic):null,
++      transport:transport?Object.assign({},transport):null,
++      buttonDisabled:!!(textSendButton&&textSendButton.disabled),
++    };
+   }
+ };
+ 
