@@ -14,7 +14,7 @@ if(!manifestPath||!stagePath||!providerPath||!adapterPath){
   const [stage,provider,adapter]=await Promise.all(
    [stagePath,providerPath,adapterPath].map(async p=>JSON.parse(await readFile(p,'utf8'))));
   const checkoutHead=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-  const boundHead=JSON.parse(raw.toString('utf8')).source?.currentScoringReviewHead;
+  const boundHead=JSON.parse(raw.toString('utf8')).currentScoringReviewHead;
   let ancestryVerified=checkoutHead===boundHead;
   if(!ancestryVerified){
    execFileSync('git',['merge-base','--is-ancestor',boundHead,checkoutHead],{stdio:'ignore'});

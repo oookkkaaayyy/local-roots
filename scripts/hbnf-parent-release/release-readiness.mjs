@@ -60,7 +60,7 @@ export function checkReleaseReadiness({
        fail('MANIFEST_CONTENT_DIFFERS_FROM_DOWNLOADED_BYTES');
    }catch{fail('INVALID_MANIFEST_BYTES');}
  }
- if(manifest?.source?.currentScoringReviewHead!==BOUND_SOURCE_HEAD||
+ if(manifest?.currentScoringReviewHead!==BOUND_SOURCE_HEAD||
     sourceHead!==BOUND_SOURCE_HEAD)fail('SOURCE_HEAD_BINDING_MISMATCH');
  const targets=manifest?.targets||[];
  if(!Array.isArray(targets)||targets.length!==5||
@@ -75,6 +75,11 @@ export function checkReleaseReadiness({
      fail('FIVE_TARGET_DRIVER_REQUIRES_SEVEN_STAGES');
  }else if(stage?.scope==='cloudflare-only'){
    const child=manifest?.scopedReleaseAuthority?.cloudflareOnlySaveAck;
+   const ownerScope=manifest?.scopedReleaseAuthority?.ownerScopeDecision;
+   if(ownerScope?.source!=='Explicit owner instruction in existing Scoring P0 execution thread'||
+      ownerScope?.decision!=='Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.'||
+      ownerScope?.productionMutationAuthorized!==false)
+     fail('CLOUDFLARE_STAGE_A_OWNER_SCOPE_NOT_AUTHORIZED');
    if(manifest?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.admittedUnderParent!==true||
       child?.parentManifestId!==ORIGINAL_MANIFEST_ID||child?.parentRevision!==MANIFEST_REVISION||
       child?.stageA?.candidateFileId!==BETA_CANDIDATE||
@@ -88,6 +93,7 @@ export function checkReleaseReadiness({
       child?.stageA?.binding?.version_id!==V348||
       !['/api/*','/internal/*','/glow-save-sync.mjs'].every(x=>child?.stageA?.workerFirstPaths?.includes(x))||
       child?.stageA?.productionTrafficAuthorized!==false||
+      child?.ownerDecisionDoesNotSatisfyPreflightOrProductionAdmission!==true||
       stage.parentManifestId!==ORIGINAL_MANIFEST_ID||stage.parentRevision!==MANIFEST_REVISION||
       stage.nonWorkerTargetsUnmodified!==true||
       stage.parentContractAllowsIndependentStage!==true||

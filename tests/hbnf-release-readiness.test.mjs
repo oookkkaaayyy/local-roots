@@ -11,15 +11,21 @@ const betaRequestSha='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c
 const manifest={
  manifestRevision:MANIFEST_REVISION,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
  status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
- scopedReleaseAuthority:{cloudflareOnlySaveAck:{admittedUnderParent:true,
+ scopedReleaseAuthority:{ownerScopeDecision:{
+  source:'Explicit owner instruction in existing Scoring P0 execution thread',
+  decision:'Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.',
+  productionMutationAuthorized:false
+ },cloudflareOnlySaveAck:{admittedUnderParent:true,
   parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:MANIFEST_REVISION,
+  ownerDecisionDoesNotSatisfyPreflightOrProductionAdmission:true,
   stageA:{candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,
    candidateBytes:274519,requestSha256:betaRequestSha,requestBytes:269030,
    noAssetUpload:true,assetStrategy:'exact-v348-inherited-binding',
    binding:{name:'ASSETS',type:'inherit',version_id:workerVersion},
    workerFirstPaths:['/api/*','/internal/*','/glow-save-sync.mjs'],
    productionTrafficAuthorized:false}}},
- source:{currentScoringReviewHead:BOUND_SOURCE_HEAD},
+ currentScoringReviewHead:BOUND_SOURCE_HEAD,
+ source:{},
  targets:[
   {id:'supabase-schema'},{id:'edge-tag-editor'},
   {id:'edge-tags-live'},{id:'edge-watch-score'},
@@ -112,6 +118,14 @@ test('a declared stage cannot override absence of Cloudflare-only authority in t
  const mismatch=checked({manifest:wrongLineage});
  assert.equal(mismatch.status,'BLOCKED');
  assert.ok(mismatch.errors.includes('CLOUDFLARE_ONLY_SCOPE_NOT_SUBORDINATE'));
+});
+test('owner scope decision must be present and cannot authorize production traffic',()=>{
+ const missing=clone(manifest);delete missing.scopedReleaseAuthority.ownerScopeDecision;
+ const noDecision=checked({manifest:missing});
+ assert.ok(noDecision.errors.includes('CLOUDFLARE_STAGE_A_OWNER_SCOPE_NOT_AUTHORIZED'));
+ const traffic=clone(manifest);traffic.scopedReleaseAuthority.ownerScopeDecision.productionMutationAuthorized=true;
+ const attemptedTraffic=checked({manifest:traffic});
+ assert.ok(attemptedTraffic.errors.includes('CLOUDFLARE_STAGE_A_OWNER_SCOPE_NOT_AUTHORIZED'));
 });
 test('stale source HEAD, missing private manifest, missing rollback and missing closeout all fail',()=>{
  assert.equal(checked({sourceHead:'b'.repeat(40)}).status,'BLOCKED');
