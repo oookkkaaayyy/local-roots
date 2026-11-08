@@ -14,10 +14,6 @@ const P0_ACCOUNT='e3bc6b78f1104fa0c2a01245084594cf';
 const P0_WORKER='hbnf';
 const P0_V348='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const P0_V348_ETAG='c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25';
-const P0_BETA_CANDIDATE_SHA256='1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e';
-const P0_BETA_CANDIDATE_BYTES=274519;
-const P0_BETA_REQUEST_SHA256='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11';
-const P0_BETA_REQUEST_BYTES=269030;
 const goodPath=p=>typeof p==='string'&&p.startsWith('/')&&!p.includes('..')&&!p.includes('//')&&!p.includes('\\');
 const fail=(condition,message)=>{if(!condition)throw Error('P0_CLOUDFLARE_'+message);};
 export const sha256=b=>createHash('sha256').update(b).digest('hex');
@@ -316,17 +312,8 @@ export async function stageInheritedBetaVersion({
     scriptEtag===P0_V348_ETAG&&hex64.test(manifestSha256||''),
     'INHERITED_STAGE_A_IDENTITY');
   const attempts=parentRecord?.cloudflareAssetRetentionAmendment?.stageAExecutionAttempts||[];
-  const priorAttempt=[...attempts].reverse().find(a=>a?.status==='STOPPED_BEFORE_VERSION_CREATE');
-  fail(priorAttempt?.status==='STOPPED_BEFORE_VERSION_CREATE'&&
-    priorAttempt?.providerVersionCreatePostSent===false&&
-    priorAttempt?.postAttemptReadback?.activeVersionId===baselineVersionId&&
-    priorAttempt?.postAttemptReadback?.activePercentage===100&&
-    expectedLatestVersionId===priorAttempt.postAttemptReadback.latestVersionId&&
-    expectedVersionCount===priorAttempt.postAttemptReadback.versionCount,
-    'INHERITED_STAGE_A_PRIOR_ATTEMPT_NOT_RECONCILED');
   const raw=Buffer.from(candidateBytes||[]);
-  fail(raw.length===P0_BETA_CANDIDATE_BYTES&&candidateSha256===P0_BETA_CANDIDATE_SHA256&&
-    sha256(raw)===candidateSha256,
+  fail(raw.length>0&&hex64.test(candidateSha256||'')&&sha256(raw)===candidateSha256,
     'INHERITED_CANDIDATE_ARTIFACT_HASH');
   const prepared=attempts.at(-1);
   fail(prepared?.status==='PREFLIGHT_READY_FOR_STAGE_A'&&
@@ -339,18 +326,36 @@ export async function stageInheritedBetaVersion({
     'INHERITED_STAGE_A_PREFLIGHT_NOT_BOUND');
   let candidate;
   try{candidate=JSON.parse(raw.toString('utf8'));}catch{fail(false,'INHERITED_CANDIDATE_JSON');}
-  const operation=candidate?.operation,request=candidate?.request,version=request?.version;
+  const operation=candidate?.operation,request=candidate?.request,version=request;
   const requestBytes=Buffer.from(JSON.stringify(request||{}));
   fail(operation?.method==='POST'&&
     operation?.path==='/accounts/{account_id}/workers/workers/{worker_id}/versions?deploy=false'&&
     operation?.contentType==='application/json'&&operation?.createsUndeployedVersion===true&&
     operation?.productionTrafficChange===false&&operation?.uploadsAssets===false&&
-    requestBytes.length===P0_BETA_REQUEST_BYTES&&requestSha256===P0_BETA_REQUEST_SHA256&&
-    operation?.requestBytes===requestBytes.length&&operation?.requestSha256===requestSha256&&
+    requestSha256===operation?.requestSha256&&operation?.requestBytes===requestBytes.length&&
     sha256(requestBytes)===requestSha256,'INHERITED_CANDIDATE_REQUEST_HASH');
-  fail(Object.keys(request||{}).length===1&&version&&
+  fail(Object.keys(request||{}).sort().join('|')===
+    ['annotations','assets','bindings','compatibility_date','compatibility_flags','main_module','modules','usage_model'].sort().join('|')&&version&&
     !Object.hasOwn(version,'routes')&&!Object.hasOwn(version,'crons'),
-    'INHERITED_CANDIDATE_VERSION_ENVELOPE');
+    'INHERITED_CANDIDATE_VERSION_BODY_SHAPE');
+  const priorAttempt=attempts.slice(0,-1).reverse().find(a=>
+    a?.status==='STOPPED_BEFORE_VERSION_CREATE'||a?.status==='POST_SENT_AMBIGUOUS_NO_VERSION_FOUND');
+  const priorReadback=priorAttempt?.status==='STOPPED_BEFORE_VERSION_CREATE'
+    ? priorAttempt.postAttemptReadback : priorAttempt?.providerOutcome?.independentReadback;
+  const priorLatest=priorReadback?.latestVersionId;
+  const priorCount=priorReadback?.versionCount??priorReadback?.totalCount;
+  fail(priorAttempt&&priorReadback?.activeVersionId===baselineVersionId&&
+    priorReadback?.activePercentage===100&&
+    expectedLatestVersionId===priorLatest&&expectedVersionCount===priorCount,
+    'INHERITED_STAGE_A_PRIOR_ATTEMPT_NOT_RECONCILED');
+  if(priorAttempt.status==='STOPPED_BEFORE_VERSION_CREATE'){
+    fail(priorAttempt.providerVersionCreatePostSent===false,'INHERITED_STAGE_A_PRIOR_ATTEMPT_NOT_RECONCILED');
+  }else{
+    fail(priorAttempt.providerVersionCreatePostSent===true&&priorReadback?.versionListHttp===200&&
+      priorReadback?.candidateTagMatches===0&&candidateSha256!==priorAttempt.candidateSha256&&
+      requestSha256!==priorAttempt.requestSha256,
+      'INHERITED_STAGE_A_AMBIGUOUS_PRIOR_REQUIRES_DISTINCT_CANDIDATE');
+  }
   const assetBinding=(version.bindings||[]).find(b=>b.name==='ASSETS');
   fail(assetBinding?.type==='inherit'&&assetBinding?.version_id===baselineVersionId,
     'INHERITED_ASSETS_BINDING_NOT_PINNED');
@@ -369,6 +374,7 @@ export async function stageInheritedBetaVersion({
     version.compatibility_date&&version.usage_model==='standard'&&
     Array.isArray(version.modules)&&version.modules.length>0,
     'INHERITED_CANDIDATE_METADATA');
+  fail(candidate.source?.boundHead===expectedSourceHead,'INHERITED_CANDIDATE_SOURCE_HEAD');
   validateCloudflareWorkerModules(version.modules,version.main_module);
   const mainModule=version.modules.find(m=>m.name===version.main_module);
   const mainBytes=Buffer.from(mainModule.content_base64||'','base64');
