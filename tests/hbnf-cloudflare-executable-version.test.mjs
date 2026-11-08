@@ -33,6 +33,10 @@ const response=(result,status=200)=>new Response(JSON.stringify({success:true,er
   {status,headers:{'content-type':'application/json'}});
 const responsePage=(result,total_count,status=200)=>new Response(JSON.stringify({success:true,errors:[],result,result_info:{page:1,per_page:100,total_count}}),
   {status,headers:{'content-type':'application/json'}});
+const deploymentsWithHistory={deployments:[
+ {id:'active-deployment',versions:[{version_id:old,percentage:100}]},
+ ...Array.from({length:9},(_,i)=>({id:`history-${i+1}`,versions:[{version_id:old,percentage:100}]}))
+]};
 const stageAParent=transactionId=>({manifestRevision:17,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
  cloudflareAssetRetentionAmendment:{stageAExecutionAttempts:[
   {status:'STOPPED_BEFORE_VERSION_CREATE',providerVersionCreatePostSent:false,
@@ -56,7 +60,7 @@ test('inherited Beta route creates one v348-bound version, preserves active traf
     const u=new URL(url),p=u.pathname,m=init.method||'GET';calls.push({method:m,path:p,search:u.search});
     if(p.endsWith('/workers/workers/hbnf'))return response({name:'hbnf',id:workerId});
     if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='GET')return responsePage([{id:priorLatest,number:349},{id:old,number:348}],349);
-    if(p.endsWith('/scripts/hbnf/deployments'))return response({deployments:[{versions:[{version_id:old,percentage:100}]}]});
+    if(p.endsWith('/scripts/hbnf/deployments'))return response(deploymentsWithHistory);
     if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old,resources:{script:{etag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25'},bindings:candidate.request.version.bindings}});
     if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='POST'){
       postCount++;
@@ -108,7 +112,7 @@ test('inherited Beta route reconciles ambiguous create by tag readback and never
       return versionListReads===1?responsePage([{id:priorLatest,number:349},{id:old,number:348}],349):
         responsePage([{id:next,number:350,annotations:candidate.request.version.annotations},{id:priorLatest,number:349},{id:old,number:348}],350);
     }
-    if(p.endsWith('/scripts/hbnf/deployments'))return response({deployments:[{versions:[{version_id:old,percentage:100}]}]});
+    if(p.endsWith('/scripts/hbnf/deployments'))return response(deploymentsWithHistory);
     if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old,resources:{script:{etag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25'},bindings:candidate.request.version.bindings}});
     if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='POST')throw Error('response lost after create may have committed');
     if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='GET')return response({result:[{id:next,annotations:candidate.request.version.annotations}]});

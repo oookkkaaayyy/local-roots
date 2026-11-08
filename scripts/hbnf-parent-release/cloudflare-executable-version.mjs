@@ -382,7 +382,8 @@ export async function stageInheritedBetaVersion({
     expectedCount:expectedVersionCount,expectedLatestVersionId,
     requiredIds:[baselineVersionId,expectedLatestVersionId]});
   const active=await c.call(c.script+'/deployments');
-  fail(active?.deployments?.length===1&&active.deployments[0]?.versions?.length===1&&
+  fail(Array.isArray(active?.deployments)&&active.deployments.length>=1&&
+    active.deployments[0]?.versions?.length===1&&
     active.deployments[0].versions[0].version_id===baselineVersionId&&
     active.deployments[0].versions[0].percentage===100,'INHERITED_BASELINE_DRIFT');
   const oldVersion=await c.call(c.script+'/versions/'+baselineVersionId);
@@ -434,7 +435,8 @@ export async function stageInheritedBetaVersion({
   fail(JSON.stringify(canon(actualBindings))===JSON.stringify(canon(version.bindings)),
     'INHERITED_BETA_BINDING_READBACK');
   const after=await c.call(c.script+'/deployments');
-  fail(after?.deployments?.length===1&&after.deployments[0]?.versions?.length===1&&
+  fail(Array.isArray(after?.deployments)&&after.deployments.length>=1&&
+    after.deployments[0]?.versions?.length===1&&
     after.deployments[0].versions[0].version_id===baselineVersionId&&
     after.deployments[0].versions[0].percentage===100,'INHERITED_ACTIVE_TRAFFIC_CHANGED');
   const retained=await c.call(c.script+'/versions/'+baselineVersionId);
