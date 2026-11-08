@@ -125,7 +125,8 @@ export function checkReleaseReadiness({
     !trueValue(provider?.routesCronBindingsMatch)||
     !trueValue(provider?.freshAuthenticatedFiveTargetReadback))
    fail('PROVIDER_READBACK_AND_ROLLBACK_UNQUALIFIED');
- if(adapter?.upload!=='cloudflare-version-multipart'||
+ if(adapter?.upload!=='cloudflare-beta-version-json'||
+    adapter?.stageADeploy!=='deploy=false'||
     adapter?.deploy!=='percentage-100'||
     adapter?.restore!=='retained-v348-percentage-100'||
     !trueValue(adapter?.nonproductionApplyRestoreReadbackPassed)||

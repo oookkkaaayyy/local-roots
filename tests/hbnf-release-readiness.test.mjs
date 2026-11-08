@@ -55,7 +55,7 @@ const provider={
  freshAuthenticatedFiveTargetReadback:true
 };
 const adapter={
- upload:'cloudflare-version-multipart',deploy:'percentage-100',
+ upload:'cloudflare-beta-version-json',stageADeploy:'deploy=false',deploy:'percentage-100',
  restore:'retained-v348-percentage-100',nonproductionApplyRestoreReadbackPassed:true,
  authenticationVerified:true,recoveryDownloadBackVerified:true,
  oneTimeClaimVerified:true,twoPhaseAdmissionVerified:true,
@@ -119,6 +119,8 @@ test('stale source HEAD, missing private manifest, missing rollback and missing 
  assert.ok(live.errors.includes('PRIVATE_MANIFEST_BYTES_NOT_VERIFIED'));
  const noRollback=clone(provider);noRollback.retainedRollbackVersion=false;
  assert.equal(checked({provider:noRollback}).status,'BLOCKED');
+ const oldUploadPath=clone(adapter);oldUploadPath.upload='cloudflare-version-multipart';
+ assert.equal(checked({adapter:oldUploadPath}).status,'BLOCKED');
  const noCloseout=clone(adapter);noCloseout.sameManifestCloseoutReady=false;
  assert.equal(checked({adapter:noCloseout}).status,'BLOCKED');
 });
