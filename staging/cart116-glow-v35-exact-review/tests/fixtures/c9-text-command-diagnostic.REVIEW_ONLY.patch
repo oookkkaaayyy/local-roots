@@ -174,3 +174,32 @@ index 98ff375c..d0bd11b4 100644
    }
  };
  
+--- a/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js
++++ b/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js
+@@ -31,0 +32 @@
++    this.onTextDiagnostic = typeof options.onTextDiagnostic === "function" ? options.onTextDiagnostic : () => {};
+@@ -549,3 +550,8 @@
+-    await this.connectOpalDirect();
+-    if (!this.transport.controlReady()) throw new Error("Fresh Matrix identity and readback are required; no control was sent.");
+-    if (!this.supports(type, payload, changedFields)) throw new Error("This Owner PWA control is not available on the offline local transport.");
++    const textOverlay = type === "OVERLAY_START" && payload && payload.kind === "text";
++    const note = phase => { if (textOverlay) { try { this.onTextDiagnostic(phase); } catch (_) {} } };
++    note("local-connect-started");
++    try { await this.connectOpalDirect(); } catch (error) { note("local-connect-rejected"); throw error; }
++    note("local-connect-complete");
++    if (!this.transport.controlReady()) { note("local-control-preflight-rejected"); throw new Error("Fresh Matrix identity and readback are required; no control was sent."); }
++    note("local-control-preflight-passed");
++    if (!this.supports(type, payload, changedFields)) { note("local-payload-rejected"); throw new Error("This Owner PWA control is not available on the offline local transport."); }
+@@ -576,0 +583 @@
++    note("matrix-command-started");
+@@ -578 +585,4 @@
+-    await this.readAux("");
++    note("matrix-readback-confirmed");
++    note("aux-readback-started");
++    try { await this.readAux(""); } catch (error) { note("aux-readback-rejected"); throw error; }
++    note("local-command-complete");
+--- a/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js
++++ b/staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js
+@@ -33 +33 @@
+-const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
++const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA, onTextDiagnostic: phase => noteTextCommandDiagnostic(phase, "opal-direct") });

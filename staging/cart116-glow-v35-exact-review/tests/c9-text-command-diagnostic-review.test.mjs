@@ -10,6 +10,7 @@ const root=new URL(".",import.meta.url);
 const base="../opal/owner-v1201-7target/";
 const transportRel=base+"mission-control-local/local-transport.js";
 const appRel=base+"owner-pwa/hbnf-cart.js";
+const localRel=base+"owner-pwa/hbnf-cart-local.js";
 const patchPath=new URL("./fixtures/c9-text-command-diagnostic.REVIEW_ONLY.patch",import.meta.url);
 const inTree=rel=>"staging/cart116-glow-v35-exact-review/"+rel.replace(/^\.\.\//,"");
 
@@ -17,7 +18,7 @@ test("review-only diagnostics locate text failures without retaining message or 
  const scratch=mkdtempSync(join(tmpdir(),"c9-text-diag-"));
  try{
   writeFileSync(join(scratch,"package.json"),JSON.stringify({type:"module"}));
-  for(const rel of [transportRel,appRel]){
+  for(const rel of [transportRel,appRel,localRel]){
    const source=new URL(rel,import.meta.url);
    const target=join(scratch,inTree(rel));
    mkdirSync(dirname(target),{recursive:true});
@@ -29,11 +30,18 @@ test("review-only diagnostics locate text failures without retaining message or 
   assert.match(app,/noteTextCommandDiagnostic\("handler-entered"/);
   assert.match(app,/noteTextCommandDiagnostic\("input-validation-failed"/);
   assert.match(app,/noteTextCommandDiagnostic\("opal-direct-selected"/);
+  assert.match(app,/onTextDiagnostic: phase => noteTextCommandDiagnostic/);
   assert.match(app,/getLastTextCommandDiagnostic/);
   const traceHelper=app.slice(app.indexOf("function noteTextCommandDiagnostic"),app.indexOf('const statusNode = $("#status")'));
   assert.ok(traceHelper.length>0);
   assert.doesNotMatch(traceHelper,/error\.message|payload|featureText\.value\s*[,}]/);
   execFileSync(process.execPath,["--check",join(scratch,inTree(appRel))],{cwd:scratch,stdio:"pipe"});
+  const local=readFileSync(join(scratch,inTree(localRel)),"utf8");
+  for(const phase of ["local-connect-started","local-connect-rejected","local-control-preflight-rejected","local-control-preflight-passed","local-payload-rejected","matrix-command-started","matrix-readback-confirmed","aux-readback-rejected","local-command-complete"]){
+   assert.ok(local.includes(`note("${phase}")`),`missing local stage ${phase}`);
+  }
+  assert.doesNotMatch(local,/onTextDiagnostic\([^)]*(payload|text|token|error\.message)/i);
+  execFileSync(process.execPath,["--check",join(scratch,inTree(localRel))],{cwd:scratch,stdio:"pipe"});
 
   const module=await import(pathToFileURL(join(scratch,inTree(transportRel))).href+"?review=1");
   const {LocalMatrixTransport,MATRIX_MAC,SUPPORTED_RELEASE,buildPatch}=module;
