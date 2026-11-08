@@ -129,6 +129,8 @@ test('only exact source head or release-control-only descendant can satisfy the 
  assert.equal(bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:BOUND_SOURCE_HEAD}),BOUND_SOURCE_HEAD);
  assert.equal(bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'ad139e2f3ccaff938a17f0b59a6e667bc3851d32',ancestryVerified:true,
   changedPaths:['scripts/hbnf-parent-release/release-readiness.mjs','scripts/hbnf-parent-release/release-readiness-cli.mjs','tests/hbnf-release-readiness.test.mjs']}),BOUND_SOURCE_HEAD);
+ assert.equal(bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'b'.repeat(40),ancestryVerified:true,
+  changedPaths:['scripts/hbnf-parent-release/cloudflare-executable-version.mjs','tests/hbnf-cloudflare-executable-version.test.mjs']}),BOUND_SOURCE_HEAD);
  assert.throws(()=>bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:true,
   changedPaths:['public/glow.html']}),/NON_GOVERNANCE_SOURCE_CHANGED_AFTER_BOUND_HEAD/);
  assert.throws(()=>bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:false,changedPaths:[]}),/NON_GOVERNANCE_SOURCE_CHANGED_AFTER_BOUND_HEAD/);

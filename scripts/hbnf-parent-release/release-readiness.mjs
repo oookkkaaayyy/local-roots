@@ -9,7 +9,9 @@ export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 const RELEASE_CONTROL_TAIL_PATHS=new Set([
  'scripts/hbnf-parent-release/release-readiness.mjs',
  'scripts/hbnf-parent-release/release-readiness-cli.mjs',
- 'tests/hbnf-release-readiness.test.mjs'
+ 'scripts/hbnf-parent-release/cloudflare-executable-version.mjs',
+ 'tests/hbnf-release-readiness.test.mjs',
+ 'tests/hbnf-cloudflare-executable-version.test.mjs'
 ]);
 
 /** A governance-only commit may follow the bound product-source head. Any

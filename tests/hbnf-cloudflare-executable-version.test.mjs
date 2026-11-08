@@ -2,7 +2,8 @@
 // provider requests are made by this suite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,stageExecutableVersion,deployRetainedVersion} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,stageExecutableVersion,stageInheritedBetaVersion,deployRetainedVersion} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {readFile} from 'node:fs/promises';
 
 const old='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const next='66a779c0-d8fd-4449-a154-7b6eab9aebeb';
@@ -27,6 +28,104 @@ const witness={complete:true,readOnly:true,workerName:'hbnf',versionId:old,paths
   digests:Object.fromEntries(installedDigests),inventoryDigest:inventoryDigest(installedPaths,installedDigests)};
 const response=(result,status=200)=>new Response(JSON.stringify({success:true,errors:[],result}),
   {status,headers:{'content-type':'application/json'}});
+
+const inheritedCandidatePath=process.env.HBNF_BETA_CANDIDATE_PATH;
+const readInheritedCandidate=async()=>{
+  assert.ok(inheritedCandidatePath,'set HBNF_BETA_CANDIDATE_PATH to the independently downloaded frozen candidate');
+  return readFile(inheritedCandidatePath);
+};
+
+test('inherited Beta route creates one v348-bound version, preserves active traffic, and reads it back',{
+  skip:!inheritedCandidatePath
+},async()=>{
+  const raw=await readInheritedCandidate(),candidate=JSON.parse(raw);
+  const calls=[];let postCount=0;
+  const fetchImpl=async(url,init={})=>{
+    const u=new URL(url),p=u.pathname,m=init.method||'GET';calls.push({method:m,path:p,search:u.search});
+    if(p.endsWith('/workers/workers/hbnf'))return response({name:'hbnf',id:workerId});
+    if(p.endsWith('/scripts/hbnf/deployments'))return response({deployments:[{versions:[{version_id:old,percentage:100}]}]});
+    if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old,resources:{script:{etag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25'},bindings:candidate.request.version.bindings}});
+    if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='POST'){
+      postCount++;
+      assert.equal(u.search,'?deploy=false');
+      assert.equal(init.headers['Content-Type'],'application/json');
+      assert.deepEqual(JSON.parse(init.body),candidate.request);
+      return response({id:next});
+    }
+    if(p.endsWith('/workers/workers/'+workerId+'/versions/'+next))return response({
+      id:next,annotations:candidate.request.version.annotations,
+      compatibility_date:candidate.request.version.compatibility_date,
+      bindings:candidate.request.version.bindings,
+      assets:{config:candidate.request.version.assets.config}
+    });
+    throw Error('unexpected '+m+' '+p);
+  };
+  const callsByClaim=[];
+  const result=await stageInheritedBetaVersion({
+    token:'test_token_long_enough',accountId,workerName:'hbnf',fetchImpl,candidateBytes:raw,
+    candidateSha256:sha256(raw),requestSha256:candidate.operation.requestSha256,
+    baselineVersionId:old,scriptEtag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25',
+    manifestSha256:'a'.repeat(64),parentRecord:{id:'existing-rev14'},
+    requireParentAdmission:async()=>true,
+    verifyCandidateDownloadback:async()=>({verified:true,sha256:sha256(raw),bytes:raw.length}),
+    requireFreshFiveTargetPreimage:async()=>true,
+    claimOnce:async()=>{callsByClaim.push('claimed');return {acquired:true,durable:true,manifestSha256:'a'.repeat(64),transactionId:'stage-a-test-claim'};}
+  });
+  assert.equal(result.status,'INHERITED_BETA_VERSION_CREATED_NOT_DEPLOYED');
+  assert.equal(result.versionId,next);assert.equal(result.activePercentage,100);
+  assert.equal(postCount,1);assert.deepEqual(callsByClaim,['claimed']);
+  assert.equal(calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
+  assert.equal(calls.some(x=>x.path.endsWith('/assets-upload-session')||x.path.endsWith('/workers/assets/upload')),false);
+  assert.equal(calls.some(x=>x.method!=='GET'&&/\/(routes|schedules)(?:\?|$)/.test(x.path)),false);
+  assert.equal(calls.filter(x=>x.method==='GET'&&x.path.endsWith('/scripts/hbnf/deployments')).length,2);
+});
+
+test('inherited Beta route reconciles ambiguous create by tag readback and never retries',{
+  skip:!inheritedCandidatePath
+},async()=>{
+  const raw=await readInheritedCandidate(),candidate=JSON.parse(raw),calls=[];
+  const fetchImpl=async(url,init={})=>{
+    const u=new URL(url),p=u.pathname,m=init.method||'GET';calls.push({method:m,path:p,search:u.search});
+    if(p.endsWith('/workers/workers/hbnf'))return response({name:'hbnf',id:workerId});
+    if(p.endsWith('/scripts/hbnf/deployments'))return response({deployments:[{versions:[{version_id:old,percentage:100}]}]});
+    if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old,resources:{script:{etag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25'},bindings:candidate.request.version.bindings}});
+    if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='POST')throw Error('response lost after create may have committed');
+    if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='GET')return response({result:[{id:next,annotations:candidate.request.version.annotations}]});
+    if(p.endsWith('/workers/workers/'+workerId+'/versions/'+next))return response({
+      id:next,annotations:candidate.request.version.annotations,
+      compatibility_date:candidate.request.version.compatibility_date,
+      bindings:candidate.request.version.bindings,
+      assets:{config:candidate.request.version.assets.config}
+    });
+    throw Error('unexpected '+m+' '+p);
+  };
+  const result=await stageInheritedBetaVersion({token:'test_token_long_enough',accountId,fetchImpl,
+    candidateBytes:raw,candidateSha256:sha256(raw),requestSha256:candidate.operation.requestSha256,
+    baselineVersionId:old,scriptEtag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25',
+    manifestSha256:'b'.repeat(64),requireParentAdmission:async()=>true,
+    verifyCandidateDownloadback:async()=>({verified:true,sha256:sha256(raw),bytes:raw.length}),
+    requireFreshFiveTargetPreimage:async()=>true,
+    claimOnce:async()=>({acquired:true,durable:true,manifestSha256:'b'.repeat(64),transactionId:'stage-a-ambiguous-test'})
+  });
+  assert.equal(result.versionId,next);
+  assert.equal(calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
+  assert.equal(calls.filter(x=>x.method==='GET'&&x.path.endsWith('/versions')).length,1);
+  assert.equal(calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
+});
+
+test('inherited Beta route rejects an unfrozen candidate before any provider request',async()=>{
+  let providerCalls=0;
+  await assert.rejects(stageInheritedBetaVersion({
+    token:'test_token_long_enough',accountId,baselineVersionId:old,
+    candidateBytes:Buffer.from('{"request":{}}'),candidateSha256:'0'.repeat(64),
+    requestSha256:'0'.repeat(64),scriptEtag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25',
+    manifestSha256:'c'.repeat(64),
+    requireParentAdmission:async()=>true,verifyCandidateDownloadback:async()=>({verified:true}),
+    requireFreshFiveTargetPreimage:async()=>true,claimOnce:async()=>({acquired:true,durable:true}),
+    fetchImpl:async()=>{providerCalls++;throw Error('provider must not be called')}
+  }),/INHERITED_CANDIDATE_ARTIFACT_HASH/);
+  assert.equal(providerCalls,0);
+});
 
 test('requires a complete v348 inventory, preserves unchanged bytes and validates every requested bucket',()=>{
   const b=Buffer.from('hello');

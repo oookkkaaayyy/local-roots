@@ -8,6 +8,14 @@ import {validateCloudflareWorkerModules} from '../validate-cloudflare-worker-mul
 
 const uuid=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 const hex64=/^[a-f0-9]{64}$/i;
+const P0_ACCOUNT='e3bc6b78f1104fa0c2a01245084594cf';
+const P0_WORKER='hbnf';
+const P0_V348='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
+const P0_V348_ETAG='c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25';
+const P0_BETA_CANDIDATE_SHA256='1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e';
+const P0_BETA_CANDIDATE_BYTES=274519;
+const P0_BETA_REQUEST_SHA256='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11';
+const P0_BETA_REQUEST_BYTES=269030;
 const goodPath=p=>typeof p==='string'&&p.startsWith('/')&&!p.includes('..')&&!p.includes('//')&&!p.includes('\\');
 const fail=(condition,message)=>{if(!condition)throw Error('P0_CLOUDFLARE_'+message);};
 export const sha256=b=>createHash('sha256').update(b).digest('hex');
@@ -255,6 +263,139 @@ export async function stageExecutableVersion({
   const retained=await c.call(c.script+'/versions/'+baselineVersionId);
   fail(retained?.id===baselineVersionId,'ROLLBACK_VERSION_NOT_RETAINED');
   return {status:'EXECUTABLE_VERSION_CREATED_NOT_DEPLOYED',versionId:newVersion.id,receipt:result.receipt};
+}
+
+// Stage the already-built Beta JSON candidate that inherits the exact v348
+// ASSETS binding. This route uploads no asset files and never changes traffic.
+// Real parent callbacks must verify the same-manifest Stage-A admission,
+// downloaded candidate bytes, fresh five-target baseline, and a durable
+// atomic one-time claim before the single POST can occur.
+export async function stageInheritedBetaVersion({
+  token,accountId,workerName='hbnf',fetchImpl=fetch,
+  candidateBytes,candidateSha256,requestSha256,baselineVersionId,scriptEtag,manifestSha256,
+  parentRecord,requireParentAdmission,verifyCandidateDownloadback,
+  requireFreshFiveTargetPreimage,claimOnce
+}){
+  fail(typeof requireParentAdmission==='function'&&
+    typeof verifyCandidateDownloadback==='function'&&
+    typeof requireFreshFiveTargetPreimage==='function'&&
+    typeof claimOnce==='function','INHERITED_STAGE_A_PROOF_CALLBACKS');
+  fail(accountId===P0_ACCOUNT&&workerName===P0_WORKER&&baselineVersionId===P0_V348&&
+    scriptEtag===P0_V348_ETAG&&hex64.test(manifestSha256||''),
+    'INHERITED_STAGE_A_IDENTITY');
+  const raw=Buffer.from(candidateBytes||[]);
+  fail(raw.length===P0_BETA_CANDIDATE_BYTES&&candidateSha256===P0_BETA_CANDIDATE_SHA256&&
+    sha256(raw)===candidateSha256,
+    'INHERITED_CANDIDATE_ARTIFACT_HASH');
+  let candidate;
+  try{candidate=JSON.parse(raw.toString('utf8'));}catch{fail(false,'INHERITED_CANDIDATE_JSON');}
+  const operation=candidate?.operation,request=candidate?.request,version=request?.version;
+  const requestBytes=Buffer.from(JSON.stringify(request||{}));
+  fail(operation?.method==='POST'&&
+    operation?.path==='/accounts/{account_id}/workers/workers/{worker_id}/versions?deploy=false'&&
+    operation?.contentType==='application/json'&&operation?.createsUndeployedVersion===true&&
+    operation?.productionTrafficChange===false&&operation?.uploadsAssets===false&&
+    requestBytes.length===P0_BETA_REQUEST_BYTES&&requestSha256===P0_BETA_REQUEST_SHA256&&
+    operation?.requestBytes===requestBytes.length&&operation?.requestSha256===requestSha256&&
+    sha256(requestBytes)===requestSha256,'INHERITED_CANDIDATE_REQUEST_HASH');
+  fail(Object.keys(request||{}).length===1&&version&&
+    !Object.hasOwn(version,'routes')&&!Object.hasOwn(version,'crons'),
+    'INHERITED_CANDIDATE_VERSION_ENVELOPE');
+  const assetBinding=(version.bindings||[]).find(b=>b.name==='ASSETS');
+  fail(assetBinding?.type==='inherit'&&assetBinding?.version_id===baselineVersionId,
+    'INHERITED_ASSETS_BINDING_NOT_PINNED');
+  fail(Array.isArray(version.bindings)&&version.bindings.length===8&&
+    version.bindings.every(b=>b?.name&&b.type==='inherit'&&b.version_id===baselineVersionId)&&
+    new Set(version.bindings.map(b=>b.name)).size===version.bindings.length,
+    'INHERITED_BINDINGS_NOT_EXACT');
+  fail(version.assets&&Object.keys(version.assets).length===1&&version.assets.config&&
+    !version.assets.jwt&&!version.assets.manifest,'INHERITED_ASSET_UPLOAD_PRESENT');
+  const workerFirst=version.assets.config.run_worker_first;
+  fail(version.assets.config.base_path==='/'&&Array.isArray(workerFirst)&&
+    ['/api/*','/internal/*','/glow-save-sync.mjs'].every(p=>workerFirst.includes(p)),
+    'INHERITED_HELPER_WORKER_FIRST');
+  fail(typeof version.annotations?.['workers/tag']==='string'&&
+    version.annotations['workers/tag'].startsWith('hbnf-p0-')&&
+    version.compatibility_date&&version.usage_model==='standard'&&
+    Array.isArray(version.modules)&&version.modules.length>0,
+    'INHERITED_CANDIDATE_METADATA');
+  validateCloudflareWorkerModules(version.modules,version.main_module);
+  const mainModule=version.modules.find(m=>m.name===version.main_module);
+  const mainBytes=Buffer.from(mainModule.content_base64||'','base64');
+  fail(mainBytes.length>0&&sha256(mainBytes)===candidate.source?.candidateModuleSha256,
+    'INHERITED_MAIN_MODULE_SOURCE_PARITY');
+  fail(candidate.source?.helperSha256==='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
+    'INHERITED_HELPER_SOURCE_PARITY');
+  fail((await requireParentAdmission(parentRecord,{manifestSha256,candidateSha256,requestSha256}))===true,
+    'INHERITED_STAGE_A_NOT_ADMITTED');
+  const downloaded=await verifyCandidateDownloadback({candidateSha256,bytes:raw.length});
+  fail(downloaded?.verified===true&&downloaded.sha256===candidateSha256&&downloaded.bytes===raw.length,
+    'INHERITED_CANDIDATE_DOWNLOADBACK');
+  fail((await requireFreshFiveTargetPreimage())===true,'INHERITED_FIVE_TARGET_PREIMAGE_NOT_FRESH');
+  const claim=await claimOnce({manifestSha256,candidateSha256,requestSha256,baselineVersionId});
+  fail(claim?.acquired===true&&claim?.durable===true&&claim?.manifestSha256===manifestSha256&&
+    typeof claim?.transactionId==='string'&&claim.transactionId.length>0,
+    'INHERITED_STAGE_A_ATOMIC_CLAIM');
+  const c=apiClient({token,accountId,workerName,fetchImpl});
+  const worker=await c.call(c.worker);
+  fail(uuid.test(worker?.id)&&worker?.name===workerName,'INHERITED_WORKER_ID');
+  const workerPath='/workers/workers/'+worker.id;
+  const active=await c.call(c.script+'/deployments');
+  fail(active?.deployments?.length===1&&active.deployments[0]?.versions?.length===1&&
+    active.deployments[0].versions[0].version_id===baselineVersionId&&
+    active.deployments[0].versions[0].percentage===100,'INHERITED_BASELINE_DRIFT');
+  const oldVersion=await c.call(c.script+'/versions/'+baselineVersionId);
+  fail(oldVersion?.id===baselineVersionId&&oldVersion?.resources?.script?.etag===scriptEtag,
+    'INHERITED_V348_ETAG_DRIFT');
+  const baselineBindings=oldVersion?.resources?.bindings||oldVersion?.bindings;
+  fail(Array.isArray(baselineBindings)&&baselineBindings.length===8&&
+    baselineBindings.map(x=>x.name).sort().join('|')===version.bindings.map(x=>x.name).sort().join('|'),
+    'INHERITED_BASELINE_BINDING_SET');
+  // The uniqueness claim is acquired before this immediate last baseline read.
+  const finalPreimage=await requireFreshFiveTargetPreimage();
+  fail(finalPreimage===true,'INHERITED_IMMEDIATE_PRECHANGE_READBACK');
+  let created;
+  try{created=await c.call(workerPath+'/versions?deploy=false','POST',request);}
+  catch(error){
+    // The create may have committed despite a lost response. Read once by the
+    // exact candidate tag; never issue a second POST on an ambiguous outcome.
+    let list;
+    try{list=await c.call(workerPath+'/versions?per_page=100');}
+    catch{throw Object.assign(Error('P0_INHERITED_BETA_CREATE_AMBIGUOUS_READBACK_FAILED'),{cause:error});}
+    const items=Array.isArray(list)?list:(list?.result||list?.versions||[]);
+    const matches=items.filter(v=>v.annotations?.['workers/tag']===version.annotations['workers/tag']);
+    fail(matches.length===1,'INHERITED_BETA_CREATE_AMBIGUOUS_NOT_UNIQUE');
+    created=matches[0];
+    if(!created?.id)throw Object.assign(Error('P0_INHERITED_BETA_CREATE_AMBIGUOUS_NO_ID'),{cause:error});
+  }
+  fail(uuid.test(created?.id)&&created.id!==baselineVersionId,'INHERITED_BETA_VERSION_CREATE');
+  const verified=await c.call(workerPath+'/versions/'+created.id);
+  fail(verified?.id===created.id&&verified.annotations?.['workers/tag']===version.annotations['workers/tag']&&
+    verified.compatibility_date===version.compatibility_date,'INHERITED_BETA_VERSION_READBACK');
+  const settings=verified.resources?.script_runtime||verified;
+  const actualConfig=verified.assets?.config||(()=>{
+    const a=settings.assets;
+    if(!a)return null;
+    return {base_path:a.base_path,run_worker_first:a.static_routing?.user_worker||a.raw_run_worker_first};
+  })();
+  fail(actualConfig?.base_path===version.assets.config.base_path&&
+    JSON.stringify(actualConfig.run_worker_first)===JSON.stringify(workerFirst),
+    'INHERITED_BETA_ASSET_CONFIG_READBACK');
+  const actualBindings=verified.resources?.bindings||verified.bindings||[];
+  const canon=items=>items.map(b=>({name:b.name,type:b.type,version_id:b.version_id||null}))
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  fail(JSON.stringify(canon(actualBindings))===JSON.stringify(canon(version.bindings)),
+    'INHERITED_BETA_BINDING_READBACK');
+  const after=await c.call(c.script+'/deployments');
+  fail(after?.deployments?.length===1&&after.deployments[0]?.versions?.length===1&&
+    after.deployments[0].versions[0].version_id===baselineVersionId&&
+    after.deployments[0].versions[0].percentage===100,'INHERITED_ACTIVE_TRAFFIC_CHANGED');
+  const retained=await c.call(c.script+'/versions/'+baselineVersionId);
+  fail(retained?.id===baselineVersionId&&retained?.resources?.script?.etag===scriptEtag,
+    'INHERITED_V348_ROLLBACK_NOT_RETAINED');
+  return {status:'INHERITED_BETA_VERSION_CREATED_NOT_DEPLOYED',versionId:created.id,
+    manifestSha256,candidateSha256,requestSha256,transactionId:claim.transactionId,
+    activeVersionId:baselineVersionId,activePercentage:100};
 }
 // Called only inside the same rev10 admitted saga; no separate deployment driver.
 export async function deployRetainedVersion({token,accountId,workerName='hbnf',fetchImpl=fetch,
