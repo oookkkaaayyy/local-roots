@@ -1,8 +1,8 @@
 // Scoring release preflight. Read-only; never performs provider actions.
 import {createHash} from 'node:crypto';
 export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
-export const MANIFEST_SHA256='0568274a429f4049678651122c15264f151150277622ad430e7370661424e260';
-export const MANIFEST_REVISION=15;
+export const MANIFEST_SHA256='a4c342fe334d9aec6a0cf13277d0f5af62939bef497af40a9a2cdadbae547b69';
+export const MANIFEST_REVISION=16;
 export const BOUND_SOURCE_HEAD='abf611e9e451464bc9b85ec4fb1d227645a7abdd';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 
@@ -87,8 +87,16 @@ export function checkReleaseReadiness({
        retention?.latestBefore!=='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'||
        retention?.rollbackLimitMostRecentlyPublishedVersions!==100||
        retention?.worstCasePositionAfterSingleVersionCreate>100||
-       cost?.stageAStatus!=='COST_QUALIFIED_AND_V348_ROLLBACK_WINDOW_PRESERVED; IMMEDIATE_READBACK_AND_ONE_TIME_CLAIM_REQUIRED; ACCOUNT_VERSION_QUOTA_NOT_EXPOSED')
+       cost?.stageAStatus!=='COST_QUALIFIED_AND_V348_ROLLBACK_WINDOW_PRESERVED; PRIOR CLAIM CONSUMED BEFORE A PRECREATE ADAPTER STOP; NO PROVIDER WRITE; NEW CLAIM AND IMMEDIATE READBACK REQUIRED; ACCOUNT VERSION QUOTA FIELD NOT EXPOSED')
       fail('STAGE_A_COST_RETENTION_EVIDENCE_UNQUALIFIED');
+    const attempts=manifest?.cloudflareAssetRetentionAmendment?.stageAExecutionAttempts;
+    if(!Array.isArray(attempts)||attempts.length!==1||
+       attempts[0]?.status!=='STOPPED_BEFORE_VERSION_CREATE'||
+       attempts[0]?.providerVersionCreatePostSent!==false||
+       attempts[0]?.postAttemptReadback?.activeVersionId!==V348||
+       attempts[0]?.postAttemptReadback?.activePercentage!==100||
+       attempts[0]?.postAttemptReadback?.latestVersionId!=='049a35e1-64b5-4e76-9378-ca4ffa0a7d47')
+      fail('STAGE_A_PRIOR_ATTEMPT_NOT_RECONCILED');
    if(ownerScope?.source!=='Explicit owner instruction in existing Scoring P0 execution thread'||
       ownerScope?.decision!=='Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.'||
       ownerScope?.productionMutationAuthorized!==false)

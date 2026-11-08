@@ -147,7 +147,7 @@ function apiClient({token,accountId,workerName,fetchImpl}){
   fail(/^[a-f0-9]{32}$/.test(accountId||''),'ACCOUNT_ID');
   fail(/^[\w-]+$/.test(workerName),'WORKER_NAME');
   const prefix='https://api.cloudflare.com/client/v4/accounts/'+accountId;
-  async function call(path,method='GET',body,authorization=token){
+  async function callEnvelope(path,method='GET',body,authorization=token){
     const init={method,headers:{Authorization:'Bearer '+authorization}};
     if(body!==undefined){
       init.body=body instanceof FormData?body:JSON.stringify(body);
@@ -157,11 +157,32 @@ function apiClient({token,accountId,workerName,fetchImpl}){
     fail(response?.ok,'HTTP_'+method+'_'+response?.status);
     const payload=await response.json();
     fail(payload?.success!==false&&(!Array.isArray(payload?.errors)||payload.errors.length===0),'PROVIDER_RESPONSE');
-    return payload?.result;
+    return payload;
+  }
+  async function call(path,method='GET',body,authorization=token){
+    return (await callEnvelope(path,method,body,authorization))?.result;
   }
   const script='/workers/scripts/'+workerName;
   const worker='/workers/workers/'+workerName;
-  return {call,script,worker};
+  return {call,callEnvelope,script,worker};
+}
+
+function versionListItems(envelope,{expectedCount,expectedLatestVersionId,requiredIds=[]}={}){
+  const result=envelope?.result;
+  const items=Array.isArray(result)?result:
+    Array.isArray(result?.result)?result.result:
+    Array.isArray(result?.versions)?result.versions:null;
+  fail(Array.isArray(items),'VERSION_LIST_RESULT_SHAPE');
+  if(expectedCount!==undefined){
+    const total=Number(envelope?.result_info?.total_count??result?.result_info?.total_count);
+    fail(Number.isSafeInteger(total)&&total===expectedCount,'VERSION_LIST_TOTAL_COUNT');
+  }
+  if(expectedLatestVersionId){
+    const latest=items.reduce((a,b)=>Number(b.number)>Number(a.number)?b:a);
+    fail(latest?.id===expectedLatestVersionId,'LATEST_VERSION_ID');
+  }
+  for(const id of requiredIds)fail(items.some(v=>v.id===id),'VERSION_LIST_REQUIRED_VERSION');
+  return items;
 }
 // Constructs a true new, UNDEPLOYED executable Worker version. All three
 // proof callbacks must be implemented by the real rev10 parent; a boolean
@@ -275,6 +296,7 @@ export async function stageExecutableVersion({
 export async function stageInheritedBetaVersion({
   token,accountId,workerName='hbnf',fetchImpl=fetch,
   candidateBytes,candidateSha256,requestSha256,baselineVersionId,scriptEtag,manifestSha256,
+  expectedLatestVersionId,expectedVersionCount,
   parentRecord,requireParentAdmission,verifyCandidateDownloadback,
   requireFreshFiveTargetPreimage,claimOnce
 }){
@@ -285,6 +307,14 @@ export async function stageInheritedBetaVersion({
   fail(accountId===P0_ACCOUNT&&workerName===P0_WORKER&&baselineVersionId===P0_V348&&
     scriptEtag===P0_V348_ETAG&&hex64.test(manifestSha256||''),
     'INHERITED_STAGE_A_IDENTITY');
+  const priorAttempt=parentRecord?.cloudflareAssetRetentionAmendment?.stageAExecutionAttempts?.at(-1);
+  fail(priorAttempt?.status==='STOPPED_BEFORE_VERSION_CREATE'&&
+    priorAttempt?.providerVersionCreatePostSent===false&&
+    priorAttempt?.postAttemptReadback?.activeVersionId===baselineVersionId&&
+    priorAttempt?.postAttemptReadback?.activePercentage===100&&
+    expectedLatestVersionId===priorAttempt.postAttemptReadback.latestVersionId&&
+    expectedVersionCount===priorAttempt.postAttemptReadback.versionCount,
+    'INHERITED_STAGE_A_PRIOR_ATTEMPT_NOT_RECONCILED');
   const raw=Buffer.from(candidateBytes||[]);
   fail(raw.length===P0_BETA_CANDIDATE_BYTES&&candidateSha256===P0_BETA_CANDIDATE_SHA256&&
     sha256(raw)===candidateSha256,
@@ -334,14 +364,13 @@ export async function stageInheritedBetaVersion({
   fail(downloaded?.verified===true&&downloaded.sha256===candidateSha256&&downloaded.bytes===raw.length,
     'INHERITED_CANDIDATE_DOWNLOADBACK');
   fail((await requireFreshFiveTargetPreimage())===true,'INHERITED_FIVE_TARGET_PREIMAGE_NOT_FRESH');
-  const claim=await claimOnce({manifestSha256,candidateSha256,requestSha256,baselineVersionId});
-  fail(claim?.acquired===true&&claim?.durable===true&&claim?.manifestSha256===manifestSha256&&
-    typeof claim?.transactionId==='string'&&claim.transactionId.length>0,
-    'INHERITED_STAGE_A_ATOMIC_CLAIM');
   const c=apiClient({token,accountId,workerName,fetchImpl});
   const worker=await c.call(c.worker);
   fail(workerIdPattern.test(worker?.id||'')&&worker?.name===workerName,'INHERITED_WORKER_ID');
   const workerPath='/workers/workers/'+worker.id;
+  const priorVersions=versionListItems(await c.callEnvelope(workerPath+'/versions?per_page=100'),{
+    expectedCount:expectedVersionCount,expectedLatestVersionId,
+    requiredIds:[baselineVersionId,expectedLatestVersionId]});
   const active=await c.call(c.script+'/deployments');
   fail(active?.deployments?.length===1&&active.deployments[0]?.versions?.length===1&&
     active.deployments[0].versions[0].version_id===baselineVersionId&&
@@ -353,18 +382,24 @@ export async function stageInheritedBetaVersion({
   fail(Array.isArray(baselineBindings)&&baselineBindings.length===8&&
     baselineBindings.map(x=>x.name).sort().join('|')===version.bindings.map(x=>x.name).sort().join('|'),
     'INHERITED_BASELINE_BINDING_SET');
-  // The uniqueness claim is acquired before this immediate last baseline read.
+  // All provider response shapes and exact lineage checks pass before claiming.
+  // The local one-use claim is acquired immediately before the single POST.
   const finalPreimage=await requireFreshFiveTargetPreimage();
   fail(finalPreimage===true,'INHERITED_IMMEDIATE_PRECHANGE_READBACK');
+  const claim=await claimOnce({manifestSha256,candidateSha256,requestSha256,baselineVersionId,
+    expectedLatestVersionId,expectedVersionCount,workerId:worker.id});
+  fail(claim?.acquired===true&&claim?.durable===true&&claim?.manifestSha256===manifestSha256&&
+    typeof claim?.transactionId==='string'&&claim.transactionId.length>0,
+    'INHERITED_STAGE_A_ATOMIC_CLAIM');
   let created;
   try{created=await c.call(workerPath+'/versions?deploy=false','POST',request);}
   catch(error){
     // The create may have committed despite a lost response. Read once by the
     // exact candidate tag; never issue a second POST on an ambiguous outcome.
-    let list;
-    try{list=await c.call(workerPath+'/versions?per_page=100');}
+    let listEnvelope;
+    try{listEnvelope=await c.callEnvelope(workerPath+'/versions?per_page=100');}
     catch{throw Object.assign(Error('P0_INHERITED_BETA_CREATE_AMBIGUOUS_READBACK_FAILED'),{cause:error});}
-    const items=Array.isArray(list)?list:(list?.result||list?.versions||[]);
+    const items=versionListItems(listEnvelope);
     const matches=items.filter(v=>v.annotations?.['workers/tag']===version.annotations['workers/tag']);
     fail(matches.length===1,'INHERITED_BETA_CREATE_AMBIGUOUS_NOT_UNIQUE');
     created=matches[0];

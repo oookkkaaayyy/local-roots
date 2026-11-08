@@ -15,8 +15,9 @@ const manifest={
   accountSpecificPlanReadback:{accountId:'e3bc6b78f1104fa0c2a01245084594cf',plan:'FREE',observedAt:'2026-11-08T04:34:00Z'},
   billingAssessment:'NO_INCREMENTAL_CHARGE_EXPECTED_FOR_THIS_EXACT_STAGE_A_OPERATION; inference based on Free plan readback, documented usage billing, no Worker invocation, no asset upload, and deploy=false.',
   retentionAssessment:{status:'PASS_ONE_ADDITIONAL_UNDEPLOYED_VERSION_RETAINS_V348_WITHIN_DOCUMENTED_ROLLBACK_WINDOW',activeBefore:workerVersion,latestBefore:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',rollbackLimitMostRecentlyPublishedVersions:100,worstCasePositionAfterSingleVersionCreate:3},
-  stageAStatus:'COST_QUALIFIED_AND_V348_ROLLBACK_WINDOW_PRESERVED; IMMEDIATE_READBACK_AND_ONE_TIME_CLAIM_REQUIRED; ACCOUNT_VERSION_QUOTA_NOT_EXPOSED'
- }},
+  stageAStatus:'COST_QUALIFIED_AND_V348_ROLLBACK_WINDOW_PRESERVED; PRIOR CLAIM CONSUMED BEFORE A PRECREATE ADAPTER STOP; NO PROVIDER WRITE; NEW CLAIM AND IMMEDIATE READBACK REQUIRED; ACCOUNT VERSION QUOTA FIELD NOT EXPOSED'
+ },
+  stageAExecutionAttempts:[{status:'STOPPED_BEFORE_VERSION_CREATE',providerVersionCreatePostSent:false,postAttemptReadback:{activeVersionId:workerVersion,activePercentage:100,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47'}}]},
  scopedReleaseAuthority:{ownerScopeDecision:{
   source:'Explicit owner instruction in existing Scoring P0 execution thread',
   decision:'Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.',
@@ -81,9 +82,9 @@ const checked=(overrides={})=>checkReleaseReadiness({
  provider:clone(provider),adapter:clone(adapter),synthetic:true,
  ...overrides
 });
-test('revision 15 source digest is pinned and remains non-admitting',()=>{
- assert.equal(MANIFEST_SHA256,'0568274a429f4049678651122c15264f151150277622ad430e7370661424e260');
- assert.equal(MANIFEST_REVISION,15);
+test('revision 16 source digest is pinned and remains non-admitting',()=>{
+ assert.equal(MANIFEST_SHA256,'a4c342fe334d9aec6a0cf13277d0f5af62939bef497af40a9a2cdadbae547b69');
+ assert.equal(MANIFEST_REVISION,16);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
  assert.equal(result.canMutate,false);
