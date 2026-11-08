@@ -203,8 +203,24 @@ function hasVerifiedWorkInventory(items, receipt) {
     receipt.itemIds.every((id, index) => id === ids[index]);
 }
 
-/** Gate coordinator exit: verified inventory is required before any terminal decision. */
-export function assessCoordinatorContinuation(workItems, inventoryReceipt) {
+function hasBoundedWaitAuthorization(waitPolicy, activeWorkIds, inventoryReceipt) {
+  if (!waitPolicy || waitPolicy.completionIsDirectDependency !== true ||
+      !Array.isArray(waitPolicy.dependencyIds) || waitPolicy.dependencyIds.length === 0 ||
+      !Number.isInteger(waitPolicy.maxWaitMs) || waitPolicy.maxWaitMs < 1 || waitPolicy.maxWaitMs > 60_000 ||
+      waitPolicy.maxWaits !== 1 || waitPolicy.waitsUsed !== 0 ||
+      waitPolicy.inventorySourceRef !== inventoryReceipt.sourceRef ||
+      waitPolicy.inventoryEvidenceRef !== inventoryReceipt.evidenceRef) return false;
+  const dependencies = waitPolicy.dependencyIds;
+  return new Set(dependencies).size === dependencies.length &&
+    dependencies.every(id => activeWorkIds.includes(id));
+}
+
+/**
+ * Gate coordinator continuation: verified inventory is required before any terminal decision.
+ * A coordinator turn may wait only for a verified, direct dependency, with one explicit wait
+ * capped at 60 seconds. Yielding the turn never marks the delivery stream complete.
+ */
+export function assessCoordinatorContinuation(workItems, inventoryReceipt, waitPolicy = null) {
   if (!hasVerifiedWorkInventory(workItems, inventoryReceipt)) {
     return { action: 'verify-work-inventory', canExit: false,
       reason: 'a complete independently read-back work inventory is required before routing or exit' };
@@ -221,7 +237,15 @@ export function assessCoordinatorContinuation(workItems, inventoryReceipt) {
       readyWorkCount: readyWorkIds.length, activeWorkIds };
   }
   if (activeWorkIds.length) {
-    return { action: 'wait-for-active-work', canExit: false, activeWorkIds, readyWorkIds: [] };
+    if (hasBoundedWaitAuthorization(waitPolicy, activeWorkIds, inventoryReceipt)) {
+      return { action: 'wait-for-active-work', canExit: false,
+        activeWorkIds: waitPolicy.dependencyIds, readyWorkIds: [],
+        wait: { maxWaitMs: waitPolicy.maxWaitMs, maxWaits: 1, waitsUsed: 1 } };
+    }
+    return { action: 'yield-active-work', canExit: true, streamComplete: false,
+      activeWorkIds, readyWorkIds: [],
+      resumptionTrigger: 'a completion or needs-attention event on an exact active thread; explicitly resume the coordinator because no automatic resumption is available',
+      reason: 'no evidence-backed direct dependency and one bounded wait are authorized' };
   }
   if (unverifiedWorkIds.length) {
     return { action: 'verify-execution', canExit: false, workIds: unverifiedWorkIds };
