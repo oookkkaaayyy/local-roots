@@ -48,6 +48,23 @@ test('rejects malformed VLQ mappings and accepts indexed Source Map v3 sections'
   assert.deepEqual(result, { valid: true, sourceMaps: 1, references: 1 });
 });
 
+test('rejects invalid indexed-map offsets, unsorted sections, and malformed nested maps', async () => {
+  const invalidMaps = [
+    { version: 3, sections: [{ map: JSON.parse(sourceMap) }] },
+    { version: 3, sections: [{ offset: { line: -1, column: 0 }, map: JSON.parse(sourceMap) }] },
+    { version: 3, sections: [
+      { offset: { line: 1, column: 0 }, map: JSON.parse(sourceMap) },
+      { offset: { line: 0, column: 0 }, map: JSON.parse(sourceMap) },
+    ] },
+    { version: 3, sections: [{ offset: { line: 0, column: 0 }, map: { version: 2, sources: [], mappings: '' } }] },
+  ];
+  for (const map of invalidMaps) {
+    const request = makeMultipart({ mapBytes: Buffer.from(JSON.stringify(map)) });
+    const body = await request.arrayBuffer();
+    await assert.rejects(() => validateCloudflareWorkerMultipart(body, request.headers.get('content-type')));
+  }
+});
+
 test('rejects malformed base64 source map metadata', async () => {
   const request = makeMultipart({ base64Map: true, mapBytes: Buffer.from(sourceMap) });
   const parsed = await request.formData();
