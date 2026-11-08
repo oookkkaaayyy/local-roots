@@ -44,6 +44,13 @@ These rules apply to substantial implementation, debugging, deployment, and repa
 - Do not make the user a command/output relay. Ask for at most one genuinely user-only action at a time.
 - Progress is measured by completed deliverables, live evidence, or closed acceptance criteria—not by preparation activity.
 
+## Delegation and usage budget gate
+
+- Default delegation, parallel workers, background runs, and retries are zero. “Proceed,” “get it done,” or broad task authorization does not grant a usage budget.
+- Before any explicitly authorized delegation, require an exact task-scoped budget and call `assessUsageBudget` from `scripts/classify-delivery-recovery.mjs`. It must pass for the planned and already-consumed usage before dispatch.
+- The permitted profile is Luna Light at low effort, at most one worker, at most 10 tool/API calls, at most 10 minutes, at most one retry, and no nested delegation. Missing limits, unavailable budget readback, or a denial means do not dispatch.
+- Stop at the first exhausted limit. Continuing requires fresh, task-specific owner authorization with a new bounded budget. The helper is caller-enforced; it does not intercept Codex platform calls, so never claim platform-level enforcement.
+
 ## Single-capsule execution model
 
 For any live, deployment, diagnostic, or high-cost task:
