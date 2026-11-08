@@ -1,8 +1,8 @@
 // Scoring release preflight. Read-only; never performs provider actions.
 import {createHash} from 'node:crypto';
 export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
-export const MANIFEST_SHA256='83502d34150ed88939b6a99d0519a0563acd2452cdbbd188d93ad741b96cbea8';
-export const MANIFEST_REVISION=14;
+export const MANIFEST_SHA256='0568274a429f4049678651122c15264f151150277622ad430e7370661424e260';
+export const MANIFEST_REVISION=15;
 export const BOUND_SOURCE_HEAD='abf611e9e451464bc9b85ec4fb1d227645a7abdd';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 
@@ -76,6 +76,19 @@ export function checkReleaseReadiness({
  }else if(stage?.scope==='cloudflare-only'){
    const child=manifest?.scopedReleaseAuthority?.cloudflareOnlySaveAck;
    const ownerScope=manifest?.scopedReleaseAuthority?.ownerScopeDecision;
+    const cost=manifest?.cloudflareAssetRetentionAmendment?.costAndQuotaEvidence;
+    const plan=cost?.accountSpecificPlanReadback;
+    const retention=cost?.retentionAssessment;
+    if(plan?.accountId!=='e3bc6b78f1104fa0c2a01245084594cf'||
+       plan?.plan!=='FREE'||!/^20\d\d-\d\d-\d\dT/.test(plan?.observedAt||'')||
+       cost?.billingAssessment!=='NO_INCREMENTAL_CHARGE_EXPECTED_FOR_THIS_EXACT_STAGE_A_OPERATION; inference based on Free plan readback, documented usage billing, no Worker invocation, no asset upload, and deploy=false.'||
+       retention?.status!=='PASS_ONE_ADDITIONAL_UNDEPLOYED_VERSION_RETAINS_V348_WITHIN_DOCUMENTED_ROLLBACK_WINDOW'||
+       retention?.activeBefore!==V348||
+       retention?.latestBefore!=='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'||
+       retention?.rollbackLimitMostRecentlyPublishedVersions!==100||
+       retention?.worstCasePositionAfterSingleVersionCreate>100||
+       cost?.stageAStatus!=='COST_QUALIFIED_AND_V348_ROLLBACK_WINDOW_PRESERVED; IMMEDIATE_READBACK_AND_ONE_TIME_CLAIM_REQUIRED; ACCOUNT_VERSION_QUOTA_NOT_EXPOSED')
+      fail('STAGE_A_COST_RETENTION_EVIDENCE_UNQUALIFIED');
    if(ownerScope?.source!=='Explicit owner instruction in existing Scoring P0 execution thread'||
       ownerScope?.decision!=='Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.'||
       ownerScope?.productionMutationAuthorized!==false)

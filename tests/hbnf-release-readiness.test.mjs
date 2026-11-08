@@ -11,6 +11,12 @@ const betaRequestSha='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c
 const manifest={
  manifestRevision:MANIFEST_REVISION,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
  status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
+ cloudflareAssetRetentionAmendment:{costAndQuotaEvidence:{
+  accountSpecificPlanReadback:{accountId:'e3bc6b78f1104fa0c2a01245084594cf',plan:'FREE',observedAt:'2026-11-08T04:34:00Z'},
+  billingAssessment:'NO_INCREMENTAL_CHARGE_EXPECTED_FOR_THIS_EXACT_STAGE_A_OPERATION; inference based on Free plan readback, documented usage billing, no Worker invocation, no asset upload, and deploy=false.',
+  retentionAssessment:{status:'PASS_ONE_ADDITIONAL_UNDEPLOYED_VERSION_RETAINS_V348_WITHIN_DOCUMENTED_ROLLBACK_WINDOW',activeBefore:workerVersion,latestBefore:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',rollbackLimitMostRecentlyPublishedVersions:100,worstCasePositionAfterSingleVersionCreate:3},
+  stageAStatus:'COST_QUALIFIED_AND_V348_ROLLBACK_WINDOW_PRESERVED; IMMEDIATE_READBACK_AND_ONE_TIME_CLAIM_REQUIRED; ACCOUNT_VERSION_QUOTA_NOT_EXPOSED'
+ }},
  scopedReleaseAuthority:{ownerScopeDecision:{
   source:'Explicit owner instruction in existing Scoring P0 execution thread',
   decision:'Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.',
@@ -75,12 +81,19 @@ const checked=(overrides={})=>checkReleaseReadiness({
  provider:clone(provider),adapter:clone(adapter),synthetic:true,
  ...overrides
 });
-test('revision 14 source digest is pinned and remains non-admitting',()=>{
- assert.equal(MANIFEST_SHA256,'83502d34150ed88939b6a99d0519a0563acd2452cdbbd188d93ad741b96cbea8');
- assert.equal(MANIFEST_REVISION,14);
+test('revision 15 source digest is pinned and remains non-admitting',()=>{
+ assert.equal(MANIFEST_SHA256,'0568274a429f4049678651122c15264f151150277622ad430e7370661424e260');
+ assert.equal(MANIFEST_REVISION,15);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
  assert.equal(result.canMutate,false);
+});
+test('Stage A requires account plan and rollback-window evidence while retaining production denial',()=>{
+ const x=clone(manifest);
+ delete x.cloudflareAssetRetentionAmendment.costAndQuotaEvidence.accountSpecificPlanReadback;
+ assert.ok(checked({manifest:x}).errors.includes('STAGE_A_COST_RETENTION_EVIDENCE_UNQUALIFIED'));
+ assert.equal(manifest.status,'PENDING_NOT_ADMITTED');
+ assert.equal(manifest.productionMutationAuthorized,false);
 });
 test('historical five-target driver refuses review ZIP as one worker stage',()=>{
  const before=clone(stage);
