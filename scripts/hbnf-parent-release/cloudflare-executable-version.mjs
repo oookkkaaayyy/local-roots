@@ -5,6 +5,7 @@
 import {createHash} from 'node:crypto';
 import {extname} from 'node:path';
 import {validateCloudflareWorkerModules} from '../validate-cloudflare-worker-multipart.mjs';
+import {readWranglerToken} from './capture-cloudflare-current-readonly.mjs';
 
 const uuid=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 const hex64=/^[a-f0-9]{64}$/i;
@@ -396,6 +397,22 @@ export async function stageInheritedBetaVersion({
   return {status:'INHERITED_BETA_VERSION_CREATED_NOT_DEPLOYED',versionId:created.id,
     manifestSha256,candidateSha256,requestSha256,transactionId:claim.transactionId,
     activeVersionId:baselineVersionId,activePercentage:100};
+}
+
+// Use Wrangler's supported credential retrieval so the existing Mac OAuth
+// session can authorize the Beta JSON call without an API token being passed,
+// printed, or persisted by the caller.
+export async function stageInheritedBetaVersionWithWranglerOAuth({
+  wranglerBinary=process.env.WRANGLER_BIN,
+  readToken=readWranglerToken,...options
+}={}){
+  fail(typeof wranglerBinary==='string'&&wranglerBinary.startsWith('/'),
+    'INHERITED_WRANGLER_BINARY_PATH');
+  fail(typeof readToken==='function','INHERITED_WRANGLER_TOKEN_READER');
+  const token=await readToken(wranglerBinary);
+  fail(typeof token==='string'&&token.length>12&&!/\s/.test(token),
+    'INHERITED_WRANGLER_OAUTH_UNAVAILABLE');
+  return stageInheritedBetaVersion({...options,token});
 }
 // Called only inside the same rev10 admitted saga; no separate deployment driver.
 export async function deployRetainedVersion({token,accountId,workerName='hbnf',fetchImpl=fetch,

@@ -2,7 +2,7 @@
 // provider requests are made by this suite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,stageExecutableVersion,stageInheritedBetaVersion,deployRetainedVersion} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {readFile} from 'node:fs/promises';
 
 const old='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -61,8 +61,10 @@ test('inherited Beta route creates one v348-bound version, preserves active traf
     throw Error('unexpected '+m+' '+p);
   };
   const callsByClaim=[];
-  const result=await stageInheritedBetaVersion({
-    token:'test_token_long_enough',accountId,workerName:'hbnf',fetchImpl,candidateBytes:raw,
+  const oauthPaths=[];
+  const result=await stageInheritedBetaVersionWithWranglerOAuth({
+    wranglerBinary:'/test/wrangler',readToken:async p=>{oauthPaths.push(p);return 'test_token_long_enough';},
+    accountId,workerName:'hbnf',fetchImpl,candidateBytes:raw,
     candidateSha256:sha256(raw),requestSha256:candidate.operation.requestSha256,
     baselineVersionId:old,scriptEtag:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25',
     manifestSha256:'a'.repeat(64),parentRecord:{id:'existing-rev14'},
@@ -72,6 +74,7 @@ test('inherited Beta route creates one v348-bound version, preserves active traf
     claimOnce:async()=>{callsByClaim.push('claimed');return {acquired:true,durable:true,manifestSha256:'a'.repeat(64),transactionId:'stage-a-test-claim'};}
   });
   assert.equal(result.status,'INHERITED_BETA_VERSION_CREATED_NOT_DEPLOYED');
+  assert.deepEqual(oauthPaths,['/test/wrangler']);
   assert.equal(result.versionId,next);assert.equal(result.activePercentage,100);
   assert.equal(postCount,1);assert.deepEqual(callsByClaim,['claimed']);
   assert.equal(calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
