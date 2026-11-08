@@ -191,3 +191,40 @@ export function routeReadyWork(workItems = []) {
     return true;
   }).map(item => item.id);
 }
+
+ 
+/** Gate coordinator exit: active or dependency-ready authorized work is never a terminal status. */
+export function assessCoordinatorContinuation(workItems = []) {
+  const items = Array.isArray(workItems) ? workItems.filter(Boolean) : [];
+  const readyWorkIds = routeReadyWork(items);
+  const activeWorkIds = items.filter(item => item.status === 'inProgress' &&
+    hasExecutionReadback(item.receivingWorker)).map(item => item.id);
+  const unverifiedWorkIds = items.filter(item => item.status === 'inProgress' &&
+    !hasExecutionReadback(item.receivingWorker)).map(item => item.id);
+
+  if (readyWorkIds.length) {
+    return { action: 'route-ready-work', canExit: false, nextWorkId: readyWorkIds[0],
+      readyWorkCount: readyWorkIds.length, activeWorkIds };
+  }
+  if (activeWorkIds.length) {
+    return { action: 'wait-for-active-work', canExit: false, activeWorkIds, readyWorkIds: [] };
+  }
+  if (unverifiedWorkIds.length) {
+    return { action: 'verify-execution', canExit: false, workIds: unverifiedWorkIds };
+  }
+
+  const unresolved = items.filter(item => {
+    if (item.status === 'done') return assessDeliveryEvidence(item.deliveryEvidence).complete !== true;
+    return item.status !== 'superseded' || !nonEmpty(item.supersededBy);
+  });
+  if (unresolved.length === 0) return { action: 'complete', canExit: true };
+
+  const preciselyBlocked = unresolved.filter(item => item.status === 'blocked' &&
+    nonEmpty(item.blocker) && nonEmpty(item.resumptionTrigger));
+  if (preciselyBlocked.length === unresolved.length) {
+    return { action: 'blocked', canExit: true, blockedWorkIds: preciselyBlocked.map(item => item.id) };
+  }
+  return { action: 'continue-work', canExit: false,
+    unresolvedWorkIds: unresolved.map(item => item.id),
+    reason: 'incomplete work lacks a verified terminal receipt or precise blocker' };
+}
