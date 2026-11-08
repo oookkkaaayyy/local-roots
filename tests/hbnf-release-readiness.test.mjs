@@ -5,8 +5,8 @@ import {
  MANIFEST_SHA256,MANIFEST_REVISION,BOUND_SOURCE_HEAD,bindSourceHeadToCheckout
 } from '../scripts/hbnf-parent-release/release-readiness.mjs';
 const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
-const betaCandidate='14z080a1qSSe4_TCABAhUepiI-_X28lhb';
-const betaCandidateSha='59f28e054a1452fc8f473921f9929c06cae28542ec864d34a23f61513315b9e7';
+const betaCandidate='1KeHOM7HKhRAcMznpQCoSFKN5RD599w1R';
+const betaCandidateSha='cee4382a1f4f52d31cde0739035020ddc4d3a7be1905877d342b21e0d2c16d0e';
 const betaRequestSha='1d693d88a1b79ffa94cecaa4d896baa104fb0c9e676ddacdd0d4e61917247884';
 const manifest={
  manifestRevision:MANIFEST_REVISION,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
@@ -17,19 +17,21 @@ const manifest={
   retentionAssessment:{status:'PASS_ONE_ADDITIONAL_UNDEPLOYED_VERSION_RETAINS_V348_WITHIN_DOCUMENTED_ROLLBACK_WINDOW',activeBefore:workerVersion,latestBefore:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',rollbackLimitMostRecentlyPublishedVersions:100,worstCasePositionAfterSingleVersionCreate:3},
   stageAStatus:'DOCUMENTED_NO_RUNTIME_REQUEST_CHARGE_EXPECTED; Free plan observation recorded; version quota field not exposed; v348 rollback window verified; immediate prechange readback and one-use claim remain required.'
  },
+  liveGlowHtmlIntegrationReadback:{httpStatus:200,url:'https://hbnightflyers.com/glow.html',bytes:208937,sha256:'dd1a6451d0a1cc020dfd26f24fa0b491fd258baa4918f070f9c82557d71681c9',imports:'./glow-save-sync.mjs',instantiates:'createGlowSaveCoordinator({storage:localStorage,onStatus:setGlowSaveStatus})',casRpc:'hbnf_save_league_state_v1'},
   stageAExecutionAttempts:[
    {status:'POST_SENT_AMBIGUOUS_NO_VERSION_FOUND',providerVersionCreatePostSent:true,candidateSha256:'1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e',requestSha256:'36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11',providerOutcome:{independentReadback:{versionListHttp:200,totalCount:349,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',candidateTagMatches:0,activeVersionId:workerVersion,activePercentage:100}}},
-   {status:'PREFLIGHT_READY_FOR_STAGE_A',providerVersionCreatePostSent:false,oneTimeClaimCreated:false,candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,requestSha256:betaRequestSha,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',versionCount:349}
+   {status:'PREFLIGHT_READY_FOR_STAGE_A',providerVersionCreatePostSent:false,oneTimeClaimCreated:false,sourceHead:BOUND_SOURCE_HEAD,candidateFileId:betaCandidate,candidateBytes:276427,candidateSha256:betaCandidateSha,requestSha256:betaRequestSha,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',versionCount:349}
   ]},
  scopedReleaseAuthority:{ownerScopeDecision:{
-  source:'Explicit owner instruction in existing Scoring P0 execution thread',
-  decision:'Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.',
+  source:'Explicit standing Stage A authorization in existing Scoring P0 execution thread',
+  decision:'Continue exact-scope undeployed hbnf version creation and readback for corrected candidates after per-candidate identity, compatibility, cost, recovery and preservation gates; no traffic promotion.',
   productionMutationAuthorized:false
  },cloudflareOnlySaveAck:{admittedUnderParent:true,
   parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:14,
   ownerDecisionDoesNotSatisfyPreflightOrProductionAdmission:true,
   stageA:{candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,
-   candidateBytes:274377,requestSha256:betaRequestSha,requestBytes:269018,
+   candidateBytes:276427,requestSha256:betaRequestSha,requestBytes:269018,
+   sourceHead:BOUND_SOURCE_HEAD,
    requestEnvelope:'VersionCreateRequest (top-level JSON object)',
    sourceIdentityReadbackRequired:true,
    sourceReadbackEndpoint:'GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps',
@@ -57,7 +59,7 @@ const stage={
   format:'cloudflare-beta-worker-version-json',sha256:betaRequestSha,bytes:269018,
   requestEnvelope:'VersionCreateRequest (top-level JSON object)',
   sourceReadbackEndpoint:'GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps',
-  candidateArtifactSha256:betaCandidateSha,candidateArtifactBytes:274377,
+  candidateArtifactSha256:betaCandidateSha,candidateArtifactBytes:276427,
   privateDriveFileId:betaCandidate,
   downloadBackVerified:true,moduleClosureVerified:true,sourceParityVerified:true,
   glowHelperSha256:'674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
@@ -90,9 +92,9 @@ const checked=(overrides={})=>checkReleaseReadiness({
  provider:clone(provider),adapter:clone(adapter),synthetic:true,
  ...overrides
 });
-test('revision 24 source digest is pinned and remains non-admitting',()=>{
- assert.equal(MANIFEST_SHA256,'8e04ac87ff65946cf71651b3452377fa104e08ae1d74796110d3ee97223563da');
- assert.equal(MANIFEST_REVISION,24);
+test('revision 25 source digest is pinned and remains non-admitting',()=>{
+ assert.equal(MANIFEST_SHA256,'914972b59404acf33605c1495ecdf41b588178a2b88967c0f07b7793f3e646ec');
+ assert.equal(MANIFEST_REVISION,25);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
  assert.equal(result.canMutate,false);
@@ -101,6 +103,14 @@ test('Stage A requires account plan and rollback-window evidence while retaining
  const x=clone(manifest);
  delete x.cloudflareAssetRetentionAmendment.costAndQuotaEvidence.accountSpecificPlanReadback;
  assert.ok(checked({manifest:x}).errors.includes('STAGE_A_COST_RETENTION_EVIDENCE_UNQUALIFIED'));
+ assert.equal(manifest.status,'PENDING_NOT_ADMITTED');
+ assert.equal(manifest.productionMutationAuthorized,false);
+});
+test('Stage A requires the live Glow import and CAS dispatch evidence',()=>{
+ const x=clone(manifest);
+ x.cloudflareAssetRetentionAmendment.liveGlowHtmlIntegrationReadback.imports='./old-save-helper.mjs';
+ const result=checked({manifest:x});
+ assert.ok(result.errors.includes('SERVED_GLOW_IMPORT_AND_CAS_NOT_VERIFIED'));
  assert.equal(manifest.status,'PENDING_NOT_ADMITTED');
  assert.equal(manifest.productionMutationAuthorized,false);
 });
