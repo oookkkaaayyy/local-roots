@@ -31,8 +31,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-skins-readable-20261014";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"basedOnFirmwareSha256\":\"43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-lazy-bass-radial-20261108";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-lazy-bass-radial-20261108\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-lazy-bass-radial-20261108\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnFirmwareSha256\":\"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\",\"lazy-bass-radial-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
