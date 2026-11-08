@@ -81,6 +81,14 @@ test('12: a sent handoff without receiving-worker execution cannot close the han
 
 const observedRun = { status: 'completed', runId: 'workflow-run-42340048195', observedBy: 'independent-run-readback', startedAt: '2026-11-06T20:00:00Z', completedAt: '2026-11-06T20:02:00Z', actualResult: 'source checks passed' };
 const acceptanceReceipt = target => ({ target, outcome: 'PASS', observedBy: 'independent-readback', sourceRef: 'be4d9910cca31917e6c8daa9ed4cc6e83bf012bf', evidenceRef: 'https://github.com/oookkkaaayyy/local-roots/actions/runs/42340048195' });
+const verifiedInventory = items => ({
+  outcome: 'PASS',
+  observedBy: 'independent-readback',
+  sourceRef: 'https://docs.google.com/document/d/180CdeHe03Y9mFs3TB-t6kFSEoUvKyts8xEeZffa6E-4/edit',
+  evidenceRef: 'https://docs.google.com/document/d/180CdeHe03Y9mFs3TB-t6kFSEoUvKyts8xEeZffa6E-4/edit',
+  itemIds: items.map(item => item.id),
+});
+const assessContinuation = items => assessCoordinatorContinuation(items, verifiedInventory(items));
 
 test('13: missing or unknown acceptance target cannot count as DONE', () => {
   for (const target of [undefined, 'done', '', null]) {
@@ -179,7 +187,7 @@ test('recovery retry requires exact explicit standing authorization', async () =
 test('coordinator cannot exit after a bounded wait while a worker is executing', () => {
   const active = { id: 'controls', target: 'controls', status: 'inProgress',
     receivingWorker: { ...observedRun, status: 'inProgress' } };
-  assert.deepEqual(assessCoordinatorContinuation([{ ...active, waitTimedOut: true }]),
+  assert.deepEqual(assessContinuation([{ ...active, waitTimedOut: true }]),
     { action: 'wait-for-active-work', canExit: false, activeWorkIds: ['controls'], readyWorkIds: [] });
 });
 
@@ -188,28 +196,45 @@ test('coordinator routes independent ready work before waiting on an active lane
     receivingWorker: { ...observedRun, status: 'inProgress' } };
   const ready = { id: 'scoring-next', target: 'scoring', status: 'ready', authorized: true, dependenciesMet: true };
   const blocked = { id: 'provider-gate', status: 'blocked', blocker: 'owner-only admission decision', resumptionTrigger: 'owner decision' };
-  assert.deepEqual(assessCoordinatorContinuation([active, ready, blocked]), {
+  assert.deepEqual(assessContinuation([active, ready, blocked]), {
     action: 'route-ready-work', canExit: false, nextWorkId: 'scoring-next', readyWorkCount: 1, activeWorkIds: ['controls']
   });
 });
 
 test('in-progress labels without execution readback cannot justify exit', () => {
-  assert.deepEqual(assessCoordinatorContinuation([{ id: 'handoff', status: 'inProgress' }]),
+  assert.deepEqual(assessContinuation([{ id: 'handoff', status: 'inProgress' }]),
     { action: 'verify-execution', canExit: false, workIds: ['handoff'] });
 });
 
 test('unresolved work without an exact blocker cannot be closed as blocked', () => {
-  assert.deepEqual(assessCoordinatorContinuation([{ id: 'todo', status: 'ready', authorized: false, dependenciesMet: true }]), {
+  assert.deepEqual(assessContinuation([{ id: 'todo', status: 'ready', authorized: false, dependenciesMet: true }]), {
     action: 'continue-work', canExit: false, unresolvedWorkIds: ['todo'],
     reason: 'incomplete work lacks a verified terminal receipt or precise blocker'
   });
 });
 
 test('only a precise blocker permits blocked exit, and verified acceptance permits completion', () => {
-  assert.deepEqual(assessCoordinatorContinuation([{ id: 'gated', status: 'blocked', blocker: 'missing signed authorization', resumptionTrigger: 'owner signs manifest' }]),
+  assert.deepEqual(assessContinuation([{ id: 'gated', status: 'blocked', blocker: 'missing signed authorization', resumptionTrigger: 'owner signs manifest' }]),
     { action: 'blocked', canExit: true, blockedWorkIds: ['gated'] });
   const evidence = { acceptanceTarget: 'source', checks: { sourceTests: true }, receivingWorker: observedRun, acceptanceReceipt: acceptanceReceipt('source') };
-  assert.deepEqual(assessCoordinatorContinuation([{ id: 'done', status: 'done', deliveryEvidence: evidence }]),
+  assert.deepEqual(assessContinuation([{ id: 'done', status: 'done', deliveryEvidence: evidence }]),
     { action: 'complete', canExit: true });
-  assert.equal(assessCoordinatorContinuation([{ id: 'false-done', status: 'done' }]).canExit, false);
+  assert.equal(assessContinuation([{ id: 'false-done', status: 'done' }]).canExit, false);
+});
+
+test('coordinator fails closed when the work inventory is missing, empty without proof, or mismatched', () => {
+  assert.deepEqual(assessCoordinatorContinuation(), {
+    action: 'verify-work-inventory', canExit: false,
+    reason: 'a complete independently read-back work inventory is required before routing or exit'
+  });
+  assert.equal(assessCoordinatorContinuation(null, verifiedInventory([])).canExit, false);
+  assert.equal(assessCoordinatorContinuation([], { ...verifiedInventory([]), outcome: 'UNKNOWN' }).canExit, false);
+  const item = { id: 'controls', status: 'ready', authorized: true, dependenciesMet: true };
+  assert.equal(assessCoordinatorContinuation([item], verifiedInventory([])).canExit, false);
+});
+
+test('an explicitly verified empty inventory is terminal, while malformed items cannot be silently dropped', () => {
+  assert.deepEqual(assessCoordinatorContinuation([], verifiedInventory([])), { action: 'complete', canExit: true });
+  const items = [{ id: 'controls', status: 'blocked', blocker: 'owner action', resumptionTrigger: 'owner response' }, null];
+  assert.equal(assessCoordinatorContinuation(items, { ...verifiedInventory(items), itemIds: ['controls', ''] }).canExit, false);
 });
