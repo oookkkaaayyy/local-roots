@@ -16,19 +16,35 @@ function decodeBase64(value, label) {
   return bytes;
 }
 
-function parseSourceMap(bytes, label) {
-  let map;
-  try {
-    map = JSON.parse(bytes.toString('utf8'));
-  } catch (error) {
-    fail(`${label} is not valid JSON: ${error.message}`);
-  }
+function validateSourceMapObject(map, label, depth = 0) {
+  if (depth > 32) fail(`${label} exceeds the maximum indexed-map nesting depth`);
   if (!map || typeof map !== 'object' || Array.isArray(map) || map.version !== 3) {
     fail(`${label} must be a Source Map v3 object`);
   }
+  if (Object.hasOwn(map, 'sections') && !Array.isArray(map.sections)) {
+    fail(`${label} sections must be an array when present`);
+  }
   const indexed = Array.isArray(map.sections);
-  if (indexed && map.sections.some(section => !section || typeof section !== 'object' || !section.map)) {
-    fail(`${label} indexed sections must each contain a map`);
+  if (indexed) {
+    let previousOffset = null;
+    for (const [index, section] of map.sections.entries()) {
+      const sectionLabel = `${label} section ${index}`;
+      if (!section || typeof section !== 'object' || Array.isArray(section)) {
+        fail(`${sectionLabel} must be an object`);
+      }
+      const offset = section.offset;
+      if (!offset || typeof offset !== 'object' || Array.isArray(offset) ||
+          !Number.isSafeInteger(offset.line) || offset.line < 0 ||
+          !Number.isSafeInteger(offset.column) || offset.column < 0) {
+        fail(`${sectionLabel} offset must contain non-negative integer line and column values`);
+      }
+      if (previousOffset && (offset.line < previousOffset.line ||
+          (offset.line === previousOffset.line && offset.column < previousOffset.column))) {
+        fail(`${label} indexed section offsets must be sorted`);
+      }
+      previousOffset = offset;
+      validateSourceMapObject(section.map, sectionLabel, depth + 1);
+    }
   }
   if (!indexed && (!Array.isArray(map.sources) || typeof map.mappings !== 'string')) {
     fail(`${label} must include a sources array and mappings string`);
@@ -49,8 +65,18 @@ function parseSourceMap(bytes, label) {
   if (map.names !== undefined && (!Array.isArray(map.names) || map.names.some(name => typeof name !== 'string'))) {
     fail(`${label} names must be an array of strings when present`);
   }
-  validateMappings(map, label);
+  if (!indexed) validateMappings(map, label);
   return map;
+}
+
+function parseSourceMap(bytes, label) {
+  let map;
+  try {
+    map = JSON.parse(bytes.toString('utf8'));
+  } catch (error) {
+    fail(`${label} is not valid JSON: ${error.message}`);
+  }
+  return validateSourceMapObject(map, label);
 }
 
 const VLQ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -80,14 +106,6 @@ function decodeVlq(segment, label) {
 }
 
 function validateMappings(map, label) {
-  // Indexed maps use sections instead of the flat sources/mappings fields.
-  if (Array.isArray(map.sections)) {
-    for (const [index, section] of map.sections.entries()) {
-      if (!section || typeof section !== 'object' || !section.map) fail(`${label} section ${index} must contain a map`);
-      validateMappings(section.map, `${label} section ${index}`);
-    }
-    return;
-  }
   if (typeof map.mappings !== 'string') return;
   let sourceIndex = 0;
   let originalLine = 0;
