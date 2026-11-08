@@ -154,8 +154,16 @@ function apiClient({token,accountId,workerName,fetchImpl}){
       if(!(body instanceof FormData))init.headers['Content-Type']='application/json';
     }
     const response=await fetchImpl(prefix+path,init);
-    fail(response?.ok,'HTTP_'+method+'_'+response?.status);
-    const payload=await response.json();
+    let payload;
+    try{payload=await response.json();}catch{payload=null;}
+    if(!response?.ok){
+      const error=Error('P0_CLOUDFLARE_HTTP_'+method+'_'+response?.status);
+      error.status=response?.status;
+      error.providerErrorCodes=Array.isArray(payload?.errors)
+        ? payload.errors.map(item=>item?.code).filter(code=>Number.isInteger(code))
+        : [];
+      throw error;
+    }
     fail(payload?.success!==false&&(!Array.isArray(payload?.errors)||payload.errors.length===0),'PROVIDER_RESPONSE');
     return payload;
   }
@@ -405,16 +413,22 @@ export async function stageInheritedBetaVersion({
   let created;
   try{created=await c.call(workerPath+'/versions?deploy=false','POST',request);}
   catch(error){
+    const ambiguous=(code,cause)=>{
+      const result=Object.assign(Error(code),{cause});
+      if(Number.isInteger(cause?.status))result.providerStatus=cause.status;
+      if(Array.isArray(cause?.providerErrorCodes))result.providerErrorCodes=cause.providerErrorCodes;
+      return result;
+    };
     // The create may have committed despite a lost response. Read once by the
     // exact candidate tag; never issue a second POST on an ambiguous outcome.
     let listEnvelope;
     try{listEnvelope=await c.callEnvelope(workerPath+'/versions?per_page=100');}
-    catch{throw Object.assign(Error('P0_INHERITED_BETA_CREATE_AMBIGUOUS_READBACK_FAILED'),{cause:error});}
+    catch{throw ambiguous('P0_INHERITED_BETA_CREATE_AMBIGUOUS_READBACK_FAILED',error);}
     const items=versionListItems(listEnvelope);
     const matches=items.filter(v=>v.annotations?.['workers/tag']===version.annotations['workers/tag']);
-    fail(matches.length===1,'INHERITED_BETA_CREATE_AMBIGUOUS_NOT_UNIQUE');
+    if(matches.length!==1)throw ambiguous('P0_INHERITED_BETA_CREATE_AMBIGUOUS_NOT_UNIQUE',error);
     created=matches[0];
-    if(!created?.id)throw Object.assign(Error('P0_INHERITED_BETA_CREATE_AMBIGUOUS_NO_ID'),{cause:error});
+    if(!created?.id)throw ambiguous('P0_INHERITED_BETA_CREATE_AMBIGUOUS_NO_ID',error);
   }
   fail(uuid.test(created?.id)&&created.id!==baselineVersionId,'INHERITED_BETA_VERSION_CREATE');
   const verified=await c.call(workerPath+'/versions/'+created.id);
