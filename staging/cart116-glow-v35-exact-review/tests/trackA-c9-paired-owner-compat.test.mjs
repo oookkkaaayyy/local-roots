@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {createHash} from "node:crypto";
-import {LocalMatrixTransport,MATRIX_MAC,SUPPORTED_RELEASE,REVIEW_OWNER_SAFE_RELEASE,acceptedDirectRelease} from "../opal/owner-v1201-7target/mission-control-local/local-transport.js";
+import {LocalMatrixTransport,MATRIX_MAC,SUPPORTED_RELEASE,REVIEW_OWNER_SAFE_RELEASE,acceptedDirectRelease,buildPatch} from "../opal/owner-v1201-7target/mission-control-local/local-transport.js";
 // The seven staged Owner release assets omit unchanged hbnf-cart-net.js.
 // Evaluate the actual staged adapter after replacing only that unavailable import;
 // the full production adapter source and all release/command methods remain unchanged.
@@ -32,6 +32,27 @@ test("C9 no command until exact MAC+fresh WS release; accepts matching ACK; clea
  assert.equal(w.sent.filter(s=>s.includes('"matrixBrightness":42')).length,1);
  frame(NEXT,42);assert.equal((await p).HBNF.matrixBrightness,42);
  w.close();assert.equal(tr.controlReady(),false);
+});
+test("Opal direct Owner text uses the R6 HBNF overlay schema and waits for matching overlayId readback",async()=>{
+ const sent=[];
+ const w={url:"ws://192.168.77.10/ws",readyState:0,send(raw){sent.push(raw)},close(){this.readyState=3;this.onclose?.()}};
+ const tr=new LocalMatrixTransport({timeoutMs:250,socketFactory:()=>w});
+ tr.connect();w.readyState=1;w.onopen();
+ const state=overlayId=>({state:{HBNF:{candidate:SUPPORTED_RELEASE,overlayId}}});
+ w.onmessage({data:JSON.stringify(state(null))});
+ assert.equal(tr.verifyIdentity({mac:MATRIX_MAC}),true);
+ const payload={overlayId:"c9-owner-text-001",kind:"text",ttlMs:8000,data:{text:"Testing",color:"#FFFFFF"}};
+ const expected={overlay:{id:payload.overlayId,kind:"text",ttlMs:8000,text:"Testing",color:"#FFFFFF"}};
+ assert.deepEqual(buildPatch("OVERLAY_START",payload),expected);
+ const result=tr.command("OVERLAY_START",payload);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(JSON.parse(sent.find(raw=>raw.includes('"overlay"'))),{HBNF:expected});
+ w.onmessage({data:JSON.stringify(state(null))});
+ let settled="pending";result.then(()=>{settled="resolved"},()=>{settled="rejected"});
+ await new Promise(resolve=>setTimeout(resolve,5));
+ assert.equal(settled,"pending","unrelated/no-overlay state must not ACK text");
+ w.onmessage({data:JSON.stringify(state(payload.overlayId))});
+ assert.equal((await result).HBNF.overlayId,payload.overlayId);
 });
 test("OFF/ON same-device AND same-firmware; reject old/new release replay",()=>{
  let saved=null;
