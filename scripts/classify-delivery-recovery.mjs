@@ -193,9 +193,23 @@ export function routeReadyWork(workItems = []) {
 }
 
  
-/** Gate coordinator exit: active or dependency-ready authorized work is never a terminal status. */
-export function assessCoordinatorContinuation(workItems = []) {
-  const items = Array.isArray(workItems) ? workItems.filter(Boolean) : [];
+function hasVerifiedWorkInventory(items, receipt) {
+  if (!Array.isArray(items) || !receipt || receipt.outcome !== 'PASS' ||
+      receipt.observedBy !== 'independent-readback' || !nonEmpty(receipt.sourceRef) ||
+      !nonEmpty(receipt.evidenceRef) || !Array.isArray(receipt.itemIds)) return false;
+  const ids = items.map(item => item && typeof item === 'object' && nonEmpty(item.id) ? item.id : null);
+  if (ids.some(id => id === null) || new Set(ids).size !== ids.length) return false;
+  return receipt.itemIds.length === ids.length &&
+    receipt.itemIds.every((id, index) => id === ids[index]);
+}
+
+/** Gate coordinator exit: verified inventory is required before any terminal decision. */
+export function assessCoordinatorContinuation(workItems, inventoryReceipt) {
+  if (!hasVerifiedWorkInventory(workItems, inventoryReceipt)) {
+    return { action: 'verify-work-inventory', canExit: false,
+      reason: 'a complete independently read-back work inventory is required before routing or exit' };
+  }
+  const items = workItems;
   const readyWorkIds = routeReadyWork(items);
   const activeWorkIds = items.filter(item => item.status === 'inProgress' &&
     hasExecutionReadback(item.receivingWorker)).map(item => item.id);
