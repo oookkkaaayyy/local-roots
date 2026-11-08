@@ -72,6 +72,24 @@ export function validateAssetBuckets(manifest,buckets){
   return seen;
 }
 
+function verifyVersionModules(returned,expected,mainModule){
+  fail(Array.isArray(returned)&&Array.isArray(expected)&&returned.length===expected.length,
+    'VERSION_MODULE_CLOSURE');
+  const byName=new Map();
+  for(const module of returned){
+    fail(typeof module?.name==='string'&&!byName.has(module.name)&&
+      typeof module.content_base64==='string','VERSION_MODULE_READBACK_SHAPE');
+    byName.set(module.name,module);
+  }
+  const expectedNames=expected.map(x=>x.name).sort();
+  fail([...byName.keys()].sort().join('|')===expectedNames.join('|'),'VERSION_MODULE_CLOSURE');
+  const main=byName.get(mainModule),expectedMain=expected.find(x=>x.name===mainModule);
+  fail(main&&expectedMain&&sha256(Buffer.from(main.content_base64,'base64'))===
+    sha256(Buffer.from(expectedMain.content_base64,'base64')),'VERSION_MAIN_MODULE_HASH');
+  return {moduleCount:returned.length,mainModule,
+    mainModuleSha256:sha256(Buffer.from(main.content_base64,'base64'))};
+}
+
 // No partial ZIP, stale historic archive, or inferred asset completeness is accepted.
 // assetDigests are hashes of original installed BYTES, not redirected HTML responses.
 export function buildExactVersion({assets,installedPaths,installedDigests,changedPath='/glow-save-sync.mjs',
@@ -275,9 +293,10 @@ export async function stageExecutableVersion({
     if(!newVersion.id)throw Object.assign(Error('P0_CLOUDFLARE_AMBIGUOUS_VERSION_CREATE_UNRESOLVED'),{cause:e});
   }
   fail(uuid.test(newVersion?.id)&&newVersion.id!==baselineVersionId,'VERSION_CREATE');
-  const verified=await c.call(workerPath+'/versions/'+newVersion.id);
+  const verified=await c.call(workerPath+'/versions/'+newVersion.id+'?include=modules,sourcemaps');
   fail(verified?.id===newVersion.id&&verified.compatibility_date===settings.compatibility_date&&
     verified.annotations?.['workers/tag']===result.body.annotations['workers/tag'],'VERSION_READBACK');
+  const sourceIdentity=verifyVersionModules(verified.modules,result.body.modules,result.body.main_module);
   fail(JSON.stringify(verified.assets?.config)===JSON.stringify(requestBody.assets.config),
     'VERSION_ASSET_CONFIG_READBACK');
   const actual=(verified.bindings||[]).map(x=>{
@@ -292,7 +311,7 @@ export async function stageExecutableVersion({
     after.deployments[0].versions[0].percentage===100,'ACTIVE_TRAFFIC_CHANGED');
   const retained=await c.call(c.script+'/versions/'+baselineVersionId);
   fail(retained?.id===baselineVersionId,'ROLLBACK_VERSION_NOT_RETAINED');
-  return {status:'EXECUTABLE_VERSION_CREATED_NOT_DEPLOYED',versionId:newVersion.id,receipt:result.receipt};
+  return {status:'EXECUTABLE_VERSION_CREATED_NOT_DEPLOYED',versionId:newVersion.id,sourceIdentity,receipt:result.receipt};
 }
 
 // Stage the already-built Beta JSON candidate that inherits the exact v348
@@ -440,9 +459,12 @@ export async function stageInheritedBetaVersion({
     if(!created?.id)throw ambiguous('P0_INHERITED_BETA_CREATE_AMBIGUOUS_NO_ID',error);
   }
   fail(uuid.test(created?.id)&&created.id!==baselineVersionId,'INHERITED_BETA_VERSION_CREATE');
-  const verified=await c.call(workerPath+'/versions/'+created.id);
+  const verified=await c.call(workerPath+'/versions/'+created.id+'?include=modules,sourcemaps');
   fail(verified?.id===created.id&&verified.annotations?.['workers/tag']===version.annotations['workers/tag']&&
     verified.compatibility_date===version.compatibility_date,'INHERITED_BETA_VERSION_READBACK');
+  const sourceIdentity=verifyVersionModules(verified.modules,version.modules,version.main_module);
+  fail(sourceIdentity.mainModuleSha256===candidate.source.candidateModuleSha256,
+    'INHERITED_BETA_MAIN_MODULE_SOURCE_IDENTITY');
   const settings=verified.resources?.script_runtime||verified;
   const actualConfig=verified.assets?.config||(()=>{
     const a=settings.assets;
@@ -466,7 +488,7 @@ export async function stageInheritedBetaVersion({
   fail(retained?.id===baselineVersionId&&retained?.resources?.script?.etag===scriptEtag,
     'INHERITED_V348_ROLLBACK_NOT_RETAINED');
   return {status:'INHERITED_BETA_VERSION_CREATED_NOT_DEPLOYED',versionId:created.id,
-    manifestSha256,candidateSha256,requestSha256,transactionId:claim.transactionId,
+    manifestSha256,candidateSha256,requestSha256,transactionId:claim.transactionId,sourceIdentity,
     activeVersionId:baselineVersionId,activePercentage:100};
 }
 

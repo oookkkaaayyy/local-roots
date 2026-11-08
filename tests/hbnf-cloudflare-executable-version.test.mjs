@@ -88,7 +88,7 @@ test('inherited Beta route creates one v348-bound version, preserves active traf
       id:next,annotations:candidate.request.annotations,
       compatibility_date:candidate.request.compatibility_date,
       bindings:candidate.request.bindings,
-      assets:{config:candidate.request.assets.config}
+      assets:{config:candidate.request.assets.config},modules:candidate.request.modules
     });
     throw Error('unexpected '+m+' '+p);
   };
@@ -108,6 +108,8 @@ test('inherited Beta route creates one v348-bound version, preserves active traf
   assert.equal(result.status,'INHERITED_BETA_VERSION_CREATED_NOT_DEPLOYED');
   assert.deepEqual(oauthPaths,['/test/wrangler']);
   assert.equal(result.versionId,next);assert.equal(result.activePercentage,100);
+  assert.equal(result.sourceIdentity.mainModuleSha256,candidate.source.candidateModuleSha256);
+  assert.equal(result.sourceIdentity.moduleCount,candidate.request.modules.length);
   assert.equal(postCount,1);assert.deepEqual(callsByClaim,['claimed']);
   assert.equal(calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
   assert.equal(calls.some(x=>x.path.endsWith('/assets-upload-session')||x.path.endsWith('/workers/assets/upload')),false);
@@ -135,7 +137,7 @@ test('inherited Beta route reconciles ambiguous create by tag readback and never
       id:next,annotations:candidate.request.annotations,
       compatibility_date:candidate.request.compatibility_date,
       bindings:candidate.request.bindings,
-      assets:{config:candidate.request.assets.config}
+      assets:{config:candidate.request.assets.config},modules:candidate.request.modules
     });
     throw Error('unexpected '+m+' '+p);
   };
@@ -246,7 +248,7 @@ test('rejects missing/altered assets, stale or partial inventory proof and absen
 
 test('Beta route pins inheritance to v348, routes helper Worker-first and creates without deployment',async()=>{
   const helperHash=assetHash('/glow-save-sync.mjs',assets.get('/glow-save-sync.mjs'));
-  const calls=[];let current=old;
+  const calls=[];let current=old,versionBody;
   const fetchImpl=async(url,init={})=>{
     const u=new URL(url),p=u.pathname,m=init.method||'GET';calls.push({method:m,path:p,search:u.search});
     if(p.endsWith('/workers/workers/hbnf'))return response({name:'hbnf',id:workerId});
@@ -266,6 +268,7 @@ test('Beta route pins inheritance to v348, routes helper Worker-first and create
       assert.equal(u.search,'?deploy=false');
       assert.equal(init.headers['Content-Type'],'application/json');
       const body=JSON.parse(init.body);
+      versionBody=body;
       assert.deepEqual(Object.keys(body).sort(),['annotations','assets','bindings','compatibility_date','compatibility_flags','main_module','modules','usage_model'].sort());
       assert.equal(Object.hasOwn(body,'version'),false);
       assert.equal(Object.hasOwn(body,'routes'),false);
@@ -282,7 +285,7 @@ test('Beta route pins inheritance to v348, routes helper Worker-first and create
       annotations:{'workers/tag':'hbnf-p0-'+sha256(assets.get('/glow-save-sync.mjs')).slice(0,32)},
       compatibility_date:'2026-07-28',bindings:settings.bindings.map(b=>b.name==='ASSETS'?b:
         {name:b.name,type:'inherit',version_id:old}),
-      assets:{config:{base_path:'/',run_worker_first:['/api/*','/internal/*','/glow-save-sync.mjs']}}});
+      assets:{config:{base_path:'/',run_worker_first:['/api/*','/internal/*','/glow-save-sync.mjs']}},modules:versionBody.modules});
     if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old});
     throw Error('unexpected '+m+' '+p);
   };
@@ -298,7 +301,7 @@ test('Beta route pins inheritance to v348, routes helper Worker-first and create
 });
 
 test('ambiguous Beta create is reconciled by version-list readback without retry',async()=>{
-  const calls=[];
+  const calls=[];let versionBody;
   const fetchImpl=async(url,init={})=>{
     const u=new URL(url),p=u.pathname,m=init.method||'GET';calls.push(m+' '+p);
     if(p.endsWith('/workers/workers/hbnf'))return response({name:'hbnf',id:workerId});
@@ -306,12 +309,12 @@ test('ambiguous Beta create is reconciled by version-list readback without retry
     if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old,resources:{script:{etag:'etag'}}});
     if(p.endsWith('/scripts/hbnf/assets-upload-session'))return response({jwt:'SESSION_JWT_LONG',buckets:[[assetHash('/glow-save-sync.mjs',assets.get('/glow-save-sync.mjs'))]]});
     if(p.endsWith('/workers/assets/upload'))return response({jwt:'COMPLETION_JWT_LONG'},201);
-    if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='POST')throw Error('connection reset after provider may have committed');
+    if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='POST'){versionBody=JSON.parse(init.body);throw Error('connection reset after provider may have committed');}
     if(p.endsWith('/workers/workers/'+workerId+'/versions')&&m==='GET')return response({result:[{id:next,annotations:{'workers/tag':'hbnf-p0-'+sha256(assets.get('/glow-save-sync.mjs')).slice(0,32)}}]});
     if(p.endsWith('/workers/workers/'+workerId+'/versions/'+next))return response({id:next,compatibility_date:'2026-07-28',
       annotations:{'workers/tag':'hbnf-p0-'+sha256(assets.get('/glow-save-sync.mjs')).slice(0,32)},
       bindings:settings.bindings.map(b=>b.name==='ASSETS'?b:{name:b.name,type:'inherit',version_id:old}),
-      assets:{config:{base_path:'/',run_worker_first:['/api/*','/internal/*','/glow-save-sync.mjs']}}});
+      assets:{config:{base_path:'/',run_worker_first:['/api/*','/internal/*','/glow-save-sync.mjs']}},modules:versionBody.modules});
     if(p.endsWith('/scripts/hbnf/versions/'+old))return response({id:old});
     throw Error('unexpected '+m+' '+p);
   };
