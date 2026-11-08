@@ -243,7 +243,7 @@
   },
   "state": "PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION",
   "transaction": {
-    "manifest_specific_one_time_id": "c9-phase1a-5518d5434a3b4ec99c573947803d42a6",
+    "manifest_specific_one_time_id": "c9-phase1a-4b8624177d1549008f19314bc8cc73a1",
     "owner_approval_for_this_exact_postimage": null,
     "owner_authorization_to_continue": "CART CONTROLS C6 standing scope: #116 comment 6648484424 and current owner message 2026-11-04; no fresh per-attempt permission request while exact technical gates pass",
     "release_owner": "Controls Track A only",
@@ -2499,126 +2499,132 @@
         "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/mission-control-local/local-transport.js",
         "staged_prechange_git_blob_sha1": "9f1f9e5997fc5aa0e3762b53581263c4a9518c64",
         "staged_prechange_sha256": "b48f5d7a4b3ea850307b13596857d753d2ff2ee4b9991b859e66b41d0338b37a",
-        "candidate_sha256": "928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387",
-        "actual_installed_preimage_sha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
-        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=8993",
+        "candidate_sha256": "9b45e28f7749628e77a2dbbbd777a764a88611c745aa68b346935c2d2e0b78b2",
+        "actual_installed_preimage_sha256": "928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387",
+        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=10298",
         "independent_installed_preimage_downloadback": true,
-        "prechange_live_verified": false,
+        "prechange_live_verified": true,
         "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE",
         "current_backup_evidence": {
-          "source": "Fresh on-device SHA+mode match byte-for-byte to independently downloaded historic actual original",
-          "private_drive_file_id": "1waGa_02GjaqPCsAnK46SQNXVQ4md4MVo",
-          "archive_member": "rollback/external-local-transport-original.js",
-          "source_sha256": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
-          "source_bytes": 8993,
+          "source": "independently downloaded and byte-verified C9 diagnostic review ZIP; rollback member matches fresh actual target preimage",
+          "private_drive_file_id": "1LUAMuJs67mxDOV4iRihbIO2yPBMofkH5",
+          "archive_member": "rollback/local-transport.js",
+          "source_sha256": "928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387",
+          "source_bytes": 10298,
           "archive_crc_and_digest": "PASS",
-          "fresh_immediate_prechange_identity": "NOT_CHECKED"
-        }
+          "fresh_immediate_prechange_identity": "PASS 2026-11-08T05:56:13+00:00 UTC; GL-SFT1200; pinned-host SSH; root:root 0644; SHA-256 exact"
+        },
+        "base_candidate_sha256": "928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387"
       },
       {
         "target": "/www/mission-control-local/owner-pwa/hbnf-cart-local.js",
         "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart-local.js",
         "staged_prechange_git_blob_sha1": "1d8e43d35b8144d533bbea7d9f60f3003c9e2f86",
         "staged_prechange_sha256": "f2bec69f5d14760d6910c06a57d40288070171814c5affbfe2a9b4baa566e419",
-        "candidate_sha256": "41eca1c6b77e6cc4304da58df3c1d553971839925b95818107bd046f229314d3",
-        "actual_installed_preimage_sha256": "9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
-        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=31497",
+        "candidate_sha256": "6921704cf97820e599de6f5ce84771ffa7ab95b809bbc026d26c493a1f7e2591",
+        "actual_installed_preimage_sha256": "41eca1c6b77e6cc4304da58df3c1d553971839925b95818107bd046f229314d3",
+        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=32024",
         "independent_installed_preimage_downloadback": true,
-        "prechange_live_verified": false,
+        "prechange_live_verified": true,
         "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE",
         "current_backup_evidence": {
-          "source": "Fresh on-device SHA+mode match byte-for-byte to independently downloaded historic actual original",
-          "private_drive_file_id": "1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB",
-          "archive_member": "owner-pwa/hbnf-cart-local.js",
-          "source_sha256": "9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
-          "source_bytes": 31497,
+          "source": "independently downloaded and byte-verified C9 diagnostic review ZIP; rollback member matches fresh actual target preimage",
+          "private_drive_file_id": "1LUAMuJs67mxDOV4iRihbIO2yPBMofkH5",
+          "archive_member": "rollback/hbnf-cart-local.js",
+          "source_sha256": "41eca1c6b77e6cc4304da58df3c1d553971839925b95818107bd046f229314d3",
+          "source_bytes": 32024,
           "archive_crc_and_digest": "PASS",
-          "fresh_immediate_prechange_identity": "NOT_CHECKED"
-        }
+          "fresh_immediate_prechange_identity": "PASS 2026-11-08T05:56:13+00:00 UTC; GL-SFT1200; pinned-host SSH; root:root 0644; SHA-256 exact"
+        },
+        "base_candidate_sha256": "41eca1c6b77e6cc4304da58df3c1d553971839925b95818107bd046f229314d3"
       },
       {
         "target": "/www/mission-control-local/owner-pwa/hbnf-cart.js",
         "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.js",
         "staged_prechange_git_blob_sha1": "36cd62d8268726a50a342dba452e345db4220826",
         "staged_prechange_sha256": "e3652350ea928585bb29938f758dbc311e337f0620a17715a783b3cb181bf119",
-        "candidate_sha256": "385d17eb4c8766a51e0395d60ebdc90011d5797972d1efad4b938e0370364a9e",
-        "actual_installed_preimage_sha256": "9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba",
-        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=40445",
+        "candidate_sha256": "1f28d1ba850fdb1de6b0d1e77bec9d79b1efede1ef53754a685bac77bbf50c61",
+        "actual_installed_preimage_sha256": "385d17eb4c8766a51e0395d60ebdc90011d5797972d1efad4b938e0370364a9e",
+        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=40437",
         "independent_installed_preimage_downloadback": true,
-        "prechange_live_verified": false,
+        "prechange_live_verified": true,
         "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE",
         "current_backup_evidence": {
-          "source": "Fresh on-device SHA+mode match byte-for-byte to independently downloaded historic actual original",
-          "private_drive_file_id": "1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB",
-          "archive_member": "owner-pwa/hbnf-cart.js",
-          "source_sha256": "9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba",
-          "source_bytes": 40445,
+          "source": "independently downloaded and byte-verified C9 diagnostic review ZIP; rollback member matches fresh actual target preimage",
+          "private_drive_file_id": "1LUAMuJs67mxDOV4iRihbIO2yPBMofkH5",
+          "archive_member": "rollback/hbnf-cart.js",
+          "source_sha256": "385d17eb4c8766a51e0395d60ebdc90011d5797972d1efad4b938e0370364a9e",
+          "source_bytes": 40437,
           "archive_crc_and_digest": "PASS",
-          "fresh_immediate_prechange_identity": "NOT_CHECKED"
-        }
+          "fresh_immediate_prechange_identity": "PASS 2026-11-08T05:56:13+00:00 UTC; GL-SFT1200; pinned-host SSH; root:root 0644; SHA-256 exact"
+        },
+        "base_candidate_sha256": "385d17eb4c8766a51e0395d60ebdc90011d5797972d1efad4b938e0370364a9e"
       },
       {
         "target": "/www/mission-control-local/owner-pwa/hbnf-cart.html",
         "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/hbnf-cart.html",
         "staged_prechange_git_blob_sha1": "755573992835e53c2414e02b8f10c115965576d3",
         "staged_prechange_sha256": "cab420a026b31d7ccf7c13aa91814237d7495269f6c72434f4cb26af43acba57",
-        "candidate_sha256": "63304d487ee3f56af9601156ef512b183e199fc4b01bb7c4fa2c5474a7736937",
-        "actual_installed_preimage_sha256": "20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f",
-        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=19242",
+        "candidate_sha256": "6760689a67c1da9d9964f8487b58925e96f76d22d8bd8742ca8ef0b409640d3b",
+        "actual_installed_preimage_sha256": "63304d487ee3f56af9601156ef512b183e199fc4b01bb7c4fa2c5474a7736937",
+        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=19237",
         "independent_installed_preimage_downloadback": true,
-        "prechange_live_verified": false,
+        "prechange_live_verified": true,
         "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE",
         "current_backup_evidence": {
-          "source": "Fresh on-device SHA+mode match byte-for-byte to independently downloaded historic actual original",
-          "private_drive_file_id": "1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB",
-          "archive_member": "owner-pwa/hbnf-cart.html",
-          "source_sha256": "20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f",
-          "source_bytes": 19242,
+          "source": "independently downloaded and byte-verified C9 diagnostic review ZIP; rollback member matches fresh actual target preimage",
+          "private_drive_file_id": "1LUAMuJs67mxDOV4iRihbIO2yPBMofkH5",
+          "archive_member": "rollback/hbnf-cart.html",
+          "source_sha256": "63304d487ee3f56af9601156ef512b183e199fc4b01bb7c4fa2c5474a7736937",
+          "source_bytes": 19237,
           "archive_crc_and_digest": "PASS",
-          "fresh_immediate_prechange_identity": "NOT_CHECKED"
-        }
+          "fresh_immediate_prechange_identity": "PASS 2026-11-08T05:56:13+00:00 UTC; GL-SFT1200; pinned-host SSH; root:root 0644; SHA-256 exact"
+        },
+        "base_candidate_sha256": "63304d487ee3f56af9601156ef512b183e199fc4b01bb7c4fa2c5474a7736937"
       },
       {
         "target": "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256",
         "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/.hbnf-payload.sha256",
         "staged_prechange_git_blob_sha1": "26ac5995ed319f2171bb0b082440a2c29bc3ad0c",
         "staged_prechange_sha256": "a32f5a4e25603116400c09eacee0cfd87cd1f8d1d5c22421b1a9d39b20d10c9e",
-        "candidate_sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee",
-        "actual_installed_preimage_sha256": "dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
+        "candidate_sha256": "03570b19003b8dded4a58504a9c14e9f66d95bbb009008d430f9baee8ff41e59",
+        "actual_installed_preimage_sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee",
         "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=1485",
         "independent_installed_preimage_downloadback": true,
-        "prechange_live_verified": false,
+        "prechange_live_verified": true,
         "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE",
         "current_backup_evidence": {
-          "source": "Fresh on-device SHA+mode match byte-for-byte to independently downloaded historic actual original",
-          "private_drive_file_id": "1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB",
-          "archive_member": "owner-pwa/.hbnf-payload.sha256",
-          "source_sha256": "dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
+          "source": "independently downloaded and byte-verified C9 diagnostic review ZIP; rollback member matches fresh actual target preimage",
+          "private_drive_file_id": "1LUAMuJs67mxDOV4iRihbIO2yPBMofkH5",
+          "archive_member": "rollback/.hbnf-payload.sha256",
+          "source_sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee",
           "source_bytes": 1485,
           "archive_crc_and_digest": "PASS",
-          "fresh_immediate_prechange_identity": "NOT_CHECKED"
-        }
+          "fresh_immediate_prechange_identity": "PASS 2026-11-08T05:56:13+00:00 UTC; GL-SFT1200; pinned-host SSH; root:root 0644; SHA-256 exact"
+        },
+        "base_candidate_sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee"
       },
       {
         "target": "/www/mission-control-local/owner-pwa/.hbnf-package-version",
         "source_path": "staging/cart116-glow-v35-exact-review/opal/owner-v1201-7target/owner-pwa/.hbnf-package-version",
         "staged_prechange_git_blob_sha1": "01129dcc10093030ccf95c7bb514e6669a246ad7",
         "staged_prechange_sha256": "c954df07ca147414214c211d894b2a4d920fc4fc740b4a2c196851d173669452",
-        "candidate_sha256": "1c24bd2ae485f22bc71dd7cefb7751bb867b9ea5fe8bd2cd8723130a29c650f4",
-        "actual_installed_preimage_sha256": "975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191",
-        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=7",
+        "candidate_sha256": "f02bbcf6068aa30a4f55fe5fbbcfcb592cca516c1f0fc5bd7167fe2bb1d159b5",
+        "actual_installed_preimage_sha256": "1c24bd2ae485f22bc71dd7cefb7751bb867b9ea5fe8bd2cd8723130a29c650f4",
+        "actual_installed_preimage_mode_owner": "-rw-r--r-- 0644 uid=0 gid=0 bytes=15",
         "independent_installed_preimage_downloadback": true,
-        "prechange_live_verified": false,
+        "prechange_live_verified": true,
         "rollback": "RESTORE_ONLY_ACTUAL_SAME_MANIFEST_INSTALLED_PREIMAGE_NOT_STAGED_GIT_SOURCE",
         "current_backup_evidence": {
-          "source": "Fresh on-device SHA+mode match byte-for-byte to independently downloaded historic actual original",
-          "private_drive_file_id": "1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB",
-          "archive_member": "owner-pwa/.hbnf-package-version",
-          "source_sha256": "975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191",
-          "source_bytes": 7,
+          "source": "independently downloaded and byte-verified C9 diagnostic review ZIP; rollback member matches fresh actual target preimage",
+          "private_drive_file_id": "1LUAMuJs67mxDOV4iRihbIO2yPBMofkH5",
+          "archive_member": "rollback/.hbnf-package-version",
+          "source_sha256": "1c24bd2ae485f22bc71dd7cefb7751bb867b9ea5fe8bd2cd8723130a29c650f4",
+          "source_bytes": 15,
           "archive_crc_and_digest": "PASS",
-          "fresh_immediate_prechange_identity": "NOT_CHECKED"
-        }
+          "fresh_immediate_prechange_identity": "PASS 2026-11-08T05:56:13+00:00 UTC; GL-SFT1200; pinned-host SSH; root:root 0644; SHA-256 exact"
+        },
+        "base_candidate_sha256": "1c24bd2ae485f22bc71dd7cefb7751bb867b9ea5fe8bd2cd8723130a29c650f4"
       }
     ],
     "existing_c8_11target_archive_installable_for_c9": false,
@@ -3016,12 +3022,12 @@
     "local_tar_entries": 73,
     "owner_21_sorted_manifest_digest": "fb74833681da22a6ec8994e0fd2429114da0ccb17511ddd3394fcc89a377aff0",
     "six_current_preimage_sha256_by_path": {
-      "/www/mission-control-local/local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
-      "/www/mission-control-local/owner-pwa/hbnf-cart-local.js": "9eeeb59a752cbf0838aee251d309f216573abdd7ff42f9d034032fc177f01956",
-      "/www/mission-control-local/owner-pwa/hbnf-cart.js": "9ff9706f9e544eaff37487d0e9511db6b4e56333150da204082d3e3b340a31ba",
-      "/www/mission-control-local/owner-pwa/hbnf-cart.html": "20987e2532f5a927152ebbba7c19bbc698494210bee91bb259c8ab51acf1771f",
-      "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256": "dc87f7878eda3bff6f8b233022c51f9c867690844d7e0194a67611f80aa9ddab",
-      "/www/mission-control-local/owner-pwa/.hbnf-package-version": "975801abe1af6fc1709ed2cd5b0680a4ea1daca7a5862e78b4ff941bb1420191"
+      "/www/mission-control-local/local-transport.js": "928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387",
+      "/www/mission-control-local/owner-pwa/hbnf-cart-local.js": "41eca1c6b77e6cc4304da58df3c1d553971839925b95818107bd046f229314d3",
+      "/www/mission-control-local/owner-pwa/hbnf-cart.js": "385d17eb4c8766a51e0395d60ebdc90011d5797972d1efad4b938e0370364a9e",
+      "/www/mission-control-local/owner-pwa/hbnf-cart.html": "63304d487ee3f56af9601156ef512b183e199fc4b01bb7c4fa2c5474a7736937",
+      "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee",
+      "/www/mission-control-local/owner-pwa/.hbnf-package-version": "1c24bd2ae485f22bc71dd7cefb7751bb867b9ea5fe8bd2cd8723130a29c650f4"
     },
     "six_modes_owner": "6/6 regular 0644 uid0 gid0",
     "six_vs_historical_staged": "6/6 observed current SHA differ from staged prechange; NEVER use staged bytes as rollback",
@@ -3209,7 +3215,7 @@
     "installed_owner_pwa": "v1.0.20 REPORTED and 21/21 independently archived/download-backed; no new post-source live readback this run",
     "installed_firmware": "original R6; C9 firmware not installed",
     "source_branch": "review/cart116-glow-canonical-intent-20261103",
-    "source_candidate_commit": "aabe0903b12d956d0a99140ea56efacf69458bce",
+    "source_candidate_commit": "f51dc5c20b3bf800df8d900d0d2af652acca7e27",
     "review_ci_head": "b66d8b95784d16d87e22e042e4918f50c362641d",
     "existing_ci_run": "https://github.com/oookkkaaayyy/local-roots/actions/runs/42165479957",
     "files": {
@@ -3268,7 +3274,7 @@
       "schema": "hbnf-c9-phase1a-owner-signature-admission-v1",
       "scope": "C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY",
       "status": "OWNER_SIGNATURE_REQUIRED",
-      "transaction_id": "c9-phase1a-5518d5434a3b4ec99c573947803d42a6",
+      "transaction_id": "c9-phase1a-4b8624177d1549008f19314bc8cc73a1",
       "rollback_sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
       "recovery_limitations": {
         "ubifs_process_reentry_restore": "PASS_ACTUAL_ROUTER",
@@ -3286,7 +3292,36 @@
           "active_files_mutated": false,
           "journal_or_registry_created": false
         }
-      ]
+      ],
+      "prior_transactions": [
+        {
+          "transaction_id": "c9-phase1a-5518d5434a3b4ec99c573947803d42a6",
+          "disposition": "PREVIOUS C9 PHASE1A TRANSACTION; CONSUMED; retained as history",
+          "active_target_preimages_now": {
+            "/www/mission-control-local/local-transport.js": "928db9ce9514e7f2f6cf5093c756b3181f861569433bb0f367ddddfc89bd3387",
+            "/www/mission-control-local/owner-pwa/hbnf-cart-local.js": "41eca1c6b77e6cc4304da58df3c1d553971839925b95818107bd046f229314d3",
+            "/www/mission-control-local/owner-pwa/hbnf-cart.js": "385d17eb4c8766a51e0395d60ebdc90011d5797972d1efad4b938e0370364a9e",
+            "/www/mission-control-local/owner-pwa/hbnf-cart.html": "63304d487ee3f56af9601156ef512b183e199fc4b01bb7c4fa2c5474a7736937",
+            "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee",
+            "/www/mission-control-local/owner-pwa/.hbnf-package-version": "1c24bd2ae485f22bc71dd7cefb7751bb867b9ea5fe8bd2cd8723130a29c650f4"
+          }
+        }
+      ],
+      "owner_authorization_provenance": {
+        "owner_authorized_followup": true,
+        "scope": "C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY",
+        "review_artifact_drive_id": "1LUAMuJs67mxDOV4iRihbIO2yPBMofkH5",
+        "review_artifact_sha256": "28e5fddcbda37c6fc3dce8f43f4e2f6550a663b8ec033e8355ff80c3b8ba6b7c",
+        "authorization": "owner authorized this exact narrow follow-up in the current Controls conversation; cryptographic exact-release signature still required"
+      },
+      "preparation_readback": {
+        "observed_utc": "2026-11-08T05:56:13+00:00",
+        "device": "GL-SFT1200",
+        "transport": "strict pinned-host SSH alias hbnf-opal",
+        "six_live_preimages_match_review_package": true,
+        "owner_mode": "root:root 0644",
+        "no_live_mutation": true
+      }
     }
   },
   "c9_gl_mc_001wl_hardware_recovery_review_20261105": {
