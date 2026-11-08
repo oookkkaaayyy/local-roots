@@ -27,6 +27,7 @@ function validateSourceMapObject(map, label, depth = 0) {
   const indexed = Array.isArray(map.sections);
   if (indexed) {
     let previousOffset = null;
+    let previousLastMapping = null;
     for (const [index, section] of map.sections.entries()) {
       const sectionLabel = `${label} section ${index}`;
       if (!section || typeof section !== 'object' || Array.isArray(section)) {
@@ -43,8 +44,25 @@ function validateSourceMapObject(map, label, depth = 0) {
         fail(`${label} indexed section offsets must be sorted`);
       }
       previousOffset = offset;
-      validateSourceMapObject(section.map, sectionLabel, depth + 1);
+      const sectionLastMapping = validateSourceMapObject(section.map, sectionLabel, depth + 1);
+      if (sectionLastMapping) {
+        const absoluteLastMapping = {
+          line: offset.line + sectionLastMapping.line,
+          column: sectionLastMapping.line === 0
+            ? offset.column + sectionLastMapping.column
+            : sectionLastMapping.column,
+        };
+        if (!Number.isSafeInteger(absoluteLastMapping.line) || !Number.isSafeInteger(absoluteLastMapping.column)) {
+          fail(`${sectionLabel} generated mapping position exceeds the safe integer range`);
+        }
+        if (previousLastMapping && (offset.line < previousLastMapping.line ||
+            (offset.line === previousLastMapping.line && offset.column < previousLastMapping.column))) {
+          fail(`${label} indexed sections must not overlap`);
+        }
+        previousLastMapping = absoluteLastMapping;
+      }
     }
+    return previousLastMapping;
   }
   if (!indexed && (!Array.isArray(map.sources) || typeof map.mappings !== 'string')) {
     fail(`${label} must include a sources array and mappings string`);
@@ -65,8 +83,7 @@ function validateSourceMapObject(map, label, depth = 0) {
   if (map.names !== undefined && (!Array.isArray(map.names) || map.names.some(name => typeof name !== 'string'))) {
     fail(`${label} names must be an array of strings when present`);
   }
-  if (!indexed) validateMappings(map, label);
-  return map;
+  return validateMappings(map, label);
 }
 
 function parseSourceMap(bytes, label) {
@@ -76,7 +93,8 @@ function parseSourceMap(bytes, label) {
   } catch (error) {
     fail(`${label} is not valid JSON: ${error.message}`);
   }
-  return validateSourceMapObject(map, label);
+  validateSourceMapObject(map, label);
+  return map;
 }
 
 const VLQ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -90,6 +108,7 @@ function decodeVlq(segment, label) {
     if (digit < 0) fail(`${label} contains a non-base64 VLQ character`);
     const continuation = digit & 32;
     value += (digit & 31) * (2 ** shift);
+    if (!Number.isSafeInteger(value)) fail(`${label} contains an unsafe VLQ value`);
     if (!continuation) {
       const negative = value & 1;
       const magnitude = Math.floor(value / 2);
@@ -106,11 +125,12 @@ function decodeVlq(segment, label) {
 }
 
 function validateMappings(map, label) {
-  if (typeof map.mappings !== 'string') return;
+  if (typeof map.mappings !== 'string') return null;
   let sourceIndex = 0;
   let originalLine = 0;
   let originalColumn = 0;
   let nameIndex = 0;
+  let lastGeneratedPosition = null;
   for (const [lineIndex, line] of map.mappings.split(';').entries()) {
     let generatedColumn = 0;
     if (line === '') continue;
@@ -119,19 +139,25 @@ function validateMappings(map, label) {
       const fields = decodeVlq(segment, `${label} line ${lineIndex + 1} segment ${segmentIndex + 1}`);
       if (![1, 4, 5].includes(fields.length)) fail(`${label} segments must contain 1, 4, or 5 VLQ fields`);
       generatedColumn += fields[0];
-      if (generatedColumn < 0) fail(`${label} generated columns cannot be negative`);
+      if (!Number.isSafeInteger(generatedColumn) || generatedColumn < 0) fail(`${label} generated columns must be non-negative safe integers`);
+      lastGeneratedPosition = { line: lineIndex, column: generatedColumn };
       if (fields.length === 1) continue;
       sourceIndex += fields[1];
       originalLine += fields[2];
       originalColumn += fields[3];
-      if (sourceIndex < 0 || sourceIndex >= map.sources.length) fail(`${label} references a source outside sources[]`);
-      if (originalLine < 0 || originalColumn < 0) fail(`${label} original positions cannot be negative`);
+      if (!Number.isSafeInteger(sourceIndex) || sourceIndex < 0 || sourceIndex >= map.sources.length) fail(`${label} references a source outside sources[]`);
+      if (!Number.isSafeInteger(originalLine) || !Number.isSafeInteger(originalColumn) || originalLine < 0 || originalColumn < 0) {
+        fail(`${label} original positions must be non-negative safe integers`);
+      }
       if (fields.length === 5) {
         nameIndex += fields[4];
-        if (!Array.isArray(map.names) || nameIndex < 0 || nameIndex >= map.names.length) fail(`${label} references a name outside names[]`);
+        if (!Array.isArray(map.names) || !Number.isSafeInteger(nameIndex) || nameIndex < 0 || nameIndex >= map.names.length) {
+          fail(`${label} references a name outside names[]`);
+        }
       }
     }
   }
+  return lastGeneratedPosition;
 }
 
 function isMapPart(name, type) {
