@@ -18,7 +18,7 @@ const parLayout={layoutId:NOV10_MAIN_LAYOUT.layoutId,layoutName:NOV10_MAIN_LAYOU
   courseId:NOV10_MAIN_LAYOUT.courseId,evidenceSha256:NOV10_MAIN_LAYOUT.evidenceSha256,
   layoutSha256:NOV10_MAIN_LAYOUT.layoutSha256};
 
-test('operator-attested fresh organizer XLSX persists once, renders in Glow, and yields one Controls Cart intent',async()=>{
+test('operator-attested organizer XLSX persists, gates exact corrections, renders in Glow, and yields Controls intents',async()=>{
   const bytes=await readFile(fixture);
   let state={glow:{activeWeek:weekDate,playerAliases:{'Fixture A':'Fixture A','Fixture B':'Fixture B'},
     weeks:{[weekDate]:{date:weekDate,eventId,eventWindow:{start:NOV10_MAIN_LAYOUT.windowStart,end:NOV10_MAIN_LAYOUT.windowEnd},
@@ -38,7 +38,7 @@ test('operator-attested fresh organizer XLSX persists once, renders in Glow, and
          JSON.stringify(current)!==JSON.stringify(body.p_expected_week))
         return new Response(JSON.stringify({applied:false}),{status:200});
       state={...state,glow:{...state.glow,weeks:{...state.glow.weeks,[weekDate]:body.p_replacement_week}}};
-      updatedAt='2026-11-06T18:00:01.000Z';
+      updatedAt=new Date(Date.parse(updatedAt)+1000).toISOString();
       return new Response(JSON.stringify({applied:true}),{status:200});
     }
     if(u.endsWith('/functions/v1/hbnf-cart-control')&&method==='POST'){
@@ -50,11 +50,12 @@ test('operator-attested fresh organizer XLSX persists once, renders in Glow, and
   };
   const env={HBNF_UDISC_OPERATOR_IMPORT_ENABLED:'true',HBNF_UDISC_ORGANIZER_IMPORT_TOKEN:token,
     SUPABASE_URL:'https://fixture.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'TEST_ONLY_NON_PRODUCTION_PROVIDER_SERVICE_ROLE_SECRET'};
-  const uploadRequest=()=>{
+  const uploadRequest=(correctionApprovals)=>{
     const form=new FormData();
     form.append('xlsx',new File([bytes],'synthetic-nov10.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
     form.append('eventId',eventId);form.append('weekDate',weekDate);form.append('officialExportConfirmed','yes');
     form.append('freshSnapshotConfirmed','yes');
+    if(correctionApprovals!==undefined)form.append('scoreCorrectionApprovals',JSON.stringify(correctionApprovals));
     form.append('reviewedDecisions',JSON.stringify({
       'udisc:fixture a':{canonicalName:'Fixture A'},'udisc:fixture b':{canonicalName:'Fixture B'}
     }));
@@ -78,11 +79,37 @@ test('operator-attested fresh organizer XLSX persists once, renders in Glow, and
   assert.equal(saved.udiscSync.status.lastSuccessAt,'2026-11-11T03:30:00.000Z');
   assert.equal(saved.scorecardText.holePars['18'],'3');
   assert.equal(saved.udiscSync.status.sourceFreshness,'OPERATOR_ATTESTED_CAPTURE_TIME');
-  const duplicate=await handleOrganizerImportRequest(uploadRequest(),env,options);
+  // An exact source change can amend a previously imported score only after
+  // the authenticated Scoring operator reviews the old and replacement value.
+  const team=saved.players[0],accepted=saved.udiscSync.latest.rows.find(row=>row.glowTeamId===team.id);
+  const replacementScore=String(team.scores[0]);
+  team.scores[0]=String(Number(replacementScore)+1);
+  accepted.acceptedHoleScores[0]=team.scores[0];
+  saved.udiscSync.latest.signature='c'.repeat(64);
+  updatedAt='2026-11-06T18:00:02.000Z';
+  const beforeRejectedCorrection=requests.length;
+  const rejected=await handleOrganizerImportRequest(uploadRequest(),env,options);
+  assert.equal(rejected.status,409);
+  assert.equal((await rejected.json()).disposition,'SCORE_CORRECTION_REQUIRES_P0_REVIEW');
+  assert.equal(requests.slice(beforeRejectedCorrection).filter(x=>x.url.includes('/rpc/hbnf_apply_udisc_glow_week')).length,0);
+  const approval=[{decision:'ACCEPT_SCORE_CORRECTION',eventId,weekDate,sourceSha256:digest(bytes),
+    teamId:team.id,hole:1,previousScore:team.scores[0],replacementScore}];
+  const beforeInvalidApproval=requests.length;
+  const invalid=await handleOrganizerImportRequest(uploadRequest([{...approval[0],sourceSha256:'0'.repeat(64)}]),env,options);
+  assert.equal(invalid.status,400);
+  assert.equal((await invalid.json()).disposition,'CORRECTION_APPROVALS_INVALID');
+  assert.equal(requests.length,beforeInvalidApproval,'approval bound to another XLSX must stop before provider access');
+  const corrected=await handleOrganizerImportRequest(uploadRequest(approval),env,options);
+  assert.equal(corrected.status,200);
+  const correctionReceipt=await corrected.json();
+  assert.equal(correctionReceipt.disposition,'SAVED_AND_READBACK_VERIFIED');
+  assert.equal(correctionReceipt.readbackVerified,true);
+  assert.equal(state.glow.weeks[weekDate].players[0].scores[0],replacementScore);
+  const duplicate=await handleOrganizerImportRequest(uploadRequest(approval),env,options);
   assert.equal(duplicate.status,200);
   assert.equal((await duplicate.json()).disposition,'DUPLICATE_VERIFIED');
-  assert.equal(requests.filter(x=>x.url.includes('/rpc/hbnf_apply_udisc_glow_week')).length,1,'same source snapshot must not cause a second CAS');
-  assert.equal(cartPayloads.length,1,'duplicate snapshot must not produce a second Cart intent');
+  assert.equal(requests.filter(x=>x.url.includes('/rpc/hbnf_apply_udisc_glow_week')).length,2,'duplicate source snapshot must not cause a third CAS');
+  assert.equal(cartPayloads.length,2,'duplicate snapshot must not produce a third Cart intent');
   assert.deepEqual(cartPayloads[0],{action:'glow_scoreboard_intent',weekDate});
   const snapshot=await parseUdiscWorkbook(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),
     {eventId,weekDate,observedAt:'2026-11-11T03:30:00.000Z'});
@@ -95,5 +122,8 @@ test('operator-attested fresh organizer XLSX persists once, renders in Glow, and
   assert.match(glowHtml,/const weekRows=standingsForWeek\(getWeek\(\)\)/);
   assert.match(glowHtml,/Operator-attested fresh UDisc export received by HBNF/);
   assert.match(glowHtml,/status\.captureAuthority==='authenticated_organizer_immediate_export_attestation'/);
-  assert.deepEqual(requests.map(x=>x.method),['GET','GET','POST','GET','POST','GET','GET','GET']);
+  assert.equal(requests.filter(x=>x.url.includes('/hbnf_udisc_glow_event_bindings?')).length,4);
+  assert.equal(requests.filter(x=>x.url.includes('/league_state?id=eq.1')).length,7);
+  assert.equal(requests.filter(x=>x.url.includes('/rpc/hbnf_apply_udisc_glow_week')).length,2);
+  assert.equal(cartPayloads.length,2);
 });

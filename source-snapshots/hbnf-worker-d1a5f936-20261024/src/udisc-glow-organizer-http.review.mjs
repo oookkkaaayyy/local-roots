@@ -92,6 +92,31 @@ function validateSelection(eventId,weekDate){
     /^20\d{2}-\d\d-\d\d$/.test(weekDate);
 }
 
+function parseCorrectionApprovals(raw,{eventId,weekDate,sha256,freshSnapshotConfirmed}){
+  if(raw===null)return [];
+  if(typeof raw!=='string'||raw.length>32768)throw Error('CORRECTION_APPROVALS_INVALID');
+  const approvals=JSON.parse(raw);
+  if(!Array.isArray(approvals)||approvals.length>72)throw Error('CORRECTION_APPROVALS_INVALID');
+  const seen=new Set();
+  for(const item of approvals){
+    const fields=['decision','eventId','hole','previousScore','replacementScore','sourceSha256','teamId','weekDate'];
+    if(!item||Array.isArray(item)||typeof item!=='object'||
+       Object.keys(item).sort().join('|')!==fields.sort().join('|')||
+       item.decision!=='ACCEPT_SCORE_CORRECTION'||item.eventId!==eventId||item.weekDate!==weekDate||
+       item.sourceSha256!==sha256||typeof item.teamId!=='string'||!item.teamId||item.teamId.length>160||
+       !Number.isInteger(item.hole)||item.hole<1||item.hole>18||
+       !/^(?:|[1-9]\d?)$/.test(String(item.previousScore))||
+       !/^(?:|[1-9]\d?)$/.test(String(item.replacementScore))||
+       String(item.previousScore)===String(item.replacementScore))
+      throw Error('CORRECTION_APPROVALS_INVALID');
+    const key=`${item.teamId}\0${item.hole}`;
+    if(seen.has(key))throw Error('CORRECTION_APPROVALS_DUPLICATE');
+    seen.add(key);
+  }
+  if(approvals.length&&!freshSnapshotConfirmed)throw Error('FRESH_CORRECTION_ATTESTATION_REQUIRED');
+  return approvals;
+}
+
 function readiness({row,binding,weekDate}){
   const glow=row.state_json.glow;
   const week=glow.weeks?.[weekDate];
@@ -156,11 +181,13 @@ export async function handleOrganizerImportRequest(request,env,{fetchImpl=fetch,
   try{form=await request.formData();}catch{return json(400,{disposition:'UPLOAD_FORM_INVALID'});}
   // This owner attestation is distinct from UDisc metadata: its timestamp is
   // the server receipt time and is eligible only inside this event's bound window.
-  if([...form.keys()].some(k=>!['eventId','weekDate','xlsx','reviewedDecisions','officialExportConfirmed','freshSnapshotConfirmed'].includes(k)))
+  if([...form.keys()].some(k=>!['eventId','weekDate','xlsx','reviewedDecisions','scoreCorrectionApprovals','officialExportConfirmed','freshSnapshotConfirmed'].includes(k)))
     return json(400,{disposition:'UNKNOWN_UPLOAD_FIELD'});
   const eventId=text(form.get('eventId')),weekDate=text(form.get('weekDate'));
   if(!validateSelection(eventId,weekDate)||form.get('officialExportConfirmed')!=='yes')
     return json(400,{disposition:'EVENT_OR_ORGANIZER_ATTESTATION_MISSING'});
+  if(form.getAll('scoreCorrectionApprovals').length>1)
+    return json(400,{disposition:'CORRECTION_APPROVALS_INVALID'});
   const file=form.get('xlsx');
   if(!file||typeof file.arrayBuffer!=='function'||
       !String(file.name||'').toLowerCase().endsWith('.xlsx')||file.size<22||file.size>MAX_FILE_BYTES)
@@ -175,11 +202,24 @@ export async function handleOrganizerImportRequest(request,env,{fetchImpl=fetch,
   const bytes=new Uint8Array(await file.arrayBuffer());
   const sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),
     b=>b.toString(16).padStart(2,'0')).join('');
+  const freshSnapshotConfirmed=form.get('freshSnapshotConfirmed')==='yes';
+  let scoreCorrectionApprovals;
+  try{
+    scoreCorrectionApprovals=parseCorrectionApprovals(form.get('scoreCorrectionApprovals'),
+      {eventId,weekDate,sha256,freshSnapshotConfirmed});
+  }catch(error){
+    return json(400,{disposition:error?.message==='FRESH_CORRECTION_ATTESTATION_REQUIRED'
+      ?'FRESH_CORRECTION_ATTESTATION_REQUIRED':'CORRECTION_APPROVALS_INVALID'});
+  }
   const result=await importOrganizerGlowXlsx({upload:{eventId,weekDate,xlsx:bytes,sha256,reviewedDecisions,
-    freshSnapshotConfirmed:form.get('freshSnapshotConfirmed')==='yes'},
+    freshSnapshotConfirmed,scoreCorrectionApprovals},
     adapters:{...provider,authorize:()=>true,
-      // There is deliberately NO upload-controlled correction authorization.
-      authorizeCorrection:()=>false,
+      // Approvals come from the authenticated Scoring operator's explicit
+      // action and must match this exact accepted snapshot and current preimage.
+      authorizeCorrection:change=>scoreCorrectionApprovals.some(item=>
+        item.eventId===change.eventId&&item.weekDate===change.weekDate&&
+        item.sourceSha256===sha256&&item.teamId===change.teamId&&item.hole===change.hole&&
+        String(item.previousScore)===change.from&&String(item.replacementScore)===change.to),
     }});
   let status=200;
   if(result.wrote===null||result.wrote===true&&!result.readbackVerified)status=503;
