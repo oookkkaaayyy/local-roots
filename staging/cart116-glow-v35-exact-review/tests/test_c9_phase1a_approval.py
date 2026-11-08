@@ -149,7 +149,7 @@ class AdmissionTests(unittest.TestCase):
    for f in ("ADMISSION.PENDING.json","C9_RELEASE_APPROVAL.json","C9_APPROVAL_MESSAGE.bin","C9_APPROVAL_SIGNATURE.raw","C9_APPROVAL_PUBKEY.der","C9_CANDIDATE.zip"):
     (cand/f).write_bytes(b"fixture")
    bindir=root/"bin";bindir.mkdir()
-   for cmd in "ls df cp mv mkdir cmp awk sort cut wc chmod chown sync rm sed id".split():
+   for cmd in "ls df cp mv mkdir cmp awk sort cut wc chmod chown sync rm sed id grep".split():
     path=shutil.which(cmd)
     if path: (bindir/cmd).symlink_to(path)
    (bindir/"jsonfilter").write_text("#!/bin/sh\nexit 0\n");(bindir/"jsonfilter").chmod(0o755)

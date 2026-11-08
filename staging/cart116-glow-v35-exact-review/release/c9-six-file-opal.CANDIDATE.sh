@@ -19,7 +19,7 @@ case "$ROOT" in
  /tmp/cart116-c9-rehearsal-*) [ -d "$ROOT" ] && [ ! -L "$ROOT" ] || exit 65;;
  *) echo 'UNSUPPORTED_C9_ROOT' >&2; exit 65;;
 esac
-for cmd in sha256sum ls df cp mv mkdir cmp awk sort cut wc chmod chown sync rm sed id; do
+for cmd in sha256sum ls df cp mv mkdir cmp awk sort cut wc chmod chown sync rm sed id grep; do
  command -v "$cmd" >/dev/null 2>&1 || { echo "MISSING_OPAL_COMMAND:$cmd" >&2; exit 66; }
 done
 [ -f "$TARGETS" ] && [ ! -L "$TARGETS" ] || exit 67
@@ -44,9 +44,11 @@ valid(){
  /www/mission-control-local/owner-pwa/hbnf-cart.js:hbnf-cart.js|\
  /www/mission-control-local/owner-pwa/hbnf-cart.html:hbnf-cart.html|\
  /www/mission-control-local/owner-pwa/.hbnf-payload.sha256:.hbnf-payload.sha256|\
- /www/mission-control-local/owner-pwa/.hbnf-package-version:.hbnf-package-version) return 0;;
+ /www/mission-control-local/owner-pwa/.hbnf-package-version:.hbnf-package-version|\
+ /www/mission-control-local/owner-pwa/hbnf-cart-features.js:hbnf-cart-features.js) return 0;;
  *) return 1;; esac
 }
+TARGET_MODE=six
 TXBASE="$ROOT/root/cart116-controls-recovery/$TX"
 REGISTRY="$ROOT/root/cart116-controls-one-time/$TX"
 TAB="$(printf '\t')"
@@ -56,8 +58,26 @@ manifest_validate(){
   valid "$dest" "$rel" && hex64 "$old" && hex64 "$new" && [ "$mode" = 644 ] || return 70
   n=$((n+1))
  done < "$TARGETS"
- [ "$n" -eq 6 ] &&
- [ "$(cut -f1 "$TARGETS" | sort -u | wc -l | awk '{print $1}')" -eq 6 ] || return 70
+ [ "$(cut -f1 "$TARGETS" | sort -u | wc -l | awk '{print $1}')" -eq "$n" ] || return 70
+ if [ "$n" -eq 6 ]; then
+  for dest in \
+   /www/mission-control-local/local-transport.js \
+   /www/mission-control-local/owner-pwa/hbnf-cart-local.js \
+   /www/mission-control-local/owner-pwa/hbnf-cart.js \
+   /www/mission-control-local/owner-pwa/hbnf-cart.html \
+   /www/mission-control-local/owner-pwa/.hbnf-payload.sha256 \
+   /www/mission-control-local/owner-pwa/.hbnf-package-version; do
+   grep -F "$dest$TAB" "$TARGETS" >/dev/null || return 70
+  done
+  TARGET_MODE=six
+ elif [ "$n" -eq 1 ]; then
+  IFS="$TAB" read -r dest rel old new mode < "$TARGETS"
+  [ "$dest" = /www/mission-control-local/owner-pwa/hbnf-cart-features.js ] &&
+  [ "$rel" = hbnf-cart-features.js ] && [ "$mode" = 644 ] || return 70
+  TARGET_MODE=safari12-text-compat
+ else
+  return 70
+ fi
 }
 candidate_validate(){
  [ -d "$SOURCE" ] && [ ! -L "$SOURCE" ] || return 71
@@ -86,30 +106,48 @@ admission_evidence_gate(){
  done
  jsonfield(){ jsonfilter -i "$SOURCE/ADMISSION.PENDING.json" -e "$1" 2>/dev/null; }
  docfield(){ jsonfilter -i "$SOURCE/C9_RELEASE_APPROVAL.json" -e "$1" 2>/dev/null; }
- # The broad controlling manifest must remain source-gate closed: this scoped
- # transaction changes only six Owner PWA assets. C9 admission itself is
- # explicit, exact-postimage, and transaction-bound inside that same manifest.
+ # Keep the broad gate closed. The existing six-file phase and the one-file
+ # Safari 12 text compatibility correction have distinct, exact scopes and
+ # transaction records inside the same Controls admission manifest.
  [ "$(jsonfield '@.transaction.source_gate_change_admitted')" = false ] &&
- [ "$(jsonfield '@.transaction.manifest_specific_one_time_id')" = "$TX" ] &&
- [ "$(jsonfield '@.transaction.independent_release_backup_download_verified')" = true ] &&
- [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.scope')" = 'C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY' ] &&
- [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.transaction_id')" = "$TX" ] &&
- [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.status')" = 'OWNER_SIGNATURE_REQUIRED' ] &&
+ [ "$(jsonfield '@.transaction.independent_release_backup_download_verified')" = true ] || return 80
+ if [ "$TARGET_MODE" = six ]; then
+  [ "$(jsonfield '@.transaction.manifest_specific_one_time_id')" = "$TX" ] &&
+  [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.scope')" = 'C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY' ] &&
+  [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.transaction_id')" = "$TX" ] &&
+  [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.status')" = 'OWNER_SIGNATURE_REQUIRED' ] || return 80
+  EXPECTED_SCOPE='C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY'
+  EXPECTED_OPERATION='install-six-owner-pwa-files-only'
+  EXPECTED_TSV_FIELD='six_tsv_sha256'
+  EXPECTED_SOURCE_COMMIT="$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.source_candidate_commit')"
+  EXPECTED_ROLLBACK_SHA='d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9'
+  [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.independent_original_21_file_rollback_sha256')" = 'd717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9' ] || return 80
+ else
+  [ "$(jsonfield '@.c9_text_compat_followup_20261108.scope')" = 'C9_PHASE1A_SAFARI12_TEXT_COMPAT_ONLY' ] &&
+  [ "$(jsonfield '@.c9_text_compat_followup_20261108.transaction_id')" = "$TX" ] &&
+  [ "$(jsonfield '@.c9_text_compat_followup_20261108.status')" = 'OWNER_SIGNATURE_REQUIRED' ] &&
+  [ "$(jsonfield '@.c9_text_compat_followup_20261108.target.path')" = '/www/mission-control-local/owner-pwa/hbnf-cart-features.js' ] || return 80
+  EXPECTED_SCOPE='C9_PHASE1A_SAFARI12_TEXT_COMPAT_ONLY'
+  EXPECTED_OPERATION='install-one-owner-pwa-text-compatibility-file-only'
+  EXPECTED_TSV_FIELD='target_tsv_sha256'
+  EXPECTED_SOURCE_COMMIT="$(jsonfield '@.c9_text_compat_followup_20261108.source_commit')"
+  EXPECTED_ROLLBACK_SHA="$(jsonfield '@.c9_text_compat_followup_20261108.target.rollback_sha256')"
+  IFS="$TAB" read -r dest rel old new mode < "$TARGETS"
+  [ "$(jsonfield '@.c9_text_compat_followup_20261108.target.preimage_sha256')" = "$old" ] &&
+  [ "$(jsonfield '@.c9_text_compat_followup_20261108.target.postimage_sha256')" = "$new" ] || return 80
+ fi
  [ "$(docfield '@.schema')" = 'hbnf-c9-phase1a-owner-release-v1' ] &&
- [ "$(docfield '@.scope')" = 'C9_PHASE1A_OWNER_PWA_SIX_FILES_ONLY' ] &&
- [ "$(docfield '@.operation')" = 'install-six-owner-pwa-files-only' ] &&
+ [ "$(docfield '@.scope')" = "$EXPECTED_SCOPE" ] &&
+ [ "$(docfield '@.operation')" = "$EXPECTED_OPERATION" ] &&
  [ "$(docfield '@.original_r6_preservation')" = 'NO_MATRIX_OR_AUX_FIRMWARE_OR_CONFIGURATION_WRITES' ] &&
  [ "$(docfield '@.transaction_id')" = "$TX" ] &&
  [ "$(docfield '@.source_branch')" = "$(jsonfield '@.exact_source.branch')" ] &&
- [ "$(docfield '@.source_commit')" = "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.source_candidate_commit')" ] &&
+ [ "$(docfield '@.source_commit')" = "$EXPECTED_SOURCE_COMMIT" ] &&
  [ "$(docfield '@.verifier_script_sha256')" = "$(sha "$0")" ] &&
  [ "$(docfield '@.manifest_sha256')" = "$(sha "$SOURCE/ADMISSION.PENDING.json")" ] &&
  [ "$(docfield '@.review_snapshot_manifest_sha256')" = "$(sha "$SOURCE/ADMISSION.PENDING.json")" ] &&
- [ "$(docfield '@.six_tsv_sha256')" = "$(sha "$TARGETS")" ] &&
- [ "$(docfield '@.rollback_sha256')" = 'd717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9' ] || return 80
- [ "$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.independent_original_21_file_rollback_sha256')" = "$(docfield '@.rollback_sha256')" ] || return 80
- nested_rollback="$(jsonfield '@.c9_phase1a_opal_transaction_candidate_20261105.phase1a_admission.rollback_sha256')"
- [ -z "$nested_rollback" ] || [ "$nested_rollback" = "$(docfield '@.rollback_sha256')" ] || return 80
+ [ "$(docfield "@.$EXPECTED_TSV_FIELD")" = "$(sha "$TARGETS")" ] &&
+ [ "$(docfield '@.rollback_sha256')" = "$EXPECTED_ROLLBACK_SHA" ] || return 80
  [ "$(sha "$SOURCE/C9_CANDIDATE.zip")" = "$(docfield '@.candidate_zip_sha256')" ] || return 80
  [ "$(docfield '@.approval_key_der_sha256')" = "$C9_OWNER_KEY_DER_SHA256" ] &&
  [ "$(jsonfield '@.transaction.c9_approval_key_der_sha256')" = "$C9_OWNER_KEY_DER_SHA256" ] &&
@@ -203,7 +241,7 @@ case "$ACTION" in
   ;;
  preflight)
   candidate_validate && old_validate && space_gate || exit 85
-  echo 'C9_SIX_FILE_PREFLIGHT_READ_ONLY_PASS'
+  if [ "$TARGET_MODE" = six ]; then echo 'C9_SIX_FILE_PREFLIGHT_READ_ONLY_PASS'; else echo 'C9_TEXT_COMPAT_PREFLIGHT_READ_ONLY_PASS'; fi
   ;;
  prepare)
   live_gate && candidate_validate && old_validate && space_gate || exit 86
@@ -226,7 +264,7 @@ case "$ACTION" in
   live_gate && candidate_validate && backup_check &&
   old_validate && space_gate || exit 87
   [ ! -e "$REGISTRY" ] && [ ! -L "$REGISTRY" ] || exit 87
-  # Stage all six adjacent to targets; verify BEFORE first swap.
+  # Stage every exact target adjacent to its live path; verify BEFORE first swap.
   while IFS="$TAB" read -r dest rel old new mode; do
    staged="$ROOT$dest.cart116c9-stage-$TX"
    [ ! -e "$staged" ] && [ ! -L "$staged" ] || exit 87
@@ -267,7 +305,7 @@ case "$ACTION" in
   [ -f "$REGISTRY/consumed" ] || exit 89
   restore_files || exit 89
   : > "$REGISTRY/restored"
-  echo 'C9_SIX_PREIMAGES_RESTORED_REQUIRE_SERVED_AND_DEVICE_VERIFICATION'
+  echo 'C9_PREIMAGES_RESTORED_REQUIRE_SERVED_AND_DEVICE_VERIFICATION'
   ;;
  verify)
   [ -f "$REGISTRY/consumed" ] && backup_check || exit 90
@@ -275,6 +313,6 @@ case "$ACTION" in
    [ -f "$ROOT$dest" ] && [ ! -L "$ROOT$dest" ] &&
    [ "$(sha "$ROOT$dest")" = "$new" ] || exit 90
   done < "$TARGETS"
-  echo 'C9_SIX_FILES_HASH_MATCH_NOT_PWA_DEVICE_FIELD_ACCEPTANCE'
+  echo 'C9_TARGET_HASHES_MATCH_NOT_PWA_DEVICE_FIELD_ACCEPTANCE'
   ;;
 esac

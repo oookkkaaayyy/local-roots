@@ -243,7 +243,7 @@
   },
   "state": "PENDING_NOT_INSTALLABLE_NO_LIVE_MUTATION",
   "transaction": {
-    "manifest_specific_one_time_id": "c9-phase1a-4b8624177d1549008f19314bc8cc73a1",
+    "manifest_specific_one_time_id": "c9-phase1a-3140788a963042b7bca03cc619f73287",
     "owner_approval_for_this_exact_postimage": null,
     "owner_authorization_to_continue": "CART CONTROLS C6 standing scope: #116 comment 6648484424 and current owner message 2026-11-04; no fresh per-attempt permission request while exact technical gates pass",
     "release_owner": "Controls Track A only",
@@ -3305,6 +3305,10 @@
             "/www/mission-control-local/owner-pwa/.hbnf-payload.sha256": "f3e617a7d42d8831b8c996ac318fe99dc7f67a91c10c5a5bf289e3f19fb636ee",
             "/www/mission-control-local/owner-pwa/.hbnf-package-version": "1c24bd2ae485f22bc71dd7cefb7751bb867b9ea5fe8bd2cd8723130a29c650f4"
           }
+        },
+        {
+          "transaction_id": "c9-phase1a-4b8624177d1549008f19314bc8cc73a1",
+          "disposition": "PRIOR SIX-FILE TRANSACTION; PRESERVED; NOT AUTHORIZATION FOR ONE-FILE CORRECTION"
         }
       ],
       "owner_authorization_provenance": {
@@ -3349,5 +3353,41 @@
     "native_tests": "PASS paired-local support-negative/positive, no partial ACK or stale companion fields, patched source isolated. Not integrated into six-file Phase1A candidate.",
     "original_R6_gap": "Energy/Variation are not independent original-R6 native HBNF Controls fields; cannot obtain faithful local semantics from Owner PWA alone. C9 later firmware changes need independently admitted rollback, separate from PWA-only.",
     "next": "After PWA-only C9 successful same-manifest device acceptance, generate next minimal six-target-recoverable candidate with patch and exact source-hash rebuild; do not silently use stale ZIP or deploy now."
+  },
+  "c9_text_compat_followup_20261108": {
+    "schema": "hbnf-c9-phase1a-owner-signature-admission-v1",
+    "scope": "C9_PHASE1A_SAFARI12_TEXT_COMPAT_ONLY",
+    "status": "OWNER_SIGNATURE_REQUIRED",
+    "transaction_id": "c9-phase1a-3140788a963042b7bca03cc619f73287",
+    "source_commit": "07af81b084e9f5d29ff69a4ed4a120c569f463d8",
+    "target": {
+      "path": "/www/mission-control-local/owner-pwa/hbnf-cart-features.js",
+      "name": "hbnf-cart-features.js",
+      "preimage_sha256": "db591fec335897c8448a5571799b4a6ce2b59889b1afeff8a08206532b470d4c",
+      "postimage_sha256": "6dba73caea3046217ee2d44ccabd04b7f601fa3b33bc924f686743cb175169cb",
+      "mode": "644",
+      "owner": "0:0",
+      "bytes": 53719,
+      "rollback_drive_id": "1K98BkzHGzKjmmt_fWBDS30jc4SbE3_tB",
+      "rollback_archive_sha256": "d717ab5d5cd29c90a4ab1a4b9041b9d8ad21314d47916b8607a051f173cd15e9",
+      "rollback_archive_member": "owner-pwa/hbnf-cart-features.js",
+      "rollback_sha256": "db591fec335897c8448a5571799b4a6ce2b59889b1afeff8a08206532b470d4c",
+      "rollback_bytes": 53719,
+      "fresh_router_readback_utc": "2026-11-08T08:27:10Z",
+      "fresh_router_readback": "PASS pinned-host SSH; SHA, size, root:root 0644 match archive member byte-for-byte"
+    },
+    "verifier_script_path": "staging/cart116-glow-v35-exact-review/release/c9-six-file-opal.CANDIDATE.sh",
+    "recovery_limitations": {
+      "ubifs_process_reentry_restore": "PASS_ACTUAL_ROUTER",
+      "abrupt_power_loss": "NOT_TESTED",
+      "partial_active_file_restore": "NOT_FAULT_INJECTED",
+      "owner_accepted_bounded_risk": true
+    },
+    "original_r6_preservation": "NO_MATRIX_OR_AUX_FIRMWARE_OR_CONFIGURATION_WRITES",
+    "source_gate_change_admitted": false,
+    "other_release_scopes_admitted": false,
+    "owner_signature_required": true,
+    "owner_authorization_basis": "User explicitly continued this exact narrow release in active Controls execution thread; fresh exact cryptographic signature remains required.",
+    "installed": false
   }
 }
