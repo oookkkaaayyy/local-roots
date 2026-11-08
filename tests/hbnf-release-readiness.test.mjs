@@ -5,10 +5,20 @@ import {
  MANIFEST_SHA256,MANIFEST_REVISION,BOUND_SOURCE_HEAD,bindSourceHeadToCheckout
 } from '../scripts/hbnf-parent-release/release-readiness.mjs';
 const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
+const betaCandidate='1gmbZo09hxkOjkVC_5-fOqFtiWfSssVt8';
+const betaCandidateSha='1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e';
+const betaRequestSha='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11';
 const manifest={
  manifestRevision:MANIFEST_REVISION,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
  status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
- scopedReleaseAuthority:{cloudflareOnlySaveAck:{admittedUnderParent:true}},
+ scopedReleaseAuthority:{cloudflareOnlySaveAck:{admittedUnderParent:true,
+  parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:MANIFEST_REVISION,
+  stageA:{candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,
+   candidateBytes:274519,requestSha256:betaRequestSha,requestBytes:269030,
+   noAssetUpload:true,assetStrategy:'exact-v348-inherited-binding',
+   binding:{name:'ASSETS',type:'inherit',version_id:workerVersion},
+   workerFirstPaths:['/api/*','/internal/*','/glow-save-sync.mjs'],
+   productionTrafficAuthorized:false}}},
  source:{currentScoringReviewHead:BOUND_SOURCE_HEAD},
  targets:[
   {id:'supabase-schema'},{id:'edge-tag-editor'},
@@ -25,14 +35,16 @@ const stage={
  otherTargetReadbacks:['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score']
   .map(id=>({id,sha256:hex,fresh:true})),
  executable:{
-  format:'cloudflare-worker-version-multipart',sha256:hex,bytes:100,
-  privateDriveFileId:'synthetic-executable-byte-backed',
+  format:'cloudflare-beta-worker-version-json',sha256:betaRequestSha,bytes:269030,
+  candidateArtifactSha256:betaCandidateSha,candidateArtifactBytes:274519,
+  privateDriveFileId:betaCandidate,
   downloadBackVerified:true,moduleClosureVerified:true,sourceParityVerified:true,
   glowHelperSha256:'674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
   glowHelperGitBlob:'a355ad13d5026551629f085060c636b60ccb8560',
-  assetStrategy:'keep_assets',keepAssetsSemanticsVerified:true,keepAssetsProviderAccepted:true,
-  noAssetUpload:true,knownAssetPathCount:46,knownAssetPathReadbackMatched:true,
-  eightNewerCartAssetReadbacksMatched:true,assetInventoryDisclosure:'KNOWN_46_NONEXHAUSTIVE',
+  assetStrategy:'exact-v348-inherited-binding',
+  assetBinding:{name:'ASSETS',type:'inherit',version_id:workerVersion},
+  exactVersionBindingSchemaVerified:true,noAssetUpload:true,
+  knownAssetPathCount:46,assetInventoryDisclosure:'KNOWN_46_NONEXHAUSTIVE',
   workerFirstPaths:['/api/*','/internal/*','/glow-save-sync.mjs'],correctedHelperServedByWorker:true
  }
 };
@@ -57,9 +69,9 @@ const checked=(overrides={})=>checkReleaseReadiness({
  provider:clone(provider),adapter:clone(adapter),synthetic:true,
  ...overrides
 });
-test('revision 13 source digest is pinned and remains non-admitting',()=>{
- assert.equal(MANIFEST_SHA256,'e9bd70c3b64a7f528e5c9f43657c991a063a1a4a078bde413bc23b8422835ad5');
- assert.equal(MANIFEST_REVISION,13);
+test('revision 14 source digest is pinned and remains non-admitting',()=>{
+ assert.equal(MANIFEST_SHA256,'83502d34150ed88939b6a99d0519a0563acd2452cdbbd188d93ad741b96cbea8');
+ assert.equal(MANIFEST_REVISION,14);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
  assert.equal(result.canMutate,false);
@@ -71,18 +83,19 @@ test('historical five-target driver refuses review ZIP as one worker stage',()=>
  const result=checked({stage:before});
  assert.equal(result.status,'BLOCKED');
  assert.ok(result.errors.includes('FIVE_TARGET_DRIVER_REQUIRES_SEVEN_STAGES'));
- assert.ok(result.errors.includes('ONEFILE_REVIEW_ZIP_NOT_EXECUTABLE_WORKER'));
+ assert.ok(result.errors.includes('BETA_JSON_CANDIDATE_NOT_BYTE_BOUND'));
 });
-test('cloud-only is subordinate and requires exact executable and keep-assets routing evidence',()=>{
+test('cloud-only is subordinate and requires exact Beta JSON and v348 asset lineage',()=>{
  for(const mutation of [
   s=>{s.parentContractAllowsIndependentStage=false;},
   s=>{s.otherTargetReadbacks.pop();},
-  s=>{s.executable.assetStrategy='complete-manifest-upload';},
-  s=>{s.executable.knownAssetPathCount=45;},
-  s=>{s.executable.assetInventoryDisclosure='EXHAUSTIVE';},
+  s=>{s.executable.assetStrategy='keep_assets';},
+  s=>{s.executable.assetBinding.version_id='049a35e1-64b5-4e76-9378-ca4ffa0a7d47';},
   s=>{s.executable.noAssetUpload=false;},
+  s=>{s.executable.assetInventoryDisclosure='EXHAUSTIVE';},
+  s=>{s.executable.sha256=hex;},
+  s=>{s.executable.privateDriveFileId='wrong-candidate';},
   s=>{s.executable.workerFirstPaths=['/api/*','/internal/*'];},
-  s=>{s.executable.keepAssetsProviderAccepted=false;},
   s=>{s.executable.moduleClosureVerified=false;},
   s=>{s.executable.glowHelperSha256=hex;}
  ]) {
@@ -95,6 +108,10 @@ test('a declared stage cannot override absence of Cloudflare-only authority in t
  const result=checked({manifest:oldManifest});
  assert.equal(result.status,'BLOCKED');
  assert.ok(result.errors.includes('CLOUDFLARE_ONLY_SCOPE_NOT_SUBORDINATE'));
+ const wrongLineage=clone(manifest);wrongLineage.scopedReleaseAuthority.cloudflareOnlySaveAck.stageA.binding.version_id='049a35e1-64b5-4e76-9378-ca4ffa0a7d47';
+ const mismatch=checked({manifest:wrongLineage});
+ assert.equal(mismatch.status,'BLOCKED');
+ assert.ok(mismatch.errors.includes('CLOUDFLARE_ONLY_SCOPE_NOT_SUBORDINATE'));
 });
 test('stale source HEAD, missing private manifest, missing rollback and missing closeout all fail',()=>{
  assert.equal(checked({sourceHead:'b'.repeat(40)}).status,'BLOCKED');
@@ -108,7 +125,7 @@ test('stale source HEAD, missing private manifest, missing rollback and missing 
 
 test('only exact source head or release-control-only descendant can satisfy the bound source',()=>{
  assert.equal(bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:BOUND_SOURCE_HEAD}),BOUND_SOURCE_HEAD);
- assert.equal(bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:true,
+ assert.equal(bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'ad139e2f3ccaff938a17f0b59a6e667bc3851d32',ancestryVerified:true,
   changedPaths:['scripts/hbnf-parent-release/release-readiness.mjs','scripts/hbnf-parent-release/release-readiness-cli.mjs','tests/hbnf-release-readiness.test.mjs']}),BOUND_SOURCE_HEAD);
  assert.throws(()=>bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:true,
   changedPaths:['public/glow.html']}),/NON_GOVERNANCE_SOURCE_CHANGED_AFTER_BOUND_HEAD/);

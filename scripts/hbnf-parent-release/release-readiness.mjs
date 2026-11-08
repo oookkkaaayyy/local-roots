@@ -1,8 +1,8 @@
 // Scoring release preflight. Read-only; never performs provider actions.
 import {createHash} from 'node:crypto';
 export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
-export const MANIFEST_SHA256='e9bd70c3b64a7f528e5c9f43657c991a063a1a4a078bde413bc23b8422835ad5';
-export const MANIFEST_REVISION=13;
+export const MANIFEST_SHA256='83502d34150ed88939b6a99d0519a0563acd2452cdbbd188d93ad741b96cbea8';
+export const MANIFEST_REVISION=14;
 export const BOUND_SOURCE_HEAD='abf611e9e451464bc9b85ec4fb1d227645a7abdd';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 
@@ -28,6 +28,11 @@ const PARENT_TARGETS=['supabase-schema','edge-tag-editor','edge-tags-live','edge
 const V348='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const ETAG='c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25';
 const REVIEW_ZIP='1ZD0it8FgFpgvmlHKUa2byIqeK81bq1_q';
+const BETA_CANDIDATE='1gmbZo09hxkOjkVC_5-fOqFtiWfSssVt8';
+const BETA_CANDIDATE_SHA256='1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e';
+const BETA_CANDIDATE_BYTES=274519;
+const BETA_REQUEST_SHA256='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11';
+const BETA_REQUEST_BYTES=269030;
 const HEX=/^[a-f0-9]{64}$/;
 const validHex=x=>typeof x==='string'&&HEX.test(x);
 const trueValue=x=>x===true;
@@ -67,7 +72,20 @@ export function checkReleaseReadiness({
    if(stage.targets?.length!==5||stage.operations?.length!==7)
      fail('FIVE_TARGET_DRIVER_REQUIRES_SEVEN_STAGES');
  }else if(stage?.scope==='cloudflare-only'){
+   const child=manifest?.scopedReleaseAuthority?.cloudflareOnlySaveAck;
    if(manifest?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.admittedUnderParent!==true||
+      child?.parentManifestId!==ORIGINAL_MANIFEST_ID||child?.parentRevision!==MANIFEST_REVISION||
+      child?.stageA?.candidateFileId!==BETA_CANDIDATE||
+      child?.stageA?.candidateSha256!==BETA_CANDIDATE_SHA256||
+      child?.stageA?.candidateBytes!==BETA_CANDIDATE_BYTES||
+      child?.stageA?.requestSha256!==BETA_REQUEST_SHA256||
+      child?.stageA?.requestBytes!==BETA_REQUEST_BYTES||
+      child?.stageA?.noAssetUpload!==true||
+      child?.stageA?.assetStrategy!=='exact-v348-inherited-binding'||
+      child?.stageA?.binding?.name!=='ASSETS'||child?.stageA?.binding?.type!=='inherit'||
+      child?.stageA?.binding?.version_id!==V348||
+      !['/api/*','/internal/*','/glow-save-sync.mjs'].every(x=>child?.stageA?.workerFirstPaths?.includes(x))||
+      child?.stageA?.productionTrafficAuthorized!==false||
       stage.parentManifestId!==ORIGINAL_MANIFEST_ID||stage.parentRevision!==MANIFEST_REVISION||
       stage.nonWorkerTargetsUnmodified!==true||
       stage.parentContractAllowsIndependentStage!==true||
@@ -79,28 +97,29 @@ export function checkReleaseReadiness({
      fail('FOUR_UNCHANGED_TARGETS_NOT_FENCED');
  }else fail('SCOPE_UNSUPPORTED');
  const e=stage?.executable||{};
- if(e.format!=='cloudflare-worker-version-multipart'||!validHex(e.sha256)||
-    !Number.isSafeInteger(e.bytes)||e.bytes<1||
-    !e.privateDriveFileId||!trueValue(e.downloadBackVerified)||
+ if(e.format!=='cloudflare-beta-worker-version-json'||
+    e.sha256!==BETA_REQUEST_SHA256||e.bytes!==BETA_REQUEST_BYTES||
+    e.candidateArtifactSha256!==BETA_CANDIDATE_SHA256||
+    e.candidateArtifactBytes!==BETA_CANDIDATE_BYTES||
+    e.privateDriveFileId!==BETA_CANDIDATE||!trueValue(e.downloadBackVerified)||
     !trueValue(e.moduleClosureVerified)||!trueValue(e.sourceParityVerified)||
     e.privateDriveFileId===REVIEW_ZIP)
-   fail('ONEFILE_REVIEW_ZIP_NOT_EXECUTABLE_WORKER');
+   fail('BETA_JSON_CANDIDATE_NOT_BYTE_BOUND');
  if(e.glowHelperSha256!=='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a'||
     e.glowHelperGitBlob!=='a355ad13d5026551629f085060c636b60ccb8560')
    fail('GLOW_HELPER_NOT_BOUND_TO_VERIFIED_PR_SOURCE');
  const workerFirst=Array.isArray(e.workerFirstPaths)?e.workerFirstPaths:[];
- if(e.assetStrategy!=='keep_assets'||
-    !trueValue(e.keepAssetsSemanticsVerified)||
-    !trueValue(e.keepAssetsProviderAccepted)||
+ if(e.assetStrategy!=='exact-v348-inherited-binding'||
+    e.assetBinding?.name!=='ASSETS'||e.assetBinding?.type!=='inherit'||
+    e.assetBinding?.version_id!==V348||
+    !trueValue(e.exactVersionBindingSchemaVerified)||
     !trueValue(e.noAssetUpload)||
     e.knownAssetPathCount!==46||
-    !trueValue(e.knownAssetPathReadbackMatched)||
-    !trueValue(e.eightNewerCartAssetReadbacksMatched)||
     e.assetInventoryDisclosure!=='KNOWN_46_NONEXHAUSTIVE'||
     !workerFirst.includes('/api/*')||!workerFirst.includes('/internal/*')||
     !workerFirst.includes('/glow-save-sync.mjs')||
     !trueValue(e.correctedHelperServedByWorker))
-   fail('KEEP_ASSETS_OR_HELPER_WORKER_FIRST_UNQUALIFIED');
+   fail('EXACT_V348_INHERITANCE_OR_HELPER_WORKER_FIRST_UNQUALIFIED');
  if(provider?.version!==V348||provider?.etag!==ETAG||
     !trueValue(provider?.retainedRollbackVersion)||
     !trueValue(provider?.routesCronBindingsMatch)||
