@@ -1,9 +1,9 @@
 // Scoring release preflight. Read-only; never performs provider actions.
 import {createHash} from 'node:crypto';
 export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
-export const MANIFEST_SHA256='a4c342fe334d9aec6a0cf13277d0f5af62939bef497af40a9a2cdadbae547b69';
-export const MANIFEST_REVISION=16;
-export const BOUND_SOURCE_HEAD='abf611e9e451464bc9b85ec4fb1d227645a7abdd';
+export const MANIFEST_SHA256='62ed97720d0f510ee5e84aacee02b2ec2fecc74b23d607477ad3024b7d8e046f';
+export const MANIFEST_REVISION=23;
+export const BOUND_SOURCE_HEAD='ad139e2f3ccaff938a17f0b59a6e667bc3851d32';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 
 const RELEASE_CONTROL_TAIL_PATHS=new Set([
@@ -30,11 +30,11 @@ const PARENT_TARGETS=['supabase-schema','edge-tag-editor','edge-tags-live','edge
 const V348='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const ETAG='c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25';
 const REVIEW_ZIP='1ZD0it8FgFpgvmlHKUa2byIqeK81bq1_q';
-const BETA_CANDIDATE='1gmbZo09hxkOjkVC_5-fOqFtiWfSssVt8';
-const BETA_CANDIDATE_SHA256='1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e';
-const BETA_CANDIDATE_BYTES=274519;
-const BETA_REQUEST_SHA256='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11';
-const BETA_REQUEST_BYTES=269030;
+const BETA_CANDIDATE='14z080a1qSSe4_TCABAhUepiI-_X28lhb';
+const BETA_CANDIDATE_SHA256='59f28e054a1452fc8f473921f9929c06cae28542ec864d34a23f61513315b9e7';
+const BETA_CANDIDATE_BYTES=274377;
+const BETA_REQUEST_SHA256='1d693d88a1b79ffa94cecaa4d896baa104fb0c9e676ddacdd0d4e61917247884';
+const BETA_REQUEST_BYTES=269018;
 const HEX=/^[a-f0-9]{64}$/;
 const validHex=x=>typeof x==='string'&&HEX.test(x);
 const trueValue=x=>x===true;
@@ -87,15 +87,23 @@ export function checkReleaseReadiness({
        retention?.latestBefore!=='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'||
        retention?.rollbackLimitMostRecentlyPublishedVersions!==100||
        retention?.worstCasePositionAfterSingleVersionCreate>100||
-       cost?.stageAStatus!=='COST_QUALIFIED_AND_V348_ROLLBACK_WINDOW_PRESERVED; PRIOR CLAIM CONSUMED BEFORE A PRECREATE ADAPTER STOP; NO PROVIDER WRITE; NEW CLAIM AND IMMEDIATE READBACK REQUIRED; ACCOUNT VERSION QUOTA FIELD NOT EXPOSED')
+       cost?.stageAStatus!=='DOCUMENTED_NO_RUNTIME_REQUEST_CHARGE_EXPECTED; Free plan observation recorded; version quota field not exposed; v348 rollback window verified; immediate prechange readback and one-use claim remain required.')
       fail('STAGE_A_COST_RETENTION_EVIDENCE_UNQUALIFIED');
     const attempts=manifest?.cloudflareAssetRetentionAmendment?.stageAExecutionAttempts;
-    if(!Array.isArray(attempts)||attempts.length!==1||
-       attempts[0]?.status!=='STOPPED_BEFORE_VERSION_CREATE'||
-       attempts[0]?.providerVersionCreatePostSent!==false||
-       attempts[0]?.postAttemptReadback?.activeVersionId!==V348||
-       attempts[0]?.postAttemptReadback?.activePercentage!==100||
-       attempts[0]?.postAttemptReadback?.latestVersionId!=='049a35e1-64b5-4e76-9378-ca4ffa0a7d47')
+    const prepared=Array.isArray(attempts)?attempts.at(-1):null;
+    const priorAmbiguous=Array.isArray(attempts)?[...attempts].reverse().find(x=>
+      x?.status==='POST_SENT_AMBIGUOUS_NO_VERSION_FOUND'):null;
+    const priorReadback=priorAmbiguous?.providerOutcome?.independentReadback;
+    if(!prepared||prepared.status!=='PREFLIGHT_READY_FOR_STAGE_A'||
+       prepared.providerVersionCreatePostSent!==false||prepared.oneTimeClaimCreated!==false||
+       prepared.candidateFileId!==BETA_CANDIDATE||prepared.candidateSha256!==BETA_CANDIDATE_SHA256||
+       prepared.requestSha256!==BETA_REQUEST_SHA256||prepared.latestVersionId!=='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'||
+       prepared.versionCount!==349||!priorAmbiguous||priorAmbiguous.providerVersionCreatePostSent!==true||
+       priorReadback?.versionListHttp!==200||priorReadback?.candidateTagMatches!==0||
+       priorReadback?.activeVersionId!==V348||priorReadback?.activePercentage!==100||
+       priorReadback?.latestVersionId!=='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'||
+       priorReadback?.totalCount!==349||BETA_CANDIDATE_SHA256===priorAmbiguous.candidateSha256||
+       BETA_REQUEST_SHA256===priorAmbiguous.requestSha256)
       fail('STAGE_A_PRIOR_ATTEMPT_NOT_RECONCILED');
    if(ownerScope?.source!=='Explicit owner instruction in existing Scoring P0 execution thread'||
       ownerScope?.decision!=='Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.'||
@@ -108,6 +116,7 @@ export function checkReleaseReadiness({
       child?.stageA?.candidateBytes!==BETA_CANDIDATE_BYTES||
       child?.stageA?.requestSha256!==BETA_REQUEST_SHA256||
       child?.stageA?.requestBytes!==BETA_REQUEST_BYTES||
+      child?.stageA?.requestEnvelope!=='VersionCreateRequest (top-level JSON object)'||
       child?.stageA?.noAssetUpload!==true||
       child?.stageA?.assetStrategy!=='exact-v348-inherited-binding'||
       child?.stageA?.binding?.name!=='ASSETS'||child?.stageA?.binding?.type!=='inherit'||
@@ -122,7 +131,9 @@ export function checkReleaseReadiness({
       stage.operations?.length!==1||stage.operations[0]?.id!=='worker-vnext')
      fail('CLOUDFLARE_ONLY_SCOPE_NOT_SUBORDINATE');
    if(stage.otherTargetReadbacks?.length!==4||
-      stage.otherTargetReadbacks.some(x=>!validHex(x.sha256)||x.fresh!==true))
+      stage.otherTargetReadbacks.some(x=>!validHex(x.sha256)||x.fresh!==true)||
+      !['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score'].every(id=>
+        stage.otherTargetReadbacks.some(x=>x.id===id&&x.fresh===true&&validHex(x.sha256))))
      fail('FOUR_UNCHANGED_TARGETS_NOT_FENCED');
  }else fail('SCOPE_UNSUPPORTED');
  const e=stage?.executable||{};
@@ -131,6 +142,7 @@ export function checkReleaseReadiness({
     e.candidateArtifactSha256!==BETA_CANDIDATE_SHA256||
     e.candidateArtifactBytes!==BETA_CANDIDATE_BYTES||
     e.privateDriveFileId!==BETA_CANDIDATE||!trueValue(e.downloadBackVerified)||
+    e.requestEnvelope!=='VersionCreateRequest (top-level JSON object)'||
     !trueValue(e.moduleClosureVerified)||!trueValue(e.sourceParityVerified)||
     e.privateDriveFileId===REVIEW_ZIP)
    fail('BETA_JSON_CANDIDATE_NOT_BYTE_BOUND');

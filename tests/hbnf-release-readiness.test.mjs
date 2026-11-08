@@ -5,9 +5,9 @@ import {
  MANIFEST_SHA256,MANIFEST_REVISION,BOUND_SOURCE_HEAD,bindSourceHeadToCheckout
 } from '../scripts/hbnf-parent-release/release-readiness.mjs';
 const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
-const betaCandidate='1gmbZo09hxkOjkVC_5-fOqFtiWfSssVt8';
-const betaCandidateSha='1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e';
-const betaRequestSha='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11';
+const betaCandidate='14z080a1qSSe4_TCABAhUepiI-_X28lhb';
+const betaCandidateSha='59f28e054a1452fc8f473921f9929c06cae28542ec864d34a23f61513315b9e7';
+const betaRequestSha='1d693d88a1b79ffa94cecaa4d896baa104fb0c9e676ddacdd0d4e61917247884';
 const manifest={
  manifestRevision:MANIFEST_REVISION,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
  status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,
@@ -15,9 +15,12 @@ const manifest={
   accountSpecificPlanReadback:{accountId:'e3bc6b78f1104fa0c2a01245084594cf',plan:'FREE',observedAt:'2026-11-08T04:34:00Z'},
   billingAssessment:'NO_INCREMENTAL_CHARGE_EXPECTED_FOR_THIS_EXACT_STAGE_A_OPERATION; inference based on Free plan readback, documented usage billing, no Worker invocation, no asset upload, and deploy=false.',
   retentionAssessment:{status:'PASS_ONE_ADDITIONAL_UNDEPLOYED_VERSION_RETAINS_V348_WITHIN_DOCUMENTED_ROLLBACK_WINDOW',activeBefore:workerVersion,latestBefore:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',rollbackLimitMostRecentlyPublishedVersions:100,worstCasePositionAfterSingleVersionCreate:3},
-  stageAStatus:'COST_QUALIFIED_AND_V348_ROLLBACK_WINDOW_PRESERVED; PRIOR CLAIM CONSUMED BEFORE A PRECREATE ADAPTER STOP; NO PROVIDER WRITE; NEW CLAIM AND IMMEDIATE READBACK REQUIRED; ACCOUNT VERSION QUOTA FIELD NOT EXPOSED'
+  stageAStatus:'DOCUMENTED_NO_RUNTIME_REQUEST_CHARGE_EXPECTED; Free plan observation recorded; version quota field not exposed; v348 rollback window verified; immediate prechange readback and one-use claim remain required.'
  },
-  stageAExecutionAttempts:[{status:'STOPPED_BEFORE_VERSION_CREATE',providerVersionCreatePostSent:false,postAttemptReadback:{activeVersionId:workerVersion,activePercentage:100,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47'}}]},
+  stageAExecutionAttempts:[
+   {status:'POST_SENT_AMBIGUOUS_NO_VERSION_FOUND',providerVersionCreatePostSent:true,candidateSha256:'1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e',requestSha256:'36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11',providerOutcome:{independentReadback:{versionListHttp:200,totalCount:349,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',candidateTagMatches:0,activeVersionId:workerVersion,activePercentage:100}}},
+   {status:'PREFLIGHT_READY_FOR_STAGE_A',providerVersionCreatePostSent:false,oneTimeClaimCreated:false,candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,requestSha256:betaRequestSha,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',versionCount:349}
+  ]},
  scopedReleaseAuthority:{ownerScopeDecision:{
   source:'Explicit owner instruction in existing Scoring P0 execution thread',
   decision:'Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.',
@@ -26,13 +29,14 @@ const manifest={
   parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:14,
   ownerDecisionDoesNotSatisfyPreflightOrProductionAdmission:true,
   stageA:{candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,
-   candidateBytes:274519,requestSha256:betaRequestSha,requestBytes:269030,
+   candidateBytes:274377,requestSha256:betaRequestSha,requestBytes:269018,
+   requestEnvelope:'VersionCreateRequest (top-level JSON object)',
    noAssetUpload:true,assetStrategy:'exact-v348-inherited-binding',
    binding:{name:'ASSETS',type:'inherit',version_id:workerVersion},
    workerFirstPaths:['/api/*','/internal/*','/glow-save-sync.mjs'],
    productionTrafficAuthorized:false}}},
  currentScoringReviewHead:BOUND_SOURCE_HEAD,
- source:{},
+ source:{currentScoringReviewHead:BOUND_SOURCE_HEAD},
  targets:[
   {id:'supabase-schema'},{id:'edge-tag-editor'},
   {id:'edge-tags-live'},{id:'edge-watch-score'},
@@ -48,8 +52,9 @@ const stage={
  otherTargetReadbacks:['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score']
   .map(id=>({id,sha256:hex,fresh:true})),
  executable:{
-  format:'cloudflare-beta-worker-version-json',sha256:betaRequestSha,bytes:269030,
-  candidateArtifactSha256:betaCandidateSha,candidateArtifactBytes:274519,
+  format:'cloudflare-beta-worker-version-json',sha256:betaRequestSha,bytes:269018,
+  requestEnvelope:'VersionCreateRequest (top-level JSON object)',
+  candidateArtifactSha256:betaCandidateSha,candidateArtifactBytes:274377,
   privateDriveFileId:betaCandidate,
   downloadBackVerified:true,moduleClosureVerified:true,sourceParityVerified:true,
   glowHelperSha256:'674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
@@ -82,9 +87,9 @@ const checked=(overrides={})=>checkReleaseReadiness({
  provider:clone(provider),adapter:clone(adapter),synthetic:true,
  ...overrides
 });
-test('revision 16 source digest is pinned and remains non-admitting',()=>{
- assert.equal(MANIFEST_SHA256,'a4c342fe334d9aec6a0cf13277d0f5af62939bef497af40a9a2cdadbae547b69');
- assert.equal(MANIFEST_REVISION,16);
+test('revision 23 source digest is pinned and remains non-admitting',()=>{
+ assert.equal(MANIFEST_SHA256,'62ed97720d0f510ee5e84aacee02b2ec2fecc74b23d607477ad3024b7d8e046f');
+ assert.equal(MANIFEST_REVISION,23);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
  assert.equal(result.canMutate,false);
