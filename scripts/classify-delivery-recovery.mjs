@@ -87,6 +87,16 @@ export async function executeRecovery(event, adapters) {
   const maxSteps = 5;
   while (steps < maxSteps) {
     const decision = classifyRecovery(current);
+    if (decision.action === 'retry-operation') {
+      const proposal = { provider: event?.provider, target: event?.target, operation: event?.operation };
+      const sameOperation = current?.provider === proposal.provider &&
+        current?.target === proposal.target && current?.operation === proposal.operation;
+      const authorization = authorizeOperation(proposal, event?.standingScope);
+      if (!sameOperation || !authorization.allowed) {
+        return { ...decision, action: 'blocked-authorization', retry: false, executed: steps > 0, resumed: false, steps,
+          reason: 'retry requires an exact provider, target, and operation match to explicit standing authorization' };
+      }
+    }
     const dispatch = {
       'verify-current-state': 'readback',
       readback: 'readback',
