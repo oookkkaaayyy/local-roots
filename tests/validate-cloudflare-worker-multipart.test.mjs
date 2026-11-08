@@ -35,6 +35,23 @@ test('rejects invalid raw map JSON before upload', async () => {
   await assert.rejects(() => validateCloudflareWorkerMultipart(body, request.headers.get('content-type')), /not valid JSON/);
 });
 
+test('accepts null source entries and ignoreList indexes defined by ECMA-426', async () => {
+  const map = { version: 3, sources: [null], names: [], mappings: 'AAAA', ignoreList: [0] };
+  const request = makeMultipart({ mapBytes: Buffer.from(JSON.stringify(map)) });
+  const body = await request.arrayBuffer();
+  const result = await validateCloudflareWorkerMultipart(body, request.headers.get('content-type'));
+  assert.deepEqual(result, { valid: true, sourceMaps: 1, references: 1 });
+});
+
+test('rejects malformed ignoreList values', async () => {
+  for (const ignoreList of ['0', [-1], [0.5], [Number.MAX_SAFE_INTEGER + 1]]) {
+    const map = { version: 3, sources: ['worker.ts'], names: [], mappings: 'AAAA', ignoreList };
+    const request = makeMultipart({ mapBytes: Buffer.from(JSON.stringify(map)) });
+    const body = await request.arrayBuffer();
+    await assert.rejects(() => validateCloudflareWorkerMultipart(body, request.headers.get('content-type')), /ignoreList/);
+  }
+});
+
 test('rejects malformed VLQ mappings and accepts indexed Source Map v3 sections', async () => {
   const malformed = Buffer.from(JSON.stringify({ version: 3, sources: ['worker.ts'], names: [], mappings: 'A?' }));
   const invalidRequest = makeMultipart({ mapBytes: malformed });
@@ -58,6 +75,10 @@ test('rejects invalid indexed-map offsets, unsorted sections, and malformed nest
     ] },
     { version: 3, sections: [
       { offset: { line: 0, column: 0 }, map: { ...JSON.parse(sourceMap), mappings: 'EAAA' } },
+      { offset: { line: 0, column: 1 }, map: JSON.parse(sourceMap) },
+    ] },
+    { version: 3, sections: [
+      { offset: { line: 0, column: 0 }, map: { ...JSON.parse(sourceMap), mappings: 'EAAA,DAAA' } },
       { offset: { line: 0, column: 1 }, map: JSON.parse(sourceMap) },
     ] },
     { version: 3, sections: [{ offset: { line: 0, column: 0 }, map: { version: 2, sources: [], mappings: '' } }] },

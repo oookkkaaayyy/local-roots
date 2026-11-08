@@ -67,8 +67,8 @@ function validateSourceMapObject(map, label, depth = 0) {
   if (!indexed && (!Array.isArray(map.sources) || typeof map.mappings !== 'string')) {
     fail(`${label} must include a sources array and mappings string`);
   }
-  if (Array.isArray(map.sources) && map.sources.some(source => typeof source !== 'string')) {
-    fail(`${label} sources entries must be strings`);
+  if (Array.isArray(map.sources) && map.sources.some(source => source !== null && typeof source !== 'string')) {
+    fail(`${label} sources entries must be strings or null`);
   }
   if (map.file !== undefined && typeof map.file !== 'string') {
     fail(`${label} file must be a string when present`);
@@ -82,6 +82,10 @@ function validateSourceMapObject(map, label, depth = 0) {
   }
   if (map.names !== undefined && (!Array.isArray(map.names) || map.names.some(name => typeof name !== 'string'))) {
     fail(`${label} names must be an array of strings when present`);
+  }
+  if (map.ignoreList !== undefined && (!Array.isArray(map.ignoreList) ||
+      map.ignoreList.some(index => !Number.isSafeInteger(index) || index < 0))) {
+    fail(`${label} ignoreList must contain non-negative integer source indexes`);
   }
   return validateMappings(map, label);
 }
@@ -140,7 +144,11 @@ function validateMappings(map, label) {
       if (![1, 4, 5].includes(fields.length)) fail(`${label} segments must contain 1, 4, or 5 VLQ fields`);
       generatedColumn += fields[0];
       if (!Number.isSafeInteger(generatedColumn) || generatedColumn < 0) fail(`${label} generated columns must be non-negative safe integers`);
-      lastGeneratedPosition = { line: lineIndex, column: generatedColumn };
+      const generatedPosition = { line: lineIndex, column: generatedColumn };
+      if (!lastGeneratedPosition || generatedPosition.line > lastGeneratedPosition.line ||
+          (generatedPosition.line === lastGeneratedPosition.line && generatedPosition.column > lastGeneratedPosition.column)) {
+        lastGeneratedPosition = generatedPosition;
+      }
       if (fields.length === 1) continue;
       sourceIndex += fields[1];
       originalLine += fields[2];
