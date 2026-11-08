@@ -2,7 +2,7 @@
 // provider requests are made by this suite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion,sanitizeProviderErrors,makeVersionCreateFailureReceipt} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {readFile} from 'node:fs/promises';
 
 const old='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -34,6 +34,28 @@ const response=(result,status=200)=>new Response(JSON.stringify({success:true,er
   {status,headers:{'content-type':'application/json'}});
 const responsePage=(result,total_count,status=200)=>new Response(JSON.stringify({success:true,errors:[],result,result_info:{page:1,per_page:100,total_count}}),
   {status,headers:{'content-type':'application/json'}});
+test('10305 provider rejection details are bounded and redacted in the failure receipt',()=>{
+ const auth='session-secret-value';
+ const errors=sanitizeProviderErrors([
+  {code:10305,message:'Request rejected: invalid metadata; Bearer session-secret-value; service_role_key=private-secret',
+   source:{pointer:'/modules/0/content_base64'},documentation_url:'must-not-be-copied'},
+  ...Array.from({length:7},(_,i)=>({code:20000+i,message:'x'.repeat(700)}))
+ ],{secrets:[auth,'private-secret']});
+ assert.equal(errors.length,5);
+ assert.equal(errors[0].code,10305);
+ assert.match(errors[0].message,/invalid metadata/);
+ assert.doesNotMatch(errors[0].message,/session-secret-value|private-secret/);
+ assert.ok(errors[0].message.length<=500);
+ assert.equal(errors[0].sourcePointer,'/modules/0/content_base64');
+ assert.equal(Object.hasOwn(errors[0],'documentation_url'),false);
+ assert.ok(errors.slice(1).every(item=>item.message.length<=500));
+ const receipt=makeVersionCreateFailureReceipt({httpStatus:400,providerErrors:errors,
+  candidateSha256:'a'.repeat(64),requestSha256:'b'.repeat(64),transactionId:'consumed-stage-a',candidateTag:'hbnf-p0-test'});
+ assert.equal(receipt.outcome,'VERSION_CREATE_ERROR_READBACK_REQUIRED');
+ assert.equal(receipt.providerErrors[0].code,10305);
+ assert.equal(receipt.retry,'PROHIBITED_WITH_THIS_TRANSACTION');
+ assert.equal(receipt.transactionId,'consumed-stage-a');
+});
 test('v348 lineage verifier accepts only the exact helper and Worker-first route patch',()=>{
  const baseline=Buffer.from('var index_default = {\n  fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    return env.ASSETS.fetch(request);\n  },\n};\n');
  const helper='export const ack = true;';

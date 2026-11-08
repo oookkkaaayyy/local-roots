@@ -17,6 +17,41 @@ const P0_V348_ETAG='c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb
 const goodPath=p=>typeof p==='string'&&p.startsWith('/')&&!p.includes('..')&&!p.includes('//')&&!p.includes('\\');
 const fail=(condition,message)=>{if(!condition)throw Error('P0_CLOUDFLARE_'+message);};
 export const sha256=b=>createHash('sha256').update(b).digest('hex');
+function safeProviderText(value,secrets=[]){
+  if(typeof value!=='string')return undefined;
+  let text=value;
+  for(const secret of secrets)if(typeof secret==='string'&&secret.length>0)
+    text=text.split(secret).join('[REDACTED]');
+  return text
+    .replace(/\bBearer\s+[^\s,;]+/gi,'Bearer [REDACTED]')
+    .replace(/\b(access[_-]?token|api[_-]?token|secret|password|service[_-]?role[_-]?key)\s*[:=]\s*["']?[^\s,"'}]+/gi,'$1=[REDACTED]')
+    .slice(0,500);
+}
+export function sanitizeProviderErrors(errors,{secrets=[]}={}){
+  if(!Array.isArray(errors))return [];
+  return errors.slice(0,5).map(item=>{
+    if(!item||typeof item!=='object')return null;
+    const record={};
+    if(Number.isInteger(item.code))record.code=item.code;
+    else if(typeof item.code==='string')record.code=item.code.slice(0,40);
+    const message=safeProviderText(item.message,secrets);
+    if(message!==undefined)record.message=message;
+    const pointer=safeProviderText(item.source?.pointer,secrets);
+    if(pointer!==undefined)record.sourcePointer=pointer.slice(0,200);
+    return Object.keys(record).length?record:null;
+  }).filter(Boolean);
+}
+export function makeVersionCreateFailureReceipt({httpStatus,providerErrors,candidateSha256,
+  requestSha256,transactionId,candidateTag}){
+  return {
+    outcome:'VERSION_CREATE_ERROR_READBACK_REQUIRED',
+    endpoint:'POST /accounts/{account_id}/workers/workers/{worker_id}/versions?deploy=false',
+    httpStatus:Number.isInteger(httpStatus)?httpStatus:null,
+    providerErrors:Array.isArray(providerErrors)?providerErrors.slice(0,5):[],
+    candidateSha256,requestSha256,transactionId,candidateTag,
+    retry:'PROHIBITED_WITH_THIS_TRANSACTION'
+  };
+}
 export const assetHash=(path,bytes)=>sha256(Buffer.from(Buffer.from(bytes).toString('base64')+extname(path).slice(1))).slice(0,32);
 export const inventoryDigest=(paths,digests)=>sha256(Buffer.from(paths.slice().sort()
   .map(p=>`${p}\0${digests.get(p)}\n`).join('')));
@@ -193,9 +228,9 @@ function apiClient({token,accountId,workerName,fetchImpl}){
     if(!response?.ok){
       const error=Error('P0_CLOUDFLARE_HTTP_'+method+'_'+response?.status);
       error.status=response?.status;
-      error.providerErrorCodes=Array.isArray(payload?.errors)
-        ? payload.errors.map(item=>item?.code).filter(code=>Number.isInteger(code))
-        : [];
+      error.providerErrors=sanitizeProviderErrors(payload?.errors,{secrets:[authorization]});
+      error.providerErrorCodes=error.providerErrors.map(item=>item.code)
+        .filter(code=>Number.isInteger(code));
       throw error;
     }
     fail(payload?.success!==false&&(!Array.isArray(payload?.errors)||payload.errors.length===0),'PROVIDER_RESPONSE');
@@ -477,6 +512,11 @@ export async function stageInheritedBetaVersion({
       const result=Object.assign(Error(code),{cause});
       if(Number.isInteger(cause?.status))result.providerStatus=cause.status;
       if(Array.isArray(cause?.providerErrorCodes))result.providerErrorCodes=cause.providerErrorCodes;
+      if(Array.isArray(cause?.providerErrors))result.providerErrors=cause.providerErrors;
+      result.failureReceipt=makeVersionCreateFailureReceipt({
+        httpStatus:cause?.status,providerErrors:cause?.providerErrors,candidateSha256,requestSha256,
+        transactionId:claim.transactionId,candidateTag:version.annotations?.['workers/tag']
+      });
       return result;
     };
     // The create may have committed despite a lost response. Read once by the
