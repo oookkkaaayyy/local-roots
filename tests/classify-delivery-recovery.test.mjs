@@ -134,8 +134,8 @@ test('20: a working label without run ID and start readback is NOT actual execut
 
 test('21: consumer reads an ambiguous target, retries only verified non-application, then resumes', async () => {
   const calls = [];
-  const result = await executeRecovery({ operationState: 'ambiguous', target: 'worker-v12' }, {
-    readback: async () => { calls.push('readback'); return { ok: true, event: { operationState: 'ambiguous', target: 'worker-v12', readbackVerified: true, readbackTargetMatches: true, readbackState: 'not-applied', retrySafe: true, attempts: 0, maxAttempts: 1 } }; },
+  const result = await executeRecovery({ operationState: 'ambiguous', provider: 'cloudflare', target: 'worker-v12', operation: 'worker.upload', standingScope: { authorized: true, provider: 'cloudflare', target: 'worker-v12', operations: ['worker.upload'] } }, {
+    readback: async () => { calls.push('readback'); return { ok: true, event: { operationState: 'ambiguous', provider: 'cloudflare', target: 'worker-v12', operation: 'worker.upload', readbackVerified: true, readbackTargetMatches: true, readbackState: 'not-applied', retrySafe: true, attempts: 0, maxAttempts: 1 } }; },
     retryOperation: async () => { calls.push('retry'); return { ok: true, event: { operationState: 'rejected', failureClass: 'permission', requiredOperation: 'worker.upload', deniedOperation: 'billing.read' } }; },
     continueTask: async () => { calls.push('resume'); return { ok: true, nextAction: 'continue-upload-workflow' }; },
   });
@@ -154,12 +154,24 @@ test('consumer fails closed when readback adapter cannot establish current state
 
 test('consumer rebuilds, verifies, retries a changed artifact, then resumes', async () => {
   const calls = [];
-  const result = await executeRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'old', candidateArtifactDigest: 'old', attempts: 0, maxAttempts: 2 }, {
-    rebuildArtifact: async () => { calls.push('rebuild'); return { ok: true, event: { operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'old', candidateArtifactDigest: 'new', attempts: 0, maxAttempts: 2 } }; },
-    verifyArtifact: async () => { calls.push('verify'); return { ok: true, event: { operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'old', candidateArtifactDigest: 'new', correctedArtifactVerified: true, retrySafe: true, attempts: 0, maxAttempts: 2 } }; },
+  const result = await executeRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', provider: 'cloudflare', target: 'worker-v12', operation: 'worker.upload', standingScope: { authorized: true, provider: 'cloudflare', target: 'worker-v12', operations: ['worker.upload'] }, priorArtifactDigest: 'old', candidateArtifactDigest: 'old', attempts: 0, maxAttempts: 2 }, {
+    rebuildArtifact: async () => { calls.push('rebuild'); return { ok: true, event: { operationState: 'rejected', failureClass: 'artifact-validation', provider: 'cloudflare', target: 'worker-v12', operation: 'worker.upload', priorArtifactDigest: 'old', candidateArtifactDigest: 'new', attempts: 0, maxAttempts: 2 } }; },
+    verifyArtifact: async () => { calls.push('verify'); return { ok: true, event: { operationState: 'rejected', failureClass: 'artifact-validation', provider: 'cloudflare', target: 'worker-v12', operation: 'worker.upload', priorArtifactDigest: 'old', candidateArtifactDigest: 'new', correctedArtifactVerified: true, retrySafe: true, attempts: 0, maxAttempts: 2 } }; },
     retryOperation: async () => { calls.push('retry'); return { ok: true, event: { operationState: 'rejected', failureClass: 'permission', requiredOperation: 'worker.upload', deniedOperation: 'billing.read' } }; },
     continueTask: async () => { calls.push('resume'); return { ok: true }; },
   });
   assert.deepEqual(calls, ['rebuild', 'verify', 'retry', 'resume']);
   assert.equal(result.resumed, true);
+});
+
+test('recovery retry requires exact explicit standing authorization', async () => {
+  const calls = [];
+  const scope = { authorized: false, provider: 'cloudflare', target: 'worker-v12', operations: ['worker.upload'] };
+  const result = await executeRecovery({ operationState: 'ambiguous', provider: 'cloudflare', target: 'worker-v12', operation: 'worker.upload', standingScope: scope }, {
+    readback: async () => { calls.push('readback'); return { ok: true, event: { operationState: 'ambiguous', provider: 'cloudflare', target: 'worker-v12', operation: 'worker.upload', readbackVerified: true, readbackTargetMatches: true, readbackState: 'not-applied', retrySafe: true, attempts: 0, maxAttempts: 1 } }; },
+    retryOperation: async () => { calls.push('retry'); return { ok: true, event: {} }; },
+  });
+  assert.deepEqual(calls, ['readback']);
+  assert.equal(result.action, 'blocked-authorization');
+  assert.equal(result.resumed, false);
 });
