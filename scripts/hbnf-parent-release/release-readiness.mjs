@@ -1,8 +1,8 @@
 // Scoring release preflight. Read-only; never performs provider actions.
 import {createHash} from 'node:crypto';
 export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
-export const MANIFEST_SHA256='914972b59404acf33605c1495ecdf41b588178a2b88967c0f07b7793f3e646ec';
-export const MANIFEST_REVISION=25;
+export const MANIFEST_SHA256='c72fc6591c124f8bb34d2f6be04f168b594885717c35a8432d477a69f4e9d8c2';
+export const MANIFEST_REVISION=26;
 export const BOUND_SOURCE_HEAD='743db719eeb5c7a1cc175cc6431ed7f5a1c5ce74';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 
