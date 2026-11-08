@@ -21,6 +21,26 @@ export const assetHash=(path,bytes)=>sha256(Buffer.from(Buffer.from(bytes).toStr
 export const inventoryDigest=(paths,digests)=>sha256(Buffer.from(paths.slice().sort()
   .map(p=>`${p}\0${digests.get(p)}\n`).join('')));
 
+const glowHelperDeclaration=/var glowSaveAckSource = ("(?:\\.|[^"\\])*");\n(?=var index_default = \{)/;
+const glowHelperRoute=`    if (path === "/glow-save-sync.mjs") {
+      if (request.method !== "GET" && request.method !== "HEAD") return errorResponse(405, "Method not allowed.", { "Allow": "GET, HEAD" });
+      return new Response(request.method === "HEAD" ? null : glowSaveAckSource, { headers: { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff" } });
+    }
+`;
+export function verifyGlowHelperModuleDelta(baselineBytes,candidateBytes){
+  const baseline=Buffer.from(baselineBytes||[]),candidate=Buffer.from(candidateBytes||[]);
+  const source=candidate.toString('utf8'),matches=[...source.matchAll(new RegExp(glowHelperDeclaration.source,'g'))];
+  fail(matches.length===1,'V348_HELPER_DECLARATION_COUNT');
+  let helper;
+  try{helper=JSON.parse(matches[0][1]);}catch{fail(false,'V348_HELPER_DECLARATION_FORMAT');}
+  const routeCount=source.split(glowHelperRoute).length-1;
+  fail(routeCount===1,'V348_HELPER_ROUTE_PATCH');
+  const stripped=source.replace(matches[0][0],'').replace(glowHelperRoute,'');
+  fail(Buffer.compare(Buffer.from(stripped),baseline)===0,'V348_BASELINE_BYTES_CHANGED');
+  return {baselineSha256:sha256(baseline),candidateSha256:sha256(candidate),
+    helperSha256:sha256(Buffer.from(helper)),baselineBytes:baseline.length,candidateBytes:candidate.length};
+}
+
 function requireInventoryWitness(witness,{workerName,baselineVersionId,installedPaths,installedDigests}){
   fail(witness&&witness.complete===true&&witness.workerName===workerName&&
     witness.versionId===baselineVersionId&&witness.readOnly===true,'COMPLETE_ASSETS_NOT_PROVEN');
@@ -348,6 +368,18 @@ export async function stageInheritedBetaVersion({
     'INHERITED_STAGE_A_PREFLIGHT_NOT_BOUND');
   let candidate;
   try{candidate=JSON.parse(raw.toString('utf8'));}catch{fail(false,'INHERITED_CANDIDATE_JSON');}
+  const lineage=candidate?.source?.v348ExecutableLineage;
+  const baselineModule=Buffer.from(lineage?.baselineModuleContentBase64||'','base64');
+  const candidateMainModule=Buffer.from(candidate?.request?.modules?.find(m=>m.name==='index.js')?.content_base64||'','base64');
+  fail(lineage?.versionId===baselineVersionId&&lineage?.mainModule==='index.js'&&
+    lineage?.baselineModuleSha256==='b6474c02325c73fe269170a4060e7fd4636bd0f38cb7b631e3c7ab2ac31ad77e'&&
+    lineage?.baselineModuleBytes===72690&&sha256(baselineModule)===lineage.baselineModuleSha256&&
+    lineage?.candidateModuleSha256==='e9f0611d5ba7ca72db4a0792be1178fab80a1b399734e403664105ce17a0ef69'&&
+    lineage?.candidateModuleBytes===candidateMainModule.length&&
+    lineage?.sourceMapSha256==='1af1fb53e2821d8f0dd6a586fd3e3a7c483be465eb3393d0e07b349165a484aa'&&
+    verifyGlowHelperModuleDelta(baselineModule,candidateMainModule).helperSha256===
+      '674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
+    'INHERITED_V348_EXECUTABLE_LINEAGE');
   const operation=candidate?.operation,request=candidate?.request,version=request;
   const requestBytes=Buffer.from(JSON.stringify(request||{}));
   fail(operation?.method==='POST'&&

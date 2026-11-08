@@ -6,7 +6,7 @@ import {
 } from '../scripts/hbnf-parent-release/release-readiness.mjs';
 const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const betaCandidate='1KeHOM7HKhRAcMznpQCoSFKN5RD599w1R';
-const betaCandidateSha='cee4382a1f4f52d31cde0739035020ddc4d3a7be1905877d342b21e0d2c16d0e';
+const betaCandidateSha='4f5f8c0bd7f7e3fb1541a7bf3e229cf726e86331f4c28a71ddb860d16b8f7019';
 const betaRequestSha='1d693d88a1b79ffa94cecaa4d896baa104fb0c9e676ddacdd0d4e61917247884';
 const manifest={
  manifestRevision:MANIFEST_REVISION,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
@@ -18,9 +18,10 @@ const manifest={
   stageAStatus:'DOCUMENTED_NO_RUNTIME_REQUEST_CHARGE_EXPECTED; Free plan observation recorded; version quota field not exposed; v348 rollback window verified; immediate prechange readback and one-use claim remain required.'
  },
   liveGlowHtmlIntegrationReadback:{httpStatus:200,url:'https://hbnightflyers.com/glow.html',bytes:208937,sha256:'dd1a6451d0a1cc020dfd26f24fa0b491fd258baa4918f070f9c82557d71681c9',imports:'./glow-save-sync.mjs',instantiates:'createGlowSaveCoordinator({storage:localStorage,onStatus:setGlowSaveStatus})',casRpc:'hbnf_save_league_state_v1'},
+  v348ExecutableLineage:{versionId:workerVersion,mainModule:'index.js',providerReadbackEndpoint:'GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps',baselineModuleSha256:'b6474c02325c73fe269170a4060e7fd4636bd0f38cb7b631e3c7ab2ac31ad77e',baselineModuleBytes:72690,candidateModuleSha256:'e9f0611d5ba7ca72db4a0792be1178fab80a1b399734e403664105ce17a0ef69',candidateModuleBytes:79392,sourceMapSha256:'1af1fb53e2821d8f0dd6a586fd3e3a7c483be465eb3393d0e07b349165a484aa',deltaDisposition:'EXACT_BASELINE_BYTES_AFTER_STRIPPING_ONLY_GLOW_SAVE_HELPER_AND_GET_HEAD_ROUTE',independentByteComparison:true},
   stageAExecutionAttempts:[
    {status:'POST_SENT_AMBIGUOUS_NO_VERSION_FOUND',providerVersionCreatePostSent:true,candidateSha256:'1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e',requestSha256:'36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11',providerOutcome:{independentReadback:{versionListHttp:200,totalCount:349,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',candidateTagMatches:0,activeVersionId:workerVersion,activePercentage:100}}},
-   {status:'PREFLIGHT_READY_FOR_STAGE_A',providerVersionCreatePostSent:false,oneTimeClaimCreated:false,sourceHead:BOUND_SOURCE_HEAD,candidateFileId:betaCandidate,candidateBytes:276427,candidateSha256:betaCandidateSha,requestSha256:betaRequestSha,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',versionCount:349}
+   {status:'PREFLIGHT_READY_FOR_STAGE_A',providerVersionCreatePostSent:false,oneTimeClaimCreated:false,sourceHead:BOUND_SOURCE_HEAD,candidateFileId:betaCandidate,candidateBytes:374547,candidateSha256:betaCandidateSha,requestSha256:betaRequestSha,latestVersionId:'049a35e1-64b5-4e76-9378-ca4ffa0a7d47',versionCount:349}
   ]},
  scopedReleaseAuthority:{ownerScopeDecision:{
   source:'Explicit standing Stage A authorization in existing Scoring P0 execution thread',
@@ -30,7 +31,7 @@ const manifest={
   parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:14,
   ownerDecisionDoesNotSatisfyPreflightOrProductionAdmission:true,
   stageA:{candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,
-   candidateBytes:276427,requestSha256:betaRequestSha,requestBytes:269018,
+   candidateBytes:374547,requestSha256:betaRequestSha,requestBytes:269018,
    sourceHead:BOUND_SOURCE_HEAD,
    requestEnvelope:'VersionCreateRequest (top-level JSON object)',
    sourceIdentityReadbackRequired:true,
@@ -59,7 +60,7 @@ const stage={
   format:'cloudflare-beta-worker-version-json',sha256:betaRequestSha,bytes:269018,
   requestEnvelope:'VersionCreateRequest (top-level JSON object)',
   sourceReadbackEndpoint:'GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps',
-  candidateArtifactSha256:betaCandidateSha,candidateArtifactBytes:276427,
+  candidateArtifactSha256:betaCandidateSha,candidateArtifactBytes:374547,
   privateDriveFileId:betaCandidate,
   downloadBackVerified:true,moduleClosureVerified:true,sourceParityVerified:true,
   glowHelperSha256:'674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
@@ -92,9 +93,9 @@ const checked=(overrides={})=>checkReleaseReadiness({
  provider:clone(provider),adapter:clone(adapter),synthetic:true,
  ...overrides
 });
-test('revision 26 source digest is pinned and remains non-admitting',()=>{
- assert.equal(MANIFEST_SHA256,'c72fc6591c124f8bb34d2f6be04f168b594885717c35a8432d477a69f4e9d8c2');
- assert.equal(MANIFEST_REVISION,26);
+test('revision 27 source digest is pinned and remains non-admitting',()=>{
+ assert.equal(MANIFEST_SHA256,'eb2c9949553190285d5f90b8ad0c2fa26073b184a1a1711a9d82688a92a3e843');
+ assert.equal(MANIFEST_REVISION,27);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
  assert.equal(result.canMutate,false);
@@ -111,6 +112,14 @@ test('Stage A requires the live Glow import and CAS dispatch evidence',()=>{
  x.cloudflareAssetRetentionAmendment.liveGlowHtmlIntegrationReadback.imports='./old-save-helper.mjs';
  const result=checked({manifest:x});
  assert.ok(result.errors.includes('SERVED_GLOW_IMPORT_AND_CAS_NOT_VERIFIED'));
+ assert.equal(manifest.status,'PENDING_NOT_ADMITTED');
+ assert.equal(manifest.productionMutationAuthorized,false);
+});
+test('Stage A rejects candidate modules without exact v348 byte lineage',()=>{
+ const x=clone(manifest);
+ x.cloudflareAssetRetentionAmendment.v348ExecutableLineage.baselineModuleSha256='f'.repeat(64);
+ const result=checked({manifest:x});
+ assert.ok(result.errors.includes('V348_EXECUTABLE_MODULE_LINEAGE_UNVERIFIED'));
  assert.equal(manifest.status,'PENDING_NOT_ADMITTED');
  assert.equal(manifest.productionMutationAuthorized,false);
 });

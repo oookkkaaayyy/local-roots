@@ -2,7 +2,7 @@
 // provider requests are made by this suite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {readFile} from 'node:fs/promises';
 
 const old='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -12,7 +12,7 @@ const workerId='eeac337b989f4378bd38a555833f5dbb';
 const accountId='e3bc6b78f1104fa0c2a01245084594cf';
 const betaCandidateSha='1b391b7db096a81cf75ed61b3ff074d034987f512c296fc8c6f4bdb7ce5f845e';
 const betaRequestSha='36017fbb2191ae9c6e46b4b08f5cdf72442222a1f59beaa6194d22851c3d6f11';
-const inheritedSourceHead='ad139e2f3ccaff938a17f0b59a6e667bc3851d32';
+const inheritedSourceHead='743db719eeb5c7a1cc175cc6431ed7f5a1c5ce74';
 const assets=new Map([
   ['/glow-save-sync.mjs',Buffer.from('new valid one-file save ACK')],
   ...Array.from({length:8},(_,i)=>[`/cart-${i+1}.html`,Buffer.from(`unchanged Cart asset ${i+1}`)])
@@ -34,6 +34,17 @@ const response=(result,status=200)=>new Response(JSON.stringify({success:true,er
   {status,headers:{'content-type':'application/json'}});
 const responsePage=(result,total_count,status=200)=>new Response(JSON.stringify({success:true,errors:[],result,result_info:{page:1,per_page:100,total_count}}),
   {status,headers:{'content-type':'application/json'}});
+test('v348 lineage verifier accepts only the exact helper and Worker-first route patch',()=>{
+ const baseline=Buffer.from('var index_default = {\n  fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    return env.ASSETS.fetch(request);\n  },\n};\n');
+ const helper='export const ack = true;';
+ const declaration=`var glowSaveAckSource = ${JSON.stringify(helper)};\n`;
+ const route='    if (path === "/glow-save-sync.mjs") {\n      if (request.method !== "GET" && request.method !== "HEAD") return errorResponse(405, "Method not allowed.", { "Allow": "GET, HEAD" });\n      return new Response(request.method === "HEAD" ? null : glowSaveAckSource, { headers: { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff" } });\n    }\n';
+ const candidate=Buffer.from(baseline.toString().replace('var index_default = {',declaration+'var index_default = {').replace('    const path = new URL(request.url).pathname;\n','    const path = new URL(request.url).pathname;\n'+route));
+ assert.deepEqual(verifyGlowHelperModuleDelta(baseline,candidate),{
+  baselineSha256:sha256(baseline),candidateSha256:sha256(candidate),helperSha256:sha256(Buffer.from(helper)),
+  baselineBytes:baseline.length,candidateBytes:candidate.length});
+ assert.throws(()=>verifyGlowHelperModuleDelta(baseline,Buffer.from(candidate.toString().replace('return env.ASSETS.fetch(request);','env.ASSETS.fetch(request); return new Response("extra");'))),/V348_BASELINE_BYTES_CHANGED/);
+});
 const deploymentsWithHistory={deployments:[
  {id:'active-deployment',versions:[{version_id:old,percentage:100}]},
  ...Array.from({length:9},(_,i)=>({id:`history-${i+1}`,versions:[{version_id:old,percentage:100}]}))

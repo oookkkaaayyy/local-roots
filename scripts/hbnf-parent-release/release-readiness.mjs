@@ -1,8 +1,8 @@
 // Scoring release preflight. Read-only; never performs provider actions.
 import {createHash} from 'node:crypto';
 export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
-export const MANIFEST_SHA256='c72fc6591c124f8bb34d2f6be04f168b594885717c35a8432d477a69f4e9d8c2';
-export const MANIFEST_REVISION=26;
+export const MANIFEST_SHA256='eb2c9949553190285d5f90b8ad0c2fa26073b184a1a1711a9d82688a92a3e843';
+export const MANIFEST_REVISION=27;
 export const BOUND_SOURCE_HEAD='743db719eeb5c7a1cc175cc6431ed7f5a1c5ce74';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 
@@ -31,8 +31,8 @@ const V348='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const ETAG='c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25';
 const REVIEW_ZIP='1ZD0it8FgFpgvmlHKUa2byIqeK81bq1_q';
 const BETA_CANDIDATE='1KeHOM7HKhRAcMznpQCoSFKN5RD599w1R';
-const BETA_CANDIDATE_SHA256='cee4382a1f4f52d31cde0739035020ddc4d3a7be1905877d342b21e0d2c16d0e';
-const BETA_CANDIDATE_BYTES=276427;
+const BETA_CANDIDATE_SHA256='4f5f8c0bd7f7e3fb1541a7bf3e229cf726e86331f4c28a71ddb860d16b8f7019';
+const BETA_CANDIDATE_BYTES=374547;
 const BETA_REQUEST_SHA256='1d693d88a1b79ffa94cecaa4d896baa104fb0c9e676ddacdd0d4e61917247884';
 const BETA_REQUEST_BYTES=269018;
 const HEX=/^[a-f0-9]{64}$/;
@@ -141,6 +141,17 @@ export function checkReleaseReadiness({
       servedGlow?.instantiates!=='createGlowSaveCoordinator({storage:localStorage,onStatus:setGlowSaveStatus})'||
       servedGlow?.casRpc!=='hbnf_save_league_state_v1')
      fail('SERVED_GLOW_IMPORT_AND_CAS_NOT_VERIFIED');
+   const lineage=manifest?.cloudflareAssetRetentionAmendment?.v348ExecutableLineage;
+   if(lineage?.versionId!==V348||lineage?.mainModule!=='index.js'||
+      lineage?.providerReadbackEndpoint!=='GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps'||
+      lineage?.baselineModuleSha256!=='b6474c02325c73fe269170a4060e7fd4636bd0f38cb7b631e3c7ab2ac31ad77e'||
+      lineage?.baselineModuleBytes!==72690||
+      lineage?.candidateModuleSha256!=='e9f0611d5ba7ca72db4a0792be1178fab80a1b399734e403664105ce17a0ef69'||
+      lineage?.candidateModuleBytes!==79392||
+      lineage?.sourceMapSha256!=='1af1fb53e2821d8f0dd6a586fd3e3a7c483be465eb3393d0e07b349165a484aa'||
+      lineage?.deltaDisposition!=='EXACT_BASELINE_BYTES_AFTER_STRIPPING_ONLY_GLOW_SAVE_HELPER_AND_GET_HEAD_ROUTE'||
+      lineage?.independentByteComparison!==true)
+     fail('V348_EXECUTABLE_MODULE_LINEAGE_UNVERIFIED');
    if(stage.otherTargetReadbacks?.length!==4||
       stage.otherTargetReadbacks.some(x=>!validHex(x.sha256)||x.fresh!==true)||
       !['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score'].every(id=>
