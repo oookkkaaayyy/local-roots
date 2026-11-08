@@ -144,7 +144,11 @@ function validateMappings(map, label) {
       if (![1, 4, 5].includes(fields.length)) fail(`${label} segments must contain 1, 4, or 5 VLQ fields`);
       generatedColumn += fields[0];
       if (!Number.isSafeInteger(generatedColumn) || generatedColumn < 0) fail(`${label} generated columns must be non-negative safe integers`);
-      lastGeneratedPosition = { line: lineIndex, column: generatedColumn };
+      const generatedPosition = { line: lineIndex, column: generatedColumn };
+      if (!lastGeneratedPosition || generatedPosition.line > lastGeneratedPosition.line ||
+          (generatedPosition.line === lastGeneratedPosition.line && generatedPosition.column > lastGeneratedPosition.column)) {
+        lastGeneratedPosition = generatedPosition;
+      }
       if (fields.length === 1) continue;
       sourceIndex += fields[1];
       originalLine += fields[2];

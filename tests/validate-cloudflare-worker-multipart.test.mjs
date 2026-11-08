@@ -77,6 +77,10 @@ test('rejects invalid indexed-map offsets, unsorted sections, and malformed nest
       { offset: { line: 0, column: 0 }, map: { ...JSON.parse(sourceMap), mappings: 'EAAA' } },
       { offset: { line: 0, column: 1 }, map: JSON.parse(sourceMap) },
     ] },
+    { version: 3, sections: [
+      { offset: { line: 0, column: 0 }, map: { ...JSON.parse(sourceMap), mappings: 'EAAA,DAAA' } },
+      { offset: { line: 0, column: 1 }, map: JSON.parse(sourceMap) },
+    ] },
     { version: 3, sections: [{ offset: { line: 0, column: 0 }, map: { version: 2, sources: [], mappings: '' } }] },
   ];
   for (const map of invalidMaps) {
