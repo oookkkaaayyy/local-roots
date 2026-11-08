@@ -1,8 +1,8 @@
 // Scoring release preflight. Read-only; never performs provider actions.
 import {createHash} from 'node:crypto';
 export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
-export const MANIFEST_SHA256='62ed97720d0f510ee5e84aacee02b2ec2fecc74b23d607477ad3024b7d8e046f';
-export const MANIFEST_REVISION=23;
+export const MANIFEST_SHA256='8e04ac87ff65946cf71651b3452377fa104e08ae1d74796110d3ee97223563da';
+export const MANIFEST_REVISION=24;
 export const BOUND_SOURCE_HEAD='ad139e2f3ccaff938a17f0b59a6e667bc3851d32';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 
@@ -117,6 +117,8 @@ export function checkReleaseReadiness({
       child?.stageA?.requestSha256!==BETA_REQUEST_SHA256||
       child?.stageA?.requestBytes!==BETA_REQUEST_BYTES||
       child?.stageA?.requestEnvelope!=='VersionCreateRequest (top-level JSON object)'||
+      child?.stageA?.sourceIdentityReadbackRequired!==true||
+      child?.stageA?.sourceReadbackEndpoint!=='GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps'||
       child?.stageA?.noAssetUpload!==true||
       child?.stageA?.assetStrategy!=='exact-v348-inherited-binding'||
       child?.stageA?.binding?.name!=='ASSETS'||child?.stageA?.binding?.type!=='inherit'||
@@ -143,6 +145,7 @@ export function checkReleaseReadiness({
     e.candidateArtifactBytes!==BETA_CANDIDATE_BYTES||
     e.privateDriveFileId!==BETA_CANDIDATE||!trueValue(e.downloadBackVerified)||
     e.requestEnvelope!=='VersionCreateRequest (top-level JSON object)'||
+    e.sourceReadbackEndpoint!=='GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps'||
     !trueValue(e.moduleClosureVerified)||!trueValue(e.sourceParityVerified)||
     e.privateDriveFileId===REVIEW_ZIP)
    fail('BETA_JSON_CANDIDATE_NOT_BYTE_BOUND');
@@ -174,6 +177,7 @@ export function checkReleaseReadiness({
     !trueValue(adapter?.authenticationVerified)||
     !trueValue(adapter?.recoveryDownloadBackVerified)||
     !trueValue(adapter?.oneTimeClaimVerified)||
+    !trueValue(adapter?.moduleReadbackQualified)||
     !trueValue(adapter?.twoPhaseAdmissionVerified)||
     !trueValue(adapter?.immediatePrechangeReadbackVerified)||
     !trueValue(adapter?.oldClientAndReopenAcceptanceReady)||

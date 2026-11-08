@@ -31,6 +31,8 @@ const manifest={
   stageA:{candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,
    candidateBytes:274377,requestSha256:betaRequestSha,requestBytes:269018,
    requestEnvelope:'VersionCreateRequest (top-level JSON object)',
+   sourceIdentityReadbackRequired:true,
+   sourceReadbackEndpoint:'GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps',
    noAssetUpload:true,assetStrategy:'exact-v348-inherited-binding',
    binding:{name:'ASSETS',type:'inherit',version_id:workerVersion},
    workerFirstPaths:['/api/*','/internal/*','/glow-save-sync.mjs'],
@@ -54,6 +56,7 @@ const stage={
  executable:{
   format:'cloudflare-beta-worker-version-json',sha256:betaRequestSha,bytes:269018,
   requestEnvelope:'VersionCreateRequest (top-level JSON object)',
+  sourceReadbackEndpoint:'GET /accounts/{account_id}/workers/workers/{worker_id}/versions/{version_id}?include=modules,sourcemaps',
   candidateArtifactSha256:betaCandidateSha,candidateArtifactBytes:274377,
   privateDriveFileId:betaCandidate,
   downloadBackVerified:true,moduleClosureVerified:true,sourceParityVerified:true,
@@ -76,7 +79,7 @@ const adapter={
  upload:'cloudflare-beta-version-json',stageADeploy:'deploy=false',deploy:'percentage-100',
  restore:'retained-v348-percentage-100',nonproductionApplyRestoreReadbackPassed:true,
  authenticationVerified:true,recoveryDownloadBackVerified:true,
- oneTimeClaimVerified:true,twoPhaseAdmissionVerified:true,
+ oneTimeClaimVerified:true,twoPhaseAdmissionVerified:true,moduleReadbackQualified:true,
  immediatePrechangeReadbackVerified:true,
  oldClientAndReopenAcceptanceReady:true,sameManifestCloseoutReady:true
 };
@@ -87,9 +90,9 @@ const checked=(overrides={})=>checkReleaseReadiness({
  provider:clone(provider),adapter:clone(adapter),synthetic:true,
  ...overrides
 });
-test('revision 23 source digest is pinned and remains non-admitting',()=>{
- assert.equal(MANIFEST_SHA256,'62ed97720d0f510ee5e84aacee02b2ec2fecc74b23d607477ad3024b7d8e046f');
- assert.equal(MANIFEST_REVISION,23);
+test('revision 24 source digest is pinned and remains non-admitting',()=>{
+ assert.equal(MANIFEST_SHA256,'8e04ac87ff65946cf71651b3452377fa104e08ae1d74796110d3ee97223563da');
+ assert.equal(MANIFEST_REVISION,24);
  const result=checked();
  assert.equal(result.status,'SYNTHETIC_ROUTE_TEST_ONLY');
  assert.equal(result.canMutate,false);
@@ -120,6 +123,7 @@ test('cloud-only is subordinate and requires exact Beta JSON and v348 asset line
   s=>{s.executable.assetInventoryDisclosure='EXHAUSTIVE';},
   s=>{s.executable.sha256=hex;},
   s=>{s.executable.privateDriveFileId='wrong-candidate';},
+  s=>{s.executable.sourceReadbackEndpoint='wrong-endpoint';},
   s=>{s.executable.workerFirstPaths=['/api/*','/internal/*'];},
   s=>{s.executable.moduleClosureVerified=false;},
   s=>{s.executable.glowHelperSha256=hex;}
