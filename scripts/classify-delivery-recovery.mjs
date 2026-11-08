@@ -10,7 +10,7 @@ function nonEmpty(value) {
  * This is a decision helper; callers must enforce the returned denial before
  * dispatch because this module cannot intercept platform tool calls.
  */
-export function assessUsageBudget(authorization, request, consumed = {}) {
+export function assessUsageBudget(authorization, request, consumed) {
   if (!authorization || authorization.explicitlyAuthorized !== true ||
       !nonEmpty(authorization.taskId) || authorization.taskId !== request?.taskId) {
     return { allowed: false, reason: 'delegation requires explicit authorization for this exact task' };
@@ -18,8 +18,12 @@ export function assessUsageBudget(authorization, request, consumed = {}) {
   if (authorization.model !== 'luna-light' || authorization.effort !== 'low') {
     return { allowed: false, reason: 'delegated work must use the authorized Luna Light low-effort profile' };
   }
-  if (authorization.allowNestedDelegation !== false || request?.nestedDelegation === true) {
+  if (authorization.allowNestedDelegation !== false || request?.nestedDelegation !== false) {
     return { allowed: false, reason: 'nested delegation is not authorized' };
+  }
+  if (consumed?.observedBy !== 'independent-budget-readback' ||
+      !nonEmpty(consumed.sourceRef) || !nonEmpty(consumed.evidenceRef)) {
+    return { allowed: false, reason: 'an independently read-back usage ledger is required before dispatch' };
   }
   if (!Number.isSafeInteger(authorization.maxWorkers) || authorization.maxWorkers > 1) {
     return { allowed: false, reason: 'this workflow permits at most one explicitly authorized worker per task' };
@@ -34,7 +38,7 @@ export function assessUsageBudget(authorization, request, consumed = {}) {
   for (const dimension of dimensions) {
     const cap = authorization[`max${dimension[0].toUpperCase()}${dimension.slice(1)}`];
     const planned = request?.[dimension];
-    const used = consumed?.[dimension] ?? 0;
+    const used = consumed[dimension];
     if (!Number.isSafeInteger(cap) || cap < 0 ||
         !Number.isSafeInteger(planned) || planned < 0 ||
         !Number.isSafeInteger(used) || used < 0) {

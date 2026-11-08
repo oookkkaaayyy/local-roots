@@ -7,26 +7,36 @@ test('delegation defaults to denied and broad task authorization is not a usage 
   assert.equal(assessUsageBudget({ explicitlyAuthorized: true, taskId: 'task-a' }, { taskId: 'task-a', workers: 1, toolCalls: 1, elapsedMs: 1000, retries: 0 }).allowed, false);
 });
 
+const zeroUsageReceipt = { workers: 0, toolCalls: 0, elapsedMs: 0, retries: 0, observedBy: 'independent-budget-readback', sourceRef: 'task-ledger', evidenceRef: 'readback-1' };
+
+test('delegation fails closed when no independent usage ledger is supplied', () => {
+  const auth = { explicitlyAuthorized: true, taskId: 'task-a', model: 'luna-light', effort: 'low', allowNestedDelegation: false, maxWorkers: 1, maxToolCalls: 4, maxElapsedMs: 60000, maxRetries: 0 };
+  const request = { taskId: 'task-a', workers: 1, toolCalls: 2, elapsedMs: 30000, retries: 0, nestedDelegation: false };
+  assert.equal(assessUsageBudget(auth, request).allowed, false);
+  assert.equal(assessUsageBudget(auth, request, { ...zeroUsageReceipt, evidenceRef: '' }).allowed, false);
+  assert.equal(assessUsageBudget(auth, { ...request, nestedDelegation: undefined }, zeroUsageReceipt).allowed, false);
+});
+
 test('delegation needs exact task, Luna Light low effort, and bounded non-nested limits', () => {
   const auth = { explicitlyAuthorized: true, taskId: 'task-a', model: 'luna-light', effort: 'low', allowNestedDelegation: false, maxWorkers: 1, maxToolCalls: 4, maxElapsedMs: 60000, maxRetries: 0 };
   const request = { taskId: 'task-a', workers: 1, toolCalls: 2, elapsedMs: 30000, retries: 0, nestedDelegation: false };
-  assert.equal(assessUsageBudget(auth, request).allowed, true);
-  assert.equal(assessUsageBudget(auth, { ...request, taskId: 'task-b' }).allowed, false);
-  assert.equal(assessUsageBudget({ ...auth, model: 'other' }, request).allowed, false);
-  assert.equal(assessUsageBudget({ ...auth, maxWorkers: 2 }, request).allowed, false);
-  assert.equal(assessUsageBudget({ ...auth, maxToolCalls: 11 }, request).allowed, false);
-  assert.equal(assessUsageBudget({ ...auth, maxElapsedMs: 600001 }, request).allowed, false);
-  assert.equal(assessUsageBudget({ ...auth, maxRetries: 2 }, request).allowed, false);
-  assert.equal(assessUsageBudget(auth, { ...request, nestedDelegation: true }).allowed, false);
+  assert.equal(assessUsageBudget(auth, request, zeroUsageReceipt).allowed, true);
+  assert.equal(assessUsageBudget(auth, { ...request, taskId: 'task-b' }, zeroUsageReceipt).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, model: 'other' }, request, zeroUsageReceipt).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, maxWorkers: 2 }, request, zeroUsageReceipt).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, maxToolCalls: 11 }, request, zeroUsageReceipt).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, maxElapsedMs: 600001 }, request, zeroUsageReceipt).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, maxRetries: 2 }, request, zeroUsageReceipt).allowed, false);
+  assert.equal(assessUsageBudget(auth, { ...request, nestedDelegation: true }, zeroUsageReceipt).allowed, false);
 });
 
 test('delegation is refused when any planned or consumed usage would exceed its cap', () => {
   const auth = { explicitlyAuthorized: true, taskId: 'task-a', model: 'luna-light', effort: 'low', allowNestedDelegation: false, maxWorkers: 1, maxToolCalls: 4, maxElapsedMs: 60000, maxRetries: 1 };
-  const request = { taskId: 'task-a', workers: 1, toolCalls: 2, elapsedMs: 30000, retries: 0 };
-  assert.equal(assessUsageBudget(auth, request, { toolCalls: 3 }).dimension, 'toolCalls');
-  assert.equal(assessUsageBudget(auth, { ...request, workers: 2 }).dimension, 'workers');
-  assert.equal(assessUsageBudget(auth, { ...request, elapsedMs: 60001 }).dimension, 'elapsedMs');
-  assert.equal(assessUsageBudget(auth, { ...request, retries: 2 }).dimension, 'retries');
+  const request = { taskId: 'task-a', workers: 1, toolCalls: 2, elapsedMs: 30000, retries: 0, nestedDelegation: false };
+  assert.equal(assessUsageBudget(auth, request, { ...zeroUsageReceipt, toolCalls: 3 }).dimension, 'toolCalls');
+  assert.equal(assessUsageBudget(auth, { ...request, workers: 2 }, zeroUsageReceipt).dimension, 'workers');
+  assert.equal(assessUsageBudget(auth, { ...request, elapsedMs: 60001 }, zeroUsageReceipt).dimension, 'elapsedMs');
+  assert.equal(assessUsageBudget(auth, { ...request, retries: 2 }, zeroUsageReceipt).dimension, 'retries');
 });
 
 test('2: rejected upload requires a changed artifact and bounded verification before retry', () => {
