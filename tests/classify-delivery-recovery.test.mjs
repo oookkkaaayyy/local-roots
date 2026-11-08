@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assessDeliveryEvidence, authorizeOperation, classifyRecovery, executeRecovery, resumeAfterContextLoss, routeReadyWork } from '../scripts/classify-delivery-recovery.mjs';
+import { assessCoordinatorContinuation, assessDeliveryEvidence, authorizeOperation, classifyRecovery, executeRecovery, resumeAfterContextLoss, routeReadyWork } from '../scripts/classify-delivery-recovery.mjs';
 
 test('1: raw and base64 Source Map v3 upload checks remain explicit', async () => {
   const { validateCloudflareWorkerMultipart } = await import('../scripts/validate-cloudflare-worker-multipart.mjs');
@@ -174,4 +174,42 @@ test('recovery retry requires exact explicit standing authorization', async () =
   assert.deepEqual(calls, ['readback']);
   assert.equal(result.action, 'blocked-authorization');
   assert.equal(result.resumed, false);
+});
+
+test('coordinator cannot exit after a bounded wait while a worker is executing', () => {
+  const active = { id: 'controls', target: 'controls', status: 'inProgress',
+    receivingWorker: { ...observedRun, status: 'inProgress' } };
+  assert.deepEqual(assessCoordinatorContinuation([{ ...active, waitTimedOut: true }]),
+    { action: 'wait-for-active-work', canExit: false, activeWorkIds: ['controls'], readyWorkIds: [] });
+});
+
+test('coordinator routes independent ready work before waiting on an active lane', () => {
+  const active = { id: 'controls', target: 'controls', status: 'inProgress',
+    receivingWorker: { ...observedRun, status: 'inProgress' } };
+  const ready = { id: 'scoring-next', target: 'scoring', status: 'ready', authorized: true, dependenciesMet: true };
+  const blocked = { id: 'provider-gate', status: 'blocked', blocker: 'owner-only admission decision', resumptionTrigger: 'owner decision' };
+  assert.deepEqual(assessCoordinatorContinuation([active, ready, blocked]), {
+    action: 'route-ready-work', canExit: false, nextWorkId: 'scoring-next', readyWorkCount: 1, activeWorkIds: ['controls']
+  });
+});
+
+test('in-progress labels without execution readback cannot justify exit', () => {
+  assert.deepEqual(assessCoordinatorContinuation([{ id: 'handoff', status: 'inProgress' }]),
+    { action: 'verify-execution', canExit: false, workIds: ['handoff'] });
+});
+
+test('unresolved work without an exact blocker cannot be closed as blocked', () => {
+  assert.deepEqual(assessCoordinatorContinuation([{ id: 'todo', status: 'ready', authorized: false, dependenciesMet: true }]), {
+    action: 'continue-work', canExit: false, unresolvedWorkIds: ['todo'],
+    reason: 'incomplete work lacks a verified terminal receipt or precise blocker'
+  });
+});
+
+test('only a precise blocker permits blocked exit, and verified acceptance permits completion', () => {
+  assert.deepEqual(assessCoordinatorContinuation([{ id: 'gated', status: 'blocked', blocker: 'missing signed authorization', resumptionTrigger: 'owner signs manifest' }]),
+    { action: 'blocked', canExit: true, blockedWorkIds: ['gated'] });
+  const evidence = { acceptanceTarget: 'source', checks: { sourceTests: true }, receivingWorker: observedRun, acceptanceReceipt: acceptanceReceipt('source') };
+  assert.deepEqual(assessCoordinatorContinuation([{ id: 'done', status: 'done', deliveryEvidence: evidence }]),
+    { action: 'complete', canExit: true });
+  assert.equal(assessCoordinatorContinuation([{ id: 'false-done', status: 'done' }]).canExit, false);
 });
