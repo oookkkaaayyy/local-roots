@@ -22,7 +22,7 @@ const manifest={
   decision:'Approve in-place rev13 amendment for this exact candidate and exact-v348 ASSETS binding inheritance.',
   productionMutationAuthorized:false
  },cloudflareOnlySaveAck:{admittedUnderParent:true,
-  parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:MANIFEST_REVISION,
+  parentManifestId:ORIGINAL_MANIFEST_ID,parentRevision:14,
   ownerDecisionDoesNotSatisfyPreflightOrProductionAdmission:true,
   stageA:{candidateFileId:betaCandidate,candidateSha256:betaCandidateSha,
    candidateBytes:274519,requestSha256:betaRequestSha,requestBytes:269030,

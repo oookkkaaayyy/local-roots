@@ -94,7 +94,7 @@ export function checkReleaseReadiness({
       ownerScope?.productionMutationAuthorized!==false)
      fail('CLOUDFLARE_STAGE_A_OWNER_SCOPE_NOT_AUTHORIZED');
    if(manifest?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.admittedUnderParent!==true||
-      child?.parentManifestId!==ORIGINAL_MANIFEST_ID||child?.parentRevision!==MANIFEST_REVISION||
+      child?.parentManifestId!==ORIGINAL_MANIFEST_ID||child?.parentRevision!==14||
       child?.stageA?.candidateFileId!==BETA_CANDIDATE||
       child?.stageA?.candidateSha256!==BETA_CANDIDATE_SHA256||
       child?.stageA?.candidateBytes!==BETA_CANDIDATE_BYTES||
