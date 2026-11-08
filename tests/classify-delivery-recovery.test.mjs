@@ -1,6 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assessCoordinatorContinuation, assessDeliveryEvidence, authorizeOperation, classifyRecovery, executeRecovery, resumeAfterContextLoss, routeReadyWork } from '../scripts/classify-delivery-recovery.mjs';
+import { assessCoordinatorContinuation, assessDeliveryEvidence, assessUsageBudget, authorizeOperation, classifyRecovery, executeRecovery, resumeAfterContextLoss, routeReadyWork } from '../scripts/classify-delivery-recovery.mjs';
+
+test('delegation defaults to denied and broad task authorization is not a usage budget', () => {
+  assert.equal(assessUsageBudget(null, { taskId: 'task-a', workers: 1, toolCalls: 1, elapsedMs: 1000, retries: 0 }).allowed, false);
+  assert.equal(assessUsageBudget({ explicitlyAuthorized: true, taskId: 'task-a' }, { taskId: 'task-a', workers: 1, toolCalls: 1, elapsedMs: 1000, retries: 0 }).allowed, false);
+});
+
+test('delegation needs exact task, Luna Light low effort, and bounded non-nested limits', () => {
+  const auth = { explicitlyAuthorized: true, taskId: 'task-a', model: 'luna-light', effort: 'low', allowNestedDelegation: false, maxWorkers: 1, maxToolCalls: 4, maxElapsedMs: 60000, maxRetries: 0 };
+  const request = { taskId: 'task-a', workers: 1, toolCalls: 2, elapsedMs: 30000, retries: 0, nestedDelegation: false };
+  assert.equal(assessUsageBudget(auth, request).allowed, true);
+  assert.equal(assessUsageBudget(auth, { ...request, taskId: 'task-b' }).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, model: 'other' }, request).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, maxWorkers: 2 }, request).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, maxToolCalls: 11 }, request).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, maxElapsedMs: 600001 }, request).allowed, false);
+  assert.equal(assessUsageBudget({ ...auth, maxRetries: 2 }, request).allowed, false);
+  assert.equal(assessUsageBudget(auth, { ...request, nestedDelegation: true }).allowed, false);
+});
+
+test('delegation is refused when any planned or consumed usage would exceed its cap', () => {
+  const auth = { explicitlyAuthorized: true, taskId: 'task-a', model: 'luna-light', effort: 'low', allowNestedDelegation: false, maxWorkers: 1, maxToolCalls: 4, maxElapsedMs: 60000, maxRetries: 1 };
+  const request = { taskId: 'task-a', workers: 1, toolCalls: 2, elapsedMs: 30000, retries: 0 };
+  assert.equal(assessUsageBudget(auth, request, { toolCalls: 3 }).dimension, 'toolCalls');
+  assert.equal(assessUsageBudget(auth, { ...request, workers: 2 }).dimension, 'workers');
+  assert.equal(assessUsageBudget(auth, { ...request, elapsedMs: 60001 }).dimension, 'elapsedMs');
+  assert.equal(assessUsageBudget(auth, { ...request, retries: 2 }).dimension, 'retries');
+});
 
 test('2: rejected upload requires a changed artifact and bounded verification before retry', () => {
   assert.equal(classifyRecovery({ operationState: 'rejected', failureClass: 'artifact-validation', priorArtifactDigest: 'a', candidateArtifactDigest: 'a' }).action, 'rebuild-correction');

@@ -5,6 +5,48 @@ function nonEmpty(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+/**
+ * Preflight delegated work against an explicit, task-specific usage budget.
+ * This is a decision helper; callers must enforce the returned denial before
+ * dispatch because this module cannot intercept platform tool calls.
+ */
+export function assessUsageBudget(authorization, request, consumed = {}) {
+  if (!authorization || authorization.explicitlyAuthorized !== true ||
+      !nonEmpty(authorization.taskId) || authorization.taskId !== request?.taskId) {
+    return { allowed: false, reason: 'delegation requires explicit authorization for this exact task' };
+  }
+  if (authorization.model !== 'luna-light' || authorization.effort !== 'low') {
+    return { allowed: false, reason: 'delegated work must use the authorized Luna Light low-effort profile' };
+  }
+  if (authorization.allowNestedDelegation !== false || request?.nestedDelegation === true) {
+    return { allowed: false, reason: 'nested delegation is not authorized' };
+  }
+  if (!Number.isSafeInteger(authorization.maxWorkers) || authorization.maxWorkers > 1) {
+    return { allowed: false, reason: 'this workflow permits at most one explicitly authorized worker per task' };
+  }
+  if (!Number.isSafeInteger(authorization.maxToolCalls) || authorization.maxToolCalls > 10 ||
+      !Number.isSafeInteger(authorization.maxElapsedMs) || authorization.maxElapsedMs > 600_000 ||
+      !Number.isSafeInteger(authorization.maxRetries) || authorization.maxRetries > 1) {
+    return { allowed: false, reason: 'the per-task hard ceiling is 10 tool calls, 10 minutes, and one retry' };
+  }
+
+  const dimensions = ['workers', 'toolCalls', 'elapsedMs', 'retries'];
+  for (const dimension of dimensions) {
+    const cap = authorization[`max${dimension[0].toUpperCase()}${dimension.slice(1)}`];
+    const planned = request?.[dimension];
+    const used = consumed?.[dimension] ?? 0;
+    if (!Number.isSafeInteger(cap) || cap < 0 ||
+        !Number.isSafeInteger(planned) || planned < 0 ||
+        !Number.isSafeInteger(used) || used < 0) {
+      return { allowed: false, reason: `a finite non-negative ${dimension} budget and usage receipt are required` };
+    }
+    if (used + planned > cap) {
+      return { allowed: false, reason: `${dimension} budget would be exceeded`, dimension, cap, used, planned };
+    }
+  }
+  return { allowed: true, reason: 'explicit task-scoped budget covers this bounded request' };
+}
+
 /** A label or dispatched prompt is not evidence that a receiving worker ran. */
 function hasExecutionReadback(execution) {
   if (!execution || !nonEmpty(execution.runId) || execution.observedBy !== 'independent-run-readback') return false;
