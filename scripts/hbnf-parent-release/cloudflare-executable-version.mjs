@@ -296,7 +296,7 @@ export async function stageExecutableVersion({
 export async function stageInheritedBetaVersion({
   token,accountId,workerName='hbnf',fetchImpl=fetch,
   candidateBytes,candidateSha256,requestSha256,baselineVersionId,scriptEtag,manifestSha256,
-  expectedLatestVersionId,expectedVersionCount,
+  expectedLatestVersionId,expectedVersionCount,expectedTransactionId,expectedSourceHead,
   parentRecord,requireParentAdmission,verifyCandidateDownloadback,
   requireFreshFiveTargetPreimage,claimOnce
 }){
@@ -307,7 +307,8 @@ export async function stageInheritedBetaVersion({
   fail(accountId===P0_ACCOUNT&&workerName===P0_WORKER&&baselineVersionId===P0_V348&&
     scriptEtag===P0_V348_ETAG&&hex64.test(manifestSha256||''),
     'INHERITED_STAGE_A_IDENTITY');
-  const priorAttempt=parentRecord?.cloudflareAssetRetentionAmendment?.stageAExecutionAttempts?.at(-1);
+  const attempts=parentRecord?.cloudflareAssetRetentionAmendment?.stageAExecutionAttempts||[];
+  const priorAttempt=[...attempts].reverse().find(a=>a?.status==='STOPPED_BEFORE_VERSION_CREATE');
   fail(priorAttempt?.status==='STOPPED_BEFORE_VERSION_CREATE'&&
     priorAttempt?.providerVersionCreatePostSent===false&&
     priorAttempt?.postAttemptReadback?.activeVersionId===baselineVersionId&&
@@ -319,6 +320,15 @@ export async function stageInheritedBetaVersion({
   fail(raw.length===P0_BETA_CANDIDATE_BYTES&&candidateSha256===P0_BETA_CANDIDATE_SHA256&&
     sha256(raw)===candidateSha256,
     'INHERITED_CANDIDATE_ARTIFACT_HASH');
+  const prepared=attempts.at(-1);
+  fail(prepared?.status==='PREFLIGHT_READY_FOR_STAGE_A'&&
+    prepared?.transactionId===expectedTransactionId&&
+    prepared?.sourceHead===expectedSourceHead&&
+    prepared?.candidateSha256===candidateSha256&&
+    prepared?.requestSha256===requestSha256&&
+    prepared?.latestVersionId===expectedLatestVersionId&&
+    prepared?.versionCount===expectedVersionCount,
+    'INHERITED_STAGE_A_PREFLIGHT_NOT_BOUND');
   let candidate;
   try{candidate=JSON.parse(raw.toString('utf8'));}catch{fail(false,'INHERITED_CANDIDATE_JSON');}
   const operation=candidate?.operation,request=candidate?.request,version=request?.version;
@@ -387,9 +397,9 @@ export async function stageInheritedBetaVersion({
   const finalPreimage=await requireFreshFiveTargetPreimage();
   fail(finalPreimage===true,'INHERITED_IMMEDIATE_PRECHANGE_READBACK');
   const claim=await claimOnce({manifestSha256,candidateSha256,requestSha256,baselineVersionId,
-    expectedLatestVersionId,expectedVersionCount,workerId:worker.id});
+    expectedLatestVersionId,expectedVersionCount,expectedTransactionId,workerId:worker.id});
   fail(claim?.acquired===true&&claim?.durable===true&&claim?.manifestSha256===manifestSha256&&
-    typeof claim?.transactionId==='string'&&claim.transactionId.length>0,
+    typeof claim?.transactionId==='string'&&claim.transactionId===expectedTransactionId,
     'INHERITED_STAGE_A_ATOMIC_CLAIM');
   let created;
   try{created=await c.call(workerPath+'/versions?deploy=false','POST',request);}
