@@ -52,6 +52,15 @@ export function makeVersionCreateFailureReceipt({httpStatus,providerErrors,candi
     retry:'PROHIBITED_WITH_THIS_TRANSACTION'
   };
 }
+// A caller may only print an uncaught Error.message, which drops enumerable
+// diagnostic fields. Put the already-redacted receipt on stderr before throwing
+// so a rejected create can be diagnosed without repeating the provider write.
+export function emitVersionCreateFailureReceipt(receipt,write=process.stderr.write.bind(process.stderr)){
+  fail(receipt?.outcome==='VERSION_CREATE_ERROR_READBACK_REQUIRED'&&
+    receipt?.retry==='PROHIBITED_WITH_THIS_TRANSACTION','FAILURE_RECEIPT_SHAPE');
+  write('HBNF_STAGE_A_PROVIDER_FAILURE '+JSON.stringify(receipt)+'\n');
+  return receipt;
+}
 export const assetHash=(path,bytes)=>sha256(Buffer.from(Buffer.from(bytes).toString('base64')+extname(path).slice(1))).slice(0,32);
 export const inventoryDigest=(paths,digests)=>sha256(Buffer.from(paths.slice().sort()
   .map(p=>`${p}\0${digests.get(p)}\n`).join('')));
@@ -517,6 +526,7 @@ export async function stageInheritedBetaVersion({
         httpStatus:cause?.status,providerErrors:cause?.providerErrors,candidateSha256,requestSha256,
         transactionId:claim.transactionId,candidateTag:version.annotations?.['workers/tag']
       });
+      emitVersionCreateFailureReceipt(result.failureReceipt);
       return result;
     };
     // The create may have committed despite a lost response. Read once by the

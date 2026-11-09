@@ -2,7 +2,7 @@
 // provider requests are made by this suite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion,sanitizeProviderErrors,makeVersionCreateFailureReceipt} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion,sanitizeProviderErrors,makeVersionCreateFailureReceipt,emitVersionCreateFailureReceipt} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {readFile} from 'node:fs/promises';
 
 const old='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -55,6 +55,11 @@ test('10305 provider rejection details are bounded and redacted in the failure r
  assert.equal(receipt.providerErrors[0].code,10305);
  assert.equal(receipt.retry,'PROHIBITED_WITH_THIS_TRANSACTION');
  assert.equal(receipt.transactionId,'consumed-stage-a');
+ let diagnostic='';
+ assert.equal(emitVersionCreateFailureReceipt(receipt,chunk=>{diagnostic+=chunk;}),receipt);
+ assert.match(diagnostic,/HBNF_STAGE_A_PROVIDER_FAILURE .*"code":10305/);
+ assert.match(diagnostic,/"sourcePointer":"\/modules\/0\/content_base64"/);
+ assert.doesNotMatch(diagnostic,/session-secret-value|private-secret/);
 });
 test('v348 lineage verifier accepts only the exact helper and Worker-first route patch',()=>{
  const baseline=Buffer.from('var index_default = {\n  fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    return env.ASSETS.fetch(request);\n  },\n};\n');
