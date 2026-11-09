@@ -18,7 +18,8 @@ const candidateFileId='drive-candidate-file-id';
 const etags={v348:'c3ea6bde761a6a5735a6a8b50334821b809baf57096c64cbb71b50a17ceb5b25',
  v349:'f54505dfb357ca96e52232309de2f3cb067556508d924c2088a2561fdc8d2720'};
 const settings={activeVersionId:v348,latestVersionId:v348,latestVersionNumber:348,firstListedVersionId:v348,
- firstListedVersionNumber:348,versionListPageSize:100,newestFirstVerified:true,
+ firstListedVersionNumber:348,versionListPageSize:100,versionListTotalCount:348,newestFirstVerified:true,
+ latestBindingsMatchBaseline:true,latestRuntimeMatchesBaseline:true,
  runtime:{compatibility_date:'2026-07-28',compatibility_flags:[],usage_model:'standard',
   assets:{base_path:'/',serve_directly:true,static_routing:{user_worker:['/api/*','/internal/*']}}},
  bindings:[{name:'ASSETS',type:'assets'},{name:'SUPABASE_SERVICE_ROLE_KEY',type:'secret_text'},
@@ -48,7 +49,7 @@ const runtime={compatibility_date:'2026-07-28',compatibility_flags:[],usage_mode
  assets:{base_path:'/',static_routing:{user_worker:['/api/*','/internal/*']}}};
 const oldVersion=id=>({id,resources:{script:{etag:id===v348?etags.v348:etags.v349},bindings,
  script_runtime:runtime}});
-function provider({ambiguous=false,drift=false,rejected=false}={}){
+function provider({ambiguous=false,drift=false,rejected=false,omitHelperRoute=false,globalWorkerFirst=false}={}){
  const calls=[];let created=false;
  const fetchImpl=async(url,init={})=>{
   const u=new URL(url);const path=u.pathname;const method=init.method||'GET';calls.push({path,method});
@@ -76,7 +77,8 @@ function provider({ambiguous=false,drift=false,rejected=false}={}){
   if(path.endsWith(`/scripts/hbnf/versions/${v349}`))return jsonResponse(oldVersion(v349));
   if(path.endsWith(`/workers/workers/${workerId}/versions/${v350}`))return jsonResponse({id:v350,
    modules:candidate.modules,resources:{bindings,script_runtime:{...runtime,assets:{base_path:'/',
-    static_routing:{user_worker:['/api/*','/internal/*','/glow-save-sync.mjs']}}}}});
+    static_routing:{user_worker:globalWorkerFirst?true:omitHelperRoute?['/api/*','/internal/*']:
+     ['/api/*','/internal/*','/glow-save-sync.mjs']}}}}});
   throw Error(`unexpected ${method} ${path}`);
  };
  return {fetchImpl,calls};
@@ -113,6 +115,17 @@ test('ambiguous multipart create is read back by exact module hash without retry
  assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
 });
 
+for(const [label,options] of [['omitted selective path',{omitHelperRoute:true}],
+ ['unadmitted global Worker-first routing',{globalWorkerFirst:true}]])
+ test(`provider readback with ${label} is rejected after one create`,async()=>{
+  const p=provider(options);
+  await assert.rejects(stageLegacyKeepAssetsVersion({...common,fetchImpl:p.fetchImpl}),
+   /LEGACY_VERSION_ASSET_ROUTING_READBACK/);
+  assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
+  assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
+  assert.ok(p.calls.some(x=>x.path.endsWith(`/workers/workers/${workerId}/versions/${v350}`)));
+ });
+
 test('rejected create preserves sanitized provider failure and noncommit readback without retry',async()=>{
  const p=provider({rejected:true});
  await assert.rejects(stageLegacyKeepAssetsVersion({...common,fetchImpl:p.fetchImpl}),error=>{
@@ -133,7 +146,9 @@ test('multipart bytes, module closure, keep-assets metadata, and inherited bindi
  assert.equal(createHash('sha256').update(Buffer.from(candidate.modules[0].content_base64,'base64')).digest('hex'),
   candidate.candidateModuleSha256);
  assert.equal(candidate.metadata.keep_assets,true);
- assert.ok(candidate.metadata.assets.config.run_worker_first.includes('/glow-save-sync.mjs'));
+ assert.deepEqual(candidate.metadata.assets.config.run_worker_first,
+  ['/api/*','/internal/*','/glow-save-sync.mjs']);
+ assert.match(Buffer.from(candidate.modules[0].content_base64,'base64').toString(),/return env\.ASSETS\.fetch\(request\);/);
  assert.equal(candidate.metadata.bindings.length,8);
  assert.ok(candidate.metadata.bindings.filter(x=>x.name!=='ASSETS').every(x=>x.type==='inherit'&&!('version_id' in x)));
 });

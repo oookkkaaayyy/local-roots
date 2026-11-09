@@ -295,6 +295,11 @@ function legacyAssetConfig(version){
   return {base_path:a.base_path,run_worker_first:a.static_routing?.user_worker||
     a.raw_run_worker_first||a.run_worker_first};
 }
+function workerFirstCovers(config,paths){
+  // Global Worker-first routing changes billing and request behavior for all
+  // static assets. This release only admits the exact selective path list.
+  return Array.isArray(config)&&paths.every(path=>config.includes(path));
+}
 function parseLegacyMultipartCandidate(bytes,contentType){
   const boundary=String(contentType||'').match(/(?:^|;)\s*boundary=([^;\s]+)/i)?.[1];
   fail(boundary&&boundary.length<200,'LEGACY_MULTIPART_BOUNDARY');
@@ -326,8 +331,7 @@ export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candida
   if(expectedSourceHead)fail(candidate?.sourceHead===expectedSourceHead,'LEGACY_CANDIDATE_HEAD');
   const metadata=candidate.metadata;
   fail(metadata.assets?.config?.base_path==='/'&&
-    Array.isArray(metadata.assets.config.run_worker_first)&&
-    ['/api/*','/internal/*','/glow-save-sync.mjs'].every(x=>metadata.assets.config.run_worker_first.includes(x)),
+    workerFirstCovers(metadata.assets.config.run_worker_first,['/api/*','/internal/*','/glow-save-sync.mjs']),
     'LEGACY_CANDIDATE_ASSET_ROUTES');
   const bindings=metadata.bindings||[];
   fail(bindings.length===8&&bindings.some(b=>b.name==='ASSETS'&&b.type==='assets')&&
@@ -369,8 +373,8 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
     typeof requireFreshFiveTargetPreimage==='function'&&typeof claimOnce==='function',
     'LEGACY_STAGE_PROOF_CALLBACKS');
   fail(accountId===P0_ACCOUNT&&workerName===P0_WORKER&&baselineVersionId===P0_V348&&
-    expectedLatestVersionId==='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'&&
-    expectedLatestNumber===349&&expectedVersionCount===349&&hex64.test(manifestSha256||'')&&
+    uuid.test(expectedLatestVersionId||'')&&Number.isSafeInteger(expectedLatestNumber)&&expectedLatestNumber>=349&&
+    expectedVersionCount===expectedLatestNumber&&hex64.test(manifestSha256||'')&&
     /^[0-9a-f]{40}$/i.test(expectedSourceHead||'')&&typeof candidateFileId==='string'&&candidateFileId.length>10,
     'LEGACY_STAGE_IDENTITY');
   const proof=verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candidateSha256,expectedSourceHead,
@@ -417,10 +421,9 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
       compatibility_flags:v.resources?.script_runtime?.compatibility_flags||[],
       usage_model:v.resources?.script_runtime?.usage_model,assets:legacyAssetConfig(v)});
     fail(JSON.stringify(runtimeIdentity(baseVersion))===JSON.stringify(runtimeIdentity(latestVersion))&&
-      baseConfig.base_path==='/'&&Array.isArray(baseConfig.run_worker_first)&&
-      ['/api/*','/internal/*'].every(x=>baseConfig.run_worker_first.includes(x)),
+      baseConfig.base_path==='/'&&workerFirstCovers(baseConfig.run_worker_first,['/api/*','/internal/*']),
       'LEGACY_RUNTIME_METADATA_DRIFT');
-    fail(baseConfig.run_worker_first.every(path=>candidate.metadata.assets.config.run_worker_first.includes(path))&&
+    fail(workerFirstCovers(candidate.metadata.assets.config.run_worker_first,baseConfig.run_worker_first)&&
       candidate.metadata.assets.config.base_path===baseConfig.base_path&&
       candidate.metadata.compatibility_date===runtimeIdentity(baseVersion).compatibility_date&&
       JSON.stringify(candidate.metadata.compatibility_flags)===JSON.stringify(runtimeIdentity(baseVersion).compatibility_flags)&&
@@ -487,8 +490,8 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
     type:b.name==='ASSETS'?'assets':(finalPreimage.latestVersion.resources?.bindings||[]).find(x=>x.name===b.name)?.type})));
   fail(JSON.stringify(actualBindings)===JSON.stringify(expectedNames),'LEGACY_VERSION_BINDING_READBACK');
   const config=legacyAssetConfig(verified);
-  fail(config.base_path==='/'&&Array.isArray(config.run_worker_first)&&
-    ['/api/*','/internal/*','/glow-save-sync.mjs'].every(x=>config.run_worker_first.includes(x)),
+  fail(config.base_path==='/'&&workerFirstCovers(config.run_worker_first,
+    ['/api/*','/internal/*','/glow-save-sync.mjs']),
     'LEGACY_VERSION_ASSET_ROUTING_READBACK');
   const afterVersions=versionListItems(await c.callEnvelope(workerPath+'/versions?per_page=100'),
     {expectedCount:expectedVersionCount+1,expectedLatestVersionId:versionId});

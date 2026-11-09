@@ -78,17 +78,18 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
   // The legacy multipart endpoint only supports type=inherit ("latest").
   // Do not assume that "latest" means the active deployment: require an
   // authenticated immediately-preflight version-list result binding both IDs.
-  const latestIsV348=workerSettings?.latestVersionId===versionId&&
-    workerSettings?.latestVersionNumber===348&&workerSettings?.firstListedVersionId===versionId&&
-    workerSettings?.firstListedVersionNumber===348;
-  const latestIsVerifiedV349=workerSettings?.latestVersionId==='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'&&
-    workerSettings?.latestVersionNumber===349&&
-    workerSettings?.firstListedVersionId==='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'&&
-    workerSettings?.firstListedVersionNumber===349&&
-    workerSettings?.latestBindingsMatchBaseline===true&&workerSettings?.latestRuntimeMatchesBaseline===true;
-  if(workerSettings?.activeVersionId!==versionId||(!latestIsV348&&!latestIsVerifiedV349)||
+  const latestLineageVerified=typeof workerSettings?.latestVersionId==='string'&&
+    workerSettings.latestVersionId===workerSettings.firstListedVersionId&&
+    Number.isInteger(workerSettings.latestVersionNumber)&&workerSettings.latestVersionNumber>=348&&
+    workerSettings.latestVersionNumber===workerSettings.firstListedVersionNumber&&
+    workerSettings.versionListTotalCount===workerSettings.latestVersionNumber&&
+    workerSettings.latestBindingsMatchBaseline===true&&workerSettings.latestRuntimeMatchesBaseline===true;
+  if(workerSettings?.activeVersionId!==versionId||!latestLineageVerified||
      workerSettings?.newestFirstVerified!==true||workerSettings?.versionListPageSize!==100)
     throw Error('INHERITED_BINDING_LATEST_NOT_ACTIVE_V348');
+  // Request only the helper path in addition to the unchanged routes. The
+  // provider may ignore this config with keep_assets; Stage A must reject that
+  // readback and never broaden routing to all assets as a workaround.
   const runWorkerFirst=[...raw.filter(x=>x!=='/glow-save-sync.mjs'),'/glow-save-sync.mjs'];
   const metadata={main_module:'index.js',keep_assets:true,compatibility_date:'2026-07-28',
     compatibility_flags:[],usage_model:'standard',
@@ -104,7 +105,7 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
     API:{method:'POST',path:`/accounts/<account>/workers/scripts/hbnf/versions?bindings_inherit=strict`,encoding:'multipart/form-data',
       uploadEligible:false,
       deploymentIsSeparateOperation:true,
-      inheritance:'legacy endpoint type=inherit resolves latest; Stage A adapter must verify active v348 and exact latest v349 with matching bindings/runtime immediately before version creation',
+      inheritance:'legacy endpoint type=inherit resolves latest; Stage A adapter must verify active v348 and exact first-listed latest version with matching bindings/runtime immediately before version creation',
       metadataFields:{keep_assets:true,assetsConfig:metadata.assets.config},
       routeConfig:'requested in metadata; candidate Worker-first helper route must be verified by version readback',
       sourceMap:'omit opaque v348 source map; Cloudflare rejected it with code 10021 because it is not Source Map v3',
