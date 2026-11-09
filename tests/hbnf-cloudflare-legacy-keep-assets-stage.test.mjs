@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {buildKeepAssetsCandidate} from '../scripts/hbnf-parent-release/build-keep-assets-candidate.mjs';
-import {stageLegacyKeepAssetsVersion,verifyLegacyKeepAssetsArtifact,sha256} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {stageLegacyKeepAssetsVersion,verifyLegacyKeepAssetsArtifact,verifyGlowHelperModuleDelta,sha256} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {prepareLegacyKeepAssetsCloudflareVersionUnderParent} from '../scripts/hbnf-parent-release/providers-live.mjs';
 
 const account='e3bc6b78f1104fa0c2a01245084594cf';
@@ -138,15 +138,22 @@ test('multipart bytes, module closure, keep-assets metadata, and inherited bindi
  assert.ok(candidate.metadata.bindings.filter(x=>x.name!=='ASSETS').every(x=>x.type==='inherit'&&!('version_id' in x)));
 });
 
-test('legacy multipart preserves the authenticated opaque source-map bytes without JSON reinterpretation',()=>{
- const boundary=candidate.upload.contentType.match(/boundary=([^;\s]+)/)[1];
+test('legacy candidate omits rejected opaque source-map module and preserves only executable delta',()=>{
+ const boundary='opaque-provider-capture';
  const rawMap=Buffer.from([0xbd,0xea,0xec,0x8a,0x89,0xf7,0x7e,0x29,0x5e,0x8a,0x77,0x5e]);
- const modules=candidate.modules.map(m=>m.name==='index.js.map'?{...m,content_base64:rawMap.toString('base64')}:m);
- const pieces=[];const part=(name,type,bytes)=>pieces.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"${name==='metadata'?'':`; filename="${name}"`}\r\nContent-Type: ${type}\r\n\r\n`),Buffer.from(bytes),Buffer.from('\r\n'));
- part('metadata','application/json',Buffer.from(JSON.stringify(candidate.metadata)));
- for(const m of modules)part(m.name,m.content_type,Buffer.from(m.content_base64,'base64'));
+ const pieces=[];const part=(name,type,bytes)=>pieces.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"; filename="${name}"\r\nContent-Type: ${type}\r\n\r\n`),Buffer.from(bytes),Buffer.from('\r\n'));
+ part('index.js','application/javascript+module',Buffer.from(original));
+ part('index.js.map','application/source-map',rawMap);
  pieces.push(Buffer.from(`--${boundary}--\r\n`));const bytes=Buffer.concat(pieces);
- const artifact={...candidate,modules,upload:{...candidate.upload,bytes:bytes.length,sha256:sha256(bytes)}};
- assert.equal(verifyLegacyKeepAssetsArtifact({candidate:artifact,candidateBytes:bytes,candidateSha256:sha256(bytes),
-  expectedModuleSha256:artifact.candidateModuleSha256,expectedHelperSha256:artifact.helperSha256}).moduleCount,2);
+ const opaqueCapture={...capture,source:{bytes:bytes.length,sha256:sha256(bytes),multipartBase64:bytes.toString('base64')}};
+ const rebuilt=buildKeepAssetsCandidate({capture:opaqueCapture,helper,workerSettings:settings});
+ assert.equal(rebuilt.result.originalMapSha256,sha256(rawMap));
+ assert.deepEqual(rebuilt.result.modules.map(m=>m.name),['index.js']);
+ assert.doesNotMatch(rebuilt.module.toString('utf8'),/sourceMappingURL/);
+ assert.equal(rebuilt.result.sourceMapDisposition,
+  'PROVIDER_REJECTED_OPAQUE_NON_V3_MAP; REMOVE_ONLY_SOURCE_MAPPING_URL_AND_OMIT_DEBUG_MODULE');
+ assert.equal(verifyGlowHelperModuleDelta(Buffer.from(original),rebuilt.module).helperSha256,sha256(helper));
+ assert.equal(verifyLegacyKeepAssetsArtifact({candidate:rebuilt.result,candidateBytes:rebuilt.multipart,
+  candidateSha256:sha256(rebuilt.multipart),expectedModuleSha256:rebuilt.result.candidateModuleSha256,
+  expectedHelperSha256:rebuilt.result.helperSha256}).moduleCount,1);
 });

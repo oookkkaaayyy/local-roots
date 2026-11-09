@@ -94,7 +94,9 @@ export function verifyGlowHelperModuleDelta(baselineBytes,candidateBytes){
   const routeCount=source.split(glowHelperRoute).length-1;
   fail(routeCount===1,'V348_HELPER_ROUTE_PATCH');
   const stripped=source.replace(matches[0][0],'').replace(glowHelperRoute,'');
-  fail(Buffer.compare(Buffer.from(stripped),baseline)===0,'V348_BASELINE_BYTES_CHANGED');
+  const baselineWithoutDebugMap=baseline.toString('utf8').replace(/^[ \t]*\/\/[#@]\s*sourceMappingURL=index\.js\.map[ \t]*\r?$/gm,'');
+  fail(Buffer.compare(Buffer.from(stripped),Buffer.from(baselineWithoutDebugMap))===0,
+    'V348_BASELINE_BYTES_CHANGED');
   return {baselineSha256:sha256(baseline),candidateSha256:sha256(candidate),
     helperSha256:sha256(Buffer.from(helper)),baselineBytes:baseline.length,candidateBytes:candidate.length};
 }
@@ -333,18 +335,18 @@ export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candida
     bindings.filter(b=>b.name!=='ASSETS').every(b=>b.type==='inherit'&&!Object.hasOwn(b,'version_id')),
     'LEGACY_CANDIDATE_BINDINGS');
   const parts=parseLegacyMultipartCandidate(raw,candidate.upload.contentType);
-  fail([...parts.keys()].sort().join('|')==='index.js|index.js.map|metadata',
+  fail([...parts.keys()].sort().join('|')==='index.js|metadata',
     'LEGACY_CANDIDATE_PARTS');
   let embedded;try{embedded=JSON.parse(parts.get('metadata').toString('utf8'));}
   catch{fail(false,'LEGACY_CANDIDATE_METADATA_JSON');}
   fail(JSON.stringify(embedded)===JSON.stringify(metadata),'LEGACY_CANDIDATE_METADATA_DRIFT');
   const moduleMap=new Map(candidate.modules.map(m=>[m.name,Buffer.from(m.content_base64,'base64')]));
-  fail(moduleMap.size===2&&moduleMap.has('index.js')&&moduleMap.has('index.js.map')&&
+  fail(moduleMap.size===1&&moduleMap.has('index.js')&&
     sha256(parts.get('index.js'))===candidate.candidateModuleSha256&&
     Buffer.compare(parts.get('index.js'),moduleMap.get('index.js'))===0&&
-    Buffer.compare(parts.get('index.js.map'),moduleMap.get('index.js.map'))===0,
+    candidate.sourceMapDisposition==='PROVIDER_REJECTED_OPAQUE_NON_V3_MAP; REMOVE_ONLY_SOURCE_MAPPING_URL_AND_OMIT_DEBUG_MODULE',
     'LEGACY_CANDIDATE_MODULE_CLOSURE');
-  fail(/[#@]\s*sourceMappingURL\s*=\s*index\.js\.map/.test(moduleMap.get('index.js').toString('utf8')),
+  fail(!/[#@]\s*sourceMappingURL\s*=\s*index\.js\.map/.test(moduleMap.get('index.js').toString('utf8')),
     'LEGACY_CANDIDATE_SOURCEMAP_REFERENCE');
   return {candidateSha256,bytes:raw.length,moduleSha256:candidate.candidateModuleSha256,
     helperSha256:candidate.helperSha256,moduleCount:moduleMap.size,keepAssets:true,

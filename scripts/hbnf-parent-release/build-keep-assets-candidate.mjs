@@ -51,7 +51,14 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
     throw Error('CAPTURE_BYTES_HASH_MISMATCH');
   const {parts}=parseMultipart(captureBytes);
   if(parts.size!==2||!parts.has('index.js.map'))throw Error('MODULE_CLOSURE_UNEXPECTED');
-  const original=parts.get('index.js').toString();
+  const originalRaw=parts.get('index.js').toString();
+  const sourceMapDirective=/^[ \t]*\/\/[#@]\s*sourceMappingURL=index\.js\.map[ \t]*\r?$/gm;
+  const sourceMapReferences=originalRaw.match(sourceMapDirective)||[];
+  if(sourceMapReferences.length!==1)throw Error('SOURCE_MAP_DIRECTIVE_NOT_EXACTLY_ONE');
+  // The captured provider map is opaque binary and Cloudflare rejects it as
+  // non-v3 on version upload. Remove only the debug directive and omit that
+  // non-executable module; preserve every executable baseline byte otherwise.
+  const original=originalRaw.replace(sourceMapDirective,'');
   const marker='    if (path === EXPORT_PATH || path === EVENTS_PATH || path === GLOW_SYNC_PATH) return errorResponse(404, "Not found.");';
   if(!original.includes(marker)||original.split(marker).length!==2)throw Error('FETCH_DISPATCH_ANCHOR_MISMATCH');
   const helperText=Buffer.from(helper).toString('utf8');
@@ -71,10 +78,16 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
   // The legacy multipart endpoint only supports type=inherit ("latest").
   // Do not assume that "latest" means the active deployment: require an
   // authenticated immediately-preflight version-list result binding both IDs.
-  if(workerSettings?.activeVersionId!==versionId||workerSettings?.latestVersionId!==versionId||
-     workerSettings?.latestVersionNumber!==348||workerSettings?.newestFirstVerified!==true||
-     workerSettings?.firstListedVersionId!==versionId||workerSettings?.firstListedVersionNumber!==348||
-     workerSettings?.versionListPageSize!==100)
+  const latestIsV348=workerSettings?.latestVersionId===versionId&&
+    workerSettings?.latestVersionNumber===348&&workerSettings?.firstListedVersionId===versionId&&
+    workerSettings?.firstListedVersionNumber===348;
+  const latestIsVerifiedV349=workerSettings?.latestVersionId==='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'&&
+    workerSettings?.latestVersionNumber===349&&
+    workerSettings?.firstListedVersionId==='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'&&
+    workerSettings?.firstListedVersionNumber===349&&
+    workerSettings?.latestBindingsMatchBaseline===true&&workerSettings?.latestRuntimeMatchesBaseline===true;
+  if(workerSettings?.activeVersionId!==versionId||(!latestIsV348&&!latestIsVerifiedV349)||
+     workerSettings?.newestFirstVerified!==true||workerSettings?.versionListPageSize!==100)
     throw Error('INHERITED_BINDING_LATEST_NOT_ACTIVE_V348');
   const runWorkerFirst=[...raw.filter(x=>x!=='/glow-save-sync.mjs'),'/glow-save-sync.mjs'];
   const metadata={main_module:'index.js',keep_assets:true,compatibility_date:'2026-07-28',
@@ -86,13 +99,15 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
     baselineVersionId:versionId,sourceCaptureSha256:capture.source.sha256,
     originalModuleSha256:sha(parts.get('index.js')),originalMapSha256:sha(parts.get('index.js.map')),
     helperSha256:sha(Buffer.from(helper)),candidateModuleSha256:sha(Buffer.from(patched)),
-    unchangedMap:true,metadata,modules:[{name:'index.js',content_type:'application/javascript+module',content_base64:Buffer.from(patched).toString('base64')},{name:'index.js.map',content_type:'application/source-map',content_base64:parts.get('index.js.map').toString('base64')}],
+    sourceMapDisposition:'PROVIDER_REJECTED_OPAQUE_NON_V3_MAP; REMOVE_ONLY_SOURCE_MAPPING_URL_AND_OMIT_DEBUG_MODULE',metadata,
+    modules:[{name:'index.js',content_type:'application/javascript+module',content_base64:Buffer.from(patched).toString('base64')}],
     API:{method:'POST',path:`/accounts/<account>/workers/scripts/hbnf/versions?bindings_inherit=strict`,encoding:'multipart/form-data',
       uploadEligible:false,
       deploymentIsSeparateOperation:true,
-    inheritance:'legacy endpoint type=inherit resolves latest; require authenticated latest and active version IDs both equal v348 immediately before version creation',
+      inheritance:'legacy endpoint type=inherit resolves latest; Stage A adapter must verify active v348 and exact latest v349 with matching bindings/runtime immediately before version creation',
       metadataFields:{keep_assets:true,assetsConfig:metadata.assets.config},
-      routeConfig:'requested in metadata but not supported by the published legacy endpoint schema; authenticated v349 readback omitted /glow-save-sync.mjs',
+      routeConfig:'requested in metadata; candidate Worker-first helper route must be verified by version readback',
+      sourceMap:'omit opaque v348 source map; Cloudflare rejected it with code 10021 because it is not Source Map v3',
       providerRetentionReadbackRequired:true},
     preservation:{assetCollection:'keep_assets requested; provider asset identity and file bytes not enumerated',
       cartAssets:'separate Worker routes; no Cart asset mutation or byte-level verification in this HBNF operation',
@@ -100,13 +115,15 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
       cron:'existing scheduled handler source unchanged',rollbackVersionId:versionId},
     lineage:{activeVersionId:workerSettings.activeVersionId,latestVersionId:workerSettings.latestVersionId,
       latestVersionNumber:workerSettings.latestVersionNumber,versionListPageSize:workerSettings.versionListPageSize,
+      latestBindingsMatchBaseline:workerSettings.latestBindingsMatchBaseline===true,
+      latestRuntimeMatchesBaseline:workerSettings.latestRuntimeMatchesBaseline===true,
       versionListCount:workerSettings.versionListCount,totalVersionCount:workerSettings.totalVersionCount,
       firstListedVersionId:workerSettings.firstListedVersionId,firstListedVersionNumber:workerSettings.firstListedVersionNumber,
       versionListOrder:workerSettings.versionListOrder,
       newestFirstVerified:workerSettings.newestFirstVerified===true,
       latestVersionGuard:'PASS_FOR_CAPTURE_ONLY_RECHECK_BEFORE_VERSION_CREATE'},
-    acceptance:{versionCreationEndpointKeepAssetsSemantics:'DOCUMENTED_REQUEST_ACCEPTED; ASSET FILES NOT ENUMERATED',
-      helperWorkerFirstReadback:'FAIL: provider readback omitted /glow-save-sync.mjs',
+    acceptance:{versionCreationEndpointKeepAssetsSemantics:'DOCUMENTED_KEEP_ASSETS; PROVIDER ACCEPTANCE PENDING',
+      helperWorkerFirstReadback:'PENDING_NEW_VERSION_READBACK',
       releaseEligible:false,
       moduleResponseFixture:'LOCAL_FOCUSED_FIXTURE_PASS; NOT PROVIDER OR BROWSER ACCEPTANCE',
       v348RetainedInVersionList:true,restoreExecution:'NOT_TESTED',productionAdmission:'NOT_ADMITTED'}};
@@ -118,7 +135,6 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
   };
   part('metadata','application/json',Buffer.from(JSON.stringify(metadata)));
   part('index.js','application/javascript+module',Buffer.from(patched));
-  part('index.js.map','application/source-map',parts.get('index.js.map'));
   chunks.push(Buffer.from(`--${boundary}--\r\n`));
   const multipart=Buffer.concat(chunks);
   result.upload={bytes:multipart.length,sha256:sha(multipart),contentType:`multipart/form-data; boundary=${boundary}`};
