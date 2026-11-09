@@ -41,6 +41,20 @@ export function sanitizeProviderErrors(errors,{secrets=[]}={}){
     return Object.keys(record).length?record:null;
   }).filter(Boolean);
 }
+// The Beta Workers Versions JSON API can pin bindings to an exact version, but
+// the live 10305 response proved it rejects an ASSETS binding unless a complete
+// asset upload is attached. It does not document keep_assets. Fail before
+// admission callbacks, one-time claim, or network access for that combination.
+export function assertBetaAssetsRequestSupported(request){
+  const assetsBinding=(request?.bindings||[]).find(binding=>binding?.name==='ASSETS');
+  const hasAssetUpload=typeof request?.assets?.jwt==='string'&&request.assets.jwt.length>15;
+  fail(!request?.keep_assets&&!request?.assets?.keep_assets,
+    'BETA_KEEP_ASSETS_UNSUPPORTED');
+  fail(!assetsBinding||(assetsBinding.type==='assets'&&hasAssetUpload),
+    'BETA_ASSETS_BINDING_REQUIRES_COMPLETE_ASSET_UPLOAD');
+  fail(!request?.assets||hasAssetUpload,'BETA_ASSET_CONFIG_REQUIRES_COMPLETE_ASSET_UPLOAD');
+  return true;
+}
 export function makeVersionCreateFailureReceipt({httpStatus,providerErrors,candidateSha256,
   requestSha256,transactionId,candidateTag}){
   return {
@@ -436,6 +450,7 @@ export async function stageInheritedBetaVersion({
     ['annotations','assets','bindings','compatibility_date','compatibility_flags','main_module','modules','usage_model'].sort().join('|')&&version&&
     !Object.hasOwn(version,'routes')&&!Object.hasOwn(version,'crons'),
     'INHERITED_CANDIDATE_VERSION_BODY_SHAPE');
+  assertBetaAssetsRequestSupported(request);
   const priorAttempt=attempts.slice(0,-1).reverse().find(a=>
     a?.status==='STOPPED_BEFORE_VERSION_CREATE'||a?.status==='POST_SENT_AMBIGUOUS_NO_VERSION_FOUND');
   const priorReadback=priorAttempt?.status==='STOPPED_BEFORE_VERSION_CREATE'

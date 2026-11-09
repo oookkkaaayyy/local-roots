@@ -2,7 +2,7 @@
 // provider requests are made by this suite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion,sanitizeProviderErrors,makeVersionCreateFailureReceipt,emitVersionCreateFailureReceipt} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion,sanitizeProviderErrors,makeVersionCreateFailureReceipt,emitVersionCreateFailureReceipt,assertBetaAssetsRequestSupported} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {readFile} from 'node:fs/promises';
 
 const old='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -60,6 +60,14 @@ test('10305 provider rejection details are bounded and redacted in the failure r
  assert.match(diagnostic,/HBNF_STAGE_A_PROVIDER_FAILURE .*"code":10305/);
  assert.match(diagnostic,/"sourcePointer":"\/modules\/0\/content_base64"/);
  assert.doesNotMatch(diagnostic,/session-secret-value|private-secret/);
+});
+test('Beta version adapter rejects retained ASSETS requests before claim or network',()=>{
+ assert.throws(()=>assertBetaAssetsRequestSupported({assets:{config:{base_path:'/',run_worker_first:['/glow-save-sync.mjs']}},
+  bindings:[{name:'ASSETS',type:'inherit',version_id:old}]}),/BETA_ASSETS_BINDING_REQUIRES_COMPLETE_ASSET_UPLOAD/);
+ assert.throws(()=>assertBetaAssetsRequestSupported({keep_assets:true,bindings:[]}),/BETA_KEEP_ASSETS_UNSUPPORTED/);
+ assert.throws(()=>assertBetaAssetsRequestSupported({assets:{config:{base_path:'/'}},bindings:[]}),/BETA_ASSET_CONFIG_REQUIRES_COMPLETE_ASSET_UPLOAD/);
+ assert.equal(assertBetaAssetsRequestSupported({assets:{jwt:'verified-complete-upload-token'},
+  bindings:[{name:'ASSETS',type:'assets'}]}),true);
 });
 test('v348 lineage verifier accepts only the exact helper and Worker-first route patch',()=>{
  const baseline=Buffer.from('var index_default = {\n  fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    return env.ASSETS.fetch(request);\n  },\n};\n');
