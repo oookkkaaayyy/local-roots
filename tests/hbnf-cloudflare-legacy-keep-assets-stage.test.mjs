@@ -106,9 +106,10 @@ test('legacy keep-assets route pins latest v349 inheritance, reads candidate bac
 
 test('explicit Stage A owner approval binds a global Worker-first candidate without promoting traffic',async()=>{
  const builtGlobal=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,
-  workerFirstMode:'global-approved-stage-a'});
+  workerFirstMode:'global-approved-stage-a',sourceHead});
  const globalCandidate={...builtGlobal.result,baselineVersionId:v348,sourceHead};
  assert.equal(globalCandidate.metadata.assets.config.run_worker_first,true);
+ assert.equal(globalCandidate.sourceHead,sourceHead);
  const globalBytes=builtGlobal.multipart,globalSha=sha256(globalBytes);
  const unapprovedRecord=parentRecordFor(globalCandidate,globalBytes,globalSha);
  const unapprovedProvider=provider({globalWorkerFirst:true,candidateSha:globalSha,readbackCandidate:globalCandidate});

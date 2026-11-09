@@ -44,7 +44,7 @@ export function parseMultipart(bytes){
 }
 
 export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionId=EXPECTED_VERSION,
-  workerFirstMode='selective'}){
+  workerFirstMode='selective',sourceHead}){
   if(capture?.before?.versionId!==versionId||capture?.after?.versionId!==versionId||
      capture?.origin!=='AUTHENTICATED_CLOUDFLARE_GET')throw Error('V348_CAPTURE_MISMATCH');
   const captureBytes=Buffer.from(capture.source?.multipartBase64||'','base64');
@@ -93,6 +93,8 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
   // readback and never broaden routing to all assets as a workaround.
   if(!['selective','global-approved-stage-a'].includes(workerFirstMode))
     throw Error('WORKER_FIRST_MODE_INVALID');
+  if(sourceHead!==undefined&&!/^[0-9a-f]{40}$/i.test(sourceHead))
+    throw Error('SOURCE_HEAD_INVALID');
   // Cloudflare's documented global Worker-first value is the boolean true.
   // A catch-all array (['/*']) was accepted but read back as the prior routes
   // when combined with keep_assets, so never treat it as equivalent input.
@@ -142,6 +144,7 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
       moduleResponseFixture:'LOCAL_FOCUSED_FIXTURE_PASS; NOT PROVIDER OR BROWSER ACCEPTANCE',
       v348RetainedInVersionList:true,restoreExecution:'NOT_TESTED',productionAdmission:'NOT_ADMITTED'}};
   const boundary='hbnf-keep-assets-'+sha(Buffer.from(patched)).slice(0,24);
+  if(sourceHead)result.sourceHead=sourceHead;
   const chunks=[];
   const part=(name,type,body)=>{
     chunks.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"${name==='metadata'?'':'; filename="'+name+'"'}\r\nContent-Type: ${type}\r\n\r\n`));
@@ -156,12 +159,12 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
 }
 
 if(import.meta.url===`file://${process.argv[1]}`){
-  const [capturePath,helperPath,settingsPath,outDir,workerFirstMode='selective']=process.argv.slice(2);
+  const [capturePath,helperPath,settingsPath,outDir,workerFirstMode='selective',sourceHead]=process.argv.slice(2);
   if(!capturePath||!helperPath||!settingsPath||!outDir)throw Error('USAGE capture.json helper.mjs safe-settings.json output-dir');
   const capture=JSON.parse(await readFile(resolve(capturePath),'utf8'));
   const helper=await readFile(resolve(helperPath));
   const settings=JSON.parse(await readFile(resolve(settingsPath),'utf8'));
-  const built=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,workerFirstMode});
+  const built=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,workerFirstMode,sourceHead});
   const out=resolve(outDir);await (await import('node:fs/promises')).mkdir(out,{recursive:true});
   await writeFile(resolve(out,'index.js'),built.module,{mode:0o600});
   await writeFile(resolve(out,'index.mjs'),built.module,{mode:0o600});
