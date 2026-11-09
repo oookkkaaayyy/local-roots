@@ -305,6 +305,18 @@ function workerFirstMatchesCandidate(config,candidate,paths){
     return config===true||(Array.isArray(config)&&config.length===1&&config[0]==='/*');
   return candidate?.routingScope==='SELECTIVE_WORKER_FIRST'&&workerFirstCovers(config,paths);
 }
+// The provider accepted keep_assets on v353 but read the existing
+// /api/* and /internal/* routing back unchanged after the requested global
+// Worker-first setting. Do not spend another one-use claim or create another
+// version through this endpoint when the candidate changes asset routing.
+export function assertLegacyKeepAssetsRoutingUnchanged(requested,current){
+  const same=typeof requested==='boolean'
+    ? requested===current
+    : Array.isArray(requested)&&Array.isArray(current)&&
+      [...requested].sort().join('\n')===[...current].sort().join('\n');
+  fail(same,'LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED');
+  return true;
+}
 function parseLegacyMultipartCandidate(bytes,contentType){
   const boundary=String(contentType||'').match(/(?:^|;)\s*boundary=([^;\s]+)/i)?.[1];
   fail(boundary&&boundary.length<200,'LEGACY_MULTIPART_BOUNDARY');
@@ -427,6 +439,8 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
         b.name==='ASSETS'?b:{name:b.name,type:latestBindings.find(x=>x.name===b.name)?.type}))),
       'LEGACY_BINDING_METADATA_DRIFT');
     const baseConfig=legacyAssetConfig(baseVersion),latestConfig=legacyAssetConfig(latestVersion);
+    assertLegacyKeepAssetsRoutingUnchanged(candidate.metadata.assets.config.run_worker_first,
+      latestConfig.run_worker_first);
     const runtimeIdentity=v=>({compatibility_date:v.resources?.script_runtime?.compatibility_date,
       compatibility_flags:v.resources?.script_runtime?.compatibility_flags||[],
       usage_model:v.resources?.script_runtime?.usage_model,assets:legacyAssetConfig(v)});

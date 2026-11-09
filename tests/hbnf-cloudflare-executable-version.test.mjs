@@ -2,7 +2,7 @@
 // provider requests are made by this suite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion,sanitizeProviderErrors,makeVersionCreateFailureReceipt,emitVersionCreateFailureReceipt,assertBetaAssetsRequestSupported} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {sha256,assetHash,inventoryDigest,buildExactVersion,validateAssetBuckets,verifyGlowHelperModuleDelta,stageExecutableVersion,stageInheritedBetaVersion,stageInheritedBetaVersionWithWranglerOAuth,deployRetainedVersion,sanitizeProviderErrors,makeVersionCreateFailureReceipt,emitVersionCreateFailureReceipt,assertBetaAssetsRequestSupported,assertLegacyKeepAssetsRoutingUnchanged} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {readFile} from 'node:fs/promises';
 
 const old='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
@@ -68,6 +68,15 @@ test('Beta version adapter rejects retained ASSETS requests before claim or netw
  assert.throws(()=>assertBetaAssetsRequestSupported({assets:{config:{base_path:'/'}},bindings:[]}),/BETA_ASSET_CONFIG_REQUIRES_COMPLETE_ASSET_UPLOAD/);
  assert.equal(assertBetaAssetsRequestSupported({assets:{jwt:'verified-complete-upload-token'},
   bindings:[{name:'ASSETS',type:'assets'}]}),true);
+});
+test('legacy keep_assets routing guard rejects provider-rejected Worker-first changes',()=>{
+ const existing=['/api/*','/internal/*'];
+ assert.equal(assertLegacyKeepAssetsRoutingUnchanged(existing,existing),true);
+ assert.throws(()=>assertLegacyKeepAssetsRoutingUnchanged(true,existing),
+  /LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED/);
+ assert.throws(()=>assertLegacyKeepAssetsRoutingUnchanged([...existing,'/glow-save-sync.mjs'],existing),
+  /LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED/);
+ assert.equal(assertLegacyKeepAssetsRoutingUnchanged(['!/x/*','/api/*'],['/api/*','!/x/*']),true);
 });
 test('v348 lineage verifier accepts only the exact helper and Worker-first route patch',()=>{
  const baseline=Buffer.from('var index_default = {\n  fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    return env.ASSETS.fetch(request);\n  },\n};\n');
