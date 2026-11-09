@@ -48,13 +48,16 @@ const runtime={compatibility_date:'2026-07-28',compatibility_flags:[],usage_mode
  assets:{base_path:'/',static_routing:{user_worker:['/api/*','/internal/*']}}};
 const oldVersion=id=>({id,resources:{script:{etag:id===v348?etags.v348:etags.v349},bindings,
  script_runtime:runtime}});
-function provider({ambiguous=false,drift=false}={}){
+function provider({ambiguous=false,drift=false,rejected=false}={}){
  const calls=[];let created=false;
  const fetchImpl=async(url,init={})=>{
   const u=new URL(url);const path=u.pathname;const method=init.method||'GET';calls.push({path,method});
   if(path.endsWith('/workers/workers/hbnf'))return jsonResponse({name:'hbnf',id:workerId});
   if(path.endsWith('/scripts/hbnf/versions')&&method==='POST'){
    assert.equal(sha256(Buffer.from(init.body)),candidateSha256);
+   if(rejected)return new Response(JSON.stringify({success:false,errors:[{code:10305,
+    message:'Cannot use an assets binding without assets.'}]}),{status:400,
+    headers:{'content-type':'application/json'}});
    if(ambiguous){created=true;throw Error('response lost after provider commit');}
    created=true;return jsonResponse({id:v350,number:350});
   }
@@ -106,6 +109,19 @@ test('legacy inheritance drift fails before exclusive claim or provider mutation
 test('ambiguous multipart create is read back by exact module hash without retry',async()=>{
  const p=provider({ambiguous:true});const out=await stageLegacyKeepAssetsVersion({...common,fetchImpl:p.fetchImpl});
  assert.equal(out.versionId,v350);
+ assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
+ assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
+});
+
+test('rejected create preserves sanitized provider failure and noncommit readback without retry',async()=>{
+ const p=provider({rejected:true});
+ await assert.rejects(stageLegacyKeepAssetsVersion({...common,fetchImpl:p.fetchImpl}),error=>{
+  assert.equal(error.providerFailure.httpStatus,400);
+  assert.deepEqual(error.providerFailure.errors,[{code:10305,message:'Cannot use an assets binding without assets.'}]);
+  assert.deepEqual(error.providerReadback,{versionCount:349,latestVersionId:v349,
+   candidateModuleMatches:0,uploadRetried:false});
+  return true;
+ });
  assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
  assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
 });

@@ -461,7 +461,17 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
       if(main&&sha256(Buffer.from(main.content_base64||'','base64'))===proof.moduleSha256)
         matches.push({id:version.id,number:version.number});
     }
-    fail(matches.length===1,'LEGACY_AMBIGUOUS_CREATE_NOT_UNIQUELY_READ_BACK');
+    if(matches.length!==1){
+      const failure=Error('P0_CLOUDFLARE_LEGACY_AMBIGUOUS_CREATE_NOT_UNIQUELY_READ_BACK');
+      const latest=listed.reduce((best,item)=>!best||Number(item.number)>Number(best.number)?item:best,null);
+      failure.providerFailure={httpStatus:Number.isInteger(error?.status)?error.status:null,
+        errors:Array.isArray(error?.providerErrors)?error.providerErrors:[]};
+      failure.providerReadback={versionCount:Number(envelope?.result_info?.total_count)||null,
+        latestVersionId:latest?.id||null,candidateModuleMatches:matches.length,
+        uploadRetried:false};
+      failure.cause=error;
+      throw failure;
+    }
     created=matches[0];
   }
   fail(uuid.test(created?.id)&&created.id!==baselineVersionId,'LEGACY_VERSION_CREATE_RESPONSE');
