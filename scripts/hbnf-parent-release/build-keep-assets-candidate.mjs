@@ -93,7 +93,10 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
   // readback and never broaden routing to all assets as a workaround.
   if(!['selective','global-approved-stage-a'].includes(workerFirstMode))
     throw Error('WORKER_FIRST_MODE_INVALID');
-  const runWorkerFirst=workerFirstMode==='global-approved-stage-a'?true:
+  // The provider accepted the boolean but read v351 back with only its old
+  // selective paths. Emit the equivalent catch-all path form so the
+  // version API has an explicit route pattern to retain and verify.
+  const runWorkerFirst=workerFirstMode==='global-approved-stage-a'?['/*']:
     [...raw.filter(x=>x!=='/glow-save-sync.mjs'),'/glow-save-sync.mjs'];
   const metadata={main_module:'index.js',keep_assets:true,compatibility_date:'2026-07-28',
     compatibility_flags:[],usage_model:'standard',

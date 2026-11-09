@@ -80,7 +80,7 @@ function provider({ambiguous=false,drift=false,rejected=false,omitHelperRoute=fa
   if(path.endsWith(`/scripts/hbnf/versions/${v349}`))return jsonResponse(oldVersion(v349));
   if(path.endsWith(`/workers/workers/${workerId}/versions/${v350}`))return jsonResponse({id:v350,
    modules:readbackCandidate.modules,resources:{bindings,script_runtime:{...runtime,assets:{base_path:'/',
-    static_routing:{user_worker:globalWorkerFirst?true:omitHelperRoute?['/api/*','/internal/*']:
+    static_routing:{user_worker:globalWorkerFirst?['/*']:omitHelperRoute?['/api/*','/internal/*']:
      ['/api/*','/internal/*','/glow-save-sync.mjs']}}}}});
   throw Error(`unexpected ${method} ${path}`);
  };
@@ -108,6 +108,7 @@ test('explicit Stage A owner approval binds a global Worker-first candidate with
  const builtGlobal=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,
   workerFirstMode:'global-approved-stage-a'});
  const globalCandidate={...builtGlobal.result,baselineVersionId:v348,sourceHead};
+ assert.deepEqual(globalCandidate.metadata.assets.config.run_worker_first,['/*']);
  const globalBytes=builtGlobal.multipart,globalSha=sha256(globalBytes);
  const unapprovedRecord=parentRecordFor(globalCandidate,globalBytes,globalSha);
  const unapprovedProvider=provider({globalWorkerFirst:true,candidateSha:globalSha,readbackCandidate:globalCandidate});
@@ -123,7 +124,7 @@ test('explicit Stage A owner approval binds a global Worker-first candidate with
  const out=await stageLegacyKeepAssetsVersion({...common,candidate:globalCandidate,candidateBytes:globalBytes,
   candidateSha256:globalSha,parentRecord,fetchImpl:p.fetchImpl});
  assert.equal(out.status,'LEGACY_KEEP_ASSETS_VERSION_CREATED_NOT_DEPLOYED');
- assert.equal(out.workerFirst,true);assert.equal(out.activeVersionId,v348);assert.equal(out.activePercentage,100);
+ assert.deepEqual(out.workerFirst,['/*']);assert.equal(out.activeVersionId,v348);assert.equal(out.activePercentage,100);
  assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
  assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
 });

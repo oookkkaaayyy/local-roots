@@ -301,7 +301,8 @@ function workerFirstCovers(config,paths){
   return Array.isArray(config)&&paths.every(path=>config.includes(path));
 }
 function workerFirstMatchesCandidate(config,candidate,paths){
-  if(candidate?.routingScope==='GLOBAL_WORKER_FIRST_STAGE_A_ONLY')return config===true;
+  if(candidate?.routingScope==='GLOBAL_WORKER_FIRST_STAGE_A_ONLY')
+    return config===true||(Array.isArray(config)&&config.length===1&&config[0]==='/*');
   return candidate?.routingScope==='SELECTIVE_WORKER_FIRST'&&workerFirstCovers(config,paths);
 }
 function parseLegacyMultipartCandidate(bytes,contentType){
