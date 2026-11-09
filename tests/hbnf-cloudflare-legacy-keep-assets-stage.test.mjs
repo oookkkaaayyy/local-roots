@@ -129,6 +129,24 @@ test('explicit Stage A owner approval binds a global Worker-first candidate with
  assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
 });
 
+test('keep_assets candidate is rejected when provider retains the installed asset routing config',async()=>{
+ const builtGlobal=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,
+  workerFirstMode:'global-approved-stage-a'});
+ const globalCandidate={...builtGlobal.result,baselineVersionId:v348,sourceHead};
+ const globalBytes=builtGlobal.multipart,globalSha=sha256(globalBytes);
+ const parentRecord=parentRecordFor(globalCandidate,globalBytes,globalSha,{globalApproved:true});
+ // This is the provider readback observed for the live v352 upload: despite
+ // assets.config.run_worker_first being present in the multipart metadata,
+ // keep_assets preserved the original /api/* and /internal/* routing.
+ const p=provider({candidateSha:globalSha,readbackCandidate:globalCandidate});
+ await assert.rejects(stageLegacyKeepAssetsVersion({...common,candidate:globalCandidate,
+  candidateBytes:globalBytes,candidateSha256:globalSha,parentRecord,fetchImpl:p.fetchImpl}),
+  /LEGACY_VERSION_ASSET_ROUTING_READBACK/);
+ assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
+ assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
+ assert.ok(p.calls.some(x=>x.path.endsWith(`/workers/workers/${workerId}/versions/${v350}`)));
+});
+
 test('legacy inheritance drift fails before exclusive claim or provider mutation',async()=>{
  const p=provider({drift:true});let claims=0;
  await assert.rejects(stageLegacyKeepAssetsVersion({...common,fetchImpl:p.fetchImpl,claimOnce:async()=>{claims++;return {};}}),
