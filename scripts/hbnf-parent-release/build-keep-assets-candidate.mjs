@@ -43,7 +43,8 @@ export function parseMultipart(bytes){
   return {boundary,parts};
 }
 
-export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionId=EXPECTED_VERSION}){
+export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionId=EXPECTED_VERSION,
+  workerFirstMode='selective'}){
   if(capture?.before?.versionId!==versionId||capture?.after?.versionId!==versionId||
      capture?.origin!=='AUTHENTICATED_CLOUDFLARE_GET')throw Error('V348_CAPTURE_MISMATCH');
   const captureBytes=Buffer.from(capture.source?.multipartBase64||'','base64');
@@ -90,13 +91,20 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
   // Request only the helper path in addition to the unchanged routes. The
   // provider may ignore this config with keep_assets; Stage A must reject that
   // readback and never broaden routing to all assets as a workaround.
-  const runWorkerFirst=[...raw.filter(x=>x!=='/glow-save-sync.mjs'),'/glow-save-sync.mjs'];
+  if(!['selective','global-approved-stage-a'].includes(workerFirstMode))
+    throw Error('WORKER_FIRST_MODE_INVALID');
+  const runWorkerFirst=workerFirstMode==='global-approved-stage-a'?true:
+    [...raw.filter(x=>x!=='/glow-save-sync.mjs'),'/glow-save-sync.mjs'];
   const metadata={main_module:'index.js',keep_assets:true,compatibility_date:'2026-07-28',
     compatibility_flags:[],usage_model:'standard',
     assets:{config:{base_path:'/',run_worker_first:runWorkerFirst}},
     bindings:[{name:'ASSETS',type:'assets'},
       ...workerSettings.bindings.filter(b=>b.name!=='ASSETS').map(b=>({name:b.name,type:'inherit'}))]};
-  const result={schema:'hbnf.cloudflare.keep-assets-candidate.v1',status:'BLOCKED_LEGACY_API_ROUTE_CONFIG_NOT_PROVIDER_VERIFIED',
+  const result={schema:'hbnf.cloudflare.keep-assets-candidate.v1',status:workerFirstMode==='global-approved-stage-a'?
+    'STAGE_A_GLOBAL_WORKER_FIRST_OWNER_APPROVED_PROVIDER_READBACK_REQUIRED':
+    'BLOCKED_LEGACY_API_ROUTE_CONFIG_NOT_PROVIDER_VERIFIED',
+    routingScope:workerFirstMode==='global-approved-stage-a'?'GLOBAL_WORKER_FIRST_STAGE_A_ONLY':'SELECTIVE_WORKER_FIRST',
+    assetStrategy:`legacy-keep-assets-strict-latest-v${workerSettings.latestVersionNumber}`,
     baselineVersionId:versionId,sourceCaptureSha256:capture.source.sha256,
     originalModuleSha256:sha(parts.get('index.js')),originalMapSha256:sha(parts.get('index.js.map')),
     helperSha256:sha(Buffer.from(helper)),candidateModuleSha256:sha(Buffer.from(patched)),
@@ -112,7 +120,9 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
       providerRetentionReadbackRequired:true},
     preservation:{assetCollection:'keep_assets requested; provider asset identity and file bytes not enumerated',
       cartAssets:'separate Worker routes; no Cart asset mutation or byte-level verification in this HBNF operation',
-      otherWorkerPaths:'existing index.js retained except helper dispatch addition; routing list retains /api/* and /internal/*',
+      otherWorkerPaths:workerFirstMode==='global-approved-stage-a'?
+        'all asset requests invoke Worker; existing non-helper paths fall through to unchanged ASSETS.fetch(request); staging only, production traffic separately gated':
+        'existing index.js retained except helper dispatch addition; routing list retains /api/* and /internal/*',
       cron:'existing scheduled handler source unchanged',rollbackVersionId:versionId},
     lineage:{activeVersionId:workerSettings.activeVersionId,latestVersionId:workerSettings.latestVersionId,
       latestVersionNumber:workerSettings.latestVersionNumber,versionListPageSize:workerSettings.versionListPageSize,
@@ -143,12 +153,12 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
 }
 
 if(import.meta.url===`file://${process.argv[1]}`){
-  const [capturePath,helperPath,settingsPath,outDir]=process.argv.slice(2);
+  const [capturePath,helperPath,settingsPath,outDir,workerFirstMode='selective']=process.argv.slice(2);
   if(!capturePath||!helperPath||!settingsPath||!outDir)throw Error('USAGE capture.json helper.mjs safe-settings.json output-dir');
   const capture=JSON.parse(await readFile(resolve(capturePath),'utf8'));
   const helper=await readFile(resolve(helperPath));
   const settings=JSON.parse(await readFile(resolve(settingsPath),'utf8'));
-  const built=buildKeepAssetsCandidate({capture,helper,workerSettings:settings});
+  const built=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,workerFirstMode});
   const out=resolve(outDir);await (await import('node:fs/promises')).mkdir(out,{recursive:true});
   await writeFile(resolve(out,'index.js'),built.module,{mode:0o600});
   await writeFile(resolve(out,'index.mjs'),built.module,{mode:0o600});

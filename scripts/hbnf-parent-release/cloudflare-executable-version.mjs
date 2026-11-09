@@ -300,6 +300,10 @@ function workerFirstCovers(config,paths){
   // static assets. This release only admits the exact selective path list.
   return Array.isArray(config)&&paths.every(path=>config.includes(path));
 }
+function workerFirstMatchesCandidate(config,candidate,paths){
+  if(candidate?.routingScope==='GLOBAL_WORKER_FIRST_STAGE_A_ONLY')return config===true;
+  return candidate?.routingScope==='SELECTIVE_WORKER_FIRST'&&workerFirstCovers(config,paths);
+}
 function parseLegacyMultipartCandidate(bytes,contentType){
   const boundary=String(contentType||'').match(/(?:^|;)\s*boundary=([^;\s]+)/i)?.[1];
   fail(boundary&&boundary.length<200,'LEGACY_MULTIPART_BOUNDARY');
@@ -331,7 +335,8 @@ export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candida
   if(expectedSourceHead)fail(candidate?.sourceHead===expectedSourceHead,'LEGACY_CANDIDATE_HEAD');
   const metadata=candidate.metadata;
   fail(metadata.assets?.config?.base_path==='/'&&
-    workerFirstCovers(metadata.assets.config.run_worker_first,['/api/*','/internal/*','/glow-save-sync.mjs']),
+    workerFirstMatchesCandidate(metadata.assets.config.run_worker_first,candidate,
+      ['/api/*','/internal/*','/glow-save-sync.mjs']),
     'LEGACY_CANDIDATE_ASSET_ROUTES');
   const bindings=metadata.bindings||[];
   fail(bindings.length===8&&bindings.some(b=>b.name==='ASSETS'&&b.type==='assets')&&
@@ -354,7 +359,8 @@ export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candida
     'LEGACY_CANDIDATE_SOURCEMAP_REFERENCE');
   return {candidateSha256,bytes:raw.length,moduleSha256:candidate.candidateModuleSha256,
     helperSha256:candidate.helperSha256,moduleCount:moduleMap.size,keepAssets:true,
-    workerFirstPaths:metadata.assets.config.run_worker_first.slice()};
+    workerFirstPaths:metadata.assets.config.run_worker_first===true?['/*']:
+      metadata.assets.config.run_worker_first.slice()};
 }
 // Cloudflare's legacy Scripts upload endpoint is the documented keep_assets
 // route. Its strict inheritance semantics resolve `type: inherit` against the
@@ -382,7 +388,10 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
   const stage=parentRecord?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.stageA;
   fail(stage?.transactionId===expectedTransactionId&&stage?.candidateFileId===candidateFileId&&
     stage?.candidateSha256===candidateSha256&&stage?.sourceHead===expectedSourceHead&&
-    stage?.candidateBytes===proof.bytes&&stage?.assetStrategy==='legacy-keep-assets-strict-latest-v349'&&
+    stage?.candidateBytes===proof.bytes&&stage?.assetStrategy===candidate.assetStrategy&&
+    stage?.routingScope===candidate.routingScope&&
+    (candidate.routingScope!=='GLOBAL_WORKER_FIRST_STAGE_A_ONLY'||
+      stage?.globalWorkerFirstOwnerApproved===true)&&
     stage?.expectedLatestVersionId===expectedLatestVersionId&&
     stage?.productionTrafficAuthorized===false,'LEGACY_STAGE_NOT_BOUND_TO_REV10');
   fail((await requireParentAdmission(parentRecord,{manifestSha256,candidateSha256,
@@ -423,7 +432,8 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
     fail(JSON.stringify(runtimeIdentity(baseVersion))===JSON.stringify(runtimeIdentity(latestVersion))&&
       baseConfig.base_path==='/'&&workerFirstCovers(baseConfig.run_worker_first,['/api/*','/internal/*']),
       'LEGACY_RUNTIME_METADATA_DRIFT');
-    fail(workerFirstCovers(candidate.metadata.assets.config.run_worker_first,baseConfig.run_worker_first)&&
+    fail(workerFirstMatchesCandidate(candidate.metadata.assets.config.run_worker_first,candidate,
+      baseConfig.run_worker_first)&&
       candidate.metadata.assets.config.base_path===baseConfig.base_path&&
       candidate.metadata.compatibility_date===runtimeIdentity(baseVersion).compatibility_date&&
       JSON.stringify(candidate.metadata.compatibility_flags)===JSON.stringify(runtimeIdentity(baseVersion).compatibility_flags)&&
@@ -490,7 +500,7 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
     type:b.name==='ASSETS'?'assets':(finalPreimage.latestVersion.resources?.bindings||[]).find(x=>x.name===b.name)?.type})));
   fail(JSON.stringify(actualBindings)===JSON.stringify(expectedNames),'LEGACY_VERSION_BINDING_READBACK');
   const config=legacyAssetConfig(verified);
-  fail(config.base_path==='/'&&workerFirstCovers(config.run_worker_first,
+  fail(config.base_path==='/'&&workerFirstMatchesCandidate(config.run_worker_first,candidate,
     ['/api/*','/internal/*','/glow-save-sync.mjs']),
     'LEGACY_VERSION_ASSET_ROUTING_READBACK');
   const afterVersions=versionListItems(await c.callEnvelope(workerPath+'/versions?per_page=100'),

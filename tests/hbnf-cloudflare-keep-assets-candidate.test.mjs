@@ -12,6 +12,7 @@ const versionId='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const helper=await readFile(new URL('../public/glow-save-sync.mjs',import.meta.url));
 const settings={activeVersionId:versionId,latestVersionId:versionId,latestVersionNumber:348,
  firstListedVersionId:versionId,firstListedVersionNumber:348,versionListPageSize:100,newestFirstVerified:true,
+ versionListTotalCount:348,latestBindingsMatchBaseline:true,latestRuntimeMatchesBaseline:true,
  runtime:{assets:{static_routing:{user_worker:['/api/*','/internal/*']},serve_directly:true,base_path:'/'},compatibility_date:'2026-07-28',usage_model:'standard'},
  bindings:[{name:'ASSETS',type:'assets'},{name:'SUPABASE_SERVICE_ROLE_KEY',type:'secret_text'},
  {name:'SUPABASE_URL',type:'plain_text'},{name:'UDISC_GLOW_ACCESS_APPROVED',type:'plain_text'},
@@ -19,7 +20,7 @@ const settings={activeVersionId:versionId,latestVersionId:versionId,latestVersio
  {name:'UDISC_GLOW_WINDOW_END',type:'plain_text'},{name:'UDISC_GLOW_WINDOW_START',type:'plain_text'}]};
 
 function captureFixture(){
- const original=`const EXPORT_PATH='/api/udisc-glow-export';\nconst EVENTS_PATH='/api/udisc-glow-events';\nconst GLOW_SYNC_PATH='/internal/udisc-glow-sync';\nfunction errorResponse(status,message,headers={}){return new Response(message,{status,headers});}\nvar index_default = {\n  fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (path === EXPORT_PATH || path === EVENTS_PATH || path === GLOW_SYNC_PATH) return errorResponse(404, "Not found.");\n    return env.ASSETS.fetch(request);\n  },\n  async scheduled(_controller, env, ctx) {\n    ctx.waitUntil(Promise.resolve());\n  }\n};\nexport { index_default as default };\n`;
+ const original=`const EXPORT_PATH='/api/udisc-glow-export';\nconst EVENTS_PATH='/api/udisc-glow-events';\nconst GLOW_SYNC_PATH='/internal/udisc-glow-sync';\nfunction errorResponse(status,message,headers={}){return new Response(message,{status,headers});}\nvar index_default = {\n  fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (path === EXPORT_PATH || path === EVENTS_PATH || path === GLOW_SYNC_PATH) return errorResponse(404, "Not found.");\n    return env.ASSETS.fetch(request);\n  },\n  async scheduled(_controller, env, ctx) {\n    ctx.waitUntil(Promise.resolve());\n  }\n};\nexport { index_default as default };\n//# sourceMappingURL=index.js.map\n`;
  const map=Buffer.from('{"version":3,"sources":["index.js"],"mappings":""}');
  const boundary='portable-capture-fixture';
  const chunks=[];
@@ -108,7 +109,7 @@ test('multipart upload body binds metadata and exact module parts',()=>{
  const body=built.multipart.toString('latin1');
  assert.match(body,/name="metadata"/);
  assert.match(body,/name="index\.js"; filename="index\.js"/);
- assert.match(body,/name="index\.js\.map"; filename="index\.js\.map"/);
+ assert.doesNotMatch(body,/name="index\.js\.map"/);
  assert.match(body,/"keep_assets":true/);
  assert.equal(built.result.upload.bytes,built.multipart.length);
  assert.equal(built.result.upload.sha256,sha(built.multipart));
