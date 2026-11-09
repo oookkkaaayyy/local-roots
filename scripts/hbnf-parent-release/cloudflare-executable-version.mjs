@@ -284,6 +284,214 @@ function versionListItems(envelope,{expectedCount,expectedLatestVersionId,requir
   for(const id of requiredIds)fail(items.some(v=>v.id===id),'VERSION_LIST_REQUIRED_VERSION');
   return items;
 }
+
+const canonicalBindings=bindings=>(bindings||[]).map(b=>({name:b.name,type:b.type}))
+  .sort((a,b)=>a.name.localeCompare(b.name));
+function legacyAssetConfig(version){
+  const runtime=version?.resources?.script_runtime||version?.script_runtime||{};
+  const a=runtime.assets||version?.assets?.config||{};
+  return {base_path:a.base_path,run_worker_first:a.static_routing?.user_worker||
+    a.raw_run_worker_first||a.run_worker_first};
+}
+function parseLegacyMultipartCandidate(bytes,contentType){
+  const boundary=String(contentType||'').match(/(?:^|;)\s*boundary=([^;\s]+)/i)?.[1];
+  fail(boundary&&boundary.length<200,'LEGACY_MULTIPART_BOUNDARY');
+  const parts=new Map();
+  for(const raw of Buffer.from(bytes).toString('latin1').split(`--${boundary}`)){
+    const name=raw.match(/Content-Disposition:\s*form-data;\s*name="([^"]+)"/i)?.[1];
+    if(!name)continue;
+    fail(!parts.has(name),'LEGACY_MULTIPART_DUPLICATE_PART');
+    const split=raw.indexOf('\r\n\r\n');fail(split>=0,'LEGACY_MULTIPART_PART_HEADER');
+    parts.set(name,Buffer.from(raw.slice(split+4).replace(/\r\n$/,''),'latin1'));
+  }
+  return parts;
+}
+export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candidateSha256,expectedSourceHead,
+  expectedModuleSha256='e9f0611d5ba7ca72db4a0792be1178fab80a1b399734e403664105ce17a0ef69',
+  expectedHelperSha256='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a'}){
+  const raw=Buffer.from(candidateBytes||[]);
+  fail(candidate?.schema==='hbnf.cloudflare.keep-assets-candidate.v1'&&
+    candidate?.baselineVersionId===P0_V348&&candidate?.metadata?.keep_assets===true,
+    'LEGACY_CANDIDATE_IDENTITY');
+  fail(raw.length===candidate.upload?.bytes&&sha256(raw)===candidateSha256&&
+    candidate.upload.sha256===candidateSha256,'LEGACY_CANDIDATE_BYTES');
+  fail(candidate?.candidateModuleSha256===expectedModuleSha256&&
+    candidate?.helperSha256===expectedHelperSha256&&candidate?.metadata?.compatibility_date==='2026-07-28',
+    'LEGACY_CANDIDATE_SOURCE');
+  fail(candidate.metadata.usage_model==='standard'&&
+    Array.isArray(candidate.metadata.compatibility_flags)&&candidate.metadata.compatibility_flags.length===0,
+    'LEGACY_CANDIDATE_RUNTIME');
+  if(expectedSourceHead)fail(candidate?.sourceHead===expectedSourceHead,'LEGACY_CANDIDATE_HEAD');
+  const metadata=candidate.metadata;
+  fail(metadata.assets?.config?.base_path==='/'&&
+    Array.isArray(metadata.assets.config.run_worker_first)&&
+    ['/api/*','/internal/*','/glow-save-sync.mjs'].every(x=>metadata.assets.config.run_worker_first.includes(x)),
+    'LEGACY_CANDIDATE_ASSET_ROUTES');
+  const bindings=metadata.bindings||[];
+  fail(bindings.length===8&&bindings.some(b=>b.name==='ASSETS'&&b.type==='assets')&&
+    bindings.filter(b=>b.name!=='ASSETS').length===7&&
+    bindings.filter(b=>b.name!=='ASSETS').every(b=>b.type==='inherit'&&!Object.hasOwn(b,'version_id')),
+    'LEGACY_CANDIDATE_BINDINGS');
+  const parts=parseLegacyMultipartCandidate(raw,candidate.upload.contentType);
+  fail([...parts.keys()].sort().join('|')==='index.js|index.js.map|metadata',
+    'LEGACY_CANDIDATE_PARTS');
+  let embedded;try{embedded=JSON.parse(parts.get('metadata').toString('utf8'));}
+  catch{fail(false,'LEGACY_CANDIDATE_METADATA_JSON');}
+  fail(JSON.stringify(embedded)===JSON.stringify(metadata),'LEGACY_CANDIDATE_METADATA_DRIFT');
+  const moduleMap=new Map(candidate.modules.map(m=>[m.name,Buffer.from(m.content_base64,'base64')]));
+  fail(moduleMap.size===2&&moduleMap.has('index.js')&&moduleMap.has('index.js.map')&&
+    sha256(parts.get('index.js'))===candidate.candidateModuleSha256&&
+    Buffer.compare(parts.get('index.js'),moduleMap.get('index.js'))===0&&
+    Buffer.compare(parts.get('index.js.map'),moduleMap.get('index.js.map'))===0,
+    'LEGACY_CANDIDATE_MODULE_CLOSURE');
+  fail(/[#@]\s*sourceMappingURL\s*=\s*index\.js\.map/.test(moduleMap.get('index.js').toString('utf8')),
+    'LEGACY_CANDIDATE_SOURCEMAP_REFERENCE');
+  return {candidateSha256,bytes:raw.length,moduleSha256:candidate.candidateModuleSha256,
+    helperSha256:candidate.helperSha256,moduleCount:moduleMap.size,keepAssets:true,
+    workerFirstPaths:metadata.assets.config.run_worker_first.slice()};
+}
+// Cloudflare's legacy Scripts upload endpoint is the documented keep_assets
+// route. Its strict inheritance semantics resolve `type: inherit` against the
+// most recently uploaded version, so this adapter binds preflight to exact v349
+// as latest and refuses any drift. It never promotes traffic or uploads assets.
+export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='hbnf',fetchImpl=fetch,
+  candidate,candidateBytes,candidateSha256,candidateFileId,expectedSourceHead,baselineVersionId=P0_V348,
+  expectedModuleSha256='e9f0611d5ba7ca72db4a0792be1178fab80a1b399734e403664105ce17a0ef69',
+  expectedHelperSha256='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
+  expectedLatestVersionId='049a35e1-64b5-4e76-9378-ca4ffa0a7d47',expectedLatestNumber=349,
+  expectedVersionCount=349,expectedDeploymentId='c4f4ce98-4635-4010-a5e6-55e791b77c51',
+  scriptEtag=P0_V348_ETAG,latestScriptEtag='f54505dfb357ca96e52232309de2f3cb067556508d924c2088a2561fdc8d2720',
+  manifestSha256,expectedTransactionId,parentRecord,requireParentAdmission,
+  verifyCandidateDownloadback,requireFreshFiveTargetPreimage,claimOnce}){
+  fail(typeof requireParentAdmission==='function'&&typeof verifyCandidateDownloadback==='function'&&
+    typeof requireFreshFiveTargetPreimage==='function'&&typeof claimOnce==='function',
+    'LEGACY_STAGE_PROOF_CALLBACKS');
+  fail(accountId===P0_ACCOUNT&&workerName===P0_WORKER&&baselineVersionId===P0_V348&&
+    expectedLatestVersionId==='049a35e1-64b5-4e76-9378-ca4ffa0a7d47'&&
+    expectedLatestNumber===349&&expectedVersionCount===349&&hex64.test(manifestSha256||'')&&
+    /^[0-9a-f]{40}$/i.test(expectedSourceHead||'')&&typeof candidateFileId==='string'&&candidateFileId.length>10,
+    'LEGACY_STAGE_IDENTITY');
+  const proof=verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candidateSha256,expectedSourceHead,
+    expectedModuleSha256,expectedHelperSha256});
+  const stage=parentRecord?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.stageA;
+  fail(stage?.transactionId===expectedTransactionId&&stage?.candidateFileId===candidateFileId&&
+    stage?.candidateSha256===candidateSha256&&stage?.sourceHead===expectedSourceHead&&
+    stage?.candidateBytes===proof.bytes&&stage?.assetStrategy==='legacy-keep-assets-strict-latest-v349'&&
+    stage?.expectedLatestVersionId===expectedLatestVersionId&&
+    stage?.productionTrafficAuthorized===false,'LEGACY_STAGE_NOT_BOUND_TO_REV10');
+  fail((await requireParentAdmission(parentRecord,{manifestSha256,candidateSha256,
+    expectedLatestVersionId,expectedTransactionId}))===true,'LEGACY_STAGE_NOT_ADMITTED');
+  const downloaded=await verifyCandidateDownloadback({candidateSha256,bytes:proof.bytes});
+  fail(downloaded?.verified===true&&downloaded.sha256===candidateSha256&&
+    downloaded.bytes===proof.bytes,'LEGACY_CANDIDATE_DOWNLOADBACK');
+  const c=apiClient({token,accountId,workerName,fetchImpl});
+  const worker=await c.call(c.worker);fail(worker?.name===workerName&&workerIdPattern.test(worker.id||''),
+    'LEGACY_WORKER_ID');
+  const workerPath='/workers/workers/'+worker.id;
+  async function readPreimage(){
+    const versionsEnvelope=await c.callEnvelope(workerPath+'/versions?per_page=100');
+    const versions=versionListItems(versionsEnvelope,{expectedCount:expectedVersionCount,
+      expectedLatestVersionId,requiredIds:[baselineVersionId,expectedLatestVersionId]});
+    fail(Number(versions.find(v=>v.id===expectedLatestVersionId)?.number)===expectedLatestNumber&&
+      Number(versions.find(v=>v.id===baselineVersionId)?.number)===348,'LEGACY_VERSION_NUMBER_DRIFT');
+    const deployments=await c.call(c.script+'/deployments');
+    const active=deployments?.deployments?.[0];
+    fail(active?.id===expectedDeploymentId&&active?.versions?.length===1&&active.versions[0]?.version_id===baselineVersionId&&
+      active.versions[0]?.percentage===100,'LEGACY_ACTIVE_DEPLOYMENT_DRIFT');
+    const [baseVersion,latestVersion]=await Promise.all([
+      c.call(c.script+'/versions/'+baselineVersionId),c.call(c.script+'/versions/'+expectedLatestVersionId)
+    ]);
+    fail(baseVersion?.id===baselineVersionId&&baseVersion.resources?.script?.etag===scriptEtag&&
+      latestVersion?.id===expectedLatestVersionId&&latestVersion.resources?.script?.etag===latestScriptEtag,
+      'LEGACY_VERSION_ETAG_DRIFT');
+    const baseBindings=canonicalBindings(baseVersion.resources?.bindings||baseVersion.bindings);
+    const latestBindings=canonicalBindings(latestVersion.resources?.bindings||latestVersion.bindings);
+    fail(baseBindings.length===8&&JSON.stringify(baseBindings)===JSON.stringify(latestBindings)&&
+      JSON.stringify(baseBindings)===JSON.stringify(canonicalBindings(candidate.metadata.bindings.map(b=>
+        b.name==='ASSETS'?b:{name:b.name,type:latestBindings.find(x=>x.name===b.name)?.type}))),
+      'LEGACY_BINDING_METADATA_DRIFT');
+    const baseConfig=legacyAssetConfig(baseVersion),latestConfig=legacyAssetConfig(latestVersion);
+    const runtimeIdentity=v=>({compatibility_date:v.resources?.script_runtime?.compatibility_date,
+      compatibility_flags:v.resources?.script_runtime?.compatibility_flags||[],
+      usage_model:v.resources?.script_runtime?.usage_model,assets:legacyAssetConfig(v)});
+    fail(JSON.stringify(runtimeIdentity(baseVersion))===JSON.stringify(runtimeIdentity(latestVersion))&&
+      baseConfig.base_path==='/'&&Array.isArray(baseConfig.run_worker_first)&&
+      ['/api/*','/internal/*'].every(x=>baseConfig.run_worker_first.includes(x)),
+      'LEGACY_RUNTIME_METADATA_DRIFT');
+    fail(baseConfig.run_worker_first.every(path=>candidate.metadata.assets.config.run_worker_first.includes(path))&&
+      candidate.metadata.assets.config.base_path===baseConfig.base_path&&
+      candidate.metadata.compatibility_date===runtimeIdentity(baseVersion).compatibility_date&&
+      JSON.stringify(candidate.metadata.compatibility_flags)===JSON.stringify(runtimeIdentity(baseVersion).compatibility_flags)&&
+      candidate.metadata.usage_model===runtimeIdentity(baseVersion).usage_model,
+      'LEGACY_BASELINE_BEHAVIOR_NOT_PRESERVED');
+    return {versions,activeDeploymentId:active.id,baseVersion,latestVersion};
+  }
+  await readPreimage();
+  fail((await requireFreshFiveTargetPreimage())===true,'LEGACY_FIVE_TARGET_PREIMAGE_NOT_FRESH');
+  const finalPreimage=await readPreimage();
+  fail((await requireFreshFiveTargetPreimage())===true,'LEGACY_IMMEDIATE_FIVE_TARGET_PREIMAGE');
+  const claim=await claimOnce({manifestSha256,candidateSha256,baselineVersionId,
+    expectedLatestVersionId,expectedVersionCount,expectedTransactionId,candidateFileId,
+    expectedSourceHead,workerId:worker.id});
+  fail(claim?.acquired===true&&claim?.durable===true&&claim?.manifestSha256===manifestSha256&&
+    claim?.transactionId===expectedTransactionId,'LEGACY_ONE_TIME_CLAIM');
+  const url=`https://api.cloudflare.com/client/v4/accounts/${accountId}${c.script}/versions?bindings_inherit=strict`;
+  const contentType=candidate.upload.contentType;
+  const callUpload=async()=>{
+    const response=await fetchImpl(url,{method:'POST',headers:{Authorization:'Bearer '+token,
+      'Content-Type':contentType},body:Buffer.from(candidateBytes)});
+    let payload;try{payload=await response.json();}catch{payload=null;}
+    if(!response.ok||payload?.success===false){const error=Error('P0_CLOUDFLARE_HTTP_POST_'+response.status);
+      error.status=response.status;error.providerErrors=sanitizeProviderErrors(payload?.errors,{secrets:[token]});throw error;}
+    return payload?.result;
+  };
+  let created;
+  try{created=await callUpload();}
+  catch(error){
+    // No retry: identify a committed version by exact provider-readback module
+    // bytes, not a self-declared annotation or a blind resend.
+    let envelope;try{envelope=await c.callEnvelope(workerPath+'/versions?per_page=100');}
+    catch{throw Object.assign(Error('P0_LEGACY_KEEP_ASSETS_CREATE_AMBIGUOUS_READBACK_FAILED'),{cause:error});}
+    const listed=versionListItems(envelope);const newer=listed.filter(v=>Number(v.number)>expectedLatestNumber);
+    const matches=[];
+    for(const version of newer){
+      if(!version.id)continue;
+      const readback=await c.call(workerPath+'/versions/'+version.id+'?include=modules,sourcemaps');
+      const main=readback?.modules?.find(m=>m.name==='index.js');
+      if(main&&sha256(Buffer.from(main.content_base64||'','base64'))===proof.moduleSha256)
+        matches.push({id:version.id,number:version.number});
+    }
+    fail(matches.length===1,'LEGACY_AMBIGUOUS_CREATE_NOT_UNIQUELY_READ_BACK');
+    created=matches[0];
+  }
+  fail(uuid.test(created?.id)&&created.id!==baselineVersionId,'LEGACY_VERSION_CREATE_RESPONSE');
+  const versionId=created.id;
+  const verified=await c.call(workerPath+'/versions/'+versionId+'?include=modules,sourcemaps');
+  fail(verified?.id===versionId,'LEGACY_VERSION_READBACK_ID');
+  const sourceIdentity=verifyVersionModules(verified.modules,candidate.modules,'index.js');
+  fail(sourceIdentity.mainModuleSha256===proof.moduleSha256,'LEGACY_VERSION_MODULE_PARITY');
+  const actualBindings=canonicalBindings(verified.resources?.bindings||verified.bindings);
+  const expectedNames=canonicalBindings(candidate.metadata.bindings.map(b=>({name:b.name,
+    type:b.name==='ASSETS'?'assets':(finalPreimage.latestVersion.resources?.bindings||[]).find(x=>x.name===b.name)?.type})));
+  fail(JSON.stringify(actualBindings)===JSON.stringify(expectedNames),'LEGACY_VERSION_BINDING_READBACK');
+  const config=legacyAssetConfig(verified);
+  fail(config.base_path==='/'&&Array.isArray(config.run_worker_first)&&
+    ['/api/*','/internal/*','/glow-save-sync.mjs'].every(x=>config.run_worker_first.includes(x)),
+    'LEGACY_VERSION_ASSET_ROUTING_READBACK');
+  const afterVersions=versionListItems(await c.callEnvelope(workerPath+'/versions?per_page=100'),
+    {expectedCount:expectedVersionCount+1,expectedLatestVersionId:versionId});
+  const afterDeployment=await c.call(c.script+'/deployments');
+  fail(afterDeployment?.deployments?.[0]?.versions?.length===1&&
+    afterDeployment.deployments[0].versions[0]?.version_id===baselineVersionId&&
+    afterDeployment.deployments[0].versions[0]?.percentage===100,'LEGACY_ACTIVE_TRAFFIC_CHANGED');
+  fail(afterVersions.some(v=>v.id===baselineVersionId)&&afterVersions.some(v=>v.id===expectedLatestVersionId)&&
+    afterVersions.some(v=>v.id===versionId),'LEGACY_ROLLBACK_OR_CANDIDATE_NOT_RETAINED');
+  return {status:'LEGACY_KEEP_ASSETS_VERSION_CREATED_NOT_DEPLOYED',versionId,
+    activeDeploymentId:afterDeployment.deployments[0].id,
+    bindingInheritance:{mode:'bindings_inherit=strict',resolvedAgainstVersionAtPrechange:expectedLatestVersionId,
+      secretValuesDirectlyReadable:false},sourceIdentity,activeVersionId:baselineVersionId,activePercentage:100,
+    moduleCount:sourceIdentity.moduleCount,assetsDirective:'keep_assets:true',workerFirst:config.run_worker_first};
+}
 // Constructs a true new, UNDEPLOYED executable Worker version. All three
 // proof callbacks must be implemented by the real rev10 parent; a boolean
 // or injected "approved" field alone is not authorization.
