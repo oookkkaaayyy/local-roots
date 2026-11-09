@@ -108,7 +108,7 @@ test('explicit Stage A owner approval binds a global Worker-first candidate with
  const builtGlobal=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,
   workerFirstMode:'global-approved-stage-a'});
  const globalCandidate={...builtGlobal.result,baselineVersionId:v348,sourceHead};
- assert.deepEqual(globalCandidate.metadata.assets.config.run_worker_first,['/*']);
+ assert.equal(globalCandidate.metadata.assets.config.run_worker_first,true);
  const globalBytes=builtGlobal.multipart,globalSha=sha256(globalBytes);
  const unapprovedRecord=parentRecordFor(globalCandidate,globalBytes,globalSha);
  const unapprovedProvider=provider({globalWorkerFirst:true,candidateSha:globalSha,readbackCandidate:globalCandidate});

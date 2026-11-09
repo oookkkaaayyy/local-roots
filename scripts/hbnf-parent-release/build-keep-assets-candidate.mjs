@@ -93,10 +93,10 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
   // readback and never broaden routing to all assets as a workaround.
   if(!['selective','global-approved-stage-a'].includes(workerFirstMode))
     throw Error('WORKER_FIRST_MODE_INVALID');
-  // The provider accepted the boolean but read v351 back with only its old
-  // selective paths. Emit the equivalent catch-all path form so the
-  // version API has an explicit route pattern to retain and verify.
-  const runWorkerFirst=workerFirstMode==='global-approved-stage-a'?['/*']:
+  // Cloudflare's documented global Worker-first value is the boolean true.
+  // A catch-all array (['/*']) was accepted but read back as the prior routes
+  // when combined with keep_assets, so never treat it as equivalent input.
+  const runWorkerFirst=workerFirstMode==='global-approved-stage-a'?true:
     [...raw.filter(x=>x!=='/glow-save-sync.mjs'),'/glow-save-sync.mjs'];
   const metadata={main_module:'index.js',keep_assets:true,compatibility_date:'2026-07-28',
     compatibility_flags:[],usage_model:'standard',
@@ -124,7 +124,7 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
     preservation:{assetCollection:'keep_assets requested; provider asset identity and file bytes not enumerated',
       cartAssets:'separate Worker routes; no Cart asset mutation or byte-level verification in this HBNF operation',
       otherWorkerPaths:workerFirstMode==='global-approved-stage-a'?
-        'all asset requests invoke Worker; existing non-helper paths fall through to unchanged ASSETS.fetch(request); staging only, production traffic separately gated':
+        'run_worker_first:true sends all static asset requests through the unchanged Worker dispatch; non-helper paths fall through to unchanged ASSETS.fetch(request); staging only, production traffic separately gated':
         'existing index.js retained except helper dispatch addition; routing list retains /api/* and /internal/*',
       cron:'existing scheduled handler source unchanged',rollbackVersionId:versionId},
     lineage:{activeVersionId:workerSettings.activeVersionId,latestVersionId:workerSettings.latestVersionId,
