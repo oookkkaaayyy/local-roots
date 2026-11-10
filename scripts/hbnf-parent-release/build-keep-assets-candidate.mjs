@@ -43,8 +43,15 @@ export function parseMultipart(bytes){
   return {boundary,parts};
 }
 
+export function replaceGlowSaveLocal(html,liveSaveLocal,correctedSaveLocal){
+  if(typeof html!=='string'||typeof liveSaveLocal!=='string'||typeof correctedSaveLocal!=='string')throw Error('GLOW_HTML_PATCH_INPUT_INVALID');
+  if(html.includes(correctedSaveLocal))return {status:'already-correct',html};
+  if(html.split(liveSaveLocal).length!==2)throw Error('GLOW_HTML_PATCH_ANCHOR_NOT_EXACT');
+  return {status:'patched',html:html.replace(liveSaveLocal,correctedSaveLocal)};
+}
+
 export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionId=EXPECTED_VERSION,
-  workerFirstMode='selective',sourceHead}){
+  workerFirstMode='selective',sourceHead,liveGlowHtml,candidateGlowHtml,liveGlowHtmlEvidence}){
   if(capture?.before?.versionId!==versionId||capture?.after?.versionId!==versionId||
      capture?.origin!=='AUTHENTICATED_CLOUDFLARE_GET')throw Error('V348_CAPTURE_MISMATCH');
   const captureBytes=Buffer.from(capture.source?.multipartBase64||'','base64');
@@ -65,12 +72,26 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
   const helperText=Buffer.from(helper).toString('utf8');
   if(!helperText.includes('createGlowSaveCoordinator')||!helperText.includes('compareAndSwap'))
     throw Error('HELPER_SOURCE_NOT_VERIFIED');
+  if(typeof liveGlowHtml!=='string'||typeof candidateGlowHtml!=='string')throw Error('LIVE_GLOW_HTML_SOURCE_REQUIRED');
+  if(liveGlowHtmlEvidence?.origin!=='PRODUCTION_HTTPS_GET'||liveGlowHtmlEvidence?.path!=='/glow'||
+     liveGlowHtmlEvidence?.status!==200||liveGlowHtmlEvidence?.contentType?.startsWith('text/html')!==true||
+     liveGlowHtmlEvidence?.sha256!==sha(Buffer.from(liveGlowHtml))||liveGlowHtmlEvidence?.bytes!==Buffer.byteLength(liveGlowHtml))
+    throw Error('LIVE_GLOW_HTML_PROVENANCE_MISMATCH');
+  if(!liveGlowHtml.includes("import('./glow-save-sync.mjs')")||!liveGlowHtml.includes("rpc('hbnf_save_league_state_v1'")||
+     !candidateGlowHtml.includes("import('./glow-save-sync.mjs')")||!candidateGlowHtml.includes("rpc('hbnf_save_league_state_v1'"))
+    throw Error('GLOW_HELPER_OR_CAS_SOURCE_UNVERIFIED');
+  const saveLocalFrom=html=>{const start=html.indexOf('const saveLocal='),end=html.indexOf(';const getWeek',start);if(start<0||end<0)throw Error('GLOW_SAVE_LOCAL_ANCHOR_MISSING');return html.slice(start,end+1);};
+  const liveSaveLocal=saveLocalFrom(liveGlowHtml),correctedSaveLocal=saveLocalFrom(candidateGlowHtml);
+  if(liveSaveLocal===correctedSaveLocal||!correctedSaveLocal.includes('ctx.earlyLocalDraft=true'))throw Error('GLOW_SAVE_LOCAL_CORRECTION_NOT_DISTINCT');
+  const liveGlowHtmlSha256=sha(Buffer.from(liveGlowHtml)),candidateGlowHtmlSha256=sha(Buffer.from(candidateGlowHtml));
   const literal=JSON.stringify(helperText);
   const insertion=`var glowSaveAckSource = ${literal};\n`;
-  let patched=original.replace('var index_default = {',insertion+'var index_default = {');
+  const htmlBindings=`var glowLiveSaveLocal = ${JSON.stringify(liveSaveLocal)};\nvar glowCorrectedSaveLocal = ${JSON.stringify(correctedSaveLocal)};\n`;
+  let patched=original.replace('var index_default = {',insertion+htmlBindings+'var index_default = {');
   if(patched===original)throw Error('WORKER_ENTRY_ANCHOR_MISMATCH');
   const route=`    if (path === "${HELPER_PATH}") {\n      if (request.method !== "GET" && request.method !== "HEAD") return errorResponse(405, "Method not allowed.", { "Allow": "GET, HEAD" });\n      return new Response(request.method === "HEAD" ? null : glowSaveAckSource, { headers: { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff" } });\n    }\n`;
-  patched=patched.replace(marker,route+marker);
+  const glowRoute=`    if (path === "/glow" || path === "/glow.html") {\n      if (request.method !== "GET") return env.ASSETS.fetch(request);\n      return env.ASSETS.fetch(request).then(async response => {\n      if (!response.ok || !(response.headers.get("content-type") || "").toLowerCase().includes("text/html")) return response;\n      const html = await response.clone().text();\n      if (html.includes(glowCorrectedSaveLocal)) return response;\n      if (html.split(glowLiveSaveLocal).length !== 2) return new Response("Glow save path version mismatch", { status: 503, headers: { "Cache-Control": "no-store" } });\n      const headers = new Headers(response.headers);\n      for (const name of ["content-length", "content-encoding", "etag", "last-modified"]) headers.delete(name);\n      headers.set("Cache-Control", "no-store");\n      return new Response(html.replace(glowLiveSaveLocal, glowCorrectedSaveLocal), { status: response.status, statusText: response.statusText, headers });\n      });\n    }\n`;
+  patched=patched.replace(marker,glowRoute+route+marker);
   const raw=workerSettings?.runtime?.assets?.static_routing?.user_worker;
   if(!Array.isArray(raw)||!raw.includes('/api/*')||!raw.includes('/internal/*'))
     throw Error('EXISTING_ASSET_ROUTING_UNVERIFIED');
@@ -112,6 +133,7 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
     assetStrategy:`legacy-keep-assets-strict-latest-v${workerSettings.latestVersionNumber}`,
     baselineVersionId:versionId,sourceCaptureSha256:capture.source.sha256,
     originalModuleSha256:sha(parts.get('index.js')),originalMapSha256:sha(parts.get('index.js.map')),
+    liveGlowHtml:{...liveGlowHtmlEvidence,sha256:liveGlowHtmlSha256,candidateSourceSha256:candidateGlowHtmlSha256},
     helperSha256:sha(Buffer.from(helper)),candidateModuleSha256:sha(Buffer.from(patched)),
     sourceMapDisposition:'PROVIDER_REJECTED_OPAQUE_NON_V3_MAP; REMOVE_ONLY_SOURCE_MAPPING_URL_AND_OMIT_DEBUG_MODULE',metadata,
     modules:[{name:'index.js',content_type:'application/javascript+module',content_base64:Buffer.from(patched).toString('base64')}],
@@ -159,12 +181,15 @@ export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionI
 }
 
 if(import.meta.url===`file://${process.argv[1]}`){
-  const [capturePath,helperPath,settingsPath,outDir,workerFirstMode='selective',sourceHead]=process.argv.slice(2);
-  if(!capturePath||!helperPath||!settingsPath||!outDir)throw Error('USAGE capture.json helper.mjs safe-settings.json output-dir');
+  const [capturePath,helperPath,settingsPath,outDir,workerFirstMode='selective',sourceHead,liveHtmlPath,candidateHtmlPath,liveEvidencePath]=process.argv.slice(2);
+  if(!capturePath||!helperPath||!settingsPath||!outDir||!liveHtmlPath||!candidateHtmlPath||!liveEvidencePath)throw Error('USAGE capture.json helper.mjs safe-settings.json output-dir worker-first-mode source-head live-glow.html candidate-glow.html live-html-evidence.json');
   const capture=JSON.parse(await readFile(resolve(capturePath),'utf8'));
   const helper=await readFile(resolve(helperPath));
   const settings=JSON.parse(await readFile(resolve(settingsPath),'utf8'));
-  const built=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,workerFirstMode,sourceHead});
+  const liveGlowHtml=await readFile(resolve(liveHtmlPath),'utf8');
+  const candidateGlowHtml=await readFile(resolve(candidateHtmlPath),'utf8');
+  const liveGlowHtmlEvidence=JSON.parse(await readFile(resolve(liveEvidencePath),'utf8'));
+  const built=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,workerFirstMode,sourceHead,liveGlowHtml,candidateGlowHtml,liveGlowHtmlEvidence});
   const out=resolve(outDir);await (await import('node:fs/promises')).mkdir(out,{recursive:true});
   await writeFile(resolve(out,'index.js'),built.module,{mode:0o600});
   await writeFile(resolve(out,'index.mjs'),built.module,{mode:0o600});

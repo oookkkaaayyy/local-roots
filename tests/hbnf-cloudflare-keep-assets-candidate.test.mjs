@@ -5,11 +5,16 @@ import {mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {buildKeepAssetsCandidate,parseMultipart} from '../scripts/hbnf-parent-release/build-keep-assets-candidate.mjs';
+import {buildKeepAssetsCandidate,parseMultipart,replaceGlowSaveLocal} from '../scripts/hbnf-parent-release/build-keep-assets-candidate.mjs';
 
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const versionId='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const helper=await readFile(new URL('../public/glow-save-sync.mjs',import.meta.url));
+const candidateGlowHtml=await readFile(new URL('../public/glow.html',import.meta.url),'utf8');
+const liveSaveLocal="const saveLocal=()=>{if(!ctx.remoteSyncing)hbnfMaybeAutoSnapshot('Auto backup before save');const raw=JSON.stringify(ctx.state);let queued=false;try{if(ctx.saveCoordinator&&!ctx.remoteSyncing&&ctx.syncReady){ctx.saveCoordinator.queue(ctx.state,ctx.remoteUpdatedAt,ctx.rootState?.glow||null);queued=true}}catch(e){setGlowSaveStatus('local-failure');throw e}try{localStorage.setItem(ctx.localKey,raw)}catch(e){if(queued){setGlowSaveStatus('pending');return}setGlowSaveStatus('local-failure');throw e}};ctx.saveLocal=saveLocal;";
+const correctedSaveLocal=(()=>{const i=candidateGlowHtml.indexOf('const saveLocal='),j=candidateGlowHtml.indexOf(';const getWeek',i);return candidateGlowHtml.slice(i,j+1)})();
+const liveGlowHtml=candidateGlowHtml.replace(correctedSaveLocal,liveSaveLocal);
+const liveGlowHtmlEvidence={origin:'PRODUCTION_HTTPS_GET',path:'/glow',status:200,contentType:'text/html; charset=utf-8',bytes:Buffer.byteLength(liveGlowHtml),sha256:sha(Buffer.from(liveGlowHtml))};
 const settings={activeVersionId:versionId,latestVersionId:versionId,latestVersionNumber:348,
  firstListedVersionId:versionId,firstListedVersionNumber:348,versionListPageSize:100,newestFirstVerified:true,
  versionListTotalCount:348,latestBindingsMatchBaseline:true,latestRuntimeMatchesBaseline:true,
@@ -34,7 +39,7 @@ function captureFixture(){
 }
 
 const temp=await mkdtemp(join(tmpdir(),'hbnf-keep-assets-'));
-const built=buildKeepAssetsCandidate({capture:captureFixture(),helper,workerSettings:settings});
+const built=buildKeepAssetsCandidate({capture:captureFixture(),helper,workerSettings:settings,liveGlowHtml,candidateGlowHtml,liveGlowHtmlEvidence});
 await writeFile(join(temp,'index.mjs'),built.module);
 test.after(async()=>rm(temp,{recursive:true,force:true}));
 const worker=await import(pathToFileURL(join(temp,'index.mjs')).href);
@@ -51,6 +56,28 @@ test('candidate returns the exact corrected helper for GET and HEAD',async()=>{
  assert.equal(head.status,200);assert.equal(await head.text(),'');
  const post=await worker.default.fetch(new Request('https://hbnightflyers.com/glow-save-sync.mjs',{method:'POST'}),{ASSETS:assets});
  assert.equal(post.status,405);assert.equal(post.headers.get('allow'),'GET, HEAD');
+});
+
+
+test('Worker rewrites only the authenticated deployed Glow save function and fails closed on drift',async()=>{
+ const assets={fetch:async request=>new Response(request.url.endsWith('/drift')?'unknown html':liveGlowHtml,{headers:{'content-type':'text/html; charset=utf-8','etag':'old','content-length':'7'}})};
+ const response=await worker.default.fetch(new Request('https://hbnightflyers.com/glow'),{ASSETS:assets});
+ assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');assert.equal(response.headers.get('etag'),null);assert.equal(response.headers.get('content-length'),null);
+ const html=await response.text();assert.ok(html.includes(correctedSaveLocal));assert.ok(!html.includes(liveSaveLocal));
+ const drift=await worker.default.fetch(new Request('https://hbnightflyers.com/glow'),{ASSETS:{fetch:async()=>new Response('unknown html',{headers:{'content-type':'text/html'}})}});
+ assert.equal(drift.status,503);assert.equal(await drift.text(),'Glow save path version mismatch');
+});
+
+test('known original export endpoint remains blocked while API fallback behavior is unchanged',async()=>{
+ const env={ASSETS:{fetch:async()=>new Response('unexpected fallback')}};
+ const response=await worker.default.fetch(new Request('https://hbnightflyers.com/api/udisc-glow-export'),env);
+ assert.equal(response.status,404);
+});
+
+test('offline helper replaces precisely one save function and rejects ambiguous anchors',()=>{
+ const result=replaceGlowSaveLocal(liveGlowHtml,liveSaveLocal,correctedSaveLocal);
+ assert.equal(result.status,'patched');assert.ok(result.html.includes(correctedSaveLocal));
+ assert.throws(()=>replaceGlowSaveLocal(liveGlowHtml+liveSaveLocal,liveSaveLocal,correctedSaveLocal),/ANCHOR_NOT_EXACT/);
 });
 
 test('other assets and API paths preserve the original Worker ASSETS dispatch',async()=>{
@@ -80,9 +107,9 @@ test('candidate is fail-closed when legacy route metadata cannot activate the he
  assert.match(built.result.preservation.cartAssets,/separate Worker routes/);
  assert.equal(built.result.acceptance.productionAdmission,'NOT_ADMITTED');
  assert.throws(()=>buildKeepAssetsCandidate({capture:captureFixture(),helper,
-  workerSettings:{...settings,latestVersionId:'0506298c-6cf5-48ea-a5ff-ea3c1bdc4341'}}),/INHERITED_BINDING_LATEST_NOT_ACTIVE_V348/);
+  workerSettings:{...settings,latestVersionId:'0506298c-6cf5-48ea-a5ff-ea3c1bdc4341'},liveGlowHtml,candidateGlowHtml,liveGlowHtmlEvidence}),/INHERITED_BINDING_LATEST_NOT_ACTIVE_V348/);
  assert.throws(()=>buildKeepAssetsCandidate({capture:captureFixture(),helper,
-  workerSettings:{...settings,firstListedVersionId:'0506298c-6cf5-48ea-a5ff-ea3c1bdc4341'}}),/INHERITED_BINDING_LATEST_NOT_ACTIVE_V348/);
+  workerSettings:{...settings,firstListedVersionId:'0506298c-6cf5-48ea-a5ff-ea3c1bdc4341'},liveGlowHtml,candidateGlowHtml,liveGlowHtmlEvidence}),/INHERITED_BINDING_LATEST_NOT_ACTIVE_V348/);
 });
 
 test('capture module closure is exact and source map bytes are preserved',()=>{
