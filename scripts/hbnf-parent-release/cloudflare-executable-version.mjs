@@ -356,11 +356,16 @@ function legacyAssetConfig(version){
   return {base_path:a.base_path,run_worker_first:a.static_routing?.user_worker||
     a.raw_run_worker_first||a.run_worker_first};
 }
-function legacyAssetBehavior(version){
+export function legacyAssetBehavior(version){
   const runtime=version?.resources?.script_runtime||version?.script_runtime||{};
   const a=runtime.assets||version?.assets?.config||{};
-  return {base_path:a.base_path,html_handling:a.html_handling,
-    not_found_handling:a.not_found_handling,serve_directly:a.serve_directly};
+  const runWorkerFirst=a.static_routing?.user_worker||a.raw_run_worker_first||a.run_worker_first;
+  // Cloudflare omits default HTML routing values from older version readbacks.
+  // Selective Worker-first routes keep the normal direct asset path, while a
+  // global run_worker_first=true setting disables direct serving for every path.
+  return {base_path:a.base_path,html_handling:a.html_handling||'auto-trailing-slash',
+    not_found_handling:a.not_found_handling||'none',
+    serve_directly:a.serve_directly??(runWorkerFirst===true?false:true)};
 }
 
 function latestVersionAssetConfig(version){
@@ -557,8 +562,17 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
     fail(routingAllowed,'LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED');
     const baseBehavior=legacyAssetBehavior(baseVersion),latestBehavior=legacyAssetBehavior(latestVersion);
     const requestedBehavior={base_path:candidate.metadata.assets.config.base_path,
-      html_handling:candidate.metadata.assets.config.html_handling,
-      not_found_handling:candidate.metadata.assets.config.not_found_handling};
+      html_handling:candidate.metadata.assets.config.html_handling||'auto-trailing-slash',
+      not_found_handling:candidate.metadata.assets.config.not_found_handling||'none'};
+    const selectiveDirectAssetBehaviorPreserved=candidate.routingScope==='SELECTIVE_GLOW_ROUTE_STAGE_A'&&
+      baseBehavior.serve_directly===true&&candidate.assetConfigExpected?.serve_directly===true&&
+      (latestBehavior.serve_directly===true||
+        (latestBehavior.serve_directly===false&&latestConfig.run_worker_first===true));
+    const directAssetBehaviorPreserved=candidate.routingScope==='GLOBAL_WORKER_FIRST_STAGE_A_ONLY'
+      ? stage?.globalWorkerFirstOwnerApproved===true
+      : candidate.routingScope==='SELECTIVE_GLOW_ROUTE_STAGE_A'
+        ? selectiveDirectAssetBehaviorPreserved
+        : baseBehavior.serve_directly===true&&latestBehavior.serve_directly===true;
     fail(routingAllowed&&
       latestConfig.base_path===baseConfig.base_path&&
       baseBehavior.base_path===requestedBehavior.base_path&&
@@ -568,6 +582,7 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
       latestBehavior.html_handling===baseBehavior.html_handling&&
       latestBehavior.not_found_handling===baseBehavior.not_found_handling&&
       JSON.stringify(runtimeIdentity(baseVersion))===JSON.stringify(runtimeIdentity(latestVersion))&&
+      directAssetBehaviorPreserved&&
       baseConfig.base_path==='/'&&workerFirstCovers(baseConfig.run_worker_first,['/api/*','/internal/*']),
       'LEGACY_RUNTIME_METADATA_DRIFT');
     fail(workerFirstMatchesCandidate(candidate.metadata.assets.config.run_worker_first,candidate,

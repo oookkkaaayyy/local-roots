@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {buildKeepAssetsCandidate,buildFrozenV355SelectiveRouteCandidate,parseMultipart} from '../scripts/hbnf-parent-release/build-keep-assets-candidate.mjs';
-import {stageLegacyKeepAssetsVersion,verifyLegacyKeepAssetsArtifact,verifyGlowHelperModuleDelta,sha256} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
+import {stageLegacyKeepAssetsVersion,verifyLegacyKeepAssetsArtifact,verifyGlowHelperModuleDelta,sha256,legacyAssetBehavior} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {prepareLegacyKeepAssetsCloudflareVersionUnderParent} from '../scripts/hbnf-parent-release/providers-live.mjs';
 
 const account='e3bc6b78f1104fa0c2a01245084594cf';
@@ -236,6 +236,18 @@ test('frozen v355 selective-route request changes metadata only and keeps other 
   assert.ok(!candidate.metadata.assets.config.run_worker_first.includes(path));
  assert.equal(candidate.API.deploy,false);
  assert.deepEqual(candidate.API.assetFileParts,[]);
+ assert.equal(candidate.assetConfigExpected.serve_directly,true);
+});
+
+test('v355 global Worker-first runtime differences do not hide v348 direct-asset defaults',()=>{
+ const v348={resources:{script_runtime:{assets:{base_path:'/',serve_directly:true,
+  static_routing:{user_worker:['/api/*','/internal/*']}}}}};
+ const v355={resources:{script_runtime:{assets:{base_path:'/',html_handling:'auto-trailing-slash',
+  not_found_handling:'none',serve_directly:false,raw_run_worker_first:true}}}};
+ assert.deepEqual(legacyAssetBehavior(v348),{base_path:'/',html_handling:'auto-trailing-slash',
+  not_found_handling:'none',serve_directly:true});
+ assert.deepEqual(legacyAssetBehavior(v355),{base_path:'/',html_handling:'auto-trailing-slash',
+  not_found_handling:'none',serve_directly:false});
 });
 
 test('legacy candidate omits rejected opaque source-map module and preserves only executable delta',()=>{
