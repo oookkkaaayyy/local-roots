@@ -1,0 +1,269 @@
+name: HBNF parent-release review-only validation
+on:
+  push:
+    branches:
+      - review/hbnf-four-writer-cas-20261029
+  pull_request:
+    paths:
+      - 'scripts/hbnf-parent-release/**'
+      - 'scripts/validate-cloudflare-worker-multipart.mjs'
+      - 'tests/hbnf-parent-release-driver.test.mjs'
+      - 'tests/hbnf-cloudflare-executable-version.test.mjs'
+      - 'tests/validate-cloudflare-worker-multipart.test.mjs'
+      - 'tests/hbnf-cloudflare-recovery.test.mjs'
+      - 'tests/hbnf-live-release-boundary.test.mjs'
+      - 'tests/hbnf-provider-artifact.test.mjs'
+      - 'tests/hbnf-udisc-nov03-reconciliation.test.mjs'
+      - 'tests/hbnf-oct24-business-recovery.test.mjs'
+      - 'tests/hbnf-nov03-tag-season.test.mjs'
+      - 'tests/hbnf-glow-quick-import.test.mjs'
+      - 'tests/hbnf-glow-financial-settlement.test.mjs'
+      - 'tests/glow-save-sync-race.test.mjs'
+      - 'tests/hbnf-glow-preinit-pending.test.mjs'
+      - 'tests/hbnf-udisc-cart-server-ack.test.mjs'
+      - 'tests/hbnf-udisc-fetch-gate.test.mjs'
+      - 'tests/hbnf-release-readiness.test.mjs'
+      - 'source-snapshots/hbnf-worker-d1a5f936-20261024/src/**'
+      - 'source-snapshots/hbnf-worker-d1a5f936-20261024/worker-private/**'
+      - 'tests/skins-pending-review.test.mjs'
+      - 'public/glow.html'
+      - 'public/skins.html'
+      - 'tests/hbnf-server-tag-projection.test.mjs'
+      - 'tests/hbnf-installed-function-drift.test.mjs'
+      - 'tests/hbnf-write-authority-cutover.test.mjs'
+      - 'tests/hbnf-server-revision-migration.test.mjs'
+      - 'supabase/migrations/**'
+      - '.github/workflows/hbnf-parent-release-review.yml'
+permissions:
+  contents: read
+jobs:
+  adapter-four-focused:
+    name: Four focused executable-version regressions (independent)
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run only new Cloudflare executable-version regressions
+        run: node --test tests/hbnf-cloudflare-executable-version.test.mjs tests/validate-cloudflare-worker-multipart.test.mjs
+  tag-sql-scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      native: ${{ steps.commit.outputs.native }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Identify one TSQL isolated-native commit
+        id: commit
+        shell: bash
+        run: |
+          case "$(git log -1 --format=%s)" in
+            TSQL:*) echo "native=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "native=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+  review-only:
+    needs: tag-sql-scope
+    if: needs.tag-sql-scope.outputs.native != 'true' && (github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'S1:'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert checkout matches the actual PR source HEAD
+        env:
+          EXACT_PR_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXACT_PR_HEAD"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Release route structural acceptance (synthetic execution gate only)
+        run: node --test tests/hbnf-release-readiness.test.mjs
+      - name: BLOCK unadmitted v348 one-file archive before any further implementation tests
+        shell: bash
+        env:
+          PRIVATE_MANIFEST: ${{ secrets.HBNF_PRIVATE_SCORING_RELEASE_MANIFEST_PATH }}
+          RELEASE_STAGE: ${{ secrets.HBNF_SCORING_RELEASE_STAGE_PATH }}
+          PROVIDER_RECEIPT: ${{ secrets.HBNF_SCORING_PROVIDER_READBACK_PATH }}
+          EXECUTOR_RECEIPT: ${{ secrets.HBNF_SCORING_EXECUTOR_PATH }}
+        run: |
+          node scripts/hbnf-parent-release/release-readiness-cli.mjs "$PRIVATE_MANIFEST" "$RELEASE_STAGE" "$PROVIDER_RECEIPT" "$EXECUTOR_RECEIPT"
+      - name: Determine focused UDisc qualification scope
+        id: scope
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin 6ce83a5f791dd42a14521a04ab870f5c9341f5b6
+          changes="$(git diff --name-only 6ce83a5f791dd42a14521a04ab870f5c9341f5b6 HEAD)"
+          outside="$(printf '%s\n' "$changes" | grep -Ev '^(public/glow.html|tests/hbnf-glow-quick-import.test.mjs|.github/workflows/hbnf-parent-release-review.yml)$' || true)"
+          if [ -z "$outside" ] && [ -n "$changes" ]; then echo "quick_only=true" >> "$GITHUB_OUTPUT"; else echo "quick_only=false" >> "$GITHUB_OUTPUT"; fi
+          git fetch --no-tags --depth=1 origin 9300e2011defc6d221df771a6850929ee077980f
+          new_changes="$(git diff --name-only 9300e2011defc6d221df771a6850929ee077980f HEAD)"
+          new_outside="$(printf '%s\n' "$new_changes" | grep -Ev '^(scripts/hbnf-parent-release/(driver\.mjs|providers-live\.mjs|cloudflare-recovery\.mjs|verify-integrated-candidate\.py|udisc-nov03-reconciliation\.mjs)|tests/hbnf-live-release-boundary\.test\.mjs|tests/hbnf-cloudflare-recovery\.test\.mjs|tests/hbnf-udisc-nov03-reconciliation\.test\.mjs|\.github/workflows/hbnf-parent-release-review\.yml)$' || true)"
+          if [ -z "$new_outside" ] && [ -n "$new_changes" ]; then echo "release_only=true" >> "$GITHUB_OUTPUT"; else echo "release_only=false" >> "$GITHUB_OUTPUT"; fi
+          git fetch --no-tags --depth=1 origin 69705e394e70ddbad97e0aa3b017432d9719e7e2
+          provider_changes="$(git diff --name-only 69705e394e70ddbad97e0aa3b017432d9719e7e2 HEAD)"
+          provider_outside="$(printf '%s\n' "$provider_changes" | grep -Ev '^(scripts/hbnf-parent-release/providers-live\.mjs|tests/hbnf-provider-artifact\.test\.mjs|\.github/workflows/hbnf-parent-release-review\.yml)$' || true)"
+          if [ -z "$provider_outside" ] && [ -n "$provider_changes" ]; then echo "provider_only=true" >> "$GITHUB_OUTPUT"; else echo "provider_only=false" >> "$GITHUB_OUTPUT"; fi
+          git fetch --no-tags --depth=1 origin e2fc987b42997c52adbfc1de920d39f7a6097d9a
+          nov3_changes="$(git diff --name-only e2fc987b42997c52adbfc1de920d39f7a6097d9a HEAD)"
+          nov3_outside="$(printf '%s\n' "$nov3_changes" | grep -Ev '^(scripts/hbnf-parent-release/(nov03-event-source|udisc-nov03-reconciliation)\.mjs|tests/hbnf-udisc-nov03-reconciliation\.test\.mjs|\.github/workflows/hbnf-parent-release-review\.yml)$' || true)"
+          if [ -z "$nov3_outside" ] && [ -n "$nov3_changes" ]; then echo "nov3_only=true" >> "$GITHUB_OUTPUT"; else echo "nov3_only=false" >> "$GITHUB_OUTPUT"; fi
+          git fetch --no-tags --depth=1 origin 825e6ec1e57ca4697b831e281cbef5ca7133268a
+          fallback_changes="$(git diff --name-only 825e6ec1e57ca4697b831e281cbef5ca7133268a HEAD)"
+          fallback_outside="$(printf '%s\n' "$fallback_changes" | grep -Ev '^(scripts/hbnf-parent-release/udisc-nov03-reconciliation\.mjs|tests/hbnf-udisc-nov03-reconciliation\.test\.mjs|\.github/workflows/hbnf-parent-release-review\.yml)$' || true)"
+          if [ -z "$fallback_outside" ] && [ -n "$fallback_changes" ]; then echo "fallback_only=true" >> "$GITHUB_OUTPUT"; else echo "fallback_only=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Cloudflare-only no-Drive-token source and drift verification
+        run: node --test tests/hbnf-cloudflare-recovery.test.mjs
+      - name: Current Cloudflare read-only stage diagnostic regression
+        run: node --test tests/hbnf-cloudflare-current-readonly.test.mjs
+      - name: Version-specific Cloudflare restore and served-asset read-only preflight regression
+        run: node --test tests/hbnf-cloudflare-restore-preflight.test.mjs
+      - name: Focused authenticated provider/recovery boundary tests (fake credentials only)
+        if: steps.scope.outputs.fallback_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        run: node --test tests/hbnf-live-release-boundary.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
+      - name: October 24 exact-history, Jason ace and nominal-vs-cash rollover safeguards
+        run: node --test tests/hbnf-oct24-business-recovery.test.mjs
+      - name: November 3 offline UDisc source preservation and reconciliation test
+        if: steps.scope.outputs.provider_only != 'true'
+        run: node --test tests/hbnf-udisc-nov03-reconciliation.test.mjs tests/hbnf-nov03-tag-season.test.mjs
+      - name: Exact provider artifact/route verification (synthetic provider, no network credentials)
+        if: steps.scope.outputs.nov3_only != 'true'
+        run: node --test tests/hbnf-provider-artifact.test.mjs
+      - name: Actual Glow financial settlement source behavior (no state writes)
+        run: node --test tests/hbnf-glow-financial-settlement.test.mjs
+      - name: Actual prior handler RED then corrected handler GREEN
+        if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        shell: bash
+        run: |
+          git show 6ce83a5f791dd42a14521a04ab870f5c9341f5b6:public/glow.html > /tmp/hbnf-prior-glow.html
+          if HBNF_QUICK_IMPORT_SOURCE=/tmp/hbnf-prior-glow.html node --test tests/hbnf-glow-quick-import.test.mjs > /tmp/hbnf-quick-red.log 2>&1; then
+            echo "UNSAFE_BASELINE_UNEXPECTEDLY_GREEN" >&2
+            exit 1
+          fi
+          node --test tests/hbnf-glow-quick-import.test.mjs
+      - name: Verify review-only parent gate and cutover source invariants (no secrets)
+        if: steps.scope.outputs.quick_only != 'true' && steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        run: node --test tests/hbnf-parent-release-driver.test.mjs tests/hbnf-installed-function-drift.test.mjs tests/hbnf-write-authority-cutover.test.mjs tests/hbnf-server-revision-migration.test.mjs tests/skins-pending-review.test.mjs tests/league-state-sync.test.mjs tests/glow-save-sync-race.test.mjs tests/hbnf-glow-preinit-pending.test.mjs tests/hbnf-udisc-cart-server-ack.test.mjs tests/hbnf-udisc-snapshot-integration.test.mjs tests/hbnf-udisc-fetch-gate.test.mjs tests/hbnf-server-tag-projection.test.mjs tests/hbnf-cloudflare-recovery.test.mjs
+      - name: Verify exact UDisc latest source blobs (read only)
+        if: steps.scope.outputs.nov3_only != 'true'
+        run: |
+          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/index.review.js)" = "05f45f267c068ed3f1b8e17404cb792e76d5c539"
+          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-auto-sync.review.mjs)" = "544bfe39001156ce44a88fbde73f026f3b01daa3"
+          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync.mjs)" = "5712a79f54b7f1917ac40195c9f96a60b8c06a65"
+          test "$(git rev-parse HEAD:source-snapshots/hbnf-worker-d1a5f936-20261024/src/udisc-glow-sync-runner.mjs)" = "f2a8978af38426c71484fc1b637f966c275c253b"
+      - name: Fetch exact installed v48 source (read only)
+        if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        run: git fetch --no-tags --depth=1 origin 44612c09677f59b84bece7de655af7bb011b51e7
+      - name: Assemble reproducible REVIEW_ONLY site asset package
+        if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        run: node scripts/hbnf-parent-release/build-review-only-assets.mjs
+      - name: Attach unadmitted candidate (not a deployment)
+        if: steps.scope.outputs.release_only != 'true' && steps.scope.outputs.provider_only != 'true' && steps.scope.outputs.nov3_only != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-P0-public-assets-REVIEW_ONLY
+          path: |
+            build/HBNF-P0-public-assets-REVIEW_ONLY.zip
+            build/HBNF-P0-public-assets-review-result.json
+          if-no-files-found: error
+          retention-days: 14
+
+
+  s1-source-only:
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: s1_ephemeral_fixture_only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 6
+    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'S1:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify focused score-only guard and conditional rollback
+        run: node --test tests/hbnf-nov03-score-only-s1.test.mjs
+      - name: PostgreSQL 17 isolated installed-trigger and selected-week inverse
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -n 1)"
+          test -n "$cid"
+          { cat tests/hbnf-s1-pg17-pre.sql; cat scripts/hbnf-parent-release/sql/nov03-score-only-guard.sql; cat tests/hbnf-s1-pg17-post.sql; } |
+            docker exec -i "$cid" psql -U postgres -v ON_ERROR_STOP=1
+
+
+
+  tag-sql-native-only:
+    # Exactly this narrow PostgreSQL test; no provider credentials, no S1 / review suite duplication.
+    needs: tag-sql-scope
+    if: needs.tag-sql-scope.outputs.native == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: hbnf_tsql_ephemeral_pg17_fixture_only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: PostgreSQL 17 isolated T1 and T2 exact generated SQL apply/undo acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -n 1)"
+          test -n "$cid"
+          HBNF_TEST_PG_CID="$cid" node tests/hbnf-t1-t2-pg17.test.mjs
+
+  udisc-gate-pg17:
+    # Native DB test runs only for explicit UDGATE: commits; isolated PG17
+    # service container, no provider tokens, no live credentials or UDisc GET.
+    if: (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'UDGATE:')) || (github.event_name == 'pull_request' && github.head_ref == 'review/hbnf-four-writer-cas-20261029')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: hbnf_udisc_ephemeral_pg17_fixture_only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native PG17 durable UDisc gate, exact installed RPC patch and ACL
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -n 1)"
+          test -n "$cid"
+          { cat tests/hbnf-udisc-fetch-gate-pg17-pre.sql; \
+            cat scripts/hbnf-parent-release/sql/udisc-event-fetch-gate.review.sql; \
+            cat scripts/hbnf-parent-release/sql/udisc-event-fetch-gate-undo.review.sql; \
+            cat tests/hbnf-udisc-fetch-gate-undo-pg17.sql; \
+            cat scripts/hbnf-parent-release/sql/udisc-event-fetch-gate.review.sql; \
+            cat tests/hbnf-udisc-fetch-gate-pg17-post.sql; } |
+            docker exec -i "$cid" psql -U postgres -v ON_ERROR_STOP=1
