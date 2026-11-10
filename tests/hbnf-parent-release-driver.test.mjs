@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { REQUIRED_STAGES } from '../scripts/hbnf-parent-release/parent-gate.mjs';
-import { digest, executeMockableSaga, persistCloseout, providerBoundPreflight, validateTransaction } from '../scripts/hbnf-parent-release/driver.mjs';
+import { digest, executeAdmittedCloudflareChildSaga, executeMockableSaga, persistCloseout, providerBoundPreflight, validateCloudflareChildTransaction, validateTransaction } from '../scripts/hbnf-parent-release/driver.mjs';
 import { MemoryJournal } from '../scripts/hbnf-parent-release/journal.mjs';
 import { DriveEvidenceJournal, FileJournal } from '../scripts/hbnf-parent-release/journal.mjs';
 import { mkdtemp } from 'node:fs/promises';
@@ -43,6 +43,72 @@ const fakeProvider = (tx, fault = {}) => {
     async restore(op) { calls.push(`restore:${op.id}`); if(fault.failRestore===op.id)return {acknowledged:false}; states[op.targetId]=structuredClone(op.beforeState); return {acknowledged:true}; }
   }};
 };
+
+const makeCloudflareChildTx=()=>{
+  const parent=makeTx(),before={id:'cloudflare-worker',accountId:'e3bc6b78f1104fa0c2a01245084594cf',
+    service:'hbnf',activeVersionId:workerBaselineVersion,percentage:100,route:'hbnightflyers.com',cron:'* * * * *'};
+  const after={...before,activeVersionId:'1c745c03-cbd5-47f3-84eb-d99781ced849',deploymentId:'deployment-candidate'};
+  const baseline=digest(before);
+  return {schemaVersion:1,transactionId:'hbnf-p0-cloudflare-child-20261110',sourceCommit:parent.sourceCommit,
+    mode:'review-only',liveExecutionEnabled:false,controllingManifestFileId:'12X06fFmdc5oPGlcq9kprf1hhglbVV7mW',
+    controllingManifestSha256:'a'.repeat(64),parentTransactionSha256:digest(parent),parentContract:parent.parentContract,
+    targets:[{id:'cloudflare-worker',provider:'Cloudflare',target:'hbnf',baselineIdentity:baseline,baselineSha256:baseline,
+      baselineProviderVersionId:workerBaselineVersion,rollback:{driveFileId:'v348-recovery',sha256:'b'.repeat(64),bytes:80000,
+        downloadBackVerified:true,providerVersionId:workerBaselineVersion}}],
+    operations:[{id:'worker-vnext',targetId:'cloudflare-worker',applyRoute:'cloudflare-deployments-post-100',
+      readbackRoute:'cloudflare-deployments-get',expectedBefore:baseline,expectedAfter:digest(after),expectedRestored:baseline,
+      candidate:{driveFileId:'v354-candidate',sha256:'c'.repeat(64),bytes:80000,downloadBackVerified:true,
+        providerVersionId:'1c745c03-cbd5-47f3-84eb-d99781ced849',uploadedVersionAndBindingsVerified:true,runWorkerFirst:true},
+      restore:{driveFileId:'v348-recovery',sha256:'b'.repeat(64),bytes:80000,downloadBackVerified:true,
+        providerVersionId:workerBaselineVersion,retainedVersionAndBindingsVerified:true,route:'cloudflare-deployments-post-100-v348'}}],
+    rollbackOrder:['worker-vnext'],acceptanceCriteria:[{id:'worker-active',description:'v354 active at 100%',method:'authenticated Cloudflare deployment readback',expected:'v354 at 100%'}],
+    testStates:{before,after}};
+};
+
+test('Cloudflare child validates one exact Worker operation while retaining the full five-target parent contract',()=>{
+  const tx=makeCloudflareChildTx();assert.deepEqual(validateCloudflareChildTransaction(tx),[]);
+  assert.equal(validateTransaction(makeTx()).length,0);
+  for(const mutate of [t=>t.targets.push(structuredClone(t.targets[0])),t=>t.operations.push(structuredClone(t.operations[0])),
+    t=>t.operations[0].candidate.providerVersionId='08633e43-dbaa-4421-a072-5af56f75d4b7',
+    t=>t.operations[0].restore.providerVersionId='08633e43-dbaa-4421-a072-5af56f75d4b7',
+    t=>t.parentContract.targets.pop()]){
+    const bad=makeCloudflareChildTx();mutate(bad);assert(validateCloudflareChildTransaction(bad).length>0);
+  }
+});
+
+test('Cloudflare child requires exact same-manifest admission before any claim or provider call',async()=>{
+  const tx=makeCloudflareChildTx();let touched=0;
+  const out=await executeAdmittedCloudflareChildSaga(tx,{authenticated:true,readOnly:false,
+    readTarget:async()=>{touched++;},apply:async()=>{touched++;},restore:async()=>{touched++;}},
+    {atomicOneTimeClaim:true,durableDownloadBack:true,claim:async()=>{touched++;},append:async()=>{touched++;}},
+    {status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false},{});
+  assert.equal(out.status,'NOT_ADMITTED_NO_MUTATION');assert.equal(touched,0);
+});
+
+test('admitted Cloudflare child runs one operation and readback; lost deployment acknowledgement restores exact v348',async()=>{
+  const tx=makeCloudflareChildTx();let state=structuredClone(tx.testStates.before);const calls=[];
+  const adapters={authenticated:true,readOnly:false,async readTarget(){return structuredClone(state);},
+    async apply(){calls.push('deploy-v354');state=structuredClone(tx.testStates.after);return {acknowledged:true};},
+    async restore(op){calls.push('restore-v348');state=structuredClone(tx.testStates.before);return {acknowledged:true};}};
+  const journal=new MemoryJournal();journal.atomicOneTimeClaim=true;journal.durableDownloadBack=true;
+  const admission={status:'ADMITTED',productionMutationAuthorized:true,controllingManifestFileId:tx.controllingManifestFileId,
+    manifestSha256:tx.controllingManifestSha256,transactionSha256:digest(tx),scope:'cloudflare-worker-only-stage-b',
+    targetVersionId:'1c745c03-cbd5-47f3-84eb-d99781ced849',trafficPercentage:100,rollbackVersionId:workerBaselineVersion,parentFiveTargetRecoveryVerified:true};
+  const verifier={async verifyOwnerApprovalAndManifest(){return true;},async verifyParentFiveTargetRecovery(){return true;}};
+  const accepted=await executeAdmittedCloudflareChildSaga(tx,adapters,journal,admission,verifier);
+  assert.equal(accepted.status,'PROVIDER_STAGES_APPLIED_PENDING_FIELD_ACCEPTANCE');
+  assert.deepEqual(calls,['deploy-v354']);
+
+  const tx2=makeCloudflareChildTx();let state2=structuredClone(tx2.testStates.before);const calls2=[];
+  const adapters2={authenticated:true,readOnly:false,async readTarget(){return structuredClone(state2);},
+    async apply(){calls2.push('deploy-v354');state2=structuredClone(tx2.testStates.after);return {acknowledged:false};},
+    async restore(){calls2.push('restore-v348');state2=structuredClone(tx2.testStates.before);return {acknowledged:true};}};
+  const journal2=new MemoryJournal();journal2.atomicOneTimeClaim=true;journal2.durableDownloadBack=true;
+  const admission2={...admission,transactionSha256:digest(tx2)};
+  const rolled=await executeAdmittedCloudflareChildSaga(tx2,adapters2,journal2,admission2,verifier);
+  assert.equal(rolled.status,'PROVIDER_ABORT_RESTORED_PENDING_REACCEPTANCE');
+  assert.deepEqual(calls2,['deploy-v354','restore-v348']);assert.deepEqual(state2,tx2.testStates.before);
+});
 
 test('successful mocked sequencing is ordered, independently read back, and never admitted', async()=>{
   const tx=makeTx(); assert.deepEqual(validateTransaction(tx),[]);

@@ -4,6 +4,9 @@ import { REQUIRED_STAGES, REQUIRED_TARGETS, validatePlan } from './parent-gate.m
 const canonical = value => JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item)
   ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
 export const digest = value => createHash('sha256').update(typeof value === 'string' || Buffer.isBuffer(value) || value instanceof Uint8Array ? value : canonical(value)).digest('hex');
+const ORIGINAL_MANIFEST_ID = '12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
+const CF_BASELINE_VERSION = '48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
+const CF_CANDIDATE_VERSION = '1c745c03-cbd5-47f3-84eb-d99781ced849';
 
 export function validateTransaction(tx) {
   const errors = [];
@@ -131,9 +134,86 @@ export async function executeAdmittedProviderSaga(tx, adapters, journal, admissi
   return runProviderSaga(tx, adapters, journal, true);
 }
 
-async function runProviderSaga(tx, adapters, journal, authenticatedLive) {
+// Narrow Stage B child for the original five-target authority.  The parent
+// contract is still fully validated and independently verified; this child
+// executes only the already-staged Cloudflare version and cannot dispatch DB
+// or Edge operations.  It is intentionally inert until the same rev10 record
+// contains an exact admitted scope and the external verifier confirms it.
+export function validateCloudflareChildTransaction(tx) {
+  const errors=[];
+  if(tx?.schemaVersion!==1||tx?.mode!=='review-only'||tx?.liveExecutionEnabled!==false)
+    errors.push('Cloudflare child must remain schema v1 and hard-locked review-only');
+  if(!/^[a-z0-9][a-z0-9-]{7,100}$/i.test(tx?.transactionId||''))errors.push('transactionId invalid');
+  if(!/^[a-f0-9]{40}$/i.test(tx?.sourceCommit||''))errors.push('exact source commit missing');
+  if(tx?.controllingManifestFileId!==ORIGINAL_MANIFEST_ID||!/^[a-f0-9]{64}$/i.test(tx?.controllingManifestSha256||''))
+    errors.push('original rev10 manifest identity missing');
+  if(!/^[a-f0-9]{64}$/i.test(tx?.parentTransactionSha256||''))errors.push('parent five-target transaction digest missing');
+  if(validatePlan(tx?.parentContract||{}).length)errors.push('complete original five-target parent contract invalid');
+  if(tx?.parentContract?.sourceCommit!==tx?.sourceCommit)errors.push('parent source binding differs from child');
+  const targets=tx?.targets||[];
+  if(targets.length!==1||targets[0]?.id!=='cloudflare-worker')errors.push('child must bind exactly the Cloudflare Worker target');
+  const target=targets[0]||{};
+  if(target.provider!=='Cloudflare'||target.target!=='hbnf'||
+    target.baselineProviderVersionId!==CF_BASELINE_VERSION||
+    target.rollback?.providerVersionId!==CF_BASELINE_VERSION||
+    !target.baselineIdentity||!/^[a-f0-9]{64}$/i.test(target.baselineSha256||'')||
+    !target.rollback?.driveFileId||!/^[a-f0-9]{64}$/i.test(target.rollback?.sha256||'')||
+    !Number.isSafeInteger(target.rollback?.bytes)||target.rollback.bytes<1||target.rollback.downloadBackVerified!==true)
+    errors.push('exact retained v348 baseline and durable rollback required');
+  const operations=tx?.operations||[];
+  if(operations.length!==1)errors.push('child must contain exactly one operation');
+  const op=operations[0]||{};
+  const candidate=op.candidate||{},restore=op.restore||{};
+  if(op.id!=='worker-vnext'||op.targetId!=='cloudflare-worker')errors.push('child operation must be the Cloudflare Worker deployment only');
+  if(candidate.providerVersionId!==CF_CANDIDATE_VERSION||candidate.uploadedVersionAndBindingsVerified!==true||
+    !candidate.driveFileId||!/^[a-f0-9]{64}$/i.test(candidate.sha256||'')||
+    !Number.isSafeInteger(candidate.bytes)||candidate.bytes<1||candidate.downloadBackVerified!==true||
+    candidate.runWorkerFirst!==true)errors.push('exact verified v354 candidate and durable download-back required');
+  if(restore.providerVersionId!==CF_BASELINE_VERSION||restore.retainedVersionAndBindingsVerified!==true||
+    !restore.driveFileId||!/^[a-f0-9]{64}$/i.test(restore.sha256||'')||
+    !Number.isSafeInteger(restore.bytes)||restore.bytes<1||restore.downloadBackVerified!==true||!restore.route)
+    errors.push('exact retained v348 restoration and durable bytes required');
+  for(const f of ['expectedBefore','expectedAfter','expectedRestored'])if(!/^[a-f0-9]{64}$/i.test(op[f]||''))errors.push(`${f} identity missing`);
+  if(op.expectedBefore!==target.baselineSha256||op.expectedRestored!==target.baselineSha256)
+    errors.push('child before/restore identities must equal original Worker baseline');
+  if(!op.applyRoute||!op.readbackRoute)errors.push('Worker apply and readback routes missing');
+  if(tx?.rollbackOrder?.join('|')!=='worker-vnext')errors.push('child rollback order must contain only worker-vnext');
+  if(!Array.isArray(tx?.acceptanceCriteria)||tx.acceptanceCriteria.length===0||
+    tx.acceptanceCriteria.some(c=>!c.id||!c.description||!c.method||!c.expected))errors.push('child acceptance criteria missing');
+  return errors;
+}
+
+export async function executeAdmittedCloudflareChildSaga(tx,adapters,journal,admission,verifier){
+  const txHash=digest(tx);
+  const blocked=reason=>({status:'NOT_ADMITTED_NO_MUTATION',errors:[reason],trace:[]});
+  if(validateCloudflareChildTransaction(tx).length)return blocked('INVALID_CLOUDFLARE_CHILD_TRANSACTION');
+  if(admission?.status!=='ADMITTED'||admission?.productionMutationAuthorized!==true||
+    admission?.controllingManifestFileId!==ORIGINAL_MANIFEST_ID||
+    admission?.manifestSha256!==tx.controllingManifestSha256||
+    admission?.transactionSha256!==txHash||admission?.scope!=='cloudflare-worker-only-stage-b'||
+    admission?.targetVersionId!==CF_CANDIDATE_VERSION||admission?.trafficPercentage!==100||
+    admission?.rollbackVersionId!==CF_BASELINE_VERSION||admission?.parentFiveTargetRecoveryVerified!==true)
+    return blocked('SAME_REV10_EXACT_CLOUDFLARE_CHILD_ADMISSION_REQUIRED');
+  if(adapters?.authenticated!==true||adapters?.readOnly!==false||
+    typeof adapters.readTarget!=='function'||typeof adapters.apply!=='function'||typeof adapters.restore!=='function')
+    return blocked('AUTHENTICATED_CLOUDFLARE_STAGE_ADAPTER_REQUIRED');
+  if(journal?.atomicOneTimeClaim!==true||journal?.durableDownloadBack!==true||
+    typeof journal.claim!=='function'||typeof journal.append!=='function')
+    return blocked('DURABLE_ATOMIC_CHILD_CLAIM_REQUIRED');
+  if(typeof verifier?.verifyOwnerApprovalAndManifest!=='function'||
+    typeof verifier?.verifyParentFiveTargetRecovery!=='function')
+    return blocked('TRUSTED_SAME_MANIFEST_PARENT_VERIFIER_REQUIRED');
+  try{
+    if(await verifier.verifyOwnerApprovalAndManifest({txHash,tx,admission})!==true||
+      await verifier.verifyParentFiveTargetRecovery({tx,admission})!==true)
+      return blocked('SAME_MANIFEST_OR_PARENT_RECOVERY_VERIFICATION_FAILED');
+  }catch{return blocked('SAME_MANIFEST_VERIFICATION_UNAVAILABLE');}
+  return runProviderSaga(tx,adapters,journal,true,validateCloudflareChildTransaction);
+}
+
+async function runProviderSaga(tx, adapters, journal, authenticatedLive, validator=validateTransaction) {
   tx = structuredClone(tx);
-  const errors = validateTransaction(tx);
+  const errors = validator(tx);
   if (errors.length) return { status: 'PENDING', errors, trace: [] };
   if (!authenticatedLive && (adapters?.testOnly !== true || adapters?.readOnly === true)) return { status: 'PENDING', errors: ['mutations are disabled outside explicit isolated test adapters'], trace: [] };
   const txHash = digest(tx);
