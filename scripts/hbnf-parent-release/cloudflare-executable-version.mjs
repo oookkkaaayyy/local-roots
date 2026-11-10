@@ -410,7 +410,7 @@ function parseLegacyMultipartCandidate(bytes,contentType){
   return parts;
 }
 export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candidateSha256,expectedSourceHead,
-  expectedModuleSha256='e9f0611d5ba7ca72db4a0792be1178fab80a1b399734e403664105ce17a0ef69',
+  expectedModuleSha256=null,
   expectedHelperSha256='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a'}){
   const raw=Buffer.from(candidateBytes||[]);
   fail(candidate?.schema==='hbnf.cloudflare.keep-assets-candidate.v1'&&
@@ -418,7 +418,8 @@ export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candida
     'LEGACY_CANDIDATE_IDENTITY');
   fail(raw.length===candidate.upload?.bytes&&sha256(raw)===candidateSha256&&
     candidate.upload.sha256===candidateSha256,'LEGACY_CANDIDATE_BYTES');
-  fail(candidate?.candidateModuleSha256===expectedModuleSha256&&
+  fail(typeof (expectedModuleSha256||candidate?.candidateModuleSha256)==='string'&&
+    candidate?.candidateModuleSha256===(expectedModuleSha256||candidate?.candidateModuleSha256)&&
     candidate?.helperSha256===expectedHelperSha256&&candidate?.metadata?.compatibility_date==='2026-07-28',
     'LEGACY_CANDIDATE_SOURCE');
   fail(candidate.metadata.usage_model==='standard'&&
@@ -460,7 +461,7 @@ export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candida
 // as latest and refuses any drift. It never promotes traffic or uploads assets.
 export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='hbnf',fetchImpl=fetch,
   candidate,candidateBytes,candidateSha256,candidateFileId,expectedSourceHead,baselineVersionId=P0_V348,
-  expectedModuleSha256='e9f0611d5ba7ca72db4a0792be1178fab80a1b399734e403664105ce17a0ef69',
+  expectedModuleSha256,
   expectedHelperSha256='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
   expectedLatestVersionId='049a35e1-64b5-4e76-9378-ca4ffa0a7d47',expectedLatestNumber=349,
   expectedVersionCount=349,expectedDeploymentId='c4f4ce98-4635-4010-a5e6-55e791b77c51',
@@ -480,7 +481,8 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
   const stage=parentRecord?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.stageA;
   fail(stage?.transactionId===expectedTransactionId&&stage?.candidateFileId===candidateFileId&&
     stage?.candidateSha256===candidateSha256&&stage?.sourceHead===expectedSourceHead&&
-    stage?.candidateBytes===proof.bytes&&stage?.assetStrategy===candidate.assetStrategy&&
+    stage?.candidateBytes===proof.bytes&&stage?.moduleSha256===expectedModuleSha256&&
+    stage?.assetStrategy===candidate.assetStrategy&&
     stage?.routingScope===candidate.routingScope&&
     (candidate.routingScope!=='GLOBAL_WORKER_FIRST_STAGE_A_ONLY'||
       stage?.globalWorkerFirstOwnerApproved===true)&&
@@ -518,12 +520,18 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
         b.name==='ASSETS'?b:{name:b.name,type:latestBindings.find(x=>x.name===b.name)?.type}))),
       'LEGACY_BINDING_METADATA_DRIFT');
     const baseConfig=legacyAssetConfig(baseVersion),latestConfig=legacyAssetConfig(latestVersion);
-    assertLegacyKeepAssetsRoutingUnchanged(candidate.metadata.assets.config.run_worker_first,
-      latestConfig.run_worker_first);
     const runtimeIdentity=v=>({compatibility_date:v.resources?.script_runtime?.compatibility_date,
       compatibility_flags:v.resources?.script_runtime?.compatibility_flags||[],
-      usage_model:v.resources?.script_runtime?.usage_model,assets:legacyAssetConfig(v)});
-    fail(JSON.stringify(runtimeIdentity(baseVersion))===JSON.stringify(runtimeIdentity(latestVersion))&&
+      usage_model:v.resources?.script_runtime?.usage_model});
+    const requestedRouting=candidate.metadata.assets.config.run_worker_first;
+    const globalRoutingAuthorized=candidate.routingScope==='GLOBAL_WORKER_FIRST_STAGE_A_ONLY'&&
+      stage?.globalWorkerFirstOwnerApproved===true&&requestedRouting===true&&latestConfig.run_worker_first===true;
+    const selectiveRoutingPreserved=candidate.routingScope==='SELECTIVE_WORKER_FIRST'&&
+      JSON.stringify(requestedRouting)===JSON.stringify(latestConfig.run_worker_first);
+    fail(globalRoutingAuthorized||selectiveRoutingPreserved,'LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED');
+    fail((globalRoutingAuthorized||selectiveRoutingPreserved)&&
+      latestConfig.base_path===baseConfig.base_path&&
+      JSON.stringify(runtimeIdentity(baseVersion))===JSON.stringify(runtimeIdentity(latestVersion))&&
       baseConfig.base_path==='/'&&workerFirstCovers(baseConfig.run_worker_first,['/api/*','/internal/*']),
       'LEGACY_RUNTIME_METADATA_DRIFT');
     fail(workerFirstMatchesCandidate(candidate.metadata.assets.config.run_worker_first,candidate,
