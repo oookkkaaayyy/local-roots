@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
  checkReleaseReadiness,exerciseCloudflareStageTestOnly,sha256,ORIGINAL_MANIFEST_ID,
- MANIFEST_SHA256,MANIFEST_REVISION,BOUND_SOURCE_HEAD,bindSourceHeadToCheckout
+ MANIFEST_SHA256,MANIFEST_REVISION,BOUND_SOURCE_HEAD,bindSourceHeadToCheckout,
+ CURRENT_BOUND_SOURCE_HEAD,CURRENT_CANDIDATE_VERSION,CURRENT_ROLLBACK_VERSION
 } from '../scripts/hbnf-parent-release/release-readiness.mjs';
 const hex='a'.repeat(64),workerVersion='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 const betaCandidate='1KeHOM7HKhRAcMznpQCoSFKN5RD599w1R';
@@ -190,6 +191,41 @@ test('only exact source head or release-control-only descendant can satisfy the 
  assert.throws(()=>bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:true,
   changedPaths:['public/glow.html']}),/NON_GOVERNANCE_SOURCE_CHANGED_AFTER_BOUND_HEAD/);
  assert.throws(()=>bindSourceHeadToCheckout({boundHead:BOUND_SOURCE_HEAD,checkoutHead:'a'.repeat(40),ancestryVerified:false,changedPaths:[]}),/NON_GOVERNANCE_SOURCE_CHANGED_AFTER_BOUND_HEAD/);
+ assert.equal(bindSourceHeadToCheckout({boundHead:CURRENT_BOUND_SOURCE_HEAD,checkoutHead:'b'.repeat(40),ancestryVerified:true,
+  changedPaths:['scripts/hbnf-parent-release/cloudflare-executable-version.mjs','tests/hbnf-cloudflare-latest-worker-first-patch.test.mjs']}),CURRENT_BOUND_SOURCE_HEAD);
+});
+
+test('rev67/v354 is recognized but fails closed without asset bytes, current other-target fences, rollback, and Stage B acceptance',()=>{
+ const currentManifest={manifestRevision:67,recordId:'hbnf-p0-pr151-udisc-20261103-52e120-review-only',
+  status:'PENDING_NOT_ADMITTED',productionMutationAuthorized:false,currentScoringReviewHead:CURRENT_BOUND_SOURCE_HEAD,
+  latestStageAProviderOutcome:{status:'STAGE_A_VERSION_CREATED_AND_PROVIDER_READBACK_VERIFIED',
+   createdVersionId:CURRENT_CANDIDATE_VERSION,createdVersionNumber:354,activeVersionId:CURRENT_ROLLBACK_VERSION,
+   activePercentage:100,runWorkerFirst:true,productionTrafficMutation:false,candidateAssetFilesVerified:false},
+  stageAPatchLatestCandidate:{candidateSha256:'e3635c0cb70284521434ee736f289807f0660d844db8aabc6ec2e04ec4b79b6e',
+   productionMutationAuthorized:false,providerOutcome:{versionId:CURRENT_CANDIDATE_VERSION}},
+  productionStageB:{status:'PENDING_NOT_ADMITTED',productionTrafficAuthorized:false}};
+ const result=checkReleaseReadiness({manifest:currentManifest,manifestFileId:ORIGINAL_MANIFEST_ID,
+  sourceHead:CURRENT_BOUND_SOURCE_HEAD,synthetic:true,
+  provider:{activeVersionId:CURRENT_ROLLBACK_VERSION,activePercentage:100,candidateVersionId:CURRENT_CANDIDATE_VERSION,
+   candidateRunWorkerFirst:true,routesMatch:true,cronMatch:true,bindingsMatch:true,rollbackRetained:true,
+   candidateAssetInventory:{complete:false,independentlyVerified:false,assetCount:0}},
+  stage:{otherTargetReadbacks:[],recovery:{}},adapter:{}});
+ assert.equal(result.status,'BLOCKED');assert.equal(result.canMutate,false);
+ assert.ok(result.errors.includes('V354_ASSET_BYTES_AND_CART_PRESERVATION_UNVERIFIED'));
+ assert.ok(result.errors.includes('FOUR_UNCHANGED_TARGETS_NOT_FENCED'));
+ assert.ok(result.errors.includes('V348_ROLLBACK_OR_DURABLE_RECOVERY_UNQUALIFIED'));
+ assert.ok(result.errors.includes('V354_STAGE_B_EXECUTION_AND_ACCEPTANCE_GATES_INCOMPLETE'));
+ const claimedInventory=checkReleaseReadiness({manifest:currentManifest,manifestFileId:ORIGINAL_MANIFEST_ID,
+  sourceHead:CURRENT_BOUND_SOURCE_HEAD,synthetic:true,
+  provider:{activeVersionId:CURRENT_ROLLBACK_VERSION,activePercentage:100,candidateVersionId:CURRENT_CANDIDATE_VERSION,
+   candidateRunWorkerFirst:true,routesMatch:true,cronMatch:true,bindingsMatch:true,rollbackRetained:true,
+   candidateAssetInventory:{complete:true,independentlyVerified:true,assetCount:54}},stage:{otherTargetReadbacks:[]},adapter:{}});
+ assert.ok(claimedInventory.errors.includes('V354_ASSET_BYTES_AND_CART_PRESERVATION_UNVERIFIED'));
+ assert.equal(currentManifest.status,'PENDING_NOT_ADMITTED');assert.equal(currentManifest.productionMutationAuthorized,false);
+ const drifted=structuredClone(currentManifest);drifted.latestStageAProviderOutcome.createdVersionId='9bf7e9ba-5c45-401f-8b29-1e023c55941a';
+ const mismatch=checkReleaseReadiness({manifest:drifted,manifestFileId:ORIGINAL_MANIFEST_ID,
+  sourceHead:CURRENT_BOUND_SOURCE_HEAD,synthetic:true});
+ assert.ok(mismatch.errors.includes('V354_STAGE_A_PROVIDER_RECEIPT_MISMATCH'));
 });
 
 test('isolated executable-stage upload, deploy, fresh readback and exact v348 rollback',async()=>{

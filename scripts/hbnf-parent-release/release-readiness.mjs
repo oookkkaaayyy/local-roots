@@ -4,6 +4,14 @@ export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
 export const MANIFEST_SHA256='eb2c9949553190285d5f90b8ad0c2fa26073b184a1a1711a9d82688a92a3e843';
 export const MANIFEST_REVISION=27;
 export const BOUND_SOURCE_HEAD='743db719eeb5c7a1cc175cc6431ed7f5a1c5ce74';
+// Exact current rev10 snapshot for the v354 routing-only Stage A result.
+// This does not grant Stage B admission; it lets the same fail-closed checker
+// evaluate current evidence instead of silently applying its obsolete rev27/v349 pins.
+export const CURRENT_MANIFEST_REVISION=67;
+export const CURRENT_MANIFEST_SHA256='f71386a765e4194a93817cc41b5c80616affbf960b573f7d977ac145a940e97c';
+export const CURRENT_BOUND_SOURCE_HEAD='88c136e05bc8d28cb04c4fa431885a958df87812';
+export const CURRENT_CANDIDATE_VERSION='1c745c03-cbd5-47f3-84eb-d99781ced849';
+export const CURRENT_ROLLBACK_VERSION='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 
 const RELEASE_CONTROL_TAIL_PATHS=new Set([
@@ -11,13 +19,14 @@ const RELEASE_CONTROL_TAIL_PATHS=new Set([
  'scripts/hbnf-parent-release/release-readiness-cli.mjs',
  'scripts/hbnf-parent-release/cloudflare-executable-version.mjs',
  'tests/hbnf-release-readiness.test.mjs',
- 'tests/hbnf-cloudflare-executable-version.test.mjs'
+ 'tests/hbnf-cloudflare-executable-version.test.mjs',
+ 'tests/hbnf-cloudflare-latest-worker-first-patch.test.mjs'
 ]);
 
 /** A governance-only commit may follow the bound product-source head. Any
  * other path means the candidate source binding must be amended again. */
 export function bindSourceHeadToCheckout({boundHead,checkoutHead,ancestryVerified,changedPaths=[]}={}){
- if(boundHead!==BOUND_SOURCE_HEAD||!/^[a-f0-9]{40}$/.test(checkoutHead||''))
+ if(![BOUND_SOURCE_HEAD,CURRENT_BOUND_SOURCE_HEAD].includes(boundHead)||!/^[a-f0-9]{40}$/.test(checkoutHead||''))
    throw Error('SOURCE_HEAD_IDENTITY_INVALID');
  if(checkoutHead===boundHead)return boundHead;
  if(ancestryVerified!==true||!Array.isArray(changedPaths)||
@@ -47,6 +56,59 @@ export function checkReleaseReadiness({
   provider,adapter,synthetic=false
 }={}){
  const errors=[],fail=x=>{if(!errors.includes(x))errors.push(x);};
+ if(manifest?.manifestRevision===CURRENT_MANIFEST_REVISION){
+   const expectedStageA=manifest?.latestStageAProviderOutcome;
+   if(manifestFileId!==ORIGINAL_MANIFEST_ID)fail('ORIGINAL_MANIFEST_ID_MISSING');
+   if(!synthetic&&(!manifestBytes||sha256(manifestBytes)!==CURRENT_MANIFEST_SHA256))
+     fail('CURRENT_PRIVATE_MANIFEST_BYTES_NOT_VERIFIED');
+   if(!synthetic&&manifestBytes){
+     try{if(JSON.stringify(JSON.parse(Buffer.from(manifestBytes).toString('utf8')))!==JSON.stringify(manifest))
+       fail('MANIFEST_CONTENT_DIFFERS_FROM_DOWNLOADED_BYTES');}
+     catch{fail('INVALID_MANIFEST_BYTES');}
+   }
+   if(manifest?.recordId!=='hbnf-p0-pr151-udisc-20261103-52e120-review-only'||
+      manifest?.status!=='PENDING_NOT_ADMITTED'||manifest?.productionMutationAuthorized!==false)
+     fail('SCORING_RELEASE_AUTHORITY_DRIFT');
+   if(manifest?.currentScoringReviewHead!==CURRENT_BOUND_SOURCE_HEAD||sourceHead!==CURRENT_BOUND_SOURCE_HEAD)
+     fail('CURRENT_SOURCE_HEAD_BINDING_MISMATCH');
+   if(expectedStageA?.status!=='STAGE_A_VERSION_CREATED_AND_PROVIDER_READBACK_VERIFIED'||
+      expectedStageA?.createdVersionId!==CURRENT_CANDIDATE_VERSION||expectedStageA?.createdVersionNumber!==354||
+      expectedStageA?.activeVersionId!==CURRENT_ROLLBACK_VERSION||expectedStageA?.activePercentage!==100||
+      expectedStageA?.runWorkerFirst!==true||expectedStageA?.productionTrafficMutation!==false)
+     fail('V354_STAGE_A_PROVIDER_RECEIPT_MISMATCH');
+   const stagePatch=manifest?.stageAPatchLatestCandidate;
+   if(stagePatch?.providerOutcome?.versionId!==CURRENT_CANDIDATE_VERSION||
+      stagePatch?.candidateSha256!=='e3635c0cb70284521434ee736f289807f0660d844db8aabc6ec2e04ec4b79b6e'||
+      stagePatch?.productionMutationAuthorized!==false)
+     fail('V354_STAGE_A_CANDIDATE_BINDING_MISMATCH');
+   if(provider?.activeVersionId!==CURRENT_ROLLBACK_VERSION||provider?.activePercentage!==100||
+      provider?.candidateVersionId!==CURRENT_CANDIDATE_VERSION||provider?.candidateRunWorkerFirst!==true||
+      provider?.routesMatch!==true||provider?.cronMatch!==true||provider?.bindingsMatch!==true||
+      provider?.rollbackRetained!==true)
+     fail('V354_PROVIDER_OR_V348_ROLLBACK_READBACK_UNQUALIFIED');
+   // Version metadata returns asset routing configuration, not a path/hash/size
+   // inventory. Keep this a hard gate until provider evidence exposes exact bytes.
+   if(expectedStageA?.candidateAssetFilesVerified!==true||
+      provider?.candidateAssetInventory?.complete!==true||
+      provider?.candidateAssetInventory?.independentlyVerified!==true||
+      provider?.candidateAssetInventory?.assetCount<1)
+     fail('V354_ASSET_BYTES_AND_CART_PRESERVATION_UNVERIFIED');
+   const four=['supabase-schema','edge-tag-editor','edge-tags-live','edge-watch-score'];
+   if(!Array.isArray(stage?.otherTargetReadbacks)||stage.otherTargetReadbacks.length!==4||
+      four.some(id=>!stage.otherTargetReadbacks.some(x=>x.id===id&&x.fresh===true&&validHex(x.sha256))))
+     fail('FOUR_UNCHANGED_TARGETS_NOT_FENCED');
+   if(stage?.recovery?.rollbackVersionId!==CURRENT_ROLLBACK_VERSION||
+      stage?.recovery?.independentDownloadBackVerified!==true||stage?.recovery?.restoreMechanismQualified!==true)
+     fail('V348_ROLLBACK_OR_DURABLE_RECOVERY_UNQUALIFIED');
+   if(adapter?.oneTimeClaimVerified!==true||adapter?.twoPhaseAdmissionVerified!==true||
+      adapter?.immediatePrechangeReadbackVerified!==true||adapter?.oldClientAndReopenAcceptanceReady!==true||
+      adapter?.sameManifestCloseoutReady!==true)
+     fail('V354_STAGE_B_EXECUTION_AND_ACCEPTANCE_GATES_INCOMPLETE');
+   const stageB=manifest?.productionStageB;
+   const ownerAdmissionMissing=stageB?.status!=='ADMITTED'||stageB?.productionTrafficAuthorized!==true;
+   return {status:errors.length?'BLOCKED':ownerAdmissionMissing?'READY_FOR_EXACT_OWNER_STAGE_B_ADMISSION':'READY_FOR_EXTERNAL_ADMISSION_VERIFICATION',
+     canMutate:false,errors,ownerAdmissionRequired:ownerAdmissionMissing};
+ }
  if(manifest?.manifestRevision!==MANIFEST_REVISION||
     manifest?.recordId!=='hbnf-p0-pr151-udisc-20261103-52e120-review-only'||
     manifest?.status!=='PENDING_NOT_ADMITTED'||manifest?.productionMutationAuthorized!==false)
