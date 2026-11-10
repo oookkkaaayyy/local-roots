@@ -55,6 +55,67 @@ export function assertBetaAssetsRequestSupported(request){
   fail(!request?.assets||hasAssetUpload,'BETA_ASSET_CONFIG_REQUIRES_COMPLETE_ASSET_UPLOAD');
   return true;
 }
+
+// The version-specific API's PATCH /versions/latest route applies RFC 7396
+// merge-patch to the latest version and creates a new version. Omitted fields
+// remain inherited, so this narrowly changes only the static asset routing
+// switch while preserving the latest version's code, bindings, and asset
+// collection. `deploy=false` is explicit; no deployment endpoint is called.
+export function buildLatestGlobalWorkerFirstPatch({tag,message='HBNF P0 helper route Stage A; no traffic deployment'}={}){
+  fail(typeof tag==='string'&&/^hbnf-p0-[a-f0-9]{24,64}$/.test(tag),'LATEST_PATCH_TAG');
+  const request={annotations:{'workers/message':message,'workers/tag':tag},
+    assets:{config:{run_worker_first:true}}};
+  const requestBytes=Buffer.from(JSON.stringify(request));
+  return {endpoint:'PATCH /accounts/{account_id}/workers/workers/{worker_id}/versions/latest?deploy=false',
+    contentType:'application/merge-patch+json',deploy:false,request,requestBytes,
+    requestSha256:sha256(requestBytes),requestBytesLength:requestBytes.length};
+}
+
+export function verifyLatestGlobalWorkerFirstPatch({patch,requestSha256,expectedTag,
+  latestVersion,createdVersion,activeDeployment,expectedActiveVersionId=P0_V348,
+  expectedMainModuleSha256,expectedHelperSha256='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a'}={}){
+  fail(patch?.endpoint==='PATCH /accounts/{account_id}/workers/workers/{worker_id}/versions/latest?deploy=false'&&
+    patch?.contentType==='application/merge-patch+json'&&patch?.deploy===false&&
+    Buffer.isBuffer(patch.requestBytes)&&sha256(patch.requestBytes)===requestSha256&&
+    requestSha256===patch.requestSha256,'LATEST_PATCH_REQUEST_IDENTITY');
+  const body=JSON.parse(patch.requestBytes.toString('utf8'));
+  fail(body.annotations?.['workers/tag']===expectedTag&&body.assets?.config?.run_worker_first===true&&
+    Object.keys(body).sort().join('|')==='annotations|assets'&&
+    Object.keys(body.assets).join('|')==='config'&&
+    Object.keys(body.assets.config).join('|')==='run_worker_first','LATEST_PATCH_MINIMAL_SCOPE');
+  fail(latestVersion?.id&&createdVersion?.id&&createdVersion.id!==latestVersion.id&&
+    createdVersion.number===latestVersion.number+1&&
+    createdVersion.annotations?.['workers/tag']===expectedTag,'LATEST_PATCH_VERSION_IDENTITY');
+  const modules=createdVersion.modules||createdVersion.resources?.script?.modules||[];
+  const main=modules.find(m=>m.name===(createdVersion.main_module||'index.js'));
+  const moduleBytes=main?.content_base64?Buffer.from(main.content_base64,'base64'):
+    main?.content!==undefined?Buffer.from(main.content):null;
+  const moduleText=moduleBytes?.toString('utf8')||'';
+  const helperMatch=moduleText.match(/var glowSaveAckSource = ("(?:\\.|[^"\\])*");/);
+  let helperBytes;try{helperBytes=helperMatch?Buffer.from(JSON.parse(helperMatch[1])):null;}catch{helperBytes=null;}
+  fail(moduleBytes&&sha256(moduleBytes)===expectedMainModuleSha256&&
+    helperBytes&&sha256(helperBytes)===expectedHelperSha256,
+    'LATEST_PATCH_EXECUTABLE_MODULE');
+  const config=createdVersion.assets?.config||createdVersion.resources?.script_runtime?.assets||{};
+  fail(config.run_worker_first===true,'LATEST_PATCH_ROUTING_READBACK');
+  fail(JSON.stringify(bindingParityShape(createdVersion.bindings||createdVersion.resources?.bindings||[]))===
+    JSON.stringify(bindingParityShape(latestVersion.bindings||latestVersion.resources?.bindings||[])),
+    'LATEST_PATCH_BINDINGS_CHANGED');
+  const runtimeShape=v=>({compatibility_date:v.compatibility_date??v.resources?.script_runtime?.compatibility_date,
+    compatibility_flags:v.compatibility_flags??v.resources?.script_runtime?.compatibility_flags??[],
+    usage_model:v.usage_model??v.resources?.script_runtime?.usage_model});
+  const latestAssets=latestVersionAssetConfig(latestVersion),createdAssets=latestVersionAssetConfig(createdVersion);
+  const withoutWorkerFirst=a=>{const copy={...a};delete copy.run_worker_first;return copy;};
+  fail(JSON.stringify(runtimeShape(createdVersion))===JSON.stringify(runtimeShape(latestVersion))&&
+    JSON.stringify(withoutWorkerFirst(createdAssets))===JSON.stringify(withoutWorkerFirst(latestAssets)),
+    'LATEST_PATCH_RUNTIME_OR_ASSET_CONFIG_CHANGED');
+  fail(activeDeployment?.versions?.length===1&&
+    activeDeployment.versions[0]?.version_id===expectedActiveVersionId&&
+    activeDeployment.versions[0]?.percentage===100,'LATEST_PATCH_ACTIVE_TRAFFIC_CHANGED');
+  return {versionId:createdVersion.id,versionNumber:createdVersion.number,
+    mainModuleSha256:sha256(moduleBytes),runWorkerFirst:true,deploy:false,
+    assetsCollection:'INHERITED_BY_MERGE_PATCH; verify file bytes separately when version URL is available'};
+}
 export function makeVersionCreateFailureReceipt({httpStatus,providerErrors,candidateSha256,
   requestSha256,transactionId,candidateTag}){
   return {
@@ -294,6 +355,24 @@ function legacyAssetConfig(version){
   const a=runtime.assets||version?.assets?.config||{};
   return {base_path:a.base_path,run_worker_first:a.static_routing?.user_worker||
     a.raw_run_worker_first||a.run_worker_first};
+}
+
+function latestVersionAssetConfig(version){
+  const runtime=version?.resources?.script_runtime||version?.script_runtime||{};
+  const assets=version?.assets?.config||runtime.assets||{};
+  const config={...assets};
+  if(config.static_routing?.user_worker!==undefined){
+    config.run_worker_first=config.static_routing.user_worker;
+    delete config.static_routing;
+  }
+  return config;
+}
+function bindingParityShape(bindings){
+  return (bindings||[]).map(b=>{
+    const copy={...b};
+    if(copy.type==='secret_text'||copy.type==='secret')delete copy.text;
+    return copy;
+  }).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
 }
 function workerFirstCovers(config,paths){
   // Global Worker-first routing changes billing and request behavior for all
