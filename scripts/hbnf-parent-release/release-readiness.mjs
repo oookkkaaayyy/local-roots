@@ -4,13 +4,13 @@ export const ORIGINAL_MANIFEST_ID='12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
 export const MANIFEST_SHA256='eb2c9949553190285d5f90b8ad0c2fa26073b184a1a1711a9d82688a92a3e843';
 export const MANIFEST_REVISION=27;
 export const BOUND_SOURCE_HEAD='743db719eeb5c7a1cc175cc6431ed7f5a1c5ce74';
-// Exact current rev10 snapshot for the v354 routing-only Stage A result.
+// Exact current rev10 snapshot for the v355 routing-only Stage A result.
 // This does not grant Stage B admission; it lets the same fail-closed checker
 // evaluate current evidence instead of silently applying its obsolete rev27/v349 pins.
 export const CURRENT_MANIFEST_REVISION=67;
 export const CURRENT_MANIFEST_SHA256='f71386a765e4194a93817cc41b5c80616affbf960b573f7d977ac145a940e97c';
 export const CURRENT_BOUND_SOURCE_HEAD='88c136e05bc8d28cb04c4fa431885a958df87812';
-export const CURRENT_CANDIDATE_VERSION='1c745c03-cbd5-47f3-84eb-d99781ced849';
+export const CURRENT_CANDIDATE_VERSION='1553524d-c71f-4ad0-9bbf-4c8713df8173';
 export const CURRENT_ROLLBACK_VERSION='48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
 export const sha256 = x=>createHash('sha256').update(x).digest('hex');
 

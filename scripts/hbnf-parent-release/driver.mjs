@@ -6,7 +6,7 @@ const canonical = value => JSON.stringify(value, (_key, item) => item && typeof 
 export const digest = value => createHash('sha256').update(typeof value === 'string' || Buffer.isBuffer(value) || value instanceof Uint8Array ? value : canonical(value)).digest('hex');
 const ORIGINAL_MANIFEST_ID = '12X06fFmdc5oPGlcq9kprf1hhglbVV7mW';
 const CF_BASELINE_VERSION = '48ffa87e-3c83-46d0-a6ca-db7bf0b064e6';
-const CF_CANDIDATE_VERSION = '1c745c03-cbd5-47f3-84eb-d99781ced849';
+const CF_CANDIDATE_VERSION = '1553524d-c71f-4ad0-9bbf-4c8713df8173';
 
 export function validateTransaction(tx) {
   const errors = [];
@@ -168,7 +168,7 @@ export function validateCloudflareChildTransaction(tx) {
   if(candidate.providerVersionId!==CF_CANDIDATE_VERSION||candidate.uploadedVersionAndBindingsVerified!==true||
     !candidate.driveFileId||!/^[a-f0-9]{64}$/i.test(candidate.sha256||'')||
     !Number.isSafeInteger(candidate.bytes)||candidate.bytes<1||candidate.downloadBackVerified!==true||
-    candidate.runWorkerFirst!==true)errors.push('exact verified v354 candidate and durable download-back required');
+    candidate.runWorkerFirst!==true)errors.push('exact verified v355 candidate and durable download-back required');
   if(restore.providerVersionId!==CF_BASELINE_VERSION||restore.retainedVersionAndBindingsVerified!==true||
     !restore.driveFileId||!/^[a-f0-9]{64}$/i.test(restore.sha256||'')||
     !Number.isSafeInteger(restore.bytes)||restore.bytes<1||restore.downloadBackVerified!==true||!restore.route)
