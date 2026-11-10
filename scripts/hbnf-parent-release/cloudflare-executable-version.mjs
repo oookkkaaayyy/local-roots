@@ -356,6 +356,12 @@ function legacyAssetConfig(version){
   return {base_path:a.base_path,run_worker_first:a.static_routing?.user_worker||
     a.raw_run_worker_first||a.run_worker_first};
 }
+function legacyAssetBehavior(version){
+  const runtime=version?.resources?.script_runtime||version?.script_runtime||{};
+  const a=runtime.assets||version?.assets?.config||{};
+  return {base_path:a.base_path,html_handling:a.html_handling,
+    not_found_handling:a.not_found_handling,serve_directly:a.serve_directly};
+}
 
 function latestVersionAssetConfig(version){
   const runtime=version?.resources?.script_runtime||version?.script_runtime||{};
@@ -382,6 +388,12 @@ function workerFirstCovers(config,paths){
 function workerFirstMatchesCandidate(config,candidate,paths){
   if(candidate?.routingScope==='GLOBAL_WORKER_FIRST_STAGE_A_ONLY')
     return config===true||(Array.isArray(config)&&config.length===1&&config[0]==='/*');
+  if(candidate?.routingScope==='SELECTIVE_GLOW_ROUTE_STAGE_A'){
+    const exact=['/api/*','/internal/*','/glow','/glow.html','/glow-save-sync.mjs'];
+    return Array.isArray(config)&&config.length===exact.length&&
+      [...config].sort().join('\n')===[...exact].sort().join('\n')&&
+      (paths||[]).every(path=>config.includes(path));
+  }
   return candidate?.routingScope==='SELECTIVE_WORKER_FIRST'&&workerFirstCovers(config,paths);
 }
 // The provider accepted keep_assets on v353 but read the existing
@@ -427,9 +439,12 @@ export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candida
     'LEGACY_CANDIDATE_RUNTIME');
   if(expectedSourceHead)fail(candidate?.sourceHead===expectedSourceHead,'LEGACY_CANDIDATE_HEAD');
   const metadata=candidate.metadata;
+  const routeRequirements=candidate.routingScope==='SELECTIVE_GLOW_ROUTE_STAGE_A'
+    ? ['/api/*','/internal/*','/glow','/glow.html','/glow-save-sync.mjs']
+    : ['/api/*','/internal/*','/glow-save-sync.mjs'];
   fail(metadata.assets?.config?.base_path==='/'&&
     workerFirstMatchesCandidate(metadata.assets.config.run_worker_first,candidate,
-      ['/api/*','/internal/*','/glow-save-sync.mjs']),
+      routeRequirements),
     'LEGACY_CANDIDATE_ASSET_ROUTES');
   const bindings=metadata.bindings||[];
   fail(bindings.length===8&&bindings.some(b=>b.name==='ASSETS'&&b.type==='assets')&&
@@ -446,7 +461,8 @@ export function verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candida
   fail(moduleMap.size===1&&moduleMap.has('index.js')&&
     sha256(parts.get('index.js'))===candidate.candidateModuleSha256&&
     Buffer.compare(parts.get('index.js'),moduleMap.get('index.js'))===0&&
-    candidate.sourceMapDisposition==='PROVIDER_REJECTED_OPAQUE_NON_V3_MAP; REMOVE_ONLY_SOURCE_MAPPING_URL_AND_OMIT_DEBUG_MODULE',
+    ['PROVIDER_REJECTED_OPAQUE_NON_V3_MAP; REMOVE_ONLY_SOURCE_MAPPING_URL_AND_OMIT_DEBUG_MODULE',
+      'V355_READBACK_CONTAINS_ONLY_INDEX_JS; NO_SOURCE_MAP_UPLOAD'].includes(candidate.sourceMapDisposition),
     'LEGACY_CANDIDATE_MODULE_CLOSURE');
   fail(!/[#@]\s*sourceMappingURL\s*=\s*index\.js\.map/.test(moduleMap.get('index.js').toString('utf8')),
     'LEGACY_CANDIDATE_SOURCEMAP_REFERENCE');
@@ -478,6 +494,9 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
     'LEGACY_STAGE_IDENTITY');
   const proof=verifyLegacyKeepAssetsArtifact({candidate,candidateBytes,candidateSha256,expectedSourceHead,
     expectedModuleSha256,expectedHelperSha256});
+  const expectedRoutePaths=candidate.routingScope==='SELECTIVE_GLOW_ROUTE_STAGE_A'
+    ? ['/api/*','/internal/*','/glow','/glow.html','/glow-save-sync.mjs']
+    : ['/api/*','/internal/*','/glow-save-sync.mjs'];
   const stage=parentRecord?.scopedReleaseAuthority?.cloudflareOnlySaveAck?.stageA;
   fail(stage?.transactionId===expectedTransactionId&&stage?.candidateFileId===candidateFileId&&
     stage?.candidateSha256===candidateSha256&&stage?.sourceHead===expectedSourceHead&&
@@ -486,6 +505,8 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
     stage?.routingScope===candidate.routingScope&&
     (candidate.routingScope!=='GLOBAL_WORKER_FIRST_STAGE_A_ONLY'||
       stage?.globalWorkerFirstOwnerApproved===true)&&
+    (candidate.routingScope!=='SELECTIVE_GLOW_ROUTE_STAGE_A'||
+      stage?.selectiveRoutingOwnerApproved===true)&&
     stage?.expectedLatestVersionId===expectedLatestVersionId&&
     stage?.productionTrafficAuthorized===false,'LEGACY_STAGE_NOT_BOUND_TO_REV10');
   fail((await requireParentAdmission(parentRecord,{manifestSha256,candidateSha256,
@@ -528,9 +549,24 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
       stage?.globalWorkerFirstOwnerApproved===true&&requestedRouting===true&&latestConfig.run_worker_first===true;
     const selectiveRoutingPreserved=candidate.routingScope==='SELECTIVE_WORKER_FIRST'&&
       JSON.stringify(requestedRouting)===JSON.stringify(latestConfig.run_worker_first);
-    fail(globalRoutingAuthorized||selectiveRoutingPreserved,'LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED');
-    fail((globalRoutingAuthorized||selectiveRoutingPreserved)&&
+    const selectiveGlowStageA=candidate.routingScope==='SELECTIVE_GLOW_ROUTE_STAGE_A'&&
+      stage?.selectiveRoutingOwnerApproved===true&&
+      workerFirstMatchesCandidate(requestedRouting,candidate,['/api/*','/internal/*','/glow','/glow.html','/glow-save-sync.mjs'])&&
+      latestConfig.run_worker_first===true;
+    const routingAllowed=globalRoutingAuthorized||selectiveRoutingPreserved||selectiveGlowStageA;
+    fail(routingAllowed,'LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED');
+    const baseBehavior=legacyAssetBehavior(baseVersion),latestBehavior=legacyAssetBehavior(latestVersion);
+    const requestedBehavior={base_path:candidate.metadata.assets.config.base_path,
+      html_handling:candidate.metadata.assets.config.html_handling,
+      not_found_handling:candidate.metadata.assets.config.not_found_handling};
+    fail(routingAllowed&&
       latestConfig.base_path===baseConfig.base_path&&
+      baseBehavior.base_path===requestedBehavior.base_path&&
+      baseBehavior.html_handling===requestedBehavior.html_handling&&
+      baseBehavior.not_found_handling===requestedBehavior.not_found_handling&&
+      latestBehavior.base_path===baseBehavior.base_path&&
+      latestBehavior.html_handling===baseBehavior.html_handling&&
+      latestBehavior.not_found_handling===baseBehavior.not_found_handling&&
       JSON.stringify(runtimeIdentity(baseVersion))===JSON.stringify(runtimeIdentity(latestVersion))&&
       baseConfig.base_path==='/'&&workerFirstCovers(baseConfig.run_worker_first,['/api/*','/internal/*']),
       'LEGACY_RUNTIME_METADATA_DRIFT');
@@ -603,8 +639,14 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
   fail(JSON.stringify(actualBindings)===JSON.stringify(expectedNames),'LEGACY_VERSION_BINDING_READBACK');
   const config=legacyAssetConfig(verified);
   fail(config.base_path==='/'&&workerFirstMatchesCandidate(config.run_worker_first,candidate,
-    ['/api/*','/internal/*','/glow-save-sync.mjs']),
+    expectedRoutePaths),
     'LEGACY_VERSION_ASSET_ROUTING_READBACK');
+  const verifiedBehavior=legacyAssetBehavior(verified);
+  fail(candidate.routingScope!=='SELECTIVE_GLOW_ROUTE_STAGE_A'||(
+    verifiedBehavior.base_path===candidate.assetConfigExpected?.base_path&&
+    verifiedBehavior.html_handling===candidate.assetConfigExpected?.html_handling&&
+    verifiedBehavior.not_found_handling===candidate.assetConfigExpected?.not_found_handling&&verifiedBehavior.serve_directly===true),
+    'LEGACY_VERSION_ASSET_BEHAVIOR_READBACK');
   const afterVersions=versionListItems(await c.callEnvelope(workerPath+'/versions?per_page=100'),
     {expectedCount:expectedVersionCount+1,expectedLatestVersionId:versionId});
   const afterDeployment=await c.call(c.script+'/deployments');

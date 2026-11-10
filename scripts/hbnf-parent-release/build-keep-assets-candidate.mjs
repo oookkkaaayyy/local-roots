@@ -50,6 +50,69 @@ export function replaceGlowSaveLocal(html,liveSaveLocal,correctedSaveLocal){
   return {status:'patched',html:html.replace(liveSaveLocal,correctedSaveLocal)};
 }
 
+// Repackage the already verified v355 executable byte-for-byte. This candidate
+// changes only the legacy multipart metadata's selective Worker-first paths.
+export function buildFrozenV355SelectiveRouteCandidate({readback,sourceHead,
+  sourceReadbackSha256,
+  expectedModuleSha256='14d673977be543e3aaff296d12bdb9ccaaf41993eee92a705d06fb82ee7b005d'}={}){
+  const fail=(ok,code)=>{if(!ok)throw Error('FROZEN_V355_ROUTE_'+code);};
+  fail(readback?.accountId==='e3bc6b78f1104fa0c2a01245084594cf'&&readback?.worker==='hbnf'&&
+    readback?.versionId==='1553524d-c71f-4ad0-9bbf-4c8713df8173'&&readback?.versionNumber===355,'IDENTITY');
+  fail(/^[a-f0-9]{40}$/i.test(sourceHead||''),'SOURCE_HEAD');
+  fail(/^[a-f0-9]{64}$/i.test(sourceReadbackSha256||''),'READBACK_HASH');
+  const m=readback.module||{},module=Buffer.from(m.content_base64||'','base64');
+  fail(m.name==='index.js'&&m.contentType==='application/javascript+module'&&
+    module.length===m.bytes&&sha(module)===m.sha256&&sha(module)===expectedModuleSha256,'MODULE_HASH');
+  const source=module.toString('utf8');
+  for(const marker of ['path === "/glow" || path === "/glow.html"',
+    'path === "/glow-save-sync.mjs"','return env.ASSETS.fetch(request);',
+    'path === EXPORT_PATH || path === EVENTS_PATH || path === GLOW_SYNC_PATH','async scheduled('])
+    fail(source.includes(marker),'MODULE_ROUTE_CLOSURE');
+  const helperMatch=source.match(/var glowSaveAckSource = ("(?:\\.|[^"\\])*");/);
+  let helperBytes;try{helperBytes=helperMatch?Buffer.from(JSON.parse(helperMatch[1])):null;}catch{helperBytes=null;}
+  fail(helperBytes&&sha(helperBytes)==='674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a','HELPER_HASH');
+  const runtime=readback.scriptRuntime||{},asset=runtime.assetConfig||{};
+  fail(runtime.compatibility_date==='2026-07-28'&&runtime.usage_model==='standard'&&
+    asset.base_path==='/'&&asset.html_handling==='auto-trailing-slash'&&
+    asset.not_found_handling==='none'&&asset.run_worker_first===true,'RUNTIME_BASELINE');
+  const bindings=readback.bindingNamesAndTypes;
+  fail(Array.isArray(bindings)&&bindings.length===8&&bindings.some(b=>b.name==='ASSETS'&&b.type==='assets')&&
+    bindings.every(b=>b?.name&&b?.type),'BINDING_BASELINE');
+  const runWorkerFirst=['/api/*','/internal/*','/glow','/glow.html','/glow-save-sync.mjs'];
+  const metadata={main_module:'index.js',keep_assets:true,compatibility_date:runtime.compatibility_date,
+    compatibility_flags:runtime.compatibility_flags||[],usage_model:runtime.usage_model,
+    assets:{config:{base_path:asset.base_path,html_handling:asset.html_handling,
+      not_found_handling:asset.not_found_handling,run_worker_first:runWorkerFirst}},
+    bindings:bindings.map(b=>({name:b.name,type:b.name==='ASSETS'?'assets':'inherit'}))};
+  const boundary='hbnf-v355-selective-'+sha(Buffer.concat([module,Buffer.from(JSON.stringify(metadata))])).slice(0,24);
+  const chunks=[];
+  const part=(name,type,body,filename)=>{
+    chunks.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"${filename?`; filename="${filename}"`:''}\r\nContent-Type: ${type}\r\n\r\n`));
+    chunks.push(Buffer.from(body));chunks.push(Buffer.from('\r\n'));
+  };
+  part('metadata','application/json',JSON.stringify(metadata));
+  part('index.js','application/javascript+module',module,'index.js');
+  chunks.push(Buffer.from(`--${boundary}--\r\n`));
+  const multipart=Buffer.concat(chunks),candidate={schema:'hbnf.cloudflare.keep-assets-candidate.v1',
+    status:'STAGE_A_SELECTIVE_ROUTE_READBACK_REQUIRED',routingScope:'SELECTIVE_GLOW_ROUTE_STAGE_A',
+    sourceHead,moduleSourceCommit:'733c78971a285d8c21454e934dedfbf9fcd04322',
+    sourceReadbackSha256,
+    baselineVersionId:'48ffa87e-3c83-46d0-a6ca-db7bf0b064e6',latestVersionId:readback.versionId,
+    latestVersionNumber:readback.versionNumber,assetStrategy:'legacy-keep-assets-strict-latest-v355',
+    candidateModuleSha256:sha(module),helperSha256:'674f8712d7313fa73cf8bd761d458b7d6e5613b1eb147a24a0a0682e88f1d54a',
+    sourceMapDisposition:'V355_READBACK_CONTAINS_ONLY_INDEX_JS; NO_SOURCE_MAP_UPLOAD',
+    metadata,modules:[{name:'index.js',content_type:m.contentType,content_base64:module.toString('base64')}],
+    assetConfigExpected:{...asset,run_worker_first:runWorkerFirst,serve_directly:true},
+    API:{method:'POST',path:'/accounts/{account_id}/workers/scripts/hbnf/versions?bindings_inherit=strict',
+      encoding:'multipart/form-data',deploy:false,keep_assets:true,assetFileParts:[],
+      inheritance:'strict against freshly verified latest v355; v355 binding lineage is retained from v348',
+      moduleMutation:false},
+    preservation:{workerFirstPaths:runWorkerFirst,allOtherStaticPathsDirect:true,
+      routesUnchanged:true,cronUnchanged:true,rollbackVersionId:'48ffa87e-3c83-46d0-a6ca-db7bf0b064e6'}};
+  candidate.upload={bytes:multipart.length,sha256:sha(multipart),contentType:`multipart/form-data; boundary=${boundary}`};
+  return {module,multipart,candidate};
+}
+
 export function buildKeepAssetsCandidate({capture,helper,workerSettings,versionId=EXPECTED_VERSION,
   workerFirstMode='selective',sourceHead,liveGlowHtml,candidateGlowHtml,liveGlowHtmlEvidence}){
   if(capture?.before?.versionId!==versionId||capture?.after?.versionId!==versionId||

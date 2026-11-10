@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {buildKeepAssetsCandidate,parseMultipart} from '../scripts/hbnf-parent-release/build-keep-assets-candidate.mjs';
+import {buildKeepAssetsCandidate,buildFrozenV355SelectiveRouteCandidate,parseMultipart} from '../scripts/hbnf-parent-release/build-keep-assets-candidate.mjs';
 import {stageLegacyKeepAssetsVersion,verifyLegacyKeepAssetsArtifact,verifyGlowHelperModuleDelta,sha256} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {prepareLegacyKeepAssetsCloudflareVersionUnderParent} from '../scripts/hbnf-parent-release/providers-live.mjs';
 
@@ -208,6 +208,34 @@ test('multipart bytes, module closure, keep-assets metadata, and inherited bindi
  assert.match(Buffer.from(candidate.modules[0].content_base64,'base64').toString(),/return env\.ASSETS\.fetch\(request\);/);
  assert.equal(candidate.metadata.bindings.length,8);
  assert.ok(candidate.metadata.bindings.filter(x=>x.name!=='ASSETS').every(x=>x.type==='inherit'&&!('version_id' in x)));
+});
+
+test('frozen v355 selective-route request changes metadata only and keeps other assets direct',()=>{
+ const helperText=helper.toString('utf8');
+ const source=`var glowSaveAckSource = ${JSON.stringify(helperText)};\nvar index_default = { fetch(request,env){const path=new URL(request.url).pathname; if (path === "/glow" || path === "/glow.html") return env.ASSETS.fetch(request); if (path === "/glow-save-sync.mjs") return new Response(glowSaveAckSource); if (path === EXPORT_PATH || path === EVENTS_PATH || path === GLOW_SYNC_PATH) return errorResponse(404,"Not found."); return env.ASSETS.fetch(request); }, async scheduled(){} };`;
+ const frozen=Buffer.from(source),bindings=[{name:'ASSETS',type:'assets'},
+  ...settings.bindings.filter(b=>b.name!=='ASSETS').map(b=>({name:b.name,type:b.type}))];
+ const readback={accountId:account,worker:'hbnf',versionId:'1553524d-c71f-4ad0-9bbf-4c8713df8173',versionNumber:355,
+  module:{name:'index.js',contentType:'application/javascript+module',bytes:frozen.length,
+   sha256:sha256(frozen),content_base64:frozen.toString('base64')},
+  scriptRuntime:{compatibility_date:'2026-07-28',compatibility_flags:[],usage_model:'standard',
+   assetConfig:{base_path:'/',html_handling:'auto-trailing-slash',not_found_handling:'none',run_worker_first:true}},
+  bindingNamesAndTypes:bindings};
+ const built=buildFrozenV355SelectiveRouteCandidate({readback,sourceHead,sourceReadbackSha256:'c'.repeat(64),expectedModuleSha256:sha256(frozen)});
+ const {candidate}=built,{parts}=parseMultipart(built.multipart);
+ assert.equal(candidate.candidateModuleSha256,sha256(frozen));
+ assert.equal(Buffer.compare(built.module,frozen),0);
+ assert.deepEqual(candidate.metadata.assets.config.run_worker_first,
+  ['/api/*','/internal/*','/glow','/glow.html','/glow-save-sync.mjs']);
+ assert.deepEqual(Object.keys(candidate.metadata.assets.config).sort(),
+  ['base_path','html_handling','not_found_handling','run_worker_first']);
+ assert.deepEqual([...parts.keys()].sort(),['index.js','metadata']);
+ assert.equal(Buffer.compare(parts.get('index.js'),frozen),0);
+ assert.deepEqual(JSON.parse(parts.get('metadata').toString()).assets.config,candidate.metadata.assets.config);
+ for(const path of ['/','/cart.html','/admin.html','/random.html','/skills.html','/favicon.ico'])
+  assert.ok(!candidate.metadata.assets.config.run_worker_first.includes(path));
+ assert.equal(candidate.API.deploy,false);
+ assert.deepEqual(candidate.API.assetFileParts,[]);
 });
 
 test('legacy candidate omits rejected opaque source-map module and preserves only executable delta',()=>{
