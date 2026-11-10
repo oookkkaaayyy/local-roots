@@ -51,7 +51,7 @@ const makeCloudflareChildTx=()=>{
   const baseline=digest(before);
   return {schemaVersion:1,transactionId:'hbnf-p0-cloudflare-child-20261110',sourceCommit:parent.sourceCommit,
     mode:'review-only',liveExecutionEnabled:false,controllingManifestFileId:'12X06fFmdc5oPGlcq9kprf1hhglbVV7mW',
-    controllingManifestSha256:'a'.repeat(64),parentTransactionSha256:digest(parent),parentContract:parent.parentContract,
+    controllingManifestSha256:'a'.repeat(64),parentTransactionSha256:digest(parent.parentContract),parentContract:parent.parentContract,
     targets:[{id:'cloudflare-worker',provider:'Cloudflare',target:'hbnf',baselineIdentity:baseline,baselineSha256:baseline,
       baselineProviderVersionId:workerBaselineVersion,rollback:{driveFileId:'v348-recovery',sha256:'b'.repeat(64),bytes:80000,
         downloadBackVerified:true,providerVersionId:workerBaselineVersion}}],
@@ -67,6 +67,12 @@ const makeCloudflareChildTx=()=>{
 
 test('Cloudflare child validates one exact Worker operation while retaining the full five-target parent contract',()=>{
   const tx=makeCloudflareChildTx();assert.deepEqual(validateCloudflareChildTransaction(tx),[]);
+  const recoveryOnly=makeCloudflareChildTx();recoveryOnly.parentContract.operations=[];
+  recoveryOnly.parentTransactionSha256=digest(recoveryOnly.parentContract);
+  assert.deepEqual(validateCloudflareChildTransaction(recoveryOnly),[]);
+  const missingBackup=makeCloudflareChildTx();missingBackup.parentContract.targets[0].rollback.downloadBackVerified=false;
+  missingBackup.parentTransactionSha256=digest(missingBackup.parentContract);
+  assert(validateCloudflareChildTransaction(missingBackup).some(e=>e.includes('durable conditional restore')));
   assert.equal(validateTransaction(makeTx()).length,0);
   for(const mutate of [t=>t.targets.push(structuredClone(t.targets[0])),t=>t.operations.push(structuredClone(t.operations[0])),
     t=>t.operations[0].candidate.providerVersionId='1553524d-c71f-4ad0-9bbf-4c8713df8173',
@@ -74,6 +80,8 @@ test('Cloudflare child validates one exact Worker operation while retaining the 
     t=>t.parentContract.targets.pop()]){
     const bad=makeCloudflareChildTx();mutate(bad);assert(validateCloudflareChildTransaction(bad).length>0);
   }
+  const staleParent=makeCloudflareChildTx();staleParent.parentTransactionSha256='a'.repeat(64);
+  assert(validateCloudflareChildTransaction(staleParent).some(e=>e.includes('recovery contract digest')));
 });
 
 test('Cloudflare child requires exact same-manifest admission before any claim or provider call',async()=>{

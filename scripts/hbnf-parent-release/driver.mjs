@@ -136,10 +136,34 @@ export async function executeAdmittedProviderSaga(tx, adapters, journal, admissi
   return runProviderSaga(tx, adapters, journal, true);
 }
 
-// Narrow Stage B child for the original five-target authority.  The parent
-// contract is still fully validated and independently verified; this child
-// executes only the already-staged Cloudflare version and cannot dispatch DB
-// or Edge operations.  It is intentionally inert until the same rev10 record
+// Validate the five-target recovery envelope for a Cloudflare-only child.
+// The complete parent seven-stage plan remains separately review-only and is
+// never dispatched by this one-target child transaction.
+function validateParentRecoveryContract(parent,sourceCommit){
+  const errors=[];
+  if(parent?.schemaVersion!==1||!parent.releaseId||parent.sourceCommit!==sourceCommit)
+    errors.push('parent recovery contract identity or source binding invalid');
+  const targets=parent?.targets||[];
+  if(targets.length!==REQUIRED_TARGETS.length||new Set(targets.map(t=>t.id)).size!==targets.length||
+     REQUIRED_TARGETS.some(id=>!targets.some(t=>t.id===id)))
+    errors.push('parent recovery must bind the exact five targets');
+  for(const id of REQUIRED_TARGETS){
+    const t=targets.find(x=>x.id===id);if(!t)continue;
+    if(!t.provider||!t.target||!/^[a-f0-9]{64}$/i.test(t.baselineIdentity||'')||
+       t.baselineReadbackSha256!==t.baselineIdentity)
+      errors.push(`${id}: exact parent preimage required`);
+    if(!t.rollback?.driveFileId||!/^[a-f0-9]{64}$/i.test(t.rollback?.sha256||'')||
+       !Number.isSafeInteger(t.rollback?.bytes)||t.rollback.bytes<1||
+       t.rollback?.downloadBackVerified!==true||!t.restoreRoute||!t.postRestoreReadback)
+      errors.push(`${id}: durable conditional restore and readback required`);
+  }
+  return errors;
+}
+
+// Narrow Stage B child for the original five-target authority. The parent
+// recovery envelope is independently verified; this child executes only the
+// staged Cloudflare version and cannot dispatch DB or Edge operations. It is
+// intentionally inert until the same rev10 record
 // contains an exact admitted scope and the external verifier confirms it.
 export function validateCloudflareChildTransaction(tx) {
   const errors=[];
@@ -149,9 +173,10 @@ export function validateCloudflareChildTransaction(tx) {
   if(!/^[a-f0-9]{40}$/i.test(tx?.sourceCommit||''))errors.push('exact source commit missing');
   if(tx?.controllingManifestFileId!==ORIGINAL_MANIFEST_ID||!/^[a-f0-9]{64}$/i.test(tx?.controllingManifestSha256||''))
     errors.push('original rev10 manifest identity missing');
-  if(!/^[a-f0-9]{64}$/i.test(tx?.parentTransactionSha256||''))errors.push('parent five-target transaction digest missing');
-  if(validatePlan(tx?.parentContract||{}).length)errors.push('complete original five-target parent contract invalid');
-  if(tx?.parentContract?.sourceCommit!==tx?.sourceCommit)errors.push('parent source binding differs from child');
+  if(!/^[a-f0-9]{64}$/i.test(tx?.parentTransactionSha256||'')||
+     tx?.parentTransactionSha256!==digest(tx?.parentContract||{}))
+    errors.push('exact parent five-target recovery contract digest missing or mismatched');
+  errors.push(...validateParentRecoveryContract(tx?.parentContract||{},tx?.sourceCommit));
   const targets=tx?.targets||[];
   if(targets.length!==1||targets[0]?.id!=='cloudflare-worker')errors.push('child must bind exactly the Cloudflare Worker target');
   const target=targets[0]||{};
