@@ -45,9 +45,9 @@ const built=build();
 const candidate={...built.result,baselineVersionId:v348,sourceHead};
 const candidateBytes=built.multipart;
 const candidateSha256=sha256(candidateBytes);
-const parentRecordFor=(c,bytes,hash,{globalApproved=false}={})=>({scopedReleaseAuthority:{cloudflareOnlySaveAck:{stageA:{transactionId,candidateFileId,
+const parentRecordFor=(c,bytes,hash,{globalApproved=false,selectiveApproved=false}={})=>({scopedReleaseAuthority:{cloudflareOnlySaveAck:{stageA:{transactionId,candidateFileId,
  candidateSha256:hash,sourceHead,candidateBytes:bytes.length,assetStrategy:c.assetStrategy,
- routingScope:c.routingScope,globalWorkerFirstOwnerApproved:globalApproved,moduleSha256:c.candidateModuleSha256,
+ routingScope:c.routingScope,globalWorkerFirstOwnerApproved:globalApproved,selectiveRoutingOwnerApproved:selectiveApproved,moduleSha256:c.candidateModuleSha256,
  expectedLatestVersionId:v349,productionTrafficAuthorized:false}}}});
 const parentRecord=parentRecordFor(candidate,candidateBytes,candidateSha256);
 const jsonResponse=(result,{total=349,status=200}={})=>new Response(JSON.stringify({success:true,errors:[],result,
@@ -59,7 +59,7 @@ const oldVersion=(id,retainOriginalRouting=false,globalRouting=false)=>({id,reso
  script_runtime:retainOriginalRouting?{...runtime,assets:{...runtime.assets,static_routing:{user_worker:['/api/*','/internal/*']}}}:
  globalRouting?{...runtime,assets:{base_path:'/',raw_run_worker_first:true}}:runtime}});
 function provider({ambiguous=false,drift=false,rejected=false,omitHelperRoute=false,globalWorkerFirst=false,
- retainOriginalRouting=false,candidateSha=candidateSha256,readbackCandidate=candidate}={}){
+ canonicalizedGlobal=false,retainOriginalRouting=false,candidateSha=candidateSha256,readbackCandidate=candidate}={}){
  const calls=[];let created=false;
  const fetchImpl=async(url,init={})=>{
   const u=new URL(url);const path=u.pathname;const method=init.method||'GET';calls.push({path,method});
@@ -85,13 +85,29 @@ function provider({ambiguous=false,drift=false,rejected=false,omitHelperRoute=fa
    versions:[{version_id:drift?v349:v348,percentage:100}]}]});
   if(path.endsWith(`/scripts/hbnf/versions/${v348}`))return jsonResponse(oldVersion(v348,retainOriginalRouting));
   if(path.endsWith(`/scripts/hbnf/versions/${v349}`))return jsonResponse(oldVersion(v349,retainOriginalRouting,globalWorkerFirst));
-  if(path.endsWith(`/workers/workers/${workerId}/versions/${v350}`))return jsonResponse({id:v350,
+  if(path.endsWith(`/workers/workers/${workerId}/versions/${v350}`))return jsonResponse(canonicalizedGlobal?{
+   id:v350,modules:readbackCandidate.modules,bindings,assets:{config:{base_path:'/',
+    html_handling:'auto-trailing-slash',not_found_handling:'none',run_worker_first:true}}}:{id:v350,
    modules:readbackCandidate.modules,resources:{bindings,script_runtime:{...runtime,assets:{base_path:'/',
     static_routing:{user_worker:omitHelperRoute?['/api/*','/internal/*']:globalWorkerFirst?['/*']:
      ['/api/*','/internal/*','/glow-save-sync.mjs']}}}}});
   throw Error(`unexpected ${method} ${path}`);
  };
  return {fetchImpl,calls};
+}
+function frozenSelectiveCandidate(){
+ const moduleBytes=Buffer.from(`var glowSaveAckSource = ${JSON.stringify(helper.toString('utf8'))};\nvar index_default = { fetch(request,env){const path=new URL(request.url).pathname; if (path === "/glow" || path === "/glow.html") return env.ASSETS.fetch(request); if (path === "/glow-save-sync.mjs") return new Response(glowSaveAckSource); if (path === EXPORT_PATH || path === EVENTS_PATH || path === GLOW_SYNC_PATH) return errorResponse(404,"Not found."); return env.ASSETS.fetch(request); }, async scheduled(){} };`);
+ const readback={accountId:account,worker:'hbnf',versionId:'1553524d-c71f-4ad0-9bbf-4c8713df8173',versionNumber:355,
+  module:{name:'index.js',contentType:'application/javascript+module',bytes:moduleBytes.length,
+   sha256:sha256(moduleBytes),content_base64:moduleBytes.toString('base64')},
+  scriptRuntime:{compatibility_date:'2026-07-28',compatibility_flags:[],usage_model:'standard',
+   assetConfig:{base_path:'/',html_handling:'auto-trailing-slash',not_found_handling:'none',run_worker_first:true}},
+  bindingNamesAndTypes:settings.bindings.map(({name,type})=>({name,type}))};
+ const built=buildFrozenV355SelectiveRouteCandidate({readback,sourceHead,sourceReadbackSha256:'c'.repeat(64),expectedModuleSha256:sha256(moduleBytes)});
+ const boundary=built.multipart.subarray(0,built.multipart.indexOf(10)).toString().replace(/^--/,'').trim();
+ const approvedCandidate={...built.candidate,baselineVersionId:v348,sourceHead,
+  upload:{bytes:built.multipart.length,sha256:sha256(built.multipart),contentType:`multipart/form-data; boundary=${boundary}`}};
+ return {...built,candidate:approvedCandidate};
 }
 const common={token:'test-token-never-real',accountId:account,candidate,candidateBytes,candidateSha256,
  candidateFileId,expectedSourceHead:sourceHead,expectedModuleSha256:candidate.candidateModuleSha256,
@@ -169,6 +185,28 @@ test('provider readback that omits the selective helper path is rejected after o
  assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
  assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
  assert.ok(p.calls.some(x=>x.path.endsWith(`/workers/workers/${workerId}/versions/${v350}`)));
+});
+
+test('provider global normalization is accepted only under explicit owner Stage A approval',async()=>{
+ const frozen=frozenSelectiveCandidate(),approvedBytes=frozen.multipart,approvedCandidate=frozen.candidate;
+ const approvedSha=sha256(approvedBytes);
+ const approved=parentRecordFor(approvedCandidate,approvedBytes,approvedSha,{globalApproved:true,selectiveApproved:true});
+ const p=provider({canonicalizedGlobal:true,globalWorkerFirst:true,candidateSha:approvedSha,readbackCandidate:approvedCandidate});
+ const staged=await stageLegacyKeepAssetsVersion({...common,candidate:approvedCandidate,candidateBytes:approvedBytes,
+  candidateSha256:approvedSha,expectedModuleSha256:approvedCandidate.candidateModuleSha256,
+  parentRecord:approved,fetchImpl:p.fetchImpl});
+ assert.equal(staged.status,'LEGACY_KEEP_ASSETS_VERSION_CREATED_NOT_DEPLOYED');
+ assert.equal(staged.versionId,v350);assert.equal(staged.workerFirst,true);
+ assert.equal(staged.activeVersionId,v348);assert.equal(staged.activePercentage,100);
+ assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
+ assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
+ const unapproved=parentRecordFor(approvedCandidate,approvedBytes,approvedSha);
+ const q=provider({canonicalizedGlobal:true,globalWorkerFirst:true,candidateSha:approvedSha,readbackCandidate:approvedCandidate});
+ await assert.rejects(stageLegacyKeepAssetsVersion({...common,candidate:approvedCandidate,candidateBytes:approvedBytes,
+  candidateSha256:approvedSha,expectedModuleSha256:approvedCandidate.candidateModuleSha256,
+  parentRecord:unapproved,fetchImpl:q.fetchImpl}),
+  /LEGACY_STAGE_NOT_BOUND_TO_REV10/);
+ assert.equal(q.calls.some(x=>x.method==='POST'),false);
 });
 
 test('authorized global Worker-first candidate fails closed when provider readback narrows routing',async()=>{

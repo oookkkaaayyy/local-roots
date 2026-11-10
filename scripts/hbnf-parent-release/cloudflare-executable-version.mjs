@@ -386,8 +386,9 @@ function bindingParityShape(bindings){
   }).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
 }
 function workerFirstCovers(config,paths){
-  // Global Worker-first routing changes billing and request behavior for all
-  // static assets. This release only admits the exact selective path list.
+  // Global Worker-first routing changes request behavior for every static
+  // asset. It is accepted only by callers whose source authority explicitly
+  // approves the global Stage A or production scope.
   return Array.isArray(config)&&paths.every(path=>config.includes(path));
 }
 function workerFirstMatchesCandidate(config,candidate,paths){
@@ -653,14 +654,20 @@ export async function stageLegacyKeepAssetsVersion({token,accountId,workerName='
     type:b.name==='ASSETS'?'assets':(finalPreimage.latestVersion.resources?.bindings||[]).find(x=>x.name===b.name)?.type})));
   fail(JSON.stringify(actualBindings)===JSON.stringify(expectedNames),'LEGACY_VERSION_BINDING_READBACK');
   const config=legacyAssetConfig(verified);
-  fail(config.base_path==='/'&&workerFirstMatchesCandidate(config.run_worker_first,candidate,
-    expectedRoutePaths),
+  const providerCanonicalizedSelectiveToApprovedGlobal=candidate.routingScope==='SELECTIVE_GLOW_ROUTE_STAGE_A'&&
+    stage?.globalWorkerFirstOwnerApproved===true&&stage?.selectiveRoutingOwnerApproved===true&&
+    config.run_worker_first===true&&
+    workerFirstMatchesCandidate(candidate.metadata.assets.config.run_worker_first,candidate,expectedRoutePaths);
+  fail(config.base_path==='/'&&(workerFirstMatchesCandidate(config.run_worker_first,candidate,
+    expectedRoutePaths)||providerCanonicalizedSelectiveToApprovedGlobal),
     'LEGACY_VERSION_ASSET_ROUTING_READBACK');
   const verifiedBehavior=legacyAssetBehavior(verified);
   fail(candidate.routingScope!=='SELECTIVE_GLOW_ROUTE_STAGE_A'||(
     verifiedBehavior.base_path===candidate.assetConfigExpected?.base_path&&
     verifiedBehavior.html_handling===candidate.assetConfigExpected?.html_handling&&
-    verifiedBehavior.not_found_handling===candidate.assetConfigExpected?.not_found_handling&&verifiedBehavior.serve_directly===true),
+    verifiedBehavior.not_found_handling===candidate.assetConfigExpected?.not_found_handling&&
+    (providerCanonicalizedSelectiveToApprovedGlobal?verifiedBehavior.serve_directly===false:
+      verifiedBehavior.serve_directly===true)),
     'LEGACY_VERSION_ASSET_BEHAVIOR_READBACK');
   const afterVersions=versionListItems(await c.callEnvelope(workerPath+'/versions?per_page=100'),
     {expectedCount:expectedVersionCount+1,expectedLatestVersionId:versionId});
