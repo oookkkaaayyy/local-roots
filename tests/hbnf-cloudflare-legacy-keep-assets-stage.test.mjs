@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {buildKeepAssetsCandidate} from '../scripts/hbnf-parent-release/build-keep-assets-candidate.mjs';
+import {buildKeepAssetsCandidate,parseMultipart} from '../scripts/hbnf-parent-release/build-keep-assets-candidate.mjs';
 import {stageLegacyKeepAssetsVersion,verifyLegacyKeepAssetsArtifact,verifyGlowHelperModuleDelta,sha256} from '../scripts/hbnf-parent-release/cloudflare-executable-version.mjs';
 import {prepareLegacyKeepAssetsCloudflareVersionUnderParent} from '../scripts/hbnf-parent-release/providers-live.mjs';
 
@@ -21,7 +21,7 @@ const settings={activeVersionId:v348,latestVersionId:v349,latestVersionNumber:34
  firstListedVersionNumber:349,versionListPageSize:100,versionListTotalCount:349,newestFirstVerified:true,
  latestBindingsMatchBaseline:true,latestRuntimeMatchesBaseline:true,
  runtime:{compatibility_date:'2026-07-28',compatibility_flags:[],usage_model:'standard',
-  assets:{base_path:'/',serve_directly:true,static_routing:{user_worker:['/api/*','/internal/*']}}},
+  assets:{base_path:'/',serve_directly:true,static_routing:{user_worker:['/api/*','/internal/*','/glow-save-sync.mjs']}}},
  bindings:[{name:'ASSETS',type:'assets'},{name:'SUPABASE_SERVICE_ROLE_KEY',type:'secret_text'},
   {name:'SUPABASE_URL',type:'plain_text'},{name:'UDISC_GLOW_ACCESS_APPROVED',type:'plain_text'},
   {name:'UDISC_GLOW_EVENT_DATE',type:'plain_text'},{name:'UDISC_GLOW_EVENT_ID',type:'plain_text'},
@@ -48,11 +48,11 @@ const jsonResponse=(result,{total=349,status=200}={})=>new Response(JSON.stringi
  result_info:{page:1,per_page:100,total_count:total}}),{status,headers:{'content-type':'application/json'}});
 const bindings=settings.bindings.map(({name,type})=>({name,type}));
 const runtime={compatibility_date:'2026-07-28',compatibility_flags:[],usage_model:'standard',
- assets:{base_path:'/',static_routing:{user_worker:['/api/*','/internal/*']}}};
-const oldVersion=id=>({id,resources:{script:{etag:id===v348?etags.v348:etags.v349},bindings,
- script_runtime:runtime}});
+ assets:{base_path:'/',static_routing:{user_worker:['/api/*','/internal/*','/glow-save-sync.mjs']}}};
+const oldVersion=(id,retainOriginalRouting=false)=>({id,resources:{script:{etag:id===v348?etags.v348:etags.v349},bindings,
+ script_runtime:retainOriginalRouting?{...runtime,assets:{...runtime.assets,static_routing:{user_worker:['/api/*','/internal/*']}}}:runtime}});
 function provider({ambiguous=false,drift=false,rejected=false,omitHelperRoute=false,globalWorkerFirst=false,
- candidateSha=candidateSha256,readbackCandidate=candidate}={}){
+ retainOriginalRouting=false,candidateSha=candidateSha256,readbackCandidate=candidate}={}){
  const calls=[];let created=false;
  const fetchImpl=async(url,init={})=>{
   const u=new URL(url);const path=u.pathname;const method=init.method||'GET';calls.push({path,method});
@@ -76,8 +76,8 @@ function provider({ambiguous=false,drift=false,rejected=false,omitHelperRoute=fa
   }
   if(path.endsWith('/scripts/hbnf/deployments'))return jsonResponse({deployments:[{id:'c4f4ce98-4635-4010-a5e6-55e791b77c51',
    versions:[{version_id:drift?v349:v348,percentage:100}]}]});
-  if(path.endsWith(`/scripts/hbnf/versions/${v348}`))return jsonResponse(oldVersion(v348));
-  if(path.endsWith(`/scripts/hbnf/versions/${v349}`))return jsonResponse(oldVersion(v349));
+  if(path.endsWith(`/scripts/hbnf/versions/${v348}`))return jsonResponse(oldVersion(v348,retainOriginalRouting));
+  if(path.endsWith(`/scripts/hbnf/versions/${v349}`))return jsonResponse(oldVersion(v349,retainOriginalRouting));
   if(path.endsWith(`/workers/workers/${workerId}/versions/${v350}`))return jsonResponse({id:v350,
    modules:readbackCandidate.modules,resources:{bindings,script_runtime:{...runtime,assets:{base_path:'/',
     static_routing:{user_worker:globalWorkerFirst?['/*']:omitHelperRoute?['/api/*','/internal/*']:
@@ -121,31 +121,25 @@ test('explicit Stage A owner approval binds a global Worker-first candidate with
  assert.equal(admissions,0);assert.equal(claims,0);
  assert.equal(unapprovedProvider.calls.some(x=>x.method==='POST'),false);
  const parentRecord=parentRecordFor(globalCandidate,globalBytes,globalSha,{globalApproved:true});
- const p=provider({globalWorkerFirst:true,candidateSha:globalSha,readbackCandidate:globalCandidate});
- const out=await stageLegacyKeepAssetsVersion({...common,candidate:globalCandidate,candidateBytes:globalBytes,
-  candidateSha256:globalSha,parentRecord,fetchImpl:p.fetchImpl});
- assert.equal(out.status,'LEGACY_KEEP_ASSETS_VERSION_CREATED_NOT_DEPLOYED');
- assert.deepEqual(out.workerFirst,['/*']);assert.equal(out.activeVersionId,v348);assert.equal(out.activePercentage,100);
- assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
- assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
+ const {parts}=parseMultipart(globalBytes);
+ const submitted=JSON.parse(parts.get('metadata').toString('utf8'));
+ assert.equal(submitted.keep_assets,true);
+ assert.equal(submitted.assets.config.run_worker_first,true);
+ const p=provider({candidateSha:globalSha,readbackCandidate:globalCandidate});
+ await assert.rejects(stageLegacyKeepAssetsVersion({...common,candidate:globalCandidate,candidateBytes:globalBytes,
+  candidateSha256:globalSha,parentRecord,fetchImpl:p.fetchImpl,claimOnce:async()=>{claims++;return {};}}),
+  /LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED/);
+ assert.equal(claims,0);
+ assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,0);
 });
 
-test('keep_assets candidate is rejected when provider retains the installed asset routing config',async()=>{
- const builtGlobal=buildKeepAssetsCandidate({capture,helper,workerSettings:settings,
-  workerFirstMode:'global-approved-stage-a'});
- const globalCandidate={...builtGlobal.result,baselineVersionId:v348,sourceHead};
- const globalBytes=builtGlobal.multipart,globalSha=sha256(globalBytes);
- const parentRecord=parentRecordFor(globalCandidate,globalBytes,globalSha,{globalApproved:true});
- // This is the provider readback observed for the live v352 upload: despite
- // assets.config.run_worker_first being present in the multipart metadata,
- // keep_assets preserved the original /api/* and /internal/* routing.
- const p=provider({candidateSha:globalSha,readbackCandidate:globalCandidate});
- await assert.rejects(stageLegacyKeepAssetsVersion({...common,candidate:globalCandidate,
-  candidateBytes:globalBytes,candidateSha256:globalSha,parentRecord,fetchImpl:p.fetchImpl}),
-  /LEGACY_VERSION_ASSET_ROUTING_READBACK/);
- assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,1);
+test('live v348 routing mismatch blocks the helper candidate before claim or upload',async()=>{
+ const p=provider({retainOriginalRouting:true});let claims=0;
+ await assert.rejects(stageLegacyKeepAssetsVersion({...common,fetchImpl:p.fetchImpl,
+  claimOnce:async()=>{claims++;return {};}}),/LEGACY_KEEP_ASSETS_ROUTING_CHANGE_UNSUPPORTED/);
+ assert.equal(claims,0);
+ assert.equal(p.calls.filter(x=>x.method==='POST'&&x.path.endsWith('/versions')).length,0);
  assert.equal(p.calls.some(x=>x.method==='POST'&&x.path.endsWith('/deployments')),false);
- assert.ok(p.calls.some(x=>x.path.endsWith(`/workers/workers/${workerId}/versions/${v350}`)));
 });
 
 test('legacy inheritance drift fails before exclusive claim or provider mutation',async()=>{
