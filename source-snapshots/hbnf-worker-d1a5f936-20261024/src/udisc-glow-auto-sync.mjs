@@ -116,11 +116,15 @@ export async function runApprovedGlowSync(env, deps = {}) {
     const model = {eventId:binding.eventId,snapshots:[snapshot]};
     const decisions = source.exactAliasDecisions(model,evidence);
     const proposal = source.buildGlowProposal(model,evidence,decisions,{weekDate:binding.weekDate});
-    if (proposal.issues?.unresolvedIdentityCount || proposal.issues?.duplicateCanonicalTeamRows) {
-      throw Object.assign(Error('Player names need a one-time review before scores can be applied.'),{code:'IDENTITY_REVIEW_REQUIRED'});
+    // A name with no alias (a new player) is not a failure: the UDisc display name is used as-is
+    // and listed in udiscSync.nameReview so an alias can be added later without blocking scores.
+    if (proposal.issues?.duplicateCanonicalTeamRows) {
+      throw Object.assign(Error('Two UDisc teams map to the same Glow identity.'),{code:'IDENTITY_REVIEW_REQUIRED'});
     }
+    const nameReview = (proposal.identityReview?.reviewedCrosswalk || []).filter(item => !item.canonicalName).flatMap(item => item.sourceNames || []);
     const prepared = await prepareGlowWeekSync(existingWeek,proposal,{aliases:evidence.aliases});
     if (!prepared.changed) return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature};
+    prepared.week.udiscSync.nameReview = nameReview;
     prepared.week.udiscSync.status = {state:'fresh',lastAttemptAt:attemptedAt,lastSuccessAt:attemptedAt,errorCode:null};
     const rpc = await fetchImpl(`${config.supabaseUrl}/rest/v1/rpc/hbnf_apply_udisc_glow_week`, {
       method:'POST',headers:requestHeaders(config.serviceKey),
