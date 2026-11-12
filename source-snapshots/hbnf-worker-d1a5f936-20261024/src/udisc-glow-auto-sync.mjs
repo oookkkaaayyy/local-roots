@@ -96,6 +96,9 @@ export async function runApprovedGlowSync(env, deps = {}) {
     return {disposition:'week_locked',date:binding.weekDate};
   }
 
+  // One UDisc request every other minute is enough for live scoring and halves the load.
+  if (now.getUTCMinutes() % 2 !== 0) return {disposition:'throttled',date:binding.weekDate};
+
   const attemptedAt = now.toISOString();
   try {
     const response = await fetchUdiscExport(fetchImpl, binding.eventId);
@@ -133,6 +136,9 @@ export async function runApprovedGlowSync(env, deps = {}) {
     if (saved !== prepared.signature) throw Object.assign(Error('Glow score save could not be independently verified.'),{code:'SAVE_CONFLICT'});
     return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at};
   } catch (error) {
+    // Before the first score is entered the export has no team rows. That is a normal
+    // waiting state: do not write a failure status (it would bump updated_at every poll).
+    if (error?.code === 'EMPTY_EXPORT_NO_SCORES') return {disposition:'no_scores_yet',date:binding.weekDate};
     const recorded = await recordFailure(fetchImpl,config,binding.weekDate,error?.code || 'SYNC_FAILED',attemptedAt);
     if (!recorded) console.error('UDisc Glow failure status was not independently verified.');
     throw error;
