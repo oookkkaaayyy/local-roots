@@ -1,8 +1,7 @@
 import {buildGlowProposal, validateIdentityEvidence} from '../worker-private/udisc-glow-reconcile.mjs';
 import {prepareGlowWeekSync} from './udisc-glow-sync.mjs';
 import {selectGlowEventBinding} from './udisc-glow-event-bindings.mjs';
-
-const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+import {fetchUdiscExport} from './udisc-glow-export-fetch.mjs';
 
 function configFor(env) {
   if (env.UDISC_GLOW_ACCESS_APPROVED !== 'true') return {blocked:'source_access_disabled'};
@@ -99,13 +98,7 @@ export async function runApprovedGlowSync(env, deps = {}) {
 
   const attemptedAt = now.toISOString();
   try {
-    const response = await fetchImpl(`https://udisc.com/events/${binding.eventId}/leaderboard/export`, {
-      headers:{Accept:XLSX_TYPE},redirect:'manual',
-    });
-    if (!response.ok || response.status >= 300 && response.status < 400 ||
-        !(response.headers.get('content-type') || '').toLowerCase().includes(XLSX_TYPE)) {
-      throw Object.assign(Error('UDisc score export unavailable.'),{code:'SOURCE_UNAVAILABLE'});
-    }
+    const response = await fetchUdiscExport(fetchImpl, binding.eventId);
     let bytes;
     try { bytes = await readBounded(response); }
     catch { throw Object.assign(Error('UDisc score export exceeds the safe size limit.'),{code:'SOURCE_PARSE_FAILED'}); }
