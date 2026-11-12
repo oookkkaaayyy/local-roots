@@ -254,7 +254,7 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
   }
   for (const team of newTeams) {
     const item=entries.get(team.id), record=incomingRecords[team.sourceIndex];
-    updates.set(team.id,{id:team.id,name:team.names.join(' / '),partner1:team.names[0],partner2:team.names[1],cardId:item.card.id,scores:record.player.scores.map(score=>String(score??'')),removed:false});
+    updates.set(team.id,{id:team.id,name:team.names.filter(Boolean).join(' / '),partner1:team.names[0],partner2:team.names[1],cardId:item.card.id,scores:record.player.scores.map(score=>String(score??'')),removed:false});
   }
   const cardIds = new Set(base.cards.flatMap(card => (card.players || []).map(entry => text(entry.id))));
   const players = [];
