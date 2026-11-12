@@ -1,8 +1,7 @@
 import {buildGlowProposal, validateIdentityEvidence} from '../worker-private/udisc-glow-reconcile.mjs';
 import {prepareGlowWeekSync} from './udisc-glow-sync.mjs';
 import {selectGlowEventBinding} from './udisc-glow-event-bindings.mjs';
-
-const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+import {fetchUdiscExport} from './udisc-glow-export-fetch.mjs';
 
 function configFor(env) {
   if (env.UDISC_GLOW_ACCESS_APPROVED !== 'true') return {blocked:'source_access_disabled'};
@@ -97,15 +96,12 @@ export async function runApprovedGlowSync(env, deps = {}) {
     return {disposition:'week_locked',date:binding.weekDate};
   }
 
+  // One UDisc request every other minute is enough for live scoring and halves the load.
+  if (now.getUTCMinutes() % 2 !== 0) return {disposition:'throttled',date:binding.weekDate};
+
   const attemptedAt = now.toISOString();
   try {
-    const response = await fetchImpl(`https://udisc.com/events/${binding.eventId}/leaderboard/export`, {
-      headers:{Accept:XLSX_TYPE},redirect:'manual',
-    });
-    if (!response.ok || response.status >= 300 && response.status < 400 ||
-        !(response.headers.get('content-type') || '').toLowerCase().includes(XLSX_TYPE)) {
-      throw Object.assign(Error('UDisc score export unavailable.'),{code:'SOURCE_UNAVAILABLE'});
-    }
+    const response = await fetchUdiscExport(fetchImpl, binding.eventId);
     let bytes;
     try { bytes = await readBounded(response); }
     catch { throw Object.assign(Error('UDisc score export exceeds the safe size limit.'),{code:'SOURCE_PARSE_FAILED'}); }
@@ -120,11 +116,15 @@ export async function runApprovedGlowSync(env, deps = {}) {
     const model = {eventId:binding.eventId,snapshots:[snapshot]};
     const decisions = source.exactAliasDecisions(model,evidence);
     const proposal = source.buildGlowProposal(model,evidence,decisions,{weekDate:binding.weekDate});
-    if (proposal.issues?.unresolvedIdentityCount || proposal.issues?.duplicateCanonicalTeamRows) {
-      throw Object.assign(Error('Player names need a one-time review before scores can be applied.'),{code:'IDENTITY_REVIEW_REQUIRED'});
+    // A name with no alias (a new player) is not a failure: the UDisc display name is used as-is
+    // and listed in udiscSync.nameReview so an alias can be added later without blocking scores.
+    if (proposal.issues?.duplicateCanonicalTeamRows) {
+      throw Object.assign(Error('Two UDisc teams map to the same Glow identity.'),{code:'IDENTITY_REVIEW_REQUIRED'});
     }
+    const nameReview = (proposal.identityReview?.reviewedCrosswalk || []).filter(item => !item.canonicalName).flatMap(item => item.sourceNames || []);
     const prepared = await prepareGlowWeekSync(existingWeek,proposal,{aliases:evidence.aliases});
     if (!prepared.changed) return {disposition:'unchanged',date:binding.weekDate,signature:prepared.signature};
+    prepared.week.udiscSync.nameReview = nameReview;
     prepared.week.udiscSync.status = {state:'fresh',lastAttemptAt:attemptedAt,lastSuccessAt:attemptedAt,errorCode:null};
     const rpc = await fetchImpl(`${config.supabaseUrl}/rest/v1/rpc/hbnf_apply_udisc_glow_week`, {
       method:'POST',headers:requestHeaders(config.serviceKey),
@@ -140,6 +140,9 @@ export async function runApprovedGlowSync(env, deps = {}) {
     if (saved !== prepared.signature) throw Object.assign(Error('Glow score save could not be independently verified.'),{code:'SAVE_CONFLICT'});
     return {disposition:'updated',date:binding.weekDate,eventId:binding.eventId,signature:prepared.signature,teamCount:prepared.week.players.length,updatedAt:verified.row.updated_at};
   } catch (error) {
+    // Before the first score is entered the export has no team rows. That is a normal
+    // waiting state: do not write a failure status (it would bump updated_at every poll).
+    if (error?.code === 'EMPTY_EXPORT_NO_SCORES') return {disposition:'no_scores_yet',date:binding.weekDate};
     const recorded = await recordFailure(fetchImpl,config,binding.weekDate,error?.code || 'SYNC_FAILED',attemptedAt);
     if (!recorded) console.error('UDisc Glow failure status was not independently verified.');
     throw error;

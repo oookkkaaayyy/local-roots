@@ -91,7 +91,18 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
   const aliases = options.aliases || {};
   const signature = await fingerprint(proposal);
   const prior = base.udiscSync;
-  if (prior?.eventId === eventId && prior?.latest?.signature === signature) {
+  // An alias added after the first import changes the mapped names but not the source
+  // signature; the unchanged fast path must not skip that rename.
+  const namesCurrent = () => {
+    const rows = prior?.latest?.rows;
+    if (!Array.isArray(rows) || rows.length !== incoming.length) return true;
+    const playersById = new Map((base.players || []).map(p => [text(p.id), p]));
+    return incoming.every((entry, index) => {
+      const player = playersById.get(text(rows[index]?.glowTeamId));
+      return !player || (text(player.partner1) === mappedName(entry.partner1, aliases) && text(player.partner2) === mappedName(entry.partner2, aliases));
+    });
+  };
+  if (prior?.eventId === eventId && prior?.latest?.signature === signature && namesCurrent()) {
     // Identical source snapshots cannot acknowledge a manually changed hole as
     // source-confirmed. Refuse the unchanged fast path if accepted scores drift.
     const playersById = new Map((base.players || []).map(p => [text(p.id), p]));
@@ -254,7 +265,7 @@ export async function prepareGlowWeekSync(currentWeek, proposal, options = {}) {
   }
   for (const team of newTeams) {
     const item=entries.get(team.id), record=incomingRecords[team.sourceIndex];
-    updates.set(team.id,{id:team.id,name:team.names.join(' / '),partner1:team.names[0],partner2:team.names[1],cardId:item.card.id,scores:record.player.scores.map(score=>String(score??'')),removed:false});
+    updates.set(team.id,{id:team.id,name:team.names.filter(Boolean).join(' / '),partner1:team.names[0],partner2:team.names[1],cardId:item.card.id,scores:record.player.scores.map(score=>String(score??'')),removed:false});
   }
   const cardIds = new Set(base.cards.flatMap(card => (card.players || []).map(entry => text(entry.id))));
   const players = [];
