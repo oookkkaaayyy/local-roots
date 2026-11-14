@@ -3,6 +3,7 @@ import { Shell } from '../components/Shell';
 import coursesData from '../data/weather-courses.json';
 import { buildHourlyRows, buildRolling24HourRows, eligibleActiveAlerts, filterCourses, forecastFlags, formatHourlyTimeLabel, summarizeHourly } from '../lib/weatherCore.js';
 import type { HourRow, WeatherCourse } from '../lib/weatherCore.js';
+import { canvasToBlob, renderWeatherCard } from '../lib/weatherCard';
 
 type Preferences = { location:string; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
 type CourseForecast = { periods:unknown[]; gusts:unknown[]; precipitation?:Array<{validTime:string;value:number|null}>; precipitationUnit?:string; gustUnit?:string; alerts:unknown[]; alertsAvailable:boolean; lastUpdatedAt?:string|null; stale?:boolean; staleMessage?:string; partialError?:string; error?:string };
@@ -60,6 +61,28 @@ function hourlyTimeParts(value:string,rows:HourRow[],timeZone:string,referenceTi
   const split=label.lastIndexOf(', ');
   return split<0?{day:'',time:label.replace(/:00 (?=AM|PM)/,' ')}:{day:label.slice(0,split),time:label.slice(split+2).replace(/:00 (?=AM|PM)/,' ')};
 }
+type OutlookDay = { date:string; label:string; weekday:string; minF:number|null; maxF:number|null; windMax:number|null; gustMax:number|null; rainMax:number|null; flags:Array<{kind:string;label:string;source:string}>; hasData:boolean };
+function dayParts(date:string) {
+  const d=new Date(`${date}T12:00:00Z`);
+  return {weekday:new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'short'}).format(d),label:new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'short',day:'numeric'}).format(d)};
+}
+function buildOutlook(raw:CourseForecast|undefined,course:WeatherCourse,today:string):OutlookDay[] {
+  const days:OutlookDay[]=[];
+  for(let i=0;i<7;i++){
+    const date=plusDays(today,i);const parts=dayParts(date);
+    const empty:OutlookDay={date,label:parts.label,weekday:i===0?'Today':parts.weekday,minF:null,maxF:null,windMax:null,gustMax:null,rainMax:null,flags:[],hasData:false};
+    if(!raw||raw.error){days.push(empty);continue;}
+    try{
+      const built=buildHourlyRows(raw.periods,raw.gusts,{date,startHour:0,endHour:24,timeZone:course.timezone||TIME_ZONE,gustUnit:raw.gustUnit,precipitationSeries:raw.precipitation,precipitationUnit:raw.precipitationUnit});
+      if(!built.rows.length){days.push(empty);continue;}
+      const sum=summarizeHourly(built.rows);
+      const alerts=eligibleActiveAlerts(raw.alerts||[],built.window);
+      const rains=built.rows.map(r=>r.precipitationProbability).filter((v):v is number=>typeof v==='number'&&Number.isFinite(v));
+      days.push({date,label:parts.label,weekday:i===0?'Today':parts.weekday,minF:sum.temperatureMinF,maxF:sum.temperatureMaxF,windMax:sum.windMaxMph,gustMax:sum.peakGustMph,rainMax:rains.length?Math.max(...rains):null,flags:forecastFlags(built.rows,alerts,Boolean(raw.alertsAvailable)).filter(f=>f.kind!=='alerts-unavailable'),hasData:true});
+    }catch{days.push(empty);}
+  }
+  return days;
+}
 function sortedCourses(views:CourseView[],sort:Preferences['sort']) {
   const copy=[...views];
   const value=(v:CourseView)=>sort==='temperature'?v.summary.temperatureMinF:sort==='wind'?v.summary.windMaxMph:sort==='gust'?v.summary.peakGustMph:v.course.distanceMiles;
@@ -74,7 +97,8 @@ export function WeatherPage() {
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState('');
   const [locationNotice,setLocationNotice]=useState('');
-  const [expanded,setExpanded]=useState<string|null>(null);
+  const [expanded,setExpanded]=useState<string|null>(()=>{try{return new URLSearchParams(window.location.search).get('course');}catch{return null;}});
+  const [cardPreview,setCardPreview]=useState<{url:string;course:string;link:string}|null>(null);
   const [shareMessage,setShareMessage]=useState('');
   const [refreshKey,setRefreshKey]=useState(0);
   const [filtersOpen,setFiltersOpen]=useState(false);
@@ -194,6 +218,52 @@ export function WeatherPage() {
     }
     setTimeout(()=>setShareMessage(''),2400);
   }
+  function courseLink(course:WeatherCourse) {
+    const url=new URL(window.location.href);url.pathname='/weather';
+    url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0',course:course.id}).toString();
+    return url.toString();
+  }
+  function selectDay(date:string) {
+    const next={...preferences,date,allDay:true};
+    setPreferences(next);setDraft(prev=>({...prev,date,allDay:true}));syncWeatherUrl(next);
+  }
+  async function shareCourseCard(view:CourseView,periodLabel:string) {
+    const link=courseLink(view.course);
+    const conds=[...new Set(view.rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
+    const rains=view.rows.map(r=>r.precipitationProbability).filter((v):v is number=>typeof v==='number'&&Number.isFinite(v));
+    const flagLabels=view.flags.filter(f=>f.kind!=='alerts-unavailable').map(f=>f.source==='official'?'NWS alert':f.label);
+    try{
+      const canvas=await renderWeatherCard({
+        course:view.course.name,
+        place:`${view.course.city}, ${view.course.state}${view.course.postalCode?` ${view.course.postalCode}`:''}`,
+        period:periodLabel,
+        tempRange:compactRange(view.summary.temperatureMinF,view.summary.temperatureMaxF,'°F'),
+        conditions:conds||'Conditions unavailable',
+        wind:compactRange(view.summary.windMinMph,view.summary.windMaxMph,' mph'),
+        gust:view.summary.peakGustMph===null?'—':`${Math.round(view.summary.peakGustMph)} mph`,
+        rain:rains.length?`${Math.max(...rains)}%`:'—',
+        flags:flagLabels,
+        issued:view.lastUpdatedAt?`NWS ${formatForecastIssued(view.lastUpdatedAt)}`:'NWS',
+        host:'localrootsdg.com/weather'
+      });
+      const blob=await canvasToBlob(canvas);
+      if(!blob)throw new Error('card');
+      const nav=navigator as Navigator&{canShare?:(data:unknown)=>boolean};
+      try{
+        const file=new File([blob],`${view.course.id}-weather.png`,{type:'image/png'});
+        if(nav.share&&nav.canShare&&nav.canShare({files:[file]})){await nav.share({files:[file],title:view.course.name,text:link});return;}
+      }catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
+      setCardPreview({url:URL.createObjectURL(blob),course:view.course.name,link});
+    }catch{
+      setShareMessage('Card unavailable.');setTimeout(()=>setShareMessage(''),2400);
+    }
+  }
+  async function copyCardLink() {
+    if(!cardPreview)return;
+    try{await navigator.clipboard.writeText(cardPreview.link);setShareMessage('Link copied.');}catch{setShareMessage('Copy unavailable.');}
+    setTimeout(()=>setShareMessage(''),2400);
+  }
+  function closeCard() { if(cardPreview)URL.revokeObjectURL(cardPreview.url);setCardPreview(null); }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
   return <Shell><main className="content weather-page">
@@ -254,9 +324,23 @@ export function WeatherPage() {
             {view.stale?<p className="weather-stale">Cached forecast · Issued {formatForecastIssued(view.lastUpdatedAt)||'time unavailable'}</p>:null}
             {!view.error&&hourly?.rows.length===0?<p className="weather-muted">No forecast for these hours.</p>:null}
             {hourly&&hourly.coverage>0&&hourly.coverage<0.999?<p className="weather-stale">Forecast covers {Math.round(hourly.coverage*100)}% of these hours.</p>:null}
+            <div className="weather-outlook" role="group" aria-label={`7-day outlook for ${view.course.name}`}>
+              {buildOutlook(view.raw,view.course,dateInPacific(new Date(referenceTime))).map(day=>{
+                const active=!rolling&&day.date===preferences.date&&preferences.allDay;
+                return <button type="button" key={day.date} className={`weather-outlook-day${active?' is-active':''}${day.hasData?'':' is-empty'}`} aria-pressed={active} disabled={!day.hasData} onClick={()=>selectDay(day.date)} aria-label={`${day.weekday} ${day.label}`}>
+                  <span className="weather-outlook-date"><strong>{day.weekday}</strong><small>{day.label}</small></span>
+                  <span className="weather-outlook-temp">{day.hasData&&day.maxF!==null?`${Math.round(day.maxF)}°`:'—'}<small>{day.hasData&&day.minF!==null?`${Math.round(day.minF)}°`:''}</small></span>
+                  <span className="weather-outlook-line">{day.hasData&&day.windMax!==null?`${Math.round(day.windMax)} mph`:'—'}{day.gustMax!==null?<small>Gust {Math.round(day.gustMax)}</small>:null}</span>
+                  <span className="weather-outlook-line">{day.rainMax!==null?`${Math.round(day.rainMax)}%`:'—'}<small>Rain</small></span>
+                  {day.flags.length?<span className="weather-outlook-flags">{day.flags.slice(0,3).map((f,i)=><em className={`weather-flag flag-${f.kind}`} key={`${f.kind}-${i}`}>{f.source==='official'?'NWS alert':f.kind==='rain'?'Rain':f.kind==='wind'?'Wind':f.kind==='storm'?'Storm':f.kind==='heat'?'Heat':f.label}</em>)}</span>:null}
+                </button>;
+              })}
+            </div>
             <p className="weather-hourly-period">{periodLabel}</p>
             <div className="weather-location-actions">
               <span>{view.course.postalCode?`ZIP ${view.course.postalCode}`:`${courseLat.toFixed(5)}, ${courseLon.toFixed(5)}`}</span>
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${courseLat.toFixed(6)},${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${view.course.name}`}>Directions</a>
+              <button type="button" onClick={()=>void shareCourseCard(view,periodLabel)} aria-label={`Share forecast card for ${view.course.name}`}>Share card</button>
               <button type="button" onClick={()=>void copyCourseLocation(view.course)}>Copy location</button>
               <a href={`https://forecast.weather.gov/MapClick.php?lat=${courseLat.toFixed(6)}&lon=${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`NWS forecast for ${view.course.name}`}>NWS forecast</a>
               {copyFeedback?.id===view.course.id?<small role="status">{copyFeedback.message}</small>:null}
@@ -269,6 +353,7 @@ export function WeatherPage() {
         </article>;
       })}
     </div>
+    {cardPreview?<div className="weather-card-modal" role="dialog" aria-modal="true" aria-label={`Forecast card for ${cardPreview.course}`}><div className="weather-card-sheet"><img src={cardPreview.url} alt={`Forecast card for ${cardPreview.course}`} /><div className="weather-card-actions"><a href={cardPreview.url} download="local-roots-weather.png">Save image</a><button type="button" onClick={()=>void copyCardLink()}>Copy link</button><button type="button" onClick={closeCard}>Close</button></div></div></div>:null}
   </main></Shell>;
 }
 

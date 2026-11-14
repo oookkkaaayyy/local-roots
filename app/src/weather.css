@@ -148,3 +148,23 @@
   .weather-metric{gap:2px}
   .weather-metric strong{font-size:.8rem}
 }
+
+.weather-outlook{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.weather-outlook-day{display:grid;gap:5px;align-content:start;min-width:0;padding:8px 6px;border:1px solid rgba(91,58,36,.22);border-radius:9px;background:rgba(255,248,238,.7);color:var(--lr-earth,var(--root));font:inherit;text-align:left;cursor:pointer}
+.weather-outlook-day.is-active{border-color:var(--clay);background:var(--lr-paper-deep,#efe2d1);box-shadow:inset 0 0 0 1px var(--clay)}
+.weather-outlook-day.is-empty{opacity:.5;cursor:default}
+.weather-outlook-date strong{display:block;font-size:.78rem}
+.weather-outlook-date small,.weather-outlook-line small,.weather-outlook-temp small{display:block;color:var(--muted);font-size:.66rem;font-weight:600}
+.weather-outlook-temp{font-size:1.02rem;font-weight:800;font-variant-numeric:tabular-nums}
+.weather-outlook-line{font-size:.76rem;font-weight:700;font-variant-numeric:tabular-nums}
+.weather-outlook-flags{display:flex;flex-wrap:wrap;gap:3px}
+.weather-outlook-flags .weather-flag{font-size:.62rem;padding:2px 5px}
+.weather-card-modal{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(58,38,24,.72)}
+.weather-card-sheet{display:grid;gap:10px;max-width:min(92vw,460px);max-height:94vh;overflow:auto;padding:12px;border-radius:14px;background:var(--lr-paper,#fbf5ea)}
+.weather-card-sheet img{display:block;width:100%;height:auto;border-radius:8px}
+.weather-card-actions{display:flex;gap:8px;flex-wrap:wrap}
+.weather-card-actions a,.weather-card-actions button{display:inline-flex;align-items:center;min-height:44px;padding:6px 12px;border:1px solid rgba(91,58,36,.3);border-radius:8px;background:transparent;color:var(--soil);font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+@media (max-width:760px){
+  .weather-outlook{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .weather-outlook-day{flex:0 0 92px}
+}
