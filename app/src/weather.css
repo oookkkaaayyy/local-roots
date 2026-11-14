@@ -168,3 +168,46 @@
   .weather-outlook{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
   .weather-outlook-day{flex:0 0 92px}
 }
+.weather-card-controls{display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px 12px}
+.weather-card-controls label{display:grid;gap:3px;color:var(--soil);font-size:.74rem;font-weight:700}
+.weather-card-controls .weather-card-allday{display:flex;align-items:center;gap:6px;min-height:44px}
+.weather-card-controls select{min-height:40px;padding:5px 8px}
+.weather-card-actions .is-primary{background:var(--root,#3a2618);color:#fbf5ea;border-color:var(--root,#3a2618)}
+.weather-card-actions .is-primary:disabled{opacity:.5}
+.weather-card-controls .weather-card-allday input{width:auto;min-height:0;padding:0;margin:0;accent-color:var(--clay)}
+.weather-card-controls .weather-card-allday{white-space:nowrap}
+
+/* uniform list/filter pattern shared with Events */
+.weather-page.events-page{max-width:none;padding:0}
+.events-page .weather-controls{display:contents}
+.events-page .weather-controls .weather-all-day{display:flex;align-items:center;gap:8px;min-height:42px}
+.events-page .weather-controls .weather-all-day input{width:auto;min-height:0}
+.events-page .weather-controls .weather-search{width:100%;min-height:44px}
+.weather-page .list-header .weather-share{margin-left:auto;min-height:38px}
+.weather-page .list-header .filters-trigger{margin-left:0}
+.page-search{display:block;margin:0 0 12px}
+.page-search input{display:block;width:100%;min-height:44px;padding:9px 12px}
+.weather-page .weather-legend{margin-top:4px}
+.weather-page .list-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.weather-page .list-actions .weather-share{margin-left:0}
+.events-page .weather-controls>*{grid-area:auto!important;grid-column:1/-1!important}
+.events-page .weather-controls input[type="date"]{display:block;width:100%;max-width:100%;min-width:0}
+.weather-page .list-header>h2+span{margin-left:10px;color:var(--muted,#6b5a4a);font-size:.85rem}
+.weather-daychart{display:grid;gap:6px;margin:10px 0 14px;padding:12px 12px 8px;background:#fbf5ea;border:1px solid rgba(91,58,36,.22);border-radius:16px}
+.weather-daychart .dc-track svg{display:block;width:100%;height:auto;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.weather-daychart text{font-family:inherit;fill:#3a2618}
+.dc-title{font-size:13px;font-weight:700;fill:#756050!important;letter-spacing:.04em;text-transform:uppercase}
+.dc-value{font-size:15px;font-weight:700}
+.dc-plot{fill:#fffaf1;stroke:rgba(91,58,36,.14)}
+.dc-night rect{fill:rgba(58,38,24,.09)}
+.dc-line{fill:none;stroke:#9f5c36;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.dc-dot{fill:#9f5c36}
+.dc-label{font-size:14px;font-weight:700}
+.dc-axis{font-size:13px;font-weight:600;fill:#756050!important}
+.dc-bar-wind{fill:#7f8962}.dc-gust{fill:#3a2618}.dc-bar-rain{fill:#5a7384}
+.dc-readout line{stroke:#3a2618;stroke-width:1.5;stroke-dasharray:3 3}
+.dc-readout rect{fill:#3a2618}
+.weather-daychart .dc-readout text{fill:#fbf5ea;font-size:14px;font-weight:700}
+.dc-sun-night{fill:#cdbfae}.dc-sun-day{fill:#f0d28a}.dc-sun-glyph{fill:#e0a526;stroke:#fbf5ea;stroke-width:2}
+.dc-sun-text{font-size:17px;font-weight:800}
+.dc-sun-cap{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;fill:#756050!important}

@@ -1,17 +1,23 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Shell } from '../components/Shell';
+import { useFilterSheet } from '../lib/useFilterSheet';
 import coursesData from '../data/weather-courses.json';
-import { buildHourlyRows, buildRolling24HourRows, eligibleActiveAlerts, filterCourses, forecastFlags, formatHourlyTimeLabel, summarizeHourly } from '../lib/weatherCore.js';
+import { buildHourlyRows, eligibleActiveAlerts, filterCourses, forecastFlags, summarizeHourly } from '../lib/weatherCore.js';
 import type { HourRow, WeatherCourse } from '../lib/weatherCore.js';
 import { canvasToBlob, renderWeatherCard } from '../lib/weatherCard';
+import { DayChart } from '../components/DayChart';
+import { toChartHours } from '../lib/dayChart';
+import { sunTimes } from '../lib/sun.js';
 
-type Preferences = { location:string; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
+type Preferences = { location:string; useDevice:boolean; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
 type CourseForecast = { periods:unknown[]; gusts:unknown[]; precipitation?:Array<{validTime:string;value:number|null}>; precipitationUnit?:string; gustUnit?:string; alerts:unknown[]; alertsAvailable:boolean; lastUpdatedAt?:string|null; stale?:boolean; staleMessage?:string; partialError?:string; error?:string };
 type WeatherResponse = { courses:Array<WeatherCourse & {distanceMiles:number}>; forecasts:Record<string,CourseForecast>; lastSuccessfulUpdate:string|null; responseAt:string; retrievedAt?:string|null };
 type GeocodeResult = { coordinates:[number,number]; label:string; source:string; stale?:boolean; staleMessage?:string };
 type CourseView = { course:WeatherCourse & {distanceMiles:number}; raw?:CourseForecast; rows:HourRow[]; summary:ReturnType<typeof summarizeHourly>; coverage:number; alerts:ReturnType<typeof eligibleActiveAlerts>; alertsAvailable:boolean; flags:ReturnType<typeof forecastFlags>; error?:string; partialError?:string; stale?:boolean; lastUpdatedAt?:string|null };
 
 const COURSES = coursesData as unknown as WeatherCourse[];
+const ALL_COURSES_MILES=500;
+const SEARCH_ALIASES:Record<string,string>={'coyote-point':'lake casitas casitas'};
 const PREF_KEY = 'lrWeatherPreferencesV1';
 const LAST_KEY = 'lrWeatherLastGoodForecastV1';
 const TIME_ZONE = 'America/Los_Angeles';
@@ -22,22 +28,27 @@ function dateInPacific(date = new Date()) {
   const values = Object.fromEntries(p.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
   return `${values.year}-${values.month}-${values.day}`;
 }
+function deviceLocation():Promise<[number,number]|null> {
+  return new Promise(resolve=>{
+    if(!('geolocation' in navigator)){resolve(null);return;}
+    navigator.geolocation.getCurrentPosition(p=>resolve([Math.round(p.coords.latitude*100)/100,Math.round(p.coords.longitude*100)/100]),()=>resolve(null),{enableHighAccuracy:false,timeout:8000,maximumAge:600000});
+  });
+}
 function plusDays(date:string,days:number) { const [y,m,d]=date.split('-').map(Number); return new Date(Date.UTC(y,m-1,d+days)).toISOString().slice(0,10); }
 function isCalendarDate(value:unknown): value is string { if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parsed=new Date(`${value}T00:00:00.000Z`);return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value; }
 function defaultPreferences():Preferences {
   const today=dateInPacific();
-  const initial:Preferences={location:'92648',radius:80,date:today,start:8,end:16,allDay:true,sort:'distance'};
+  const initial:Preferences={location:'92648',useDevice:true,radius:ALL_COURSES_MILES,date:today,start:8,end:16,allDay:true,sort:'distance'};
   try {
     const saved=JSON.parse(localStorage.getItem(PREF_KEY)||'null') as Partial<Preferences>|null;
-    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,radius:[25,50,80,100,125,150].includes(Number(saved.radius))?Number(saved.radius):80,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance'});
+    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,useDevice:typeof saved.useDevice==='boolean'?saved.useDevice:true,radius:ALL_COURSES_MILES,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance'});
   } catch { /* browser storage may be unavailable */ }
   const query=new URLSearchParams(window.location.search);
-  const zip=query.get('zip'); if(zip&&/^\d{5}$/.test(zip)) initial.location=zip;
-  const radius=Number(query.get('radius')); if([25,50,80,100,125,150].includes(radius)) initial.radius=radius;
+  const zip=query.get('zip'); if(zip&&/^\d{5}$/.test(zip)){initial.location=zip;initial.useDevice=false;}
   const sharedDate=query.get('date'); if(isCalendarDate(sharedDate)) initial.date=sharedDate;
   const startParam=query.get('start'); if(startParam!==null){const start=Number(startParam);if(Number.isInteger(start)&&start>=0&&start<=22)initial.start=start;}
   const endParam=query.get('end'); if(endParam!==null){const end=Number(endParam);if(Number.isInteger(end)&&end>initial.start&&end<=24)initial.end=end;}
-  const allDayParam=query.get('allDay'); if(allDayParam==='1')initial.allDay=true;else if(allDayParam==='0')initial.allDay=false;
+  initial.allDay=true;
   return initial;
 }
 function labelHour(hour:number) { if(hour===24)return '12:00 AM'; const h=hour%12||12; return `${h}:00 ${hour<12?'AM':'PM'}`; }
@@ -45,21 +56,11 @@ function compactRange(min:number|null,max:number|null,unit:string) { return min=
 function formatUpdated(value?:string|null) { return value?new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,hour:'numeric',minute:'2-digit'}).format(new Date(value)):'Unavailable'; }
 function formatForecastIssued(value?:string|null) { return value?new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value)):null; }
 function weatherWindow(p:Preferences) { return p.allDay?{startHour:0,endHour:24}:{startHour:p.start,endHour:p.end}; }
-function syncWeatherUrl(p:Preferences) { const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:p.location,radius:String(p.radius),date:p.date,start:String(p.start),end:String(p.end),allDay:p.allDay?'1':'0'}).toString();window.history.replaceState({},'',url); }
+function syncWeatherUrl(p:Preferences) { const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({...(p.useDevice?{}:{zip:p.location}),date:p.date}).toString();window.history.replaceState({},'',url); }
 function extractHourRows(raw:CourseForecast|undefined,course:WeatherCourse,p:Preferences) {
   if(!raw||raw.error)return {rows:[] as HourRow[],coverage:0,adjusted:false};
   try { const result=buildHourlyRows(raw.periods,raw.gusts,{date:p.date,...weatherWindow(p),timeZone:course.timezone||TIME_ZONE,gustUnit:raw.gustUnit,precipitationSeries:raw.precipitation,precipitationUnit:raw.precipitationUnit}); return {rows:result.rows,coverage:result.coverage,adjusted:result.adjustedForClockChange}; }
   catch { return {rows:[] as HourRow[],coverage:0,adjusted:false}; }
-}
-function extractRollingHourRows(raw:CourseForecast|undefined,course:WeatherCourse,now:number) {
-  if(!raw||raw.error)return {rows:[] as HourRow[],coverage:0};
-  try { const result=buildRolling24HourRows(raw.periods,raw.gusts,{now,timeZone:course.timezone||TIME_ZONE,gustUnit:raw.gustUnit,precipitationSeries:raw.precipitation,precipitationUnit:raw.precipitationUnit}); return {rows:result.rows,coverage:result.coverage}; }
-  catch { return {rows:[] as HourRow[],coverage:0}; }
-}
-function hourlyTimeParts(value:string,rows:HourRow[],timeZone:string,referenceTime:number) {
-  const label=formatHourlyTimeLabel(value,rows,timeZone,referenceTime);
-  const split=label.lastIndexOf(', ');
-  return split<0?{day:'',time:label.replace(/:00 (?=AM|PM)/,' ')}:{day:label.slice(0,split),time:label.slice(split+2).replace(/:00 (?=AM|PM)/,' ')};
 }
 type OutlookDay = { date:string; label:string; weekday:string; minF:number|null; maxF:number|null; windMax:number|null; gustMax:number|null; rainMax:number|null; flags:Array<{kind:string;label:string;source:string}>; hasData:boolean };
 function dayParts(date:string) {
@@ -93,16 +94,19 @@ export function WeatherPage() {
   const [preferences,setPreferences]=useState<Preferences>(defaultPreferences);
   const [draft,setDraft]=useState<Preferences>(defaultPreferences);
   const [center,setCenter]=useState<[number,number]|null>(null);
+  const [centerLabel,setCenterLabel]=useState('');
   const [result,setResult]=useState<WeatherResponse|null>(null);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState('');
   const [locationNotice,setLocationNotice]=useState('');
   const [expanded,setExpanded]=useState<string|null>(()=>{try{return new URLSearchParams(window.location.search).get('course');}catch{return null;}});
-  const [cardPreview,setCardPreview]=useState<{url:string;course:string;link:string}|null>(null);
+  const [cardState,setCardState]=useState<{id:string;date:string}|null>(null);
+  const [cardUrl,setCardUrl]=useState<string|null>(null);
+  const [cardBlob,setCardBlob]=useState<Blob|null>(null);
   const [shareMessage,setShareMessage]=useState('');
   const [refreshKey,setRefreshKey]=useState(0);
-  const [filtersOpen,setFiltersOpen]=useState(false);
-  const [copyFeedback,setCopyFeedback]=useState<{id:string;message:string}|null>(null);
+  const {filtersOpen,filtersDialog,openFilters,closeFilters}=useFilterSheet();
+  const [search,setSearch]=useState('');
 
   useEffect(()=>{try{localStorage.setItem(PREF_KEY,JSON.stringify(preferences));}catch{/* optional */}},[preferences]);
   useEffect(()=>{
@@ -110,12 +114,21 @@ export function WeatherPage() {
     async function load() {
       setLoading(true);setError('');setLocationNotice('');
       try {
-        let geo:GeocodeResult;
-        const zip=preferences.location.trim();
-        const response=await fetch(`/api/geocode?query=${encodeURIComponent(zip)}`,{headers:{Accept:'application/json'}});
-        const body=await response.json();
-        if(!response.ok)throw new Error(body.error||`Location lookup failed (${response.status}).`);
-        geo=body as GeocodeResult;
+        let geo:GeocodeResult|null=null;
+        let deviceFailed=false;
+        if(preferences.useDevice){
+          const here=await deviceLocation();
+          if(here)geo={coordinates:here,label:'Current location',source:'device'};else deviceFailed=true;
+        }
+        if(!geo){
+          const zip=preferences.location.trim();
+          const response=await fetch(`/api/geocode?query=${encodeURIComponent(zip)}`,{headers:{Accept:'application/json'}});
+          const body=await response.json();
+          if(!response.ok)throw new Error(body.error||`Location lookup failed (${response.status}).`);
+          geo=body as GeocodeResult;
+        }
+        if(deviceFailed)setLocationNotice(`Location unavailable. Distances from ZIP ${preferences.location}.`);
+        setCenterLabel(geo.source==='device'?'Current location':`ZIP ${preferences.location}`);
         if(cancelled)return;
         setCenter(geo.coordinates);
         if(geo.stale)setLocationNotice('Location data may be old.');
@@ -127,8 +140,8 @@ export function WeatherPage() {
         setResult(weather);
         const batches=Array.from({length:Math.ceil(nearby.length/2)},(_,i)=>nearby.slice(i*2,i*2+2));
         let hadBatchFailure=false;
-        for(let i=0;i<batches.length;i+=2){
-          const results=await Promise.all(batches.slice(i,i+2).map(async batch=>{
+        for(let i=0;i<batches.length;i+=3){
+          const results=await Promise.all(batches.slice(i,i+3).map(async batch=>{
             const ids=batch.map(course=>course.id).join(',');
             const url=`/api/weather?lat=${encodeURIComponent(geo.coordinates[0])}&lon=${encodeURIComponent(geo.coordinates[1])}&radius=${preferences.radius}&ids=${encodeURIComponent(ids)}`;
             const response=await fetch(url,{headers:{Accept:'application/json'},cache:'no-store'});
@@ -164,7 +177,7 @@ export function WeatherPage() {
     }
     void load();
     return ()=>{cancelled=true;};
-  },[preferences.location,preferences.radius,refreshKey]);
+  },[preferences.location,preferences.useDevice,refreshKey]);
 
   const views=useMemo(()=>{
     if(!center)return [] as CourseView[];
@@ -179,7 +192,11 @@ export function WeatherPage() {
       return {course,raw,rows:extracted.rows,summary,coverage:extracted.coverage,alerts,alertsAvailable,flags:forecastFlags(extracted.rows,alerts,alertsAvailable),error:raw?.error,partialError:raw?.partialError,stale:raw?.stale,lastUpdatedAt:raw?.lastUpdatedAt};
     });
   },[center,preferences,result]);
-  const sorted=useMemo(()=>sortedCourses(views,preferences.sort),[views,preferences.sort]);
+  const sortedAll=useMemo(()=>sortedCourses(views,preferences.sort),[views,preferences.sort]);
+  const searchTerms=search.toLowerCase().split(/\s+/).filter(Boolean);
+  const courseText=(c:WeatherCourse)=>`${c.name} ${c.city} ${c.state} ${c.county||''} ${c.postalCode||''} ${SEARCH_ALIASES[c.id]||''}`.toLowerCase();
+  const sorted=searchTerms.length?sortedAll.filter(v=>searchTerms.every(t=>courseText(v.course).includes(t))):sortedAll;
+  const activeFilterCount=[preferences.date!==dateInPacific(),preferences.sort!=='distance'].filter(Boolean).length;
 
   function updateDraft<K extends keyof Preferences>(key:K,value:Preferences[K]) {
     setDraft(prev=>{
@@ -191,20 +208,15 @@ export function WeatherPage() {
     e.preventDefault();
     if(!/^\d{5}$/.test(draft.location.trim())){setError('Enter a 5-digit US ZIP code.');return;}
     if(!draft.allDay&&draft.end<=draft.start){setError('End time must be later than start time.');return;}
-    setPreferences({...draft,location:draft.location.trim()});setExpanded(null);setFiltersOpen(false);
+    setPreferences({...draft,location:draft.location.trim()});setExpanded(null);closeFilters();
     syncWeatherUrl({...draft,location:draft.location.trim()});
   }
-  async function copyCourseLocation(course:WeatherCourse) {
-    const location=course.postalCode||course.coordinates.map(value=>value.toFixed(6)).join(', ');
-    try {
-      await navigator.clipboard.writeText(location);
-      setCopyFeedback({id:course.id,message:'Copied'});
-    } catch {
-      setCopyFeedback({id:course.id,message:'Copy unavailable'});
-    }
+  function useMyLocation() {
+    const next={...preferences,useDevice:true};
+    setPreferences(next);setDraft(prev=>({...prev,useDevice:true}));syncWeatherUrl(next);setExpanded(null);closeFilters();setRefreshKey(k=>k+1);
   }
   async function share() {
-    const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0'}).toString();
+    const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({...(preferences.useDevice?{}:{zip:preferences.location}),date:preferences.date}).toString();
     try {if(navigator.share){await navigator.share({title:'Disc Golf Weather · Local Roots',url:url.toString()});return;}}catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
     try {
       await navigator.clipboard.writeText(url.toString());
@@ -218,83 +230,97 @@ export function WeatherPage() {
     }
     setTimeout(()=>setShareMessage(''),2400);
   }
-  function courseLink(course:WeatherCourse) {
+  function courseLink(course:WeatherCourse,date:string) {
     const url=new URL(window.location.href);url.pathname='/weather';
-    url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0',course:course.id}).toString();
+    url.search=new URLSearchParams({...(preferences.useDevice?{}:{zip:preferences.location}),date,course:course.id}).toString();
     return url.toString();
   }
   function selectDay(date:string) {
     const next={...preferences,date,allDay:true};
     setPreferences(next);setDraft(prev=>({...prev,date,allDay:true}));syncWeatherUrl(next);
   }
-  async function shareCourseCard(view:CourseView,periodLabel:string) {
-    const link=courseLink(view.course);
-    const conds=[...new Set(view.rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
-    const rains=view.rows.map(r=>r.precipitationProbability).filter((v):v is number=>typeof v==='number'&&Number.isFinite(v));
-    const flagLabels=view.flags.filter(f=>f.kind!=='alerts-unavailable').map(f=>f.source==='official'?'NWS alert':f.label);
-    try{
-      const canvas=await renderWeatherCard({
-        course:view.course.name,
-        place:`${view.course.city}, ${view.course.state}${view.course.postalCode?` ${view.course.postalCode}`:''}`,
-        period:periodLabel,
-        tempRange:compactRange(view.summary.temperatureMinF,view.summary.temperatureMaxF,'°F'),
-        conditions:conds||'Conditions unavailable',
-        wind:compactRange(view.summary.windMinMph,view.summary.windMaxMph,' mph'),
-        gust:view.summary.peakGustMph===null?'—':`${Math.round(view.summary.peakGustMph)} mph`,
-        rain:rains.length?`${Math.max(...rains)}%`:'—',
-        flags:flagLabels,
-        issued:view.lastUpdatedAt?`NWS ${formatForecastIssued(view.lastUpdatedAt)}`:'NWS',
-        host:'localrootsdg.com/weather'
-      });
-      const blob=await canvasToBlob(canvas);
-      if(!blob)throw new Error('card');
-      const nav=navigator as Navigator&{canShare?:(data:unknown)=>boolean};
+  function openCard(view:CourseView) { setCardState({id:view.course.id,date:preferences.date}); }
+  function dayData(view:CourseView,date:string) {
+    const timeZone=view.course.timezone||TIME_ZONE;
+    const rows=extractHourRows(view.raw,view.course,{...preferences,date,allDay:true}).rows;
+    const [lat,lon]=view.course.coordinates;
+    return {rows,timeZone,hours:toChartHours(rows,timeZone),sun:sunTimes(date,lat,lon,timeZone)};
+  }
+  useEffect(()=>{
+    if(!cardState)return;
+    const view=views.find(v=>v.course.id===cardState.id);
+    if(!view)return;
+    let cancelled=false;
+    (async()=>{
       try{
-        const file=new File([blob],`${view.course.id}-weather.png`,{type:'image/png'});
-        if(nav.share&&nav.canShare&&nav.canShare({files:[file]})){await nav.share({files:[file],title:view.course.name,text:link});return;}
-      }catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
-      setCardPreview({url:URL.createObjectURL(blob),course:view.course.name,link});
-    }catch{
-      setShareMessage('Card unavailable.');setTimeout(()=>setShareMessage(''),2400);
-    }
+        const {rows,timeZone,hours,sun}=dayData(view,cardState.date);
+        const dayFmt=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric'});
+        const dayLabel=dayFmt.format(new Date(`${cardState.date}T12:00:00Z`));
+        let alerts:ReturnType<typeof eligibleActiveAlerts>=[];
+        try{const {window}=buildHourlyRows(view.raw?.periods||[],view.raw?.gusts||[],{date:cardState.date,startHour:0,endHour:24,timeZone,gustUnit:view.raw?.gustUnit});alerts=eligibleActiveAlerts(view.raw?.alerts||[],window);}catch{/* none */}
+        const flags=forecastFlags(rows,alerts,Boolean(view.alertsAvailable)).filter(f=>f.kind!=='alerts-unavailable').map(f=>f.source==='official'?'NWS alert':f.label);
+        const conds=[...new Set(rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
+        const checked=view.stale?`Cached · NWS ${formatForecastIssued(view.lastUpdatedAt)||''}`:`Checked ${formatForecastIssued(result?.retrievedAt||new Date().toISOString())}`;
+        const canvas=await renderWeatherCard({
+          course:view.course.name,
+          place:`${view.course.city}, ${view.course.state}${view.course.postalCode?` ${view.course.postalCode}`:''}`,
+          period:dayLabel,
+          conditions:conds,
+          hours,sun,
+          flags,checked,host:'localrootsdg.com/weather'
+        });
+        const blob=await canvasToBlob(canvas);
+        if(cancelled||!blob)return;
+        const url=URL.createObjectURL(blob);
+        setCardBlob(blob);
+        setCardUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return url;});
+      }catch{if(!cancelled)setShareMessage('Card unavailable.');}
+    })();
+    return ()=>{cancelled=true;};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[cardState,views,result]);
+  function closeCard() { setCardUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return null;});setCardBlob(null);setCardState(null); }
+  async function sendCard() {
+    const view=cardState?views.find(v=>v.course.id===cardState.id):undefined;
+    if(!view||!cardBlob)return;
+    const link=courseLink(view.course,cardState!.date);
+    const nav=navigator as Navigator&{canShare?:(data:unknown)=>boolean};
+    try{
+      const file=new File([cardBlob],`${view.course.id}-weather.png`,{type:'image/png'});
+      if(nav.share&&nav.canShare&&nav.canShare({files:[file]})){await nav.share({files:[file],title:view.course.name,text:link});return;}
+    }catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
+    try{await navigator.clipboard.writeText(link);setShareMessage('Link copied. Use Save image for the card.');}catch{setShareMessage('Use Save image for the card.');}
+    setTimeout(()=>setShareMessage(''),3200);
   }
-  async function copyCardLink() {
-    if(!cardPreview)return;
-    try{await navigator.clipboard.writeText(cardPreview.link);setShareMessage('Link copied.');}catch{setShareMessage('Copy unavailable.');}
-    setTimeout(()=>setShareMessage(''),2400);
-  }
-  function closeCard() { if(cardPreview)URL.revokeObjectURL(cardPreview.url);setCardPreview(null); }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
-  return <Shell><main className="content weather-page">
-    <section className="weather-heading"><div><h1>Forecast</h1></div><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button></section>
-    <section className="weather-filter">
-      <button className="weather-filter-toggle" type="button" aria-expanded={filtersOpen} aria-controls="weather-filters-panel" onClick={()=>setFiltersOpen(value=>!value)}>
-        <strong>Filters</strong><span className="weather-filter-summary">{preferences.location} · {preferences.radius} mi · {new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric'}).format(new Date(`${preferences.date}T12:00:00Z`))} · {preferences.allDay?'All day':`${labelHour(preferences.start).replace(':00','')}–${labelHour(preferences.end).replace(':00','')}`}</span><span className="weather-filter-chevron" aria-hidden="true">{filtersOpen?'−':'+'}</span>
-      </button>
-      <div id="weather-filters-panel" className="weather-filter-panel" hidden={!filtersOpen}>
-      <form className="weather-controls" onSubmit={submit}>
-      <label className="weather-field-zip">ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
-      <label className="weather-field-radius">Miles<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option><option value={80}>80</option><option value={100}>100</option><option value={125}>125</option><option value={150}>150</option></select></label>
-      <label className="weather-field-date">Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
-      <label className="weather-field-start">Start<select disabled={draft.allDay} value={draft.start} onChange={e=>updateDraft('start',Number(e.target.value))}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
-      <label className="weather-field-end">End<select disabled={draft.allDay} value={draft.end} onChange={e=>updateDraft('end',Number(e.target.value))}>{HOUR_OPTIONS.slice(1).filter(h=>h>draft.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
-      <label className="weather-all-day"><input type="checkbox" checked={draft.allDay} onChange={e=>updateDraft('allDay',e.target.checked)} /> All Day</label>
-      <button className="button primary weather-search" type="submit" disabled={loading}>Search</button>
-    </form>
-      </div>
-    </section>
-    <div className="weather-status" aria-live="polite">
-      {loading?<span className="weather-status-dot">Loading…</span>:null}
-      {error?<span className="weather-error">{error}</span>:null}
-      {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
-      {shareMessage?<span>{shareMessage}</span>:null}
-    </div>
-    {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)}</p>:null}
-    <div className="weather-results-heading"><h2>Courses</h2><span>{loading&&!result?'…':sorted.length}</span><label className="weather-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label></div>
+  return <Shell><main className="events-page weather-page"><h1 className="sr-only">Southern California Disc Golf Weather</h1>
+    <section className="events-layout content">
+      <dialog ref={filtersDialog} id="weather-filters" className="filters-dialog" open aria-labelledby="filters-title" onCancel={()=>closeFilters()} onClose={()=>closeFilters()} onClick={event=>{if(event.target===event.currentTarget)closeFilters();}}>
+        <div className="filters" role="group" aria-label="Weather filters">
+          <div className="filters-sheet-heading"><h2 id="filters-title">Filters &amp; sort</h2><button type="button" className="filters-close" data-filter-close onClick={closeFilters} aria-label="Close filters and sort">Close</button></div>
+          <form className="weather-controls" onSubmit={submit}>
+            <label className="weather-field-zip">Near ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>{updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5));updateDraft('useDevice',false);}} aria-label="ZIP code for course search" /></label>
+            <button type="button" className="button ghost weather-use-location" onClick={useMyLocation}>Use my location</button>
+            <label className="weather-field-date">Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
+            <label className="weather-field-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label>
+            <button className="button primary weather-search" type="submit" disabled={loading}>Update</button>
+          </form>
+        </div>
+      </dialog>
+      <div className="event-list weather-list" aria-busy={loading}>
+        <div className="list-header"><h2>Courses</h2><span aria-live="polite" aria-atomic="true">{loading&&!result?'…':`${sorted.length} shown`}</span><span className="list-actions"><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button><button type="button" className="filters-trigger" aria-haspopup="dialog" aria-controls="weather-filters" aria-expanded={filtersOpen} aria-label={activeFilterCount?'Filters & sort, active filters':'Filters & sort'} onClick={openFilters}><span>Filters &amp; sort</span>{activeFilterCount?<span className="filter-count" aria-hidden="true">{activeFilterCount}</span>:null}</button></span></div>
+        <label className="page-search"><span className="sr-only">Search courses</span><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search course, city, county" aria-label="Search courses" /></label>
+        <div className="weather-status" aria-live="polite">
+          {loading?<span className="weather-status-dot">Loading…</span>:null}
+          {error?<span className="weather-error">{error}</span>:null}
+          {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
+          {shareMessage?<span>{shareMessage}</span>:null}
+        </div>
+        {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)} · {centerLabel}</p>:null}
     <div className="weather-legend" aria-label="Forecast column headings"><span>Course</span><span>Temp</span><span>Wind · Gust</span><span>Conditions</span></div>
     <div className="weather-course-list">
-      {!loading&&!error&&sorted.length===0?<div className="empty-state"><strong>No courses found within {preferences.radius} miles.</strong></div>:null}
+      {!loading&&!error&&sorted.length===0?<div className="empty-state"><strong>{searchTerms.length?'No matching courses.':'No courses found.'}</strong></div>:null}
       {sorted.map(view=>{
         const open=expanded===view.course.id;
         const temps=compactRange(view.summary.temperatureMinF,view.summary.temperatureMaxF,'°F');
@@ -302,11 +328,10 @@ export function WeatherPage() {
         const currentConditions=[...new Set(view.rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
         const rowFlags=view.flags.filter(flag=>flag.kind!=='alerts-unavailable');
         const referenceTime=Date.now();
-        const rolling=preferences.date===dateInPacific(new Date(referenceTime))&&preferences.allDay;
-        const hourly=open?(rolling?extractRollingHourRows(view.raw,view.course,referenceTime):extractHourRows(view.raw,view.course,preferences)):null;
-        const periodLabel=rolling?'Next 24 hours':`${new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric'}).format(new Date(`${preferences.date}T12:00:00Z`))} · ${preferences.allDay?'All day':`${labelHour(preferences.start)}–${labelHour(preferences.end)}`}`;
+        const hourly=open?extractHourRows(view.raw,view.course,preferences):null;
+        const chart=open?dayData(view,preferences.date):null;
+        const periodLabel=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'long',month:'short',day:'numeric'}).format(new Date(`${preferences.date}T12:00:00Z`));
         const [courseLat,courseLon]=view.course.coordinates;
-        const timeZone=view.course.timezone||TIME_ZONE;
         return <article className={`weather-course ${open?'is-expanded':''}`} key={view.course.id}>
           <button className="weather-course-toggle" type="button" aria-expanded={open} aria-controls={`weather-details-${view.course.id}`} onClick={()=>setExpanded(open?null:view.course.id)}>
             <span className="weather-course-name"><strong>{view.course.name}</strong><small>{view.course.city}, {view.course.state}{view.course.postalCode?` · ZIP ${view.course.postalCode}`:''} · {view.course.distanceMiles.toFixed(1)} mi</small></span>
@@ -326,7 +351,7 @@ export function WeatherPage() {
             {hourly&&hourly.coverage>0&&hourly.coverage<0.999?<p className="weather-stale">Forecast covers {Math.round(hourly.coverage*100)}% of these hours.</p>:null}
             <div className="weather-outlook" role="group" aria-label={`7-day outlook for ${view.course.name}`}>
               {buildOutlook(view.raw,view.course,dateInPacific(new Date(referenceTime))).map(day=>{
-                const active=!rolling&&day.date===preferences.date&&preferences.allDay;
+                const active=day.date===preferences.date;
                 return <button type="button" key={day.date} className={`weather-outlook-day${active?' is-active':''}${day.hasData?'':' is-empty'}`} aria-pressed={active} disabled={!day.hasData} onClick={()=>selectDay(day.date)} aria-label={`${day.weekday} ${day.label}`}>
                   <span className="weather-outlook-date"><strong>{day.weekday}</strong><small>{day.label}</small></span>
                   <span className="weather-outlook-temp">{day.hasData&&day.maxF!==null?`${Math.round(day.maxF)}°`:'—'}<small>{day.hasData&&day.minF!==null?`${Math.round(day.minF)}°`:''}</small></span>
@@ -340,20 +365,21 @@ export function WeatherPage() {
             <div className="weather-location-actions">
               <span>{view.course.postalCode?`ZIP ${view.course.postalCode}`:`${courseLat.toFixed(5)}, ${courseLon.toFixed(5)}`}</span>
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${courseLat.toFixed(6)},${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${view.course.name}`}>Directions</a>
-              <button type="button" onClick={()=>void shareCourseCard(view,periodLabel)} aria-label={`Share forecast card for ${view.course.name}`}>Share card</button>
-              <button type="button" onClick={()=>void copyCourseLocation(view.course)}>Copy location</button>
-              <a href={`https://forecast.weather.gov/MapClick.php?lat=${courseLat.toFixed(6)}&lon=${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`NWS forecast for ${view.course.name}`}>NWS forecast</a>
-              {copyFeedback?.id===view.course.id?<small role="status">{copyFeedback.message}</small>:null}
+              <button type="button" onClick={()=>openCard(view)} aria-label={`Share forecast card for ${view.course.name}`}>Share card</button>
             </div>
-            <div className="weather-hourly-scroll"><table className="weather-hourly" role="table"><thead role="rowgroup"><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain</th><th>Conditions</th></tr></thead><tbody role="rowgroup">{(hourly?.rows||[]).map((row,i)=>{const time=hourlyTimeParts(row.startTime,hourly?.rows||[],timeZone,referenceTime);return <tr role="row" key={`${row.startTime}-${i}`}><th scope="row" role="rowheader"><span className="weather-hourly-clock">{time.time}</span>{time.day?<span className="weather-hourly-day">{time.day}</span>:null}</th><td role="cell" data-label="Temp">{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td role="cell" data-label="Wind">{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td role="cell" data-label="Gust">{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td role="cell" data-label="Rain">{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td role="cell" data-label="Conditions">{row.conditions||'—'}</td></tr>})}</tbody></table></div>
             {!view.stale&&view.lastUpdatedAt?<p className="weather-updated">Forecast issued {formatForecastIssued(view.lastUpdatedAt)}</p>:null}
-            {view.flags.length?<div className="weather-flag-list"><strong>Alerts</strong>{view.flags.map((flag,i)=><p key={`${flag.kind}-${i}`}><span className={`weather-flag flag-${flag.kind}`}>{flag.source==='official'?'NWS alert':flag.label}</span>{flag.detail?<span>{flag.detail}</span>:null}</p>)}</div>:null}
             {!view.alertsAvailable?<p className="weather-stale">Alert status unavailable.</p>:null}
+            {chart&&chart.hours.length?<DayChart hours={chart.hours} sun={chart.sun} label={`${periodLabel} forecast for ${view.course.name}`} />:null}
           </section>:null}
         </article>;
       })}
     </div>
-    {cardPreview?<div className="weather-card-modal" role="dialog" aria-modal="true" aria-label={`Forecast card for ${cardPreview.course}`}><div className="weather-card-sheet"><img src={cardPreview.url} alt={`Forecast card for ${cardPreview.course}`} /><div className="weather-card-actions"><a href={cardPreview.url} download="local-roots-weather.png">Save image</a><button type="button" onClick={()=>void copyCardLink()}>Copy link</button><button type="button" onClick={closeCard}>Close</button></div></div></div>:null}
+      </div>
+    </section>
+    {cardState?<div className="weather-card-modal" role="dialog" aria-modal="true" aria-label="Forecast card"><div className="weather-card-sheet">
+      {cardUrl?<img src={cardUrl} alt="Forecast card preview" />:<p className="weather-muted">Preparing card…</p>}
+      <div className="weather-card-actions"><button type="button" className="is-primary" disabled={!cardBlob} onClick={()=>void sendCard()}>Share</button>{cardUrl?<a href={cardUrl} download="local-roots-weather.png">Save image</a>:null}<button type="button" onClick={closeCard}>Close</button></div>
+    </div></div>:null}
   </main></Shell>;
 }
 

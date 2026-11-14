@@ -20,7 +20,7 @@ export function isEligibleCourse(course) {
 }
 
 export function filterCourses(courses, center, radiusMiles) {
-  if (!Array.isArray(center) || center.length !== 2 || !center.every(Number.isFinite) || !Number.isFinite(radiusMiles) || radiusMiles < 0 || radiusMiles > 150) return [];
+  if (!Array.isArray(center) || center.length !== 2 || !center.every(Number.isFinite) || !Number.isFinite(radiusMiles) || radiusMiles < 0 || radiusMiles > 500) return [];
   return courses.filter(isEligibleCourse).map((course) => ({ ...course, distanceMiles: distanceMiles(center, course.coordinates) }))
     .filter((course) => course.distanceMiles <= radiusMiles)
     .sort((a, b) => a.distanceMiles - b.distanceMiles);
