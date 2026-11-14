@@ -1,10 +1,12 @@
-export type CardHour = { label: string; tempF: number | null; windMph: number | null; gustMph: number | null; rain: number | null };
+import { formatMinutes } from './sun.js';
+export type CardHour = { minute: number; label: string; tempF: number | null; windMph: number | null; gustMph: number | null; rain: number | null };
 export type WeatherCardData = {
   course: string;
   place: string;
   period: string;
   conditions: string;
   hours: CardHour[];
+  sun: { sunriseMin: number; sunsetMin: number } | null;
   flags: string[];
   checked: string;
   host: string;
@@ -119,12 +121,29 @@ export async function renderWeatherCard(data: WeatherCardData): Promise<HTMLCanv
   }
 
   const n = hrs.length;
+  const panelX = 56, panelW = W - 112, padX = 30;
+  const plotX = panelX + padX, plotW = panelW - padX * 2, col = plotW / 24;
+  const mx = (minute: number) => plotX + (minute / 1440) * plotW;
+  const sun = data.sun;
+  if (sun && n) {
+    const rise = mx(sun.sunriseMin), set = mx(sun.sunsetMin);
+    const anchor = (px: number) => Math.min(Math.max(px, plotX + 80), plotX + plotW - 80);
+    ctx.textAlign = 'center';
+    for (const [px, cap, time] of [[rise, 'SUNRISE', formatMinutes(sun.sunriseMin)], [set, 'SUNSET', formatMinutes(sun.sunsetMin)]] as Array<[number, string, string]>) {
+      ctx.fillStyle = MUTED; ctx.font = '700 22px ' + FONT; ctx.fillText(cap, anchor(px), y + 22);
+      ctx.fillStyle = INK; ctx.font = '800 32px ' + FONT; ctx.fillText(time, anchor(px), y + 60);
+    }
+    ctx.textAlign = 'left';
+    const by = y + 80;
+    ctx.fillStyle = '#cdbfae'; rr(ctx, plotX, by, plotW, 18, 9); ctx.fill();
+    ctx.fillStyle = '#f0d28a'; ctx.fillRect(rise, by, Math.max(0, set - rise), 18);
+    for (const sx of [rise, set]) { ctx.fillStyle = '#e0a526'; ctx.beginPath(); ctx.arc(sx, by + 9, 13, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = PAPER; ctx.lineWidth = 3; ctx.stroke(); }
+    y += 126;
+  }
   if (!n) {
-    ctx.fillStyle = SOIL; ctx.font = '700 38px ' + FONT; ctx.fillText('No forecast for these hours', 56, y + 70); y += 110;
+    ctx.fillStyle = SOIL; ctx.font = '700 38px ' + FONT; ctx.fillText('No forecast available', 56, y + 70); y += 110;
   }
   if (n) {
-    const panelX = 56, panelW = W - 112, padX = 30;
-    const plotX = panelX + padX, plotW = panelW - padX * 2, col = plotW / n;
     const tracks = [
       { title: 'TEMP', value: range(temps, '°F'), h: 170 },
       { title: 'WIND', value: range(winds, ' mph') + (nums(gusts).length ? `  ·  gust ${Math.round(Math.max(...nums(gusts)))}` : ''), h: 110 },
@@ -134,12 +153,17 @@ export async function renderWeatherCard(data: WeatherCardData): Promise<HTMLCanv
     ctx.fillStyle = PAPER; rr(ctx, panelX, y, panelW, panelH, 26); ctx.fill();
     ctx.strokeStyle = 'rgba(91,58,36,.22)'; ctx.lineWidth = 2; ctx.stroke();
     let ty = y + 30;
-    const colX = (i: number) => plotX + col * i + col / 2;
+    const colX = (i: number) => mx(hrs[i].minute) + col / 2;
     const gridLine = (yy: number) => { ctx.strokeStyle = 'rgba(91,58,36,.14)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(plotX, yy); ctx.lineTo(plotX + plotW, yy); ctx.stroke(); };
     for (const tr of tracks) {
       ctx.fillStyle = MUTED; ctx.font = '700 24px ' + FONT; ctx.textAlign = 'left'; ctx.fillText(tr.title, plotX, ty + 28);
       ctx.fillStyle = INK; ctx.font = '700 26px ' + FONT; ctx.textAlign = 'right'; ctx.fillText(tr.value, plotX + plotW, ty + 28); ctx.textAlign = 'left';
       const top = ty + 50, bot = top + tr.h;
+      if (sun) {
+        ctx.fillStyle = 'rgba(58,38,24,.09)';
+        ctx.fillRect(plotX, top, Math.max(0, mx(sun.sunriseMin) - plotX), tr.h);
+        ctx.fillRect(mx(sun.sunsetMin), top, Math.max(0, plotX + plotW - mx(sun.sunsetMin)), tr.h);
+      }
       if (tr.title === 'TEMP') {
         const tn = nums(temps);
         if (tn.length) {
@@ -190,9 +214,8 @@ export async function renderWeatherCard(data: WeatherCardData): Promise<HTMLCanv
       }
       ty = bot + 26;
     }
-    ctx.fillStyle = MUTED; ctx.font = '600 24px ' + FONT; ctx.textAlign = 'center';
-    const step = n <= 9 ? 1 : n <= 14 ? 2 : n <= 20 ? 3 : n <= 26 ? 4 : 6;
-    hrs.forEach((h, i) => { if (i % step === 0) ctx.fillText(h.label, colX(i), ty + 30); });
+    ctx.fillStyle = MUTED; ctx.font = '600 24px ' + FONT;
+    for (const t of [{ m: 0, l: '12 AM' }, { m: 360, l: '6 AM' }, { m: 720, l: '12 PM' }, { m: 1080, l: '6 PM' }]) { ctx.textAlign = t.m === 0 ? 'left' : 'center'; ctx.fillText(t.l, mx(t.m), ty + 30); }
     ctx.textAlign = 'left';
     y += panelH + 24;
   }

@@ -64,8 +64,6 @@ test('Weather interface keeps player controls and removes internal explanations'
   assert.match(page,/>ZIP</);
   assert.match(page,/>Miles</);
   assert.match(page,/Search course, city, county/);
-  assert.match(page,/> All Day</);
-  assert.match(page,/<th>Rain<\/th>/);
   assert.match(page,/'NWS alert'/);
   assert.match(page,/view\.flags\.filter\(flag=>flag\.kind!=='alerts-unavailable'\)/);
   assert.doesNotMatch(page,/Course verification and sources|verified public courses|Course point is approximate|grid|App forecast flags:|Forecast ranges include|Forecast data: National Weather Service|ZIP lookup:/i);
@@ -94,8 +92,7 @@ test('Weather first visits default to today all-day without a passed-window noti
   assert.doesNotMatch(page,/This time window has passed|Tomorrow · 8 AM–4 PM|chooseNextAvailableWindow|forecastWindowHasPassed/);
   assert.doesNotMatch(page,/date:isCalendarDate\(saved\.date\)|allDay:Boolean\(saved\.allDay\)/);
   assert.match(page,/sharedDate=query\.get\('date'\); if\(isCalendarDate\(sharedDate\)\) initial\.date=sharedDate/);
-  assert.match(page,/if\(allDayParam==='1'\)initial\.allDay=true;else if\(allDayParam==='0'\)initial\.allDay=false/);
-  assert.match(page,/\{preferences\.allDay\?'All day':/);
+  assert.match(page,/initial\.allDay=true;/);
   assert.match(page,/aria-expanded=\{open\}/);
   assert.match(page,/\},\[preferences\.location,preferences\.radius,refreshKey\]\)/);
 });
@@ -117,33 +114,27 @@ test('Weather heading keeps Events typography and rolling detail does not alter 
   assert.match(events,/\.events-page \.list-header h2\{font-size:1\.28rem;font-weight:700;letter-spacing:-\.012em\}/);
   assert.match(polish,/\.public-brand-shell \.events-page \.list-header h2\{\s*font-size:1\.2rem;\s*\}/);
   assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.08rem\}/);
-  assert.match(page,/buildRolling24HourRows/);assert.match(page,/No forecast for these hours/);assert.match(page,/Forecast covers \{Math\.round\(hourly\.coverage\*100\)\}% of these hours/);assert.match(page,/formatHourlyTimeLabel/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
+assert.match(page,/No forecast for these hours/);assert.match(page,/Forecast covers \{Math\.round\(hourly\.coverage\*100\)\}% of these hours/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
   assert.match(page,/view\.error\?\<p className="weather-error">Forecast unavailable\.<\/p>/);assert.match(page,/view\.flags\.length\?<div className="weather-flag-list"/);
 });
 
-test('mobile hourly detail keeps time, rain, and conditions together without sideways scrolling',async()=>{
-  const css=await read('../src/weather.css');
+test('expanded detail shows the selected full day as interactive charts with sunrise and sunset',async()=>{
   const page=await read('../src/pages/WeatherPage.tsx');
-  assert.match(css,/\.weather-hourly-scroll\{overflow-x:hidden/);
-  assert.match(css,/\.weather-hourly\{display:block;width:100%;min-width:0/);
-  assert.match(css,/\.weather-hourly tbody tr\{display:grid/);
-  assert.match(css,/\.weather-hourly tbody td:nth-child\(5\)\{grid-column:3;grid-row:1(?:;|\})/);
-  assert.match(css,/\.weather-hourly tbody th\{grid-column:1;grid-row:1\/4;/);
-  assert.match(css,/\.weather-hourly tbody td:nth-child\(6\)\{grid-column:2\/4;grid-row:3\}/);
-  assert.match(css,/\.weather-hourly-clock\{display:block;color:var\(--root\);font-size:1\.03rem;font-weight:850/);
-  assert.match(page,/function hourlyTimeParts\(/);
-  assert.match(page,/className="weather-hourly-clock"/);
-  assert.match(page,/className="weather-hourly-day"/);
-  assert.ok(page.includes("time:label.replace(/:00 (?=AM|PM)/,' ')"));
-  for(const label of ['Temp','Wind','Gust','Rain','Conditions'])assert.ok(page.includes('data-label="'+label+'"'));
-  assert.match(page,/role="table"/);
+  const chart=await read('../src/components/DayChart.tsx');
+  const sun=await read('../src/lib/sun.js');
+  assert.match(page,/<DayChart hours=\{chart\.hours\} sun=\{chart\.sun\}/);
+  assert.match(page,/sunTimes\(date,lat,lon,timeZone\)/);
+  assert.doesNotMatch(page,/<table/);
+  for(const kind of ['temp','wind','rain'])assert.match(chart,new RegExp('kind="'+kind+'"'));
+  assert.match(chart,/onPointerDown/);assert.match(chart,/Sunrise/);assert.match(chart,/Sunset/);assert.match(chart,/dc-readout/);
+  assert.match(sun,/export function sunTimes/);
 });
 
-test('expanded detail respects selected date or time, otherwise retains rolling today',async()=>{
+test('expanded detail defaults to today midnight to midnight and follows the selected day',async()=>{
   const page=await read('../src/pages/WeatherPage.tsx');
-  assert.match(page,/const rolling=preferences\.date===dateInPacific\(new Date\(referenceTime\)\)&&preferences\.allDay/);
-  assert.match(page,/rolling\?extractRollingHourRows\(view\.raw,view\.course,referenceTime\):extractHourRows\(view\.raw,view\.course,preferences\)/);
-  assert.match(page,/periodLabel=rolling\?'Next 24 hours'/);
+  assert.match(page,/const hourly=open\?extractHourRows\(view\.raw,view\.course,preferences\):null/);
+  assert.match(page,/const active=day\.date===preferences\.date/);
+  assert.doesNotMatch(page,/Next 24 hours|extractRollingHourRows|buildRolling24HourRows/);
   assert.match(page,/summarizeHourly\(extracted\.rows\)/);
   assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);
   assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
@@ -169,9 +160,8 @@ test('course locations expose source-verified ZIPs and coordinate-based NWS link
 test('mobile filter grid gives native iPhone date control its own full-width row',async()=>{
   const css=await read('../src/weather.css');
   const page=await read('../src/pages/WeatherPage.tsx');
-  assert.match(css,/grid-template-areas:"zip radius" "date date" "start end" "allDay search"/);
   assert.match(css,/\.weather-controls \.weather-field-date\{grid-area:date\}/);
   assert.match(css,/\.weather-controls input\[type="date"\]\{[^}]*width:calc\(100% - 16px\);min-width:0;max-width:calc\(100% - 16px\);box-sizing:border-box/);
-  for(const field of ['zip','radius','date','start','end'])assert.match(page,new RegExp('className="weather-field-'+field+'"'));
+  for(const field of ['zip','radius','date'])assert.match(page,new RegExp('className="weather-field-'+field+'"'));
   assert.match(page,/type="date" min=\{selectDateMin\} max=\{selectDateMax\}/);
 });
