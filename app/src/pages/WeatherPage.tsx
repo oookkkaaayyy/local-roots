@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Shell } from '../components/Shell';
+import { useFilterSheet } from '../lib/useFilterSheet';
 import coursesData from '../data/weather-courses.json';
 import { buildHourlyRows, buildRolling24HourRows, eligibleActiveAlerts, filterCourses, forecastFlags, formatHourlyTimeLabel, summarizeHourly } from '../lib/weatherCore.js';
 import type { HourRow, WeatherCourse } from '../lib/weatherCore.js';
@@ -103,7 +104,8 @@ export function WeatherPage() {
   const [cardBlob,setCardBlob]=useState<Blob|null>(null);
   const [shareMessage,setShareMessage]=useState('');
   const [refreshKey,setRefreshKey]=useState(0);
-  const [filtersOpen,setFiltersOpen]=useState(false);
+  const {filtersOpen,filtersDialog,openFilters,closeFilters}=useFilterSheet();
+  const [search,setSearch]=useState('');
 
   useEffect(()=>{try{localStorage.setItem(PREF_KEY,JSON.stringify(preferences));}catch{/* optional */}},[preferences]);
   useEffect(()=>{
@@ -180,7 +182,12 @@ export function WeatherPage() {
       return {course,raw,rows:extracted.rows,summary,coverage:extracted.coverage,alerts,alertsAvailable,flags:forecastFlags(extracted.rows,alerts,alertsAvailable),error:raw?.error,partialError:raw?.partialError,stale:raw?.stale,lastUpdatedAt:raw?.lastUpdatedAt};
     });
   },[center,preferences,result]);
-  const sorted=useMemo(()=>sortedCourses(views,preferences.sort),[views,preferences.sort]);
+  const sortedAll=useMemo(()=>sortedCourses(views,preferences.sort),[views,preferences.sort]);
+  const searchTerms=search.toLowerCase().split(/\s+/).filter(Boolean);
+  const courseText=(c:WeatherCourse)=>`${c.name} ${c.city} ${c.state} ${c.county||''} ${c.postalCode||''}`.toLowerCase();
+  const sorted=searchTerms.length?sortedAll.filter(v=>searchTerms.every(t=>courseText(v.course).includes(t))):sortedAll;
+  const outsideMatches=searchTerms.length&&!sorted.length?COURSES.filter(c=>searchTerms.every(t=>courseText(c).includes(t))&&!sortedAll.some(v=>v.course.id===c.id)):[];
+  const activeFilterCount=[preferences.radius!==80,!preferences.allDay,preferences.sort!=='distance'].filter(Boolean).length;
 
   function updateDraft<K extends keyof Preferences>(key:K,value:Preferences[K]) {
     setDraft(prev=>{
@@ -192,7 +199,7 @@ export function WeatherPage() {
     e.preventDefault();
     if(!/^\d{5}$/.test(draft.location.trim())){setError('Enter a 5-digit US ZIP code.');return;}
     if(!draft.allDay&&draft.end<=draft.start){setError('End time must be later than start time.');return;}
-    setPreferences({...draft,location:draft.location.trim()});setExpanded(null);setFiltersOpen(false);
+    setPreferences({...draft,location:draft.location.trim()});setExpanded(null);closeFilters();
     syncWeatherUrl({...draft,location:draft.location.trim()});
   }
   async function share() {
@@ -283,35 +290,36 @@ export function WeatherPage() {
   }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
-  return <Shell><main className="content weather-page">
-    <section className="weather-heading"><div><h1>Forecast</h1></div><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button></section>
-    <section className="weather-filter">
-      <button className="weather-filter-toggle" type="button" aria-expanded={filtersOpen} aria-controls="weather-filters-panel" onClick={()=>setFiltersOpen(value=>!value)}>
-        <strong>Filters</strong><span className="weather-filter-summary">{preferences.location} · {preferences.radius} mi · {new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric'}).format(new Date(`${preferences.date}T12:00:00Z`))} · {preferences.allDay?'All day':`${labelHour(preferences.start).replace(':00','')}–${labelHour(preferences.end).replace(':00','')}`}</span><span className="weather-filter-chevron" aria-hidden="true">{filtersOpen?'−':'+'}</span>
-      </button>
-      <div id="weather-filters-panel" className="weather-filter-panel" hidden={!filtersOpen}>
-      <form className="weather-controls" onSubmit={submit}>
-      <label className="weather-field-zip">ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
-      <label className="weather-field-radius">Miles<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option><option value={80}>80</option><option value={100}>100</option><option value={125}>125</option><option value={150}>150</option></select></label>
-      <label className="weather-field-date">Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
-      <label className="weather-field-start">Start<select disabled={draft.allDay} value={draft.start} onChange={e=>updateDraft('start',Number(e.target.value))}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
-      <label className="weather-field-end">End<select disabled={draft.allDay} value={draft.end} onChange={e=>updateDraft('end',Number(e.target.value))}>{HOUR_OPTIONS.slice(1).filter(h=>h>draft.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
-      <label className="weather-all-day"><input type="checkbox" checked={draft.allDay} onChange={e=>updateDraft('allDay',e.target.checked)} /> All Day</label>
-      <button className="button primary weather-search" type="submit" disabled={loading}>Search</button>
-    </form>
-      </div>
-    </section>
-    <div className="weather-status" aria-live="polite">
-      {loading?<span className="weather-status-dot">Loading…</span>:null}
-      {error?<span className="weather-error">{error}</span>:null}
-      {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
-      {shareMessage?<span>{shareMessage}</span>:null}
-    </div>
-    {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)}</p>:null}
-    <div className="weather-results-heading"><h2>Courses</h2><span>{loading&&!result?'…':sorted.length}</span><label className="weather-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label></div>
+  return <Shell><main className="events-page weather-page"><h1 className="sr-only">Southern California Disc Golf Weather</h1>
+    <section className="events-layout content">
+      <dialog ref={filtersDialog} id="weather-filters" className="filters-dialog" open aria-labelledby="filters-title" onCancel={()=>closeFilters()} onClose={()=>closeFilters()} onClick={event=>{if(event.target===event.currentTarget)closeFilters();}}>
+        <div className="filters" role="group" aria-label="Weather filters">
+          <div className="filters-sheet-heading"><h2 id="filters-title">Filters &amp; sort</h2><button type="button" className="filters-close" data-filter-close onClick={closeFilters} aria-label="Close filters and sort">Close</button></div>
+          <form className="weather-controls" onSubmit={submit}>
+            <label className="weather-field-zip">ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
+            <label className="weather-field-radius">Miles<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option><option value={80}>80</option><option value={100}>100</option><option value={125}>125</option><option value={150}>150</option></select></label>
+            <label className="weather-field-date">Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
+            <label className="weather-all-day"><input type="checkbox" checked={draft.allDay} onChange={e=>updateDraft('allDay',e.target.checked)} /> All Day</label>
+            <label className="weather-field-start">Start<select disabled={draft.allDay} value={draft.start} onChange={e=>updateDraft('start',Number(e.target.value))}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
+            <label className="weather-field-end">End<select disabled={draft.allDay} value={draft.end} onChange={e=>updateDraft('end',Number(e.target.value))}>{HOUR_OPTIONS.slice(1).filter(h=>h>draft.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
+            <label className="weather-field-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label>
+            <button className="button primary weather-search" type="submit" disabled={loading}>Update</button>
+          </form>
+        </div>
+      </dialog>
+      <div className="event-list weather-list" aria-busy={loading}>
+        <div className="list-header"><h2>Courses</h2><span aria-live="polite" aria-atomic="true">{loading&&!result?'…':`${sorted.length} shown`}</span><span className="list-actions"><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button><button type="button" className="filters-trigger" aria-haspopup="dialog" aria-controls="weather-filters" aria-expanded={filtersOpen} aria-label={activeFilterCount?'Filters & sort, active filters':'Filters & sort'} onClick={openFilters}><span>Filters &amp; sort</span>{activeFilterCount?<span className="filter-count" aria-hidden="true">{activeFilterCount}</span>:null}</button></span></div>
+        <label className="page-search"><span className="sr-only">Search courses</span><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search course, city, county" aria-label="Search courses" /></label>
+        <div className="weather-status" aria-live="polite">
+          {loading?<span className="weather-status-dot">Loading…</span>:null}
+          {error?<span className="weather-error">{error}</span>:null}
+          {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
+          {shareMessage?<span>{shareMessage}</span>:null}
+        </div>
+        {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)} · {preferences.location} · {preferences.radius} mi</p>:null}
     <div className="weather-legend" aria-label="Forecast column headings"><span>Course</span><span>Temp</span><span>Wind · Gust</span><span>Conditions</span></div>
     <div className="weather-course-list">
-      {!loading&&!error&&sorted.length===0?<div className="empty-state"><strong>No courses found within {preferences.radius} miles.</strong></div>:null}
+      {!loading&&!error&&sorted.length===0&&!(searchTerms.length&&outsideMatches.length)?<div className="empty-state"><strong>{searchTerms.length?'No matching courses.':`No courses found within ${preferences.radius} miles.`}</strong></div>:null}
       {sorted.map(view=>{
         const open=expanded===view.course.id;
         const temps=compactRange(view.summary.temperatureMinF,view.summary.temperatureMaxF,'°F');
@@ -366,7 +374,10 @@ export function WeatherPage() {
           </section>:null}
         </article>;
       })}
+      {!loading&&!error&&searchTerms.length>0&&sorted.length===0&&outsideMatches.length>0?<div className="empty-state"><strong>{outsideMatches.slice(0,3).map(c=>c.name).join(', ')} {outsideMatches.length===1?'is':'are'} outside {preferences.radius} miles.</strong>{preferences.radius<150?<button type="button" className="button ghost" onClick={()=>{const next={...preferences,radius:150};setPreferences(next);setDraft(prev=>({...prev,radius:150}));syncWeatherUrl(next);}}>Widen to 150 miles</button>:null}</div>:null}
     </div>
+      </div>
+    </section>
     {cardState?<div className="weather-card-modal" role="dialog" aria-modal="true" aria-label="Forecast card"><div className="weather-card-sheet">
       <div className="weather-card-controls">
         <label className="weather-card-allday"><input type="checkbox" checked={cardState.allDay} onChange={e=>updateCard({allDay:e.target.checked})} /> {cardState.date===cardState.today?'Next 24 hours':'All day'}</label>

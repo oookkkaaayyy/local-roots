@@ -211,3 +211,5 @@
   font-family:var(--events-sans);
   font-weight:700;
 }
+.events-page .page-search{display:block;margin:0 0 12px}
+.events-page .page-search input{display:block;width:100%;min-height:44px;padding:9px 12px}

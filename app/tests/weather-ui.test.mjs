@@ -44,15 +44,12 @@ test('Fresh Weather searches retain 8 AM–4 PM unless URL hours are supplied', 
   assert.match(page, /endParam=query\.get\('end'\); if\(endParam!==null\)/);
 });
 
-test('Weather filter disclosure is closed initially and does not refetch on toggle', async () => {
+test('Weather filters use the shared Events-style sheet and do not refetch on toggle', async () => {
   const page = await read('../src/pages/WeatherPage.tsx');
-  const css = await read('../src/weather.css');
-  assert.match(page, /\[filtersOpen,setFiltersOpen\]=useState\(false\)/);
-  assert.match(page, /aria-expanded=\{filtersOpen\} aria-controls="weather-filters-panel"/);
-  assert.match(page, /hidden=\{!filtersOpen\}/);
-  assert.match(page, /setPreferences\(\{\.\.\.draft,location:draft\.location\.trim\(\)\}\);setExpanded\(null\);setFiltersOpen\(false\)/);
+  assert.match(page, /useFilterSheet/);
+  assert.match(page, /aria-controls="weather-filters"/);
   assert.match(page, /\},\[preferences\.location,preferences\.radius,refreshKey\]\)/);
-  assert.match(css, /\.weather-filter-toggle\{[^}]*min-height:48px/);
+  assert.match(page, /page-search/);
 });
 
 test('Weather frontend requests courses in bounded two-course batches',async()=>{
@@ -66,7 +63,7 @@ test('Weather interface keeps player controls and removes internal explanations'
   const page=await read('../src/pages/WeatherPage.tsx');
   assert.match(page,/>ZIP</);
   assert.match(page,/>Miles</);
-  assert.match(page,/>Search</);
+  assert.match(page,/Search course, city, county/);
   assert.match(page,/> All Day</);
   assert.match(page,/<th>Rain<\/th>/);
   assert.match(page,/'NWS alert'/);
@@ -116,17 +113,10 @@ test('Weather distinguishes a successful retrieval from NWS forecast publication
 
 test('Weather heading keeps Events typography and rolling detail does not alter summary requests',async()=>{
   const page=await read('../src/pages/WeatherPage.tsx');const weather=await read('../src/weather.css');const events=await read('../src/events-enhancements.css');const integration=await read('../src/lr-hbnf-integration.css');const polish=await read('../src/share-ready-polish.css');
-  assert.match(page,/<h1>Forecast<\/h1>/);assert.doesNotMatch(page,/<h1>Disc Golf Weather<\/h1>/);
-  const weatherRule=weather.match(/\.weather-heading h1\{([^}]*)\}/)?.[1];
-  assert.ok(weatherRule);
-  assert.match(weatherRule,/color:var\(--root\)/);
-  assert.match(weatherRule,/font-family:var\(--lr-public-font,Arial,sans-serif\)/);
-  assert.match(weatherRule,/font-size:1\.2rem;font-weight:700;letter-spacing:-\.012em/);
+  assert.match(page,/<h2>Courses<\/h2>/);assert.doesNotMatch(page,/<h1>Disc Golf Weather<\/h1>/);
   assert.match(events,/\.events-page \.list-header h2\{font-size:1\.28rem;font-weight:700;letter-spacing:-\.012em\}/);
   assert.match(polish,/\.public-brand-shell \.events-page \.list-header h2\{\s*font-size:1\.2rem;\s*\}/);
   assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.08rem\}/);
-  assert.match(weather,/@media\(max-width:720px\)\{\.weather-heading h1\{font-size:1\.08rem\}\}/);
-  assert.doesNotMatch(weather,/@media\(max-width:700px\)\{\.weather-heading h1\{/);
   assert.match(page,/buildRolling24HourRows/);assert.match(page,/No forecast for these hours/);assert.match(page,/Forecast covers \{Math\.round\(hourly\.coverage\*100\)\}% of these hours/);assert.match(page,/formatHourlyTimeLabel/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
   assert.match(page,/view\.error\?\<p className="weather-error">Forecast unavailable\.<\/p>/);assert.match(page,/view\.flags\.length\?<div className="weather-flag-list"/);
 });

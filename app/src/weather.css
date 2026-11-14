@@ -176,3 +176,20 @@
 .weather-card-actions .is-primary:disabled{opacity:.5}
 .weather-card-controls .weather-card-allday input{width:auto;min-height:0;padding:0;margin:0;accent-color:var(--clay)}
 .weather-card-controls .weather-card-allday{white-space:nowrap}
+
+/* uniform list/filter pattern shared with Events */
+.weather-page.events-page{max-width:none;padding:0}
+.events-page .weather-controls{display:contents}
+.events-page .weather-controls .weather-all-day{display:flex;align-items:center;gap:8px;min-height:42px}
+.events-page .weather-controls .weather-all-day input{width:auto;min-height:0}
+.events-page .weather-controls .weather-search{width:100%;min-height:44px}
+.weather-page .list-header .weather-share{margin-left:auto;min-height:38px}
+.weather-page .list-header .filters-trigger{margin-left:0}
+.page-search{display:block;margin:0 0 12px}
+.page-search input{display:block;width:100%;min-height:44px;padding:9px 12px}
+.weather-page .weather-legend{margin-top:4px}
+.weather-page .list-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.weather-page .list-actions .weather-share{margin-left:0}
+.events-page .weather-controls>*{grid-area:auto!important;grid-column:1/-1!important}
+.events-page .weather-controls input[type="date"]{display:block;width:100%;max-width:100%;min-width:0}
+.weather-page .list-header>h2+span{margin-left:10px;color:var(--muted,#6b5a4a);font-size:.85rem}
