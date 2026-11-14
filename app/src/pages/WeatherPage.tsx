@@ -381,8 +381,8 @@ export function WeatherPage() {
     {cardState?<div className="weather-card-modal" role="dialog" aria-modal="true" aria-label="Forecast card"><div className="weather-card-sheet">
       <div className="weather-card-controls">
         <label className="weather-card-allday"><input type="checkbox" checked={cardState.allDay} onChange={e=>updateCard({allDay:e.target.checked})} /> {cardState.date===cardState.today?'Next 24 hours':'All day'}</label>
-        <label>Start<select disabled={cardState.allDay} value={cardState.start} onChange={e=>updateCard({start:Number(e.target.value)})}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
-        <label>End<select disabled={cardState.allDay} value={cardState.end} onChange={e=>updateCard({end:Number(e.target.value)})}>{HOUR_OPTIONS.slice(1).filter(h=>h>cardState.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
+        {!cardState.allDay&&<label>Start<select disabled={cardState.allDay} value={cardState.start} onChange={e=>updateCard({start:Number(e.target.value)})}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>}
+        {!cardState.allDay&&<label>End<select disabled={cardState.allDay} value={cardState.end} onChange={e=>updateCard({end:Number(e.target.value)})}>{HOUR_OPTIONS.slice(1).filter(h=>h>cardState.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>}
       </div>
       {cardUrl?<img src={cardUrl} alt="Forecast card preview" />:<p className="weather-muted">Preparing card…</p>}
       <div className="weather-card-actions"><button type="button" className="is-primary" disabled={!cardBlob} onClick={()=>void sendCard()}>Share</button>{cardUrl?<a href={cardUrl} download="local-roots-weather.png">Save image</a>:null}<button type="button" onClick={closeCard}>Close</button></div>
