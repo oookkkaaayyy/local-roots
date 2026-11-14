@@ -1,0 +1,15 @@
+{
+  "name": "HBNF Matrix Controller",
+  "short_name": "HBNF Matrix",
+  "start_url": "/matrix.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050706",
+  "theme_color": "#050706",
+  "id": "/matrix.html",
+  "description": "HB Night Flyers Matrix controller with automatic shuffled looks, event cards and live round controls.",
+  "icons": [
+    {"src":"/matrix-apple-touch-icon.png","sizes":"180x180","type":"image/png","purpose":"any"},
+    {"src":"/matrix-icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}

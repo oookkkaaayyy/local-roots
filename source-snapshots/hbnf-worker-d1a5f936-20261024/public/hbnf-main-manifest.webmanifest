@@ -1,0 +1,29 @@
+{
+  "name": "HB Night Flyers",
+  "short_name": "HBNF",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#292119",
+  "theme_color": "#292119",
+  "icons": [
+    {
+      "src": "/hbnf-main-icon-180.png?v=20261018-bone-ink-1",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/hbnf-main-icon-192.png?v=20261019-unified-1",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/hbnf-main-icon-512.png?v=20261018-bone-ink-1",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
