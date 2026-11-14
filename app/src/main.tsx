@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { ErrorBoundary } from './ErrorBoundary';
 import './styles.css';
 import './brand-assets.css';
 import './du-admin.css';
@@ -10,4 +11,4 @@ import './share-ready-polish.css';
 import './accessibility.css';
 import './weather.css';
 import './lr-hbnf-integration.css';
-createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
+createRoot(document.getElementById('root')!).render(<StrictMode><ErrorBoundary><App /></ErrorBoundary></StrictMode>);
