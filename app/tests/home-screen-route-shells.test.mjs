@@ -85,3 +85,35 @@ test('isolated iOS icon experiment embeds the exact approved 180px PNG in initia
   assert.equal(manifest.display, 'standalone');
   assert.equal(manifest.icons, undefined, 'manifest must not mask whether Safari accepts the embedded Apple icon');
 });
+
+test('isolated external-PNG route tests only the same-origin Apple touch icon path', async () => {
+  const html = await shell('ios-icon-external-png-preview/index.html');
+  const iconLinks = html.match(/<link[^>]+rel="(?:apple-touch-icon|icon)"[^>]*>/g) ?? [];
+  assert.equal(iconLinks.length, 1, 'the Apple touch PNG must be the sole icon source in initial HTML');
+  assert.match(html, /<title>Local Roots PNG Icon Test<\/title>/);
+  assert.match(html, /apple-mobile-web-app-title" content="LR PNG Test"/);
+  assert.match(html, /Isolated icon-path test: the only Home Screen artwork source is the approved 180×180 Local Roots PNG/);
+  assert.match(html, /rel="manifest" href="\/ios-icon-external-png-preview\/manifest\.webmanifest"/);
+  assert.match(iconLinks[0], /rel="apple-touch-icon" sizes="180x180" type="image\/png" href="\/apple-touch-icon\.png\?v=af4a80127dd7f9cf"/);
+  assert.doesNotMatch(html, /data:image\/png;base64,/);
+  assert.doesNotMatch(html, /<script\b/i, 'the static candidate must not depend on delayed JavaScript');
+
+  const manifest = JSON.parse(await readFile(resolve(dist, 'ios-icon-external-png-preview/manifest.webmanifest'), 'utf8'));
+  assert.equal(manifest.name, 'Local Roots PNG Icon Test');
+  assert.equal(manifest.short_name, 'LR PNG Test');
+  assert.equal(manifest.id, '/ios-icon-external-png-preview/');
+  assert.equal(manifest.start_url, '/ios-icon-external-png-preview/');
+  assert.equal(manifest.scope, '/ios-icon-external-png-preview/');
+  assert.equal(manifest.display, 'standalone');
+  assert.equal(manifest.icons, undefined, 'the manifest must not provide an alternate icon');
+
+  const headers = await readFile(resolve(import.meta.dirname, '..', 'public/_headers'), 'utf8');
+  assert.match(headers, /img-src[^\n]*'self'/, 'CSP must allow the same-origin image request');
+  assert.match(headers, /\/apple-touch-icon\.png\n  Cache-Control: no-cache/);
+  assert.match(headers, /\/manifest\.webmanifest\n  Cache-Control: no-cache/);
+
+  const icon = await readFile(resolve(import.meta.dirname, '..', 'public/apple-touch-icon.png'));
+  assert.equal(icon.toString('ascii', 1, 4), 'PNG');
+  assert.deepEqual([icon.readUInt32BE(16), icon.readUInt32BE(20)], [180, 180]);
+  assert.equal(createHash('sha256').update(icon).digest('hex'), 'af4a80127dd7f9cf208a101dc342743b7d5c50e599b39ea0e7e3d98dd2a667d9');
+});
