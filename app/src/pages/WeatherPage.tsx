@@ -102,7 +102,6 @@ export function WeatherPage() {
   const [shareMessage,setShareMessage]=useState('');
   const [refreshKey,setRefreshKey]=useState(0);
   const [filtersOpen,setFiltersOpen]=useState(false);
-  const [copyFeedback,setCopyFeedback]=useState<{id:string;message:string}|null>(null);
 
   useEffect(()=>{try{localStorage.setItem(PREF_KEY,JSON.stringify(preferences));}catch{/* optional */}},[preferences]);
   useEffect(()=>{
@@ -193,15 +192,6 @@ export function WeatherPage() {
     if(!draft.allDay&&draft.end<=draft.start){setError('End time must be later than start time.');return;}
     setPreferences({...draft,location:draft.location.trim()});setExpanded(null);setFiltersOpen(false);
     syncWeatherUrl({...draft,location:draft.location.trim()});
-  }
-  async function copyCourseLocation(course:WeatherCourse) {
-    const location=course.postalCode||course.coordinates.map(value=>value.toFixed(6)).join(', ');
-    try {
-      await navigator.clipboard.writeText(location);
-      setCopyFeedback({id:course.id,message:'Copied'});
-    } catch {
-      setCopyFeedback({id:course.id,message:'Copy unavailable'});
-    }
   }
   async function share() {
     const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0'}).toString();
@@ -341,9 +331,6 @@ export function WeatherPage() {
               <span>{view.course.postalCode?`ZIP ${view.course.postalCode}`:`${courseLat.toFixed(5)}, ${courseLon.toFixed(5)}`}</span>
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${courseLat.toFixed(6)},${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${view.course.name}`}>Directions</a>
               <button type="button" onClick={()=>void shareCourseCard(view,periodLabel)} aria-label={`Share forecast card for ${view.course.name}`}>Share card</button>
-              <button type="button" onClick={()=>void copyCourseLocation(view.course)}>Copy location</button>
-              <a href={`https://forecast.weather.gov/MapClick.php?lat=${courseLat.toFixed(6)}&lon=${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`NWS forecast for ${view.course.name}`}>NWS forecast</a>
-              {copyFeedback?.id===view.course.id?<small role="status">{copyFeedback.message}</small>:null}
             </div>
             <div className="weather-hourly-scroll"><table className="weather-hourly" role="table"><thead role="rowgroup"><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain</th><th>Conditions</th></tr></thead><tbody role="rowgroup">{(hourly?.rows||[]).map((row,i)=>{const time=hourlyTimeParts(row.startTime,hourly?.rows||[],timeZone,referenceTime);return <tr role="row" key={`${row.startTime}-${i}`}><th scope="row" role="rowheader"><span className="weather-hourly-clock">{time.time}</span>{time.day?<span className="weather-hourly-day">{time.day}</span>:null}</th><td role="cell" data-label="Temp">{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td role="cell" data-label="Wind">{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td role="cell" data-label="Gust">{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td role="cell" data-label="Rain">{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td role="cell" data-label="Conditions">{row.conditions||'—'}</td></tr>})}</tbody></table></div>
             {!view.stale&&view.lastUpdatedAt?<p className="weather-updated">Forecast issued {formatForecastIssued(view.lastUpdatedAt)}</p>:null}
