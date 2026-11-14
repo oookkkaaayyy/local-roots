@@ -171,10 +171,9 @@ test('course locations expose source-verified ZIPs and coordinate-based NWS link
   }
   assert.equal(courses.find(course=>course.id==='oak-grove').postalCode,'91103');
   assert.equal(courses.find(course=>course.id==='huntington-central').postalCode,'92647');
-  assert.match(page,/course\.postalCode\|\|course\.coordinates\.map/);
-  assert.match(page,/Copy location/);
-  assert.match(page,/https:\/\/forecast\.weather\.gov\/MapClick\.php\?lat=/);
-  assert.match(page,/NWS forecast/);
+  assert.doesNotMatch(page,/Copy location/);
+  assert.doesNotMatch(page,/NWS forecast/);
+  assert.match(page,/google\.com\/maps\/dir\/\?api=1&destination=/);
 });
 
 test('mobile filter grid gives native iPhone date control its own full-width row',async()=>{
