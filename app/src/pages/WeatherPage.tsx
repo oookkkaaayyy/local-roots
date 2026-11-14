@@ -98,9 +98,7 @@ export function WeatherPage() {
   const [error,setError]=useState('');
   const [locationNotice,setLocationNotice]=useState('');
   const [expanded,setExpanded]=useState<string|null>(()=>{try{return new URLSearchParams(window.location.search).get('course');}catch{return null;}});
-  const [cardState,setCardState]=useState<{id:string;allDay:boolean;start:number;end:number;date:string;today:string}|null>(null);
-  const [cardUrl,setCardUrl]=useState<string|null>(null);
-  const [cardBlob,setCardBlob]=useState<Blob|null>(null);
+  const [cardPreview,setCardPreview]=useState<{url:string;course:string;link:string}|null>(null);
   const [shareMessage,setShareMessage]=useState('');
   const [refreshKey,setRefreshKey]=useState(0);
   const [filtersOpen,setFiltersOpen]=useState(false);
@@ -210,77 +208,52 @@ export function WeatherPage() {
     }
     setTimeout(()=>setShareMessage(''),2400);
   }
-  function courseLink(course:WeatherCourse,w:{date:string;start:number;end:number;allDay:boolean}) {
+  function courseLink(course:WeatherCourse) {
     const url=new URL(window.location.href);url.pathname='/weather';
-    url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:w.date,start:String(w.start),end:String(w.end),allDay:w.allDay?'1':'0',course:course.id}).toString();
+    url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0',course:course.id}).toString();
     return url.toString();
   }
   function selectDay(date:string) {
     const next={...preferences,date,allDay:true};
     setPreferences(next);setDraft(prev=>({...prev,date,allDay:true}));syncWeatherUrl(next);
   }
-  function openCard(view:CourseView) {
-    const today=dateInPacific();
-    setCardState({id:view.course.id,allDay:preferences.allDay,start:preferences.start,end:preferences.end,date:preferences.date,today});
-  }
-  function cardRows(view:CourseView,c:NonNullable<typeof cardState>) {
-    const rolling=c.date===c.today&&c.allDay;
-    const prefs={...preferences,date:c.date,allDay:c.allDay,start:c.start,end:c.end};
-    return {rolling,rows:(rolling?extractRollingHourRows(view.raw,view.course,Date.now()):extractHourRows(view.raw,view.course,prefs)).rows};
-  }
-  useEffect(()=>{
-    if(!cardState)return;
-    const view=views.find(v=>v.course.id===cardState.id);
-    if(!view)return;
-    let cancelled=false;
-    (async()=>{
-      try{
-        const {rolling,rows}=cardRows(view,cardState);
-        const timeZone=view.course.timezone||TIME_ZONE;
-        const hourFmt=new Intl.DateTimeFormat('en-US',{timeZone,hour:'numeric'});
-        const dayFmt=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric'});
-        const dayLabel=dayFmt.format(new Date(`${cardState.date}T12:00:00Z`));
-        const hoursLabel=cardState.allDay?(rolling?'Next 24 hours':'All day'):`${labelHour(cardState.start).replace(':00','')}–${labelHour(cardState.end).replace(':00','')}`;
-        let alerts:ReturnType<typeof eligibleActiveAlerts>=[];
-        try{const {window}=buildHourlyRows(view.raw?.periods||[],view.raw?.gusts||[],{date:cardState.date,startHour:cardState.allDay?0:cardState.start,endHour:cardState.allDay?24:cardState.end,timeZone,gustUnit:view.raw?.gustUnit});alerts=eligibleActiveAlerts(view.raw?.alerts||[],window);}catch{/* none */}
-        const flags=forecastFlags(rows,alerts,Boolean(view.alertsAvailable)).filter(f=>f.kind!=='alerts-unavailable').map(f=>f.source==='official'?'NWS alert':f.label);
-        const conds=[...new Set(rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
-        const anyStale=Boolean(view.stale);
-        const checked=anyStale?`Cached · NWS ${formatForecastIssued(view.lastUpdatedAt)||''}`:`Checked ${formatForecastIssued(result?.retrievedAt||new Date().toISOString())}`;
-        const canvas=await renderWeatherCard({
-          course:view.course.name,
-          place:`${view.course.city}, ${view.course.state}${view.course.postalCode?` ${view.course.postalCode}`:''}`,
-          period:`${dayLabel} · ${hoursLabel}`,
-          conditions:conds,
-          hours:rows.map(r=>({label:hourFmt.format(new Date(r.startTime)),tempF:r.temperatureF,windMph:r.windMaxMph,gustMph:r.gustMph,rain:r.precipitationProbability})),
-          flags,checked,host:'localrootsdg.com/weather'
-        });
-        const blob=await canvasToBlob(canvas);
-        if(cancelled||!blob)return;
-        const url=URL.createObjectURL(blob);
-        setCardBlob(blob);
-        setCardUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return url;});
-      }catch{if(!cancelled)setShareMessage('Card unavailable.');}
-    })();
-    return ()=>{cancelled=true;};
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[cardState,views,result]);
-  function updateCard(patch:Partial<NonNullable<typeof cardState>>) {
-    setCardState(prev=>{if(!prev)return prev;const next={...prev,...patch};if(patch.start!==undefined&&next.end<=next.start)next.end=Math.min(24,next.start+1);return next;});
-  }
-  function closeCard() { setCardUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return null;});setCardBlob(null);setCardState(null); }
-  async function sendCard() {
-    const view=cardState?views.find(v=>v.course.id===cardState.id):undefined;
-    if(!view||!cardBlob)return;
-    const link=courseLink(view.course,cardState!);
-    const nav=navigator as Navigator&{canShare?:(data:unknown)=>boolean};
+  async function shareCourseCard(view:CourseView,periodLabel:string) {
+    const link=courseLink(view.course);
+    const conds=[...new Set(view.rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
+    const rains=view.rows.map(r=>r.precipitationProbability).filter((v):v is number=>typeof v==='number'&&Number.isFinite(v));
+    const flagLabels=view.flags.filter(f=>f.kind!=='alerts-unavailable').map(f=>f.source==='official'?'NWS alert':f.label);
     try{
-      const file=new File([cardBlob],`${view.course.id}-weather.png`,{type:'image/png'});
-      if(nav.share&&nav.canShare&&nav.canShare({files:[file]})){await nav.share({files:[file],title:view.course.name,text:link});return;}
-    }catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
-    try{await navigator.clipboard.writeText(link);setShareMessage('Link copied. Use Save image for the card.');}catch{setShareMessage('Use Save image for the card.');}
-    setTimeout(()=>setShareMessage(''),3200);
+      const canvas=await renderWeatherCard({
+        course:view.course.name,
+        place:`${view.course.city}, ${view.course.state}${view.course.postalCode?` ${view.course.postalCode}`:''}`,
+        period:periodLabel,
+        tempRange:compactRange(view.summary.temperatureMinF,view.summary.temperatureMaxF,'°F'),
+        conditions:conds||'Conditions unavailable',
+        wind:compactRange(view.summary.windMinMph,view.summary.windMaxMph,' mph'),
+        gust:view.summary.peakGustMph===null?'—':`${Math.round(view.summary.peakGustMph)} mph`,
+        rain:rains.length?`${Math.max(...rains)}%`:'—',
+        flags:flagLabels,
+        issued:view.lastUpdatedAt?`NWS ${formatForecastIssued(view.lastUpdatedAt)}`:'NWS',
+        host:'localrootsdg.com/weather'
+      });
+      const blob=await canvasToBlob(canvas);
+      if(!blob)throw new Error('card');
+      const nav=navigator as Navigator&{canShare?:(data:unknown)=>boolean};
+      try{
+        const file=new File([blob],`${view.course.id}-weather.png`,{type:'image/png'});
+        if(nav.share&&nav.canShare&&nav.canShare({files:[file]})){await nav.share({files:[file],title:view.course.name,text:link});return;}
+      }catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
+      setCardPreview({url:URL.createObjectURL(blob),course:view.course.name,link});
+    }catch{
+      setShareMessage('Card unavailable.');setTimeout(()=>setShareMessage(''),2400);
+    }
   }
+  async function copyCardLink() {
+    if(!cardPreview)return;
+    try{await navigator.clipboard.writeText(cardPreview.link);setShareMessage('Link copied.');}catch{setShareMessage('Copy unavailable.');}
+    setTimeout(()=>setShareMessage(''),2400);
+  }
+  function closeCard() { if(cardPreview)URL.revokeObjectURL(cardPreview.url);setCardPreview(null); }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
   return <Shell><main className="content weather-page">
@@ -357,7 +330,7 @@ export function WeatherPage() {
             <div className="weather-location-actions">
               <span>{view.course.postalCode?`ZIP ${view.course.postalCode}`:`${courseLat.toFixed(5)}, ${courseLon.toFixed(5)}`}</span>
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${courseLat.toFixed(6)},${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${view.course.name}`}>Directions</a>
-              <button type="button" onClick={()=>openCard(view)} aria-label={`Share forecast card for ${view.course.name}`}>Share card</button>
+              <button type="button" onClick={()=>void shareCourseCard(view,periodLabel)} aria-label={`Share forecast card for ${view.course.name}`}>Share card</button>
             </div>
             <div className="weather-hourly-scroll"><table className="weather-hourly" role="table"><thead role="rowgroup"><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain</th><th>Conditions</th></tr></thead><tbody role="rowgroup">{(hourly?.rows||[]).map((row,i)=>{const time=hourlyTimeParts(row.startTime,hourly?.rows||[],timeZone,referenceTime);return <tr role="row" key={`${row.startTime}-${i}`}><th scope="row" role="rowheader"><span className="weather-hourly-clock">{time.time}</span>{time.day?<span className="weather-hourly-day">{time.day}</span>:null}</th><td role="cell" data-label="Temp">{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td role="cell" data-label="Wind">{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td role="cell" data-label="Gust">{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td role="cell" data-label="Rain">{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td role="cell" data-label="Conditions">{row.conditions||'—'}</td></tr>})}</tbody></table></div>
             {!view.stale&&view.lastUpdatedAt?<p className="weather-updated">Forecast issued {formatForecastIssued(view.lastUpdatedAt)}</p>:null}
@@ -367,15 +340,7 @@ export function WeatherPage() {
         </article>;
       })}
     </div>
-    {cardState?<div className="weather-card-modal" role="dialog" aria-modal="true" aria-label="Forecast card"><div className="weather-card-sheet">
-      <div className="weather-card-controls">
-        <label className="weather-card-allday"><input type="checkbox" checked={cardState.allDay} onChange={e=>updateCard({allDay:e.target.checked})} /> {cardState.date===cardState.today?'Next 24 hours':'All day'}</label>
-        <label>Start<select disabled={cardState.allDay} value={cardState.start} onChange={e=>updateCard({start:Number(e.target.value)})}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
-        <label>End<select disabled={cardState.allDay} value={cardState.end} onChange={e=>updateCard({end:Number(e.target.value)})}>{HOUR_OPTIONS.slice(1).filter(h=>h>cardState.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
-      </div>
-      {cardUrl?<img src={cardUrl} alt="Forecast card preview" />:<p className="weather-muted">Preparing card…</p>}
-      <div className="weather-card-actions"><button type="button" className="is-primary" disabled={!cardBlob} onClick={()=>void sendCard()}>Share</button>{cardUrl?<a href={cardUrl} download="local-roots-weather.png">Save image</a>:null}<button type="button" onClick={closeCard}>Close</button></div>
-    </div></div>:null}
+    {cardPreview?<div className="weather-card-modal" role="dialog" aria-modal="true" aria-label={`Forecast card for ${cardPreview.course}`}><div className="weather-card-sheet"><img src={cardPreview.url} alt={`Forecast card for ${cardPreview.course}`} /><div className="weather-card-actions"><a href={cardPreview.url} download="local-roots-weather.png">Save image</a><button type="button" onClick={()=>void copyCardLink()}>Copy link</button><button type="button" onClick={closeCard}>Close</button></div></div></div>:null}
   </main></Shell>;
 }
 
