@@ -168,3 +168,11 @@
   .weather-outlook{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
   .weather-outlook-day{flex:0 0 92px}
 }
+.weather-card-controls{display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px 12px}
+.weather-card-controls label{display:grid;gap:3px;color:var(--soil);font-size:.74rem;font-weight:700}
+.weather-card-controls .weather-card-allday{display:flex;align-items:center;gap:6px;min-height:44px}
+.weather-card-controls select{min-height:40px;padding:5px 8px}
+.weather-card-actions .is-primary{background:var(--root,#3a2618);color:#fbf5ea;border-color:var(--root,#3a2618)}
+.weather-card-actions .is-primary:disabled{opacity:.5}
+.weather-card-controls .weather-card-allday input{width:auto;min-height:0;padding:0;margin:0;accent-color:var(--clay)}
+.weather-card-controls .weather-card-allday{white-space:nowrap}
