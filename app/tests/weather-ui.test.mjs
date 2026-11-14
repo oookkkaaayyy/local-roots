@@ -115,7 +115,7 @@ test('Weather heading keeps Events typography and rolling detail does not alter 
   assert.match(polish,/\.public-brand-shell \.events-page \.list-header h2\{\s*font-size:1\.2rem;\s*\}/);
   assert.match(integration,/\.public-brand-shell \.events-page \.list-header h2\{font-size:1\.08rem\}/);
 assert.match(page,/No forecast for these hours/);assert.match(page,/Forecast covers \{Math\.round\(hourly\.coverage\*100\)\}% of these hours/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
-  assert.match(page,/view\.error\?\<p className="weather-error">Forecast unavailable\.<\/p>/);assert.match(page,/view\.flags\.length\?<div className="weather-flag-list"/);
+  assert.match(page,/view\.error\?\<p className="weather-error">Forecast unavailable\.<\/p>/);assert.doesNotMatch(page,/weather-flag-list/);
 });
 
 test('expanded detail shows the selected full day as interactive charts with sunrise and sunset',async()=>{
