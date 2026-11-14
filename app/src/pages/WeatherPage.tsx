@@ -347,10 +347,9 @@ export function WeatherPage() {
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${courseLat.toFixed(6)},${courseLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${view.course.name}`}>Directions</a>
               <button type="button" onClick={()=>openCard(view)} aria-label={`Share forecast card for ${view.course.name}`}>Share card</button>
             </div>
-            {chart&&chart.hours.length?<DayChart hours={chart.hours} sun={chart.sun} label={`${periodLabel} forecast for ${view.course.name}`} />:null}
             {!view.stale&&view.lastUpdatedAt?<p className="weather-updated">Forecast issued {formatForecastIssued(view.lastUpdatedAt)}</p>:null}
-            {view.flags.length?<div className="weather-flag-list"><strong>Alerts</strong>{view.flags.map((flag,i)=><p key={`${flag.kind}-${i}`}><span className={`weather-flag flag-${flag.kind}`}>{flag.source==='official'?'NWS alert':flag.label}</span>{flag.detail?<span>{flag.detail}</span>:null}</p>)}</div>:null}
             {!view.alertsAvailable?<p className="weather-stale">Alert status unavailable.</p>:null}
+            {chart&&chart.hours.length?<DayChart hours={chart.hours} sun={chart.sun} label={`${periodLabel} forecast for ${view.course.name}`} />:null}
           </section>:null}
         </article>;
       })}
