@@ -68,8 +68,8 @@ export async function getWeatherResponse(request, context, courses) {
   const lat = Number(url.searchParams.get('lat'));
   const lon = Number(url.searchParams.get('lon'));
   const radius = Number(url.searchParams.get('radius') || 80);
-  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lon) || lon < -180 || lon > 180 || !Number.isFinite(radius) || radius < 0 || radius > 150) {
-    return jsonResponse({ error: 'Enter a valid location and a radius from 0 to 150 miles.' }, 400);
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lon) || lon < -180 || lon > 180 || !Number.isFinite(radius) || radius < 0 || radius > 500) {
+    return jsonResponse({ error: 'Enter a valid location and a radius from 0 to 500 miles.' }, 400);
   }
 
   const nearbyAll = filterCourses(courses, [lat, lon], radius);

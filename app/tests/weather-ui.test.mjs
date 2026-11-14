@@ -48,7 +48,7 @@ test('Weather filters use the shared Events-style sheet and do not refetch on to
   const page = await read('../src/pages/WeatherPage.tsx');
   assert.match(page, /useFilterSheet/);
   assert.match(page, /aria-controls="weather-filters"/);
-  assert.match(page, /\},\[preferences\.location,preferences\.radius,refreshKey\]\)/);
+  assert.match(page, /\},\[preferences\.location,preferences\.useDevice,refreshKey\]\)/);
   assert.match(page, /page-search/);
 });
 
@@ -61,8 +61,9 @@ test('Weather frontend requests courses in bounded two-course batches',async()=>
 
 test('Weather interface keeps player controls and removes internal explanations',async()=>{
   const page=await read('../src/pages/WeatherPage.tsx');
-  assert.match(page,/>ZIP</);
-  assert.match(page,/>Miles</);
+  assert.match(page,/>Near ZIP</);
+  assert.match(page,/Use my location/);
+  assert.doesNotMatch(page,/>Miles</);
   assert.match(page,/Search course, city, county/);
   assert.match(page,/'NWS alert'/);
   assert.match(page,/view\.flags\.filter\(flag=>flag\.kind!=='alerts-unavailable'\)/);
@@ -88,13 +89,13 @@ test('Primary navigation keeps the active links and exposes an accessible mobile
 
 test('Weather first visits default to today all-day without a passed-window notice; explicit shared filters still work', async()=>{
   const page=await read('../src/pages/WeatherPage.tsx');
-  assert.match(page,/const initial:Preferences=\{location:'92648',radius:80,date:today,start:8,end:16,allDay:true,sort:'distance'\}/);
+  assert.match(page,/const initial:Preferences=\{location:'92648',useDevice:true,radius:ALL_COURSES_MILES,date:today,start:8,end:16,allDay:true,sort:'distance'\}/);
   assert.doesNotMatch(page,/This time window has passed|Tomorrow · 8 AM–4 PM|chooseNextAvailableWindow|forecastWindowHasPassed/);
   assert.doesNotMatch(page,/date:isCalendarDate\(saved\.date\)|allDay:Boolean\(saved\.allDay\)/);
   assert.match(page,/sharedDate=query\.get\('date'\); if\(isCalendarDate\(sharedDate\)\) initial\.date=sharedDate/);
   assert.match(page,/initial\.allDay=true;/);
   assert.match(page,/aria-expanded=\{open\}/);
-  assert.match(page,/\},\[preferences\.location,preferences\.radius,refreshKey\]\)/);
+  assert.match(page,/\},\[preferences\.location,preferences\.useDevice,refreshKey\]\)/);
 });
 
 test('Weather distinguishes a successful retrieval from NWS forecast publication and explains empty forecasts', async()=>{
@@ -162,6 +163,6 @@ test('mobile filter grid gives native iPhone date control its own full-width row
   const page=await read('../src/pages/WeatherPage.tsx');
   assert.match(css,/\.weather-controls \.weather-field-date\{grid-area:date\}/);
   assert.match(css,/\.weather-controls input\[type="date"\]\{[^}]*width:calc\(100% - 16px\);min-width:0;max-width:calc\(100% - 16px\);box-sizing:border-box/);
-  for(const field of ['zip','radius','date'])assert.match(page,new RegExp('className="weather-field-'+field+'"'));
+  for(const field of ['zip','date'])assert.match(page,new RegExp('className="weather-field-'+field+'"'));
   assert.match(page,/type="date" min=\{selectDateMin\} max=\{selectDateMax\}/);
 });

@@ -16,9 +16,9 @@ function upstream(url){
   throw new Error(`Unexpected URL ${url}`);
 }
 
-test('weather endpoint rejects invalid coordinates and radius over 150 miles',async()=>{
+test('weather endpoint rejects invalid coordinates and radius over 500 miles',async()=>{
   const invalid=await getWeatherResponse(new Request('https://preview.local/api/weather?lat=91&lon=0&radius=80'),makeContext(),courses);assert.equal(invalid.status,400);
-  const over=await getWeatherResponse(new Request('https://preview.local/api/weather?lat=33.7&lon=-118&radius=151'),makeContext(),courses);assert.equal(over.status,400);
+  const over=await getWeatherResponse(new Request('https://preview.local/api/weather?lat=33.7&lon=-118&radius=501'),makeContext(),courses);assert.equal(over.status,400);
 });
 
 test('ZIP endpoint rejects non-ZIP input without making a geocoder request',async()=>{

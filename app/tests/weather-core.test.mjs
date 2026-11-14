@@ -16,7 +16,7 @@ test('radius filtering uses great-circle distance and removes closed courses',()
   const found=filterCourses([...courses,{...courses[0],id:'closed',status:'closed'}],center,80);
   assert.equal(found[0].id,'huntington-central');assert.equal(found[0].distanceMiles,0);
   assert.ok(found.some(c=>c.id==='prado'));assert.ok(!found.some(c=>c.id==='coyote-point-lake-casitas'));
-  assert.equal(filterCourses(courses,center,151).length,0);assert.ok(distanceMiles(center,courses[3].coordinates)>0);
+  assert.equal(filterCourses(courses,center,501).length,0);assert.ok(distanceMiles(center,courses[3].coordinates)>0);
 });
 
 test('time-window summary uses overlapping hours and actual gust grid intervals',()=>{

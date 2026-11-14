@@ -9,13 +9,15 @@ import { DayChart } from '../components/DayChart';
 import { toChartHours } from '../lib/dayChart';
 import { sunTimes } from '../lib/sun.js';
 
-type Preferences = { location:string; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
+type Preferences = { location:string; useDevice:boolean; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
 type CourseForecast = { periods:unknown[]; gusts:unknown[]; precipitation?:Array<{validTime:string;value:number|null}>; precipitationUnit?:string; gustUnit?:string; alerts:unknown[]; alertsAvailable:boolean; lastUpdatedAt?:string|null; stale?:boolean; staleMessage?:string; partialError?:string; error?:string };
 type WeatherResponse = { courses:Array<WeatherCourse & {distanceMiles:number}>; forecasts:Record<string,CourseForecast>; lastSuccessfulUpdate:string|null; responseAt:string; retrievedAt?:string|null };
 type GeocodeResult = { coordinates:[number,number]; label:string; source:string; stale?:boolean; staleMessage?:string };
 type CourseView = { course:WeatherCourse & {distanceMiles:number}; raw?:CourseForecast; rows:HourRow[]; summary:ReturnType<typeof summarizeHourly>; coverage:number; alerts:ReturnType<typeof eligibleActiveAlerts>; alertsAvailable:boolean; flags:ReturnType<typeof forecastFlags>; error?:string; partialError?:string; stale?:boolean; lastUpdatedAt?:string|null };
 
 const COURSES = coursesData as unknown as WeatherCourse[];
+const ALL_COURSES_MILES=500;
+const SEARCH_ALIASES:Record<string,string>={'coyote-point':'lake casitas casitas'};
 const PREF_KEY = 'lrWeatherPreferencesV1';
 const LAST_KEY = 'lrWeatherLastGoodForecastV1';
 const TIME_ZONE = 'America/Los_Angeles';
@@ -26,18 +28,23 @@ function dateInPacific(date = new Date()) {
   const values = Object.fromEntries(p.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
   return `${values.year}-${values.month}-${values.day}`;
 }
+function deviceLocation():Promise<[number,number]|null> {
+  return new Promise(resolve=>{
+    if(!('geolocation' in navigator)){resolve(null);return;}
+    navigator.geolocation.getCurrentPosition(p=>resolve([Math.round(p.coords.latitude*100)/100,Math.round(p.coords.longitude*100)/100]),()=>resolve(null),{enableHighAccuracy:false,timeout:8000,maximumAge:600000});
+  });
+}
 function plusDays(date:string,days:number) { const [y,m,d]=date.split('-').map(Number); return new Date(Date.UTC(y,m-1,d+days)).toISOString().slice(0,10); }
 function isCalendarDate(value:unknown): value is string { if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parsed=new Date(`${value}T00:00:00.000Z`);return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value; }
 function defaultPreferences():Preferences {
   const today=dateInPacific();
-  const initial:Preferences={location:'92648',radius:80,date:today,start:8,end:16,allDay:true,sort:'distance'};
+  const initial:Preferences={location:'92648',useDevice:true,radius:ALL_COURSES_MILES,date:today,start:8,end:16,allDay:true,sort:'distance'};
   try {
     const saved=JSON.parse(localStorage.getItem(PREF_KEY)||'null') as Partial<Preferences>|null;
-    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,radius:[25,50,80,100,125,150].includes(Number(saved.radius))?Number(saved.radius):80,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance'});
+    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,useDevice:typeof saved.useDevice==='boolean'?saved.useDevice:true,radius:ALL_COURSES_MILES,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance'});
   } catch { /* browser storage may be unavailable */ }
   const query=new URLSearchParams(window.location.search);
-  const zip=query.get('zip'); if(zip&&/^\d{5}$/.test(zip)) initial.location=zip;
-  const radius=Number(query.get('radius')); if([25,50,80,100,125,150].includes(radius)) initial.radius=radius;
+  const zip=query.get('zip'); if(zip&&/^\d{5}$/.test(zip)){initial.location=zip;initial.useDevice=false;}
   const sharedDate=query.get('date'); if(isCalendarDate(sharedDate)) initial.date=sharedDate;
   const startParam=query.get('start'); if(startParam!==null){const start=Number(startParam);if(Number.isInteger(start)&&start>=0&&start<=22)initial.start=start;}
   const endParam=query.get('end'); if(endParam!==null){const end=Number(endParam);if(Number.isInteger(end)&&end>initial.start&&end<=24)initial.end=end;}
@@ -49,7 +56,7 @@ function compactRange(min:number|null,max:number|null,unit:string) { return min=
 function formatUpdated(value?:string|null) { return value?new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,hour:'numeric',minute:'2-digit'}).format(new Date(value)):'Unavailable'; }
 function formatForecastIssued(value?:string|null) { return value?new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value)):null; }
 function weatherWindow(p:Preferences) { return p.allDay?{startHour:0,endHour:24}:{startHour:p.start,endHour:p.end}; }
-function syncWeatherUrl(p:Preferences) { const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:p.location,radius:String(p.radius),date:p.date,}).toString();window.history.replaceState({},'',url); }
+function syncWeatherUrl(p:Preferences) { const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({...(p.useDevice?{}:{zip:p.location}),date:p.date}).toString();window.history.replaceState({},'',url); }
 function extractHourRows(raw:CourseForecast|undefined,course:WeatherCourse,p:Preferences) {
   if(!raw||raw.error)return {rows:[] as HourRow[],coverage:0,adjusted:false};
   try { const result=buildHourlyRows(raw.periods,raw.gusts,{date:p.date,...weatherWindow(p),timeZone:course.timezone||TIME_ZONE,gustUnit:raw.gustUnit,precipitationSeries:raw.precipitation,precipitationUnit:raw.precipitationUnit}); return {rows:result.rows,coverage:result.coverage,adjusted:result.adjustedForClockChange}; }
@@ -87,6 +94,7 @@ export function WeatherPage() {
   const [preferences,setPreferences]=useState<Preferences>(defaultPreferences);
   const [draft,setDraft]=useState<Preferences>(defaultPreferences);
   const [center,setCenter]=useState<[number,number]|null>(null);
+  const [centerLabel,setCenterLabel]=useState('');
   const [result,setResult]=useState<WeatherResponse|null>(null);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState('');
@@ -106,12 +114,21 @@ export function WeatherPage() {
     async function load() {
       setLoading(true);setError('');setLocationNotice('');
       try {
-        let geo:GeocodeResult;
-        const zip=preferences.location.trim();
-        const response=await fetch(`/api/geocode?query=${encodeURIComponent(zip)}`,{headers:{Accept:'application/json'}});
-        const body=await response.json();
-        if(!response.ok)throw new Error(body.error||`Location lookup failed (${response.status}).`);
-        geo=body as GeocodeResult;
+        let geo:GeocodeResult|null=null;
+        let deviceFailed=false;
+        if(preferences.useDevice){
+          const here=await deviceLocation();
+          if(here)geo={coordinates:here,label:'Current location',source:'device'};else deviceFailed=true;
+        }
+        if(!geo){
+          const zip=preferences.location.trim();
+          const response=await fetch(`/api/geocode?query=${encodeURIComponent(zip)}`,{headers:{Accept:'application/json'}});
+          const body=await response.json();
+          if(!response.ok)throw new Error(body.error||`Location lookup failed (${response.status}).`);
+          geo=body as GeocodeResult;
+        }
+        if(deviceFailed)setLocationNotice(`Location unavailable. Distances from ZIP ${preferences.location}.`);
+        setCenterLabel(geo.source==='device'?'Current location':`ZIP ${preferences.location}`);
         if(cancelled)return;
         setCenter(geo.coordinates);
         if(geo.stale)setLocationNotice('Location data may be old.');
@@ -123,8 +140,8 @@ export function WeatherPage() {
         setResult(weather);
         const batches=Array.from({length:Math.ceil(nearby.length/2)},(_,i)=>nearby.slice(i*2,i*2+2));
         let hadBatchFailure=false;
-        for(let i=0;i<batches.length;i+=2){
-          const results=await Promise.all(batches.slice(i,i+2).map(async batch=>{
+        for(let i=0;i<batches.length;i+=3){
+          const results=await Promise.all(batches.slice(i,i+3).map(async batch=>{
             const ids=batch.map(course=>course.id).join(',');
             const url=`/api/weather?lat=${encodeURIComponent(geo.coordinates[0])}&lon=${encodeURIComponent(geo.coordinates[1])}&radius=${preferences.radius}&ids=${encodeURIComponent(ids)}`;
             const response=await fetch(url,{headers:{Accept:'application/json'},cache:'no-store'});
@@ -160,7 +177,7 @@ export function WeatherPage() {
     }
     void load();
     return ()=>{cancelled=true;};
-  },[preferences.location,preferences.radius,refreshKey]);
+  },[preferences.location,preferences.useDevice,refreshKey]);
 
   const views=useMemo(()=>{
     if(!center)return [] as CourseView[];
@@ -177,10 +194,9 @@ export function WeatherPage() {
   },[center,preferences,result]);
   const sortedAll=useMemo(()=>sortedCourses(views,preferences.sort),[views,preferences.sort]);
   const searchTerms=search.toLowerCase().split(/\s+/).filter(Boolean);
-  const courseText=(c:WeatherCourse)=>`${c.name} ${c.city} ${c.state} ${c.county||''} ${c.postalCode||''}`.toLowerCase();
+  const courseText=(c:WeatherCourse)=>`${c.name} ${c.city} ${c.state} ${c.county||''} ${c.postalCode||''} ${SEARCH_ALIASES[c.id]||''}`.toLowerCase();
   const sorted=searchTerms.length?sortedAll.filter(v=>searchTerms.every(t=>courseText(v.course).includes(t))):sortedAll;
-  const outsideMatches=searchTerms.length&&!sorted.length?COURSES.filter(c=>searchTerms.every(t=>courseText(c).includes(t))&&!sortedAll.some(v=>v.course.id===c.id)):[];
-  const activeFilterCount=[preferences.radius!==80,preferences.date!==dateInPacific(),preferences.sort!=='distance'].filter(Boolean).length;
+  const activeFilterCount=[preferences.date!==dateInPacific(),preferences.sort!=='distance'].filter(Boolean).length;
 
   function updateDraft<K extends keyof Preferences>(key:K,value:Preferences[K]) {
     setDraft(prev=>{
@@ -195,8 +211,12 @@ export function WeatherPage() {
     setPreferences({...draft,location:draft.location.trim()});setExpanded(null);closeFilters();
     syncWeatherUrl({...draft,location:draft.location.trim()});
   }
+  function useMyLocation() {
+    const next={...preferences,useDevice:true};
+    setPreferences(next);setDraft(prev=>({...prev,useDevice:true}));syncWeatherUrl(next);setExpanded(null);closeFilters();setRefreshKey(k=>k+1);
+  }
   async function share() {
-    const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,}).toString();
+    const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({...(preferences.useDevice?{}:{zip:preferences.location}),date:preferences.date}).toString();
     try {if(navigator.share){await navigator.share({title:'Disc Golf Weather · Local Roots',url:url.toString()});return;}}catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
     try {
       await navigator.clipboard.writeText(url.toString());
@@ -212,7 +232,7 @@ export function WeatherPage() {
   }
   function courseLink(course:WeatherCourse,date:string) {
     const url=new URL(window.location.href);url.pathname='/weather';
-    url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date,course:course.id}).toString();
+    url.search=new URLSearchParams({...(preferences.useDevice?{}:{zip:preferences.location}),date,course:course.id}).toString();
     return url.toString();
   }
   function selectDay(date:string) {
@@ -280,8 +300,8 @@ export function WeatherPage() {
         <div className="filters" role="group" aria-label="Weather filters">
           <div className="filters-sheet-heading"><h2 id="filters-title">Filters &amp; sort</h2><button type="button" className="filters-close" data-filter-close onClick={closeFilters} aria-label="Close filters and sort">Close</button></div>
           <form className="weather-controls" onSubmit={submit}>
-            <label className="weather-field-zip">ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
-            <label className="weather-field-radius">Miles<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option><option value={80}>80</option><option value={100}>100</option><option value={125}>125</option><option value={150}>150</option></select></label>
+            <label className="weather-field-zip">Near ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>{updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5));updateDraft('useDevice',false);}} aria-label="ZIP code for course search" /></label>
+            <button type="button" className="button ghost weather-use-location" onClick={useMyLocation}>Use my location</button>
             <label className="weather-field-date">Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
             <label className="weather-field-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label>
             <button className="button primary weather-search" type="submit" disabled={loading}>Update</button>
@@ -297,10 +317,10 @@ export function WeatherPage() {
           {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
           {shareMessage?<span>{shareMessage}</span>:null}
         </div>
-        {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)} · {preferences.location} · {preferences.radius} mi</p>:null}
+        {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)} · {centerLabel}</p>:null}
     <div className="weather-legend" aria-label="Forecast column headings"><span>Course</span><span>Temp</span><span>Wind · Gust</span><span>Conditions</span></div>
     <div className="weather-course-list">
-      {!loading&&!error&&sorted.length===0&&!(searchTerms.length&&outsideMatches.length)?<div className="empty-state"><strong>{searchTerms.length?'No matching courses.':`No courses found within ${preferences.radius} miles.`}</strong></div>:null}
+      {!loading&&!error&&sorted.length===0?<div className="empty-state"><strong>{searchTerms.length?'No matching courses.':'No courses found.'}</strong></div>:null}
       {sorted.map(view=>{
         const open=expanded===view.course.id;
         const temps=compactRange(view.summary.temperatureMinF,view.summary.temperatureMaxF,'°F');
@@ -353,7 +373,6 @@ export function WeatherPage() {
           </section>:null}
         </article>;
       })}
-      {!loading&&!error&&searchTerms.length>0&&sorted.length===0&&outsideMatches.length>0?<div className="empty-state"><strong>{outsideMatches.slice(0,3).map(c=>c.name).join(', ')} {outsideMatches.length===1?'is':'are'} outside {preferences.radius} miles.</strong>{preferences.radius<150?<button type="button" className="button ghost" onClick={()=>{const next={...preferences,radius:150};setPreferences(next);setDraft(prev=>({...prev,radius:150}));syncWeatherUrl(next);}}>Widen to 150 miles</button>:null}</div>:null}
     </div>
       </div>
     </section>
