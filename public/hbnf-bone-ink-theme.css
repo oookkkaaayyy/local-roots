@@ -414,21 +414,35 @@ body #backScorecard table.scorecard-table thead th:not(.sticky-col) {
 }
 @media(max-width:520px) { .ecosystem-nav { margin-left:auto; } }
 
-/* Scope the keyboard-focus pilot to Glow and Skins until the other pages are checked. */
-body:has(#glowDashWeek, #skinsDashWeek) {
+/* Glow/Skins focus pilot. Simple selectors and :focus support Safari 12.
+   Modern browsers suppress pointer-only rings via :focus-visible. */
+body.hbnf-score-page {
   --ui-focus: var(--ui-accent);
   --ui-focus-width: 3px;
   --ui-focus-offset: 3px;
   --ui-target-min: 44px;
 }
 
-body:has(#glowDashWeek, #skinsDashWeek) :focus-visible {
+body.hbnf-score-page :focus {
   outline: var(--ui-focus-width) solid var(--ui-focus) !important;
   outline-offset: var(--ui-focus-offset) !important;
   box-shadow: 0 0 0 3px rgba(41, 33, 25, .92) !important;
 }
 
-body:has(#glowDashWeek, #skinsDashWeek) :is(#weekSelect, .tools-menu-button) {
+/* Unsupported selectors are discarded by older browsers; their :focus rule remains. */
+body.hbnf-score-page :focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+body.hbnf-score-page :focus-visible {
+  outline: var(--ui-focus-width) solid var(--ui-focus) !important;
+  outline-offset: var(--ui-focus-offset) !important;
+  box-shadow: 0 0 0 3px rgba(41, 33, 25, .92) !important;
+}
+
+body.hbnf-score-page #weekSelect,
+body.hbnf-score-page .tools-menu-button {
   min-height: var(--ui-target-min) !important;
   min-width: var(--ui-target-min) !important;
 }
