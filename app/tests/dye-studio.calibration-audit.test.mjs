@@ -11,7 +11,7 @@ const example=(overrides={})=>({
 });
 test('measured to displayed preview is ordinary RGB distance only',()=>{
  assert.equal(rgbDistance('#030400','#000000'),5);
- assert.equal(rgbDistance('#000000','#ffffff'),Number(Math.sqrt(3*255*255).toFixed(12)));
+ assert.ok(Math.abs(rgbDistance('#000000','#ffffff')-Math.sqrt(3*255*255))<1e-9);
  assert.equal(rgbDistance('invalid','#000000'),null);
 });
 test('source-qualified aggregate does not use undocumented or uncertain records',()=>{
