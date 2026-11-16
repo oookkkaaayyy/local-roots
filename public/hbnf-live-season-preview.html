@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#292119">
+<title>HBNF | Live and Season Preview</title>
+<link rel="icon" href="/hbnf-favicon-32.png" type="image/png">
+<link rel="stylesheet" href="/hbnf-bone-ink-theme.css">
+<style>
+@font-face{font-family:Cabin;src:url('/fonts/cabin-latin-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Cabin;src:url('/fonts/cabin-latin-700.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{color-scheme:dark;--canvas:#292119;--panel:#352b20;--ink:#f4e9d6;--muted:#d9cebb;--accent:#b4c58f;--line:#6d7354}
+*{box-sizing:border-box}
+body.hbnf-preview{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45 Cabin,Arial,sans-serif}
+.hbnf-preview .wrap{max-width:1060px;margin:auto;padding:20px 18px 56px}
+.hbnf-preview .head{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap}
+.hbnf-preview .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+.hbnf-preview .brand img{width:54px;height:54px;object-fit:contain}
+.hbnf-preview h1{font-size:clamp(1.4rem,4vw,2rem);margin:0;color:var(--ink);letter-spacing:.015em}
+.hbnf-preview .sub{margin:2px 0 0;color:var(--muted);font-size:.87rem}
+.hbnf-preview .demo{display:inline-block;padding:5px 9px;border:1px solid var(--line);border-radius:5px;color:var(--accent);font-size:.71rem;font-weight:700;letter-spacing:.08em}
+.hbnf-preview .nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 24px}
+.hbnf-preview .nav a{min-height:44px;display:inline-flex;align-items:center;padding:9px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);text-decoration:none;background:#3a3024;font-weight:700;font-size:.88rem}
+.hbnf-preview .nav a:hover,.hbnf-preview .nav a:focus{border-color:var(--accent);color:var(--accent)}
+.hbnf-preview .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 18px}
+.hbnf-preview .tabs button{min-height:48px;border:1px solid var(--line);border-radius:9px;background:#3a3024;color:var(--ink);font:700 1rem Cabin,Arial,sans-serif;cursor:pointer}
+.hbnf-preview .tabs button[aria-selected="true"]{background:#4b5038;border-color:var(--accent);color:var(--ink)}
+.hbnf-preview button:focus,.hbnf-preview a:focus{outline:3px solid var(--accent);outline-offset:3px}
+.hbnf-preview button:focus:not(:focus-visible),.hbnf-preview a:focus:not(:focus-visible){outline:none}
+.hbnf-preview button:focus-visible,.hbnf-preview a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.hbnf-preview [hidden]{display:none!important}
+.hbnf-preview .heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.hbnf-preview h2{font-size:1.45rem;line-height:1.2;margin:0;color:var(--ink)}
+.hbnf-preview h3{font-size:1.06rem;margin:0 0 12px;color:var(--ink)}
+.hbnf-preview .small{font-size:.81rem;color:var(--muted)}
+.hbnf-preview .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.hbnf-preview .metric,.hbnf-preview .panel{border:1px solid #6d735499;border-radius:10px;background:var(--panel);padding:16px}
+.hbnf-preview .metric small{display:block;color:var(--muted);font-size:.76rem}
+.hbnf-preview .metric strong{display:block;color:var(--ink);font-size:1.35rem;margin-top:5px}
+.hbnf-preview .panel{margin:14px 0 0;overflow-x:auto}
+.hbnf-preview table{width:100%;border-collapse:collapse;min-width:420px;font-variant-numeric:tabular-nums}
+.hbnf-preview th,.hbnf-preview td{text-align:left;padding:12px 8px;border-bottom:1px solid #6d735477}
+.hbnf-preview th{color:var(--accent);font-weight:700;font-size:.77rem;text-transform:uppercase;letter-spacing:.04em}
+.hbnf-preview tbody tr:last-child td{border-bottom:0}
+.hbnf-preview td:nth-child(n+3),.hbnf-preview th:nth-child(n+3){text-align:right}
+.hbnf-preview .position{font-weight:700;color:var(--accent)}
+.hbnf-preview .status{font-weight:700;color:var(--accent)}
+.hbnf-preview .warn{color:#e9d39b}
+.hbnf-preview .foot{margin-top:22px;font-size:.76rem;color:var(--muted)}
+@media(max-width:600px){.hbnf-preview .wrap{padding:14px 12px 36px}.hbnf-preview .brand img{width:42px;height:42px}.hbnf-preview .metric,.hbnf-preview .panel{padding:12px}.hbnf-preview .metrics{grid-template-columns:1fr 1fr}.hbnf-preview .metrics .metric:last-child{grid-column:1/-1}.hbnf-preview h2{font-size:1.25rem}}
+</style>
+</head>
+<body class="hbnf-preview">
+<main class="wrap">
+<header class="head">
+ <a class="brand" href="/" aria-label="HBNF home"><img src="/hbnf-bone-ink-logo.png" alt=""><span><h1>HB Night Flyers</h1><span class="sub">Live Round &amp; Season Stats</span></span></a>
+ <span class="demo">SAMPLE DATA</span>
+</header>
+<nav class="nav" aria-label="HBNF sections"><a href="/glow.html">Glow Doubles</a><a href="/skins.html">Skins</a><a href="/hbnf-cart.html">Cart Control</a></nav>
+<div class="tabs" role="tablist" aria-label="Statistics preview">
+ <button type="button" id="tab-live" role="tab" aria-controls="pane-live" aria-selected="true" tabindex="0">Live Round</button>
+ <button type="button" id="tab-season" role="tab" aria-controls="pane-season" aria-selected="false" tabindex="-1">Season Stats</button>
+</div>
+<section id="pane-live" role="tabpanel" aria-labelledby="tab-live">
+ <div class="heading"><div><h2>Glow Doubles</h2><span class="small">Example round · 18 holes</span></div><span class="small">Tue · 5:30 PM PT</span></div>
+ <div class="metrics"><div class="metric"><small>Round</small><strong>Live</strong></div><div class="metric"><small>Feed</small><strong class="status">Available</strong></div><div class="metric"><small>Score age</small><strong class="warn">Stale · 5:01</strong></div></div>
+ <div class="panel"><h3>Teams</h3><table aria-label="Example live standings"><thead><tr><th>Rank</th><th>Team</th><th>Holes</th><th>Strokes</th><th>To par</th></tr></thead><tbody><tr><td class="position">1</td><td>Team A</td><td>2/18</td><td>6</td><td>−1</td></tr><tr><td class="position">1</td><td>Team B</td><td>2/18</td><td>6</td><td>−1</td></tr><tr><td class="position">3</td><td>Team C</td><td>2/18</td><td>8</td><td>+1</td></tr></tbody></table></div>
+</section>
+<section id="pane-season" role="tabpanel" aria-labelledby="tab-season" hidden>
+ <div class="heading"><div><h2>2026 Season</h2><span class="small">Example standings · finals only</span></div><span class="small">Partial season</span></div>
+ <div class="panel"><h3>Glow wins</h3><table aria-label="Example season Glow standings"><thead><tr><th>Rank</th><th>Player</th><th>Wins</th></tr></thead><tbody><tr><td class="position">1</td><td>Player A</td><td>4</td></tr><tr><td class="position">1</td><td>Player B</td><td>4</td></tr><tr><td class="position">3</td><td>Player C</td><td>2</td></tr></tbody></table></div>
+ <div class="panel"><h3>Skins</h3><table aria-label="Example season Skins standings"><thead><tr><th>Rank</th><th>Player</th><th>Front</th><th>Back</th><th>Total</th></tr></thead><tbody><tr><td class="position">1</td><td>Player A</td><td>7</td><td>3</td><td>10</td></tr><tr><td class="position">1</td><td>Player B</td><td>2</td><td>8</td><td>10</td></tr><tr><td class="position">3</td><td>Player C</td><td>4</td><td>5</td><td>9</td></tr></tbody></table></div>
+</section>
+<p class="foot">Preview only · No live score connection · No device commands</p>
+</main>
+<script>
+(function(){
+ 'use strict';
+ var ids=['live','season'];
+ function select(view,focus){
+  if(ids.indexOf(view)<0)view='live';
+  ids.forEach(function(id){
+   var chosen=id===view,tab=document.getElementById('tab-'+id),pane=document.getElementById('pane-'+id);
+   tab.setAttribute('aria-selected',chosen?'true':'false');
+   tab.tabIndex=chosen?0:-1;
+   pane.hidden=!chosen;
+   if(chosen&&focus)tab.focus();
+  });
+ }
+ function fromHash(){select(location.hash==='#season'?'season':'live',false)}
+ ids.forEach(function(id){var tab=document.getElementById('tab-'+id);
+  tab.addEventListener('click',function(){location.hash=id;select(id,false)});
+  tab.addEventListener('keydown',function(e){
+   if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+    e.preventDefault();var next=ids[(ids.indexOf(id)+(e.key==='ArrowRight'?1:ids.length-1))%ids.length];
+    location.hash=next;select(next,true);
+   }
+  });
+ });
+ window.addEventListener('hashchange',fromHash);fromHash();
+})();
+</script>
+</body>
+</html>
