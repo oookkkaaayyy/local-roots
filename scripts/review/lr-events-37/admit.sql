@@ -1,5 +1,5 @@
 -- Review candidate under Events #162. Kept outside the migration path.
--- Run only inside a caller-owned transaction with all 37 reviewed CSV rows
+-- Run only inside a caller-owned transaction with all 36 reviewed CSV rows
 -- loaded into pg_temp.lr_review_occurrences and the evidence timestamp set.
 DO $review$
 DECLARE
@@ -14,8 +14,8 @@ BEGIN
     OR verified_at < transaction_timestamp() - interval '14 days' THEN
     RAISE EXCEPTION 'Tier-2 verification timestamp must be within 14 days';
   END IF;
-  IF (SELECT count(*) FROM pg_temp.lr_review_occurrences) <> 37 THEN
-    RAISE EXCEPTION 'Review candidate requires exactly 37 occurrences';
+  IF (SELECT count(*) FROM pg_temp.lr_review_occurrences) <> 36 THEN
+    RAISE EXCEPTION 'Review candidate requires exactly 36 occurrences';
   END IF;
   IF EXISTS (
     SELECT 1 FROM pg_temp.lr_review_occurrences
@@ -94,12 +94,12 @@ BEGIN
     published_count := published_count + 1;
   END LOOP;
 
-  IF published_count <> 37 OR (
+  IF published_count <> 36 OR (
     SELECT count(*) FROM public.lr_events e
     JOIN pg_temp.lr_review_occurrences i ON i.slug = e.slug
     WHERE e.published
-  ) <> 37 THEN
-    RAISE EXCEPTION 'Expected 37 published occurrences after source linkage';
+  ) <> 36 THEN
+    RAISE EXCEPTION 'Expected 36 published occurrences after source linkage';
   END IF;
 END
 $review$;

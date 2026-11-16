@@ -22,14 +22,14 @@ const rows=lines.map(s=>{
   if(fields.length!==cols.length)throw Error('Candidate CSV width changed');
   return Object.fromEntries(cols.map((col,i)=>[col,fields[i]]));
 });
-if(rows.length!==37||new Set(rows.map(x=>x.slug)).size!==37)throw Error('Candidate identity/count changed');
+if(rows.length!==36||new Set(rows.map(x=>x.slug)).size!==36)throw Error('Candidate identity/count changed');
 const payload=JSON.stringify(rows);
-if(payload.includes('$LR37_REVIEW$'))throw Error('Unsafe SQL delimiter');
+if(payload.includes('$LR36_REVIEW$'))throw Error('Unsafe SQL delimiter');
 const sql=[
 '-- READ ONLY: exact Local Roots review CSV. Run against the existing Local Roots DB with read-only privileges.',
 '-- No DML, DDL, source crawling, scores, tags or restricted HBNF league_state access.',
 'WITH candidate AS (',
-" SELECT * FROM jsonb_to_recordset($LR37_REVIEW$"+payload+"$LR37_REVIEW$::jsonb)",
+" SELECT * FROM jsonb_to_recordset($LR36_REVIEW$"+payload+"$LR36_REVIEW$::jsonb)",
 ' AS c(slug text,name text,start_date date,county text,city text,course_name text,event_type text,source_key text,external_id text,source_url text)',
 '), joined AS (',
 ' SELECT c.*,s.id AS source_id,s.enabled,s.trust_tier,s.verification_ttl,',

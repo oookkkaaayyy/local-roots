@@ -4,8 +4,8 @@ DECLARE
   withdrawn integer;
   verified_at timestamptz := current_setting('local_roots.review_evidence_at')::timestamptz;
 BEGIN
-  IF (SELECT count(*) FROM pg_temp.lr_review_occurrences) <> 37 THEN
-    RAISE EXCEPTION 'Withdrawal requires exactly 37 reviewed occurrences';
+  IF (SELECT count(*) FROM pg_temp.lr_review_occurrences) <> 36 THEN
+    RAISE EXCEPTION 'Withdrawal requires exactly 36 reviewed occurrences';
   END IF;
   LOCK TABLE public.lr_events, public.lr_event_sources IN SHARE ROW EXCLUSIVE MODE;
   UPDATE public.lr_events e SET published = false
@@ -19,8 +19,8 @@ BEGIN
     AND e.event_type = i.event_type AND e.last_verified_at = verified_at
     AND e.published;
   GET DIAGNOSTICS withdrawn = ROW_COUNT;
-  IF withdrawn <> 37 THEN
-    RAISE EXCEPTION 'Withdrawal identity mismatch: expected 37, got %', withdrawn;
+  IF withdrawn <> 36 THEN
+    RAISE EXCEPTION 'Withdrawal identity mismatch: expected 36, got %', withdrawn;
   END IF;
 END
 $review$;

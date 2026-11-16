@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Read-only date eligibility check for the exact 37-row review candidate.
+// Read-only date eligibility check for the exact 36-row review candidate.
 // This does not confer source authority, query production or publish events.
 import fs from "node:fs";
 import path from "node:path";
@@ -65,9 +65,9 @@ const rows = lines.map((line) => {
   if (cells.length !== expectedColumns.length) throw new Error("Wrong field count in CSV row");
   return Object.fromEntries(header.map((name, index) => [name, cells[index]]));
 });
-if (rows.length !== 37) throw new Error(`Expected exactly 37 rows, got ${rows.length}`);
-if (new Set(rows.map((row) => row.slug)).size !== 37) throw new Error("Duplicate slug");
-if (new Set(rows.map((row) => `${row.source_key}|${row.external_id}`)).size !== 37) {
+if (rows.length !== 36) throw new Error(`Expected exactly 36 rows, got ${rows.length}`);
+if (new Set(rows.map((row) => row.slug)).size !== 36) throw new Error("Duplicate slug");
+if (new Set(rows.map((row) => `${row.source_key}|${row.external_id}`)).size !== 36) {
   throw new Error("Duplicate source identity");
 }
 if (rows.some((row) => !validIsoDate(row.start_date))) {
@@ -78,7 +78,7 @@ const eligible = rows.length - expired.length;
 console.log(`Pacific date: ${asOf}; candidate: ${rows.length}; eligible: ${eligible}; past: ${expired.length}`);
 for (const row of expired) console.log(`PAST ${row.start_date} ${row.slug}`);
 if (expired.length) {
-  console.error("BLOCKED: the all-or-none 37-row admit.sql would reject past occurrences. Re-scope and regrade; do not override the guard.");
+  console.error("BLOCKED: the all-or-none 36-row admit.sql would reject past occurrences. Re-scope and regrade; do not override the guard.");
   process.exitCode = 2;
 } else {
   console.log("DATE CHECK PASS. Production admission still requires every independent source, scope, duplicate and release check.");

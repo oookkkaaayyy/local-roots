@@ -103,7 +103,7 @@ jobs:
           retention-days: 7
 
   events-37-native-review:
-    name: PG17 isolated 37-date admission and non-deleting withdrawal
+    name: PG17 isolated 36-date admission and non-deleting withdrawal
     if: github.event_name == 'pull_request' && github.head_ref == 'review/lr-events-37-admission-20261115'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -122,7 +122,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Apply and withdraw 37 candidate rows in disposable PG17 only
+      - name: Apply and withdraw 36 candidate rows in disposable PG17 only
         shell: bash
         run: |
           set -euo pipefail

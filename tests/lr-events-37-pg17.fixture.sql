@@ -31,6 +31,20 @@ CREATE TABLE public.lr_event_field_evidence(
  source_url text NOT NULL,status text NOT NULL,observed_value jsonb,
  verified_at timestamptz,expires_at timestamptz
 );
+INSERT INTO public.lr_events(
+ id,slug,name,start_date,end_date,county,city,course_name,event_type,published,confidence,last_verified_at
+) VALUES (
+ '10000000-0000-4000-8000-000000000001','new-year-new-me-new-tags-2027','New Year, New Me, New Tags 2027',
+ '2027-01-01','2027-01-01','Santa Barbara','Santa Maria','Waller Park','tournament',true,'high','2026-11-16 14:43:16+00'
+);
+INSERT INTO public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,is_sanction_basis)
+SELECT '10000000-0000-4000-8000-000000000001',id,'dgs:fixture-existing',
+ 'https://www.discgolfscene.com/tournaments/New_Year_New_Me_New_Tags_2027','manual_verification',false
+FROM public.lr_sources WHERE key='dgs_manual_discovery_only';
+CREATE TEMP TABLE jan1_before AS
+SELECT to_jsonb(e) AS event_row, to_jsonb(s) AS source_row
+FROM public.lr_events e JOIN public.lr_event_sources s ON s.event_id=e.id
+WHERE e.slug='new-year-new-me-new-tags-2027';
 CREATE FUNCTION public.lr_candidate_validation_errors(payload jsonb) RETURNS jsonb
 LANGUAGE sql AS $$
  SELECT CASE WHEN payload ?& ARRAY['name','start_date','end_date','city','county','course_name','event_type']
@@ -61,17 +75,21 @@ BEGIN
  IF (SELECT count(*) FROM public.lr_events) <> 37
     OR (SELECT count(*) FROM public.lr_events WHERE published) <> 37
     OR (SELECT count(*) FROM public.lr_event_sources) <> 37
-    OR (SELECT count(*) FROM public.lr_event_field_evidence) <> 259
+    OR (SELECT count(*) FROM public.lr_event_field_evidence) <> 252
  THEN RAISE EXCEPTION 'PG17 admission fixture count mismatch'; END IF;
 END $check$;
 \i /tmp/lr-review/withdraw.sql
 DO $check$
 BEGIN
  IF (SELECT count(*) FROM public.lr_events) <> 37
-    OR (SELECT count(*) FROM public.lr_events WHERE published) <> 0
+    OR (SELECT count(*) FROM public.lr_events WHERE published) <> 1
     OR (SELECT count(*) FROM public.lr_event_sources) <> 37
-    OR (SELECT count(*) FROM public.lr_event_field_evidence) <> 259
+    OR (SELECT count(*) FROM public.lr_event_field_evidence) <> 252
  THEN RAISE EXCEPTION 'PG17 withdrawal modified or deleted candidate evidence'; END IF;
+ IF NOT EXISTS (
+   SELECT 1 FROM jan1_before b JOIN public.lr_events e ON to_jsonb(e)=b.event_row
+   JOIN public.lr_event_sources s ON s.event_id=e.id AND to_jsonb(s)=b.source_row
+ ) THEN RAISE EXCEPTION 'PG17 fixture altered the pre-existing January 1 event or its provenance'; END IF;
 END $check$;
 ROLLBACK;
-\echo PG17_REVIEW_ONLY_ADMIT_37_WITHDRAW_37_PRESERVE_EVIDENCE_PASS
+\echo PG17_REVIEW_ONLY_ADMIT_36_WITHDRAW_36_PRESERVE_EXISTING_AND_EVIDENCE_PASS

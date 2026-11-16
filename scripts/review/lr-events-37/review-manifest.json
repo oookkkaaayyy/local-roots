@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "disposition": "REVIEW_ONLY",
+  "authority": {
+    "repository": "oookkkaaayyy/local-roots",
+    "issue": 162,
+    "pullRequest": 191
+  },
+  "supersedesCandidateCommit": "3e1ece2565bddeb23e7d19f082e9c292dd3a22d5",
+  "occurrenceCount": 36,
+  "excludedExisting": {
+    "slug": "new-year-new-me-new-tags-2027",
+    "date": "2027-01-01",
+    "reason": "already-published"
+  },
+  "dateRange": {
+    "first": "2026-11-17",
+    "last": "2027-01-20",
+    "timezone": "America/Los_Angeles"
+  },
+  "package": {
+    "format": "ordered-utf8-json-file-bundle",
+    "bytes": 15548,
+    "sha256": "135ae0db239abfa4049802f4618979de306da5b462d622941065df32bd508172"
+  },
+  "files": [
+    {
+      "path": "scripts/review/lr-events-37/admit.sql",
+      "bytes": 4913,
+      "sha256": "4741976c25de775e34e2b4a0df9551c96294f13dcffa26deee9ae08c6bd74bba"
+    },
+    {
+      "path": "scripts/review/lr-events-37/occurrences.csv",
+      "bytes": 8497,
+      "sha256": "96d4a64d9ed28a92321e00b576e5f17666d5a7349059ec048c5dd644fdb851e6"
+    },
+    {
+      "path": "scripts/review/lr-events-37/stage.sql",
+      "bytes": 473,
+      "sha256": "bb1432428fcc49e689fcd6e23ff565de54a7e5867b854b03665d26ea274efa74"
+    },
+    {
+      "path": "scripts/review/lr-events-37/withdraw.sql",
+      "bytes": 1214,
+      "sha256": "2c253b60aaf79f3a00930e1fc06a652d51820235cb0c51a61bac30f3321cfe61"
+    }
+  ],
+  "recovery": {
+    "effect": "unpublish-matching-events-retain-all-data",
+    "approval": "PENDING_EXACT_REVISED_CANDIDATE"
+  },
+  "productionPublication": "NOT_AUTHORIZED",
+  "releaseAdmission": "NOT_RUN"
+}

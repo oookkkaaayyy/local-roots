@@ -10,20 +10,20 @@ function run(asOf) {
   });
 }
 
-test("37 exact review candidates remain date-eligible on November 17 Pacific", () => {
+test("36 exact review candidates remain date-eligible on November 17 Pacific", () => {
   for (const day of ["2026-11-16", "2026-11-17"]) {
     const result = run(day);
     assert.equal(result.error, undefined);
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /candidate: 37; eligible: 37; past: 0/);
+    assert.match(result.stdout, /candidate: 36; eligible: 36; past: 0/);
     assert.match(result.stdout, /DATE CHECK PASS/);
   }
 });
 
-test("the three November 17 events block the unchanged 37-date release on November 18", () => {
+test("the three November 17 events block the unchanged 36-date release on November 18", () => {
   const result = run("2026-11-18");
   assert.equal(result.status, 2);
-  assert.match(result.stdout, /candidate: 37; eligible: 34; past: 3/);
+  assert.match(result.stdout, /candidate: 36; eligible: 33; past: 3/);
   for (const slug of [
     "dog-haus-tuesday-tags-2026-11-17",
     "tuesday-glow-at-truxtun-2026-11-17",
@@ -35,7 +35,7 @@ test("the three November 17 events block the unchanged 37-date release on Novemb
 test("later passed dates require further explicit rescoping, not bypass", () => {
   const result = run("2026-11-24");
   assert.equal(result.status, 2);
-  assert.match(result.stdout, /candidate: 37; eligible: 32; past: 5/);
+  assert.match(result.stdout, /candidate: 36; eligible: 31; past: 5/);
 });
 
 test("an invalid date flag is rejected without changing files or production data", () => {
