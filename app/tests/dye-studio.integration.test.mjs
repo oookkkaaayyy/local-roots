@@ -1388,3 +1388,43 @@ test('a same-method artist naming all pigments cannot validate their unisolated 
  assert.match(studioScript,/evidenceScore\(obs,selected,p\?\.plastic\|\|"",baseFamily,overlapExists\)/);
  assert.match(studioScript,/No indexed controlled A, B and A\+B dye-overlap result/);
 });
+
+test('calibration capture preserves the displayed unvalidated prediction without changing dye math', () => {
+  const start=studioScript.indexOf('$("addCalibrationRecord").onclick=()=>{');
+  const end=studioScript.indexOf(';$("exportCalibration").onclick',start);
+  assert.ok(start>=0 && end>start,'real editor calibration handler available');
+  const inputs={
+    measuredHex:{value:'#BBDDFF'},recordStatus:{value:'experimental'},repeatCount:{value:'2'},
+    boundarySpread:{value:'0'},recipeVersion:{value:'review'},recordNotes:{value:'test fixture'},
+    baseHex:{value:'#FFFFFF'}
+  };
+  const records=[],sample={x:.12,y:-.2};
+  const env={
+    $:id=>inputs[id]||{value:''},layers:[{name:'Blue',hex:'#0000FF',strength:100,passes:1,method:'acetone-direct'}],
+    sample,calibrationRecords:records,viewMode:'daylight',renderQueued:false,
+    paintedImage:{data:new Uint8ClampedArray(4)},sampleColorAt:()=> '#AABBCC',
+    activeRecipeKey:()=> 'acetone-1',validHex:s=>/^#[0-9A-F]{6}$/.test(s),
+    layerCovers:()=>true,isTranslucentProfile:()=>false,profile:()=>({id:'innova_star'}),
+    uid:()=> 'test-record',activeMethod:()=> 'acetone-direct',
+    methodKey:()=> '["acetone-direct"]',activePassCount:()=> 1,
+    activeProfileId:'innova_star',comboKey:()=> 'blue-pass1',
+    currentTransmissionHex:()=> '#FFFFFF',daylightScene:'outdoor',
+    saveDb:()=>{},renderRecords:()=>{},requestRender:()=>{},toast:()=>{}
+  };
+  const handler=Function('env','with(env){'+studioScript.slice(start,end)+';return $("addCalibrationRecord").onclick;}')(env);
+  handler();
+  assert.equal(records.length,1);
+  assert.equal(records[0].measuredHex,'#BBDDFF');
+  assert.equal(records[0].previewHexAtCapture,'#AABBCC');
+  assert.equal(records[0].previewEvidence,'displayed_unvalidated');
+  assert.deepEqual(records[0].samplePointAtCapture,{x:.12,y:-.2});
+  assert.equal(records[0].processKey,'acetone-1');
+  env.renderQueued=true;
+  handler();
+  assert.equal(records.length,2);
+  assert.equal(records[1].previewHexAtCapture,null,'pending render cannot imply known preview');
+  env.renderQueued=false;
+  env.viewMode='uv';
+  handler();
+  assert.equal(records[2].previewHexAtCapture,null,'UV visualization is not daylight calibration');
+});
