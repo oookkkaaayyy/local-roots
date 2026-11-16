@@ -9,11 +9,12 @@
     "release:verify": "node scripts/validate-release-receipt.mjs",
     "test:delivery-recovery": "node --test tests/classify-delivery-recovery.test.mjs",
     "test:m2": "rm -rf dist && tsc && mkdir -p dist/tests/fixtures && cp tests/fixtures/events.json dist/tests/fixtures/events.json && node --test dist/tests/*.test.js",
-    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && npm run test:delivery-recovery && npm run test:cloudflare-worker-multipart && node --test tests/package-dye-studio-candidate.test.mjs && npm run test:hbnf-live-season-review",
+    "test": "npm run typecheck && npm run test:m2 && npm run test:release-receipt && npm run test:delivery-recovery && npm run test:cloudflare-worker-multipart && node --test tests/package-dye-studio-candidate.test.mjs && npm run test:hbnf-live-season-review && npm run test:hbnf-live-season-model",
     "release:audit-workflows": "node scripts/audit-release-workflows.mjs",
     "test:cloudflare-worker-multipart": "node --test tests/validate-cloudflare-worker-multipart.test.mjs",
     "preflight:cloudflare-worker-multipart": "node scripts/validate-cloudflare-worker-multipart.mjs",
-    "test:hbnf-live-season-review": "node --test tests/hbnf-live-season-contract.review.test.mjs"
+    "test:hbnf-live-season-review": "node --test tests/hbnf-live-season-contract.review.test.mjs",
+    "test:hbnf-live-season-model": "node --test tests/hbnf-live-season-model.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
