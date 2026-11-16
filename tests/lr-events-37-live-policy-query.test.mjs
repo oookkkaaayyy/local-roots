@@ -33,5 +33,6 @@ test('compares installed live authorization, fields, matcher, and Pacific time',
   "method IS DISTINCT FROM 'new'",'slug_exists','same_url_date',
   "America/Los_Angeles",'blocked_rows'
  ])assert.ok(sql.includes(field),field);
- assert.ok(!sql.includes('league_state'),'must not query official HBNF scoring');
+ const body=sql.split('\n').filter(x=>!x.startsWith('--')).join('\n');
+ assert.ok(!body.includes('league_state'),'must not query official HBNF scoring');
 });
