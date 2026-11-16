@@ -1,0 +1,16 @@
+name: Lane C hosted concurrency proof
+on:
+  pull_request:
+    branches: [review/lane-c-hosted-proof-base]
+    paths: ['.github/lane-c-hosted-proof/**']
+permissions: {}
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('lane-c-hosted-proof-pr-{0}', github.event.pull_request.number) || format('lane-c-hosted-proof-run-{0}-{1}', github.run_id, github.run_attempt) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Hold run open for the isolated supersession test
+        run: sleep 90
