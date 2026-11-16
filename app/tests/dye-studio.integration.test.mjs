@@ -226,6 +226,33 @@ test('beta launch copy and PNG export include physical recipe limitations', () =
   assert.ok(output.some(x=>x.includes('dyed-and-unattached-disc-dye-plan')&&x.endsWith('.png')));
 });
 
+test('copied recipe distinguishes accepted photo base from unmeasured predictive colors',async()=>{
+  const start=studioScript.indexOf('$("copyRecipe").onclick=async()=>{');
+  const end=studioScript.indexOf('\n};',start)+3;
+  assert.ok(start>=0&&end>start,'find the actual production clipboard handler');
+  async function copiedRecipe(photoBaseSelected){
+    let copied=null;
+    const fields={baseHex:{value:'#D4E3FE'},methodSelect:{selectedOptions:[{text:'Acetone direct paint'}]},
+      blendMode:{selectedOptions:[{text:'Research estimate'}]},sampleHex:{textContent:'#D4E3FE'},
+      samplePos:{textContent:'center'},copyRecipe:{disabled:false}};
+    const $=id=>fields[id]||(fields[id]={value:'',textContent:'',selectedOptions:[{text:'Unknown'}]});
+    const env={$ ,photoBaseSelected,discAppearance:null,layers:[],viewMode:'daylight',daylightScene:'outdoor',
+      currentTransmissionHex:()=> '#E4EEFF',activePassCount:()=>1,activeRecipeKey:()=> 'not documented',
+      collectRegions:()=>[{hex:'#D4E3FE',plateHex:'#D4E3FE',shoulderHex:'#D4E3FE',rimHex:'#D4E3FE',label:'Original disc only'}],
+      navigator:{clipboard:{writeText:async value=>{copied=value}}},toast(){}};
+    await Function('env','with(env){'+studioScript.slice(start,end)+';return $("copyRecipe").onclick;}')(env)();
+    return copied;
+  }
+  const accepted=await copiedRecipe(true),manual=await copiedRecipe(false);
+  assert.match(accepted,/Surface disc color: #D4E3FE/);
+  assert.match(accepted,/Base color source: User-accepted photo draft \(may be manually adjusted; image appearance is uncalibrated\)/);
+  assert.match(manual,/Base color source: Manual\/preset selection \(no physical-color measurement\)/);
+  for(const recipe of [accepted,manual]){
+    assert.match(recipe,/Predicted region colors \(illustrative model estimates, not measured dye results; overlaps unverified\):/);
+    assert.match(recipe,/#D4E3FE overall; plate #D4E3FE/);
+  }
+});
+
 test('editor state roundtrip and undo-redo preserve block identities and physical methods', () => {
   const start=studio.indexOf('function stateObject(){'),end=studio.indexOf('function layerCovers(',start);
   assert.ok(start>=0&&end>start);
@@ -256,6 +283,23 @@ test('editor state roundtrip and undo-redo preserve block identities and physica
   assert.equal(env.layers[1].method,'worm-dip');
   fns.applyState({base:'#FFFFFF',passCount:2,layers:[{name:'UV Blast Red',hex:'#FF0022',strength:100,shape:'edge',angle:0,offset:0,side:1,width:.42}]});
   assert.equal(env.layers[0].passes,2);assert.equal(env.layers[0].method,'worm-dip');
+  // An accepted, manually corrected photo base retains its exact values and origin across edits, history and Load.
+  env.photoBaseSelected=true;$('baseHex').value='#D4E3FE';$('transmissionHex').value='#E4EEFF';
+  fns.commitHistory();
+  const acceptedPhoto=JSON.parse(fns.stateString());
+  assert.equal(acceptedPhoto.photoBaseSelected,true);
+  assert.equal(acceptedPhoto.base,'#D4E3FE');
+  fns.mutate(()=>{env.photoBaseSelected=false;$('baseHex').value='#FFFFFF';$('transmissionHex').value='#FFFFFF'});
+  fns.undo();
+  assert.equal(env.photoBaseSelected,true);
+  assert.equal($('baseHex').value,'#D4E3FE');
+  assert.equal($('transmissionHex').value,'#E4EEFF');
+  fns.redo();
+  assert.equal(env.photoBaseSelected,false);
+  fns.applyState(acceptedPhoto);
+  assert.equal(env.photoBaseSelected,true);
+  assert.equal($('baseHex').value,'#D4E3FE');
+  assert.equal($('transmissionHex').value,'#E4EEFF');
 });
 
 test('external studio script complies with shared CSP without loosening site headers', () => {
