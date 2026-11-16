@@ -25,6 +25,19 @@
   --cart-warn:#f2cf7a;
   --cart-bad:#ffad98;
   --cart-good:#a9d794;
+  /* Same semantic roles as Local Roots and HBNF; preserve Cart's existing palette. */
+  --ui-canvas:var(--cart-canvas);
+  --ui-surface:var(--cart-cream);
+  --ui-surface-raised:var(--cart-sand);
+  --ui-text:var(--cart-root);
+  --ui-text-muted:var(--cart-muted);
+  --ui-accent:var(--cart-forest);
+  --ui-selected-bg:var(--cart-sage-light);
+  --ui-selected-text:var(--cart-root);
+  --ui-disabled-bg:var(--cart-cream);
+  --ui-disabled-text:var(--cart-muted);
+  --ui-font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --ui-font-heading:var(--ui-font-body);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
