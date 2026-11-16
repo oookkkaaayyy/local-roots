@@ -43,3 +43,9 @@ test("an invalid date flag is rejected without changing files or production data
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Usage: node preflight.mjs/);
 });
+
+test("impossible calendar dates cannot produce a false eligibility PASS", () => {
+  const result = run("2026-02-30");
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Invalid Pacific as-of date/);
+});

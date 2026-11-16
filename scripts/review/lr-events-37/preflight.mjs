@@ -43,11 +43,18 @@ function pacificToday() {
   return `${value.year}-${value.month}-${value.day}`;
 }
 
+function validIsoDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(value + "T00:00:00Z");
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
 const arg = process.argv.slice(2);
 if (arg.length > 1 || (arg.length === 1 && !/^--as-of=\d{4}-\d{2}-\d{2}$/.test(arg[0]))) {
   throw new Error("Usage: node preflight.mjs [--as-of=YYYY-MM-DD]");
 }
 const asOf = arg.length ? arg[0].slice("--as-of=".length) : pacificToday();
+if (!validIsoDate(asOf)) throw new Error("Invalid Pacific as-of date");
 const source = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "occurrences.csv"), "utf8");
 const lines = source.trim().split(/\r?\n/);
 const header = csvRow(lines.shift());
@@ -63,7 +70,7 @@ if (new Set(rows.map((row) => row.slug)).size !== 37) throw new Error("Duplicate
 if (new Set(rows.map((row) => `${row.source_key}|${row.external_id}`)).size !== 37) {
   throw new Error("Duplicate source identity");
 }
-if (rows.some((row) => !/^\d{4}-\d{2}-\d{2}$/.test(row.start_date))) {
+if (rows.some((row) => !validIsoDate(row.start_date))) {
   throw new Error("Invalid start date");
 }
 const expired = rows.filter((row) => row.start_date < asOf);
