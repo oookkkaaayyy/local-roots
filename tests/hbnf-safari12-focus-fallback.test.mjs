@@ -22,7 +22,7 @@ test("page scoping exists exactly once on both Glow and Skins, not through :has"
 test("Safari 12 basic focus selector supplies a visible ring even without :focus-visible", () => {
   assert.match(pilot, /body\.hbnf-score-page :focus\s*\{[^}]*outline:\s*var\(--ui-focus-width\) solid var\(--ui-focus\) !important/s);
   assert.match(pilot, /body\.hbnf-score-page :focus\s*\{[^}]*box-shadow:\s*0 0 0 3px/s);
-  assert.ok(pilot.indexOf("body.hbnf-score-page :focus {") < pilot.indexOf(":focus-visible"));
+  assert.ok(pilot.indexOf("body.hbnf-score-page :focus {") < pilot.indexOf("body.hbnf-score-page :focus-visible {"));
 });
 
 test("modern pointer-only ring suppression cannot erase the older-browser :focus fallback", () => {
