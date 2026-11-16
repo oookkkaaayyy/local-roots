@@ -27,6 +27,8 @@ on:
       - 'source-snapshots/hbnf-worker-d1a5f936-20261024/worker-private/**'
       - 'tests/skins-pending-review.test.mjs'
       - 'public/glow.html'
+      - 'public/hbnf-live-season-preview.html'
+      - 'tests/hbnf-live-season-preview.test.mjs'
       - 'public/skins.html'
       - 'tests/hbnf-server-tag-projection.test.mjs'
       - 'tests/hbnf-installed-function-drift.test.mjs'
@@ -85,6 +87,8 @@ jobs:
           node-version: '22'
       - name: Release route structural acceptance (synthetic execution gate only)
         run: node --test tests/hbnf-release-readiness.test.mjs
+      - name: Verify Live/Season visual preview source (offline, no credentials)
+        run: node --test tests/hbnf-live-season-preview.test.mjs
       - name: BLOCK unadmitted v348 one-file archive before any further implementation tests
         shell: bash
         env:
