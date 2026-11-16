@@ -1394,6 +1394,7 @@ test('calibration capture preserves the displayed unvalidated prediction without
   const end=studioScript.indexOf(';$("exportCalibration").onclick',start);
   assert.ok(start>=0 && end>start,'real editor calibration handler available');
   const inputs={
+    addCalibrationRecord:{},
     measuredHex:{value:'#BBDDFF'},recordStatus:{value:'experimental'},repeatCount:{value:'2'},
     boundarySpread:{value:'0'},recipeVersion:{value:'review'},recordNotes:{value:'test fixture'},
     baseHex:{value:'#FFFFFF'}
