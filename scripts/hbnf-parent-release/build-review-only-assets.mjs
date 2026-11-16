@@ -7,7 +7,8 @@ import path from 'node:path';
 
 const installedSource='44612c09677f59b84bece7de655af7bb011b51e7';
 const prefix='source-snapshots/hbnf-worker-d1a5f936-20261024/public/';
-const overlays=['skins.html','glow.html','admin.html','random.html','skills.html','hbnf-league-state-sync.js','glow-save-sync.mjs','league-state-cas.mjs'];
+const scoringOverlays=['skins.html','glow.html','admin.html','random.html','skills.html','hbnf-league-state-sync.js','glow-save-sync.mjs','league-state-cas.mjs'];
+const themeOverlays=['hbnf-bone-ink-theme.css','hbnf-cart-ui-v6.css'];
 const out='build/hbnf-scoring-review-only', site=path.join(out,'public');
 const digest=b=>createHash('sha256').update(b).digest('hex');
 const git=(...args)=>execFileSync('git',args,{maxBuffer:16*1024*1024});
@@ -26,18 +27,26 @@ for(const expected of witness.assets){
  const rel=name.slice(7);
  if(!rel||rel.includes('..')||path.isAbsolute(rel)||byPath.has(rel))throw Error('Invalid or duplicate witness entry '+name);
  const bytes=git('show',installedSource+':'+prefix+rel);
- if(!overlays.includes(rel)&&(digest(bytes)!==expected.sha256||bytes.length!==expected.bytes)){
+ if(!scoringOverlays.includes(rel)&&(digest(bytes)!==expected.sha256||bytes.length!==expected.bytes)){
   uninstalledVariantPaths.push(rel);
  }
  byPath.set(rel,{bytes,origin:'installed-source-snapshot',witnessSha256:expected.sha256});
 }
 if(uninstalledVariantPaths.length)throw Error('Unapproved snapshot-only differences: '+JSON.stringify(uninstalledVariantPaths));
-for(const rel of overlays){
+for(const rel of scoringOverlays){
  const p=path.join('public',rel);
  if(!existsSync(p))throw Error('Missing required candidate overlay: '+rel);
  const bytes=readFileSync(p);
  if(!bytes.length)throw Error('Empty overlay: '+rel);
  byPath.set(rel,{bytes,origin:'PR151-review'});
+}
+for(const rel of themeOverlays){
+ if(!byPath.has(rel))throw Error('Expected installed theme asset absent: '+rel);
+ // The asset manifest names sourceHead. Stage the exact committed CSS bytes
+ // even when the working copy has local review edits.
+ const bytes=git('show',sourceHead+':public/'+rel);
+ if(!bytes.length)throw Error('Empty theme overlay: '+rel);
+ byPath.set(rel,{bytes,origin:'review-head-css'});
 }
 if(byPath.size!==47)throw Error('Expected installed 46 assets plus one new guarded-sync helper; observed '+byPath.size);
 const required=['skins.html','glow.html','admin.html','random.html','skills.html','glow-save-sync.mjs','league-state-cas.mjs','hbnf-league-state-sync.js'];

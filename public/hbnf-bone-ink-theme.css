@@ -15,9 +15,21 @@
 }
 
 :root {
-  --hbnf-bone-ink: #292119;
-  --hbnf-moon-bone: #F4E9D6;
-  --hbnf-faded-phosphor: #B4C58F;
+  --ui-canvas: #292119;
+  --ui-surface: #352B20;
+  --ui-surface-raised: #403427;
+  --ui-text: #F4E9D6;
+  --ui-text-muted: #D9CEBB;
+  --ui-accent: #B4C58F;
+  --ui-selected-bg: #4B5038;
+  --ui-selected-text: var(--ui-text);
+  --ui-disabled-bg: #32281F;
+  --ui-disabled-text: #C5B8A3;
+  --ui-font-body: "Cabin", "Trebuchet MS", Arial, sans-serif;
+  --ui-font-heading: var(--ui-font-body);
+  --hbnf-bone-ink: var(--ui-canvas);
+  --hbnf-moon-bone: var(--ui-text);
+  --hbnf-faded-phosphor: var(--ui-accent);
   --hbnf-local-roots-sage: #8C956A;
 
   --bg: var(--hbnf-bone-ink) !important;
@@ -25,7 +37,7 @@
   --card2: #3B3024 !important;
   --line: rgba(140, 149, 106, .42) !important;
   --text: var(--hbnf-moon-bone) !important;
-  --muted: #D9CEBB !important;
+  --muted: var(--ui-text-muted) !important;
   --bright: var(--hbnf-faded-phosphor) !important;
   --warn: #E9D39B !important;
   --danger: #E8A69A !important;
@@ -34,26 +46,26 @@
   --hbnf-bg: var(--hbnf-bone-ink) !important;
   --hbnf-bg2: #32271D !important;
   --hbnf-panel: rgba(53, 43, 32, .97) !important;
-  --hbnf-panel-solid: #352B20 !important;
+  --hbnf-panel-solid: var(--ui-surface) !important;
   --hbnf-card: #3C3124 !important;
   --hbnf-card2: #443829 !important;
   --hbnf-line: rgba(140, 149, 106, .36) !important;
   --hbnf-line-strong: var(--hbnf-local-roots-sage) !important;
   --hbnf-text: var(--hbnf-moon-bone) !important;
-  --hbnf-muted: #D9CEBB !important;
+  --hbnf-muted: var(--ui-text-muted) !important;
   --hbnf-soft: #C5B8A3 !important;
   --hbnf-green: var(--hbnf-local-roots-sage) !important;
   --hbnf-green2: var(--hbnf-faded-phosphor) !important;
-  --hbnf-green-dark: #4B5038 !important;
+  --hbnf-green-dark: var(--ui-selected-bg) !important;
   --hbnf-shadow: var(--shadow) !important;
 
   --h5-bg: var(--hbnf-bone-ink) !important;
-  --h5-panel: #352B20 !important;
-  --h5-panel-2: #403427 !important;
+  --h5-panel: var(--ui-surface) !important;
+  --h5-panel-2: var(--ui-surface-raised) !important;
   --h5-line: rgba(140, 149, 106, .36) !important;
   --h5-line-strong: var(--hbnf-local-roots-sage) !important;
   --h5-text: var(--hbnf-moon-bone) !important;
-  --h5-soft: #D9CEBB !important;
+  --h5-soft: var(--ui-text-muted) !important;
   --h5-dim: #C5B8A3 !important;
   --h5-green: var(--hbnf-local-roots-sage) !important;
   --h5-green-soft: var(--hbnf-faded-phosphor) !important;
@@ -63,17 +75,20 @@
 html,
 body {
   color: var(--hbnf-moon-bone) !important;
-  background-color: var(--hbnf-bone-ink) !important;
-  font-family: "Cabin", "Trebuchet MS", Arial, sans-serif !important;
+  background-color: var(--ui-canvas) !important;
+  font-family: var(--ui-font-body) !important;
 }
 body {
   background-image:
     radial-gradient(ellipse at 50% -16%, rgba(180, 197, 143, .10), transparent 48%),
     linear-gradient(180deg, #292119 0%, #241C15 100%) !important;
 }
-body :is(h1, h2, h3, h4, .brand-title, .section-title, .panel-title, .btn, .nav-btn, .mode-btn),
+body :is(h1, h2, h3, h4, .brand-title, .section-title, .panel-title) {
+  font-family: var(--ui-font-heading) !important;
+}
+body :is(.btn, .nav-btn, .mode-btn),
 body :is(button, input, select, textarea) {
-  font-family: "Cabin", "Trebuchet MS", Arial, sans-serif !important;
+  font-family: var(--ui-font-body) !important;
 }
 
 .site-header,
@@ -206,17 +221,17 @@ body :is(p, li, td, small, strong, legend, caption, .event-row, .event-date-sing
 .nav-btn.active,
 .btn.active,
 .mode-btn.active {
-  color: var(--hbnf-moon-bone) !important;
-  background-color: #4B5038 !important;
+  color: var(--ui-selected-text) !important;
+  background-color: var(--ui-selected-bg) !important;
   border-color: var(--hbnf-local-roots-sage) !important;
   box-shadow: inset 0 0 0 1px rgba(180, 197, 143, .12) !important;
 }
 .btn:disabled,
 .nav-btn:disabled,
 button:disabled {
-  color: #C5B8A3 !important;
+  color: var(--ui-disabled-text) !important;
   border-color: rgba(140, 149, 106, .30) !important;
-  background-color: #32281F !important;
+  background-color: var(--ui-disabled-bg) !important;
   opacity: .72 !important;
 }
 .pill,
@@ -252,8 +267,8 @@ select:disabled,
 textarea:disabled,
 .score-input-mini:disabled,
 .par-input-mini:disabled {
-  color: #C5B8A3 !important;
-  background-color: #32281F !important;
+  color: var(--ui-disabled-text) !important;
+  background-color: var(--ui-disabled-bg) !important;
   border-color: rgba(140, 149, 106, .32) !important;
   opacity: .78 !important;
 }
@@ -398,3 +413,36 @@ body #backScorecard table.scorecard-table thead th:not(.sticky-col) {
   outline:3px solid #B4C58F !important; outline-offset:2px;
 }
 @media(max-width:520px) { .ecosystem-nav { margin-left:auto; } }
+
+/* Glow/Skins focus pilot. Simple selectors and :focus support Safari 12.
+   Modern browsers suppress pointer-only rings via :focus-visible. */
+body.hbnf-score-page {
+  --ui-focus: var(--ui-accent);
+  --ui-focus-width: 3px;
+  --ui-focus-offset: 3px;
+  --ui-target-min: 44px;
+}
+
+body.hbnf-score-page :focus {
+  outline: var(--ui-focus-width) solid var(--ui-focus) !important;
+  outline-offset: var(--ui-focus-offset) !important;
+  box-shadow: 0 0 0 3px rgba(41, 33, 25, .92) !important;
+}
+
+/* Unsupported selectors are discarded by older browsers; their :focus rule remains. */
+body.hbnf-score-page :focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+body.hbnf-score-page :focus-visible {
+  outline: var(--ui-focus-width) solid var(--ui-focus) !important;
+  outline-offset: var(--ui-focus-offset) !important;
+  box-shadow: 0 0 0 3px rgba(41, 33, 25, .92) !important;
+}
+
+body.hbnf-score-page #weekSelect,
+body.hbnf-score-page .tools-menu-button {
+  min-height: var(--ui-target-min) !important;
+  min-width: var(--ui-target-min) !important;
+}
