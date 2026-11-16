@@ -9,6 +9,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Isolate each PR so a busy change cannot block another change's checks.
+# Keep current and queued runs while supersession policy is under review.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('local-roots-ci-pr-{0}', github.event.pull_request.number) || format('local-roots-ci-run-{0}-{1}', github.run_id, github.run_attempt) }}
+  cancel-in-progress: false
+  queue: max
+
 permissions:
   contents: read
 
