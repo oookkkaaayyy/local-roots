@@ -8,6 +8,14 @@ The owner-approved exception for Dye Studio PR #153 is encoded as a fixed scope 
 
 ## Run the gate
 
+### PR #191 non-deleting containment exception
+
+Release `local-roots-events-pr191-36-2026-11-16` may use the pinned PR #191 withdrawal for post-commit containment on the Local Roots Supabase project. The candidate remains commit `4f6e88d9b157065cccb7434959db76cdb4b4e92b`. Build the pinned JSON bundle by ordering `admit.sql`, `occurrences.csv`, `stage.sql`, `withdraw.sql` under `scripts/review/lr-events-37/` as `{files:[{path,content},...]}`, using `JSON.stringify` followed by a newline. The bundle and independent withdrawal download-back must match the validator's pinned digests.
+
+Use `recoveryMode.mode`, `baseline.rollback.mode`, and `rollback.mode` equal to `local-roots-pr191-non-deleting-containment`. Set `recoveryMode.approvalUrl` to the owner decision in `CODEX_WORKLOG`, `approvalScope` to `recovery-only`, and `effect` to `unpublish-matching-events-retain-all-data`. Keep the recovered scoped preimage and identity evidence, distinct candidate and withdrawal artifacts, durable copies, and same-manifest acceptance gates. The mode substitutes exact visibility containment for byte-exact post-commit rollback on this release alone. It preserves records and requires separate authorization to publish.
+
+## Receipt commands
+
 Keep the receipt and its evidence files in one private working directory. Use relative paths that stay inside that directory. Do not put secrets or production data in the receipt. Run:
 
 ```sh
