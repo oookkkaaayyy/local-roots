@@ -107,3 +107,34 @@ jobs:
           path: release-capsule/
           if-no-files-found: error
           retention-days: 7
+
+  events-37-native-review:
+    name: PG17 isolated 36-date admission and non-deleting withdrawal
+    if: github.event_name == 'pull_request' && github.head_ref == 'review/lr-events-37-admission-20261115'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: events37_fixture_only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 6
+    steps:
+      - name: Checkout review candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Apply and withdraw 36 candidate rows in disposable PG17 only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -n 1)"
+          test -n "$cid"
+          docker exec "$cid" mkdir -p /tmp/lr-review
+          docker cp scripts/review/lr-events-37/. "$cid":/tmp/lr-review/
+          docker cp tests/lr-events-37-pg17.fixture.sql "$cid":/tmp/lr-review-fixture.sql
+          docker exec "$cid" psql -U postgres -v ON_ERROR_STOP=1 -f /tmp/lr-review-fixture.sql

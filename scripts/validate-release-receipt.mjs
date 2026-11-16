@@ -6,6 +6,18 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SHA256 = /^[a-f0-9]{64}$/i;
+const PR191_CONTAINMENT = Object.freeze({
+  mode: 'local-roots-pr191-non-deleting-containment',
+  releaseId: 'local-roots-events-pr191-36-2026-11-16',
+  repository: 'oookkkaaayyy/local-roots',
+  pullRequest: 191,
+  commit: '4f6e88d9b157065cccb7434959db76cdb4b4e92b',
+  provider: 'supabase',
+  target: 'wtymjxscneufjlkkywyg',
+  approvalUrl: 'https://docs.google.com/document/d/1K5MXkSNM-UvJ06PXnBHpQ-U2Ptm41hxt0iJWOsAr4ps/edit',
+  packageSha256: '135ae0db239abfa4049802f4618979de306da5b462d622941065df32bd508172',
+  withdrawalSha256: '2c253b60aaf79f3a00930e1fc06a652d51820235cb0c51a61bac30f3321cfe61',
+});
 const DYE_STUDIO_NATIVE_ROLLBACK_SCOPES = Object.freeze({
   'local-roots-dye-studio-pr-153-2026-10-29-r2': Object.freeze({
     releaseId: 'local-roots-dye-studio-pr-153-2026-10-29-r2',
@@ -46,7 +58,8 @@ function admissionProjection(receipt, hashes = {}) {
   return {
     schemaVersion: 1,
     releaseId: receipt.releaseId,
-    ...(receipt.recoveryMode?.mode === 'cloudflare-pages-native-rollback'
+    ...(receipt.recoveryMode?.mode === 'cloudflare-pages-native-rollback' ||
+      receipt.recoveryMode?.mode === PR191_CONTAINMENT.mode
       ? { recoveryMode: receipt.recoveryMode }
       : {}),
     source: receipt.source,
@@ -107,6 +120,20 @@ function admissionProjection(receipt, hashes = {}) {
         ({ id, description, method, expectedOutcome })),
     },
   };
+}
+
+function requirePr191ContainmentScope(receipt) {
+  if (receipt.recoveryMode?.mode !== PR191_CONTAINMENT.mode) return false;
+  const { releaseId, repository, pullRequest, commit, provider, target, approvalUrl } = PR191_CONTAINMENT;
+  if (receipt.releaseId !== releaseId || receipt.source.repository !== repository ||
+      receipt.source.pullRequest !== pullRequest || receipt.source.commit !== commit ||
+      receipt.baseline?.provider !== provider || receipt.baseline?.target !== target ||
+      receipt.recoveryMode.approvalUrl !== approvalUrl ||
+      receipt.recoveryMode.approvalScope !== 'recovery-only' ||
+      receipt.recoveryMode.effect !== 'unpublish-matching-events-retain-all-data') {
+    throw new Error('PR #191 non-deleting containment is authorized only for the pinned candidate and Supabase target');
+  }
+  return true;
 }
 
 function requireDyeStudioNativeRollbackScope(receipt) {
@@ -475,9 +502,10 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   requireString(source?.repository, 'source.repository');
   requireString(source?.ref, 'source.ref');
   if (!/^[a-f0-9]{40}$/i.test(source?.commit ?? '')) throw new Error('source.commit must be a full 40-character commit SHA');
-  if (receipt.recoveryMode && receipt.recoveryMode.mode !== 'cloudflare-pages-native-rollback' && receipt.recoveryMode.mode !== 'exact-artifact') {
+  if (receipt.recoveryMode && !['cloudflare-pages-native-rollback', 'exact-artifact', PR191_CONTAINMENT.mode].includes(receipt.recoveryMode.mode)) {
     throw new Error(`unsupported recovery mode: ${receipt.recoveryMode.mode}`);
   }
+  const pr191Containment = requirePr191ContainmentScope(receipt);
 
   const build = receipt.build;
   requireString(build?.command, 'build.command');
@@ -578,7 +606,8 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
   if (!nativeRollback && packageFile.sha256 === baselineRollback.sha256) {
     throw new Error('candidate package must be distinct from the baseline rollback package');
   }
-  if (!nativeRollback && (baselineArtifactFile.sha256 !== baselineRollback.sha256 || baselineArtifactFile.bytes !== baselineRollback.bytes)) {
+  if (!nativeRollback && !pr191Containment &&
+      (baselineArtifactFile.sha256 !== baselineRollback.sha256 || baselineArtifactFile.bytes !== baselineRollback.bytes)) {
     throw new Error('baseline rollback must byte-match the recovered current baseline artifact');
   }
   let rollbackFile;
@@ -597,6 +626,19 @@ export async function validateReleaseReceipt(receipt, root, { phase = 'closeout'
     }
   }
   requireString(receipt.rollback?.restoreProcedure, 'rollback.restoreProcedure');
+  if (pr191Containment) {
+    if (packageFile.sha256 !== PR191_CONTAINMENT.packageSha256 ||
+        rollbackFile.sha256 !== PR191_CONTAINMENT.withdrawalSha256 ||
+        baselineRollback.mode !== PR191_CONTAINMENT.mode || receipt.rollback.mode !== PR191_CONTAINMENT.mode ||
+        baselineRollback.restoreProcedure !== receipt.rollback.restoreProcedure) {
+      throw new Error('PR #191 candidate and withdrawal bytes must match the approved recovery scope');
+    }
+    if (path.resolve(root, baselineRollback.path) === path.resolve(root, baselineRollback.downloadBack.path) ||
+        path.resolve(root, receipt.rollback.artifact.path) === path.resolve(root, receipt.rollback.recovery?.downloadBack?.path ?? '.') ||
+        path.resolve(root, receipt.package.path) === path.resolve(root, receipt.recovery?.downloadBack?.path ?? '.')) {
+      throw new Error('PR #191 recovery requires separate downloaded-back candidate and withdrawal files');
+    }
+  }
   const rollbackRecovery = receipt.rollback?.recovery;
   if (nativeRollback) {
     if (receipt.rollback.restoreProcedure !== receipt.recoveryMode.providerVerification.restoreProcedure) {

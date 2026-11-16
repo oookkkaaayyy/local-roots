@@ -982,3 +982,104 @@ test('rejects baseline artifact size or hash metadata that differs from its byte
     } finally { await f.cleanup(); }
   }
 });
+
+test('PR #191 non-deleting containment binds the exact candidate, withdrawal, target and approval', async () => {
+  const { root, receipt, cleanup } = await fixture();
+  try {
+    const mode = 'local-roots-pr191-non-deleting-containment';
+    const provider = 'supabase';
+    const target = 'wtymjxscneufjlkkywyg';
+    const candidateFiles = ['admit.sql', 'occurrences.csv', 'stage.sql', 'withdraw.sql'];
+    const files = await Promise.all(candidateFiles.map(async name => {
+      const file = `scripts/review/lr-events-37/${name}`;
+      return { path: file, content: await readFile(file, 'utf8') };
+    }));
+    async function save(name, value) {
+      const bytes = Buffer.from(value);
+      await writeFile(path.join(root, 'evidence', name), bytes);
+      return { path: `evidence/${name}`, bytes: bytes.length, sha256: hash(bytes) };
+    }
+    const candidate = `${JSON.stringify({ files })}\n`;
+    const withdrawal = files.find(file => file.path.endsWith('/withdraw.sql')).content;
+    const procedure = 'Unpublish only the 36 exact candidate identities; retain event, provenance and field evidence.';
+    receipt.releaseId = 'local-roots-events-pr191-36-2026-11-16';
+    receipt.source = {
+      repository: 'oookkkaaayyy/local-roots',
+      pullRequest: 191,
+      ref: 'review/lr-events-37-admission-20261115',
+      commit: '4f6e88d9b157065cccb7434959db76cdb4b4e92b',
+    };
+    receipt.recoveryMode = {
+      mode,
+      approvalUrl: 'https://docs.google.com/document/d/1K5MXkSNM-UvJ06PXnBHpQ-U2Ptm41hxt0iJWOsAr4ps/edit',
+      approvalScope: 'recovery-only',
+      effect: 'unpublish-matching-events-retain-all-data',
+    };
+    receipt.package = await save('pr191.json', candidate);
+    receipt.recovery.downloadBack = await save('pr191-downloaded.json', candidate);
+    receipt.rollback = {
+      ...receipt.rollback,
+      mode,
+      artifact: await save('withdraw.sql', withdrawal),
+      restoreProcedure: procedure,
+    };
+    receipt.rollback.recovery.downloadBack = await save('withdraw-downloaded.sql', withdrawal);
+    Object.assign(receipt.baseline, { provider, target });
+    Object.assign(receipt.baseline.rollback, {
+      ...receipt.rollback.artifact,
+      mode,
+      restoreProcedure: procedure,
+      downloadBack: receipt.rollback.recovery.downloadBack,
+    });
+    Object.assign(receipt.deployment, { provider, target, restoreProcedure: procedure });
+    receipt.deployment.readback = await save('pr191-readback.json', JSON.stringify({
+      provider, target, versionId: receipt.deployment.versionId,
+      sourceCommit: receipt.source.commit, packageSha256: receipt.package.sha256,
+      baselineIdentity: receipt.baseline.identity,
+    }));
+    delete receipt.admission;
+    const preflight = structuredClone(receipt);
+    preflight.acceptance.criteria[0].status = 'PENDING';
+    delete preflight.acceptance.criteria[0].evidence;
+    const admit = value => validateReleaseReceipt(value, root, { phase: 'admission' });
+    const admitted = await admit(preflight);
+    assert.deepEqual(admitted.admissionManifest.recoveryMode, receipt.recoveryMode);
+    assert.notEqual(admitted.admissionManifest.baseline.artifactSha256, admitted.rollbackSha256);
+
+    const manifest = Buffer.from(`${JSON.stringify(admitted.admissionManifest, null, 2)}\n`);
+    const manifestPath = `${receipt.releaseId}.admission.json`;
+    await writeFile(path.join(root, manifestPath), manifest);
+    receipt.admission = {
+      path: manifestPath, bytes: manifest.length, sha256: hash(manifest),
+      driveFileId: 'fixture-admission', driveUrl: 'https://drive.google.com/file/d/fixture-admission/view',
+      downloadBackVerified: true,
+      downloadBack: await save('pr191-admission-download.json', manifest),
+    };
+    assert.equal((await validateReleaseReceipt(receipt, root)).phase, 'closeout');
+
+    for (const [label, adjust, expected] of [
+      ['arbitrary PR', r => r.source.pullRequest++, /pinned candidate/],
+      ['arbitrary source commit', r => r.source.commit = 'f'.repeat(40), /pinned candidate/],
+      ['other Supabase project', r => r.baseline.target = 'other', /pinned candidate/],
+      ['unapproved recovery record', r => r.recoveryMode.approvalUrl = 'https://example.com', /pinned candidate/],
+      ['purported publication approval', r => r.recoveryMode.approvalScope = 'production', /pinned candidate/],
+      ['exact rollback claim', r => delete r.recoveryMode, /byte-match the recovered current baseline artifact/],
+      ['changed package bytes', r => r.package = r.baseline.artifact, /approved recovery scope/],
+      ['same file instead of download-back', r => r.recovery.downloadBack = r.package, /separate downloaded-back/],
+    ]) {
+      const changed = structuredClone(preflight);
+      adjust(changed);
+      await assert.rejects(admit(changed), expected, label);
+    }
+
+    const changedWithdrawal = structuredClone(preflight);
+    const alternate = await save('alternate-withdraw.sql', 'select 1;');
+    const alternateCopy = await save('alternate-downloaded.sql', 'select 1;');
+    changedWithdrawal.rollback.artifact = alternate;
+    changedWithdrawal.rollback.recovery.downloadBack = alternateCopy;
+    Object.assign(changedWithdrawal.baseline.rollback, alternate, { downloadBack: alternateCopy });
+    await assert.rejects(admit(changedWithdrawal), /approved recovery scope/);
+  } finally {
+    await cleanup();
+  }
+});
