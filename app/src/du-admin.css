@@ -33,3 +33,5 @@
 .du-compile-views{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 .du-compile-views figure{margin:0;display:grid;gap:4px}
 .du-compile-views img{width:100%;height:auto;border:1px solid var(--line,#d8d3cb);border-radius:8px;background:#fff}
+
+.du-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px}.du-compare figure{margin:0;display:grid;gap:4px;min-width:0}.du-compare figcaption{font-size:.78rem;color:#5e625d;text-align:center}
