@@ -26,7 +26,8 @@ test("Generation V2 uses immutable same-pet roles and controlled accepted-style 
   assert.ok(prompt.includes("DU_MIN_CONNECTED_WHITE_WIDTH_MM=1.0"));
   assert.ok(prompt.includes("DU_MIN_CONNECTED_WHITE_LENGTH_MM=0.4"));
   assert.ok(prompt.includes("generation targets, not production certification"));
-  assert.ok(prompt.includes("FEWER, LARGER"));
+  assert.ok(prompt.includes("deliberate tapered white openings"));
+  assert.ok(prompt.includes("FRAMING:"));
   assert.ok(workflow.includes("buildDuGenerationPrompt"));
   assert.ok(workflow.includes("generation_import_style_reference"));
   assert.ok(workflow.includes("visual_review:visualReview"));
