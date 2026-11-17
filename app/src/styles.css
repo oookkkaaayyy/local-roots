@@ -23,6 +23,19 @@
   --lr-rust:#83482d;
   --lr-sage:#7f8962;
   --lr-stone:#b79a79;
+  /* Shared semantic names with HBNF; Local Roots retains its light brand values. */
+  --ui-canvas:var(--lr-canvas);
+  --ui-surface:var(--lr-paper);
+  --ui-surface-raised:var(--lr-paper-deep);
+  --ui-text:var(--lr-earth);
+  --ui-text-muted:var(--muted);
+  --ui-accent:var(--lr-sage);
+  --ui-selected-bg:var(--lr-paper-deep);
+  --ui-selected-text:var(--lr-earth);
+  --ui-disabled-bg:var(--lr-paper-deep);
+  --ui-disabled-text:var(--muted);
+  --ui-font-body:var(--lr-ui);
+  --ui-font-heading:var(--lr-ui);
   font-family:var(--lr-ui);
   color:var(--lr-earth);
   background:
