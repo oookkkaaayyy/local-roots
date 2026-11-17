@@ -7,3 +7,7 @@
  .public-brand-shell .site-header nav.primary-nav a:last-child{border-bottom:3px solid transparent}
  .public-brand-shell .site-header nav.primary-nav a[aria-current=page]{background:transparent;box-shadow:none;border-bottom-color:var(--lr-clay,#9f5c36)}
 }
+@media(max-width:380px){
+ .public-brand-shell .site-header nav.primary-nav{overflow-x:auto}
+ .public-brand-shell .site-header nav.primary-nav a{font-size:.82rem!important;padding:8px 4px!important}
+}
