@@ -205,7 +205,7 @@ test('beta launch copy and PNG export include physical recipe limitations', () =
   assert.match(studio,/class="beta-status" role="note"/);
   assert.match(studio,/Predicted colors are illustrative/);
   assert.doesNotMatch(studio,/Integration Candidate<\/title>/);
-  assert.match(studio,/historical HBNF green Champion/i);
+  assert.doesNotMatch(studio,/data-help|<button class="help-dot"/);
   assert.match(studio,/nominal intensity \$\{l.strength\}% · \$\{clamp\(Math.round\(\+l.passes\|\|1\),1,12\)\} coat\(s\) · \$\{methodForDyeLayer\(l\)\}/);
   const start=studio.indexOf('$("exportPng").onclick=()=>{');
   const end=studio.indexOf('\n};',start)+3;
@@ -866,7 +866,7 @@ test('published evidence counts match actual entries and distinct source URLs', 
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
   assert.match(studioScript, /ALL_DYE_EVIDENCE\.filter\(o=>selected\.some\(d=>evidenceDyeFamilyMatches/);
   assert.doesNotMatch(studioHtml, /includes the user-provided before\/after photos/);
-  assert.match(studioHtml, /Those photos are not published here/);
+  assert.doesNotMatch(studioHtml, /data-help/);
 });
 
 test('zero-intensity blocks cannot create false dyed regions or confidence',()=>{

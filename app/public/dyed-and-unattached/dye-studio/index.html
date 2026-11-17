@@ -398,7 +398,7 @@ body.calibration-mode #du-lighting{display:none!important}
       <h1>Disc Dye Studio</h1>
       <div class="sub legacy-context">Experimental beta: design dye regions and compare source-linked evidence. Predicted colors are illustrative and have not been independently validated against physical results. Do not promise an exact finished shade.</div>
     </div>
-    <div class="top-actions"><div class="mode-switch" aria-label="Studio view"><button id="clientModeBtn" class="active" aria-pressed="true">Design</button><button id="calibrationModeBtn" aria-pressed="false">Technical Studio</button></div><button id="globalHelp" class="ghost">Help</button></div></div>
+    <div class="top-actions"><div class="mode-switch" aria-label="Studio view"><button id="clientModeBtn" class="active" aria-pressed="true">Design</button><button id="calibrationModeBtn" aria-pressed="false">Technical Studio</button></div></div></div>
 </header>
 <div class="beta-status" role="note"><strong>Experimental beta.</strong> Preview colors are estimates, not verified dye results.</div>
 <div id="projectActions" class="project-actions" role="group" aria-label="Project actions"><button id="saveProject">Save</button><button id="loadProject">Load</button><button id="copyRecipe">Copy recipe</button><button id="exportPng" class="primary">Export PNG</button></div>
@@ -458,21 +458,17 @@ body.calibration-mode #du-lighting{display:none!important}
   <div class="toolbar">
     <div class="action-with-help">
       <button id="undoBtn" disabled>↶ Undo<span class="shortcut">⌘Z</span></button>
-      <button class="help-dot" data-help-title="Undo" data-help="Reverses the most recent change to colors, blocks, positions, sizes, layer order, or settings. Shortcut: Command-Z on Mac, or Control-Z on Windows.">?</button>
     </div>
     <div class="action-with-help">
       <button id="redoBtn" disabled>↷ Redo<span class="shortcut">⇧⌘Z</span></button>
-      <button class="help-dot" data-help-title="Redo" data-help="Restores the most recently undone change. Shortcut: Command-Shift-Z on Mac, or Control-Shift-Z on Windows.">?</button>
     </div>
     <span class="spacer"></span>
 <details class="examples-menu"><summary>Examples</summary><div class="examples-menu-body">
     <div class="action-with-help">
       <button id="actualTestBtn">Load actual HBNF test</button>
-      <button class="help-dot" data-help-title="Actual HBNF test" data-help="Loads the historical HBNF green Champion and UV Blast Green / Blaze Orange layout. Its photographs are qualitative references only; the preview does not apply source-photo RGB as calibrated color targets.">?</button>
     </div>
     <div class="action-with-help">
       <button id="exampleBtn">Load four-color example</button>
-      <button class="help-dot" data-help-title="Load example" data-help="Creates a four-color layout so you can immediately see how boundaries, overlaps, and handles work. It replaces the current layout, but you can Undo afterward.">?</button>
     </div>
 </div></details>
   </div>
@@ -481,7 +477,7 @@ body.calibration-mode #du-lighting{display:none!important}
   <details id="plasticDetails" open>
     <summary><span class="summary-left">Plastic & method</span></summary>
     <div class="detail-body">
-      <div class="control-label">Innova reference family <button class="help-dot" data-help-title="Innova reference families" data-help="Use Innova names as broad optical and dye-uptake references: Star for solid/opaque premium plastic, Champion for clear/translucent premium plastic, GStar for flexible opaque premium, and separate Proto Glow Star and Proto Glow Champion profiles. Other brands can later be mapped to the closest family and locally refined.">?</button></div>
+      <div class="control-label">Innova reference family</div>
       <select id="profileSelect" class="model-select"></select>
       <div id="profileSummary" class="profile-card" style="margin-top:8px"></div>
       <div id="profileNotice" class="client-only warning-box" style="margin-top:8px"></div>
@@ -514,16 +510,16 @@ body.calibration-mode #du-lighting{display:none!important}
     <summary><span class="summary-left">Disc color & lighting</span></summary>
     <div class="detail-body">
       <div class="field">
-        <div class="control-label">Surface / reflected starting color <button class="help-dot" data-help-title="Surface starting color" data-help="For opaque Star-style plastic, this is usually enough. For translucent Champion-style plastic, this is only the reflected appearance; the held-to-light transmission color below is also required because the dye is viewed partly through the plastic.">?</button></div>
+        <div class="control-label">Surface / reflected starting color</div>
         <div class="row">
           <input id="baseColor" type="color" value="#E9F0CF">
           <input id="baseHex" type="text" value="#E9F0CF" maxlength="7" aria-label="Disc hex color">
-          <button id="whiteDisc">White</button><button class="help-dot" data-help-title="White preset" data-help="Sets the starting disc to pure display white. Real white plastic may be slightly warmer or cooler, so use a sampled hex when accuracy matters.">?</button>
-          <button id="glowDisc">Glow</button><button class="help-dot" data-help-title="Glow preset" data-help="Sets a pale yellow-green starting point typical of many glow discs. Actual glow plastics vary, so replace it with a sampled color for better results.">?</button>
+          <button id="whiteDisc">White</button>
+          <button id="glowDisc">Glow</button>
         </div>
         <div class="preset-row"><button data-base-preset="#F4F2E8">Warm white</button><button data-base-preset="#F7E331">Yellow</button><button data-base-preset="#F27A26">Orange</button><button data-base-preset="#E84C55">Red/pink</button><button data-base-preset="#59A9DE">Blue</button><button data-base-preset="#57A768">Green</button><button data-base-preset="#8D62B6">Purple</button><button data-base-preset="#DCE8E1">Colorless Champion</button></div>
         <div id="transmissionBox" class="transmission-box">
-          <div class="control-label">Held-to-light / transmission color <button class="help-dot" data-help-title="Transmission color" data-help="Champion-style plastic cannot be modeled from one opaque HEX value. This second color represents the flight plate when light passes through it. Use the auto estimate initially; replace it with a sample from a held-to-light photo when available.">?</button></div>
+          <div class="control-label">Held-to-light / transmission color</div>
           <div class="row">
             <input id="transmissionColor" type="color" value="#A6C5B5">
             <input id="transmissionHex" type="text" value="#A6C5B5" maxlength="7" aria-label="Transmitted blank hex color">
@@ -533,11 +529,11 @@ body.calibration-mode #du-lighting{display:none!important}
         </div>
       </div>
       <div class="field">
-        <div class="control-label">Preview condition <button class="help-dot" data-help-title="Preview condition" data-help="Daylight predicts ordinary visible appearance. 365 nm UV emphasizes fluorescent and UV Blast behavior. Charged glow estimates how dyes block or tint a glowing disc in darkness. These are separate optical states and cannot be represented by one hex code.">?</button></div>
+        <div class="control-label">Preview condition</div>
         <div class="condition-switch"><button class="condition active" data-view="daylight">Daylight</button><button class="condition" data-view="uv365">365 nm UV</button><button class="condition" data-view="glow">Charged glow</button></div>
         <div id="viewConditionHelp" class="small" style="margin-top:7px"></div>
         <div id="daylightSceneBox" style="margin-top:10px">
-          <div class="control-label">Translucent-disc daylight view <button class="help-dot" data-help-title="Translucent viewing condition" data-help="A colored Champion disc changes dramatically with the background and amount of transmitted light. Surface shows the disc lying on a neutral surface. Outdoor held mixes reflected and transmitted light and is the recommended client preview. Backlit shows the strongest transmitted saturation.">?</button></div>
+          <div class="control-label">Translucent-disc daylight view</div>
           <div class="scene-switch"><button class="scene" data-scene="surface">On a surface</button><button class="scene active" data-scene="outdoor">Outdoor / held</button><button class="scene" data-scene="backlit">Backlit</button></div>
         </div>
         <div id="photoAnchorAlert" class="anchor-alert hidden"><b>HBNF photo-guided approximation active.</b> UV Blast Green and Blaze Orange on the loaded green Champion blank use the observed finished-photo colors rather than the former orange/green digital blend.</div>
@@ -547,7 +543,6 @@ body.calibration-mode #du-lighting{display:none!important}
       <div class="recommended client-hide">
         <div class="row spread">
           <div><span class="badge">Recommended</span><br><strong>HBNF optical-path model v9</strong></div>
-          <button class="help-dot" data-help-title="Recommended prediction model" data-help="The default separates opaque surface color from translucent transmission. Dye source HEX values are not treated as paint colors: Champion-style predictions use dye-specific transmission targets, photo anchors, fluorescence, viewing condition, and any local measurements you add.">?</button>
         </div>
         <div id="engineStatus" class="small" style="margin-top:6px"></div>
       </div>
@@ -556,7 +551,7 @@ body.calibration-mode #du-lighting{display:none!important}
       <details class="client-hide" style="margin-top:10px;margin-bottom:0">
         <summary><span class="summary-left">Prediction model details</span></summary>
         <div class="detail-body">
-          <div class="control-label">Model <button class="help-dot" data-help-title="Advanced models" data-help="The client tool uses one locked HBNF research model so users are not asked to choose between arbitrary digital blend modes. Only compatible exact-method, color, pass-count, plastic, dose-ID and viewing-condition records can override opaque daylight estimates; legacy and uncontrolled observations cannot.">?</button></div>
+          <div class="control-label">Model</div>
           <select id="blendMode" class="model-select" disabled><option value="research" selected>HBNF research model — locked</option></select>
           <div id="modeHelp" class="small" style="margin-top:7px"></div>
         </div>
@@ -572,7 +567,6 @@ body.calibration-mode #du-lighting{display:none!important}
         <span class="small">Top item is applied last.</span>
         <div class="action-with-help">
           <button id="clearLayers" class="danger compact">Clear all</button>
-          <button class="help-dot" data-help-title="Clear all dye blocks" data-help="Removes every dye block. This can be reversed with Undo.">?</button>
         </div>
       </div>
       <div id="layerList" class="layers"></div>
@@ -588,7 +582,7 @@ body.calibration-mode #du-lighting{display:none!important}
       <div id="editorControls" class="hidden">
         <div class="editor-grid">
           <div>
-            <div class="control-label">Block shape <button class="help-dot" data-help-title="Block shape" data-help="Edge Block colors one side of a straight line. Stripe colors the area between two parallel lines. Whole Disc applies the dye everywhere, allowing later blocks to overlap it.">?</button></div>
+            <div class="control-label">Block shape</div>
             <select id="shape">
               <option value="edge">Edge block</option>
               <option value="stripe">Stripe</option>
@@ -597,7 +591,7 @@ body.calibration-mode #du-lighting{display:none!important}
           </div>
           <div>
             <div class="client-only locked-method"><b>Preview intensity:</b> 100% nominal model input. This is NOT a measured dye concentration or validated physical recipe.</div>
-            <div class="calibration-only"><div class="control-label">Application intensity <button class="help-dot" data-help-title="Application intensity" data-help="The 100% model intensity is a nominal scale, NOT full-strength chemical concentration. Reduce only for a documented, intentionally different physical application. Numerical uptake is not yet calibrated.">?</button></div><input id="strength" type="range" min="1" max="100" value="100"><div class="readout"><span>Light</span><strong id="strengthOut">100%</strong></div></div>
+            <div class="calibration-only"><div class="control-label">Application intensity</div><input id="strength" type="range" min="1" max="100" value="100"><div class="readout"><span>Light</span><strong id="strengthOut">100%</strong></div></div>
           </div>
           <div class="wide" id="layerMethodBox"><label class="control-label" for="layerMethod">Physical application method for this dye</label>
 <select id="layerMethod" class="model-select">
@@ -611,23 +605,23 @@ body.calibration-mode #du-lighting{display:none!important}
 </select><div class="small">Each color can use a different carrier. This field controls evidence and calibration matching, not numerical hue.</div></div>
 <div class="wide" id="layerPassesBox"><label class="control-label" for="layerPasses">Passes / coats for selected dye block</label><input id="layerPasses" type="number" min="1" max="12" step="1" value="1" inputmode="numeric"><div class="small">Physically applied passes on this specific color; affects recipe records and evidence warnings, not the uncalibrated preview.</div></div>
           <div id="angleBox">
-            <div class="control-label">Boundary angle <button class="help-dot" data-help-title="Boundary angle" data-help="Rotates the boundary. You can also drag either round handle around the outside of the disc.">?</button></div>
+            <div class="control-label">Boundary angle</div>
             <input id="angle" type="range" min="-180" max="180" value="0">
             <div class="readout"><span>-180°</span><strong id="angleOut">0°</strong></div>
           </div>
           <div id="positionBox">
-            <div class="control-label">Boundary position <button class="help-dot" data-help-title="Boundary position" data-help="Slides the boundary across the disc without rotating it. You can also drag the square handle in the middle of the line.">?</button></div>
+            <div class="control-label">Boundary position</div>
             <input id="position" type="range" min="-98" max="98" value="0">
             <div class="readout"><span>-98%</span><strong id="positionOut">0%</strong></div>
           </div>
           <div id="widthBox" class="wide hidden">
-            <div class="control-label">Stripe width <button class="help-dot" data-help-title="Stripe width" data-help="Controls the distance between the stripe’s two outer boundaries. You can also drag either diamond width handle on the disc.">?</button></div>
+            <div class="control-label">Stripe width</div>
             <input id="stripeWidth" type="range" min="3" max="190" value="45">
             <div class="readout"><span>Narrow</span><strong id="widthOut">45%</strong></div>
           </div>
           <div id="flipBox" class="wide row">
-            <button id="flipSide">Flip colored side</button><button class="help-dot" data-help-title="Flip colored side" data-help="Keeps the line in place but moves the dye to the opposite side of it. The diamond marked F on the disc does the same thing.">?</button>
-            <button id="duplicateLayer">Duplicate</button><button class="help-dot" data-help-title="Duplicate block" data-help="Creates an identical copy directly above the selected block. This is useful for making parallel or repeating shapes.">?</button>
+            <button id="flipSide">Flip colored side</button>
+            <button id="duplicateLayer">Duplicate</button>
           </div>
         </div>
       </div>
@@ -642,9 +636,9 @@ body.calibration-mode #du-lighting{display:none!important}
   <details>
     <summary><span class="summary-left">Display options</span></summary>
     <div class="detail-body">
-      <label class="check"><input id="showGuides" type="checkbox" checked><span>Show draggable boundaries and handles</span><button class="help-dot" data-help-title="Boundary guides" data-help="Shows the editing lines and handles. They are automatically removed from the exported PNG report.">?</button></label>
+      <label class="check"><input id="showGuides" type="checkbox" checked><span>Show draggable boundaries and handles</span></label>
       <div style="height:10px"></div>
-      <div class="control-label">Custom dye <button class="help-dot" data-help-title="Custom dye" data-help="Adds any dye or experimental color that is not already in the catalog. Enter its display hex code, then add it as a movable block.">?</button></div>
+      <div class="control-label">Custom dye</div>
       <div class="row">
         <input id="customColor" type="color" value="#FF00AA">
         <input id="customHex" type="text" value="#FF00AA" maxlength="7">
@@ -671,7 +665,7 @@ body.calibration-mode #du-lighting{display:none!important}
   </div><div id="clientGuard" class="client-only warning-box" style="margin-bottom:12px"></div>
   <div class="catalog-head">
     <div>
-      <div class="row"><strong>Dye catalog</strong><button class="help-dot" data-help-title="Dye catalog" data-help="Tap a swatch to add that dye as a new movable Edge Block. The new block is placed above the existing layers, meaning it is applied later in the simulated dye order.">?</button></div>
+      <div class="row"><strong>Dye catalog</strong></div>
       <div class="small">Tap any swatch to add it.</div>
     </div>
     <input id="search" class="search" type="text" placeholder="Search dye colors…" aria-label="Search dye colors">
@@ -693,7 +687,7 @@ body.calibration-mode #du-lighting{display:none!important}
     <div id="evidenceLinks"></div>
   </details>
 <div class="reference-head">
-    <div><div class="row"><strong>Research reference library</strong><button class="help-dot" data-help-title="Research library" data-help="Most cards are illustrative research analogs, not physically matched recipes. The HBNF green/orange card is different: it is informed by a private before/after photo comparison and uncalibrated sampled colors. Those photos are not published here. This remains weaker than controlled color-chart measurements.">?</button></div><div class="small">Community research plus the first HBNF before/after photo anchor.</div></div>
+    <div><div class="row"><strong>Research reference library</strong></div><div class="small">Community research plus the first HBNF before/after photo anchor.</div></div>
     <select id="referenceFilter"><option value="all">All references</option><option value="inventory">Uses only my dyes</option><option value="star">Star / opaque</option><option value="champion">Champion / translucent</option><option value="glow">Glow</option></select>
   </div>
   <div id="referenceGrid" class="reference-grid"></div>
