@@ -9,6 +9,20 @@ if (!stringProto.replaceAll) {
     return this.split(search).join(typeof replacement === 'function' ? replacement(search) : replacement);
   };
 }
+if (!stringProto.matchAll) {
+  stringProto.matchAll = function (this: string, pattern: RegExp) {
+    if (!(pattern instanceof RegExp) || !pattern.global) throw new TypeError('matchAll must be called with a global RegExp');
+    const re = new RegExp(pattern.source, pattern.flags); re.lastIndex = pattern.lastIndex;
+    const results: RegExpExecArray[] = []; let match: RegExpExecArray | null;
+    while ((match = re.exec(this)) !== null) { results.push(match); if (match[0] === '') re.lastIndex++; }
+    return results[Symbol.iterator]();
+  };
+}
+if (!stringProto.at) {
+  Object.defineProperty(stringProto, 'at', { configurable: true, writable: true, value: function (this: string, index: number) {
+    const i = Math.trunc(index) || 0; const k = i < 0 ? this.length + i : i; return k < 0 || k >= this.length ? undefined : this.charAt(k);
+  } });
+}
 const arrayProto = Array.prototype as any;
 if (!arrayProto.at) {
   Object.defineProperty(arrayProto, 'at', { configurable: true, writable: true, value: function (this: any[], index: number) {
