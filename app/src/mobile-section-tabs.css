@@ -1,0 +1,9 @@
+/* Public small-screen navigation: sections stay visible as a tab row under the brand (labels only). */
+@media(max-width:840px){
+ .public-brand-shell .site-header{flex-wrap:wrap;row-gap:0;padding-bottom:0}
+ .public-brand-shell .mobile-menu-toggle{display:none}
+ .public-brand-shell .site-header nav.primary-nav{position:static;display:flex;flex:1 0 100%;flex-direction:row;align-items:stretch;gap:0;padding:0;margin:6px -12px 0;border:0;border-top:1px solid rgba(91,58,36,.16);border-radius:0;background:transparent;box-shadow:none}
+ .public-brand-shell .site-header nav.primary-nav a{flex:1 1 0;display:flex!important;align-items:center;justify-content:center;min-height:44px;padding:8px 6px!important;border-bottom:3px solid transparent;font-size:.9rem!important;font-weight:700;text-align:center;white-space:nowrap}
+ .public-brand-shell .site-header nav.primary-nav a:last-child{border-bottom:3px solid transparent}
+ .public-brand-shell .site-header nav.primary-nav a[aria-current=page]{background:transparent;box-shadow:none;border-bottom-color:var(--lr-clay,#9f5c36)}
+}
