@@ -1,0 +1,6 @@
+.location-prompt-backdrop{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(40,26,16,.45)}
+.location-prompt{width:min(340px,100%);padding:22px;border:1px solid rgba(91,58,36,.23);border-radius:12px;background:#fbf5ea;box-shadow:0 18px 46px rgba(58,38,24,.22)}
+.location-prompt h2{margin:0 0 16px;font-size:1.2rem;font-weight:700;color:var(--root)}
+.location-prompt-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.events-page .event-distance{display:block;margin-top:6px;font-weight:700;color:var(--clay)}
+.event-sort-switch{margin-top:-4px}
