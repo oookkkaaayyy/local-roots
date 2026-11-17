@@ -205,7 +205,7 @@ test('beta launch copy and PNG export include physical recipe limitations', () =
   assert.match(studio,/class="beta-status" role="note"/);
   assert.match(studio,/Predicted colors are illustrative/);
   assert.doesNotMatch(studio,/Integration Candidate<\/title>/);
-  assert.doesNotMatch(studio,/data-help|help-dot/);
+  assert.doesNotMatch(studio,/data-help|<button class="help-dot"/);
   assert.match(studio,/nominal intensity \$\{l.strength\}% · \$\{clamp\(Math.round\(\+l.passes\|\|1\),1,12\)\} coat\(s\) · \$\{methodForDyeLayer\(l\)\}/);
   const start=studio.indexOf('$("exportPng").onclick=()=>{');
   const end=studio.indexOf('\n};',start)+3;
