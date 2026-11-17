@@ -13,7 +13,7 @@ export function useFilterSheet() {
   const filtersDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const media = window.matchMedia('(max-width: 700px)');
-    const update = () => { setCompactViewport(media.matches); if (!media.matches && (filtersDialog.current ? isOpen(filtersDialog.current) : false)) { closeDialog(filtersDialog.current); setFiltersOpen(false); } };
+    const update = () => { setCompactViewport(media.matches); const open = filtersDialog.current; if (!media.matches && open && isOpen(open)) { closeDialog(open); setFiltersOpen(false); } };
     if (typeof media.addEventListener === 'function') {
       media.addEventListener('change', update);
       return () => media.removeEventListener('change', update);
