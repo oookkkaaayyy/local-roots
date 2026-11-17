@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#292119">
+<title>HBNF | Live Round and Season</title>
+<link rel="icon" href="/hbnf-favicon-32.png" type="image/png">
+<link rel="stylesheet" href="/hbnf-bone-ink-theme.css">
+<style>
+@font-face{font-family:Cabin;src:url('/fonts/cabin-latin-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Cabin;src:url('/fonts/cabin-latin-700.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{color-scheme:dark;--canvas:#292119;--panel:#352b20;--ink:#f4e9d6;--muted:#d9cebb;--accent:#b4c58f;--line:#6d7354}
+*{box-sizing:border-box}
+body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45 Cabin,Arial,sans-serif}
+.hbnf-live .wrap{max-width:1060px;margin:auto;padding:20px 18px 56px}
+.hbnf-live h1{font-size:clamp(1.4rem,4vw,2rem);margin:0}
+.hbnf-live .nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 20px}
+.hbnf-live .nav a{min-height:44px;display:inline-flex;align-items:center;padding:9px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);text-decoration:none;background:#3a3024;font-weight:700;font-size:.88rem}
+.hbnf-live .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 18px}
+.hbnf-live .tabs button{min-height:48px;border:1px solid var(--line);border-radius:9px;background:#3a3024;color:var(--ink);font:700 1rem Cabin,Arial,sans-serif;cursor:pointer}
+.hbnf-live .tabs button[aria-selected="true"]{background:#4b5038;border-color:var(--accent)}
+.hbnf-live button:focus-visible,.hbnf-live a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.hbnf-live [hidden]{display:none!important}
+.hbnf-live h2{font-size:1.45rem;margin:0}
+.hbnf-live h3{font-size:1.06rem;margin:0 0 12px}
+.hbnf-live .small{font-size:.81rem;color:var(--muted)}
+.hbnf-live .heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.hbnf-live .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.hbnf-live .metric,.hbnf-live .panel{border:1px solid #6d735499;border-radius:10px;background:var(--panel);padding:16px}
+.hbnf-live .metric small{display:block;color:var(--muted);font-size:.76rem}
+.hbnf-live .metric strong{display:block;font-size:1.35rem;margin-top:5px}
+.hbnf-live .panel{margin:14px 0 0;overflow-x:auto}
+.hbnf-live table{width:100%;border-collapse:collapse;min-width:420px;font-variant-numeric:tabular-nums}
+.hbnf-live th,.hbnf-live td{text-align:left;padding:12px 8px;border-bottom:1px solid #6d735477}
+.hbnf-live th{color:var(--accent);font-size:.77rem;text-transform:uppercase;letter-spacing:.04em}
+.hbnf-live tbody tr:last-child td{border-bottom:0}
+.hbnf-live td.n,.hbnf-live th.n{text-align:right}
+.hbnf-live .pos{font-weight:700;color:var(--accent)}
+.hbnf-live .ok{color:var(--accent);font-weight:700}
+.hbnf-live .warn{color:#e9d39b;font-weight:700}
+@media(max-width:600px){.hbnf-live .wrap{padding:14px 12px 36px}.hbnf-live .metrics{grid-template-columns:1fr 1fr}.hbnf-live .metrics .metric:last-child{grid-column:1/-1}.hbnf-live table{min-width:0;font-size:.8rem}.hbnf-live th,.hbnf-live td{padding:8px 4px}}
+</style>
+</head>
+<body class="hbnf-live">
+<main class="wrap">
+<h1>HB Night Flyers</h1>
+<nav class="nav" aria-label="HBNF sections"><a href="/glow.html">Glow Doubles</a><a href="/skins.html">Skins</a><a href="/hbnf-cart.html">Cart Control</a></nav>
+<div class="tabs" role="tablist" aria-label="Statistics">
+ <button type="button" id="tab-live" role="tab" aria-controls="pane-live" aria-selected="true" tabindex="0">Live Round</button>
+ <button type="button" id="tab-season" role="tab" aria-controls="pane-season" aria-selected="false" tabindex="-1">Season Stats</button>
+</div>
+<section id="pane-live" role="tabpanel" aria-labelledby="tab-live">
+ <div class="heading"><div><h2>Glow Doubles</h2><span class="small" id="liveWeek"></span></div></div>
+ <div class="metrics"><div class="metric"><small>Round</small><strong id="mRound">-</strong></div><div class="metric"><small>Teams</small><strong id="mTeams">-</strong></div><div class="metric"><small>Score age</small><strong id="mAge">-</strong></div></div>
+ <div class="panel"><h3>Teams</h3><table aria-label="Live standings"><thead><tr><th>Rank</th><th>Team</th><th class="n">Holes</th><th class="n">Strokes</th><th class="n">To par</th></tr></thead><tbody id="liveBody"></tbody></table></div>
+</section>
+<section id="pane-season" role="tabpanel" aria-labelledby="tab-season" hidden>
+ <div class="heading"><div><h2 id="seasonTitle">Season</h2><span class="small">Locked rounds only</span></div></div>
+ <div class="panel"><h3>Glow wins</h3><table aria-label="Season Glow wins"><thead><tr><th>Rank</th><th>Team</th><th class="n">Wins</th></tr></thead><tbody id="seasonBody"></tbody></table></div>
+</section>
+</main>
+<script>
+(function(){
+ 'use strict';
+ var CFG=window.APP_CONFIG||{};
+ var BASE='https://phcpbvuqibyarpfrftgx.supabase.co',KEY='sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC';
+ var ids=['live','season'];
+ function $(i){return document.getElementById(i)}
+ function select(v,focus){
+  if(ids.indexOf(v)<0)v='live';
+  ids.forEach(function(id){var c=id===v,t=$('tab-'+id);t.setAttribute('aria-selected',c?'true':'false');t.tabIndex=c?0:-1;$('pane-'+id).hidden=!c;if(c&&focus)t.focus()});
+ }
+ ids.forEach(function(id){var t=$('tab-'+id);
+  t.addEventListener('click',function(){location.hash=id;select(id,false)});
+  t.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();var n=ids[(ids.indexOf(id)+(e.key==='ArrowRight'?1:ids.length-1))%ids.length];location.hash=n;select(n,true)}});
+ });
+ window.addEventListener('hashchange',function(){select(location.hash==='#season'?'season':'live',false)});
+ select(location.hash==='#season'?'season':'live',false);
+ function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+ function played(p){return(p.scores||[]).filter(function(s){return s!==''&&s!=null&&!isNaN(Number(s))})}
+ function total(p){return played(p).reduce(function(a,s){return a+Number(s)},0)}
+ function rank(rows){var out=[],last=null,pos=0;rows.forEach(function(r,i){if(last===null||r.key!==last){pos=i+1;last=r.key}r.pos=pos;r.tie=rows.filter(function(x){return x.key===r.key}).length>1;out.push(r)});return out}
+ function par(week,p){
+  var rows=(((week||{}).udiscSync||{}).latest||{}).rows||[];
+  for(var i=0;i<rows.length;i++){var r=rows[i];if(r.sourceTeam&&p.name&&r.sourceTeam.replace(/\s+/g,' ').toLowerCase()===p.name.replace(/\s+/g,' ').toLowerCase()&&typeof r.relativeScore==='number')return r.relativeScore}
+  return null;
+ }
+ function fmt(n){return n===null?'-':(n>0?'+'+n:n<0?'−'+Math.abs(n):'E')}
+ function renderLive(root,updated){
+  var g=root.glow||{},wk=(g.weeks||{})[g.activeWeek]||{},players=(wk.players||[]).filter(function(p){return!p.removed});
+  $('liveWeek').textContent=g.activeWeek||'';
+  var rows=players.map(function(p){var h=played(p).length;return{p:p,h:h,s:total(p),key:h?String(total(p)):'x'}}).filter(function(r){return r.h>0});
+  rows.sort(function(a,b){return a.s-b.s});
+  rank(rows);
+  var done=rows.length&&rows.every(function(r){return r.h>=18});
+  $('mRound').textContent=wk.scoresLocked?'Final':rows.length?(done?'Complete':'Live'):'Waiting';
+  $('mRound').className=rows.length&&!wk.scoresLocked?'ok':'';
+  $('mTeams').textContent=String(players.length);
+  var age=Math.max(0,Math.round((Date.now()-Date.parse(updated))/1000));
+  $('mAge').textContent=Math.floor(age/60)+':'+String(age%60).padStart(2,'0');
+  $('mAge').className=age>300?'warn':'ok';
+  $('liveBody').innerHTML=rows.map(function(r){return'<tr><td class="pos">'+(r.tie?'T':'')+r.pos+'</td><td>'+esc(r.p.name)+'</td><td class="n">'+r.h+'/18</td><td class="n">'+r.s+'</td><td class="n">'+fmt(par(wk,r.p))+'</td></tr>'}).join('')||'<tr><td colspan="5">-</td></tr>';
+ }
+ function renderSeason(root){
+  var g=root.glow||{},wins={};
+  Object.keys(g.weeks||{}).forEach(function(k){var w=g.weeks[k];if(!w||!w.scoresLocked)return;
+   var ps=(w.players||[]).filter(function(p){return!p.removed&&played(p).length>=18});
+   if(!ps.length)return;var best=Math.min.apply(null,ps.map(total));
+   ps.filter(function(p){return total(p)===best}).forEach(function(p){wins[p.name]=(wins[p.name]||0)+1});
+  });
+  var rows=Object.keys(wins).map(function(n){return{n:n,w:wins[n],key:String(wins[n])}}).sort(function(a,b){return b.w-a.w});
+  rank(rows);
+  $('seasonTitle').textContent=(new Date().getFullYear())+' Season';
+  $('seasonBody').innerHTML=rows.map(function(r){return'<tr><td class="pos">'+(r.tie?'T':'')+r.pos+'</td><td>'+esc(r.n)+'</td><td class="n">'+r.w+'</td></tr>'}).join('')||'<tr><td colspan="3">-</td></tr>';
+ }
+ function load(){
+  fetch(BASE+'/rest/v1/league_state?select=state_json,updated_at&id=eq.1',{headers:{apikey:KEY,Authorization:'Bearer '+KEY},cache:'no-store'})
+   .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+   .then(function(a){if(!a||!a[0])throw new Error('empty');renderLive(a[0].state_json,a[0].updated_at);renderSeason(a[0].state_json)})
+   .catch(function(){$('mAge').textContent='Offline';$('mAge').className='warn'});
+ }
+ load();setInterval(load,20000);
+})();
+</script>
+</body>
+</html>
