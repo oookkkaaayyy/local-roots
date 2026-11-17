@@ -2,8 +2,9 @@
 // vinyl stencil masks. mask: Uint8Array, 1 = retained vinyl (white), 0 = cut away (black).
 // Pure functions, no dependencies. Not wired into any UI.
 export const DEFAULT_RULES = Object.freeze({
-  islandMinDiameterMm: 2.5,
-  islandMinAreaMm2: 6,
+  islandMinBboxMm: 2.0,
+  islandMinDiameterMm: 1.5,
+  islandMinAreaMm2: 3,
   whiteMinWidthMm: 1.0,
   blackMinWidthMm: 0.8,
   bridgeMaxGapMm: 1.6,
@@ -84,7 +85,7 @@ export function analyzeStencil(mask, w, h, mmPerPx, rules = {}) {
     const diameterMm = (2 * Math.sqrt(m) - 1) * mmPerPx;
     const areaMm2 = c.area * mmPerPx * mmPerPx;
     const bboxMm = [(c.x1 - c.x0 + 1) * mmPerPx, (c.y1 - c.y0 + 1) * mmPerPx];
-    const fails = diameterMm < R.islandMinDiameterMm || areaMm2 < R.islandMinAreaMm2;
+    const fails = diameterMm < R.islandMinDiameterMm || areaMm2 < R.islandMinAreaMm2 || bboxMm[0] < R.islandMinBboxMm || bboxMm[1] < R.islandMinBboxMm;
     return { id: c.id, diameterMm: +diameterMm.toFixed(3), areaMm2: +areaMm2.toFixed(3), bboxMm, fails };
   });
   const tw = thinRegion(mask, w, h, 1, R.whiteMinWidthMm, mmPerPx);
