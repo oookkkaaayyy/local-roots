@@ -12,4 +12,5 @@ import './accessibility.css';
 import './weather.css';
 import './lr-hbnf-integration.css';
 import './events-location.css';
+import './mobile-section-tabs.css';
 createRoot(document.getElementById('root')!).render(<StrictMode><ErrorBoundary><App /></ErrorBoundary></StrictMode>);
