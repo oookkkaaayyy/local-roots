@@ -17,8 +17,8 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
 .hbnf-live h1{font-size:clamp(1.4rem,4vw,2rem);margin:0}
 .hbnf-live .nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 20px}
 .hbnf-live .nav a{min-height:44px;display:inline-flex;align-items:center;padding:9px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);text-decoration:none;background:#3a3024;font-weight:700;font-size:.88rem}
-.hbnf-live .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 18px}
-.hbnf-live .tabs button{min-height:48px;border:1px solid var(--line);border-radius:9px;background:#3a3024;color:var(--ink);font:700 1rem Cabin,Arial,sans-serif;cursor:pointer}
+.hbnf-live .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 18px}
+.hbnf-live .tabs button{min-height:48px;border:1px solid var(--line);border-radius:9px;background:#3a3024;color:var(--ink);font:700 .95rem Cabin,Arial,sans-serif;cursor:pointer}
 .hbnf-live .tabs button[aria-selected="true"]{background:#4b5038;border-color:var(--accent)}
 .hbnf-live button:focus-visible,.hbnf-live a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .hbnf-live [hidden]{display:none!important}
@@ -39,7 +39,7 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
 .hbnf-live .pos{font-weight:700;color:var(--accent)}
 .hbnf-live .ok{color:var(--accent);font-weight:700}
 .hbnf-live .warn{color:#e9d39b;font-weight:700}
-@media(max-width:600px){.hbnf-live .wrap{padding:14px 12px 36px}.hbnf-live .metrics{grid-template-columns:1fr 1fr}.hbnf-live .metrics .metric:last-child{grid-column:1/-1}.hbnf-live table{min-width:0;font-size:.8rem}.hbnf-live th,.hbnf-live td{padding:8px 4px}}
+@media(max-width:600px){.hbnf-live .wrap{padding:14px 12px 36px}.hbnf-live .tabs{grid-template-columns:1fr 1fr}.hbnf-live .metrics{grid-template-columns:1fr 1fr}.hbnf-live .metrics .metric:last-child{grid-column:1/-1}.hbnf-live table{min-width:0;font-size:.8rem}.hbnf-live th,.hbnf-live td{padding:8px 4px}}
 </style>
 </head>
 <body class="hbnf-live">
@@ -48,6 +48,8 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
 <nav class="nav" aria-label="HBNF sections"><a href="/glow.html">Glow Doubles</a><a href="/skins.html">Skins</a><a href="/hbnf-cart.html">Cart Control</a></nav>
 <div class="tabs" role="tablist" aria-label="Statistics">
  <button type="button" id="tab-live" role="tab" aria-controls="pane-live" aria-selected="true" tabindex="0">Live Round</button>
+ <button type="button" id="tab-trophy" role="tab" aria-controls="pane-trophy" aria-selected="false" tabindex="-1">Trophy Race</button>
+ <button type="button" id="tab-awards" role="tab" aria-controls="pane-awards" aria-selected="false" tabindex="-1">Awards</button>
  <button type="button" id="tab-season" role="tab" aria-controls="pane-season" aria-selected="false" tabindex="-1">Season Stats</button>
 </div>
 <section id="pane-live" role="tabpanel" aria-labelledby="tab-live">
@@ -55,27 +57,37 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
  <div class="metrics"><div class="metric"><small>Round</small><strong id="mRound">-</strong></div><div class="metric"><small>Teams</small><strong id="mTeams">-</strong></div><div class="metric"><small>Score age</small><strong id="mAge">-</strong></div></div>
  <div class="panel"><h3>Teams</h3><table aria-label="Live standings"><thead><tr><th>Rank</th><th>Team</th><th class="n">Holes</th><th class="n">Strokes</th><th class="n">To par</th></tr></thead><tbody id="liveBody"></tbody></table></div>
 </section>
+<section id="pane-trophy" role="tabpanel" aria-labelledby="tab-trophy" hidden>
+ <div class="heading"><div><h2>Trophy Race</h2><span class="small" id="trophyRounds"></span></div></div>
+ <div class="panel"><table aria-label="Trophy Race"><thead><tr><th>Rank</th><th>Player</th><th class="n">Rounds</th><th class="n">To par</th><th class="n">Avg</th><th class="n">Gap</th><th class="n">Tonight</th></tr></thead><tbody id="trophyBody"></tbody></table></div>
+</section>
+<section id="pane-awards" role="tabpanel" aria-labelledby="tab-awards" hidden>
+ <div class="heading"><div><h2>Awards</h2></div></div>
+ <div class="panel"><table aria-label="Awards"><thead><tr><th>Award</th><th>Leader</th><th class="n">Value</th></tr></thead><tbody id="awardsBody"></tbody></table></div>
+ <div class="panel"><h3>Finals field</h3><table aria-label="Finals field"><thead><tr><th>Seed</th><th>Player</th><th class="n">To par</th></tr></thead><tbody id="finalsBody"></tbody></table></div>
+</section>
 <section id="pane-season" role="tabpanel" aria-labelledby="tab-season" hidden>
  <div class="heading"><div><h2 id="seasonTitle">Season</h2><span class="small">Locked rounds only</span></div></div>
  <div class="panel"><h3>Glow wins</h3><table aria-label="Season Glow wins"><thead><tr><th>Rank</th><th>Player</th><th class="n">Wins</th></tr></thead><tbody id="seasonBody"></tbody></table></div>
 </section>
-</main>
 <script>
 (function(){
  'use strict';
  var BASE='https://phcpbvuqibyarpfrftgx.supabase.co',KEY='sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC';
- var ids=['live','season'];
+ var FINALS=4,YEAR='2026';
+ var ids=['live','trophy','awards','season'];
  function $(i){return document.getElementById(i)}
  function select(v,focus){
   if(ids.indexOf(v)<0)v='live';
   ids.forEach(function(id){var c=id===v,t=$('tab-'+id);t.setAttribute('aria-selected',c?'true':'false');t.tabIndex=c?0:-1;$('pane-'+id).hidden=!c;if(c&&focus)t.focus()});
  }
+ function hv(){var h=location.hash.replace('#','');return ids.indexOf(h)>=0?h:'live'}
  ids.forEach(function(id){var t=$('tab-'+id);
   t.addEventListener('click',function(){location.hash=id;select(id,false)});
   t.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();var n=ids[(ids.indexOf(id)+(e.key==='ArrowRight'?1:ids.length-1))%ids.length];location.hash=n;select(n,true)}});
  });
- window.addEventListener('hashchange',function(){select(location.hash==='#season'?'season':'live',false)});
- select(location.hash==='#season'?'season':'live',false);
+ window.addEventListener('hashchange',function(){select(hv(),false)});
+ select(hv(),false);
  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
  function played(p){return(p.scores||[]).filter(function(s){return s!==''&&s!=null&&!isNaN(Number(s))})}
  function total(p){return played(p).reduce(function(a,s){return a+Number(s)},0)}
@@ -85,10 +97,43 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
   for(var i=0;i<rows.length;i++){var r=rows[i];if(r.sourceTeam&&p.name&&r.sourceTeam.replace(/\s+/g,' ').toLowerCase()===p.name.replace(/\s+/g,' ').toLowerCase()&&typeof r.relativeScore==='number')return r.relativeScore}
   return null;
  }
- function fmt(n){return n===null?'-':(n>0?'+'+n:n<0?'−'+Math.abs(n):'E')}
+ function fmt(n){return n===null||n===undefined?'-':(n>0?'+'+n:n<0?'−'+Math.abs(n):'E')}
  function members(p){
   var list=(p.partner1||p.partner2)?[p.partner1,p.partner2]:String(p.name||'').split(/\s*(?:\/|&|\band\b)\s*/i);
   return list.map(function(s){return String(s||'').trim()}).filter(Boolean);
+ }
+ function alias(g,n){var a=g.playerAliases||{};n=String(n||'').trim();return a[n]||a[n.toLowerCase()]||n}
+ function weekRel(w,p){
+  var hp=((w.scorecardText||{}).holePars)||{},rel=0,h=0;
+  (p.scores||[]).forEach(function(s,i){if(s===''||s==null||isNaN(Number(s)))return;var pr=Number(hp[i+1]);if(!pr||isNaN(pr))pr=3;rel+=Number(s)-pr;h++});
+  return{rel:rel,h:h};
+ }
+ function isTest(n){return /^test player/i.test(n)}
+ // Rules: every dated round (history, plus scored weeks not in history) credits each partner with the team to-par.
+ // Rank: lowest cumulative to par, then more rounds, then name. Live week is provisional until locked or 18 holes complete.
+ function build(g){
+  var hist=g.trophyHistory||{},weeks=g.weeks||{},del=g.deletedWeeks||{},rounds=[],live=null;
+  Object.keys(hist).forEach(function(d){if(d.indexOf(YEAR)!==0||del[d])return;
+   (hist[d]||[]).forEach(function(t){rounds.push({d:d,rel:Number(t.rel),raw:Number(t.raw),names:(t.partners||[]).map(function(n){return alias(g,n)})})})});
+  Object.keys(weeks).forEach(function(d){
+   if(d.indexOf(YEAR)!==0||hist[d]||del[d])return;
+   var w=weeks[d],ps=(w.players||[]).filter(function(p){return!p.removed&&played(p).length>0});
+   var isLive=d===g.activeWeek&&!w.scoresLocked;
+   ps.forEach(function(p){var r=weekRel(w,p);
+    var names=members(p).map(function(n){return alias(g,n)}).filter(function(n){return!isTest(n)});
+    if(!names.length)return;
+    if(isLive){if(!live)live={};names.forEach(function(n){live[n]=r.rel});if(r.h<18)return}
+    else if(r.h<18)return;
+    rounds.push({d:d,rel:r.rel,raw:total(p),names:names,prov:isLive});
+   });
+  });
+  var tp={};
+  rounds.forEach(function(r){r.names.forEach(function(n){if(isTest(n))return;var t=tp[n]||(tp[n]={n:n,r:0,rel:0});t.r++;t.rel+=r.rel})});
+  var rows=Object.keys(tp).map(function(n){return tp[n]}).sort(function(a,b){return a.rel-b.rel||b.r-a.r||a.n.localeCompare(b.n)});
+  rows.forEach(function(r){r.key=r.rel+'|'+r.r;r.live=live&&live[r.n]!==undefined?live[r.n]:null});
+  rank(rows);
+  var dates={};rounds.forEach(function(r){dates[r.d]=1});
+  return{rows:rows,rounds:rounds,dates:Object.keys(dates).sort(),live:live};
  }
  function renderLive(root,updated){
   var g=root.glow||{},wk=(g.weeks||{})[g.activeWeek]||{},players=(wk.players||[]).filter(function(p){return!p.removed});
@@ -103,7 +148,42 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
   var age=Math.max(0,Math.round((Date.now()-Date.parse(updated))/1000));
   $('mAge').textContent=Math.floor(age/60)+':'+String(age%60).padStart(2,'0');
   $('mAge').className=age>300?'warn':'ok';
-  $('liveBody').innerHTML=rows.map(function(r){return'<tr><td class="pos">'+(r.tie?'T':'')+r.pos+'</td><td>'+esc(r.p.name)+'</td><td class="n">'+r.h+'/18</td><td class="n">'+r.s+'</td><td class="n">'+fmt(par(wk,r.p))+'</td></tr>'}).join('')||'<tr><td colspan="5">-</td></tr>';
+  $('liveBody').innerHTML=rows.map(function(r){var pr=par(wk,r.p);if(pr===null)pr=weekRel(wk,r.p).rel;return'<tr><td class="pos">'+(r.tie?'T':'')+r.pos+'</td><td>'+esc(r.p.name)+'</td><td class="n">'+r.h+'/18</td><td class="n">'+r.s+'</td><td class="n">'+fmt(pr)+'</td></tr>'}).join('')||'<tr><td colspan="5">-</td></tr>';
+ }
+ function renderTrophy(b){
+  var lead=b.rows.length?b.rows[0].rel:0;
+  $('trophyRounds').textContent=b.dates.length+' rounds';
+  $('trophyBody').innerHTML=b.rows.map(function(r){
+   var avg=r.r?Math.round(r.rel/r.r*10)/10:0;
+   return'<tr><td class="pos">'+(r.tie?'T':'')+r.pos+'</td><td>'+esc(r.n)+'</td><td class="n">'+r.r+'</td><td class="n">'+fmt(r.rel)+'</td><td class="n">'+(avg>0?'+'+avg:avg<0?'−'+Math.abs(avg):'E')+'</td><td class="n">'+(r.rel-lead===0?'-':'+'+(r.rel-lead))+'</td><td class="n">'+fmt(r.live)+'</td></tr>'}).join('')||'<tr><td colspan="7">-</td></tr>';
+ }
+ function renderAwards(b){
+  var rows=b.rows,out=[];
+  function top(label,list,val){if(list.length)out.push('<tr><td>'+label+'</td><td>'+list.map(esc).join(', ')+'</td><td class="n">'+val+'</td></tr>')}
+  if(rows.length){
+   var lo=rows[0].rel;top('Trophy',rows.filter(function(r){return r.rel===lo}).map(function(r){return r.n}),fmt(lo));
+   if(rows[1]){var s=rows.filter(function(r){return r.rel===rows[1].rel&&r.rel>lo}).map(function(r){return r.n});top('Runner-up',s,fmt(rows[1].rel))}
+   var mx=Math.max.apply(null,rows.map(function(r){return r.r}));top('Most rounds',rows.filter(function(r){return r.r===mx}).map(function(r){return r.n}),mx);
+   var best=null;rows.forEach(function(r){if(best===null||r.rel/r.r<best)best=r.rel/r.r});
+   var bn=rows.filter(function(r){return r.r>=Math.ceil(mx/2)&&Math.abs(r.rel/r.r-best)<1e-9}).map(function(r){return r.n});
+   if(!bn.length){var m2=Math.min.apply(null,rows.filter(function(r){return r.r>=Math.ceil(mx/2)}).map(function(r){return r.rel/r.r}));bn=rows.filter(function(r){return r.r>=Math.ceil(mx/2)&&Math.abs(r.rel/r.r-m2)<1e-9}).map(function(r){return r.n});best=m2}
+   top('Best average',bn,(Math.round(best*10)/10));
+  }
+  var wins={},byDate={};
+  b.rounds.forEach(function(r){if(r.prov)return;var c=byDate[r.d];if(c===undefined||r.rel<c)byDate[r.d]=r.rel});
+  b.rounds.forEach(function(r){if(!r.prov&&byDate[r.d]===r.rel)r.names.forEach(function(n){wins[n]=(wins[n]||0)+1})});
+  var wm=0;Object.keys(wins).forEach(function(n){if(wins[n]>wm)wm=wins[n]});
+  top('Round wins',Object.keys(wins).filter(function(n){return wins[n]===wm}).sort(),wm);
+  var br=null;b.rounds.forEach(function(r){if(!r.prov&&(br===null||r.rel<br.rel))br=r});
+  if(br)top('Best round',[br.names.join(' / ')],fmt(br.rel)+' '+br.d);
+  var aces={};var g=window.__g||{};
+  Object.keys(g.weeks||{}).forEach(function(d){var w=g.weeks[d];if(d.indexOf(YEAR)!==0||!w)return;
+   var l=[];if(w.aceWinner)l.push(w.aceWinner);if(Array.isArray(w.aceWinners))w.aceWinners.forEach(function(x){l.push(typeof x==='string'?x:(x&&x.name)||'')});
+   l.filter(Boolean).forEach(function(n){n=alias(g,n);aces[n]=(aces[n]||0)+1})});
+  var am=0;Object.keys(aces).forEach(function(n){if(aces[n]>am)am=aces[n]});
+  top('Aces',Object.keys(aces).filter(function(n){return aces[n]===am}).sort(),am);
+  $('awardsBody').innerHTML=out.join('')||'<tr><td colspan="3">-</td></tr>';
+  $('finalsBody').innerHTML=rows.slice(0,FINALS).map(function(r,i){return'<tr><td class="pos">'+(i+1)+'</td><td>'+esc(r.n)+'</td><td class="n">'+fmt(r.rel)+'</td></tr>'}).join('')||'<tr><td colspan="3">-</td></tr>';
  }
  function renderSeason(root){
   var g=root.glow||{},wins={};
@@ -120,11 +200,12 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
  function load(){
   fetch(BASE+'/rest/v1/league_state?select=state_json,updated_at&id=eq.1',{headers:{apikey:KEY,Authorization:'Bearer '+KEY},cache:'no-store'})
    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
-   .then(function(a){if(!a||!a[0])throw new Error('empty');renderLive(a[0].state_json,a[0].updated_at);renderSeason(a[0].state_json)})
+   .then(function(a){if(!a||!a[0])throw new Error('empty');var s=a[0].state_json;window.__g=s.glow||{};var b=build(window.__g);renderLive(s,a[0].updated_at);renderTrophy(b);renderAwards(b);renderSeason(s)})
    .catch(function(){$('mAge').textContent='Offline';$('mAge').className='warn'});
  }
  load();setInterval(load,20000);
 })();
 </script>
+</main>
 </body>
 </html>
