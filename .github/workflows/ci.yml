@@ -67,7 +67,7 @@ jobs:
 
       - name: Run web app unit tests (distance sort, stencil constraints)
         working-directory: app
-        run: node --test tests/event-distance.test.mjs tests/du-stencil-constraints.test.mjs tests/png-mask.test.mjs
+        run: node --test tests/event-distance.test.mjs tests/du-stencil-constraints.test.mjs tests/png-mask.test.mjs tests/du-stencil-compiler.test.mjs tests/du-cut-sheet.test.mjs
 
       - name: Build web app
         working-directory: app

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import JSZip from 'jszip';
 import { callFunction } from '../lib/supabase';
 import { buildDuGenerationPrompt, DU_GENERATION_PROMPT_VERSION } from '../lib/duGenerationPrompt';
+import { compileMasterImage, svgFromStencilPng, type CompiledStencil } from '../lib/duStencilBrowser';
 
 type Credential = {kind:'session'|'device';value:string};
 type SourcePhoto = {id:string;original_filename:string|null;sort_order:number;signed_url:string|null};
@@ -76,6 +77,7 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
   const [candidateFile,setCandidateFile]=useState<File|null>(null),[correctionFile,setCorrectionFile]=useState<File|null>(null);
   const [productionFile,setProductionFile]=useState<File|null>(null),[validatorFile,setValidatorFile]=useState<File|null>(null);
   const [validatorPassed,setValidatorPassed]=useState(false),[validatorReport,setValidatorReport]=useState<any>(null);
+  const [compiled,setCompiled]=useState<CompiledStencil|null>(null),[compiling,setCompiling]=useState(false),[changesAccepted,setChangesAccepted]=useState(false);
   const invoke=async(action:string,data:Record<string,unknown>={})=>callFunction<WorkflowState>('du-admin',{action,job_id:jobId,...data},authFor(credential));
   const canonicalPrompt=buildDuGenerationPrompt({jobNumber,sourceCount:photos.length,notes});
   const refresh=async()=>setState(await invoke('generation_state'));
@@ -100,6 +102,28 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
     finally{setBusy(false);}
   }
 
+  async function compileMaster(){
+    if(!state.final_master?.signed_url)return;
+    setCompiling(true);setCompiled(null);setChangesAccepted(false);setMessage('Compiling the final master for cutting…');
+    try{
+      const response=await fetch(state.final_master.signed_url);
+      if(!response.ok)throw new Error('The final master could not be downloaded. Refresh and try again.');
+      const result=await compileMasterImage(await response.blob(),jobNumber);
+      setCompiled(result);setMessage(`Compile finished: ${result.result.verdict}.`);
+    }catch(error){setMessage(error instanceof Error?error.message:'Compile failed.');}
+    finally{setCompiling(false);}
+  }
+  async function recordCompiled(){
+    if(!compiled||compiled.result.verdict!=='PASS')return;
+    await run(async()=>{const image=await readFile(new File([compiled.png],'compiled-stencil.png',{type:'image/png'}));await invoke('generation_upload_production',{image_data_url:image,original_filename:'compiled-stencil.png',validator_passed:true,validator_report:compiled.report});setCompiled(null);},'Compiled stencil and passing report recorded.');
+  }
+  function downloadText(text:string,name:string,type:string){
+    const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  async function downloadRecordedSvg(){
+    try{const response=await fetch(state.production_run.output_url);if(!response.ok)throw new Error('Recorded output could not be downloaded.');downloadText(await svgFromStencilPng(await response.blob()),`${jobNumber}-cut.svg`,'image/svg+xml');}
+    catch(error){setMessage(error instanceof Error?error.message:'Could not build the cut file.');}
+  }
   async function uploadCandidate(){
     if(!candidateFile)return;
     const active=state.attempts.find(item=>item.status==='ready');
@@ -191,7 +215,22 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
       </div>:null}
       {state.selection&&!state.final_master?<button className="button primary" type="button" disabled={busy} onClick={()=>void run(()=>invoke('generation_finalize_master',{master_kind:'attempt'}),'Selected visual master locked for productionization.')}>Lock selected image as final visual master</button>:null}
       {state.final_master?<div className="du-generation-production"><h5>Final visual master</h5><p>{state.final_master.master_kind} · SHA-256 {state.final_master.master_sha256}</p><button className="button ghost" type="button" onClick={()=>{const mime=state.final_master.master_kind==='correction'?state.correction?.corrected_metadata?.mime:selectedAttempt?.candidate_metadata?.mime;void downloadPrivate(state.final_master.signed_url,`final-visual-master.${imageExtension(mime)}`).catch(error=>setMessage(error.message));}}>Download final visual master</button>
-        {!state.production_run?<><p>Run the existing generalized productionizer and unchanged physical validator locally at 190.5 mm. Then attach the productionized PNG and the exact validator JSON report.</p><label className="button ghost">Productionized PNG<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={event=>setProductionFile(event.target.files?.[0]||null)}/></label><input type="file" accept="application/json,.json" aria-label="Passing validator report JSON" disabled={busy} onChange={event=>void chooseValidatorReport(event.target.files?.[0]||null)}/>{validatorFile?<small>{validatorFile.name} · {validatorPassed?'PASS at 190.5 mm':'does not pass'}</small>:null}<button className="button primary" type="button" disabled={busy||!productionFile||!validatorPassed} onClick={()=>void uploadProduction()}>Record productionized output and validator PASS</button></>:<><p>Physical validator: PASS · artwork width 190.5 mm</p><a href={state.production_run.output_url} target="_blank" rel="noreferrer">View private productionized output</a></>}
+        {!state.production_run?<>
+          <div className="du-compile">
+            <button className="button primary" type="button" disabled={busy||compiling} onClick={()=>void compileMaster()}>{compiling?'Compiling…':'Compile for cutting'}</button>
+            {compiled?<div className="du-compile-result">
+              <strong>{compiled.result.verdict}</strong>
+              <span>Change: {compiled.result.fidelity.level} · vinyl removed {compiled.result.fidelity.vinylRemovedMm2} mm² · added {compiled.result.fidelity.vinylAddedMm2} mm² · largest {compiled.result.fidelity.largestChangeMm2} mm² · bridges {compiled.result.bridges.filter((item:any)=>item.action==='bridged').length}</span>
+              <div className="du-compile-views"><figure><img src={compiled.beforeUrl} alt="Input stencil"/><figcaption>Input</figcaption></figure><figure><img src={compiled.afterUrl} alt="Compiled stencil"/><figcaption>Compiled</figcaption></figure><figure><img src={compiled.changeUrl} alt="Changes: red vinyl removed, blue vinyl added"/><figcaption>Changes · red removed · blue added</figcaption></figure></div>
+              <div className="button-row">
+                <button className="button ghost" type="button" onClick={()=>downloadText(compiled.svg,`${jobNumber}-cut.svg`,'image/svg+xml')}>Download cut SVG</button>
+                <a className="button ghost" href={compiled.afterUrl} download={`${jobNumber}-compiled.png`}>Download compiled PNG</a>
+              </div>
+              {compiled.result.verdict==='PASS'&&compiled.result.fidelity.level==='review'?<label><input type="checkbox" checked={changesAccepted} onChange={event=>setChangesAccepted(event.target.checked)}/> I compared Input and Compiled and accept the changes</label>:null}
+              {compiled.result.verdict==='PASS'?<button className="button primary" type="button" disabled={busy||(compiled.result.fidelity.level==='review'&&!changesAccepted)} onClick={()=>void recordCompiled()}>Record compiled stencil</button>:<p>Not recorded. Regenerate with fewer fine hairlines, thin strands and tiny floating pieces.</p>}
+            </div>:null}
+          </div>
+          <details><summary>Record output made with the Swift tools</summary><p>Run the existing generalized productionizer and unchanged physical validator locally at 190.5 mm. Then attach the productionized PNG and the exact validator JSON report.</p><label className="button ghost">Productionized PNG<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={event=>setProductionFile(event.target.files?.[0]||null)}/></label><input type="file" accept="application/json,.json" aria-label="Passing validator report JSON" disabled={busy} onChange={event=>void chooseValidatorReport(event.target.files?.[0]||null)}/>{validatorFile?<small>{validatorFile.name} · {validatorPassed?'PASS at 190.5 mm':'does not pass'}</small>:null}<button className="button primary" type="button" disabled={busy||!productionFile||!validatorPassed} onClick={()=>void uploadProduction()}>Record productionized output and validator PASS</button></details></>:<><p>Physical validator: PASS · artwork width 190.5 mm</p><a href={state.production_run.output_url} target="_blank" rel="noreferrer">View private productionized output</a><button className="button ghost" type="button" onClick={()=>void downloadRecordedSvg()}>Download cut SVG</button></>}
       </div>:null}
     </>}
     {message?<div className={message.toLowerCase().includes('failed')?'notice error':'notice'} role="status">{message}</div>:null}

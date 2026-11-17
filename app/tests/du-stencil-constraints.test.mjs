@@ -8,11 +8,11 @@ const disc = (m, cx, cy, r, v) => { for (let y = 0; y < H; y++) for (let x = 0; 
 
 test('large island passes, tiny island fails on inscribed diameter', () => {
   const m = blank(1); disc(m, 30, 30, 18, 0); disc(m, 30, 30, 14, 1);
-  disc(m, 85, 85, 12, 0); disc(m, 85, 85, 4, 1);
+  disc(m, 85, 85, 12, 0); disc(m, 85, 85, 3, 1);
   const a = analyzeStencil(m, W, H, MM);
   assert.equal(a.islands.length, 2);
   assert.equal(a.failingIslands, 1);
-  assert.ok(a.islands.find((i) => i.fails).diameterMm < 2.5);
+  assert.ok(a.islands.find((i) => i.fails).diameterMm < 2.0);
 });
 
 test('thin diagonal sliver passes a bounding-box rule but fails the width rule', () => {
@@ -25,7 +25,7 @@ test('thin diagonal sliver passes a bounding-box rule but fails the width rule',
 });
 
 test('failing island is bridged when vinyl is within the gap limit', () => {
-  const m = blank(1); disc(m, 60, 60, 12, 0); disc(m, 60, 60, 4, 1);
+  const m = blank(1); disc(m, 60, 60, 12, 0); disc(m, 60, 60, 3, 1);
   const r = repairIslands(m, W, H, MM, { bridgeMaxGapMm: 2.5 });
   assert.equal(r.before.failingIslands, 1);
   assert.equal(r.after.failingIslands, 0);
@@ -34,7 +34,7 @@ test('failing island is bridged when vinyl is within the gap limit', () => {
 });
 
 test('failing island with no nearby vinyl is removed, never left floating', () => {
-  const m = blank(0); disc(m, 60, 60, 4, 1);
+  const m = blank(0); disc(m, 60, 60, 3, 1);
   const r = repairIslands(m, W, H, MM);
   assert.equal(r.log[0].action, 'removed');
   assert.equal(r.after.islands.length, 0);
