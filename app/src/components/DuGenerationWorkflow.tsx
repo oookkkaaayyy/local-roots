@@ -163,6 +163,7 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
   }
 
   const active=state.attempts.find(item=>item.status==='ready');
+  const sourcePhoto=state.package?.source_manifest?.sources?.find((source:any)=>source.role==='composition');
   const selectedAttempt=state.attempts.find(item=>item.id===state.selection?.attempt_id);
   const promptText=state.package?.locked_prompt||'';
   return <section className="du-generation-workflow" aria-label="Generation attempts and review">
@@ -189,7 +190,7 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
       <div className="du-generation-attempts"><h5>Independent attempts</h5><div className="du-generation-candidates">
         {state.attempts.map((attempt:any)=><article className="du-generation-candidate" key={attempt.id}>
           <h6>Attempt {String.fromCharCode(64+attempt.attempt_number)} <span className="status-pill">{attempt.status}</span></h6>
-          {attempt.candidate_url?<img src={attempt.candidate_url} alt={`Candidate from attempt ${attempt.attempt_number}`} loading="lazy"/>:<p>No candidate uploaded.</p>}
+          {attempt.candidate_url?<div className="du-compare">{sourcePhoto?.signed_url?<figure><img src={sourcePhoto.signed_url} alt="Original source photo" loading="lazy"/><figcaption>Original</figcaption></figure>:null}<figure><img src={attempt.candidate_url} alt={`Candidate from attempt ${attempt.attempt_number}`} loading="lazy"/><figcaption>Candidate</figcaption></figure></div>:<p>No candidate uploaded.</p>}
           {attempt.candidate_sha256?<small>SHA-256 {attempt.candidate_sha256}</small>:null}
           {attempt.failure_note?<p><strong>Outcome note:</strong> {attempt.failure_note}</p>:null}
           {attempt.status==='ready'?<><p>Use the original package above in a fresh chat, then attach that chat’s result here.</p><label className="button ghost">Attach candidate<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={event=>setCandidateFile(event.target.files?.[0]||null)}/></label><button className="button primary" type="button" disabled={busy||!candidateFile} onClick={()=>void uploadCandidate()}>{candidateFile?'Upload '+candidateFile.name:'Choose generated candidate'}</button><label>Failure note if this attempt cannot produce a candidate<textarea value={outcomeNote} onChange={event=>setOutcomeNote(event.target.value)} rows={2} maxLength={1000} placeholder="Record a short, non-identifying reason."/></label><button className="button ghost" type="button" disabled={busy||outcomeNote.trim().length<5} onClick={()=>void run(async()=>{await invoke('generation_mark_attempt',{attempt_id:attempt.id,status:'failed',failure_note:outcomeNote.trim()});setOutcomeNote('');},'Attempt marked failed. Original package remains unchanged.')}>Mark attempt failed</button></>:null}
@@ -221,7 +222,7 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
             {compiled?<div className="du-compile-result">
               <strong>{compiled.result.verdict}</strong>
               <span>Change: {compiled.result.fidelity.level} · vinyl removed {compiled.result.fidelity.vinylRemovedMm2} mm² · added {compiled.result.fidelity.vinylAddedMm2} mm² · largest {compiled.result.fidelity.largestChangeMm2} mm² · bridges {compiled.result.bridges.filter((item:any)=>item.action==='bridged').length}</span>
-              <div className="du-compile-views"><figure><img src={compiled.beforeUrl} alt="Input stencil"/><figcaption>Input</figcaption></figure><figure><img src={compiled.afterUrl} alt="Compiled stencil"/><figcaption>Compiled</figcaption></figure><figure><img src={compiled.changeUrl} alt="Changes: red vinyl removed, blue vinyl added"/><figcaption>Changes · red removed · blue added</figcaption></figure></div>
+              <div className="du-compile-views">{sourcePhoto?.signed_url?<figure><img src={sourcePhoto.signed_url} alt="Original source photo"/><figcaption>Original</figcaption></figure>:null}<figure><img src={compiled.beforeUrl} alt="Input stencil"/><figcaption>Input</figcaption></figure><figure><img src={compiled.afterUrl} alt="Compiled stencil"/><figcaption>Compiled</figcaption></figure><figure><img src={compiled.changeUrl} alt="Changes: red vinyl removed, blue vinyl added"/><figcaption>Changes · red removed · blue added</figcaption></figure></div>
               <div className="button-row">
                 <button className="button ghost" type="button" onClick={()=>downloadText(compiled.svg,`${jobNumber}-cut.svg`,'image/svg+xml')}>Download cut SVG</button>
                 <a className="button ghost" href={compiled.afterUrl} download={`${jobNumber}-compiled.png`}>Download compiled PNG</a>
