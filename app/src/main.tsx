@@ -11,4 +11,5 @@ import './share-ready-polish.css';
 import './accessibility.css';
 import './weather.css';
 import './lr-hbnf-integration.css';
+import './events-location.css';
 createRoot(document.getElementById('root')!).render(<StrictMode><ErrorBoundary><App /></ErrorBoundary></StrictMode>);
