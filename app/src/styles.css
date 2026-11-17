@@ -177,3 +177,5 @@
   .public-brand-shell .site-header nav a{font-size:.84rem}
   .public-brand-shell .branch-actions .button{font-size:.9rem}
 }
+
+dialog:not([open]){display:none}
