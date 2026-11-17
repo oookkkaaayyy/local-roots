@@ -11,7 +11,8 @@
     "check:du-handoff": "node scripts/check-du-handoff.mjs",
     "test:studio": "node --test tests/dye-studio.integration.test.mjs tests/dye-studio.model.test.mjs tests/dye-studio.evidence.test.mjs && node scripts/check-hbnf-integration.mjs",
     "test:weather": "node --test tests/weather*.test.mjs",
-    "test:brand": "node --test tests/brand-identity-assets.test.mjs"
+    "test:brand": "node --test tests/brand-identity-assets.test.mjs",
+    "test:stencil": "node --test tests/du-stencil-constraints.test.mjs tests/png-mask.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",

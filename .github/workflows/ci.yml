@@ -65,6 +65,10 @@ jobs:
         working-directory: app
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: Run web app unit tests (distance sort, stencil constraints)
+        working-directory: app
+        run: node --test tests/event-distance.test.mjs tests/du-stencil-constraints.test.mjs tests/png-mask.test.mjs
+
       - name: Build web app
         working-directory: app
         run: npm run build
