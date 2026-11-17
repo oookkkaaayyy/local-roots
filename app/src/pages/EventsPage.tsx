@@ -1,6 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { callFunction, supabase } from '../lib/supabase';
 import { downloadEventCalendar, eventDateRange, eventDetailPath, eventTitle, HBNF_EVENT_LINKS, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
+import { buildCourseIndex, compareByDistance, distanceMilesTo } from '../lib/eventDistance.js';
+import type { LatLon } from '../lib/eventDistance.js';
+import courseData from '../data/weather-courses.json';
 import { Shell } from '../components/Shell';
 import { useFilterSheet } from '../lib/useFilterSheet';
 import type { PublicEvent } from '../types';
@@ -14,6 +17,7 @@ const EVENT_TYPES = [
 
 type EventView = 'upcoming' | 'results';
 type ResultsFilter = 'all' | 'local' | 'official';
+type SortMode = 'date' | 'distance';
 type EventFilters = {
   view: EventView;
   query: string;
@@ -24,6 +28,7 @@ type EventFilters = {
   results: ResultsFilter;
 };
 
+const courseIndex = buildCourseIndex(courseData as Parameters<typeof buildCourseIndex>[0]);
 const monthKey = (v: string) => v.slice(0,7);
 function monthLabel(key: string) {
   const [y,m] = key.split('-').map(Number);
@@ -53,7 +58,7 @@ function currentEventsPath(){
   return `${window.location.pathname}${window.location.search}`;
 }
 
-function EventCard({event,today}:{event:PublicEvent;today:string}) {
+function EventCard({event,today,distance}:{event:PublicEvent;today:string;distance?:number|null}) {
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
   const effectiveStatus = ['canceled','completed'].includes(event.status) ? event.status : event.end_date<today ? 'completed' : event.status;
   const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed'].includes(effectiveStatus));
@@ -64,7 +69,7 @@ function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const hbnfEvent=isHbnfEvent(event);
   const canShowOfficialInfo=Boolean(event.official_url&&!hbnfEvent&&event.official_url!==event.registration_url&&event.official_url!==event.results_url);
   return <article className={`event-card ${effectiveStatus==='canceled'?'is-canceled':''}`}>
-    <div className="event-date-block"><strong>{eventDateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span></div>
+    <div className="event-date-block"><strong>{eventDateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span>{distance!=null?<span className="event-distance">{distance<10?distance.toFixed(1):Math.round(distance)} mi</span>:null}</div>
     <div className="event-main">
       <div className="event-heading-row"><div><h3><a className="event-title-link" href={detailHref}>{event.name}</a></h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span></div>
       <div className="event-tags"><span>{eventTitle(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
@@ -111,6 +116,7 @@ export function EventsPage({landing=false}:{landing?:boolean}={}){
   const initialFilters=useMemo(()=>readEventFilters(),[]);
   const [events,setEvents]=useState<PublicEvent[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(false);
   const [view,setView]=useState<EventView>(initialFilters.view),[query,setQuery]=useState(initialFilters.query),[county,setCounty]=useState(initialFilters.county),[sanction,setSanction]=useState(initialFilters.sanction),[eventType,setEventType]=useState(initialFilters.eventType),[month,setMonth]=useState(initialFilters.month),[resultsFilter,setResultsFilter]=useState<ResultsFilter>(initialFilters.results);
+  const [sortMode,setSortMode]=useState<SortMode>('date'),[origin,setOrigin]=useState<LatLon|null>(null),[locPrompt,setLocPrompt]=useState(false),[locBusy,setLocBusy]=useState(false),[locFailed,setLocFailed]=useState(false);
   const {compactViewport,filtersOpen,setFiltersOpen,filtersDialog,openFilters,closeFilters}=useFilterSheet();
   useEffect(()=>{supabase!.rpc('lr_public_events').then(({data,error})=>{if(error)setError(true);else setEvents((data??[]) as PublicEvent[]);setLoading(false);});},[]);
   const today=pacificToday();
@@ -131,6 +137,12 @@ export function EventsPage({landing=false}:{landing?:boolean}={}){
     const next=`${window.location.pathname}${search?`?${search}`:''}${window.location.hash}`;
     window.history.replaceState(null,'',next);
   },[view,query,county,sanction,eventType,month,resultsFilter]);
+  const distances=useMemo(()=>{
+    const map=new Map<string,number|null>();
+    if(origin)for(const e of events)map.set(e.id,distanceMilesTo(origin,e,courseIndex));
+    return map;
+  },[origin,events]);
+  const byDistance=sortMode==='distance'&&origin!==null;
   const filtered=useMemo(()=>{
     const needle=query.trim().toLowerCase();
     return viewEvents.filter(e=>{
@@ -138,14 +150,31 @@ export function EventsPage({landing=false}:{landing?:boolean}={}){
       if(resultsFilter==='local'&&!e.top_results?.length)return false;if(resultsFilter==='official'&&!e.results_url)return false;
       if(needle){const haystack=[e.name,e.city,e.course_name,e.venue_name,e.club_host,...(e.td_names??[])].filter(Boolean).join(' ').toLowerCase();if(!haystack.includes(needle))return false;}
       return true;
-    }).sort((a,b)=>view==='results'?(b.end_date.localeCompare(a.end_date)||a.name.localeCompare(b.name)):(a.start_date.localeCompare(b.start_date)||a.name.localeCompare(b.name)));
-  },[viewEvents,view,query,county,sanction,eventType,month,resultsFilter]);
+    }).sort((a,b)=>byDistance?compareByDistance(distances,a,b):view==='results'?(b.end_date.localeCompare(a.end_date)||a.name.localeCompare(b.name)):(a.start_date.localeCompare(b.start_date)||a.name.localeCompare(b.name)));
+  },[viewEvents,view,query,county,sanction,eventType,month,resultsFilter,byDistance,distances]);
+  function chooseSort(mode:SortMode){
+    setLocFailed(false);
+    if(mode==='date'){setSortMode('date');return;}
+    if(origin){setSortMode('distance');return;}
+    setLocPrompt(true);
+  }
+  function allowLocation(){
+    if(typeof navigator==='undefined'||!navigator.geolocation){setLocPrompt(false);setLocFailed(true);return;}
+    setLocBusy(true);
+    navigator.geolocation.getCurrentPosition(
+      pos=>{setOrigin([pos.coords.latitude,pos.coords.longitude]);setSortMode('distance');setLocBusy(false);setLocPrompt(false);},
+      ()=>{setLocBusy(false);setLocPrompt(false);setLocFailed(true);setSortMode('date');},
+      {enableHighAccuracy:false,timeout:10000,maximumAge:600000},
+    );
+  }
+  function declineLocation(){setLocPrompt(false);setSortMode('date');}
   const viewTitle=view==='results'?'Past events & results':'Upcoming events';
   const hasActiveFilters=Boolean(query.trim()||county!=='all'||sanction!=='all'||eventType!=='all'||month!=='all'||resultsFilter!=='all');
   const activeFilterCount=[query.trim(),county!=='all',sanction!=='all',eventType!=='all',month!=='all',resultsFilter!=='all'].filter(Boolean).length;
   function clearFilters(){setQuery('');setCounty('all');setSanction('all');setEventType('all');setMonth('all');setResultsFilter('all');}
   return <Shell><main className={`events-page ${landing?'events-landing':''}`}><h1 className="sr-only">Southern California Disc Golf Events</h1>
-    <section className="events-layout content"><dialog ref={filtersDialog} id="event-filters" className="filters-dialog" open={!compactViewport} aria-labelledby="filters-title" onCancel={()=>setFiltersOpen(false)} onClose={()=>setFiltersOpen(false)} onClick={event=>{if(event.target===event.currentTarget)closeFilters();}}><div className="filters" role="group" aria-label="Event filters"><div className="filters-sheet-heading"><h2 id="filters-title">Filters &amp; sort</h2><button type="button" className="filters-close" data-filter-close onClick={closeFilters} aria-label="Close filters and sort">Close</button></div><div className="event-view-switch" role="group" aria-label="Event view"><button type="button" className={`button ${view==='upcoming'?'primary':'ghost'}`} aria-pressed={view==='upcoming'} onClick={()=>setView('upcoming')}>Upcoming</button><button type="button" className={`button ${view==='results'?'primary':'ghost'}`} aria-pressed={view==='results'} onClick={()=>setView('results')}>Results</button></div><label>Month<select value={month} onChange={e=>setMonth(e.target.value)}><option value="all">All months</option>{months.map(m=><option key={m} value={m}>{monthLabel(m)}</option>)}</select></label><label>County<select value={county} onChange={e=>setCounty(e.target.value)}><option value="all">All six counties</option>{COUNTIES.map(c=><option key={c}>{c}</option>)}</select></label><label>Sanction<select value={sanction} onChange={e=>setSanction(e.target.value)}><option value="all">All</option><option value="yes">Sanctioned</option><option value="no">Unsanctioned</option></select></label><label>Type<select value={eventType} onChange={e=>setEventType(e.target.value)}><option value="all">All types</option>{EVENT_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label>Results<select value={resultsFilter} onChange={e=>setResultsFilter(e.target.value as ResultsFilter)}><option value="all">All</option><option value="local">On Local Roots</option><option value="official">Official link</option></select></label>{hasActiveFilters?<button type="button" className="clear-filters" onClick={clearFilters}>Clear filters</button>:null}</div></dialog>
-    <div className="event-list" data-status-policy="date-aware-v1" aria-busy={loading}><div className="list-header"><h2>{viewTitle}</h2><span aria-live="polite" aria-atomic="true">{filtered.length} shown · {viewEvents.length} {view==='upcoming'?'upcoming':'past'}</span><button type="button" className="filters-trigger" aria-haspopup="dialog" aria-controls="event-filters" aria-expanded={filtersOpen} aria-label={activeFilterCount?'Filters & sort, active filters':'Filters & sort'} onClick={openFilters}><span>Filters &amp; sort</span>{activeFilterCount?<span className="filter-count" aria-hidden="true">{activeFilterCount}</span>:null}</button></div><label className="page-search"><span className="sr-only">Search events</span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search event, course, city, host" aria-label="Search events"/></label>{loading?<div className="empty-state" role="status" aria-live="polite">Loading events…</div>:null}{error?<div className="notice error" role="alert">Could not load events.</div>:null}{!loading&&!error&&!filtered.length?<div className="empty-state" role="status"><strong>No matching events.</strong><span>Change or clear the filters.</span></div>:null}{filtered.map(e=><EventCard key={e.id} event={e} today={today}/>)}</div></section>
+    <section className="events-layout content"><dialog ref={filtersDialog} id="event-filters" className="filters-dialog" open={!compactViewport} aria-labelledby="filters-title" onCancel={()=>setFiltersOpen(false)} onClose={()=>setFiltersOpen(false)} onClick={event=>{if(event.target===event.currentTarget)closeFilters();}}><div className="filters" role="group" aria-label="Event filters"><div className="filters-sheet-heading"><h2 id="filters-title">Filters &amp; sort</h2><button type="button" className="filters-close" data-filter-close onClick={closeFilters} aria-label="Close filters and sort">Close</button></div><div className="event-view-switch" role="group" aria-label="Event view"><button type="button" className={`button ${view==='upcoming'?'primary':'ghost'}`} aria-pressed={view==='upcoming'} onClick={()=>setView('upcoming')}>Upcoming</button><button type="button" className={`button ${view==='results'?'primary':'ghost'}`} aria-pressed={view==='results'} onClick={()=>setView('results')}>Results</button></div><div className="event-view-switch event-sort-switch" role="group" aria-label="Sort"><button type="button" className={`button ${!byDistance?'primary':'ghost'}`} aria-pressed={!byDistance} onClick={()=>chooseSort('date')}>Date</button><button type="button" className={`button ${byDistance?'primary':'ghost'}`} aria-pressed={byDistance} onClick={()=>chooseSort('distance')}>Distance</button></div>{locFailed?<p className="form-error" role="status">Location unavailable</p>:null}<label>Month<select value={month} onChange={e=>setMonth(e.target.value)}><option value="all">All months</option>{months.map(m=><option key={m} value={m}>{monthLabel(m)}</option>)}</select></label><label>County<select value={county} onChange={e=>setCounty(e.target.value)}><option value="all">All six counties</option>{COUNTIES.map(c=><option key={c}>{c}</option>)}</select></label><label>Sanction<select value={sanction} onChange={e=>setSanction(e.target.value)}><option value="all">All</option><option value="yes">Sanctioned</option><option value="no">Unsanctioned</option></select></label><label>Type<select value={eventType} onChange={e=>setEventType(e.target.value)}><option value="all">All types</option>{EVENT_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label>Results<select value={resultsFilter} onChange={e=>setResultsFilter(e.target.value as ResultsFilter)}><option value="all">All</option><option value="local">On Local Roots</option><option value="official">Official link</option></select></label>{hasActiveFilters?<button type="button" className="clear-filters" onClick={clearFilters}>Clear filters</button>:null}</div></dialog>
+    <div className="event-list" data-status-policy="date-aware-v1" aria-busy={loading}><div className="list-header"><h2>{viewTitle}</h2><span aria-live="polite" aria-atomic="true">{filtered.length} shown · {viewEvents.length} {view==='upcoming'?'upcoming':'past'}</span><button type="button" className="filters-trigger" aria-haspopup="dialog" aria-controls="event-filters" aria-expanded={filtersOpen} aria-label={activeFilterCount?'Filters & sort, active filters':'Filters & sort'} onClick={openFilters}><span>Filters &amp; sort</span>{activeFilterCount?<span className="filter-count" aria-hidden="true">{activeFilterCount}</span>:null}</button></div><label className="page-search"><span className="sr-only">Search events</span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search event, course, city, host" aria-label="Search events"/></label>{loading?<div className="empty-state" role="status" aria-live="polite">Loading events…</div>:null}{error?<div className="notice error" role="alert">Could not load events.</div>:null}{!loading&&!error&&!filtered.length?<div className="empty-state" role="status"><strong>No matching events.</strong><span>Change or clear the filters.</span></div>:null}{filtered.map(e=><EventCard key={e.id} event={e} today={today} distance={origin?distances.get(e.id):undefined}/>)}</div></section>
+    {locPrompt?<div className="location-prompt-backdrop" role="presentation"><div className="location-prompt" role="dialog" aria-modal="true" aria-labelledby="location-prompt-title"><h2 id="location-prompt-title">Use your location?</h2><div className="location-prompt-actions"><button type="button" className="button primary" onClick={allowLocation} disabled={locBusy}>{locBusy?'Locating…':'Use location'}</button><button type="button" className="button ghost" onClick={declineLocation} disabled={locBusy}>Not now</button></div></div></div>:null}
     <div className="content"><SubmissionForm/></div></main></Shell>;
 }
