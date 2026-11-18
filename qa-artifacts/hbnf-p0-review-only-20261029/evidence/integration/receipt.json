@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "runId": "hbnf-local-2026-10-29T081529-083Z",
+  "startedAt": "2026-10-29T08:15:29.083Z",
+  "target": "HBNF scoring candidate / isolated local Supabase only",
+  "productionRequests": 0,
+  "credentialsStored": false,
+  "steps": [
+    {
+      "step": "start isolated native Supabase",
+      "status": "PASS"
+    },
+    {
+      "step": "isolated stack identity and readiness",
+      "status": "PASS"
+    },
+    {
+      "step": "reset isolated local fixture database",
+      "status": "PASS"
+    },
+    {
+      "step": "source regression harness",
+      "status": "PASS"
+    },
+    {
+      "step": "deterministic 44-asset package check",
+      "status": "PASS"
+    },
+    {
+      "step": "local PostgREST persistence and CAS smoke",
+      "status": "PASS"
+    },
+    {
+      "step": "Chromium cross-profile Realtime synchronization",
+      "status": "PASS"
+    },
+    {
+      "step": "Chromium scoring integration",
+      "status": "PASS"
+    },
+    {
+      "step": "cross-writer Skins integrity / Glow issue #147",
+      "status": "FAIL",
+      "details": "FAIL: Glow #147 whole-root write can erase valid Skins state"
+    },
+    {
+      "step": "stop local Supabase started by runner",
+      "status": "PASS"
+    }
+  ],
+  "environment": {
+    "readiness": "ready",
+    "runtime": "native",
+    "endpointHost": "127.0.0.1"
+  },
+  "persistence": {
+    "status": "PASS",
+    "environment": "isolated-local-supabase",
+    "runtime": "native",
+    "readiness": "ready",
+    "postgrestRead": "PASS",
+    "conditionalAckAndIndependentReadback": "PASS",
+    "twoConsecutiveSaves": "PASS",
+    "compareAndSwapConflictNoOverwrite": "PASS",
+    "fixtureRestored": "PASS",
+    "fixtureWeek": "2099-01-06"
+  },
+  "browser": {
+    "status": "PASS",
+    "environment": "isolated-local-supabase",
+    "browser": "Chromium",
+    "appSourceSha256": "c78d01d4ff1c90786ccf8cc15ec77b782bf30fd40b603ecdae2a7ad52dae80d9",
+    "fixtureWeek": "2099-01-06",
+    "productionRequests": 0,
+    "fixtureRestored": true,
+    "overallScoringSafety": "FAIL: Glow #147 whole-root write can erase valid Skins state",
+    "scenarios": {
+      "frontSetupReadback": "PASS",
+      "isolatedProductionTriggerProjections": "PASS",
+      "backSetupPreservesFront": "PASS",
+      "twoConsecutiveFrontSavesAndReadback": "PASS",
+      "coldProfileReopen": "PASS",
+      "crossProfileRealtimeSync": "PASS",
+      "offlineDraftRetry": "PASS",
+      "uiCasConflictRetainsDraftNoOverwrite": "PASS",
+      "mobile390TouchScoringAndLayout": "PASS",
+      "mobileColdReopenAndServerReadback": "PASS",
+      "undoRestoresAndPersistsPreviousScore": "PASS",
+      "roundTagDisplayAndTestOnlyEdit": "PASS",
+      "frontBackPayoutAcePotAndStandings": "PASS",
+      "unacknowledgedOfflineEditForcedCloseReopenPostgrestReadback": "PASS",
+      "updateAckThenFailedReadbackAndReopen": "PASS",
+      "pendingMarkerQuotaFailureTruthfulOfflineStatus": "PASS",
+      "phoneTabletViewportAndAccessibleStatus": "PASS (320, 390, 430, 768, 1024 CSS px)",
+      "glowIssue147StaleFullRootUpsertCrossWriterIntegrity": "FAIL_CONFIRMED: stale Glow upsert erased an acknowledged Skins score in isolated PostgREST"
+    }
+  },
+  "error": "Cross-writer scoring safety failed; preserve the evidence and do not admit a release.",
+  "finishedAt": "2026-10-29T08:17:42.778Z",
+  "status": "FAIL",
+  "candidate": {
+    "directory": "/Users/andrew/.codex/.chatgpt-projects/g-p-6aaed4cbf3388191bb1916ff62aa1114/qa-artifacts/hbnf-p0-review-candidate-20261029",
+    "skinsHtmlSha256": "c78d01d4ff1c90786ccf8cc15ec77b782bf30fd40b603ecdae2a7ad52dae80d9",
+    "migrationSha256": "4ee286435ecdad9d5d19dff88eb03c2dd09f762b3a60007264b5f7bf8e5e23fc",
+    "runnerSha256": "147223b7fb7a9bbcc5f42584701bf2576ac581667bc4407e454aaaa6c4923606"
+  }
+}

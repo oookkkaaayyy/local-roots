@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "b74c789b53860b79cf419c14da90047b7b6b8258",
+  "sourceParent": "376b31ccf3be3fed06cb7a17810e7ad15ca0cb01",
+  "candidateAssetSha256": "3073023036a39dfda5ffc7afb6f1de4d8b13eacdb5fad92fdc2d8542da1540b1",
+  "baselineAssetSha256": "29d3c6c2aa9038063c659a5361b932ce2c9819a481fd020b5172701450dc477a",
+  "integrationRunId": "hbnf-local-2026-10-29T081529-083Z",
+  "overallStatus": "FAIL",
+  "passingBrowserScenarios": 17,
+  "failingProductScenario": "Glow #147 stale full-root upsert overwrote an acknowledged Skins CAS write",
+  "releaseAdmissionQualified": false,
+  "files": {
+    "README.md": {
+      "bytes": 2517,
+      "sha256": "8fcbaf0240ea8093363d7178a6867c992b98b1a88d1762bd0ffd9b2302b5f424"
+    },
+    "integration/browser-scoring-smoke.mjs": {
+      "bytes": 39858,
+      "sha256": "3d68b42c8619b184c5aa25100e5c72a65d457f13341bb20665d562e404d9e2e2"
+    },
+    "integration/package-lock.json": {
+      "bytes": 13450,
+      "sha256": "5c26f7557e79aa254fe72a3baf11db2cd418e5aca9e10aefc42792abe51d9545"
+    },
+    "integration/package.json": {
+      "bytes": 204,
+      "sha256": "9f83c05a6a4bc8c055b643a336f15863ad223df94ba1896307bb4ad862975028"
+    },
+    "integration/persistence-smoke.mjs": {
+      "bytes": 4369,
+      "sha256": "288d454a7e30b1793ab933f896adcb4deb5f326d0079775d112db5bf5416ff3b"
+    },
+    "integration/receipt.json": {
+      "bytes": 3775,
+      "sha256": "ea122c91498d61dec193c23e6af7a62f7841790e5b1f42a7da31e54a4c9fb27a"
+    },
+    "integration/run.mjs": {
+      "bytes": 8820,
+      "sha256": "147223b7fb7a9bbcc5f42584701bf2576ac581667bc4407e454aaaa6c4923606"
+    },
+    "integration/screenshots/ipad-768x1024-saved.png": {
+      "bytes": 269799,
+      "sha256": "01aeb104c240157db51ceaef4570bb20a7f0b29b7231fada58cf0868ac4492d2"
+    },
+    "integration/screenshots/iphone-390x844-offline-pending.png": {
+      "bytes": 640297,
+      "sha256": "80d45876f7fba21447600fbff96d1b36511671021ba4fe7386b03c59b7d7a1a2"
+    },
+    "packages/baseline-44-assets.zip": {
+      "bytes": 3264714,
+      "sha256": "29d3c6c2aa9038063c659a5361b932ce2c9819a481fd020b5172701450dc477a"
+    },
+    "packages/candidate-44-assets.zip": {
+      "bytes": 3267533,
+      "sha256": "3073023036a39dfda5ffc7afb6f1de4d8b13eacdb5fad92fdc2d8542da1540b1"
+    },
+    "packages/candidate-manifest.json": {
+      "bytes": 13825,
+      "sha256": "db32807bf599b4d64aede53450ae38fdffb1b59f703ed2274f31a1844d01b9f5"
+    },
+    "packages/source-history.bundle": {
+      "bytes": 2156125,
+      "sha256": "50a3509f465fa47e7d27a7d7eff37271e7b2b53ad3eb9688faf2b96617d57d30"
+    },
+    "source/REVIEW_ONLY.md": {
+      "bytes": 2653,
+      "sha256": "ffe472f0a5ae17c404ec22179920f8bef9c08042db67fc7a243d3768df5a9f4e"
+    },
+    "source/public/skins.html": {
+      "bytes": 214518,
+      "sha256": "c78d01d4ff1c90786ccf8cc15ec77b782bf30fd40b603ecdae2a7ad52dae80d9"
+    },
+    "source/tests/skins-pending-review.test.mjs": {
+      "bytes": 10040,
+      "sha256": "9cf3ee787d5c220631fdbf7d042ab469e570835bf70d8e5aea680677d6f90a7a"
+    }
+  }
+}

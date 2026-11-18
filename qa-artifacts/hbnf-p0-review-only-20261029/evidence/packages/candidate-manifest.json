@@ -1,0 +1,331 @@
+{
+  "releaseDisposition": "REVIEW_ONLY \u2014 NOT ADMITTED, NOT DEPLOYED, NOT INSTALLED",
+  "scope": "HBNF Skins P0 cold reopen and readback",
+  "sourceCommit": "b74c789b53860b79cf419c14da90047b7b6b8258",
+  "sourceGitBundleSHA256": "50a3509f465fa47e7d27a7d7eff37271e7b2b53ad3eb9688faf2b96617d57d30",
+  "baseCommit": "376b31ccf3be3fed06cb7a17810e7ad15ca0cb01",
+  "baseArchiveSHA256": "29d3c6c2aa9038063c659a5361b932ce2c9819a481fd020b5172701450dc477a",
+  "baseWorkerVersionLastRecorded": "3b019c24-0288-4c0d-bcc2-46cb6028d0f6",
+  "candidateSHA256": "3073023036a39dfda5ffc7afb6f1de4d8b13eacdb5fad92fdc2d8542da1540b1",
+  "candidateBytes": 3267533,
+  "files": [
+    {
+      "path": "hbnf-assets/admin.html",
+      "bytes": 67303,
+      "sha256": "efb836fa3abccfafbb332beeb76eb5a9359b1f6fdf5e706c358404f2be7f04ec",
+      "baseline_sha256": "efb836fa3abccfafbb332beeb76eb5a9359b1f6fdf5e706c358404f2be7f04ec",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/apple-touch-icon.png",
+      "bytes": 23180,
+      "sha256": "ca9b69edd803628c8eff75c763b221807f41c8ca513ccd4dab2f871e78533742",
+      "baseline_sha256": "ca9b69edd803628c8eff75c763b221807f41c8ca513ccd4dab2f871e78533742",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/bag-tags-prominence.js",
+      "bytes": 3912,
+      "sha256": "e4db42185d987e72abe79ec181efad160ba176067eebdcae77a45b3814d811ce",
+      "baseline_sha256": "e4db42185d987e72abe79ec181efad160ba176067eebdcae77a45b3814d811ce",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/cart.html",
+      "bytes": 5531,
+      "sha256": "4533d1967bbe72cf696aa44dbe71d8d67d4de11274427b0e8f3843bfaf4ab793",
+      "baseline_sha256": "4533d1967bbe72cf696aa44dbe71d8d67d4de11274427b0e8f3843bfaf4ab793",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/config.js",
+      "bytes": 3655,
+      "sha256": "e68fd3b58982298169fd0d98bfe5e46a9e3d43eb59878df2bdc52e36fc0ea1d4",
+      "baseline_sha256": "e68fd3b58982298169fd0d98bfe5e46a9e3d43eb59878df2bdc52e36fc0ea1d4",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/fonts/cabin-latin-400.woff2",
+      "bytes": 16888,
+      "sha256": "9c72abe1427dd4bb1fb8fda80f15d2232932864b05bba38e816f9885bd877a74",
+      "baseline_sha256": "9c72abe1427dd4bb1fb8fda80f15d2232932864b05bba38e816f9885bd877a74",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/fonts/cabin-latin-700.woff2",
+      "bytes": 16680,
+      "sha256": "e0a2b0e87b833f07a76bdaaecef067579c0988c25e6fd528c96b410004605e60",
+      "baseline_sha256": "e0a2b0e87b833f07a76bdaaecef067579c0988c25e6fd528c96b410004605e60",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/glow.html",
+      "bytes": 205148,
+      "sha256": "99c12f383bad549f793c329d358ae85e75a1efafa619836e36c3824b23e3ec11",
+      "baseline_sha256": "99c12f383bad549f793c329d358ae85e75a1efafa619836e36c3824b23e3ec11",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-bone-ink-logo.png",
+      "bytes": 71051,
+      "sha256": "0439a88017524c0c37fd28075b170bfd79c84c530ad9e1802942ae33934b1e37",
+      "baseline_sha256": "0439a88017524c0c37fd28075b170bfd79c84c530ad9e1802942ae33934b1e37",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-bone-ink-theme.css",
+      "bytes": 11947,
+      "sha256": "5cd1ac0b18d014b63e1adb0cf8236af881318978aa77d58d9d1eb0d5a001f8e9",
+      "baseline_sha256": "5cd1ac0b18d014b63e1adb0cf8236af881318978aa77d58d9d1eb0d5a001f8e9",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart-features.mjs",
+      "bytes": 46321,
+      "sha256": "2ba72cae97012a8b0a9b19860be38e2929a40e84fb2e6f109b0558447902fb92",
+      "baseline_sha256": "2ba72cae97012a8b0a9b19860be38e2929a40e84fb2e6f109b0558447902fb92",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart-icon-180.png",
+      "bytes": 50069,
+      "sha256": "2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e",
+      "baseline_sha256": "2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart-icon-512.png",
+      "bytes": 299892,
+      "sha256": "3088b88b82ac601cf32b3902e70de7bdc0ffb7236a7533d7a71775fcc3fb6d27",
+      "baseline_sha256": "3088b88b82ac601cf32b3902e70de7bdc0ffb7236a7533d7a71775fcc3fb6d27",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart-manifest.webmanifest",
+      "bytes": 488,
+      "sha256": "9f75747ca24aec6436484337064d0530e16cc6e07f4462b50b67b389b52ce4d5",
+      "baseline_sha256": "9f75747ca24aec6436484337064d0530e16cc6e07f4462b50b67b389b52ce4d5",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart-semantic.mjs",
+      "bytes": 3411,
+      "sha256": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+      "baseline_sha256": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart-skins-score.mjs",
+      "bytes": 7067,
+      "sha256": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+      "baseline_sha256": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart-ui-v6.css",
+      "bytes": 15962,
+      "sha256": "6dc3652bc436ddb14b10dc2ce89e6f1c2ec7ab6024f097d854bd700e3df36d57",
+      "baseline_sha256": "6dc3652bc436ddb14b10dc2ce89e6f1c2ec7ab6024f097d854bd700e3df36d57",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart-ui-v6.mjs",
+      "bytes": 6499,
+      "sha256": "07d027ef857e628110cecb97e5bfd25eb04f010bc5872f4c53d69174cf8d2382",
+      "baseline_sha256": "07d027ef857e628110cecb97e5bfd25eb04f010bc5872f4c53d69174cf8d2382",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart.html",
+      "bytes": 18269,
+      "sha256": "e2283aa913a07e2b9887060165a63ab7f92bb80ec0f7c7f8172d379c4761cb88",
+      "baseline_sha256": "e2283aa913a07e2b9887060165a63ab7f92bb80ec0f7c7f8172d379c4761cb88",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-cart.js",
+      "bytes": 40047,
+      "sha256": "53f807062606e5dbf328a8dcf9e153a7614f2c4d8955a8a6d9d212ebebeff616",
+      "baseline_sha256": "53f807062606e5dbf328a8dcf9e153a7614f2c4d8955a8a6d9d212ebebeff616",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-favicon-32.png",
+      "bytes": 2468,
+      "sha256": "d05191d638a60235e0daae2b1d3395dc881cbf1f2c8845091f79fd48e0303456",
+      "baseline_sha256": "d05191d638a60235e0daae2b1d3395dc881cbf1f2c8845091f79fd48e0303456",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-main-cart-shell.js",
+      "bytes": 4570,
+      "sha256": "7e2e22230780a5f9c5e2939f7d669e3ed2307b9171f03b4904d53c86b40a419b",
+      "baseline_sha256": "7e2e22230780a5f9c5e2939f7d669e3ed2307b9171f03b4904d53c86b40a419b",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-main-icon-180.png",
+      "bytes": 23180,
+      "sha256": "ca9b69edd803628c8eff75c763b221807f41c8ca513ccd4dab2f871e78533742",
+      "baseline_sha256": "ca9b69edd803628c8eff75c763b221807f41c8ca513ccd4dab2f871e78533742",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-main-icon-192.png",
+      "bytes": 23219,
+      "sha256": "60dc017dd806adc9b19585da3665febbb28eb06df5abff24978ad9c4e98090c8",
+      "baseline_sha256": "60dc017dd806adc9b19585da3665febbb28eb06df5abff24978ad9c4e98090c8",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-main-icon-512.png",
+      "bytes": 92285,
+      "sha256": "67671c59633eb5acb64aa14fc7b8dd8549878a7a0f8232fb79945d5fc8390df3",
+      "baseline_sha256": "67671c59633eb5acb64aa14fc7b8dd8549878a7a0f8232fb79945d5fc8390df3",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-main-manifest.webmanifest",
+      "bytes": 649,
+      "sha256": "6c12b9055d5347ffe8f1ce5108c4941f4f1307019175fdb1adbfc819034cb545",
+      "baseline_sha256": "6c12b9055d5347ffe8f1ce5108c4941f4f1307019175fdb1adbfc819034cb545",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/hbnf-mobile-ux.js",
+      "bytes": 10720,
+      "sha256": "4b29921790e046017f64d74273fa650f67e6b915f491f3afe474228d3fb5ef97",
+      "baseline_sha256": "4b29921790e046017f64d74273fa650f67e6b915f491f3afe474228d3fb5ef97",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/index.html",
+      "bytes": 98937,
+      "sha256": "476db1ee01c6f9a9cbf31b04d8e226017c0d0f5aeb476f6963282a3f5f827e12",
+      "baseline_sha256": "476db1ee01c6f9a9cbf31b04d8e226017c0d0f5aeb476f6963282a3f5f827e12",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/matrix-apple-touch-icon.png",
+      "bytes": 48333,
+      "sha256": "b4714e155ca82dc92a07b92cbfa0b69b11fc0095b5209d40d86e5794c67d6d47",
+      "baseline_sha256": "b4714e155ca82dc92a07b92cbfa0b69b11fc0095b5209d40d86e5794c67d6d47",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/matrix-build.json",
+      "bytes": 329,
+      "sha256": "68a0c2ee0174cc245c0f0d804ebd5c81da49c5c636fe7e57058bcb1a337145db",
+      "baseline_sha256": "68a0c2ee0174cc245c0f0d804ebd5c81da49c5c636fe7e57058bcb1a337145db",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/matrix-control.js",
+      "bytes": 5465,
+      "sha256": "cf9abf652c7c3c07d0156251cd1490c56d6d095217c5b8db4bda36486ee17f9f",
+      "baseline_sha256": "cf9abf652c7c3c07d0156251cd1490c56d6d095217c5b8db4bda36486ee17f9f",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/matrix-icon-512.png",
+      "bytes": 235800,
+      "sha256": "e4c30160cdafe215de87c6b25ef491d783c01c00b6fb9798beb024a12fbcba6f",
+      "baseline_sha256": "e4c30160cdafe215de87c6b25ef491d783c01c00b6fb9798beb024a12fbcba6f",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/matrix-manifest.webmanifest",
+      "bytes": 563,
+      "sha256": "5e641e40faa5d293b9c420f245a16389c362a66a06b3131a94414dfd8b7adce7",
+      "baseline_sha256": "5e641e40faa5d293b9c420f245a16389c362a66a06b3131a94414dfd8b7adce7",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/matrix-quick-controls.js",
+      "bytes": 8023,
+      "sha256": "2d7476e74b07bb7de0812087303fda658d68ff4dbec7a6d7b95b2601a4d2487d",
+      "baseline_sha256": "2d7476e74b07bb7de0812087303fda658d68ff4dbec7a6d7b95b2601a4d2487d",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/matrix-show-library.json",
+      "bytes": 36890,
+      "sha256": "554e730552ea907b6bcf98486724ba094e2ac0188f3c6f6d5264761266c54f5b",
+      "baseline_sha256": "554e730552ea907b6bcf98486724ba094e2ac0188f3c6f6d5264761266c54f5b",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/matrix.html",
+      "bytes": 10266,
+      "sha256": "12ec18dd2c5d882a7c8224c25d8cbf65f2899b4c4f4d1c5c7e30b430a1db81b6",
+      "baseline_sha256": "12ec18dd2c5d882a7c8224c25d8cbf65f2899b4c4f4d1c5c7e30b430a1db81b6",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/random.html",
+      "bytes": 1471806,
+      "sha256": "93d48bfefde2cd4b3acdd61f458bf3cb9f357358188064a042c0d8e0a6c54aba",
+      "baseline_sha256": "93d48bfefde2cd4b3acdd61f458bf3cb9f357358188064a042c0d8e0a6c54aba",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/round-tags.js",
+      "bytes": 121458,
+      "sha256": "79cc22987781a4a007f97be7a7dde17e14843c1d69fe5b6ca521522967fdb344",
+      "baseline_sha256": "79cc22987781a4a007f97be7a7dde17e14843c1d69fe5b6ca521522967fdb344",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/skills.html",
+      "bytes": 1473787,
+      "sha256": "4c89b5b50dc451948de14847f7582a5ef70e5a995a21a49a871b83d13382825e",
+      "baseline_sha256": "4c89b5b50dc451948de14847f7582a5ef70e5a995a21a49a871b83d13382825e",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/skins-tag-editor.js",
+      "bytes": 18705,
+      "sha256": "590abbebb490106047c22f37bf0df4b0405fc19d682c169cd12ed93f79508125",
+      "baseline_sha256": "590abbebb490106047c22f37bf0df4b0405fc19d682c169cd12ed93f79508125",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/skins-tag-projection-modal.js",
+      "bytes": 5283,
+      "sha256": "40498efa59d7eeb1e9bf38f1483aa7b6455839327be7ababcbcd59dad54824da",
+      "baseline_sha256": "40498efa59d7eeb1e9bf38f1483aa7b6455839327be7ababcbcd59dad54824da",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/skins-tag-tracker.js",
+      "bytes": 24403,
+      "sha256": "0e029fc93896f3971240d721a9f1d95eb1c378d2dc47e663d70bfbca4d2951f8",
+      "baseline_sha256": "0e029fc93896f3971240d721a9f1d95eb1c378d2dc47e663d70bfbca4d2951f8",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/skins-ux-polish.js",
+      "bytes": 13602,
+      "sha256": "b190f1decf6e2c64a798575ebbc6febfb2b767c584c80ea0f63b613c9e2cff53",
+      "baseline_sha256": "b190f1decf6e2c64a798575ebbc6febfb2b767c584c80ea0f63b613c9e2cff53",
+      "changed": false
+    },
+    {
+      "path": "hbnf-assets/skins.html",
+      "bytes": 214518,
+      "sha256": "c78d01d4ff1c90786ccf8cc15ec77b782bf30fd40b603ecdae2a7ad52dae80d9",
+      "baseline_sha256": "e8e1d0513f53b1c273b921e1ef5fbf42330f8ec9191693f33d066bd0e63e4a97",
+      "changed": true
+    }
+  ],
+  "changedFiles": [
+    "hbnf-assets/skins.html"
+  ],
+  "unitTests": "11/11 isolated VM PASS; realistic Supabase integration NOT RUN",
+  "browserCheck": "390x844,430x932,768x1024 no document overflow; external requests blocked; not iPhone",
+  "productionWrites": 0,
+  "releaseAdmission": "PENDING",
+  "releaseCloseout": "NOT STARTED",
+  "rollback": "Baseline exact ZIP retained in Drive 16ILHuKGKxbll0kpagHS5UFu3xtxUttZz; re-read current version before any release",
+  "note": "Contents are review-only candidate. Do not deploy without 2-phase manifest gate, exact current rollback download-back, full isolated provider verification, and explicit release approval."
+}
