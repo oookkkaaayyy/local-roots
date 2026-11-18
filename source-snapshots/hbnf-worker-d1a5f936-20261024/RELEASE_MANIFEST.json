@@ -1,0 +1,19 @@
+{
+  "release": "HBNF calculated-Net reporting correction",
+  "baseline_worker_version": "dfde63fe-685c-44f8-a230-9481caa3c3a3",
+  "rollback_worker_version": "dfde63fe-685c-44f8-a230-9481caa3c3a3",
+  "asset_count": 44,
+  "changed_assets": [
+    {
+      "path": "public/skins.html",
+      "baseline_sha256": "a8f083776fb81af25249b6b202e75cb531ce74dcae63d3aeb02ff54fb2a9996e",
+      "candidate_sha256": "514c3269de04a738a34a5b316cd728c93a76f48f3c4cc37f0f2c5bf1fdfd3287",
+      "bytes": 208311
+    }
+  ],
+  "all_unchanged_asset_hashes_match": true,
+  "scope": [
+    "Calculated Net display and explanatory copy on Skins page only"
+  ],
+  "production_data_changed": false
+}

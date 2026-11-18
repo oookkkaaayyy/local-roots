@@ -1,0 +1,400 @@
+/* Reconstructed visual-only Bone Ink layer; built from accepted palette and owner logo. */
+@font-face {
+  font-family: "Cabin";
+  src: url("/fonts/cabin-latin-400.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cabin";
+  src: url("/fonts/cabin-latin-700.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --hbnf-bone-ink: #292119;
+  --hbnf-moon-bone: #F4E9D6;
+  --hbnf-faded-phosphor: #B4C58F;
+  --hbnf-local-roots-sage: #8C956A;
+
+  --bg: var(--hbnf-bone-ink) !important;
+  --card: #34291F !important;
+  --card2: #3B3024 !important;
+  --line: rgba(140, 149, 106, .42) !important;
+  --text: var(--hbnf-moon-bone) !important;
+  --muted: #D9CEBB !important;
+  --bright: var(--hbnf-faded-phosphor) !important;
+  --warn: #E9D39B !important;
+  --danger: #E8A69A !important;
+  --shadow: 0 12px 34px rgba(0, 0, 0, .28) !important;
+
+  --hbnf-bg: var(--hbnf-bone-ink) !important;
+  --hbnf-bg2: #32271D !important;
+  --hbnf-panel: rgba(53, 43, 32, .97) !important;
+  --hbnf-panel-solid: #352B20 !important;
+  --hbnf-card: #3C3124 !important;
+  --hbnf-card2: #443829 !important;
+  --hbnf-line: rgba(140, 149, 106, .36) !important;
+  --hbnf-line-strong: var(--hbnf-local-roots-sage) !important;
+  --hbnf-text: var(--hbnf-moon-bone) !important;
+  --hbnf-muted: #D9CEBB !important;
+  --hbnf-soft: #C5B8A3 !important;
+  --hbnf-green: var(--hbnf-local-roots-sage) !important;
+  --hbnf-green2: var(--hbnf-faded-phosphor) !important;
+  --hbnf-green-dark: #4B5038 !important;
+  --hbnf-shadow: var(--shadow) !important;
+
+  --h5-bg: var(--hbnf-bone-ink) !important;
+  --h5-panel: #352B20 !important;
+  --h5-panel-2: #403427 !important;
+  --h5-line: rgba(140, 149, 106, .36) !important;
+  --h5-line-strong: var(--hbnf-local-roots-sage) !important;
+  --h5-text: var(--hbnf-moon-bone) !important;
+  --h5-soft: #D9CEBB !important;
+  --h5-dim: #C5B8A3 !important;
+  --h5-green: var(--hbnf-local-roots-sage) !important;
+  --h5-green-soft: var(--hbnf-faded-phosphor) !important;
+  --h5-shadow: var(--shadow) !important;
+}
+
+html,
+body {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: var(--hbnf-bone-ink) !important;
+  font-family: "Cabin", "Trebuchet MS", Arial, sans-serif !important;
+}
+body {
+  background-image:
+    radial-gradient(ellipse at 50% -16%, rgba(180, 197, 143, .10), transparent 48%),
+    linear-gradient(180deg, #292119 0%, #241C15 100%) !important;
+}
+body :is(h1, h2, h3, h4, .brand-title, .section-title, .panel-title, .btn, .nav-btn, .mode-btn),
+body :is(button, input, select, textarea) {
+  font-family: "Cabin", "Trebuchet MS", Arial, sans-serif !important;
+}
+
+.site-header,
+.top-tools,
+.panel,
+.card,
+.match-card,
+.round-card,
+.summary-card,
+.event-panel,
+.schedule-panel,
+.responsive-table-wrap,
+.scorecard-wrap,
+.preview-box,
+.status-box,
+.team-col,
+.generated-team,
+.round-summary {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #352B20 !important;
+  background-image: none !important;
+  border-color: rgba(140, 149, 106, .36) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .20) !important;
+}
+.dash-hero,
+.dash-card,
+.dash-stat,
+.dash-empty,
+.dash-list-row {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #352B20 !important;
+  background-image: none !important;
+  border-color: rgba(140, 149, 106, .36) !important;
+  box-shadow: none !important;
+}
+.dash-status {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #403528 !important;
+  background-image: none !important;
+  border-color: rgba(140, 149, 106, .42) !important;
+}
+.dash-dot {
+  background-color: var(--hbnf-faded-phosphor) !important;
+  box-shadow: 0 0 8px rgba(180, 197, 143, .22) !important;
+}
+.dash-chip {
+  color: var(--hbnf-faded-phosphor) !important;
+  background-color: rgba(180, 197, 143, .12) !important;
+  background-image: none !important;
+  border-color: rgba(180, 197, 143, .30) !important;
+}
+.dash-stat-icon {
+  color: var(--hbnf-faded-phosphor) !important;
+  background-color: rgba(180, 197, 143, .12) !important;
+  background-image: none !important;
+  border-color: rgba(180, 197, 143, .30) !important;
+}
+.aurora {
+  background:
+    radial-gradient(ellipse at 28% 18%, rgba(180, 197, 143, .10), transparent 26%),
+    radial-gradient(ellipse at 78% 22%, rgba(140, 149, 106, .08), transparent 22%) !important;
+  filter: blur(18px) !important;
+}
+.site-header {
+  background-color: rgba(41, 33, 25, .96) !important;
+  border-bottom-color: rgba(140, 149, 106, .32) !important;
+}
+.brand-logo {
+  width: 72px;
+  height: 72px;
+  border: 0 !important;
+  border-radius: 50% !important;
+  object-fit: contain !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.brand-title,
+h1,
+h2,
+h3,
+h4 {
+  color: var(--hbnf-moon-bone) !important;
+  font-weight: 700 !important;
+}
+.tagline,
+.section-title,
+.next-event-label,
+.money,
+.summary-card strong,
+.event-date-single strong,
+.skins-payout-value {
+  color: var(--hbnf-faded-phosphor) !important;
+}
+.helper,
+.muted,
+.ranking-note,
+.mobile-scroll-note,
+.schedule-subtitle,
+.course-subhead,
+.summary-card span,
+label,
+th {
+  color: #D9CEBB !important;
+}
+body,
+body :is(p, li, td, small, strong, legend, caption, .event-row, .event-date-single) {
+  color: var(--hbnf-moon-bone);
+}
+
+.btn,
+.nav-btn,
+.mode-btn,
+.event-btn,
+.tools-menu-button {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #3A3024 !important;
+  background-image: none !important;
+  border-color: rgba(140, 149, 106, .55) !important;
+  box-shadow: none !important;
+}
+.btn:hover,
+.nav-btn:hover,
+.mode-btn:hover,
+.event-btn:hover,
+.tools-menu-button:hover {
+  color: var(--hbnf-faded-phosphor) !important;
+  border-color: var(--hbnf-faded-phosphor) !important;
+  background-color: #45392A !important;
+}
+.nav-btn.active,
+.btn.active,
+.mode-btn.active {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #4B5038 !important;
+  border-color: var(--hbnf-local-roots-sage) !important;
+  box-shadow: inset 0 0 0 1px rgba(180, 197, 143, .12) !important;
+}
+.btn:disabled,
+.nav-btn:disabled,
+button:disabled {
+  color: #C5B8A3 !important;
+  border-color: rgba(140, 149, 106, .30) !important;
+  background-color: #32281F !important;
+  opacity: .72 !important;
+}
+.pill,
+.tag,
+.badge,
+.status-pill,
+.event-type,
+.event-status {
+  color: var(--hbnf-faded-phosphor) !important;
+  background-color: rgba(180, 197, 143, .12) !important;
+  border-color: rgba(180, 197, 143, .30) !important;
+}
+
+input,
+select,
+textarea,
+.score-input-mini,
+.par-input-mini,
+.score-input,
+.par-input {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #292119 !important;
+  border-color: rgba(180, 197, 143, .52) !important;
+  caret-color: var(--hbnf-faded-phosphor) !important;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #C5B8A3 !important;
+  opacity: 1 !important;
+}
+input:disabled,
+select:disabled,
+textarea:disabled,
+.score-input-mini:disabled,
+.par-input-mini:disabled {
+  color: #C5B8A3 !important;
+  background-color: #32281F !important;
+  border-color: rgba(140, 149, 106, .32) !important;
+  opacity: .78 !important;
+}
+table,
+th,
+td,
+.scorecard-table,
+.scorecard-table th,
+.scorecard-table td,
+.standings-table,
+.standings-table th,
+.standings-table td,
+.dash-table,
+.dash-table th,
+.dash-table td {
+  border-color: rgba(140, 149, 106, .30) !important;
+}
+.scorecard-wrap,
+table.scorecard-table {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #30271E !important;
+  background-image: none !important;
+  border-color: rgba(140, 149, 106, .38) !important;
+}
+table.scorecard-table thead th,
+table.scorecard-table th {
+  color: var(--hbnf-faded-phosphor) !important;
+  background-color: #3A3024 !important;
+  background-image: none !important;
+}
+table.scorecard-table tbody td {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #30271E !important;
+  background-image: none !important;
+}
+table.scorecard-table .sticky-col {
+  background-color: #382E23 !important;
+  background-image: none !important;
+}
+#frontScorecard .scorecard-table th,
+#backScorecard .scorecard-table th {
+  color: var(--hbnf-faded-phosphor) !important;
+  background-color: #3A3024 !important;
+  background-image: none !important;
+  border-color: rgba(140, 149, 106, .38) !important;
+}
+#frontScorecard .scorecard-table td,
+#backScorecard .scorecard-table td {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #30271E !important;
+  background-image: none !important;
+  border-color: rgba(140, 149, 106, .32) !important;
+}
+#frontScorecard .scorecard-table .sticky-col,
+#backScorecard .scorecard-table .sticky-col {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #382E23 !important;
+  background-image: none !important;
+  border-right-color: rgba(140, 149, 106, .42) !important;
+  box-shadow: 8px 0 10px rgba(0, 0, 0, .16) !important;
+}
+#frontScorecard .scorecard-table .score-input-mini,
+#backScorecard .scorecard-table .score-input-mini,
+#frontScorecard .scorecard-table .par-input-mini,
+#backScorecard .scorecard-table .par-input-mini {
+  color: var(--hbnf-moon-bone) !important;
+  background-color: #292119 !important;
+  border-color: rgba(180, 197, 143, .55) !important;
+  caret-color: var(--hbnf-faded-phosphor) !important;
+}
+.scorecard-table th,
+.scorecard-table td,
+.standings-table td,
+.dash-table td {
+  color: var(--hbnf-moon-bone) !important;
+}
+.scorecard-table th,
+.standings-table th,
+.dash-table th {
+  color: var(--hbnf-faded-phosphor) !important;
+}
+
+a {
+  color: var(--hbnf-faded-phosphor);
+}
+a:hover {
+  color: var(--hbnf-moon-bone);
+}
+:focus-visible {
+  outline: 2px solid var(--hbnf-faded-phosphor) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(41, 33, 25, .92) !important;
+}
+::selection {
+  color: var(--hbnf-bone-ink);
+  background: var(--hbnf-faded-phosphor);
+}
+
+@media (max-width: 760px) {
+  .brand-logo {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+/* Keep the fixed first scorecard column on the Bone Ink surface. The inline legacy
+   visual layer uses an important background shorthand, so match that property
+   with a scoped, higher-specificity visual override. */
+body #frontScorecard table.scorecard-table thead th.sticky-col,
+body #frontScorecard table.scorecard-table tbody td.sticky-col,
+body #backScorecard table.scorecard-table thead th.sticky-col,
+body #backScorecard table.scorecard-table tbody td.sticky-col {
+  color: var(--hbnf-moon-bone) !important;
+  background: #382E23 !important;
+  border-right-color: rgba(140, 149, 106, .42) !important;
+  box-shadow: 8px 0 10px rgba(0, 0, 0, .16) !important;
+}
+body #frontScorecard table.scorecard-table thead th:not(.sticky-col),
+body #backScorecard table.scorecard-table thead th:not(.sticky-col) {
+  color: var(--hbnf-faded-phosphor) !important;
+  background: #3A3024 !important;
+}
+
+
+/* Cross-site navigation: keep HBNF as the scoring app; return to Events-first Local Roots without touching scoring state. */
+.ecosystem-nav { display:flex; align-items:center; justify-content:flex-end; flex:0 0 auto; }
+.ecosystem-home-link,
+.tools-menu-panel .ecosystem-menu-link {
+  display:inline-flex !important; align-items:center; justify-content:center;
+  min-height:36px; padding:6px 9px !important;
+  border:1px solid rgba(140,149,106,.52) !important; border-radius:7px !important;
+  background:rgba(140,149,106,.10) !important; color:#F4E9D6 !important;
+  font:700 .84rem/1.2 Cabin,Arial,sans-serif !important; letter-spacing:0 !important;
+  text-decoration:none !important; box-shadow:none !important;
+}
+.ecosystem-home-link:hover,
+.tools-menu-panel .ecosystem-menu-link:hover {
+  color:#B4C58F !important; border-color:#B4C58F !important; background:rgba(180,197,143,.14) !important;
+}
+.ecosystem-home-link:focus-visible,
+.tools-menu-panel .ecosystem-menu-link:focus-visible {
+  outline:3px solid #B4C58F !important; outline-offset:2px;
+}
+@media(max-width:520px) { .ecosystem-nav { margin-left:auto; } }

@@ -1,0 +1,10 @@
+{
+  "frontendBuildId": "9.14.26-cinematic-director-v1",
+  "matrixLibraryRevision": "hbnf-wow-2026-09-13-v2",
+  "cinematicDirectorRevision": "hbnf-cinematic-director-v1",
+  "backendFunctions": {
+    "hbnf-matrix-control": "generation-13",
+    "hbnf-cinematic-dispatcher": "generation-1"
+  },
+  "builtAt": "2026-09-14T00:00:00Z"
+}
