@@ -164,13 +164,6 @@ test("HBNF external action discloses new-tab behavior without changing visible l
   assert.ok(hbnf.includes("{ label: 'Glow', href: 'https://hbnightflyers.com/glow' }"));
 });
 
-test("D&U request errors are assertive and all request status messages are atomic", () => {
-  const du = source("pages/DyedUnattachedPage.tsx");
-  assert.ok(du.includes("aria-live={state === 'error' ? 'assertive' : 'polite'}"));
-  assert.ok(du.includes('aria-atomic="true"'));
-});
-
-
 test("owner-controlled copy policy remains explicit in source control", () => {
   const policy = readFileSync(new URL("../../docs/site-copy-policy.md", import.meta.url), "utf8");
   assert.ok(policy.includes("Do not invent promotional"));

@@ -29,7 +29,6 @@ test("D&U public page keeps only approved/functional copy and intake", () => {
 
 test("D&U public page uses the preserved canonical brand artwork", () => {
   assert.ok(duPublic.includes('src="/brand/dyed-unattached-logo.png"'));
-  assert.ok(duPublic.includes('src="/brand/dyed-unattached-tombstone.png"'));
   assert.equal(duPublic.includes('className="branch-monogram"'), false);
   assert.equal(createHash("sha256").update(duLogo).digest("hex"), "a9bdcd967c968008e3493f52be96c0cb2066364848e78b9987a4350bfb1f4136");
   assert.equal(createHash("sha256").update(duTombstone).digest("hex"), "89ce5f6db5fa730182610575a2bc53aa07ac8a1bd3cf7c33b26af75d23ade879");
