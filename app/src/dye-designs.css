@@ -19,3 +19,9 @@
 .dd-side{display:flex;flex-direction:column;gap:12px}
 .dd-dl{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.dd-dl .primary{background:#5ec2a1;color:#06150f;border-color:#5ec2a1;grid-column:1/-1;min-height:56px;font-size:17px}
 .dd-rec{margin:0;padding:12px;border-radius:12px;background:#0b0d10;white-space:pre-wrap;font:13px/1.5 ui-monospace,Menlo,monospace;overflow:auto;max-height:42dvh;-webkit-user-select:text;user-select:text}
+
+.dd-lay{display:grid;gap:6px}
+.dd-lr{display:grid;grid-template-columns:30px 1fr auto auto;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line,#33404e);border-radius:12px;background:rgba(255,255,255,.05)}
+.dd-lr b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#5ec2a1;color:#06150f;font-size:13px}
+.dd-lr em{font-style:normal;opacity:.75;font-size:13px}
+.dd-lr a{min-height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line,#33404e);display:inline-flex;align-items:center;color:inherit;text-decoration:none;font-weight:700}

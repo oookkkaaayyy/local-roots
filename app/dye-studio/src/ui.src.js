@@ -18,17 +18,17 @@ const PL=[
 const BASES=["#F4F2E8","#F7E331","#F27A26","#E84C55","#59A9DE","#57A768","#8D62B6","#DCE8E1","#2B2B2E"];
 const MEAS={base:"#38906F",c:{"UV Blast Green":{plate:"#8FC316",shoulder:"#69B820",rim:"#3BAF27"},"UV Blast Blaze Orange":{plate:"#B30003",shoulder:"#890507",rim:"#57090D"}}};
 const TYPES={
- stripe:{label:"Stripe",p:{a:-.6,c:0,w:.5,f:.02}},
- half:{label:"Half",p:{a:-.6,c:0,f:.02}},
- stencil:{label:"Stencil",p:{x:0,y:0,s:190.5/105},g:""}};
+ stripe:{label:"Stripe",p:{x:0,y:0,a:Math.PI/2,h:.45}},
+ box:{label:"Box",p:{x:0,y:0,a:0,w:.8,h:.5}},
+ stencil:{label:"Stencil",p:{x:0,y:0,s:190.5/105}}};
 const STN={};
 const uid=()=>Math.random().toString(36).slice(2,8);
 const poolOf=g=>{let L=DYELIST.filter(d=>!d.c);if(g==="Inventory")L=L.filter(d=>d.i);else if(g==="ProChem")L=L.filter(d=>d.g==="ProChem");else if(g==="UV Blast")L=L.filter(d=>/UV Blast/.test(d.g)&&!d.i||/UV Blast/.test(d.n));return L};
 const GROUPS=["Inventory"];const GL={Inventory:"Available"};
 function defState(){const a=uid(),b=uid();return{plastic:"star",base:"#F4F2E8",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:b,
- layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}},{id:b,type:"half",name:"Half",vis:true,dyes:[{n:"UV Blast Blaze Orange",s:1}],p:Object.assign({},TYPES.half.p)}]}}
+ layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}},{id:b,type:"stripe",name:"Stripe",vis:true,dyes:[{n:"UV Blast Blaze Orange",s:1}],p:Object.assign({},TYPES.stripe.p)}]}}
 let S=defState();
-try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]&&l.type!=="dip");if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}S.plastic="star";S.trans="";S.pool="Inventory";if(!["disc","blocks","stencil"].includes(S.tab))S.tab="disc";
+try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil")S.tab="stencil"}catch(e){}if(!["disc","design","stencil"].includes(S.tab))S.tab="disc";
 const dropGhost=()=>{S.layers=S.layers.filter(l=>l.type!=="stencil"||STN[l.id]);if(!S.layers.some(l=>l.id===S.sel))S.sel=S.layers[S.layers.length-1].id};
 const save=()=>{try{localStorage.setItem("dds11",JSON.stringify(S))}catch(e){}};
 const plastic=()=>PL.find(p=>p.id===S.plastic)||PL[0];
@@ -48,21 +48,22 @@ function colorAt(its,r,mc){
  return{hex:m||o.hex,spread:o.spread,lab:o.lab,gamut:o.gamutExcess>.02,measured:!!m};
 }
 // ---------- layer masks ----------
+function loc(L,u,v){const p=L.p,c=Math.cos(p.a),s=Math.sin(p.a),dx=u-p.x,dy=v-p.y;return[dx*c+dy*s,-dx*s+dy*c]}
 function maskW(L,x,y,r,ang){const p=L.p;
  switch(L.type){
  case"full":return 1;
- case"stripe":{const d=x*Math.cos(p.a)+y*Math.sin(p.a),e=Math.max(.004,p.f*.3);return edge(p.c-p.w/2,d,e)*(1-edge(p.c+p.w/2,d,e))}
- case"half":{const d=x*Math.cos(p.a)+y*Math.sin(p.a);return edge(p.c,d,Math.max(.004,p.f*.3))}
+ case"stripe":{const q=loc(L,x,y);return 1-edge(p.h/2,Math.abs(q[1]),.004)}
+ case"box":{const q=loc(L,x,y);return(1-edge(p.w/2,Math.abs(q[0]),.004))*(1-edge(p.h/2,Math.abs(q[1]),.004))}
  case"stencil":{const m=STN[L.id];if(!m)return 0;const hw=p.s/2,hh=hw*m.h/m.w,u=(x-p.x)/hw,v=(y-p.y)/hh;if(u<-1||u>1||v<-1||v>1)return 0;
   const fx=(u+1)/2*m.w-.5,fy=(v+1)/2*m.h-.5,x0=Math.floor(fx),y0=Math.floor(fy),tx=fx-x0,ty=fy-y0,g=(a,b)=>a<0||b<0||a>=m.w||b>=m.h?1:m.mask[b*m.w+a];
   return 1-((g(x0,y0)*(1-tx)+g(x0+1,y0)*tx)*(1-ty)+(g(x0,y0+1)*(1-tx)+g(x0+1,y0+1)*tx)*ty)}
  }
  return 0}
 const upOf=()=>plastic().up;
-function itemsFor(ws,layers){const up=upOf(),out=[];
- for(let i=0;i<layers.length;i++){const w=ws[i];if(!(w>.02))continue;for(const d of layers[i].dyes)out.push({name:d.n,s:Math.max(0,d.s*up*w)})}
+function itemsFor(ws,layers){const up=upOf(),out=[];let rem=1;
+ for(let i=layers.length-1;i>=0;i--){const w=ws[i];if(!(w>0))continue;const e=w*rem;rem*=1-w;if(e>.02)for(const d of layers[i].dyes)out.push({name:d.n,s:Math.max(0,d.s*up*e)})}
  return out}
-function weightsAt(x,y){const r=Math.hypot(x,y),ang=Math.atan2(y,x);return S.layers.map(L=>L.vis&&L.dyes.length?maskW(L,x,y,r,ang):0)}
+function weightsAt(x,y){const r=Math.hypot(x,y),ang=Math.atan2(y,x);return S.layers.map(L=>L.vis?maskW(L,x,y,r,ang):0)}
 function colorAtPt(x,y,mc){const r=Math.hypot(x,y);return colorAt(itemsFor(weightsAt(x,y),S.layers),r,mc)}
 function layerAt(x,y){const ws=weightsAt(x,y);for(let i=S.layers.length-1;i>0;i--)if(ws[i]>.5)return S.layers[i];return S.layers[0]}
 // ---------- rendering ----------
@@ -70,7 +71,7 @@ const cv=$("#cv"),ov=$("#ov"),sq=$(".sq"),vw=$(".vw");let B=800;const oc=documen
 const NB=96;
 function renderDisc(W){
  const layers=S.layers,n=layers.length,hasW=false;
- const act=layers.map(l=>l.vis&&l.dyes.length>0);
+ const act=layers.map(l=>l.vis);
  const cache=new Map();
  const img=new ImageData(W,W),d=img.data,c=W/2,R=W*.46,ws=new Array(n).fill(0),qs=new Array(n).fill(0);
  for(let y=0;y<W;y++)for(let x=0;x<W;x++){
@@ -89,55 +90,73 @@ function paint(fast){
  const W=fast?Math.max(240,Math.round(B/3)):B;oc.width=oc.height=W;oc.getContext("2d").putImageData(renderDisc(W),0,0);
  const ctx=cv.getContext("2d");ctx.clearRect(0,0,B,B);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.drawImage(oc,0,0,B,B);
  clearTimeout(fastT);if(fast)fastT=setTimeout(()=>paint(false),140)}
-// ---------- overlay: outline + handles ----------
-const UI={edit:false,flashUntil:0,pt:{x:.5,y:0},drag:null,hideT:null,raf:0};
+// ---------- overlay + direct manipulation ----------
+const UI={drag:null,hover:null,guide:null,pt:{x:.5,y:0}};
 const P2=(u,v)=>[B/2+u*B*.46,B/2+v*B*.46];
-function outline(ctx,L){const R=B*.46,c=B/2;
- const line=(a,e)=>{if(Math.abs(e)>=1)return;const h=Math.sqrt(1-e*e),n=[Math.cos(a),Math.sin(a)],t=[-n[1],n[0]];ctx.beginPath();ctx.moveTo(c+(n[0]*e-t[0]*h)*R,c+(n[1]*e-t[1]*h)*R);ctx.lineTo(c+(n[0]*e+t[0]*h)*R,c+(n[1]*e+t[1]*h)*R);ctx.stroke()};
- if(L.type==="full"){ctx.beginPath();ctx.arc(c,c,.995*R,0,7);ctx.stroke()}
- else if(L.type==="stripe"){line(L.p.a,L.p.c-L.p.w/2);line(L.p.a,L.p.c+L.p.w/2)}
- else if(L.type==="half")line(L.p.a,L.p.c);
+const isShape=L=>L&&(L.type==="stripe"||L.type==="box");
+const showH=()=>{const L=selL();return L&&L.type!=="full"&&(L.type==="stencil"?S.tab==="stencil":S.tab==="design")};
+const axes=L=>{const a=L.p.a;return{t:[Math.cos(a),Math.sin(a)],n:[-Math.sin(a),Math.cos(a)]}};
+function corners(L){const p=L.p,{t,n}=axes(L),hw=p.w/2,hh=p.h/2,f=(a,b)=>[p.x+t[0]*a+n[0]*b,p.y+t[1]*a+n[1]*b];return[f(-hw,-hh),f(hw,-hh),f(hw,hh),f(-hw,hh)]}
+function chord(P,t){const b=P[0]*t[0]+P[1]*t[1],c=P[0]*P[0]+P[1]*P[1]-1,d=b*b-c;if(d<=0)return null;const q=Math.sqrt(d);return[[P[0]+t[0]*(-b-q),P[1]+t[1]*(-b-q)],[P[0]+t[0]*(-b+q),P[1]+t[1]*(-b+q)]]}
+function stripeLines(L){const p=L.p,{t,n}=axes(L),o=[];for(const s of[-1,1]){const c=chord([p.x+n[0]*s*p.h/2,p.y+n[1]*s*p.h/2],t);if(c)o.push(c)}return o}
+function outline(ctx,L){const R=B*.46,c=B/2,pt=q=>[c+q[0]*R,c+q[1]*R];
+ const seg=(a,b)=>{const A=pt(a),Z=pt(b);ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(Z[0],Z[1]);ctx.stroke()};
+ if(L.type==="stripe")stripeLines(L).forEach(s=>seg(s[0],s[1]));
+ else if(L.type==="box"){const q=corners(L);for(let i=0;i<4;i++)seg(q[i],q[(i+1)%4])}
  else if(L.type==="stencil"&&STN[L.id]){const m=STN[L.id],hw=L.p.s/2,hh=hw*m.h/m.w;ctx.strokeRect(c+(L.p.x-hw)*R,c+(L.p.y-hh)*R,hw*2*R,hh*2*R)}}
-function handles(L){const p=L.p;
- if(L.type==="stripe"||L.type==="half"){const n=[Math.cos(p.a),Math.sin(p.a)],o=[{id:"c",u:n[0]*p.c,v:n[1]*p.c}];if(L.type==="stripe"){const e=p.c+p.w/2;o.push({id:"w",u:n[0]*e-n[1]*.3,v:n[1]*e+n[0]*.3})}return o}
- if(L.type==="stencil"&&STN[L.id]){const m=STN[L.id],hw=p.s/2;return[{id:"c",u:p.x,v:p.y},{id:"sz",u:p.x+hw,v:p.y+hw*m.h/m.w}]}
- return[]}
-function dragTo(L,id,u,v){const p=L.p,r=Math.hypot(u,v);
- if(L.type==="stripe"||L.type==="half"){if(id==="c"){if(r>.06)p.a=Math.atan2(v,u);p.c=clamp(r,0,.95)}else p.w=clamp(2*(u*Math.cos(p.a)+v*Math.sin(p.a)-p.c),.04,1.9)}
- else if(L.type==="stencil"){if(id==="c"){p.x=clamp(u,-1.2,1.2);p.y=clamp(v,-1.2,1.2)}else p.s=clamp(2*(u-p.x),.4,2.2)}}
-function drawOv(){const ctx=ov.getContext("2d");ctx.clearRect(0,0,B,B);const now=performance.now(),L=selL();
- const fa=clamp((UI.flashUntil-now)/350,0,1),a=UI.edit?1:fa;
- if(a>0){ctx.save();ctx.globalAlpha=a;ctx.lineCap="round";ctx.setLineDash([B*.012,B*.012]);
-  ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=B*.007;outline(ctx,L);
-  ctx.strokeStyle="#fff";ctx.lineWidth=B*.003;outline(ctx,L);ctx.restore()}
- if(fa>0&&!UI.edit){const[x,y]=P2(UI.pt.x,UI.pt.y);ctx.save();ctx.globalAlpha=fa;ctx.beginPath();ctx.arc(x,y,B*.012,0,7);ctx.lineWidth=B*.006;ctx.strokeStyle="rgba(0,0,0,.6)";ctx.stroke();ctx.lineWidth=B*.003;ctx.strokeStyle="#fff";ctx.stroke();ctx.restore()}
- if(UI.edit)for(const h of handles(L)){const[x,y]=P2(h.u,h.v);ctx.beginPath();ctx.arc(x,y,B*.017,0,7);ctx.fillStyle="#fff";ctx.fill();ctx.lineWidth=B*.006;ctx.strokeStyle="rgba(0,0,0,.65)";ctx.stroke();ctx.beginPath();ctx.arc(x,y,B*.006,0,7);ctx.fillStyle=UI.drag&&UI.drag.id===h.id?"#5ec2a1":"#222";ctx.fill()}
- if(a>0&&!UI.edit&&UI.flashUntil>now)UI.raf=requestAnimationFrame(drawOv);else UI.raf=0}
-function flash(ms){UI.flashUntil=performance.now()+(ms||1100);if(!UI.raf)UI.raf=requestAnimationFrame(drawOv);else drawOv()}
-function setEdit(on){UI.edit=on;clearTimeout(UI.hideT);drawOv();const b=$("[data-act=reshape]");if(b)b.classList.toggle("on",on)}
-function hideSoon(){clearTimeout(UI.hideT);UI.hideT=setTimeout(()=>setEdit(false),2600)}
-// ---------- pointer ----------
+function handles(L){const p=L.p,{t,n}=axes(L),o=[],W=(a,b)=>({u:p.x+t[0]*a+n[0]*b,v:p.y+t[1]*a+n[1]*b});
+ if(L.type==="box"){const hw=p.w/2,hh=p.h/2;for(const sx of[-1,0,1])for(const sy of[-1,0,1]){if(!sx&&!sy)continue;o.push(Object.assign(W(sx*hw,sy*hh),{id:"r:"+sx+":"+sy,k:sx&&sy?"c":"e",sx,sy}))}o.push(Object.assign(W(0,-hh-.12),{id:"rot",k:"rot"}))}
+ else if(L.type==="stripe"){for(const s of[-1,1])o.push(Object.assign(W(0,s*p.h/2),{id:"e:"+s,k:"e",sx:0,sy:s}));const d=Math.hypot(p.x,p.y),Lr=Math.sqrt(Math.max(.05,1-d*d))*.86;o.push(Object.assign(W(Lr,0),{id:"rot",k:"rot"}))}
+ else if(L.type==="stencil"&&STN[L.id]){const m=STN[L.id],hw=p.s/2;o.push({id:"c",u:p.x,v:p.y,k:"m"},{id:"sz",u:p.x+hw,v:p.y+hw*m.h/m.w,k:"c",sx:1,sy:1})}
+ return o}
+function drawOv(){const ctx=ov.getContext("2d");ctx.clearRect(0,0,B,B);const L=selL();
+ const stroke=(f,w)=>{ctx.strokeStyle="rgba(58,38,24,.75)";ctx.lineWidth=B*.007+w;f();ctx.strokeStyle="#fff";ctx.lineWidth=B*.0035+w;f()};
+ ctx.lineCap="round";ctx.lineJoin="round";
+ if(UI.hover&&UI.hover!==S.sel){const H=S.layers.find(l=>l.id===UI.hover);if(H&&H.type!=="full"){ctx.save();ctx.globalAlpha=.8;ctx.setLineDash([B*.012,B*.012]);stroke(()=>outline(ctx,H),0);ctx.restore()}}
+ if(showH()){stroke(()=>outline(ctx,L),0);
+  if(UI.guide){ctx.save();ctx.setLineDash([B*.01,B*.01]);ctx.strokeStyle="#9f5c36";ctx.lineWidth=B*.004;const R=B*.46,c=B/2;if(UI.guide.x){ctx.beginPath();ctx.moveTo(c,c-R);ctx.lineTo(c,c+R);ctx.stroke()}if(UI.guide.y){ctx.beginPath();ctx.moveTo(c-R,c);ctx.lineTo(c+R,c);ctx.stroke()}if(UI.guide.r){const A=UI.guide.r;ctx.beginPath();ctx.moveTo(c-A[0]*R,c-A[1]*R);ctx.lineTo(c+A[0]*R,c+A[1]*R);ctx.stroke()}ctx.restore()}
+  const hs=handles(L),rot=hs.find(h=>h.k==="rot");
+  if(rot&&L.type==="box"){const n=axes(L).n,a=P2(L.p.x-n[0]*L.p.h/2,L.p.y-n[1]*L.p.h/2),b=P2(rot.u,rot.v);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.strokeStyle="#fff";ctx.lineWidth=B*.004;ctx.stroke()}
+  for(const h of hs){const[x,y]=P2(h.u,h.v),act=UI.drag&&UI.drag.id===h.id;ctx.beginPath();
+   if(h.k==="rot")ctx.arc(x,y,B*.019,0,7);else if(h.k==="c")ctx.rect(x-B*.014,y-B*.014,B*.028,B*.028);else ctx.rect(x-B*.011,y-B*.011,B*.022,B*.022);
+   ctx.fillStyle=act?"#9f5c36":"#fff";ctx.fill();ctx.lineWidth=B*.004;ctx.strokeStyle="rgba(58,38,24,.85)";ctx.stroke();
+   if(h.k==="rot"){ctx.beginPath();ctx.arc(x,y,B*.009,-2.4,1.2);ctx.lineWidth=B*.003;ctx.strokeStyle=act?"#fff":"rgba(58,38,24,.85)";ctx.stroke()}}}}
+const flash=()=>drawOv(),setEdit=()=>drawOv();
 function toUV(e){const r=ov.getBoundingClientRect(),X=(e.clientX-r.left)/r.width*B,Y=(e.clientY-r.top)/r.height*B;return{u:(X-B/2)/(B*.46),v:(Y-B/2)/(B*.46),X,Y}}
-function hit(e){const t=toUV(e),L=selL(),dpr=B/ov.getBoundingClientRect().width;let best=null,bd=1e9;
+function hit(e){if(!showH())return null;const t=toUV(e),L=selL(),dpr=B/ov.getBoundingClientRect().width;let best=null,bd=1e9;
  for(const h of handles(L)){const[x,y]=P2(h.u,h.v),d=Math.hypot(x-t.X,y-t.Y);if(d<bd){bd=d;best=h}}
- return best&&bd<34*dpr?best:null}
-let down=null;
+ return best&&bd<22*dpr?best:null}
+function inside(L,u,v){if(L.type==="stencil"){const m=STN[L.id];if(!m)return false;const hw=L.p.s/2,hh=hw*m.h/m.w;return Math.abs(u-L.p.x)<=hw&&Math.abs(v-L.p.y)<=hh}
+ const q=loc(L,u,v);return L.type==="stripe"?Math.abs(q[1])<=L.p.h/2:Math.abs(q[0])<=L.p.w/2&&Math.abs(q[1])<=L.p.h/2}
+function cursorFor(h,L){if(!h)return"default";if(h.k==="m")return"move";if(h.k==="rot")return"grab";
+ const a=Math.atan2(h.v-L.p.y,h.u-L.p.x),d=(((a*57.296)%180)+180)%180,i=Math.round(d/45)%4;return["ew-resize","nwse-resize","ns-resize","nesw-resize"][i]}
 ov.addEventListener("contextmenu",e=>e.preventDefault());
-ov.addEventListener("pointerdown",e=>{ov.setPointerCapture(e.pointerId);const t=toUV(e);
- if(UI.edit){const h=hit(e);if(h){UI.drag={id:h.id};clearTimeout(UI.hideT);drawOv();return}}
- down={x:e.clientX,y:e.clientY,t:performance.now(),t0:t,moved:false,fired:false};
- down.lp=setTimeout(()=>{if(!down||down.moved)return;down.fired=true;const r=Math.hypot(down.t0.u,down.t0.v);if(r<1.02){selectLayer(layerAt(down.t0.u,down.t0.v).id,true);if(selL().type!=="full")setEdit(true,hideSoon());else flash(1200)}},380)});
-ov.addEventListener("pointermove",e=>{
- if(UI.drag){const t=toUV(e);dragTo(selL(),UI.drag.id,t.u,t.v);paint(true);drawOv();syncShape();return}
- if(down&&!down.moved&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>10){down.moved=true;clearTimeout(down.lp)}});
-ov.addEventListener("pointerup",e=>{
- if(UI.drag){UI.drag=null;commit();paint(false);drawOv();hideSoon();readout();return}
- if(!down)return;clearTimeout(down.lp);const d=down;down=null;
- if(d.fired){hideSoon();return}
- if(d.moved)return;
- const r=Math.hypot(d.t0.u,d.t0.v);if(UI.edit)setEdit(false);
- if(r<1.02){UI.pt={x:d.t0.u,y:d.t0.v};selectLayer(layerAt(d.t0.u,d.t0.v).id,true)}});
-ov.addEventListener("pointercancel",()=>{if(down){clearTimeout(down.lp);down=null}UI.drag=null});
+ov.addEventListener("pointerdown",e=>{ov.setPointerCapture(e.pointerId);const t=toUV(e),L=selL(),h=hit(e),r=Math.hypot(t.u,t.v);
+ if(h){UI.drag={id:h.id,h,L,p0:JSON.parse(JSON.stringify(L.p)),t0:t,moved:false};if(h.id==="rot"){const O=L.type==="box"?[L.p.x,L.p.y]:[0,0];UI.drag.O=O;UI.drag.phi0=Math.atan2(t.v-O[1],t.u-O[0])}drawOv();return}
+ let T=null;if(showH()&&inside(L,t.u,t.v))T=L;else if(r<=1.03)T=layerAt(t.u,t.v);
+ if(r<=1.03){UI.pt={x:t.u,y:t.v};readout()}
+ if(!T){if(S.sel!==S.layers[0].id)selectLayer(S.layers[0].id);return}
+ if(T.id!==S.sel)selectLayer(T.id);
+ if(T.type!=="full"){UI.drag={id:"body",L:T,p0:JSON.parse(JSON.stringify(T.p)),t0:t,moved:false};ov.style.cursor="move"}drawOv()});
+ov.addEventListener("pointermove",e=>{const t=toUV(e),D=UI.drag;
+ if(!D){const h=hit(e);let cur=cursorFor(h,selL());let hv=null;if(!h){const r=Math.hypot(t.u,t.v);if(r<=1.03){const T=showH()&&inside(selL(),t.u,t.v)?selL():layerAt(t.u,t.v);cur=T.type==="full"?"default":"move";if(T.type!=="full")hv=T.id}}
+  ov.style.cursor=cur;if(hv!==UI.hover){UI.hover=hv;drawOv()}return}
+ const L=D.L,p=L.p,p0=D.p0;if(!D.moved&&Math.hypot(t.X-D.t0.X,t.Y-D.t0.Y)<4)return;D.moved=true;UI.guide=null;
+ if(D.id==="body"||D.id==="c"){const du=t.u-D.t0.u,dv=t.v-D.t0.v;
+  if(L.type==="stripe"){const n=axes(L).n,d0=p0.x*n[0]+p0.y*n[1];let d=clamp(d0+du*n[0]+dv*n[1],-.98,.98);if(Math.abs(d)<.03){d=0;UI.guide={r:axes(L).t}}p.x=n[0]*d;p.y=n[1]*d}
+  else{let x=clamp(p0.x+du,-1.15,1.15),y=clamp(p0.y+dv,-1.15,1.15);const g={};if(Math.abs(x)<.03){x=0;g.x=1}if(Math.abs(y)<.03){y=0;g.y=1}UI.guide=g.x||g.y?g:null;p.x=x;p.y=y}}
+ else if(D.id==="rot"){let da=Math.atan2(t.v-D.O[1],t.u-D.O[0])-D.phi0,a=p0.a+da,deg=a*57.296,sn=Math.round(deg/15)*15;if(Math.abs(deg-sn)<3){a=sn/57.296;da=a-p0.a}
+  p.a=wrap(a);if(L.type==="stripe"){const c=Math.cos(da),s=Math.sin(da);p.x=p0.x*c-p0.y*s;p.y=p0.x*s+p0.y*c}}
+ else if(D.id==="sz"){p.s=clamp(2*(t.u-p.x),.4,2.2)}
+ else{const c0=Math.cos(p0.a),s0=Math.sin(p0.a),dx=t.u-p0.x,dy=t.v-p0.y,q=[dx*c0+dy*s0,-dx*s0+dy*c0],tt=[c0,s0],n=[-s0,c0];
+  let ct=0,cn=0;const sx=D.h.sx,sy=D.h.sy;
+  if(L.type==="box"&&sx){const an=-sx*p0.w/2,w=Math.max(.06,(q[0]-an)*sx);p.w=Math.min(w,2.2);ct=an+sx*p.w/2}
+  if(sy){const an=-sy*p0.h/2,h=Math.max(.04,(q[1]-an)*sy);p.h=Math.min(h,2.2);cn=an+sy*p.h/2}
+  p.x=p0.x+tt[0]*ct+n[0]*cn;p.y=p0.y+tt[1]*ct+n[1]*cn}
+ paint(true);drawOv();readout()});
+const endDrag=()=>{const D=UI.drag;UI.drag=null;UI.guide=null;if(D&&D.moved){commit();paint(false)}drawOv()};
+ov.addEventListener("pointerup",endDrag);ov.addEventListener("pointercancel",endDrag);
+ov.addEventListener("pointerleave",()=>{if(!UI.drag&&UI.hover){UI.hover=null;drawOv()}});
 // ---------- history ----------
 let H=[],hi=-1;
 const snap=()=>JSON.stringify({plastic:S.plastic,base:S.base,trans:S.trans,layers:S.layers,sel:S.sel});
@@ -175,33 +194,33 @@ $("#px").onclick=closePick;$("#sheet").addEventListener("click",e=>{if(e.target.
 // ---------- panel ----------
 const EYE='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const MM=105,unitOf=k=>k==="a"?"°":k==="sz"?" mm":"%";
-const ANG=["Angle","a",-180,180,L=>Math.round(L.p.a*57.296),(L,v)=>L.p.a=v/57.296],POS=["Position","c",-95,95,L=>Math.round(L.p.c*100),(L,v)=>L.p.c=v/100];
 const SHAPES={
- stripe:[ANG,POS,["Width","w",5,190,L=>Math.round(L.p.w*100),(L,v)=>L.p.w=v/100]],
- half:[ANG,POS],
  stencil:[["Size","sz",40,200,L=>Math.round(L.p.s*MM),(L,v)=>L.p.s=v/MM],["X","sx",-100,100,L=>Math.round(L.p.x*100),(L,v)=>L.p.x=v/100],["Y","sy",-100,100,L=>Math.round(L.p.y*100),(L,v)=>L.p.y=v/100]]};
 const slider=(id,k,i,lo,hi,val,name,unit)=>`<div class="sl"><span class="nm">${name}</span><input type="range" min="${lo}" max="${hi}" value="${val}" data-id="${id}" data-k="${k}" data-i="${i}" style="--v:${(val-lo)/(hi-lo)*100}%"><span class="pc" data-for="${id}${k}${i}">${val}${unit}</span></div>`;
-function layerCard(L){const sel=L.id===S.sel;
- const sum=L.dyes.map(d=>esc(d.n)+" "+Math.round(d.s*100)+"%").join(" + ");
- let h=`<div class="lc${sel?" sel":""}"><div class="lh" data-act="sel" data-id="${L.id}"><i class="sw" style="background:${layerHex(L)}"></i><div class="ln"><b>${esc(L.type==="full"?"Whole disc":L.name)}</b><span>${sum}</span></div><button class="ic${L.vis?"":" off"}" data-act="vis" data-id="${L.id}">${EYE}</button></div>`;
+const CH={up:'<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',dn:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>'};
+function layerCard(L,i,n){const sel=L.id===S.sel,full=L.type==="full";
+ const sum=L.dyes.length?L.dyes.map(d=>esc(d.n)+" "+Math.round(d.s*100)+"%").join(" + "):"No dye";
+ let h=`<div class="lc${sel?" sel":""}"><div class="lh" data-act="sel" data-id="${L.id}"><i class="sw" style="background:${layerHex(L)}"></i><div class="ln"><b>${esc(full?"Whole disc":L.name)}</b><span>${sum}</span></div>`+
+  (full?"":`<button class="ic${i>=n-1?" dis":""}" data-act="up" data-id="${L.id}" aria-label="Forward">${CH.up}</button><button class="ic${i<=1?" dis":""}" data-act="down" data-id="${L.id}" aria-label="Back">${CH.dn}</button>`)+
+  `<button class="ic${L.vis?"":" off"}" data-act="vis" data-id="${L.id}" aria-label="Show">${EYE}</button></div>`;
  if(sel){h+=`<div class="lb">`;
-  L.dyes.forEach((d,i)=>{h+=`<div class="dr"><button class="dsw" data-act="dyepick" data-i="${i}"><i style="background:${dyeHex(d.n)}"></i></button><button class="dn" data-act="dyepick" data-i="${i}">${esc(d.n)}</button><span class="pc" data-for="${L.id}s${i}">${Math.round(d.s*100)}%</span><button class="ic" data-act="dyedel" data-i="${i}">×</button></div>`+
-   `<input type="range" min="5" max="150" value="${Math.round(d.s*100)}" data-id="${L.id}" data-k="s" data-i="${i}" style="--v:${(Math.round(d.s*100)-5)/145*100}%">`});
+  L.dyes.forEach((d,k)=>{h+=`<div class="dr"><button class="dsw" data-act="dyepick" data-i="${k}"><i style="background:${dyeHex(d.n)}"></i></button><button class="dn" data-act="dyepick" data-i="${k}">${esc(d.n)}</button><span class="pc" data-for="${L.id}s${k}">${Math.round(d.s*100)}%</span><button class="ic" data-act="dyedel" data-i="${k}">×</button></div>`+
+   `<input type="range" min="5" max="150" value="${Math.round(d.s*100)}" data-id="${L.id}" data-k="s" data-i="${k}" style="--v:${(Math.round(d.s*100)-5)/145*100}%">`});
   h+=`<div class="row" style="margin-top:10px"><button class="g" data-act="dyeadd">+ Dye</button><button class="g" data-act="match">Match</button></div>`;
-  if(L.type!=="full"){h+=SHAPES[L.type].map(([nm,k,lo,hi,get],i)=>slider(L.id,"p"+k,i,lo,hi,get(L),nm,unitOf(k))).join("")+
-   `<div class="foot"><button data-act="reshape" class="${UI.edit?"on":""}">Move</button>${L.type==="stencil"?"<button data-act=\"del\" class=\"dg\">Delete</button>":"<button data-act=\"dup\">Duplicate</button>"}${L.type==="stencil"?"":"<button data-act=\"del\" class=\"dg\">Delete</button>"}</div>`}
+  if(L.type==="stencil")h+=SHAPES.stencil.map(([nm,k,lo,hi,get],j)=>slider(L.id,"p"+k,j,lo,hi,get(L),nm,unitOf(k))).join("");
+  if(!full)h+=`<div class="foot2">${L.type==="stencil"?"":`<button data-act="dup">Duplicate</button>`}<button data-act="del" class="dg">Delete</button></div>`;
   h+=`</div>`}
  return h+`</div>`}
-const IC={photo:'<svg viewBox="0 0 32 32"><path d="M4 10h5l2-3h10l2 3h5v15H4z"/><circle cx="16" cy="17" r="5"/></svg>',color:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><circle cx="11" cy="13" r="2"/><circle cx="17" cy="10" r="2"/><circle cx="21" cy="16" r="2"/></svg>',stripe:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><path d="M8 24L24 8M13 28L28 13" /></svg>',half:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><path d="M5 22L27 10" /><path d="M5 22a13 13 0 0 0 22-12z" fill="currentColor" stroke="none" opacity=".45"/></svg>',stencil:'<svg viewBox="0 0 32 32"><rect x="5" y="5" width="22" height="22" rx="3"/><circle cx="16" cy="14" r="4"/><path d="M8 25c1-5 15-5 16 0"/></svg>'};
+const IC={photo:'<svg viewBox="0 0 32 32"><path d="M4 10h5l2-3h10l2 3h5v15H4z"/><circle cx="16" cy="17" r="5"/></svg>',color:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><circle cx="11" cy="13" r="2"/><circle cx="17" cy="10" r="2"/><circle cx="21" cy="16" r="2"/></svg>',stripe:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><path d="M8 24L24 8M13 28L28 13" /></svg>',box:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><rect x="10" y="11" width="12" height="10" rx="1"/></svg>',stencil:'<svg viewBox="0 0 32 32"><rect x="5" y="5" width="22" height="22" rx="3"/><circle cx="16" cy="14" r="4"/><path d="M8 25c1-5 15-5 16 0"/></svg>'};
 const tile=(act,ic,t,x)=>`<button class="tl" data-act="${act}" ${x||""}>${IC[ic]}<span>${t}</span></button>`;
 const next=(t,l)=>`<button class="pri nx" data-act="go" data-t="${t}">${l}</button>`;
-function tabBlocks(){
- let h=`<div class="tg">${tile("addlayer","stripe","Stripe",'data-t="stripe"')}${tile("addlayer","half","Half",'data-t="half"')}</div>`;
- for(let i=S.layers.length-1;i>=0;i--)if(S.layers[i].type!=="stencil")h+=layerCard(S.layers[i]);
- return h+next("stencil","Stencil")}
+function tabDesign(){const n=S.layers.length;
+ let h=`<div class="tg">${tile("addlayer","stripe","Stripe",'data-t="stripe"')}${tile("addlayer","box","Box",'data-t="box"')}</div><div class="ord">Front</div>`;
+ for(let i=n-1;i>=0;i--)h+=layerCard(S.layers[i],i,n);
+ return h+`<div class="ord">Back</div>`+next("stencil","Stencil")}
 const colorField=(id,val)=>`<div class="cl"><input type="color" id="${id}C" value="${val}"><input type="text" id="${id}H" value="${val}" maxlength="7" autocapitalize="characters" autocorrect="off" spellcheck="false"></div>`;
 function tabDisc(){
- return `<div class="tg">${tile("discphoto","photo","Photo")}${tile("discpick","color","Color")}</div><div class="bs">`+BASES.map(b=>`<button data-act="base" data-c="${b}" class="${b===S.base.toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`</div>`+colorField("b",S.base)+next("blocks","Blocks")}
+ return `<div class="tg">${tile("discphoto","photo","Photo")}${tile("discpick","color","Color")}</div><div class="bs">`+BASES.map(b=>`<button data-act="base" data-c="${b}" class="${b===S.base.toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`</div>`+colorField("b",S.base)+next("design","Design")}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
 const sh=n=>n.replace(/^(ProChem |iDye Poly )/,"");
 const chips=()=>"";
@@ -210,35 +229,36 @@ function tabRecipe(){
  `<div class="seg" style="margin-top:10px">`+[1,2,3].map(n=>`<button data-act="nd" data-n="${n}" class="${S.nd===n?"on":""}">${n}</button>`).join("")+`<button data-act="grab">Sample</button><button class="pri" data-act="solve">Find</button></div><div id="rec"></div>`}
 function tabStencil(){const L=S.layers.find(l=>l.type==="stencil");
  let h=`<div class="tg">${tile("photo","stencil",L?"Replace":"Photo")}</div>`;
- if(L){const m=STN[L.id];h+=`<div class="lbl">Stencil</div><div class="row"><div class="sw" style="width:96px;height:96px;background:#fff;overflow:hidden;display:flex"><canvas id="stp" width="96" height="96" style="width:96px;height:96px"></canvas></div><div class="ln"><b>${Math.round(L.p.s*MM)} × ${Math.round(L.p.s*MM*m.h/m.w)} mm</b><span>${m.verdict==="PASS"?"Ready to cut":"Review"}</span></div><button data-act="sel" data-id="${L.id}">Edit</button></div>`}
- return h+(L?layerCard(L):"")}
+ if(L){const m=STN[L.id];h+=`<div class="thumb"><div class="sw" style="width:84px;height:84px;background:#fff;overflow:hidden;display:flex"><canvas id="stp" width="96" height="96" style="width:84px;height:84px"></canvas></div><div class="ln"><b>${Math.round(L.p.s*MM)} × ${Math.round(L.p.s*MM*m.h/m.w)} mm</b></div></div>`+layerCard(L,S.layers.indexOf(L),S.layers.length)}
+ return h}
 function paintThumb(){const L=S.layers.find(l=>l.type==="stencil"),c=$("#stp");if(!L||!c)return;const m=STN[L.id],x=c.getContext("2d"),k=Math.min(96/m.w,96/m.h);x.fillStyle="#fff";x.fillRect(0,0,96,96);const id=x.createImageData(96,96);for(let j=0;j<96;j++)for(let i=0;i<96;i++){const sx=Math.floor((i-(96-m.w*k)/2)/k),sy=Math.floor((j-(96-m.h*k)/2)/k),o=(j*96+i)*4;const v=sx<0||sy<0||sx>=m.w||sy>=m.h?255:m.mask[sy*m.w+sx]?255:0;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255}x.putImageData(id,0,0)}
 function panel(){const b=$("#body"),y=b.scrollTop;
- b.innerHTML=S.tab==="blocks"?tabBlocks():S.tab==="disc"?tabDisc():tabStencil();if(S.tab==="stencil")paintThumb();
+ b.innerHTML=S.tab==="design"?tabDesign():S.tab==="disc"?tabDisc():tabStencil();if(S.tab==="stencil")paintThumb();
  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===S.tab));
  b.scrollTop=y;if($("#match").classList.contains("open"))drawMatch()}
 function drawMatch(){$("#mbody").innerHTML=tabRecipe()}
 function all(){paint(false);drawOv();readout();panel();undoBtns()}
-function selectLayer(id,fl){S.sel=id;{const l=S.layers.find(x=>x.id===id);S.tab=l&&l.type==="stencil"?"stencil":"blocks"}save();readout();panel();if(fl)flash(1100);else drawOv()}
+function selectLayer(id){S.sel=id;const l=S.layers.find(x=>x.id===id);if(l&&l.type!=="full")S.tab=l.type==="stencil"?"stencil":"design";save();readout();panel();drawOv()}
 function syncShape(){const L=selL(),sp=SHAPES[L.type]||[];sp.forEach(([nm,k,lo,hi,get],i)=>{const v=get(L),inp=document.querySelector(`[data-id="${L.id}"][data-k="p${k}"]`);if(inp){inp.value=v;inp.style.setProperty("--v",(v-lo)/(hi-lo)*100+"%")}const o=document.querySelector(`[data-for="${L.id}p${k}${i}"]`);if(o)o.textContent=v+unitOf(k)})}
 // panel events
 const body=$("#body");let DM=false;
 const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.dataset.act,L=selL();
- if(a==="sel"){if(e.target.closest("[data-act=vis]"))return;selectLayer(t.dataset.id,true)}
+ if(a==="sel"){if(e.target.closest("[data-act]:not([data-act=sel])")!==t&&e.target.closest("[data-act]:not([data-act=sel])"))return;selectLayer(t.dataset.id)}
+ else if(a==="up"||a==="down"){const i=S.layers.findIndex(x=>x.id===t.dataset.id),j=i+(a==="up"?1:-1);if(i>0&&j>=1&&j<S.layers.length){const q=S.layers[i];S.layers[i]=S.layers[j];S.layers[j]=q;commit();all()}}
  else if(a==="vis"){const l=S.layers.find(x=>x.id===t.dataset.id);l.vis=!l.vis;commit();all()}
  else if(a==="go"){S.tab=t.dataset.t;save();setEdit(false);panel()}
  else if(a==="discphoto"){DM=true;$("#pfile").click()}
  else if(a==="discpick"){const c=$("#bC");if(c)c.click()}
  else if(a==="match"){drawMatch();$("#match").classList.add("open")}
  else if(a==="addlayer"){const ty=t.dataset.t,n=S.layers.filter(l=>l.type===ty).length,pool=poolOf("Inventory"),used=new Set(S.layers.flatMap(l=>l.dyes.map(d=>d.n))),pick=(pool.find(d=>!used.has(d.n))||pool[0]).n;
-  const N={id:uid(),type:ty,name:TYPES[ty].label+(n?" "+(n+1):""),vis:true,dyes:[{n:pick,s:1}],p:Object.assign({},TYPES[ty].p)};S.layers.push(N);S.sel=N.id;S.tab="blocks";commit();all();flash(1300)}
+  const N={id:uid(),type:ty,name:TYPES[ty].label+(n?" "+(n+1):""),vis:true,dyes:[{n:pick,s:1}],p:Object.assign({},TYPES[ty].p)};if(ty==="box"){N.p.x=.12*(n%4);N.p.y=-.12*(n%4)}if(ty==="stripe"&&n){const m=n%2?1:-1;N.p.a=wrap(N.p.a+m*.5236*Math.ceil(n/2))}S.layers.push(N);S.sel=N.id;S.tab="design";commit();all()}
  else if(a==="dyepick"){const i=+t.dataset.i;openPick(n=>{L.dyes[i].n=n;commit();all()})}
  else if(a==="dyeadd")openPick(n=>{L.dyes.push({n,s:1});commit();all()});
  else if(a==="dyedel"){L.dyes.splice(+t.dataset.i,1);commit();all()}
  else if(a==="photo"){DM=false;$("#pfile").click()}
  else if(a==="reshape"){setEdit(!UI.edit);if(UI.edit)hideSoon()}
- else if(a==="dup"){const N=JSON.parse(JSON.stringify(L));N.id=uid();N.name=L.name+" 2";if(N.type==="stripe"||N.type==="half")N.p.a=wrap(N.p.a+Math.PI);S.layers.push(N);S.sel=N.id;commit();all();flash(1200)}
- else if(a==="del"){delete STN[L.id];S.layers=S.layers.filter(l=>l.id!==L.id);S.sel=S.layers[S.layers.length-1].id;setEdit(false);commit();all()}
+ else if(a==="dup"){const N=JSON.parse(JSON.stringify(L));N.id=uid();N.name=L.name+" 2";if(N.type==="stripe"){N.p.x*=-1;N.p.y*=-1;if(!N.p.x&&!N.p.y){const t=axes(N).n;N.p.x=t[0]*.3;N.p.y=t[1]*.3}}else if(N.type==="box"){N.p.x=clamp(N.p.x+.12,-1,1);N.p.y=clamp(N.p.y+.12,-1,1)}S.layers.push(N);S.sel=N.id;commit();all()}
+ else if(a==="del"){delete STN[L.id];S.layers=S.layers.filter(l=>l.id!==L.id);S.sel=S.layers[S.layers.length-1].id;commit();all()}
   else if(a==="base"){S.base=t.dataset.c;commit();all()}
  else if(a==="pool"){S.pool=t.dataset.g;save();panel()}
  else if(a==="nd"){S.nd=+t.dataset.n;save();panel()}
@@ -267,17 +287,20 @@ $("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(
 // header
 const flip=(b,t)=>{const o=b.dataset.o||b.textContent;b.dataset.o=o;b.textContent=t;clearTimeout(b._t);b._t=setTimeout(()=>b.textContent=o,1400)};
 const pad=n=>String(n).padStart(2,"0"),slug=t=>t.replace(/UV Blast |iDye Poly |ProChem /g,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
-function recipeText(d){d=d||new Date();const mm=r=>Math.round(r*MM),dy=l=>l.dyes.map(x=>x.n+" "+Math.round(x.s*100)+"%").join(" + ")||"none";
- const L=["DYE RECIPE "+d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes()),"Plastic: "+plastic().name+(plastic().fam==="champion"?" (tint "+transHex()+")":"")+" | Base color: "+S.base,"Strength: 100% = standard bath for the dye. Layers add dye; apply in order.",""];
- S.layers.forEach((l,i)=>{if(!l.vis||!l.dyes.length)return;const p=l.p;let g;
-  if(l.type==="full")g="whole disc";
-  else if(l.type==="stripe")g="straight-edged stripe "+mm(p.w)+" mm wide, center line "+mm(p.c)+" mm from disc center toward "+Math.round(((p.a*57.296)+360)%360)+"° (0° = 3 o'clock, clockwise); edges parallel and perpendicular to that direction";
-  else if(l.type==="half")g="half disc: straight edge "+mm(p.c)+" mm from center toward "+Math.round(((p.a*57.296)+360)%360)+"° (0° = 3 o'clock, clockwise); dye the side beyond the line";
-  else if(l.type==="stencil"){const m=STN[l.id];g=m?"vinyl stencil (stencil.svg, Cricut, black = cut out) "+mm(p.s)+" x "+mm(p.s*m.h/m.w)+" mm, centered "+mm(Math.abs(p.x))+" mm "+(p.x>=0?"right":"left")+" and "+mm(Math.abs(p.y))+" mm "+(p.y>=0?"below":"above")+" disc center; apply after the other layers are dyed and dry, then dye through the holes; compile check: "+m.verdict:"stencil"}
+const deg=a=>Math.round(((a*57.296)%360+360)%360);
+function recipeText(d){d=d||new Date();const mm=r=>Math.round(r*MM),dy=l=>l.dyes.map(x=>x.n+" "+Math.round(x.s*100)+"%").join(" + ")||"no dye (keep disc color)";
+ const L=["DYE RECIPE "+d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes()),"Disc color: "+S.base+" ("+plastic().name+")","Strength: 100% = standard bath for the dye.","Disc: 210 mm across. Angles: 0 deg = 3 o'clock, clockwise. Positions in mm from disc center (+x right, +y down).","Regions do not overlap: a layer in front covers layers behind it. Dye one region per step; vinyl (Cricut SVG) covers everything outside that region. SVG center = disc center.",""];
+ const vis=S.layers.map((l,i)=>({l,i})).filter(o=>o.l.vis);let step=0;
+ vis.forEach(({l,i})=>{const p=l.p;let g,f="";
+  if(l.type==="full")g="outside all shapes (whole disc if no shapes)";
+  else if(l.type==="stripe"){const n=axes(l).n,dd=p.x*n[0]+p.y*n[1];g="stripe "+mm(p.h)+" mm wide, long edges at "+deg(p.a)+" deg, center line "+mm(Math.abs(dd))+" mm from disc center ("+mm(p.x)+", "+mm(p.y)+" mm foot point)"}
+  else if(l.type==="box")g="box "+mm(p.w)+" x "+mm(p.h)+" mm, rotated "+deg(p.a)+" deg, center ("+mm(p.x)+", "+mm(p.y)+") mm";
+  else if(l.type==="stencil"){const m=STN[l.id];g=m?"photo stencil (stencil.svg, Cricut, black = cut out) "+mm(p.s)+" x "+mm(p.s*m.h/m.w)+" mm, center ("+mm(p.x)+", "+mm(p.y)+") mm; dye through the holes; compile check: "+m.verdict:"stencil"}
   else g="";
-  L.push((i+1)+". "+l.name+": "+dy(l)+" - "+g)});
+  if(l.type!=="stencil"&&l.dyes.length&&vis.length>1)f=" - vinyl file layer-"+(i+1)+".svg";
+  step++;L.push(step+". "+(l.type==="full"?"Whole disc":l.name)+" (layer "+(i+1)+", "+(i===0?"back":i===S.layers.length-1?"front":"middle")+"): "+dy(l)+" - "+g+f)});
  const a=Math.atan2(UI.pt.y,UI.pt.x),pts=[.35,.72,.93].map(r=>colorAtPt(Math.cos(a)*r,Math.sin(a)*r).hex);
- L.push("","Predicted (sample direction): center "+pts[0]+", mid "+pts[1]+", rim "+pts[2]);return L.join("\n")}
+ L.push("","Predicted (sample point): center "+pts[0]+", mid "+pts[1]+", rim "+pts[2]);return L.join("\n")}
 function fileName(d){const bl=S.layers[0],parts=[d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()),pad(d.getHours())+pad(d.getMinutes()),slug(plastic().name),slug(S.base)];
  S.layers.forEach((l,i)=>{if(l.vis&&l.dyes.length)parts.push((i?l.name.replace(/\s+/g,""):"Base")+"-"+l.dyes.map(x=>slug(x.n)+Math.round(x.s*100)).join("+"))});return parts.join("_").slice(0,150)}
 const SB="https://wtymjxscneufjlkkywyg.supabase.co/rest/v1/du_dye_recipes",SK="sb_publishable_rimiZU1rSfq1nCEOUBw3ew_1j_GuZUx";
@@ -286,6 +309,22 @@ const SBR="https://wtymjxscneufjlkkywyg.supabase.co";
 const uuid=()=>crypto.randomUUID?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const v=Math.random()*16|0;return(c==="x"?v:(v&3|8)).toString(16)});
 async function put(id,name,blob,type){try{const r=await fetch(SBR+"/storage/v1/object/du-dye-designs/"+id+"/"+name,{method:"POST",headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":type,"x-upsert":"false"},body:blob});return r.ok}catch(e){return false}}
 const toBlob=(c,t)=>new Promise(r=>c.toBlob(r,t||"image/png"));
+function regionSvg(idx,title){const N=1400,V=N+1,layers=S.layers,n=layers.length,mk=new Uint8Array(N*N);
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){const u=(x+.5)/N*2-1,v=(y+.5)/N*2-1;if(u*u+v*v>1)continue;let own=0;for(let i=n-1;i>=0;i--){const L=layers[i];if(!L.vis)continue;if((L.type==="full"?1:maskW(L,u,v,0,0))>.5){own=i;break}}if(own===idx)mk[y*N+x]=1}
+ const nx=new Map(),add=(a,b)=>{const l=nx.get(a);l?l.push(b):nx.set(a,[b])};
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!mk[y*N+x])continue;
+  if(y===0||!mk[(y-1)*N+x])add(y*V+x,y*V+x+1);if(x===N-1||!mk[y*N+x+1])add(y*V+x+1,(y+1)*V+x+1);
+  if(y===N-1||!mk[(y+1)*N+x])add((y+1)*V+x+1,(y+1)*V+x);if(x===0||!mk[y*N+x-1])add((y+1)*V+x,y*V+x)}
+ const sc=210/N,f=q=>(Math.round(q*sc*100)/100),parts=[];
+ const dist=(P,A,Z)=>{const dx=Z[0]-A[0],dy=Z[1]-A[1],l=dx*dx+dy*dy;if(!l)return Math.hypot(P[0]-A[0],P[1]-A[1]);const t=((P[0]-A[0])*dx+(P[1]-A[1])*dy)/l;return Math.hypot(P[0]-A[0]-t*dx,P[1]-A[1]-t*dy)};
+ const rdp=(pts,eps)=>{const keep=new Uint8Array(pts.length);keep[0]=keep[pts.length-1]=1;const st=[[0,pts.length-1]];while(st.length){const[a,b]=st.pop();let m=-1,k=0;for(let i=a+1;i<b;i++){const d=dist(pts[i],pts[a],pts[b]);if(d>m){m=d;k=i}}if(m>eps){keep[k]=1;st.push([a,k],[k,b])}}return pts.filter((_,i)=>keep[i])};
+ for(const[s0]of nx){while((nx.get(s0)||[]).length){const loop=[];let cur=s0;while(true){const l=nx.get(cur);if(!l||!l.length)break;const q=l.pop();loop.push(cur);cur=q;if(cur===s0)break}
+  if(loop.length<4)continue;let pts=loop.map(k=>[k%V,Math.floor(k/V)]);
+  pts=pts.filter((P,i)=>{const A=pts[(i+pts.length-1)%pts.length],Z=pts[(i+1)%pts.length];return(P[0]-A[0])*(Z[1]-P[1])-(P[1]-A[1])*(Z[0]-P[0])!==0});
+  if(pts.length<3)continue;let far=0,fd=0;for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[0][0],pts[i][1]-pts[0][1]);if(d>fd){fd=d;far=i}}
+  const a=rdp(pts.slice(0,far+1),.75),b=rdp(pts.slice(far).concat([pts[0]]),.75),all=a.concat(b.slice(1,-1));
+  if(all.length>=3)parts.push("M"+all.map(P=>f(P[0])+" "+f(P[1])).join("L")+"Z")}}
+ return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="210mm" viewBox="0 0 210 210"><title>${esc(title)}</title><path d="${parts.join("")}" fill="none" stroke="#000" stroke-width="0.1" fill-rule="evenodd"/></svg>\n`}
 async function uploadFiles(id,spec,row){const f={},W=1200,c=document.createElement("canvas");c.width=c.height=W;c.getContext("2d").putImageData(renderDisc(W),0,0);
  if(await put(id,"preview.png",await toBlob(c),"image/png"))f.preview=true;
  const L=S.layers.find(l=>l.type==="stencil"&&l.vis),m=L&&STN[L.id];
@@ -295,6 +334,9 @@ async function uploadFiles(id,spec,row){const f={},W=1200,c=document.createEleme
   const sc=document.createElement("canvas");sc.width=m.w;sc.height=m.h;const sx=sc.getContext("2d"),im=sx.createImageData(m.w,m.h);for(let i=0;i<m.mask.length;i++){const v=m.mask[i]?255:0;im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255}sx.putImageData(im,0,0);
   if(await put(id,"stencil.png",await toBlob(sc),"image/png"))f.stencil_png=true;
   if(m.photo&&await put(id,"photo.jpg",m.photo,"image/jpeg"))f.photo=true}
+
+ if(S.layers.filter(l=>l.vis).length>1)for(let i=0;i<S.layers.length;i++){const l=S.layers[i];if(!l.vis||l.type==="stencil"||!l.dyes.length)continue;
+  if(await put(id,"layer-"+(i+1)+".svg",new Blob([regionSvg(i,"Layer "+(i+1)+" "+l.name+" "+l.dyes.map(d=>d.n).join("+"))],{type:"image/svg+xml"}),"image/svg+xml"))f["layer_"+(i+1)]=true}
  return f}
 async function logRecipe(action){try{const d=new Date(),spec={plastic:S.plastic,base:S.base,trans:S.trans,layers:S.layers.map(l=>({type:l.type,name:l.name,vis:l.vis,dyes:l.dyes,p:l.p}))},key=JSON.stringify(spec);if(sent.has(key))return;sent.add(key);
  const id=uuid(),row={id,file_name:fileName(d),plastic:plastic().name,base_hex:S.base,recipe:recipeText(d),spec,action};
@@ -315,7 +357,7 @@ $("#svx").onclick=()=>$("#save").classList.remove("open");$("#save").addEventLis
 $("#copy").onclick=()=>{logRecipe("copy");copyText(publicText());flip($("#copy"),"Copied")};
 
 // ---------- photo to stencil ----------
-let SM=null;const stencilMod=()=>SM||(SM=import("./photo-stencil.mjs"));
+let SM=null;const stencilMod=()=>SM||(SM=import("/dyed-and-unattached/dye-studio/photo-stencil.mjs"));
 const FN=640,FR={img:null,z:1,ox:0,oy:0,detail:.6,balance:.5,invert:false,res:null,t:null,seq:0};
 const fcan=document.createElement("canvas");fcan.width=fcan.height=FN;
 function frameDraw(){const x=fcan.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,FN,FN);const im=FR.img;if(!im)return;const b=Math.max(FN/im.width,FN/im.height)*FR.z,w=im.width*b,h=im.height*b,mx=Math.max(0,(w-FN)/2),my=Math.max(0,(h-FN)/2);FR.ox=clamp(FR.ox,-mx,mx);FR.oy=clamp(FR.oy,-my,my);x.drawImage(im,FN/2-w/2+FR.ox,FN/2-h/2+FR.oy,w,h)}
@@ -348,6 +390,14 @@ $("#fok").onclick=async()=>{if(!FR.res)return;if(FR.dm){S.base=FR.res.hex;S.tran
 function layout(){const w=vw.clientWidth,h=vw.clientHeight,s=Math.max(120,Math.floor(Math.min(w,h)-8));sq.style.width=sq.style.height=s+"px";
  const nb=clamp(Math.round(s*Math.min(2,window.devicePixelRatio||1)),480,1400);if(nb!==B||cv.width!==nb){B=nb;cv.width=cv.height=ov.width=ov.height=B;paint(false);drawOv()}}
 new ResizeObserver(layout).observe(vw);
-window.addEventListener("keydown",e=>{if(e.key==="Escape"){closePick();setEdit(false)}});
+window.addEventListener("keydown",e=>{const tg=e.target&&e.target.tagName;if(tg==="INPUT"||tg==="TEXTAREA")return;
+ if(e.key==="Escape"){closePick();$("#match").classList.remove("open");selectLayer(S.layers[0].id);return}
+ const L=selL(),mod=e.metaKey||e.ctrlKey;
+ if(mod&&e.key.toLowerCase()==="z"){e.preventDefault();(e.shiftKey?$("#redo"):$("#undo")).click();return}
+ if(!L||L.type==="full")return;
+ if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();delete STN[L.id];S.layers=S.layers.filter(l=>l.id!==L.id);S.sel=S.layers[S.layers.length-1].id;commit();all();return}
+ if(mod&&e.key.toLowerCase()==="d"&&L.type!=="stencil"){e.preventDefault();const b=document.querySelector("[data-act=dup]");if(b)b.click();return}
+ const st=e.shiftKey?.05:.01,m={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
+ if(m){e.preventDefault();if(L.type==="stripe"){const n=axes(L).n,d=clamp(L.p.x*n[0]+L.p.y*n[1]+m[0]*n[0]+m[1]*n[1],-.98,.98);L.p.x=n[0]*d;L.p.y=n[1]*d}else{L.p.x=clamp(L.p.x+m[0],-1.15,1.15);L.p.y=clamp(L.p.y+m[1],-1.15,1.15)}paint(true);drawOv();clearTimeout(window.__nt);window.__nt=setTimeout(()=>{commit();paint(false)},300)}});
 dropGhost();flushQ();layout();H=[snap()];hi=0;all();
 })();

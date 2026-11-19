@@ -72,5 +72,5 @@ test('Local Roots Weather PWA and iPhone metadata use the LR mark without changi
   assert.equal((index.match(/rel="apple-touch-icon"/g) ?? []).length, 1);
   assert.match(app, /isDuAdmin\|\|isDuPublic\?'D&U'/);
   assert.match(app, /isWeather\?'LR Weather':'Local Roots'/);
-  assert.match(text('public/dyed-and-unattached/dye-studio/index.html'), /sizes="180x180" href="\/brand\/dyed-unattached-icon-180\.png/);
+  assert.match(text('scripts/generate-home-screen-route-shells.mjs'), /dyed-and-unattached\/dye-studio\/index\.html[\s\S]*?brand\/dyed-unattached-icon-180\.png/);
 });
