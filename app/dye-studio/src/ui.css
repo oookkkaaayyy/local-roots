@@ -102,3 +102,4 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 
 .ord{font:800 11px/1 var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin:10px 2px 8px}
 .foot2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+#frame .row{flex-wrap:wrap}#fleft{margin-left:auto;font-size:13px;font-weight:700;color:var(--mu)}#fleft.lo{color:#e8a23a}

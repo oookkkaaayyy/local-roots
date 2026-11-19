@@ -112,3 +112,4 @@
 .ds .thumb{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 
 .ds .tl[data-big]{min-height:220px;border-style:dashed;background:var(--p2)}.ds .tl[data-big] svg{width:56px;height:56px}.ds .tl[data-big] span{font-size:18px}
+.ds #frame .row{flex-wrap:wrap}.ds #fleft{margin-left:auto;font-size:13px;font-weight:700;color:var(--mu)}.ds #fleft.lo{color:#e8a23a}
