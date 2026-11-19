@@ -1,6 +1,6 @@
 import { blur, N } from "./photo-stencil.mjs";
 const S = 320;
-let sess = null, ortMod = null;
+let sess = null, ortMod = null, lsess = null;
 export function frameToTensor(rgba, n = N) {
   const mean = [.485, .456, .406], std = [.229, .224, .225], t = new Float32Array(3 * S * S), k = n / S;
   for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
@@ -52,4 +52,14 @@ export function headFrame(mask, n = N) {
   let sx = 0, c = 0; for (let y = y0; y <= y0 + Math.round(Math.min(H, wh * 1.3) * .6); y++) for (let x = lx[y]; x <= rx[y]; x++) if (mask[y * n + x]) { sx += x; c++; }
   const cx = c ? sx / c : (x0 + x1) / 2, side = Math.min(Math.max(wh * 1.9, 160), Math.max(W, H) * 1.1);
   return { cx, cy: y0 + side * .5 - side * .04, side };
+}
+
+// Photo to line drawing (1 = paper, 0 = ink). Background outside the mask is painted white first.
+export async function lineMap(rgba, mask, n = N, base = "/dyed-and-unattached/dye-studio/") {
+  if (!ortMod) { ortMod = await import(base + "ml/ort.min.mjs"); ortMod.env.wasm.wasmPaths = base + "ml/"; ortMod.env.wasm.numThreads = 1; ortMod.env.wasm.proxy = false; }
+  if (!lsess) lsess = await ortMod.InferenceSession.create(base + "ml/linedraw.onnx", { executionProviders: ["wasm"] });
+  const t = new Float32Array(3 * n * n);
+  for (let i = 0; i < n * n; i++) for (let c = 0; c < 3; c++) t[c * n * n + i] = (mask[i] ? rgba[i * 4 + c] : 255) / 255;
+  const out = await lsess.run({ x: new ortMod.Tensor("float32", t, [1, 3, n, n]) });
+  return out.y.data;
 }
