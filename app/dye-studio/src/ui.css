@@ -99,3 +99,6 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 #fv{background:#000}
 .fr.disc{width:min(460px,100%)}.disc .st{display:none}.disc #fp{display:none}.disc #fv{width:100%}
 @media(max-width:700px){.frm{flex-direction:column}.frm canvas{width:100%}}
+
+.ord{font:800 11px/1 var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin:10px 2px 8px}
+.foot2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}

@@ -37,8 +37,33 @@ export function photoToLum(rgba, n = N, { detail = 0.6, balance = 0.5, invert = 
   }
   return lum;
 }
+function cleanLum(lum, n, opts) {
+  // Smooth edges: blur the two-tone map and re-threshold, then drop specks.
+  const f = new Float32Array(n * n);
+  for (let i = 0; i < f.length; i++) f[i] = lum[i] < 128 ? 0 : 255;
+  const b = blur(f, n, n, 1.4 + (1 - (opts.detail ?? 0.6)) * 1.2);
+  const out = new Uint8Array(n * n);
+  for (let i = 0; i < out.length; i++) out[i] = b[i] < 127.5 ? 0 : 255;
+  const minA = Math.round(n * n * (0.00018 + (1 - (opts.detail ?? 0.6)) * 0.0004));
+  const seen = new Uint8Array(n * n), stack = [];
+  for (let s0 = 0; s0 < out.length; s0++) {
+    if (seen[s0]) continue;
+    const v = out[s0], comp = [];
+    stack.push(s0); seen[s0] = 1;
+    while (stack.length) {
+      const k = stack.pop(); comp.push(k);
+      const x = k % n, y = (k - x) / n;
+      if (x > 0 && !seen[k - 1] && out[k - 1] === v) { seen[k - 1] = 1; stack.push(k - 1); }
+      if (x < n - 1 && !seen[k + 1] && out[k + 1] === v) { seen[k + 1] = 1; stack.push(k + 1); }
+      if (y > 0 && !seen[k - n] && out[k - n] === v) { seen[k - n] = 1; stack.push(k - n); }
+      if (y < n - 1 && !seen[k + n] && out[k + n] === v) { seen[k + n] = 1; stack.push(k + n); }
+    }
+    if (comp.length < minA) for (const k of comp) out[k] = v ? 0 : 255;
+  }
+  return out;
+}
 export function buildStencil(rgba, opts, n = N) {
-  const lum = photoToLum(rgba, n, opts);
+  const lum = cleanLum(photoToLum(rgba, n, opts), n, opts);
   const art = normalizeArtwork(lum, n, n);
   const r = compileStencil(art.mask, art.width, art.height, art.mmPerPx);
   return { mask: r.mask, w: art.width, h: art.height, mmPerPx: art.mmPerPx, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length };

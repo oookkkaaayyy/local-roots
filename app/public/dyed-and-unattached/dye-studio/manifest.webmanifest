@@ -5,6 +5,6 @@
   "start_url": "/dyed-and-unattached/dye-studio/",
   "scope": "/dyed-and-unattached/dye-studio/",
   "display": "standalone",
-  "background_color": "#0b1016",
+  "background_color": "#f4ecdf",
   "theme_color": "#3A2618"
 }
