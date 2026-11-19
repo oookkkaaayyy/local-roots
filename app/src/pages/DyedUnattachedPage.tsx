@@ -177,14 +177,19 @@ export function DyedUnattachedPage() {
       <div className="du-brand-lockup">
         <h1 className="du-brand-heading"><img src="/brand/dyed-unattached-logo.png" alt="Dyed & Unattached" /></h1>
         <div className="branch-actions">
-          <a className="button primary" href="#request-stencil">Request a stencil</a>
+          <a className="button primary" href="/dyed-and-unattached/dye-studio?tool=stencil">Make a stencil</a>
           <a className="button ghost" href="/dyed-and-unattached/dye-studio">Dye Studio</a>
+          <a className="button ghost" href="#request-stencil">Request a stencil</a>
         </div>
       </div>
     </section>
 
     <div id="gallery" />
 
+    <section className="du-tools content" aria-label="Tools">
+      <a className="du-tool" href="/dyed-and-unattached/dye-studio?tool=stencil"><div className="du-tool-img"><img src="/brand/du-tool-stencil.png" alt="" /></div><div className="du-tool-foot"><h2>Stencil</h2><span className="button primary">Make a stencil</span></div></a>
+      <a className="du-tool" href="/dyed-and-unattached/dye-studio"><div className="du-tool-img"><img src="/brand/du-tool-studio.png" alt="" /></div><div className="du-tool-foot"><h2>Dye Studio</h2><span className="button ghost">Design a disc</span></div></a>
+    </section>
     <section className="du-gallery content" aria-label="Dyed & Unattached portfolio examples">
       <div className="du-gallery-shell" onMouseEnter={() => setGalleryPaused(true)} onMouseLeave={() => setGalleryPaused(false)} onFocus={() => setGalleryPaused(true)} onBlur={() => setGalleryPaused(false)}>
         <span className="du-gallery-hint">Swipe or use the arrow buttons to browse portfolio examples.</span>

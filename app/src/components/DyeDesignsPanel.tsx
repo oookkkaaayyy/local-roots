@@ -3,7 +3,7 @@ import { callFunction } from '../lib/supabase';
 
 type Auth = Parameters<typeof callFunction>[2];
 type Item = {id:string;created_at:string;file_name:string;plastic:string;base_hex:string;status:string;has_stencil:boolean;preview_url:string|null;layers:Array<{type:string;dyes:string[]}>};
-type Detail = {item:{id:string;created_at:string;file_name:string;plastic:string;base_hex:string;recipe:string;status:string;has_stencil:boolean;files:Record<string,boolean>};urls:Record<string,string>;view:Record<string,string>};
+type Detail = {item:{id:string;created_at:string;file_name:string;plastic:string;base_hex:string;recipe:string;status:string;has_stencil:boolean;files:Record<string,boolean>;spec?:{layers?:Array<{type:string;name:string;vis?:boolean;dyes:Array<{n:string;s:number}>}>}};urls:Record<string,string>;view:Record<string,string>};
 const STATUS:Array<[string,string]> = [['new','New'],['making','Making'],['done','Done']];
 const FILE_LABELS:Array<[string,string,boolean]> = [['stencil_svg','Cricut SVG',true],['preview','Preview',false],['stencil_png','Stencil PNG',false],['photo','Photo',false],['design','Design file',false]];
 const EXT:Record<string,string> = {stencil_svg:'_CRICUT.svg',preview:'.png',stencil_png:'_stencil.png',photo:'_photo.jpg',design:'_design.json'};
@@ -45,7 +45,8 @@ export function DyeDesignsPanel({auth}:{auth:Auth}){
     setBusy(true);
     try{
       const files:Array<{name:string;data:Uint8Array}>=[{name:`${d.item.file_name}_recipe.txt`,data:new TextEncoder().encode(d.item.recipe)}];
-      for(const [key] of FILE_LABELS){const u=d.urls[key];if(!u)continue;const res=await fetch(u);files.push({name:d.item.file_name+EXT[key],data:new Uint8Array(await res.arrayBuffer())});}
+      const keys=[...FILE_LABELS.map(f=>f[0]),...Object.keys(d.urls).filter(k=>/^layer_\d+$/.test(k))];
+      for(const key of keys){const u=d.urls[key];if(!u)continue;const res=await fetch(u);const ext=EXT[key]??`_CRICUT_layer${key.slice(6)}.svg`;files.push({name:d.item.file_name+ext,data:new Uint8Array(await res.arrayBuffer())});}
       saveBlob(zipStore(files),`${d.item.file_name}.zip`);
     }finally{setBusy(false);}
   };
@@ -67,6 +68,7 @@ export function DyeDesignsPanel({auth}:{auth:Auth}){
           <div className="dd-dl">{FILE_LABELS.filter(([k])=>open.urls[k]).map(([k,l,primary])=><a key={k} className={primary?'primary':''} href={open.urls[k]} download>{l}</a>)}
             <button type="button" onClick={()=>saveBlob(new Blob([open.item.recipe],{type:'text/plain'}),`${open.item.file_name}_recipe.txt`)}>Recipe</button>
             <button type="button" disabled={busy} onClick={()=>void zipAll(open)}>{busy?'…':'All files'}</button></div>
+          {open.item.spec?.layers?<div className="dd-lay">{[...open.item.spec.layers.map((l,i)=>({l,i}))].reverse().filter(o=>o.l.vis!==false).map(({l,i})=>{const u=open.urls['layer_'+(i+1)];return <div className="dd-lr" key={i}><b>{i+1}</b><span>{l.type==='full'?'Whole disc':l.name}</span><em>{l.dyes.map(d=>d.n).join(' + ')||'No dye'}</em>{u?<a href={u} download>SVG</a>:<i/>}</div>;})}</div>:null}
           <pre className="dd-rec">{open.item.recipe}</pre>
           <button type="button" onClick={()=>copy(open.item.recipe)}>Copy recipe</button>
         </div>
