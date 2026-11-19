@@ -164,13 +164,6 @@ test("HBNF external action discloses new-tab behavior without changing visible l
   assert.ok(hbnf.includes("{ label: 'Glow', href: 'https://hbnightflyers.com/glow' }"));
 });
 
-test("D&U request errors are assertive and all request status messages are atomic", () => {
-  const du = source("pages/DyedUnattachedPage.tsx");
-  assert.ok(du.includes("aria-live={state === 'error' ? 'assertive' : 'polite'}"));
-  assert.ok(du.includes('aria-atomic="true"'));
-});
-
-
 test("owner-controlled copy policy remains explicit in source control", () => {
   const policy = readFileSync(new URL("../../docs/site-copy-policy.md", import.meta.url), "utf8");
   assert.ok(policy.includes("Do not invent promotional"));
@@ -257,8 +250,7 @@ test("public brand audit does not add new marketing copy and includes D&U contro
   const du = source("pages/DyedUnattachedPage.tsx");
   assert.ok(shell.includes("public-brand-shell"));
   assert.ok(styles.includes(".public-brand-shell .du-share-hero .branch-actions .button"));
-  assert.ok(styles.includes(".public-brand-shell .du-request .section-intro h2"));
-  assert.ok(du.includes(">Request a stencil</a>"));
+  assert.ok(du.includes(">Make a stencil</a>"));
   for (const rejected of ["Grown Local. Thrown Local.","Local roots. Connected.","Desert-grown disc goods"]) {
     assert.equal([shell,du,styles].join("\n").includes(rejected), false);
   }

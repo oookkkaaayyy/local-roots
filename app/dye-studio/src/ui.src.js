@@ -28,7 +28,7 @@ const GROUPS=["Inventory"];const GL={Inventory:"Available"};
 function defState(){const a=uid(),b=uid();return{plastic:"star",base:"#F4F2E8",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:b,
  layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}},{id:b,type:"stripe",name:"Stripe",vis:true,dyes:[{n:"UV Blast Blaze Orange",s:1}],p:Object.assign({},TYPES.stripe.p)}]}}
 let S=defState();
-try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil")S.tab="stencil"}catch(e){}if(!["disc","design","stencil"].includes(S.tab))S.tab="disc";
+try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil"){S.tab="stencil";S.layers=S.layers.filter(l=>l.type==="full");S.sel=S.layers[0].id}}catch(e){}if(!["disc","design","stencil"].includes(S.tab))S.tab="disc";
 const dropGhost=()=>{S.layers=S.layers.filter(l=>l.type!=="stencil"||STN[l.id]);if(!S.layers.some(l=>l.id===S.sel))S.sel=S.layers[S.layers.length-1].id};
 const save=()=>{try{localStorage.setItem("dds11",JSON.stringify(S))}catch(e){}};
 const plastic=()=>PL.find(p=>p.id===S.plastic)||PL[0];
@@ -228,8 +228,8 @@ function tabRecipe(){
  return `<div class="cl" style="margin-top:0"><input type="color" id="gC" value="${S.tg.toLowerCase()}"><input type="text" id="gH" value="${S.tg}" maxlength="7" autocapitalize="characters" autocorrect="off" spellcheck="false"></div>`+
  `<div class="seg" style="margin-top:10px">`+[1,2,3].map(n=>`<button data-act="nd" data-n="${n}" class="${S.nd===n?"on":""}">${n}</button>`).join("")+`<button data-act="grab">Sample</button><button class="pri" data-act="solve">Find</button></div><div id="rec"></div>`}
 function tabStencil(){const L=S.layers.find(l=>l.type==="stencil");
- let h=`<div class="tg">${tile("photo","stencil",L?"Replace":"Photo")}</div>`;
- if(L){const m=STN[L.id];h+=`<div class="thumb"><div class="sw" style="width:84px;height:84px;background:#fff;overflow:hidden;display:flex"><canvas id="stp" width="96" height="96" style="width:84px;height:84px"></canvas></div><div class="ln"><b>${Math.round(L.p.s*MM)} × ${Math.round(L.p.s*MM*m.h/m.w)} mm</b></div></div>`+layerCard(L,S.layers.indexOf(L),S.layers.length)}
+ let h=`<div class="tg">${tile("photo","stencil",L?"Replace photo":"Choose a photo",L?"":'data-big="1"')}</div>`;
+ if(L){const m=STN[L.id];h+=`<div class="thumb"><div class="sw" style="width:84px;height:84px;background:#fff;overflow:hidden;display:flex"><canvas id="stp" width="96" height="96" style="width:84px;height:84px"></canvas></div><div class="ln"><b>${Math.round(L.p.s*MM)} × ${Math.round(L.p.s*MM*m.h/m.w)} mm</b></div></div>`+`<div class="seg" style="margin:10px 0"><button class="pri" data-act="stsvg">Download SVG</button><button data-act="stdisc">Place on disc</button></div>`+layerCard(L,S.layers.indexOf(L),S.layers.length)}
  return h}
 function paintThumb(){const L=S.layers.find(l=>l.type==="stencil"),c=$("#stp");if(!L||!c)return;const m=STN[L.id],x=c.getContext("2d"),k=Math.min(96/m.w,96/m.h);x.fillStyle="#fff";x.fillRect(0,0,96,96);const id=x.createImageData(96,96);for(let j=0;j<96;j++)for(let i=0;i<96;i++){const sx=Math.floor((i-(96-m.w*k)/2)/k),sy=Math.floor((j-(96-m.h*k)/2)/k),o=(j*96+i)*4;const v=sx<0||sy<0||sx>=m.w||sy>=m.h?255:m.mask[sy*m.w+sx]?255:0;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255}x.putImageData(id,0,0)}
 function panel(){const b=$("#body"),y=b.scrollTop;
@@ -256,6 +256,8 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  else if(a==="dyeadd")openPick(n=>{L.dyes.push({n,s:1});commit();all()});
  else if(a==="dyedel"){L.dyes.splice(+t.dataset.i,1);commit();all()}
  else if(a==="photo"){DM=false;$("#pfile").click()}
+ else if(a==="stdisc"){S.tab="design";const l=S.layers.filter(x=>x.type!=="stencil").pop();if(l)S.sel=l.id;save();readout();panel();drawOv()}
+ else if(a==="stsvg"){const SL=S.layers.find(l=>l.type==="stencil"),m=SL&&STN[SL.id];if(m)stencilMod().then(M=>{const svg=M.maskToCutSvg(m.mask,m.w,m.h,SL.p.s*MM/m.w),u=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"})),a2=document.createElement("a");a2.href=u;a2.download="stencil.svg";document.body.appendChild(a2);a2.click();a2.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
  else if(a==="reshape"){setEdit(!UI.edit);if(UI.edit)hideSoon()}
  else if(a==="dup"){const N=JSON.parse(JSON.stringify(L));N.id=uid();N.name=L.name+" 2";if(N.type==="stripe"){N.p.x*=-1;N.p.y*=-1;if(!N.p.x&&!N.p.y){const t=axes(N).n;N.p.x=t[0]*.3;N.p.y=t[1]*.3}}else if(N.type==="box"){N.p.x=clamp(N.p.x+.12,-1,1);N.p.y=clamp(N.p.y+.12,-1,1)}S.layers.push(N);S.sel=N.id;commit();all()}
  else if(a==="del"){delete STN[L.id];S.layers=S.layers.filter(l=>l.id!==L.id);S.sel=S.layers[S.layers.length-1].id;commit();all()}
