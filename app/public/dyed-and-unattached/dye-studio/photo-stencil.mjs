@@ -151,6 +151,33 @@ function distIn(mask, n, r) {
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const i = y * n + x; if (!mask[i]) continue; let edge = false; for (let dy = -r; dy <= r && !edge; dy += r) for (let dx = -r; dx <= r; dx += r) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= n || yy >= n || !mask[yy * n + xx]) { edge = true; break; } } out[i] = edge ? 1 : 0; }
   return out;
 }
+
+// Line-drawing model output (1 = paper, 0 = ink) combined with shadow fills and a silhouette ring into a two-tone stencil.
+function erodeMask(m, n, r) {
+  const o = new Uint8Array(n * n);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const i = y * n + x; if (!m[i]) continue; let ok = 1; for (let d = -r; d <= r && ok; d += r) for (let e = -r; e <= r; e += r) { const xx = x + e, yy = y + d; if (xx < 0 || yy < 0 || xx >= n || yy >= n || !m[yy * n + xx]) { ok = 0; break; } } o[i] = ok; }
+  return o;
+}
+export function lineLum(rgba, n, mask, line, { detail = 0.6, balance = 0.5, invert = false } = {}, pass = 0) {
+  const g = new Float32Array(n * n), sub = []; let area = 0;
+  for (let i = 0; i < g.length; i++) { const k = i * 4; g[i] = .299 * rgba[k] + .587 * rgba[k + 1] + .114 * rgba[k + 2]; if (mask[i]) { area++; if (i % 3 === 0) sub.push(g[i]); } }
+  sub.sort((p, q) => p - q);
+  const lo = sub[Math.floor(sub.length * .02)] ?? 0, hi = sub[Math.floor(sub.length * .99)] ?? 255, span = Math.max(50, hi - lo), gs = blur(g, n, n, 2);
+  const gn = new Float32Array(n * n); for (let i = 0; i < gn.length; i++) gn[i] = Math.min(255, Math.max(0, (gs[i] - lo) / span * 255));
+  const sv = []; for (let i = 0; i < gn.length; i += 3) if (mask[i]) sv.push(gn[i]); sv.sort((p, q) => p - q);
+  const shT = sv[Math.floor(sv.length * (0.02 + 0.05 * balance))] ?? 30, target = 0.11 + 0.17 * detail - pass * 0.03;
+  const ring = new Uint8Array(n * n), er = erodeMask(mask, n, 3); for (let i = 0; i < ring.length; i++) ring[i] = mask[i] && !er[i] && gn[i] < 200 ? 1 : 0;
+  const cands = [0.34, 0.26, 0.2, 0.15, 0.11, 0.08], build = t1 => {
+    const l0 = new Float32Array(n * n); for (let i = 0; i < l0.length; i++) l0[i] = (1 - line[i]) > t1 ? 1 : 0;
+    const lb = blur(l0, n, n, 0.8 + pass * 0.45), blk = new Float32Array(n * n); let ink = 0;
+    for (let i = 0; i < blk.length; i++) { const on = mask[i] && (lb[i] > 0.22 || gn[i] < shT || ring[i]); blk[i] = on ? 255 : 0; if (on) ink++; }
+    return { blk, ink: ink / Math.max(1, area) };
+  };
+  const best = build(0.25 - 0.12 * detail + pass * 0.035);
+  const lum = new Uint8Array(n * n).fill(255); for (let i = 0; i < lum.length; i++) lum[i] = best.blk[i] ? 0 : 255;
+  if (invert) for (let i = 0; i < lum.length; i++) if (mask[i]) lum[i] = lum[i] ? 0 : 255;
+  return lum;
+}
 function cleanLum(lum, n, opts) {
   // Smooth edges: blur the two-tone map and re-threshold, then drop specks.
   const f = new Float32Array(n * n);
@@ -208,6 +235,17 @@ function dotsLum(rgba, n, o) {
 }
 export function buildStencil(rgba, opts = {}, n = N) {
   const st = opts.style || "photo";
+  if (opts.line && opts.mask && st === "photo") {
+    let last = null;
+    for (let pass = 0; pass < 4; pass++) {
+      const lum = cleanLum(lineLum(rgba, n, opts.mask, opts.line, opts, pass), n, { ...opts, smooth: 1.1 + pass * 0.3, minArea: 70 + pass * 60 });
+      let art; try { art = normalizeArtwork(lum, n, n); } catch (e) { continue; }
+      const r = compileStencil(art.mask, art.width, art.height, art.mmPerPx);
+      last = { mask: r.mask, w: art.width, h: art.height, mmPerPx: art.mmPerPx, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length, style: st };
+      if (r.verdict === "PASS") return last;
+    }
+    if (last) return last;
+  }
   if (st === "photo" || st === "bold") opts = { ...opts, detail: 0.55 + 0.45 * (opts.detail ?? 0.6), balance: 0.5 + 0.5 * (opts.balance ?? 0.5) };
   let lum;
   if (opts.mask && (st === "photo" || st === "bold")) { let ma = 0; for (let i = 0; i < opts.mask.length; i++) ma += opts.mask[i]; lum = cleanLum(subjectLum(rgba, n, opts.mask, opts), n, { ...opts, smooth: 1.1, minArea: Math.round(ma * 0.0006) }); }
