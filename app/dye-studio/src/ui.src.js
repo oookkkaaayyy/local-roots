@@ -433,8 +433,8 @@ $("#gsv").onclick=async()=>{const r=FR.res;if(!r||FR.busy)return;const W=700,H=7
  const at=e=>{const q=ec.getBoundingClientRect();return{x:(e.clientX-q.left)/q.width*ec.width,y:(e.clientY-q.top)/q.height*ec.height}};
  const dot=p=>{const r=FR.base,ox=r.origin[0],oy=r.origin[1];for(let j=Math.max(0,Math.floor(p.y-rb));j<Math.min(r.h,p.y+rb);j++)for(let i=Math.max(0,Math.floor(p.x-rb));i<Math.min(r.w,p.x+rb);i++)if((i-p.x)*(i-p.x)+(j-p.y)*(j-p.y)<=rb*rb&&!r.mask[j*r.w+i])eb[(j+oy)*1024+i+ox]=2;ex.fillStyle="#fff";ex.beginPath();ex.arc(p.x,p.y,rb,0,7);ex.fill()};
  const lbl=()=>{$("#ers").classList.toggle("on",rb===7);$("#erl").classList.toggle("on",rb===16);$("#eru").classList.toggle("dis",!est.length)};
- $("#ger").onclick=()=>{if(FR.busy||!FR.base)return;eb=FR.br?FR.br.slice():new Uint8Array(1024*1024);est=[];ez=2;$("#erz").value=200;ec.width=FR.base.w;ec.height=FR.base.h;draw();er.classList.add("open");size();lbl()};
- $("#erz").oninput=()=>{ez=$("#erz").value/100;size()};$("#ers").onclick=()=>{rb=7;lbl()};$("#erl").onclick=()=>{rb=16;lbl()};
+ $("#ger").onclick=()=>{if(FR.busy||!FR.base)return;eb=FR.br?FR.br.slice():new Uint8Array(1024*1024);est=[];ez=1;$("#erz").value=100;ec.width=FR.base.w;ec.height=FR.base.h;draw();er.classList.add("open");size();lbl()};
+ $("#erz").oninput=()=>{const w=ew,fx=(w.scrollLeft+w.clientWidth/2)/Math.max(1,w.scrollWidth),fy=(w.scrollTop+w.clientHeight/2)/Math.max(1,w.scrollHeight);ez=$("#erz").value/100;size();w.scrollLeft=fx*w.scrollWidth-w.clientWidth/2;w.scrollTop=fy*w.scrollHeight-w.clientHeight/2};$("#ers").onclick=()=>{rb=7;lbl()};$("#erl").onclick=()=>{rb=16;lbl()};
  $("#eru").onclick=()=>{if(!est.length)return;eb=est.pop();draw();lbl()};
  $("#erd").onclick=()=>{er.classList.remove("open");FR.br=eb;eb=null;adjRun()};
  ec.addEventListener("pointerdown",e=>{ec.setPointerCapture(e.pointerId);pt.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pt.size===1){dr=true;est.push(eb.slice());if(est.length>12)est.shift();lbl();dot(at(e))}else if(dr){dr=false;eb=est.pop();draw();lbl()}});
