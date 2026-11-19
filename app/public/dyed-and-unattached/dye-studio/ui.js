@@ -297,7 +297,7 @@ function recipeText(d){d=d||new Date();const mm=r=>Math.round(r*MM),dy=l=>l.dyes
   if(l.type==="full")g="outside all shapes (whole disc if no shapes)";
   else if(l.type==="stripe"){const n=axes(l).n,dd=p.x*n[0]+p.y*n[1];g="stripe "+mm(p.h)+" mm wide, long edges at "+deg(p.a)+" deg, center line "+mm(Math.abs(dd))+" mm from disc center ("+mm(p.x)+", "+mm(p.y)+" mm foot point)"}
   else if(l.type==="box")g="box "+mm(p.w)+" x "+mm(p.h)+" mm, rotated "+deg(p.a)+" deg, center ("+mm(p.x)+", "+mm(p.y)+") mm";
-  else if(l.type==="stencil"){const m=STN[l.id];g=m?"photo stencil (stencil.svg, Cricut, black = cut out) "+mm(p.s)+" x "+mm(p.s*m.h/m.w)+" mm, center ("+mm(p.x)+", "+mm(p.y)+") mm; dye through the holes; compile check: "+m.verdict:"stencil"}
+  else if(l.type==="stencil"){const m=STN[l.id];g=m?"photo stencil, style "+(m.style||"photo")+" (stencil.svg, Cricut, black = cut out) "+mm(p.s)+" x "+mm(p.s*m.h/m.w)+" mm, center ("+mm(p.x)+", "+mm(p.y)+") mm; dye through the holes; compile check: "+m.verdict:"stencil"}
   else g="";
   if(l.type!=="stencil"&&l.dyes.length&&vis.length>1)f=" - vinyl file layer-"+(i+1)+".svg";
   step++;L.push(step+". "+(l.type==="full"?"Whole disc":l.name)+" (layer "+(i+1)+", "+(i===0?"back":i===S.layers.length-1?"front":"middle")+"): "+dy(l)+" - "+g+f)});
@@ -330,7 +330,7 @@ function regionSvg(idx,title){const N=1400,V=N+1,layers=S.layers,n=layers.length
 async function uploadFiles(id,spec,row){const f={},W=1200,c=document.createElement("canvas");c.width=c.height=W;c.getContext("2d").putImageData(renderDisc(W),0,0);
  if(await put(id,"preview.png",await toBlob(c),"image/png"))f.preview=true;
  const L=S.layers.find(l=>l.type==="stencil"&&l.vis),m=L&&STN[L.id];
- if(await put(id,"design.json",new Blob([JSON.stringify({file_name:row.file_name,recipe:row.recipe,spec,stencil:m?{width_mm:+(L.p.s*MM).toFixed(1),height_mm:+(L.p.s*MM*m.h/m.w).toFixed(1),offset_mm:[+(L.p.x*MM).toFixed(1),+(L.p.y*MM).toFixed(1)],verdict:m.verdict,change:m.change}:null},null,1)],{type:"application/json"}),"application/json"))f.design=true;
+ if(await put(id,"design.json",new Blob([JSON.stringify({file_name:row.file_name,recipe:row.recipe,spec,stencil:m?{width_mm:+(L.p.s*MM).toFixed(1),height_mm:+(L.p.s*MM*m.h/m.w).toFixed(1),offset_mm:[+(L.p.x*MM).toFixed(1),+(L.p.y*MM).toFixed(1)],verdict:m.verdict,change:m.change,style:m.style}:null},null,1)],{type:"application/json"}),"application/json"))f.design=true;
  if(m){const M=await stencilMod(),svg=M.maskToCutSvg(m.mask,m.w,m.h,L.p.s*MM/m.w);
   if(await put(id,"stencil.svg",new Blob([svg],{type:"image/svg+xml"}),"image/svg+xml"))f.stencil_svg=true;
   const sc=document.createElement("canvas");sc.width=m.w;sc.height=m.h;const sx=sc.getContext("2d"),im=sx.createImageData(m.w,m.h);for(let i=0;i<m.mask.length;i++){const v=m.mask[i]?255:0;im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255}sx.putImageData(im,0,0);
@@ -360,16 +360,16 @@ $("#copy").onclick=()=>{logRecipe("copy");copyText(publicText());flip($("#copy")
 
 // ---------- photo to stencil ----------
 let SM=null;const stencilMod=()=>SM||(SM=import("/dyed-and-unattached/dye-studio/photo-stencil.mjs"));
-const FN=640,FR={img:null,z:1,ox:0,oy:0,detail:.6,balance:.5,invert:false,res:null,t:null,seq:0};
+const FN=640,FR={style:"photo",img:null,z:1,ox:0,oy:0,detail:.7,balance:.7,invert:false,res:null,t:null,seq:0};
 const fcan=document.createElement("canvas");fcan.width=fcan.height=FN;
 function frameDraw(){const x=fcan.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,FN,FN);const im=FR.img;if(!im)return;const b=Math.max(FN/im.width,FN/im.height)*FR.z,w=im.width*b,h=im.height*b,mx=Math.max(0,(w-FN)/2),my=Math.max(0,(h-FN)/2);FR.ox=clamp(FR.ox,-mx,mx);FR.oy=clamp(FR.oy,-my,my);x.drawImage(im,FN/2-w/2+FR.ox,FN/2-h/2+FR.oy,w,h)}
 function frameShow(){const dm=FR.dm;frameDraw();const v=$("#fv"),x=v.getContext("2d");x.clearRect(0,0,FN,FN);x.drawImage(fcan,0,0);x.save();x.fillStyle="rgba(8,10,13,.72)";x.beginPath();x.rect(0,0,FN,FN);x.arc(FN/2,FN/2,FN/2-1,0,7);x.fill("evenodd");x.restore();x.beginPath();x.arc(FN/2,FN/2,FN/2-1,0,7);x.lineWidth=3;x.strokeStyle="#fff";x.stroke();if(dm){x.lineWidth=2;x.setLineDash([8,8]);for(const q of[.35,.85]){x.beginPath();x.arc(FN/2,FN/2,q*FN/2,0,7);x.stroke()}x.setLineDash([])}}
-async function frameCompute(){const my=++FR.seq;if(FR.dm){const d=fcan.getContext("2d").getImageData(0,0,FN,FN).data,ch=[[],[],[]];for(let y=0;y<FN;y+=3)for(let x=0;x<FN;x+=3){const r=Math.hypot(x-FN/2,y-FN/2)/(FN/2);if(r<.35||r>.85)continue;const k=(y*FN+x)*4;ch[0].push(d[k]);ch[1].push(d[k+1]);ch[2].push(d[k+2])}const hx=rgbHex(ch.map(a=>{a.sort((p,q)=>p-q);return a[a.length>>1]||0}));FR.res={hex:hx};const c=$("#fp"),x=c.getContext("2d");x.fillStyle=hx;x.fillRect(0,0,c.width,c.height);$("#fok").classList.remove("dis");return}try{const M=await stencilMod(),d=fcan.getContext("2d").getImageData(0,0,FN,FN).data;let res=null;try{res=M.buildStencil(d,{detail:FR.detail,balance:FR.balance,invert:FR.invert})}catch(e){}
+async function frameCompute(){const my=++FR.seq;if(FR.dm){const d=fcan.getContext("2d").getImageData(0,0,FN,FN).data,ch=[[],[],[]];for(let y=0;y<FN;y+=3)for(let x=0;x<FN;x+=3){const r=Math.hypot(x-FN/2,y-FN/2)/(FN/2);if(r<.35||r>.85)continue;const k=(y*FN+x)*4;ch[0].push(d[k]);ch[1].push(d[k+1]);ch[2].push(d[k+2])}const hx=rgbHex(ch.map(a=>{a.sort((p,q)=>p-q);return a[a.length>>1]||0}));FR.res={hex:hx};const c=$("#fp"),x=c.getContext("2d");x.fillStyle=hx;x.fillRect(0,0,c.width,c.height);$("#fok").classList.remove("dis");return}try{const M=await stencilMod(),d=fcan.getContext("2d").getImageData(0,0,FN,FN).data;let res=null;try{res=M.buildStencil(d,{style:FR.style,detail:FR.detail,balance:FR.balance,invert:FR.invert})}catch(e){}
  if(my!==FR.seq)return;FR.res=res;const c=$("#fp"),x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);
  if(res){const k=Math.min(c.width/res.w,c.height/res.h),id=x.createImageData(c.width,c.height);for(let j=0;j<c.height;j++)for(let i=0;i<c.width;i++){const sx=Math.floor((i-(c.width-res.w*k)/2)/k),sy=Math.floor((j-(c.height-res.h*k)/2)/k),o=(j*c.width+i)*4,v=sx<0||sy<0||sx>=res.w||sy>=res.h?255:res.mask[sy*res.w+sx]?255:0;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255}x.putImageData(id,0,0)}
  $("#fok").classList.toggle("dis",!res)}catch(e){}}
 function frameSched(){frameShow();clearTimeout(FR.t);FR.t=setTimeout(frameCompute,260)}
-function openFrame(file){FR.dm=DM;$("#frame").classList.toggle("disc",DM);$("#fok").textContent=DM?"Use":"Add";const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(url);Object.assign(FR,{img:im,file,z:1,ox:0,oy:0,res:null});$("#fz").value=100;$("#fzv").textContent="100%";$("#fd").value=60;$("#fb").value=50;[$("#fz"),$("#fd"),$("#fb")].forEach(el=>el.style.setProperty("--v",(el.value-el.min)/(el.max-el.min)*100+"%"));FR.detail=.6;FR.balance=.5;FR.invert=false;$("#finv").classList.remove("on");$("#fok").classList.add("dis");$("#frame").classList.add("open");frameSched()};im.src=url}
+function openFrame(file){FR.dm=DM;$("#frame").classList.toggle("disc",DM);$("#fok").textContent=DM?"Use":"Add";const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(url);Object.assign(FR,{img:im,file,z:1,ox:0,oy:0,res:null});$("#fz").value=100;$("#fzv").textContent="100%";$("#fd").value=70;$("#fb").value=70;FR.style="photo";FR.detail=.7;FR.balance=.7;document.querySelectorAll("#fstyle button").forEach(b=>b.classList.toggle("on",b.dataset.st==="photo"));[$("#fz"),$("#fd"),$("#fb")].forEach(el=>el.style.setProperty("--v",(el.value-el.min)/(el.max-el.min)*100+"%"));FR.detail=.6;FR.balance=.5;FR.invert=false;$("#finv").classList.remove("on");$("#fok").classList.add("dis");$("#frame").classList.add("open");frameSched()};im.src=url}
 $("#pfile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(f)openFrame(f)});
 const fvp=new Map();let pinch=null;
 $("#fv").addEventListener("pointerdown",e=>{$("#fv").setPointerCapture(e.pointerId);fvp.set(e.pointerId,{x:e.clientX,y:e.clientY});if(fvp.size===2){const[a,b]=[...fvp.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:FR.z}}});
@@ -380,13 +380,14 @@ const fvEnd=e=>{fvp.delete(e.pointerId);pinch=null};$("#fv").addEventListener("p
 $("#fz").addEventListener("input",e=>{FR.z=e.target.value/100;$("#fzv").textContent=e.target.value+"%";e.target.style.setProperty("--v",(e.target.value-100)/300*100+"%");frameSched()});
 $("#fd").addEventListener("input",e=>{FR.detail=e.target.value/100;e.target.style.setProperty("--v",e.target.value+"%");frameSched()});
 $("#fb").addEventListener("input",e=>{FR.balance=e.target.value/100;e.target.style.setProperty("--v",e.target.value+"%");frameSched()});
+document.querySelectorAll("#fstyle button").forEach(b=>b.onclick=()=>{FR.style=b.dataset.st;document.querySelectorAll("#fstyle button").forEach(x=>x.classList.toggle("on",x===b));frameSched()});
 $("#finv").onclick=()=>{FR.invert=!FR.invert;$("#finv").classList.toggle("on",FR.invert);frameSched()};
 $("#fx").onclick=()=>{$("#frame").classList.remove("open");clearTimeout(FR.t);FR.seq++};
 function photoBlob(){return new Promise(res=>{const im=FR.img,k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(res,"image/jpeg",.85)})}
 $("#fok").onclick=async()=>{if(!FR.res)return;if(FR.dm){S.base=FR.res.hex;S.trans="";S.tab="disc";$("#frame").classList.remove("open");commit();all();return}const res=FR.res,photo=await photoBlob();
  for(const l of S.layers.filter(x=>x.type==="stencil"))delete STN[l.id];S.layers=S.layers.filter(x=>x.type!=="stencil");
  const pool=poolOf("Inventory"),used=new Set(S.layers.flatMap(l=>l.dyes.map(d=>d.n))),pick=(pool.find(d=>!used.has(d.n))||pool[0]).n,id=uid();
- STN[id]={mask:res.mask,w:res.w,h:res.h,mm:res.mmPerPx,verdict:res.verdict,change:res.change,photo};
+ STN[id]={mask:res.mask,w:res.w,h:res.h,mm:res.mmPerPx,verdict:res.verdict,change:res.change,photo,style:res.style};
  S.layers.push({id,type:"stencil",name:"Stencil",vis:true,dyes:[{n:pick,s:1}],p:{x:0,y:0,s:190.5/MM}});S.sel=id;S.tab="stencil";$("#frame").classList.remove("open");commit();all();flash(1300)};
 // layout
 function layout(){const w=vw.clientWidth,h=vw.clientHeight,s=Math.max(120,Math.floor(Math.min(w,h)-8));sq.style.width=sq.style.height=s+"px";

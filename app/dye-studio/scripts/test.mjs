@@ -44,4 +44,8 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
  const rc=DE.recipe(truth,star,"star",["UV Blast Blaze Orange","iDye Poly Crimson","iDye Poly Blue","UV Blast Green","ProChem Neon Hot Orange"],{top:3,maxDyes:2});
  ok(rc[0].dE<2.5,"recipe recovers a known mixture dE "+rc[0].dE.toFixed(2));
  const all=h.dyes.filter(d=>!d[3]).map(d=>d[1]);const big=DE.recipe("#2A8FD6",star,"star",[...new Set(all)],{top:3,maxDyes:2});ok(big[0].dE<12,"recipe for blue from full catalog dE "+big[0].dE.toFixed(1)+" via "+big[0].items.map(i=>i.name).join("+"))}
+// 8 stencil styles stay Cricut-viable
+{const PS=await import("../src/photo-stencil.mjs"),n=640,px=new Uint8ClampedArray(n*n*4);
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){const k=(y*n+x)*4,dx=x-n/2,dy=y-n/2,r=Math.hypot(dx,dy),v=r<110?30:r<200?(Math.sin(x/17)*Math.cos(y/23)>0?70:190):225-r/4;px[k]=px[k+1]=px[k+2]=v;px[k+3]=255}
+ for(const st of PS.STYLES){let res=null;try{res=PS.buildStencil(px,{style:st,detail:.7,balance:.7})}catch(e){}ok(res&&res.verdict==="PASS"&&res.islands===0,"stencil style "+st+" compiles "+(res?res.verdict:"error"))}}
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
