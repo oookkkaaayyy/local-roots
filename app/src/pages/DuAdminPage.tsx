@@ -5,6 +5,7 @@ import { callFunction, supabase } from '../lib/supabase';
 import { Shell } from '../components/Shell';
 import { ImageDropField } from '../components/ImageDropField';
 import { DuGenerationWorkflow } from '../components/DuGenerationWorkflow';
+import { DyeDesignsPanel } from '../components/DyeDesignsPanel';
 
 type WorkflowStatus = 'draft'|'intake_complete'|'handoff_preparing'|'chatgpt_ready'|'notification_sent'|'stage_a_started'|'awaiting_art_approval'|'art_approved'|'production_ready'|'complete'|'handoff_failed';
 type JobSummary = {
@@ -345,7 +346,7 @@ export function DuAdminPage(){
   const [dashboard,setDashboard]=useState<Dashboard|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
   const [pushBusy,setPushBusy]=useState(false),[pushEnabled,setPushEnabled]=useState(false),[pushMessage,setPushMessage]=useState('');
   const [pairBusy,setPairBusy]=useState(false),[pairCode,setPairCode]=useState(''),[pairMessage,setPairMessage]=useState('');
-  const [adminView,setAdminView]=useState<'submissions'|'gallery'>('submissions');
+  const [adminView,setAdminView]=useState<'submissions'|'gallery'|'designs'>('submissions');
   const targetJob=useMemo(()=>{
     const queryJob=new URLSearchParams(window.location.search).get('job')?.trim().toUpperCase()||null;
     if(queryJob){sessionStorage.setItem('du-target-job',queryJob);return queryJob;}
@@ -446,8 +447,8 @@ export function DuAdminPage(){
     {pairCode?<div className="notice"><strong>{pairCode}</strong><span>{pairMessage||'Paste this single-use code into D&U on the new device. It expires after 5 minutes.'}</span><button className="button ghost" type="button" onClick={()=>void copyPairCode()}>Copy code</button></div>:pairMessage?<div className="notice">{pairMessage}</div>:null}
     {deviceToken?<div className="notice"><strong>This device is paired.</strong><span>D&amp;U will remember it across normal site builds. Its authorization renews automatically while you keep using it.</span></div>:null}
     {pushMessage?<div className="notice">{pushMessage}</div>:null}
-    <nav className="du-admin-tabs" aria-label="Admin sections"><button type="button" className={adminView==='submissions'?'active':''} aria-current={adminView==='submissions'?'page':undefined} onClick={()=>setAdminView('submissions')}>Submissions <span>{jobs.length}</span></button><button type="button" className={adminView==='gallery'?'active':''} aria-current={adminView==='gallery'?'page':undefined} onClick={()=>setAdminView('gallery')}>Gallery</button></nav>
-    {adminView==='gallery'?<GalleryPanel credential={credential}/>:<section className="du-submissions" aria-label="Stencil submissions">
+    <nav className="du-admin-tabs" aria-label="Admin sections"><button type="button" className={adminView==='submissions'?'active':''} aria-current={adminView==='submissions'?'page':undefined} onClick={()=>setAdminView('submissions')}>Submissions <span>{jobs.length}</span></button><button type="button" className={adminView==='gallery'?'active':''} aria-current={adminView==='gallery'?'page':undefined} onClick={()=>setAdminView('gallery')}>Gallery</button><button type="button" className={adminView==='designs'?'active':''} aria-current={adminView==='designs'?'page':undefined} onClick={()=>setAdminView('designs')}>Designs</button></nav>
+    {adminView==='designs'?<DyeDesignsPanel auth={functionAuth(credential)}/>:adminView==='gallery'?<GalleryPanel credential={credential}/>:<section className="du-submissions" aria-label="Stencil submissions">
     {loading?<div className="empty-state">Loading production queue…</div>:error?<div className="notice error"><strong>Could not load queue.</strong><span>{error}</span></div>:jobs.length?<section className="admin-grid">{jobs.map(job=><JobCard key={job.id} job={job} credential={credential} refresh={()=>void load(credential)} autoOpen={targetJob===job.job_number}/>)}</section>:<div className="empty-state"><strong>Production queue is clear.</strong><span>No stencil jobs currently require action.</span></div>}
       {completedJobs.length?<details className="du-completed-jobs"><summary>Completed <span>{completedJobs.length}</span></summary><section className="admin-grid">{completedJobs.map(job=><JobCard key={job.id} job={job} credential={credential} refresh={()=>void load(credential)} autoOpen={targetJob===job.job_number}/>)}</section></details>:null}
     </section>}</div></main></Shell>;

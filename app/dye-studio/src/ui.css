@@ -30,7 +30,7 @@ header button{min-width:56px}
 .zs div{width:78px;text-align:center;font:11px/1.2 ui-monospace,Menlo,monospace;color:var(--mu)}
 .zs b{display:block;height:26px;border-radius:8px;border:1px solid #0007;margin-bottom:3px}
 .panel{display:flex;flex-direction:column;min-height:0;background:var(--p);border-left:1px solid var(--ln)}
-.tabs{flex:none;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 12px;border-bottom:1px solid var(--ln)}
+.tabs{flex:none;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px 12px;border-bottom:1px solid var(--ln)}
 .tabs button{min-height:44px;padding:0 4px}
 .body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px calc(20px + var(--sab));overscroll-behavior:contain}
 .lbl{font:600 11px/1 -apple-system,system-ui,sans-serif;letter-spacing:1.1px;text-transform:uppercase;color:var(--mu);margin:16px 2px 8px}
@@ -98,3 +98,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
  .rd{padding:8px 10px}.rd .big{width:48px;height:48px}
  .gr{max-height:none}
 }
+
+.fr{width:min(820px,100%);gap:6px;align-items:stretch}
+.frm{display:flex;gap:10px;margin-bottom:6px}
+.frm canvas{flex:1;min-width:0;width:50%;height:auto;aspect-ratio:1;border-radius:12px;background:#fff;touch-action:none}
+#fv{background:#000}
+@media(max-width:700px){.frm{flex-direction:column}.frm canvas{width:100%}}
+.tabs button{font-size:14px}
+.fr{overflow-y:auto}
