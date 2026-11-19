@@ -6,6 +6,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import './styles.css';
 import './brand-assets.css';
 import './du-admin.css';
+import './dye-designs.css';
 import './responsive-overrides.css';
 import './events-enhancements.css';
 import './share-ready-polish.css';
