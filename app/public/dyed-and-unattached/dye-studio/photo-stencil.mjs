@@ -257,4 +257,9 @@ export function buildStencil(rgba, opts = {}, n = N) {
   const r = compileStencil(art.mask, art.width, art.height, art.mmPerPx);
   return { mask: r.mask, w: art.width, h: art.height, mmPerPx: art.mmPerPx, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length, style: st };
 }
+export function compileGenerated(lum, n) {
+  const art = normalizeArtwork(lum, n, n);
+  const r = compileStencil(art.mask, art.width, art.height, art.mmPerPx);
+  return { mask: r.mask, w: art.width, h: art.height, mmPerPx: art.mmPerPx, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length, style: "gen" };
+}
 export { maskToCutSvg };
