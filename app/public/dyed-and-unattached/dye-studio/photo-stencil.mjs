@@ -261,6 +261,6 @@ export function compileGenerated(lum, n, pxMm) {
   const art = normalizeArtwork(lum, n, n);
   const mm = pxMm || art.mmPerPx;
   const r = compileStencil(art.mask, art.width, art.height, mm);
-  return { mask: r.mask, w: art.width, h: art.height, origin: art.origin, mmPerPx: mm, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length, style: "gen" };
+  return { mask: r.mask, w: art.width, h: art.height, origin: art.origin, mmPerPx: mm, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length, fails: r.validation.islandFails.map(f => f.pixelBounds), style: "gen" };
 }
 export { maskToCutSvg };
