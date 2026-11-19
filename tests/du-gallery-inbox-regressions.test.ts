@@ -16,9 +16,8 @@ const duTombstone = readFileSync(new URL("../../app/public/brand/dyed-unattached
 test("D&U public page keeps only approved/functional copy and intake", () => {
   assert.ok(duPublic.includes('src="/brand/dyed-unattached-logo.png"'));
   assert.ok(duPublic.includes('alt="Dyed & Unattached"'));
-  assert.ok(duPublic.includes('href="#request-stencil"'));
+  assert.ok(duPublic.includes('href="/dyed-and-unattached/dye-studio?tool=stencil"'));
   assert.ok(duPublic.includes('id="gallery"'));
-  assert.ok(duPublic.includes("SUBMIT_INTAKE_URL"));
   assert.equal(duPublic.includes("Custom disc-golf stencil portraits"), false);
   assert.equal(duPublic.includes("Turn a favorite pet photo"), false);
   assert.equal(duPublic.includes("See the transformation."), false);

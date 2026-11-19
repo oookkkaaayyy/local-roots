@@ -110,3 +110,5 @@
 .ds .tg:has(>:only-child){grid-template-columns:1fr}
 .ds .body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px calc(20px + var(--sab));overscroll-behavior:contain}
 .ds .thumb{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+
+.ds .tl[data-big]{min-height:220px;border-style:dashed;background:var(--p2)}.ds .tl[data-big] svg{width:56px;height:56px}.ds .tl[data-big] span{font-size:18px}

@@ -257,8 +257,7 @@ test("public brand audit does not add new marketing copy and includes D&U contro
   const du = source("pages/DyedUnattachedPage.tsx");
   assert.ok(shell.includes("public-brand-shell"));
   assert.ok(styles.includes(".public-brand-shell .du-share-hero .branch-actions .button"));
-  assert.ok(styles.includes(".public-brand-shell .du-request .section-intro h2"));
-  assert.ok(du.includes(">Request a stencil</a>"));
+  assert.ok(du.includes(">Make a stencil</a>"));
   for (const rejected of ["Grown Local. Thrown Local.","Local roots. Connected.","Desert-grown disc goods"]) {
     assert.equal([shell,du,styles].join("\n").includes(rejected), false);
   }
