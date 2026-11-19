@@ -257,9 +257,10 @@ export function buildStencil(rgba, opts = {}, n = N) {
   const r = compileStencil(art.mask, art.width, art.height, art.mmPerPx);
   return { mask: r.mask, w: art.width, h: art.height, mmPerPx: art.mmPerPx, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length, style: st };
 }
-export function compileGenerated(lum, n) {
+export function compileGenerated(lum, n, pxMm) {
   const art = normalizeArtwork(lum, n, n);
-  const r = compileStencil(art.mask, art.width, art.height, art.mmPerPx);
-  return { mask: r.mask, w: art.width, h: art.height, mmPerPx: art.mmPerPx, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length, style: "gen" };
+  const mm = pxMm || art.mmPerPx;
+  const r = compileStencil(art.mask, art.width, art.height, mm);
+  return { mask: r.mask, w: art.width, h: art.height, origin: art.origin, mmPerPx: mm, verdict: r.verdict, change: r.fidelity.level, islands: r.validation.islandFails.length, style: "gen" };
 }
 export { maskToCutSvg };
