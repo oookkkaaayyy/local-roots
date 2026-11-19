@@ -17,7 +17,8 @@ export function DyeStudioPage() {
     const w = window as unknown as { __dyeStudio?: boolean };
     if (w.__dyeStudio) return;
     w.__dyeStudio = true;
-    const v = document.documentElement.dataset.studioVersion || '1';
+    const v = __STUDIO_BUILD__;
+    (w as unknown as { __dsv?: string }).__dsv = v;
     loadScript(`${BASE}engine.js?v=${v}`).then(() => loadScript(`${BASE}ui.js?v=${v}`)).catch(() => { w.__dyeStudio = false; });
   }, []);
   return <Shell><main id="studio" className="ds-page"><div className="ds">
@@ -28,7 +29,7 @@ export function DyeStudioPage() {
     </div>
     <div className="sheet" id="save"><div className="card" style={{alignItems:'center'}}><img id="svimg" alt="" style={{width:'100%',maxWidth:420,borderRadius:12}}/><div className="row" style={{width:'100%',marginTop:12}}><a id="svdl" download="disc.png" className="g" style={{textDecoration:'none'}}><button className="pri" style={{width:'100%'}} tabIndex={-1}>Download</button></a><button id="svx" className="g">Close</button></div></div></div>
     <input type="file" id="pfile" accept="image/*" hidden />
-    <div className="sheet" id="frame"><div className="card fr"><div className="frm"><canvas id="fv" width="640" height="640"></canvas><canvas id="fp" width="400" height="400"></canvas></div><div className="seg" id="fstyle" style={{margin:'8px 0'}}><button data-st="photo" className="on">Photo</button><button data-st="bold">Bold</button><button data-st="outline">Line</button><button data-st="dots">Dots</button></div><div className="sl"><span className="nm">Zoom</span><input id="fz" type="range" min="100" max="400" defaultValue="100"/><span className="pc" id="fzv">100%</span></div><div className="sl st"><span className="nm">Detail</span><input id="fd" type="range" min="0" max="100" defaultValue="70"/></div><div className="sl st"><span className="nm">Balance</span><input id="fb" type="range" min="0" max="100" defaultValue="70"/></div><div className="row" style={{marginTop:8}}><button id="finv" className="st">Invert</button><button id="fx" className="g">Cancel</button><button id="fok" className="pri g dis">Add</button></div></div></div>
+    <div className="sheet" id="frame"><div className="card fr"><div className="frm"><canvas id="fv" width="640" height="640"></canvas><canvas id="fp" width="400" height="400"></canvas></div><div className="seg" id="fstyle" style={{margin:'8px 0'}}><button data-st="photo" className="on">Photo</button><button data-st="bold">Bold</button><button data-st="outline">Line</button><button data-st="dots">Dots</button></div><div className="sl"><span className="nm">Zoom</span><input id="fz" type="range" min="100" max="400" defaultValue="100"/><span className="pc" id="fzv">100%</span></div><div className="sl st"><span className="nm">Detail</span><input id="fd" type="range" min="0" max="100" defaultValue="70"/></div><div className="sl st"><span className="nm">Balance</span><input id="fb" type="range" min="0" max="100" defaultValue="70"/></div><div className="row" style={{marginTop:8}}><button id="fcut" className="st on">Cutout</button><button id="finv" className="st">Invert</button><button id="fx" className="g">Cancel</button><button id="fok" className="pri g dis">Add</button></div></div></div>
     <div className="sheet" id="sheet"><div className="card"><div className="top"><input id="pq" type="search" placeholder="Search" autoComplete="off"/><button id="px">Close</button></div><div className="ch" id="pch"></div><div className="dg2" id="pgr"></div></div></div>
     <div className="sheet" id="match"><div className="card"><div className="top" style={{justifyContent:'flex-end'}}><button id="mx">Close</button></div><div id="mbody" style={{overflowY:'auto'}}></div></div></div>
   </div></main></Shell>;
