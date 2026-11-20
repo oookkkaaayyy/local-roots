@@ -19,3 +19,8 @@ Used to constrain the engine and encoded in scripts/test.mjs. No source gives me
 ## Open items
 - Neon yellow plus neon orange emission split (absorption vs glow) is not identifiable from one swatch per dye; needs one overlap photo with known dyes.
 - Champion two-dye overlaps are the least validated case.
+
+## dgcoursereview 148993 (glue bed, iPoly)
+- Red on green Star: deep red overwrites the green (sampled about #8d241c). Engine: red-dominant, darker.
+- Black on orange DX: only a subdued brown shows, base plastic takes dye weakly. Engine has no base-plastic uptake factor yet; open item.
+- Clear F2: light dyes weak, dark dyes needed.

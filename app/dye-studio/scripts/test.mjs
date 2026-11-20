@@ -61,4 +61,9 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
  {const g=P("#F7E331",it(["Caribbean",1])).hex;ok(hsl(g)[0]>100&&hsl(g)[0]<200&&Ls(g)>30&&Ls(g)<80,"teal-blue dye on yellow plastic reads green, not black "+g);}
 }
 
+{ // dgcoursereview 148993: red dye on green Star reads red, black stays near black
+  const r=P("#3f9a4a",[{name:"Crimson",s:1,b:0}]).hex,k=P("#3f9a4a",[{name:"Black",s:1,b:0}]).hex;
+  const c=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const[a,g,b]=c(r),[kr,kg,kb]=c(k);
+  ok(a>g*1.4&&a>b*1.4,"red on green Star reads red");ok(Math.max(kr,kg,kb)<60,"black on green Star is dark");
+}
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
