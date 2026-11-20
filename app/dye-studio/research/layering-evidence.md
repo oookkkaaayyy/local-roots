@@ -48,3 +48,8 @@ Used to constrain the engine and encoded in scripts/test.mjs. No source gives me
 ## dgcoursereview 134835 (labeled)
 - iDye Poly blue and purple on orange Star: gray/black and maroon. Same dyes true on light blue. Champion/translucent takes purple over orange closer to true.
 - Engine matches (tests added). This also explains why photos of vivid blue on orange discs are not single-dye baths on Star.
+
+## dgcoursereview 130367 (Dye A Day III, pages 1 to 30 scanned for named layering)
+- Only one labeled layering post: purple iDye Poly on pink Opto Bolt (saran wrap method), photo mauve about #7a4f7b to #84618f (150 px thumbnail, partial coverage).
+- Engine Champion purples on pink are darker and more saturated (dE 32 to 56, strengths .1 to 1). Single low-resolution sample with partial coverage; not used for calibration.
+- Threads 75681, 106557, 109862, 130722: process notes only; consistent with additive layering and dark dominance.
