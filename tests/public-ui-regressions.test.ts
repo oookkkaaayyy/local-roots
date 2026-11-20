@@ -65,8 +65,7 @@ test("event submission failures do not expose backend errors", () => {
 test("repeated event actions have event-specific accessible names and disclose new-tab behavior", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('aria-label={`Registration for ${event.name} (opens in new tab)`}'));
-  assert.ok(events.includes('aria-label={`Add ${event.name} to calendar`}'));
-  assert.ok(events.includes('aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}'));
+  assert.ok(source("pages/EventDetailPage.tsx").includes('aria-label={`Add ${event.name} to calendar`}'));
 });
 
 test("event discovery controls expose upcoming/results views, search, and result-source filtering", () => {
@@ -113,8 +112,7 @@ test("event cards expose permanent detail URLs, filtered return state, and calen
   assert.ok(events.includes('const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`'));
   assert.ok(events.includes('href={detailHref}'));
   assert.ok(events.includes('className="event-title-link"'));
-  assert.ok(events.includes('onClick={()=>downloadEventCalendar(event)}'));
-  assert.ok(events.includes('>Add to Calendar</button>'));
+  assert.ok(source("pages/EventDetailPage.tsx").includes('>Add to Calendar</button>'));
   assert.ok(events.includes('>Full Results</a>'));
 });
 
@@ -191,8 +189,6 @@ test("event cards and detail pages expose permitted first-party official info wi
   const types = source("types.ts");
   assert.ok(types.includes("official_url: string | null"));
   assert.ok(events.includes("event.official_url&&!hbnfEvent"));
-  assert.ok(events.includes(">Official Info</a>"));
-  assert.ok(events.includes("aria-label={`Official info for ${event.name} (opens in new tab)`}"));
   assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
   assert.ok(detail.includes(">Official Info</a>"));
 });

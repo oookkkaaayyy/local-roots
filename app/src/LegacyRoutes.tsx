@@ -1,6 +1,6 @@
 import { configReady } from './lib/supabase';
 import { Shell } from './components/Shell';
-import { EventsPage } from './pages/EventsPage';
+import { EventsPage, SubmitEventPage } from './pages/EventsPage';
 import { EventDetailPage } from './pages/EventDetailPage';
 import { HbnfPage } from './pages/HbnfPage';
 import { DyedUnattachedPage } from './pages/DyedUnattachedPage';
@@ -24,6 +24,7 @@ export default function LegacyRoutes(){
   if(detailSlug)return <EventDetailPage slug={detailSlug}/>;
   if(path==='/events')return <EventsPage/>;
   if(path==='/hb-night-flyers'||path==='/hbnf')return <HbnfPage/>;
+  if(path==='/submit-event')return <SubmitEventPage/>;
   if(path==='/dyed-and-unattached/dye-studio')return <DyeStudioPage/>;
   if(path==='/dyed-and-unattached/stencil')return <StencilPage/>;
   if(path==='/dyed-and-unattached'||path==='/du')return <DyedUnattachedPage/>;
