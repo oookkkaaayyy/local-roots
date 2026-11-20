@@ -11,7 +11,7 @@ const wrap=a=>{a=(a+Math.PI)%(2*Math.PI);if(a<0)a+=2*Math.PI;return a-Math.PI};
 const PL=[
  {id:"star",name:"Star",fam:"star",up:1,base:"#F4F2E8"},
  {id:"champion",name:"Champion",fam:"champion",up:1,base:"#DCE8E1",tr:.78},
- {id:"glow",name:"Glow",fam:"star",up:1,base:"#D3E4A0",est:1}];
+ {id:"glow",name:"Glow",fam:"champion",up:1,base:"#D3E4A0",tr:.78,est:1}];
 const BASES=["#F4F2E8","#DCE8E1","#D3E4A0","#F7E331","#F27A26","#E84C55","#59A9DE","#57A768","#8D62B6","#2B2B2E"];
 const MEAS={base:"#38906F",c:{"UV Blast Green":{plate:"#8FC316",shoulder:"#69B820",rim:"#3BAF27"},"UV Blast Blaze Orange":{plate:"#B30003",shoulder:"#890507",rim:"#57090D"}}};
 const TYPES={
@@ -36,8 +36,8 @@ const mixHex=(a,b,k)=>{const A=hexRgb(a),B2=hexRgb(b);return rgbHex(A.map((v,i)=
 const rimK=r=>{if(!S.rim)return 0;const w=S.rim.w/100,f=.14*(1-S.rim.f)+.006;return ss(1-w-f/2,1-w+f/2,r)};
 const baseAt=r=>S.rim?mixHex(S.base,S.rim.c,rimK(r)):S.base;
 const transHex=bh=>{if(hexOk(S.trans))return S.trans.toUpperCase();const p=plastic(),t=p.tr||.7,c=hexRgb(bh||S.base),lum=(.2126*c[0]+.7152*c[1]+.0722*c[2])/255,l=(.38+.36*t)*Math.pow(lum,.6);return rgbHex(c.map(v=>v+(255-v)*l))};
-const pathAt=(r,p)=>{if(p.fam!=="champion")return 1;if(r<.58)return .64+r*.20;if(r<.84)return .78+(r-.58)*1.25;return 1.10+(r-.84)*3.10};
-const zoneAt=r=>r<.58?"plate":r<.84?"shoulder":"rim";
+const pathAt=(r,p)=>p.fam!=="champion"?1:.74;
+const zoneAt=r=>"plate";
 function measured(its,r){const p=plastic();if(p.fam!=="champion"||its.length!==1||rimK(r)>0)return null;const a=MEAS.c[its[0].name];if(!a)return null;
  if(Math.abs(its[0].s/p.up-1)>.1)return null;
  const m=hexRgb(MEAS.base),d=hexRgb(S.base).reduce((s,v,i)=>s+(v-m[i])**2,0);if(Math.sqrt(d)>48)return null;return a[zoneAt(r)]}
@@ -83,7 +83,7 @@ function renderDisc(W){
   let rgb=cache.get(key);
   if(!rgb){for(let i=0;i<n;i++)ws[i]=qs[i]/12;const rr=Math.min(NB-1,Math.round(r*(NB-1)))/(NB-1);rgb=hexRgb(colorAt(itemsFor(ws,layers),rr).hex);cache.set(key,rgb)}
   const lip=ss(.88,.99,r),lit=1+.05*(-(u+v)*.7);
-  const sh=lit*(1-.16*lip)*1;
+  const sh=lit*(1-.16*lip)*(PL_T?1-.05*ss(.84,.99,r):1);
   const a=clamp((1-r)*R/1.1,0,1);
   const k=(y*W+x)*4;d[k]=rgb[0]*sh;d[k+1]=rgb[1]*sh;d[k+2]=rgb[2]*sh;d[k+3]=a*255*(PL_T?.8+.14*lip:1)}
  return img}
@@ -229,11 +229,10 @@ function discSection(){
  if(rim)h+=`<div class="sub">`+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%")+`</div>`;
  return h+`</div>`}
 let dOpen=false;
-function tabDesign(){const n=S.layers.length;let h="";
+function tabDesign(){const n=S.layers.length;let h=`<button class="dtog" data-act="disctoggle" aria-expanded="${dOpen}">Disc and plastic<span>${dOpen?"Hide":"Edit"}</span></button>`+(dOpen?discSection():"");
  if(n>1)h+=`<div class="lhd"><h3>Layers</h3><span class="lact"><button class="sm dg" data-act="clearask">Clear</button><button class="pri sm" data-act="addlayer" data-t="stripe">+ Add color</button></span></div>`;
  else h+=`<div class="lhd"><h3>Layers</h3><span class="lact"><button class="sm dg" data-act="clearask">Clear</button></span></div><button class="addbig" data-act="addlayer" data-t="stripe">+ Add color</button>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
- h+=`<button class="dtog" data-act="disctoggle" aria-expanded="${dOpen}">Disc and plastic<span>${dOpen?"Hide":"Edit"}</span></button>`+(dOpen?discSection():"");
  return h}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
 const sh=n=>n.replace(/^(ProChem |iDye Poly )/,"");
