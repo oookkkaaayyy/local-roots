@@ -426,3 +426,10 @@
   .lr .dug-row-single{grid-template-rows:1fr}
   .lr .dug-strip{justify-content:flex-start}
 }
+@media(max-width:700px){
+  .lr .ds .bar{padding:8px 10px!important}
+  .lr .ds .bar .du-switch{flex:0 0 auto!important}
+  .lr .ds .bar .du-switch a{flex:1 0 auto!important;padding:12px 10px!important;white-space:nowrap}
+  .lr .ds .bar button{padding-left:10px!important;padding-right:10px!important;font-size:.86rem!important}
+  .lr .ds .bar button+button{margin-left:6px!important}
+}
