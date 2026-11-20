@@ -14,9 +14,10 @@ export function StencilPage() {
         <div id="stleft" className="stmeta"></div>
       </div>
       <div className="stwork">
-        <canvas id="fp" width="800" height="800"></canvas>
+        <div className="stpair"><canvas id="sp" width="800" height="800"></canvas><canvas id="fp" width="800" height="800"></canvas></div>
         <div className="stside">
         <div id="gth" className="gth"></div>
+        <div className="stpre"><div className="sl gn"><span className="nm">Zoom</span><input id="spz" type="range" min="0" max="100" defaultValue="0"/></div><button id="stgo" className="pri">Generate<small>1 run</small></button></div>
         <div className="stctl">
           <div className="stvar"><button id="gd1" className="dis">Lighter<small>1 run</small></button><button id="gd2" className="dis">Bolder<small>1 run</small></button><button id="gd3" className="dis">Closer<small>1 run</small></button></div>
           <div className="sl gn"><span className="nm">Detail</span><input id="gt" type="range" min="0" max="4" step="1" defaultValue="0"/></div>
