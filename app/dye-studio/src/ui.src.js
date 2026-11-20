@@ -11,11 +11,7 @@ const wrap=a=>{a=(a+Math.PI)%(2*Math.PI);if(a<0)a+=2*Math.PI;return a-Math.PI};
 const PL=[
  {id:"star",name:"Star",fam:"star",up:1,base:"#F4F2E8"},
  {id:"champion",name:"Champion",fam:"champion",up:1,base:"#DCE8E1",tr:.78},
- {id:"glow",name:"Glow",fam:"star",up:1,base:"#EAF2DC",est:1},
- {id:"gstar",name:"GStar",fam:"star",up:1.05,base:"#F2F0E6"},
- {id:"halo",name:"Halo Star",fam:"star",up:.98,base:"#F2F0E8"},
- {id:"pro",name:"Pro",fam:"star",up:.66,base:"#F1EFE5"},
- {id:"dx",name:"DX",fam:"star",up:.42,base:"#F2F0E5"}];
+ {id:"glow",name:"Glow",fam:"star",up:1,base:"#EAF2DC",est:1}];
 const BASES=["#F4F2E8","#F7E331","#F27A26","#E84C55","#59A9DE","#57A768","#8D62B6","#DCE8E1","#2B2B2E"];
 const MEAS={base:"#38906F",c:{"UV Blast Green":{plate:"#8FC316",shoulder:"#69B820",rim:"#3BAF27"},"UV Blast Blaze Orange":{plate:"#B30003",shoulder:"#890507",rim:"#57090D"}}};
 const TYPES={
@@ -174,9 +170,7 @@ function acc(m){if(plastic().est)return"Accuracy Low";if(m.measured)return"Accur
 function readout(){
  const a=Math.atan2(UI.pt.y,UI.pt.x),pr=Math.hypot(UI.pt.x,UI.pt.y);
  const main=colorAtPt(UI.pt.x,UI.pt.y,32);
- const zs=[["Face",.5]];if(S.layers.some(l=>l.type==="ring"&&l.vis))zs.push(["Rim",.95]);
- const pts=zs.map(z=>colorAtPt(Math.cos(a)*z[1],Math.sin(a)*z[1]));
- $("#rd").innerHTML=`<i class="big" style="background:${main.hex}"></i><div class="m"><div class="st">${acc(main)}</div></div><div class="zs">${pts.map((p,i)=>`<div><b style="background:${p.hex}"></b>${zs[i][0]}</div>`).join("")}</div>`}
+ $("#rd").innerHTML=`<i class="big" style="background:${main.hex}"></i><div class="m"><div class="st">${acc(main)}</div></div>`}
 // ---------- dye swatches ----------
 let swKey="",swC={};
 function dyeHex(n){const k=S.plastic+S.base+S.trans;if(k!==swKey){swKey=k;swC={}}if(!swC[n])swC[n]=colorAt([{name:n,s:upOf()}],.5).hex;return swC[n]}
@@ -221,11 +215,11 @@ const tile=(act,ic,t,x)=>`<button class="tl" data-act="${act}" ${x||""}>${IC[ic]
 const next=(t,l)=>`<button class="pri nx" data-act="go" data-t="${t}">${l}</button>`;
 const colorPick=(id,val)=>`<input type="color" id="${id}C" value="${val}" aria-label="Custom color">`;
 function tabDisc(){const n=S.layers.length,hasRing=S.layers.some(l=>l.type==="ring");
- let h=`<div class="ord">Plastic</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+`</div>`+
+ let h=`<div class="ord">Plastic</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+(hasRing?`<button data-act="sel" data-id="${S.layers.find(l=>l.type==="ring").id}" class="on">Rim</button>`:`<button data-act="addlayer" data-t="ring">+ Rim</button>`)+`</div>`+
   `<div class="ord">Disc</div><div class="bs">`+BASES.map(b=>`<button data-act="base" data-c="${b}" class="${b===S.base.toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`<span class="cpk">${colorPick("b",S.base)}</span></div><div class="seg" style="margin-top:8px"><button class="g" data-act="discphoto">Match from photo</button></div>`+
   `<div class="ord">Colors</div>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
- h+=`<div class="seg" style="margin:8px 0 4px"><button class="pri" data-act="addlayer" data-t="stripe">+ Add color</button>${hasRing?"":`<button class="g" data-act="addlayer" data-t="ring">+ Rim</button>`}</div>`;
+ h+=`<div class="seg" style="margin:8px 0 4px"><button class="pri" data-act="addlayer" data-t="stripe">+ Add color</button></div>`;
  return h+next("stencil","Stencil")}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
 const sh=n=>n.replace(/^(ProChem |iDye Poly )/,"");
