@@ -316,8 +316,8 @@ export function WeatherPage() {
           {error?<span className="weather-error">{error}</span>:null}
           {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
           {shareMessage?<span>{shareMessage}</span>:null}
+          {result?.retrievedAt?<span className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)} · {centerLabel}</span>:null}
         </div>
-        {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)} · {centerLabel}</p>:null}
     <div className="weather-legend" aria-label="Forecast column headings"><span>Course</span><span>Temp</span><span>Wind · Gust</span><span>Conditions</span></div>
     <div className="weather-course-list">
       {!loading&&!error&&sorted.length===0?<div className="empty-state"><strong>{searchTerms.length?'No matching courses.':'No courses found.'}</strong></div>:null}
