@@ -46,3 +46,10 @@ Built-in browser (resize_window presets: iPad Pro landscape 1366x1024, iPad port
 - Dye Studio: per-layer x beside eye; Champion renders semi-translucent, disc color full range (dark bases stay dark).
 - Stencil: empty state centered picker; work state preview + controls (CSS bug: tool grid overrode empty-state hide).
 - HBNF: live worker rolled back to v438; auto-deploy from hbnf-site disabled; never deploy that repo until reconciled. Embed single-header injection is not live.
+
+## 2026-11-20 round
+- Phone tool shell fixed (skin.css max-width:700 block; Dye/Stencil keep fixed layout).
+- Day charts: three equal tracks (96px plot) each with time axis.
+- Phone events/weather compaction (skin.css end).
+- El Dorado Park events added from UDisc (Sunday Dubs, NOMADs Tuesday, Monthly), confidence 0.8, manual_verification source.
+- HBNF edge phone CSS (max-width:600px in ACE_CSS) deployed to hbnf-edge and merged (hbnf-site PR 17).

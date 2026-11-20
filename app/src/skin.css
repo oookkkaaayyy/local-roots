@@ -379,3 +379,35 @@
   .lr .events-page .event-tags span{margin:0 4px 4px 0!important;padding:3px 8px!important;font-size:.72rem!important}
   .lr .events-page .event-card{padding:10px 12px!important;margin:0 0 8px!important}
 }
+@media(max-width:700px){
+  .lr .events-layout{padding:6px 14px 24px!important}
+  .lr .events-page{width:100%!important;max-width:none!important;margin:0!important}
+  .lr .lr-top{flex-wrap:nowrap!important;align-items:center!important}
+  .lr .lr-top-aside{width:auto!important;margin:0 0 0 auto!important}
+  .lr .lr-top-aside .lr-btn{min-height:36px!important;padding:0 12px!important;font-size:.84rem!important}
+  .lr .events-page .event-list{display:flex!important;flex-wrap:wrap;align-items:center}
+  .lr .events-page .event-list>*{flex:0 0 100%;min-width:0}
+  .lr .events-page .event-list>.page-search{order:1;flex:1 1 0;margin:0 0 8px!important}
+  .lr .events-page .event-list>.list-header{order:2;flex:0 0 auto;margin:0 0 8px 8px!important;padding:0!important}
+  .lr .events-page .event-list>.list-header>*:not(.filters-trigger){display:none}
+  .lr .events-page .filters-trigger{margin:0!important;min-height:44px!important;white-space:nowrap}
+  .lr .events-page .event-list>*:not(.page-search):not(.list-header){order:3}
+  .lr .events-page .event-card{display:block!important}
+  .lr .events-page .event-date-block{display:flex!important;border-bottom:0!important;padding:0!important;margin:0 0 2px!important}
+  .lr .events-page .event-actions{margin-top:2px!important;padding-top:4px!important}
+  .lr .weather-course-toggle{padding:12px 40px 12px 12px!important}
+  .lr .weather-course-name{padding-right:0!important}
+  .lr .weather-details{padding:0 12px 10px!important}
+  .lr .weather-status{padding:0 2px}
+  .lr.lr-tool .ds button{text-align:center}
+  .lr.lr-tool .ds .stage{flex:0 0 30%!important}
+}
+@media(max-width:700px){
+  .lr.lr-tool .ds .dscroll{max-height:30vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .lr.lr-tool .ds .seg button,.lr.lr-tool .ds .tmode button{padding-left:10px;padding-right:10px}
+}
+@media(max-width:700px){
+  .lr .events-page .event-list>.list-header>.list-actions{display:flex!important;margin:0!important}
+  .lr .events-page .event-list>.list-header .list-actions>*:not(.filters-trigger){display:none}
+  .lr .events-page .event-list>.weather-status{order:3}
+}

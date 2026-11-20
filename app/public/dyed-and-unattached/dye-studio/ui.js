@@ -230,7 +230,7 @@ function discSection(){
  if(rim)h+=`<div class="sub">`+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%")+`</div>`;
  return h+`</div>`}
 let dOpen=false;
-function tabDesign(){const n=S.layers.length;let h=`<button class="dtog" data-act="disctoggle" aria-expanded="${dOpen}">Disc and plastic<span>${dOpen?"Hide":"Edit"}</span></button>`+(dOpen?discSection():"");
+function tabDesign(){const n=S.layers.length;let h=`<button class="dtog" data-act="disctoggle" aria-expanded="${dOpen}">Disc and plastic<span>${dOpen?"Hide":"Edit"}</span></button>`+(dOpen?`<div class="dscroll">${discSection()}</div>`:"");
  if(n>1)h+=`<div class="lhd"><h3>Layers</h3><span class="lact"><button class="sm dg" data-act="clearask">Clear</button><button class="pri sm" data-act="addlayer" data-t="stripe">+ Add color</button></span></div>`;
  else h+=`<div class="lhd"><h3>Layers</h3><span class="lact"><button class="sm dg" data-act="clearask">Clear</button></span></div><button class="addbig" data-act="addlayer" data-t="stripe">+ Add color</button>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
