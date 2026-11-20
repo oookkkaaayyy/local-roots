@@ -34,7 +34,7 @@ export function Shell({children,admin=false,mast}:{children:ReactNode;admin?:boo
   </div>;
 
   const nav=(cls:string,href:string,cur:'page'|undefined,long:string,short:string)=><a className={cls} href={href} aria-current={cur} aria-label={long}><span className="nav-long" aria-hidden="true">{long}</span><span className="nav-short" aria-hidden="true">{short}</span></a>;
-  return <div className={`site-shell public-brand-shell lr${tool?' lr-tool':''}`} data-section={section}>
+  return <div className={`site-shell public-brand-shell lr${tool?' lr-tool':''}${path.startsWith('/hb-night-flyers')?' lr-embed':''}`} data-section={section}>
     <a className="skip-link" href="#main-content">Skip to main content</a>
     <header className="lr-head"><div className="lr-wrap lr-head-in">
       <a className="lr-brand" href="/" aria-label="Local Roots home"><img src="/brand/local-roots-lr.svg" alt="" aria-hidden="true" width="34" height="37" /><span>Local Roots</span></a>

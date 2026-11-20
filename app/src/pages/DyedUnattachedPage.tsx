@@ -87,7 +87,7 @@ export function DyedUnattachedPage() {
   },[]);
   useEffect(()=>{if(galleryIndex>=gallerySlideCount)setGalleryIndex(0);},[galleryIndex,gallerySlideCount]);
 
-  return <Shell mast={<Mast title={<><img className="du-wordmark" src="/brand/dyed-unattached-logo.png" alt="Dyed & Unattached" width="955" height="233" /></>} aside={<div className="lr-actions"><a className="lr-btn lr-btn-primary" href="/dyed-and-unattached/stencil">Make a stencil</a><a className="lr-btn lr-btn-ghost" href="/dyed-and-unattached/dye-studio">Design a disc</a></div>} />}><main className="lr-wrap du-stage">
+  return <Shell mast={<Mast title={<span className="du-wordmark"><img src="/brand/dyed-unattached-logo.png" alt="Dyed & Unattached" width="955" height="233" /></span>} aside={<div className="lr-actions"><a className="lr-btn lr-btn-primary" href="/dyed-and-unattached/stencil">Make a stencil</a><a className="lr-btn lr-btn-ghost" href="/dyed-and-unattached/dye-studio">Design a disc</a></div>} />}><main className="lr-wrap du-stage">
     <div id="gallery" />
     <section className="dug" aria-label="Dyed & Unattached portfolio examples" onMouseEnter={() => setGalleryPaused(true)} onMouseLeave={() => setGalleryPaused(false)} onFocus={() => setGalleryPaused(true)} onBlur={() => setGalleryPaused(false)}>
       <div className="dug-frame" onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; setGalleryPaused(true); }} onTouchEnd={event => { const start = touchStartX.current; const end = event.changedTouches[0]?.clientX; touchStartX.current = null; setGalleryPaused(false); if (start == null || end == null) return; const delta = end - start; if (Math.abs(delta) > 45) { if (delta < 0) nextSlide(); else previousSlide(); } }}>

@@ -35,14 +35,8 @@ assert.match(filterSheet, /dialog\.close\(\)/);
 assert.match(events, /onCancel=\{\(\)=>setFiltersOpen\(false\)\}/);
 assert.match(events, /data-filter-close/);
 
-assert.match(hbnf, /https:\/\/hbnightflyers\.com\/skins/);
-assert.match(hbnf, /https:\/\/hbnightflyers\.com\/glow/);
-assert.match(hbnf, /supabase!\.rpc\('lr_public_events'\)/);
-assert.match(hbnf, /isHbnfEvent\(event\)/);
-assert.match(hbnf, /eventDetailPath\(event\)/);
-assert.match(hbnf, /sort\(\(a, b\) => a\.start_date\.localeCompare\(b\.start_date\)/);
-assert.doesNotMatch(hbnf, /hbnightflyers\.com\/(scorecards|standings|tags)(?:\b|\/)/);
-assert.doesNotMatch(hbnf, /const events\s*=\s*\[/);
+
+assert.match(hbnf, /src="https:\/\/hbnightflyers\.com\/"/);
 
 const png = readFileSync(path.join(root, 'public/brand/hbnf-mark-authentic.png'));
 assert.equal(png.toString('hex', 0, 8), '89504e470d0a1a0a');
@@ -53,7 +47,6 @@ assert.match(read('public/fonts/OFL.txt'), /SIL OPEN FONT LICENSE Version 1\.1/)
 
 
 assert.doesNotMatch(events, /↗/);
-assert.doesNotMatch(hbnf, /↗/);
 assert.doesNotMatch(read('src/pages/EventDetailPage.tsx'), /↗/);
 assert.doesNotMatch(read('src/lib/eventPresentation.ts'), /↗/);
 

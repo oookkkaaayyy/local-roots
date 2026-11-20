@@ -36,7 +36,8 @@
 .lr .lr-top-meta{margin:0 0 0 14px;color:var(--muted);font:700 .88rem/1 var(--sans);font-variant-numeric:tabular-nums}
 .lr .lr-top-aside{margin-left:auto;align-self:center}
 .lr .hb-mark{display:block;width:32px;height:32px;margin-right:10px;border-radius:6px}
-.lr .du-wordmark{display:block;width:210px;height:auto;max-width:56vw;filter:invert(14%) sepia(45%) saturate(900%) hue-rotate(345deg) brightness(.9)}
+.lr .du-wordmark{display:block;width:150px;background:var(--ink);-webkit-mask:url(/brand/dyed-unattached-logo.png) center/contain no-repeat;mask:url(/brand/dyed-unattached-logo.png) center/contain no-repeat}
+.lr .du-wordmark img{display:block;width:100%;height:auto;opacity:0}
 
 /* Controls */
 .lr .lr-actions{display:flex}
@@ -163,20 +164,20 @@
 .lr .hb-row p{margin:4px 0 0;color:var(--muted);font:500 .92rem/1.3 var(--sans)}
 .lr .hb-state{padding:36px 0;color:var(--muted)}
 
-/* Dyed & Unattached landing */
-.lr .du-stage{display:flex;align-items:center;min-height:calc(100vh - 150px);padding-top:8px;padding-bottom:8px}
-.lr .du-stage .dug{width:100%}
-.lr .dug{width:100%;max-width:1120px;margin:0 auto}
-@media(min-width:701px){.lr .dug{max-width:min(1120px,calc((100vh - 200px)*1.78))}}
+/* Dyed & Unattached landing: gallery sized to the space left under the title row */
+.lr .du-stage{display:block;max-width:1600px;padding-top:12px;padding-bottom:16px}
+.lr .dug{width:100%;margin:0 auto}
+@media(min-width:701px){.lr .dug{max-width:calc((100vh - 60px - 72px - 36px)*2);max-width:calc((100vh - 60px - 72px - 36px)*2)}}
 .lr .dug-frame{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--wash);-ms-touch-action:pan-y;touch-action:pan-y}
 .lr .dug-track{display:flex;transition:transform .5s cubic-bezier(.2,.75,.25,1)}
 .lr .dug-slide{position:relative;flex:0 0 100%}
-.lr .dug-slide:before{content:"";display:block;padding-top:56%}
+.lr .dug-slide:before{content:"";display:block;padding-top:50%}
 .lr .dug-row{position:absolute;top:0;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 1fr}
 .lr .dug-row-single{grid-template-columns:1fr}
 .lr .dug-media{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--wash);background-repeat:no-repeat}
 .lr .dug-media+.dug-media{border-left:1px solid var(--line)}
-.lr .dug-media img{display:block;width:100%;height:100%;object-fit:cover}
+.lr .dug-media img{display:block;width:100%;height:100%;object-fit:contain}
+.lr .dug-row-single .dug-media{grid-column:1/-1;width:50%;margin:0 auto}
 .lr .dug-row-single .dug-media img{object-fit:contain}
 .lr .dug-loading .dug-media{background:linear-gradient(100deg,#eadfca 30%,#f6efe0 50%,#eadfca 70%);background-size:200% 100%;animation:lr-sheen 1.6s linear infinite}
 @keyframes lr-sheen{to{background-position:-200% 0}}
@@ -198,18 +199,36 @@
 .lr .location-prompt-actions{display:flex}.lr .location-prompt-actions .button+.button{margin-left:8px}
 
 /* Tool pages: app shell, fits one screen, no page scroll */
-.lr.lr-tool{height:100vh;height:100dvh;min-height:0;overflow:hidden}
-.lr.lr-tool #main-content{flex:1 1 0;min-height:0;display:flex}
+.lr.lr-embed,.lr.lr-tool{position:fixed;top:0;left:0;right:0;bottom:0;min-height:0;overflow:hidden}
+.lr.lr-embed #main-content,.lr.lr-tool #main-content{flex:1 1 0;min-height:0;display:flex}
+.lr .hbnf-embed{flex:1 1 auto;display:flex;min-width:0}
+.lr .hbnf-frame{flex:1 1 auto;width:100%;height:100%;border:0;background:#031006}
 .lr.lr-tool .ds-page{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;min-height:0}
 .lr.lr-tool .ds{flex:1 1 auto;height:auto;min-height:0;width:100%}
-.lr .ds .bar,.lr .ds .tbar{display:flex;align-items:center;flex:none;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
-.lr .ds .bar .du-switch,.lr .ds .tbar .du-switch{margin-right:auto}
+.lr .ds .bar,.lr .ds .tbar{align-self:stretch;width:100%;display:flex;align-items:center;flex:none;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.lr .ds .du-switch{margin:0 auto 0 0;width:auto}
+.lr .ds .stframe[data-state=empty]{flex:1 1 auto;display:flex;align-items:center;justify-content:center}
 .lr .ds .bar button+button{margin-left:8px}
 .lr .ds .bar .pri{background:var(--clay);border-color:var(--clay);color:#fff}
 .lr .ds .seg{display:flex}
 .lr .ds .seg button+button{margin-left:8px}
 .lr .ds .pl button{margin:0 6px 6px 0}
 
+@media(min-width:701px){
+  .lr.lr-tool .ds.stp{display:flex;flex-direction:column;max-width:none;padding:0;overflow:hidden}
+  .lr.lr-tool .ds.stp .stframe{flex:1 1 auto;min-height:0;display:flex;padding:16px 20px;position:relative}
+  .lr.lr-tool .ds.stp .stframe[data-state=empty]{align-items:center;justify-content:center}
+  .lr.lr-tool .ds.stp .stframe[data-state=empty] .stpickw{min-height:0}
+  .lr.lr-tool .ds.stp .stwork{flex:1 1 auto;min-height:0;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-column-gap:24px}
+  .lr.lr-tool .ds.stp #fp{grid-column:1;width:100%;height:100%;min-height:0;object-fit:contain}
+  .lr.lr-tool .ds.stp .stside{grid-column:2;display:flex;flex-direction:column;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .lr.lr-tool .ds.stp .stside>*{flex:none}
+  .lr.lr-tool .ds.stp .stfoot{margin-top:auto;padding-top:12px}
+}
+@media(orientation:portrait) and (min-width:701px){
+  .lr.lr-tool .ds.stp .stwork{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
+  .lr.lr-tool .ds.stp .stside{grid-column:1;overflow:visible}
+}
 @media(max-width:900px){
   .lr .events-layout{grid-template-columns:210px minmax(0,1fr);grid-column-gap:18px}
   .lr .weather-page .filters{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -251,7 +270,8 @@
   .lr .hb-row{grid-template-columns:1fr;padding:12px 0}
   .lr .du-wordmark{width:170px}
   .lr .event-detail-card{padding:18px}
-  .lr.lr-tool{height:auto;overflow:visible}
+  .lr.lr-tool{position:static;overflow:visible;min-height:100vh}
+  .lr.lr-tool #main-content{display:block}
   .lr.lr-tool .ds{height:auto}
 }
 @media(prefers-reduced-motion:reduce){.lr *{transition:none!important;animation:none!important}}
