@@ -438,3 +438,13 @@
   .lr .ds .tbar .du-switch{flex:0 0 auto!important}
   .lr .ds .tbar .du-switch a{flex:1 0 auto!important;padding:12px 10px!important;white-space:nowrap}
 }
+.lr .ds .stframe{position:relative}
+.lr .ds .gprog{position:absolute;top:0;left:0;right:0;bottom:0;z-index:6;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(250,246,238,.9);border-radius:14px}
+.lr .ds .gp-bar{width:62%;max-width:300px;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.lr .ds .gp-bar i{display:block;height:100%;width:0;border-radius:99px;background:var(--clay);-webkit-transition:width .5s linear;transition:width .5s linear}
+.lr .ds .gp-t{margin-top:12px;color:var(--ink);font:700 .95rem/1 var(--sans)}
+.lr .ds .stvar button small{display:block;margin-top:3px;font-size:.68rem;font-weight:600;opacity:.65}
+.lr .ds.stp #fp{cursor:grab;-ms-touch-action:none;touch-action:none}
+.lr .ds .stfoot{grid-template-columns:1fr 1fr 1fr}
+.lr .ds .stfoot #stsvg:not([hidden]){grid-column:1/-1}
+@media(max-width:700px){.lr .ds .stfoot button{padding-left:6px;padding-right:6px;font-size:.84rem}}
