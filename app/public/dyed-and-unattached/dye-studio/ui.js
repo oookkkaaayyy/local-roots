@@ -476,8 +476,8 @@ window.addEventListener("keydown",e=>{const tg=e.target&&e.target.tagName;if(tg=
  const st=e.shiftKey?.05:.01,m={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
  if(m){e.preventDefault();if(L.type==="stripe"){const n=axes(L).n,d=clamp(L.p.x*n[0]+L.p.y*n[1]+m[0]*n[0]+m[1]*n[1],-.98,.98);L.p.x=n[0]*d;L.p.y=n[1]*d}else{L.p.x=clamp(L.p.x+m[0],-1.15,1.15);L.p.y=clamp(L.p.y+m[1],-1.15,1.15)}paint(true);drawOv();clearTimeout(window.__nt);window.__nt=setTimeout(()=>{commit();paint(false)},300)}});
 dropGhost();flushQ();layout();H=[snap()];hi=0;all();if(TOOL==="stencil")stInit();
-})();
 async function stCommit(){const res=FR.res,photo=await photoBlob();for(const l of S.layers.filter(x=>x.type==="stencil"))delete STN[l.id];S.layers=S.layers.filter(x=>x.type!=="stencil");const id=uid();STN[id]={mask:res.mask,w:res.w,h:res.h,mm:res.mmPerPx,verdict:res.verdict,change:res.change,photo,style:res.style};S.layers.push({id,type:"stencil",name:"Stencil",vis:true,dyes:[{n:poolOf("Inventory")[0].n,s:1}],p:{x:0,y:0,s:res.w*res.mmPerPx/MM}});S.sel=id}
 function stInit(){const R=$("#frame");const pick=()=>{if(FR.busy)return;DM=false;$("#pfile").click()};$("#stpick").onclick=pick;$("#stnew").onclick=pick;
  $("#stsave").onclick=async()=>{const b=$("#stsave");if(!FR.res||FR.busy)return;flip(b,"…");try{await stCommit();logRecipe("save");await saveStencilImage();flip(b,"Saved")}catch(e){flip(b,"Save")}};
  peek().then(()=>stUI())}
+})();
