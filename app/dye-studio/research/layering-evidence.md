@@ -34,3 +34,8 @@ Used to constrain the engine and encoded in scripts/test.mjs. No source gives me
 ## Veil
 - Champion dark dyes clip to pure channels; photos show a floor. Veil .008 linear fit against measured champion anchors (5.39 to 5.22 dE2000); larger veils worsened anchors.
 - Blue on orange photos show vivid blue; engine dark teal. Not changed: source disc unknown, possibly stripped or painted.
+
+## Image color coverage test
+- 54 Google Images thumbnails (dip dye, glue bed), 3-cluster colors per disc; each darker cluster tested against best engine dye (Star or Champion, strength .5-1.3) on each lighter cluster as base.
+- 38 of 54 within dE 8, median 6.4. Worst cases are vivid blue on lime, mint and yellow plastics (photo brighter than engine).
+- Base reflectance floor 0, .05, .10: coverage 38, 34, 31 of 54 and Champion anchors 5.22, 5.57, 5.89. Floor rejected.
