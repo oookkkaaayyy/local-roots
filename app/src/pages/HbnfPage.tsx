@@ -35,7 +35,7 @@ export function HbnfPage() {
 
   return <Shell><main className="hbnf-page content">
     <header className="hbnf-heading">
-      <span className="hbnf-logo" role="img" aria-label="HB Night Flyers logo" />
+      <span className="hbnf-logo"><img src="/brand/hbnf-mark-authentic.png" alt="HB Night Flyers" width="36" height="36" /></span>
       <div className="hbnf-heading-copy">
         <h1>HB Night Flyers</h1>
         <nav className="hbnf-play-links" aria-label="Skins and Glow">

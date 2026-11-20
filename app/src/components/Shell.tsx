@@ -5,11 +5,12 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
   const path=raw==='/hbnf'?'/hb-night-flyers':raw==='/du'?'/dyed-and-unattached':raw;
   const current=(href:string)=>path===href||path.startsWith(`${href}/`)?'page' as const:undefined;
   const eventsCurrent=path==='/'||path==='/events'||path.startsWith('/events/')?'page' as const:undefined;
+  const section=path.startsWith('/weather')?'weather':path.startsWith('/hb-night-flyers')?'hbnf':path.startsWith('/dyed-and-unattached')||path.startsWith('/admin/dyed-and-unattached')?'du':'events';
   const [menuOpen,setMenuOpen]=useState(false);
   const menuButton=useRef<HTMLButtonElement>(null);
   const handleNavKeyDown=(event:KeyboardEvent<HTMLElement>)=>{if(event.key==='Escape'&&menuOpen){event.preventDefault();setMenuOpen(false);menuButton.current?.focus();}};
 
-  return <div className={`site-shell ${admin?'admin-shell':'public-brand-shell'}`}>
+  return <div className={`site-shell ${admin?'admin-shell':'public-brand-shell'}`} data-section={section}>
     <a className="skip-link" href="#main-content">Skip to main content</a>
     <header className="site-header">
       <a className="brand" href="/" aria-label="Local Roots home">
