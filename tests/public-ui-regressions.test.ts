@@ -250,11 +250,12 @@ test("HB Night Flyers is in the primary navigation with the other sections", () 
   assert.equal(shell.includes('HB Night Flyers events'),false);
 });
 
-test("compact public navigation stays three plain links and reflows under the brand", () => {
+test("compact public navigation keeps four sections in one row with short labels", () => {
   const shell=source("components/Shell.tsx");
   const skin=source("skin.css");
   assert.ok(shell.includes('<nav id="primary-navigation" className="lr-nav" aria-label="Primary">'));
   assert.ok(skin.includes('@media(max-width:700px)'));
-  assert.ok(skin.includes('.lr .lr-nav a{flex:1 1 0'));
+  assert.ok(skin.includes('.lr .nav-long{display:none}'));
+  assert.ok(shell.includes('className="nav-short"'));
 });
 
