@@ -448,3 +448,11 @@
 .lr .ds .stfoot{grid-template-columns:1fr 1fr 1fr}
 .lr .ds .stfoot #stsvg:not([hidden]){grid-column:1/-1}
 @media(max-width:700px){.lr .ds .stfoot button{padding-left:6px;padding-right:6px;font-size:.84rem}}
+.lr .du-wordmark{background:var(--clay)!important;width:230px!important}
+@media(min-width:701px){.lr .du-wordmark{width:280px!important}}
+@media(max-width:700px){
+  .lr .lr-top{flex-wrap:wrap!important}
+  .lr .du-wordmark{width:min(260px,72vw)!important}
+  .lr .lr-top-aside .du-switch{width:100%!important;margin-top:8px!important}
+  .lr .lr-top-aside{width:100%!important;margin:0!important}
+}
