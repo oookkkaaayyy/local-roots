@@ -23,8 +23,8 @@ const STN={};
 const uid=()=>Math.random().toString(36).slice(2,8);
 const poolOf=g=>{let L=DYELIST.filter(d=>!d.c);if(g==="Inventory")L=L.filter(d=>d.i);else if(g==="ProChem")L=L.filter(d=>d.g==="ProChem");else if(g==="UV Blast")L=L.filter(d=>/UV Blast/.test(d.g)&&!d.i||/UV Blast/.test(d.n));return L};
 const GROUPS=["Inventory"];const GL={Inventory:"Available"};
-function defState(){const a=uid(),b=uid();return{plastic:"star",base:"#F4F2E8",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:b,
- layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}},{id:b,type:"stripe",name:"Color",vis:true,dyes:[{n:"UV Blast Blaze Orange",s:1}],p:Object.assign({},TYPES.stripe.p)}]}}
+function defState(){const a=uid();return{plastic:"star",base:"#F4F2E8",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:a,
+ layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}}]}}
 let S=defState();
 try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);t.layers.forEach(l=>{if(l.name==="Stripe")l.name="Color";else if(/^Stripe \d+$/.test(l.name))l.name=l.name.replace("Stripe","Color")});if(t.tab==="design")t.tab="disc";if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}if(!PL.some(p=>p.id===S.plastic))S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil"){S.tab="disc";S.layers=S.layers.filter(l=>l.type==="full");S.sel=S.layers[0].id}}catch(e){}S.tab="disc";
 const dropGhost=()=>{S.layers=S.layers.filter(l=>l.type!=="stencil"||STN[l.id]);if(!S.layers.some(l=>l.id===S.sel))S.sel=S.layers[S.layers.length-1].id};
@@ -217,9 +217,9 @@ const colorPick=(id,val)=>`<input type="color" id="${id}C" value="${val}" aria-l
 function tabDisc(){const n=S.layers.length,hasRing=S.layers.some(l=>l.type==="ring");
  let h=`<div class="ord">Plastic</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+(hasRing?`<button data-act="sel" data-id="${S.layers.find(l=>l.type==="ring").id}" class="on">Rim</button>`:`<button data-act="addlayer" data-t="ring">+ Rim</button>`)+`</div>`+
   `<div class="ord">Disc</div><div class="bs">`+BASES.map(b=>`<button data-act="base" data-c="${b}" class="${b===S.base.toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`<span class="cpk">${colorPick("b",S.base)}</span></div><div class="seg" style="margin-top:8px"><button class="g" data-act="discphoto">Match from photo</button></div>`+
-  `<div class="ord">Colors</div>`;
+  `<div class="ord">Add</div><div class="tg2"><button class="tl2" data-act="addlayer" data-t="stripe">+ Color</button>${S.layers.some(l=>l.type==="stencil")?"":`<button class="tl2" data-act="photo">+ Photo stencil</button>`}</div>`;
+ if(n>1)h+=`<div class="ord">Layers</div>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
- h+=`<div class="seg" style="margin:8px 0 4px"><button class="pri" data-act="addlayer" data-t="stripe">+ Add color</button>${S.layers.some(l=>l.type==="stencil")?"":`<button class="g" data-act="photo">+ Photo stencil</button>`}</div>`;
  return h}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
 const sh=n=>n.replace(/^(ProChem |iDye Poly )/,"");
