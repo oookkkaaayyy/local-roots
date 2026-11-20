@@ -8,6 +8,7 @@ import { DuAdminPage } from './pages/DuAdminPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AdminPage } from './pages/AdminPage';
 import { ReadinessPage } from './pages/ReadinessPage';
+import { StencilPage } from './pages/StencilPage';
 import { DyeStudioPage } from './pages/DyeStudioPage';
 
 function ConfigMissing(){return <Shell><main className="content narrow"><div className="notice error"><strong>Local Roots configuration could not initialize.</strong><span>The public Supabase connection is unavailable. No private credentials should be entered here.</span></div></main></Shell>;}
@@ -24,6 +25,7 @@ export default function LegacyRoutes(){
   if(path==='/events')return <EventsPage/>;
   if(path==='/hb-night-flyers'||path==='/hbnf')return <HbnfPage/>;
   if(path==='/dyed-and-unattached/dye-studio')return <DyeStudioPage/>;
+  if(path==='/dyed-and-unattached/stencil')return <StencilPage/>;
   if(path==='/dyed-and-unattached'||path==='/du')return <DyedUnattachedPage/>;
   if(path==='/')return <EventsPage landing/>;
   return <NotFoundPage/>;

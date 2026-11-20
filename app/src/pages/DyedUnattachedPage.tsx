@@ -96,7 +96,7 @@ export function DyedUnattachedPage() {
       <div className="du-brand-lockup">
         <h1 className="du-brand-heading"><img src="/brand/dyed-unattached-logo.png" alt="Dyed & Unattached" /></h1>
         <div className="branch-actions du-hero-actions">
-          <a className="button primary" href="/dyed-and-unattached/dye-studio?tool=stencil">Make a stencil</a>
+          <a className="button primary" href="/dyed-and-unattached/stencil">Make a stencil</a>
           <a className="button ghost" href="/dyed-and-unattached/dye-studio">Design a disc</a>
         </div>
       </div>

@@ -11,6 +11,7 @@ const routeMetadata: Record<string, RouteMetadata> = {
   '/hb-night-flyers': {title:'HB Night Flyers · Local Roots',description:'HB Night Flyers community disc golf, weekly skins and glow events in Huntington Beach, California.',canonical:'/hb-night-flyers'},
   '/dyed-and-unattached': {title:'Dyed & Unattached · Local Roots',description:'Request a custom pet portrait disc stencil from Dyed & Unattached, a Local Roots sub-brand.',canonical:'/dyed-and-unattached/'},
   '/dyed-and-unattached/dye-studio': {title:'Dye Studio · Dyed & Unattached · Local Roots',description:'Design a disc dye recipe with the Dyed & Unattached Disc Dye Studio.',canonical:'/dyed-and-unattached/dye-studio'},
+  '/dyed-and-unattached/stencil': {title:'Stencil · Dyed & Unattached · Local Roots',description:'Turn a pet photo into a Cricut-ready vinyl disc stencil with Dyed & Unattached.',canonical:'/dyed-and-unattached/stencil'},
   '/weather': {title:'Disc Golf Weather · Local Roots',description:'Compare verified Southern California disc golf course forecasts by playing hours.',canonical:'/weather'},
   '/admin': {title:'Local Roots Admin',description:'Local Roots administrative workspace.',canonical:'/admin',noindex:true},
   '/admin/events': {title:'Local Roots Event Admin',description:'Local Roots event administration.',canonical:'/admin/events',noindex:true},
