@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Shell } from '../components/Shell';
+import { Shell, Mast } from '../components/Shell';
 import { DuSwitch } from '../components/DuSwitch';
 import { loadStudio } from './studioLoader';
 
@@ -8,7 +8,7 @@ export function DyeStudioPage() {
     if (new URLSearchParams(window.location.search).get('tool') === 'stencil') { window.location.replace('/dyed-and-unattached/stencil'); return; }
     loadStudio('dye');
   }, []);
-  return <Shell><main id="studio" className="ds-page"><DuSwitch active="dye"/><div className="ds dye">
+  return <Shell mast={<Mast title="Dye design" aside={<DuSwitch active="dye"/>} />}><main id="studio" className="ds-page"><div className="ds dye">
     <div className="bar"><button id="undo" className="dis">Undo</button><button id="redo" className="dis">Redo</button><button id="copy" hidden>Copy recipe</button><button id="png" className="pri">Save</button></div>
     <div className="app">
       <section className="stage"><div className="vw"><div className="sq"><canvas id="cv"></canvas><canvas id="ov"></canvas></div></div></section>

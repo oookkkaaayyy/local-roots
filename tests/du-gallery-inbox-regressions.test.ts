@@ -98,7 +98,7 @@ test("public gallery prioritizes reference plus finished disc and otherwise show
   assert.ok(duPublic.includes("if(source&&finished)return [source,finished]"));
   assert.ok(duPublic.includes(".slice(0,2)"));
   assert.ok(duPublic.includes("length>=1"));
-  assert.ok(duPublic.includes("du-gallery-row-single"));
+  assert.ok(duPublic.includes("dug-row-single"));
 });
 
 

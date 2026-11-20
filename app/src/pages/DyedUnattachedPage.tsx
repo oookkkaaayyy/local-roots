@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Shell } from '../components/Shell';
+import { Shell, Mast } from '../components/Shell';
 import { supabase } from '../lib/supabase';
 
 const GALLERY_SPRITE = 'https://wtymjxscneufjlkkywyg.supabase.co/storage/v1/object/public/du-gallery/gallery-v2.avif';
@@ -41,10 +41,10 @@ function parseLegacyPath(path:string){
 function GalleryMediaView({media}:{media:GalleryMedia}){
   const legacy=parseLegacyPath(media.path);
   if(legacy){
-    return <div className="du-gallery-media du-gallery-media-legacy" role="img" aria-label={media.label} style={{backgroundImage:`url(${GALLERY_SPRITE})`,backgroundSize:'200% 1800%',backgroundPosition:`${legacy.side==='left'?'0%':'100%'} ${legacy.row*(100/17)}%`}}/>;
+    return <div className="dug-media" role="img" aria-label={media.label} style={{backgroundImage:`url(${GALLERY_SPRITE})`,backgroundSize:'200% 1800%',backgroundPosition:`${legacy.side==='left'?'0%':'100%'} ${legacy.row*(100/17)}%`}}/>;
   }
   const url=supabase.storage.from('du-gallery').getPublicUrl(media.path).data.publicUrl;
-  return <div className="du-gallery-media"><img src={url} alt={media.label} loading="lazy"/></div>;
+  return <div className="dug-media"><img src={url} alt={media.label} loading="lazy"/></div>;
 }
 
 export function DyedUnattachedPage() {
@@ -56,7 +56,7 @@ export function DyedUnattachedPage() {
   const gallerySlides=useMemo(()=>{
     const valid=galleryItems.filter(item=>galleryDisplayMedia(item).length>=1);
     const slides:Array<GalleryItem[]>=[];
-    for(let index=0;index<valid.length;index+=2)slides.push(valid.slice(index,index+2));
+    for(let index=0;index<valid.length;index+=1)slides.push(valid.slice(index,index+1));
     return slides;
   },[galleryItems]);
   const gallerySlideCount=Math.max(1,gallerySlides.length);
@@ -87,40 +87,21 @@ export function DyedUnattachedPage() {
   },[]);
   useEffect(()=>{if(galleryIndex>=gallerySlideCount)setGalleryIndex(0);},[galleryIndex,gallerySlideCount]);
 
-  return <Shell><main>
-    <style>{`
-      .du-share-hero{grid-template-columns:1fr;justify-items:center;text-align:center;padding:clamp(28px,4vw,48px) 0 24px}.du-brand-lockup{display:grid;justify-items:center}.du-brand-heading{margin:0!important;font:inherit!important;letter-spacing:normal!important;line-height:1!important}.du-brand-heading img{display:block;width:min(760px,88vw);height:auto}.du-share-hero .branch-actions{justify-content:center;gap:12px;margin-top:22px}.du-hero-actions .button{min-width:180px;padding:14px 26px;font-size:1rem}.du-tombstone-mark{display:block;width:54px;height:auto;margin:0 0 12px}.du-gallery{margin:0 auto 52px}.du-gallery-shell{position:relative;width:min(1040px,100%);margin:0 auto}.du-gallery-frame{overflow:hidden;border:1px solid rgba(185,154,119,.65);border-radius:24px;background:#f3eadf;box-shadow:0 12px 34px rgba(58,38,24,.10);touch-action:pan-y}.du-gallery-track{display:flex;transition:transform .48s cubic-bezier(.2,.75,.25,1)}.du-gallery-slide{flex:0 0 100%;aspect-ratio:1;display:grid;grid-template-rows:repeat(2,minmax(0,1fr));background:#efe3d2}.du-gallery-row{display:grid;grid-template-columns:1fr 1fr;min-height:0}.du-gallery-row-single{grid-template-columns:1fr}.du-gallery-row-single .du-gallery-media img{object-fit:contain}.du-gallery-row+.du-gallery-row{border-top:1px solid rgba(185,154,119,.55)}.du-gallery-media{min-width:0;min-height:0;overflow:hidden;background:#efe3d2}.du-gallery-media+.du-gallery-media{border-left:1px solid rgba(185,154,119,.55)}.du-gallery-media img{width:100%;height:100%;display:block;object-fit:cover}.du-gallery-media-legacy{background-repeat:no-repeat}.du-gallery-row-empty{background:#efe3d2}.du-gallery-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}.du-gallery-controls button{width:38px;height:38px;border:1px solid rgba(112,77,49,.25);border-radius:999px;background:#fff8ee;color:#5b3a24;font-size:1.25rem;line-height:1;cursor:pointer}.du-gallery-controls button:hover{background:#efe3d2}.du-gallery-count{min-width:52px;text-align:center;color:#756050;font-size:.78rem;font-weight:800;letter-spacing:.08em}.du-gallery-hint{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.du-request .section-intro strong{display:block;margin-top:14px;color:var(--soil);font-size:.84rem}@media(max-width:620px){.du-share-hero{padding-top:30px;padding-bottom:22px}.du-brand-heading img{width:min(94vw,560px)}.du-tombstone-mark{width:48px;margin:0 auto 10px}.du-gallery{margin-bottom:36px}.du-gallery-frame{border-radius:18px}.du-gallery-controls{margin-top:8px}.du-live-card{border-radius:18px}}@media(prefers-reduced-motion:reduce){.du-gallery-track{transition:none}}
-    `}</style>
-
-    <section className="branch-hero content du-share-hero">
-      <div className="du-brand-lockup">
-        <h1 className="du-brand-heading"><img src="/brand/dyed-unattached-logo.png" alt="Dyed & Unattached" /></h1>
-        <div className="branch-actions du-hero-actions">
-          <a className="button primary" href="/dyed-and-unattached/stencil">Make a stencil</a>
-          <a className="button ghost" href="/dyed-and-unattached/dye-studio">Design a disc</a>
-        </div>
-      </div>
-    </section>
-
+  return <Shell mast={<Mast title={<><img className="du-wordmark" src="/brand/dyed-unattached-logo.png" alt="Dyed & Unattached" width="955" height="233" /></>} aside={<div className="lr-actions"><a className="lr-btn lr-btn-primary" href="/dyed-and-unattached/stencil">Make a stencil</a><a className="lr-btn lr-btn-ghost" href="/dyed-and-unattached/dye-studio">Design a disc</a></div>} />}><main className="lr-wrap du-stage">
     <div id="gallery" />
-
-    <section className="du-gallery content" aria-label="Dyed & Unattached portfolio examples">
-      <div className="du-gallery-shell" onMouseEnter={() => setGalleryPaused(true)} onMouseLeave={() => setGalleryPaused(false)} onFocus={() => setGalleryPaused(true)} onBlur={() => setGalleryPaused(false)}>
-                <div className="du-gallery-frame" onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; setGalleryPaused(true); }} onTouchEnd={event => { const start = touchStartX.current; const end = event.changedTouches[0]?.clientX; touchStartX.current = null; setGalleryPaused(false); if (start == null || end == null) return; const delta = end - start; if (Math.abs(delta) > 45) delta < 0 ? nextSlide() : previousSlide(); }}>
-          <div className="du-gallery-track" style={{ transform: `translateX(-${galleryIndex * 100}%)` }}>
-            {galleryLoaded&&gallerySlides.length?gallerySlides.map((items,index)=><div key={items.map(item=>item.id).join(':')} className="du-gallery-slide" aria-label={items.length===1?`Portfolio example ${index*2+1}`:`Portfolio examples ${index*2+1} and ${index*2+2}`} aria-hidden={index!==galleryIndex}>
-              {items.map(item=>{const media=galleryDisplayMedia(item);return <div className={`du-gallery-row${media.length===1?' du-gallery-row-single':''}`} key={item.id}>{media.map(entry=><GalleryMediaView key={entry.label} media={entry}/>)}</div>;})}
-              {items.length===1?<div className="du-gallery-row-empty" aria-hidden="true"/>:null}
-            </div>):<div className="du-gallery-slide" aria-label="Portfolio loading"><div className="du-gallery-row-empty"/><div className="du-gallery-row-empty"/></div>}
-          </div>
+    <section className="dug" aria-label="Dyed & Unattached portfolio examples" onMouseEnter={() => setGalleryPaused(true)} onMouseLeave={() => setGalleryPaused(false)} onFocus={() => setGalleryPaused(true)} onBlur={() => setGalleryPaused(false)}>
+      <div className="dug-frame" onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; setGalleryPaused(true); }} onTouchEnd={event => { const start = touchStartX.current; const end = event.changedTouches[0]?.clientX; touchStartX.current = null; setGalleryPaused(false); if (start == null || end == null) return; const delta = end - start; if (Math.abs(delta) > 45) { if (delta < 0) nextSlide(); else previousSlide(); } }}>
+        <div className="dug-track" style={{ transform: `translateX(-${galleryIndex * 100}%)` }}>
+          {galleryLoaded&&gallerySlides.length?gallerySlides.map((items,index)=><div key={items.map(item=>item.id).join(':')} className="dug-slide" aria-label={`Portfolio example ${index+1}`} aria-hidden={index!==galleryIndex}>
+            {items.map(item=>{const media=galleryDisplayMedia(item);return <div className={`dug-row${media.length===1?' dug-row-single':''}`} key={item.id}>{media.map(entry=><GalleryMediaView key={entry.label} media={entry}/>)}</div>;})}
+          </div>):<div className="dug-slide dug-loading" aria-label="Portfolio loading"><div className="dug-row"><div className="dug-media"/><div className="dug-media"/></div></div>}
         </div>
-        <div className="du-gallery-controls" aria-label="Gallery controls">
+        <div className="dug-controls" aria-label="Gallery controls">
           <button type="button" onClick={previousSlide} aria-label="Previous examples" disabled={gallerySlideCount<=1}>‹</button>
-          <span className="du-gallery-count" aria-live="polite">{String(galleryIndex + 1).padStart(2, '0')} / {String(gallerySlideCount).padStart(2, '0')}</span>
+          <span className="dug-count" aria-live="polite">{String(galleryIndex + 1).padStart(2, '0')} / {String(gallerySlideCount).padStart(2, '0')}</span>
           <button type="button" onClick={nextSlide} aria-label="Next examples" disabled={gallerySlideCount<=1}>›</button>
         </div>
       </div>
     </section>
-
   </main></Shell>;
 }

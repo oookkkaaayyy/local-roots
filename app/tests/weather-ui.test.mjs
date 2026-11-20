@@ -68,19 +68,14 @@ test('Weather interface keeps player controls and removes internal explanations'
 });
 
 
-test('Primary navigation keeps the active links and exposes an accessible mobile disclosure', async () => {
+test('Primary navigation keeps the active links as plain reflowing links', async () => {
   const shell = await read('../src/components/Shell.tsx');
-  const styles = await read('../src/styles.css');
-  const integration = await read('../src/lr-hbnf-integration.css');
+  const skin = await read('../src/skin.css');
   assert.ok(shell.includes(`className="nav-weather" href="/weather" aria-current={current('/weather')}>Weather</a>`));
   assert.ok(shell.includes(`href="/" aria-label="Local Roots home"`));
-  assert.match(shell, /aria-expanded=\{menuOpen\} aria-controls="primary-navigation"/);
-  assert.match(shell, /event\.key===\"Escape\"/);
-  assert.match(integration, /\.mobile-menu-toggle\{display:inline-flex;[^}]*min-height:44px/);
-  assert.match(integration, /\.site-header nav\.primary-nav a\{display:block!important;min-height:44px/);
-  assert.doesNotMatch(styles, /@media\(max-width:720px\)\{\.site-header \.nav-home/);
-  assert.doesNotMatch(integration, /\.site-header \.nav-hbnf\{display:block\}/);
+  assert.match(skin, /@media\(max-width:700px\)/);
 });
+
 
 
 test('Weather first visits default to today all-day without a passed-window notice; explicit shared filters still work', async()=>{
