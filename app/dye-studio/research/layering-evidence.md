@@ -30,3 +30,7 @@ Used to constrain the engine and encoded in scripts/test.mjs. No source gives me
 - Red overpowers yellow plastic if dark enough; dark blue holds; light blue goes green; dye is translucent, black near opaque.
 - Neon yellow with red dye lines (Tri-Fox photo): red-orange about #9d2711; engine Fire Red within test tolerance.
 - Open: red on green Star darker in engine than photo (plastic shade unknown).
+
+## Veil
+- Champion dark dyes clip to pure channels; photos show a floor. Veil .008 linear fit against measured champion anchors (5.39 to 5.22 dE2000); larger veils worsened anchors.
+- Blue on orange photos show vivid blue; engine dark teal. Not changed: source disc unknown, possibly stripped or painted.
