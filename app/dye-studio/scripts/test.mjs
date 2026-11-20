@@ -58,6 +58,7 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
  ok(de2(B(star,"Aqua","Bright Yellow"),o1)>2,"blend differs from layering");
  ok(de2(L(star,"Aqua","Bright Yellow"),L("#2A6FD0","Aqua","Bright Yellow"))>12,"plastic color changes layered result");
  const zo=L("#E8731C","Neon Lemon Zest","UV Blast Blaze Orange");ok(hsl(zo)[0]>10&&hsl(zo)[0]<55,"zest then orange stays warm yellow-orange "+zo);
+ {const g=P("#F7E331",it(["Caribbean",1])).hex;ok(hsl(g)[0]>100&&hsl(g)[0]<200&&Ls(g)>30&&Ls(g)<80,"teal-blue dye on yellow plastic reads green, not black "+g);}
 }
 
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
