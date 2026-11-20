@@ -360,3 +360,13 @@
 .lr .weather-daychart .dc-track{min-width:0;max-width:520px;width:100%;margin:0 auto}
 .lr .weather-daychart .dc-sun{grid-column:1/-1;max-width:460px}
 .lr .weather-daychart .dc-title{font-size:15px}.lr .weather-daychart .dc-value{font-size:16px}.lr .weather-daychart .dc-label{font-size:16px}.lr .weather-daychart .dc-axis{font-size:14.5px}
+@media(max-width:700px){
+  .lr .weather-course-toggle{padding:12px 36px 12px 2px}
+  .lr .weather-course-name{padding-right:30px}
+  .lr .weather-expand-indicator{top:12px;right:4px}
+  .lr .event-card{padding:10px 12px;margin:0 0 8px}
+  .lr .event-date-block{display:flex;flex-wrap:wrap;align-items:baseline;padding:0 0 6px;margin-bottom:6px}
+  .lr .event-date-block>*{margin:0 8px 0 0}
+  .lr .event-actions{display:flex;flex-wrap:wrap;margin-top:6px}
+  .lr .event-actions .button{min-height:36px;padding:0 12px;margin:0 6px 6px 0;flex:0 1 auto;font-size:.84rem}
+}
