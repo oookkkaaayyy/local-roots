@@ -14,5 +14,5 @@ test("D&U public homepage has a discreet direct link to its protected admin queu
   assert.ok(shell.includes("path==='/dyed-and-unattached'?<a"));
   assert.ok(shell.includes('href="https://localrootsdg.com/admin/dyed-and-unattached"'));
   assert.ok(shell.includes('>Admin</a>:null'));
-  assert.ok(shell.includes('{!admin?<footer'));
+  assert.ok(shell.includes('<footer className="lr-foot">'));
 });

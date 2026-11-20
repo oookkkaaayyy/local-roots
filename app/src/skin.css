@@ -1,5 +1,5 @@
 /* Local Roots public skin. One system for Events, Weather, HB Night Flyers and Dyed & Unattached.
-   Safe for iOS 12 Safari: no :is(), no clamp(), no aspect-ratio, no flex gap. */
+   Written for iOS 12 Safari: only long-supported CSS. */
 .lr{
   --paper:#f6f0e4;--surface:#fffcf6;--wash:#efe6d4;--line:#ddd0b8;--line-soft:#e9dfcb;
   --ink:#2a1f17;--earth:#4b3626;--muted:#6f5e50;
@@ -39,7 +39,7 @@
 .lr[data-section=hbnf] .lr-mast-meta{color:var(--phosphor)}
 .lr .lr-mast-aside{margin-left:20px}
 .lr .hb-mark{display:block;width:44px;height:44px;margin-right:14px;border-radius:8px;background:var(--bone);padding:5px}
-.lr .du-wordmark{display:block;width:340px;height:83px;max-width:60vw;background:var(--ink);-webkit-mask:url(/brand/dyed-unattached-logo.png) left center/contain no-repeat;mask:url(/brand/dyed-unattached-logo.png) left center/contain no-repeat}
+.lr .du-wordmark{display:block;width:340px;height:auto;max-width:60vw;filter:invert(12%) sepia(40%) saturate(700%) hue-rotate(345deg) brightness(.95)}
 
 /* Controls */
 .lr .lr-actions{display:flex}
@@ -220,7 +220,7 @@
   .lr .event-actions .button{margin:0 8px 8px 0;flex:1 1 auto}
   .lr .submission-form{grid-template-columns:1fr}
   .lr .hb-row{grid-template-columns:1fr;padding:14px 0}
-  .lr .du-wordmark{width:260px;height:64px}
+  .lr .du-wordmark{width:240px}
   .lr .event-detail-card{padding:18px}
 }
 @media(prefers-reduced-motion:reduce){.lr *{transition:none!important;animation:none!important}}
