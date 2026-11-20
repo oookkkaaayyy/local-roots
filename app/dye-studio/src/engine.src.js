@@ -17,7 +17,7 @@ const DE=(()=>{
  // Uptake. Dyes in ONE bath (a blend) compete for the same sites (Langmuir, affinity-weighted). Separate baths
  // (layers, item.b) do not displace each other, so their dye loads add and absorbances add in the film (order is
  // irrelevant); a soft total cap (TOTCAP) stands in for the plastic running out of sites altogether.
- const TOTCAP=3.2,LAM=.6;
+ const TOTCAP=3.2,LAM=.4;
  function conc(items){
   const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))],bt=[];
   for(const b of bs){
