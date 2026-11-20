@@ -17,7 +17,7 @@ const DE=(()=>{
  // Uptake. Dyes in ONE bath (a blend) compete for the same sites (Langmuir, affinity-weighted). Separate baths
  // (layers, item.b) do not displace each other, so their dye loads add and absorbances add in the film (order is
  // irrelevant); a soft total cap (TOTCAP) stands in for the plastic running out of sites altogether.
- const TOTCAP=3.2,LAM=.4;
+ const TOTCAP=3.2,LAM=.4,VEIL=.008;
  function conc(items){
   const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))],bt=[];
   for(const b of bs){
@@ -104,8 +104,8 @@ const DE=(()=>{
  const hexLab=h=>labOf(SP.hexLin(h));
  const dEhex=(a,b)=>de2000(hexLab(a),hexLab(b));
  // gamut: spectrum -> linear RGB (may leave [0,1]); report clipping and chroma-preserving soft clip
- function present(s){
-  const l=SP.toLin(s),over=Math.max(0,...l)-1,under=Math.min(0,...l);
+ function present(s,veil=0){
+  const l=SP.toLin(s).map(v=>v+veil),over=Math.max(0,...l)-1,under=Math.min(0,...l);
   let m=Math.max(1,...l);const lin=l.map(v=>Math.max(0,v)/ (m>1?1:1));
   const hex=SP.linHex(l.map(v=>Math.min(1,Math.max(0,v))));
   return{hex,lin:l,gamutExcess:Math.max(over,-under)};
@@ -122,7 +122,7 @@ const DE=(()=>{
   return R;
  }
  function predict(spec,opt={}){
-  const R=render(spec,opt);let out=present(R);
+  const R=render(spec,opt);let out=present(R,famOf(spec.family)==='champion'?VEIL:0);
   const P=PRM[famOf(spec.family)];
   if(spec.zone==="rim"||spec.rim){const k=P.rim*(spec.items.length?1:0);if(k){out={...out,hex:SP.linHex(SP.toLin(R).map(v=>Math.min(1,Math.max(0,v*(1-k)))))}}}
   if(opt.mc){
