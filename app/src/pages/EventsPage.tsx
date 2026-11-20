@@ -58,7 +58,11 @@ function currentEventsPath(){
   return `${window.location.pathname}${window.location.search}`;
 }
 
+const hostOf=(u:string)=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch{return 'source';}};
+const clock=(t?:string|null)=>{if(!t)return '';const [h,m]=t.split(':').map(Number);if(h==null||Number.isNaN(h))return '';return `${h%12||12}:${String(m||0).padStart(2,'0')} ${h<12?'AM':'PM'}`;};
+
 function EventCard({event,today,distance}:{event:PublicEvent;today:string;distance?:number|null}) {
+  const [open,setOpen]=useState(false);
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
   const effectiveStatus = ['canceled','completed'].includes(event.status) ? event.status : event.end_date<today ? 'completed' : event.status;
   const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed'].includes(effectiveStatus));
@@ -67,17 +71,26 @@ function EventCard({event,today,distance}:{event:PublicEvent;today:string;distan
   const resultLabel = event.results_url ? resultsLinkLabel(event.results_url) : '';
   const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`;
   const hbnfEvent=isHbnfEvent(event);
-  const canShowOfficialInfo=Boolean(event.official_url&&!hbnfEvent&&event.official_url!==event.registration_url&&event.official_url!==event.results_url);
-  return <article className={`event-card ${effectiveStatus==='canceled'?'is-canceled':''}`}>
+  const infoUrl=event.official_url||event.source_url||event.course_url||(canShowRegistration?null:event.registration_url)||null;
+  const showInfo=Boolean(infoUrl&&infoUrl!==event.results_url&&!(canShowRegistration&&infoUrl===event.registration_url));
+  const fee=event.entry_fee_amount!=null?`$${Number(event.entry_fee_amount)%1===0?Number(event.entry_fee_amount):Number(event.entry_fee_amount).toFixed(2)}${event.entry_fee_unit&&event.entry_fee_unit!=='per_player'?` ${event.entry_fee_unit.replace(/_/g,' ')}`:''}`:'';
+  const time=clock(event.start_time_local);
+  const meta=[time,fee,event.rounds_text,event.format].filter(Boolean).join(' · ');
+  const panelId=`ev-${event.id}`;
+  return <article className={`event-card ${open?'is-open':''} ${effectiveStatus==='canceled'?'is-canceled':''}`}>
     <div className="event-date-block"><strong>{eventDateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span>{distance!=null?<span className="event-distance">{distance<10?distance.toFixed(1):Math.round(distance)} mi</span>:null}</div>
     <div className="event-main">
-      <div className="event-heading-row"><div><h3><a className="event-title-link" href={detailHref}>{event.name}</a></h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div>{effectiveStatus!=='upcoming'?<span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span>:null}</div>
-      <div className="event-tags"><span>{eventTitle(event.event_type)}</span>{event.sanctioned===true?<span>{event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'}</span>:null}</div>
-            {hbnfEvent?<nav className="event-resource-links" aria-label={`HB Night Flyers links for ${event.name}`}>{HBNF_EVENT_LINKS.map(link=><a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={`${link.label} for ${event.name} (opens in new tab)`}>{link.label}</a>)}</nav>:null}
+      <div className="event-heading-row"><div><h3><button type="button" className="event-title-btn" aria-expanded={open} aria-controls={panelId} onClick={()=>setOpen(o=>!o)}>{event.name}</button></h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div>{effectiveStatus!=='upcoming'?<span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span>:null}</div>
+      <div className="event-tags"><span>{eventTitle(event.event_type)}</span>{event.sanctioned===true?<span>{event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'}</span>:null}{meta?<span className="event-meta">{meta}</span>:null}</div>
+      {hbnfEvent?<nav className="event-resource-links" aria-label={`HB Night Flyers links for ${event.name}`}>{HBNF_EVENT_LINKS.map(link=><a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={`${link.label} for ${event.name} (opens in new tab)`}>{link.label}</a>)}</nav>:null}
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
       {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {eventTitle(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{resultValue(r)}</strong></li>)}</ol></div>:null}
+      <div className="event-more" id={panelId} hidden={!open}>
+        <dl className="event-facts">{event.venue_address?<div><dt>Address</dt><dd><a href={`https://maps.google.com/?q=${encodeURIComponent(event.venue_address)}`} target="_blank" rel="noreferrer">{event.venue_address}</a></dd></div>:null}{event.club_host?<div><dt>Host</dt><dd>{event.club_host}</dd></div>:null}{tdNames.length?<div><dt>TD</dt><dd>{tdNames.join(', ')}</dd></div>:null}<div><dt>Sanction</dt><dd>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Not listed'}</dd></div></dl>
+        <div className="event-more-actions">{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)} aria-label={`Add ${event.name} to calendar`}>Add to calendar</button>:null}{event.top_results?.length?<a className="button ghost" href={`${detailHref}#results`}>Full results</a>:null}</div>
+      </div>
     </div>
-    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}<a className="button ghost" href={detailHref} aria-label={`View details for ${event.name}`}>Details</a>{event.top_results?.length?<a className="button ghost" href={`${detailHref}#results`}>Full Results</a>:null}</div>
+    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Register</a>:null}{showInfo?<a className="button ghost" href={infoUrl!} target="_blank" rel="noreferrer" aria-label={`Event info for ${event.name} from ${hostOf(infoUrl!)} (opens in new tab)`}>{hostOf(infoUrl!)}</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
   </article>;
 }
 

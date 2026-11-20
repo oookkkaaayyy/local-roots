@@ -35,7 +35,7 @@ const selL=()=>S.layers.find(l=>l.id===S.sel)||S.layers[S.layers.length-1];
 const mixHex=(a,b,k)=>{const A=hexRgb(a),B2=hexRgb(b);return rgbHex(A.map((v,i)=>v+(B2[i]-v)*k))};
 const rimK=r=>{if(!S.rim)return 0;const w=S.rim.w/100,f=.14*(1-S.rim.f)+.006;return ss(1-w-f/2,1-w+f/2,r)};
 const baseAt=r=>S.rim?mixHex(S.base,S.rim.c,rimK(r)):S.base;
-const transHex=bh=>{if(hexOk(S.trans))return S.trans.toUpperCase();const p=plastic(),t=p.tr||.7,l=.38+.36*t;return rgbHex(hexRgb(bh||S.base).map(v=>v+(255-v)*l))};
+const transHex=bh=>{if(hexOk(S.trans))return S.trans.toUpperCase();const p=plastic(),t=p.tr||.7,c=hexRgb(bh||S.base),lum=(.2126*c[0]+.7152*c[1]+.0722*c[2])/255,l=(.38+.36*t)*Math.pow(lum,.6);return rgbHex(c.map(v=>v+(255-v)*l))};
 const pathAt=(r,p)=>{if(p.fam!=="champion")return 1;if(r<.58)return .64+r*.20;if(r<.84)return .78+(r-.58)*1.25;return 1.10+(r-.84)*3.10};
 const zoneAt=r=>r<.58?"plate":r<.84?"shoulder":"rim";
 function measured(its,r){const p=plastic();if(p.fam!=="champion"||its.length!==1||rimK(r)>0)return null;const a=MEAS.c[its[0].name];if(!a)return null;
@@ -71,6 +71,7 @@ function layerAt(x,y){const ws=weightsAt(x,y);for(let i=S.layers.length-1;i>0;i-
 const cv=$("#cv"),ov=$("#ov"),sq=$(".sq"),vw=$(".vw");let B=800;const oc=document.createElement("canvas");
 const NB=96;
 function renderDisc(W){
+ const PL_T=plastic().fam==='champion';
  const layers=S.layers,n=layers.length,hasW=false;
  const act=layers.map(l=>l.vis);
  const cache=new Map();
@@ -84,7 +85,7 @@ function renderDisc(W){
   const lip=ss(.88,.99,r),lit=1+.05*(-(u+v)*.7);
   const sh=lit*(1-.16*lip)*1;
   const a=clamp((1-r)*R/1.1,0,1);
-  const k=(y*W+x)*4;d[k]=rgb[0]*sh;d[k+1]=rgb[1]*sh;d[k+2]=rgb[2]*sh;d[k+3]=a*255}
+  const k=(y*W+x)*4;d[k]=rgb[0]*sh;d[k+1]=rgb[1]*sh;d[k+2]=rgb[2]*sh;d[k+3]=a*255*(PL_T?.8+.14*lip:1)}
  return img}
 let fastT=null;
 function paint(fast){
@@ -203,7 +204,7 @@ const ltitle=L=>L.type==="stencil"?"Stencil":L.dyes.length>1?"Blend":L.dyes.leng
 function layerCard(L,i,n,solo){const sel=L.id===S.sel,full=L.type==="full",st=L.type==="stencil";
  const sum=L.dyes.length?L.dyes.map(d=>esc(d.n)).join(" + "):"No dye";
  let h=`<div class="lc${sel?" sel":""}"><div class="lh" data-act="sel" data-id="${L.id}">${st?`<div class="sw" style="background:#fff;overflow:hidden;display:flex"><canvas id="stp" width="96" height="96" style="width:100%;height:100%"></canvas></div>`:`<i class="sw" style="background:${layerHex(L)}"></i>`}<div class="ln"><b>${esc(ltitle(L))}</b><span>${L.dyes.length>1?sum:""}</span></div>`+
-  `<button class="ic${L.vis?"":" off"}" data-act="vis" data-id="${L.id}" aria-label="Show">${EYE}</button></div>`;
+  `<button class="ic${L.vis?"":" off"}" data-act="vis" data-id="${L.id}" aria-label="Show">${EYE}</button>${n>1&&!full?`<button class="ic rm" data-act="rmlayer" data-id="${L.id}" aria-label="Remove layer">&times;</button>`:""}</div>`;
  if(sel){h+=`<div class="lb">`;
   L.dyes.forEach((d,k)=>{h+=`<div class="dr"><button class="dsw" data-act="dyepick" data-i="${k}"><i style="background:${dyeHex(d.n)}"></i></button><button class="dn" data-act="dyepick" data-i="${k}">${esc(d.n)}</button>${L.dyes.length>1?`<button class="ic" data-act="dyedel" data-i="${k}" aria-label="Remove">×</button>`:""}</div>`});
   h+=`<div class="row" style="margin-top:10px"><button class="g" data-act="dyeadd">Blend colors</button></div>`;
@@ -278,6 +279,7 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  else if(a==="dup"){const N=JSON.parse(JSON.stringify(L));N.id=uid();N.name=L.name+" 2";if(N.type==="stripe"){N.p.x*=-1;N.p.y*=-1;if(!N.p.x&&!N.p.y){const t=axes(N).n;N.p.x=t[0]*.3;N.p.y=t[1]*.3}}else if(N.type==="box"){N.p.x=clamp(N.p.x+.12,-1,1);N.p.y=clamp(N.p.y+.12,-1,1)}S.layers.push(N);S.sel=N.id;commit();all()}
  else if(a==="disctoggle"){dOpen=!dOpen;panel()}
  else if(a==="clearask"){$("#clr").classList.add("open")}
+ else if(a==="rmlayer"){const id=t.dataset.id;delete STN[id];S.layers=S.layers.filter(l=>l.id!==id);if(!S.layers.some(l=>l.id===S.sel))S.sel=S.layers[S.layers.length-1].id;commit();all()}
  else if(a==="del"){delete STN[L.id];S.layers=S.layers.filter(l=>l.id!==L.id);S.sel=S.layers[S.layers.length-1].id;commit();all()}
   else if(a==="base"){S.base=t.dataset.c;commit();all()}
  else if(a==="pool"){S.pool=t.dataset.g;save();panel()}

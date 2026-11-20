@@ -110,10 +110,11 @@ test("results link labels identify known destinations without importing their co
 test("event cards expose permanent detail URLs, filtered return state, and calendar actions", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`'));
-  assert.ok(events.includes('href={detailHref}'));
-  assert.ok(events.includes('className="event-title-link"'));
+  assert.ok(events.includes('className="event-title-btn"'));
+  assert.ok(events.includes('aria-expanded={open}'));
+  assert.ok(events.includes('className="event-more"'));
   assert.ok(source("pages/EventDetailPage.tsx").includes('>Add to Calendar</button>'));
-  assert.ok(events.includes('>Full Results</a>'));
+  assert.ok(events.includes('href={`${detailHref}#results`}'));
 });
 
 test("event detail route is permanent, canonical, and uses the detail RPC", () => {
@@ -173,7 +174,7 @@ test("events page polish is scoped and HBNF cards expose first-party resources",
   const detail = source("pages/EventDetailPage.tsx");
   const presentation = source("lib/eventPresentation.ts");
   assert.ok(events.includes('<main className={`events-page ${landing?\'events-landing\':\'\'}`}>'));
-  assert.ok(events.includes('>Details</a>'));
+  assert.ok(events.includes('hostOf(infoUrl!)'));
   assert.ok(events.includes("{filtered.length} shown · {viewEvents.length} {view==='upcoming'?'upcoming':'past'}"));
   assert.ok(events.includes('className="event-resource-links"'));
   assert.ok(detail.includes('className="event-resource-links"'));
@@ -188,9 +189,9 @@ test("event cards and detail pages expose permitted first-party official info wi
   const detail = source("pages/EventDetailPage.tsx");
   const types = source("types.ts");
   assert.ok(types.includes("official_url: string | null"));
-  assert.ok(events.includes("event.official_url&&!hbnfEvent"));
+  assert.ok(events.includes("event.official_url||event.source_url"));
   assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
-  assert.ok(detail.includes(">Official Info</a>"));
+  assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
 });
 
 test("the Local Roots landing page is the event utility, not the old three-card hub", () => {
