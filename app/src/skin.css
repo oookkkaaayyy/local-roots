@@ -329,3 +329,11 @@
   .lr .lr-top-aside .lr-actions{display:flex}
   .lr .lr-top-aside .lr-actions .lr-btn{flex:1 1 0;min-width:0}
 }
+.lr .event-title-btn{display:inline;padding:0;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer;-webkit-appearance:none;appearance:none}
+.lr .event-title-btn:hover{color:var(--clay-dk);text-decoration:underline}
+.lr .event-title-btn:after{content:"";display:inline-block;width:7px;height:7px;margin-left:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);-webkit-transform:translateY(-3px) rotate(45deg);transform:translateY(-3px) rotate(45deg)}
+.lr .event-card.is-open .event-title-btn:after{-webkit-transform:translateY(1px) rotate(225deg);transform:translateY(1px) rotate(225deg)}
+.lr .event-meta{background:none;padding-left:0;color:var(--earth);font-weight:600}
+.lr .event-more{margin-top:10px;padding-top:10px;border-top:1px solid var(--line-soft)}
+.lr .event-more .event-facts{margin:0 0 10px}
+.lr .event-more-actions .button{margin:0 8px 6px 0;min-height:36px}
