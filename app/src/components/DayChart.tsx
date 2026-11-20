@@ -20,7 +20,7 @@ function Track({ kind, hours, sun, title, value, height, showAxis }: { kind: Kin
   const tn = finite(temps), lo = tn.length ? Math.min(...tn) : 0, hi = tn.length ? Math.max(...tn) : 0, span = Math.max(hi - lo, 6);
   const maxWind = Math.max(25, ...finite(winds), ...finite(gusts));
   const cx = (h: ChartHour) => x(h.minute) + COL / 2;
-  const ty = (v: number) => bottom - 18 - ((v - lo) / span) * (plotH - 40);
+  const ty = (v: number) => bottom - 26 - ((v - lo) / span) * (plotH - 56);
   const rainPeak = finite(rains).length ? Math.max(...finite(rains)) : null;
   const peakIdx = rainPeak !== null && rainPeak > 0 ? rains.indexOf(rainPeak) : -1;
 
@@ -51,7 +51,7 @@ function Track({ kind, hours, sun, title, value, height, showAxis }: { kind: Kin
         <path className="dc-line" d={hours.map((h, i) => h.tempF === null ? '' : `${hours.slice(0, i).some(p => p.tempF !== null) && hours[i - 1]?.tempF !== null ? 'L' : 'M'}${cx(h).toFixed(1)},${ty(h.tempF).toFixed(1)}`).join('')} />
         {[hours[temps.indexOf(hi)], hours[temps.indexOf(lo)]].filter((h, i, a) => a.indexOf(h) === i).map((h, i) => {
           const isHi = h.tempF === hi && i === 0;
-          return <g key={i}><circle className="dc-dot" cx={cx(h)} cy={ty(h.tempF as number)} r={4.5} /><text className="dc-label" x={Math.min(Math.max(cx(h), PAD + 18), PAD + PW - 18)} y={ty(h.tempF as number) + (isHi ? -10 : 20)} textAnchor="middle">{Math.round(h.tempF as number)}°</text></g>;
+          return <g key={i}><circle className="dc-dot" cx={cx(h)} cy={ty(h.tempF as number)} r={4.5} /><text className="dc-label" x={Math.min(Math.max(cx(h), PAD + 18), PAD + PW - 18)} y={ty(h.tempF as number) + (isHi ? -10 : 18)} textAnchor="middle">{Math.round(h.tempF as number)}°</text></g>;
         })}
       </> : null}
       {kind === 'wind' ? hours.map((h, i) => {

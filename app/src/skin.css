@@ -350,3 +350,10 @@
 .lr.lr-tool .ds.stp #fp{background:var(--surface);border:1px solid var(--line);border-radius:14px}
 .lr .event-time{font-weight:700;color:var(--ink)}
 .lr .event-location a{color:inherit;text-decoration:underline;text-decoration-color:var(--line)}
+
+/* Weather day charts: natural size, tiled by available width instead of one giant scaled column */
+.lr .weather-daychart{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));grid-column-gap:14px;grid-row-gap:6px;align-items:start;padding:6px 4px}
+@media(min-width:900px){.lr .weather-daychart{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.lr .weather-daychart .dc-track{min-width:0;max-width:520px;width:100%;margin:0 auto}
+.lr .weather-daychart .dc-sun{grid-column:1/-1;max-width:460px}
+.lr .weather-daychart .dc-title{font-size:15px}.lr .weather-daychart .dc-value{font-size:16px}.lr .weather-daychart .dc-label{font-size:16px}.lr .weather-daychart .dc-axis{font-size:14.5px}
