@@ -44,3 +44,7 @@ Used to constrain the engine and encoded in scripts/test.mjs. No source gives me
 - 169 discs, 3-cluster colors from Google Images thumbnails; dye strengths .1 to 1.3; Champion uses UI transmission color.
 - Overall bias dL +0.0, dC near 0. Per-hue mean best-fit dE 4.7 to 9.1; blue (270 deg) worst at 9.1 with n=10; light blues fit only at low strength.
 - Global parameter sensitivity (star Sx, champion kT, gT): no meaningful change. No global recalibration justified.
+
+## dgcoursereview 134835 (labeled)
+- iDye Poly blue and purple on orange Star: gray/black and maroon. Same dyes true on light blue. Champion/translucent takes purple over orange closer to true.
+- Engine matches (tests added). This also explains why photos of vivid blue on orange discs are not single-dye baths on Star.

@@ -78,4 +78,10 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
    if(ab!==ba)o++;if(Lm(ab)>Math.min(Lm(a),Lm(c))+.03)l++}
   ok(o===0,"sweep order independent ("+n+" pairs)");ok(l===0,"sweep layered not lighter than both ("+l+")");
 }
+{ // dgcoursereview 134835: iDye Poly blue and purple on orange Star came out gray/black and maroon; same dyes stay true on light blue
+  const o="#E8661C",lb="#8EC5E6",bl=P(o,[{name:"iDye Poly Blue",s:1,b:0}]).hex,pu=P(o,[{name:"Concord",s:1,b:0}]).hex,blL=P(lb,[{name:"iDye Poly Blue",s:1,b:0}]).hex;
+  ok(Ls(bl)<22&&Cs(bl)<25,"blue on orange Star is dark gray "+bl);
+  const h=hsl(pu);ok(Ls(pu)<30&&(h[0]<30||h[0]>330),"purple on orange Star is maroon "+pu);
+  const hb=hsl(blL);ok(hb[0]>205&&hb[0]<260,"blue on light blue stays blue "+blL);
+}
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
