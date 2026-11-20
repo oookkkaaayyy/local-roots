@@ -370,3 +370,12 @@
   .lr .event-actions{display:flex;flex-wrap:wrap;margin-top:6px}
   .lr .event-actions .button{min-height:36px;padding:0 12px;margin:0 6px 6px 0;flex:0 1 auto;font-size:.84rem}
 }
+@media(max-width:700px){
+  .lr .events-page .event-actions{display:flex!important;flex-flow:row wrap!important;justify-content:flex-start!important;padding:6px 0 0!important;margin:4px 0 0!important;border-top:0!important}
+  .lr .events-page .event-actions .button{flex:0 1 auto!important;width:auto!important;min-height:34px!important;padding:0 12px!important;margin:0 6px 6px 0!important;font-size:.82rem!important}
+  .lr .events-page .event-main{padding:0!important}
+  .lr .events-page .event-main h3{margin:0 0 2px!important;font-size:1rem!important}
+  .lr .events-page .event-tags{margin:6px 0 2px!important}
+  .lr .events-page .event-tags span{margin:0 4px 4px 0!important;padding:3px 8px!important;font-size:.72rem!important}
+  .lr .events-page .event-card{padding:10px 12px!important;margin:0 0 8px!important}
+}
