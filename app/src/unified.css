@@ -22,3 +22,12 @@
 .public-brand-shell .hbnf-logo img{display:block;width:36px;height:36px;object-fit:contain}
 .public-brand-shell .hbnf-page{border-radius:var(--r-m)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* One segmented control for Events views and D&U tools */
+.public-brand-shell :is(.event-view-switch,.du-switch){display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border:1px solid var(--line-soft);border-radius:var(--r-m);background:#eadcca}
+.public-brand-shell .du-switch{display:grid;margin:var(--sp-4) auto var(--sp-3)}
+.public-brand-shell :is(.event-view-switch .button,.du-switch a){display:flex;align-items:center;justify-content:center;min-height:40px;padding:0 var(--sp-4);border:0;border-radius:var(--r-s);background:transparent;color:var(--lr-soil);font:700 .94rem/1 var(--lr-ui);text-decoration:none;box-shadow:none}
+.public-brand-shell :is(.event-view-switch .button.primary,.event-view-switch .button[aria-pressed=true],.du-switch a[aria-current=page]){background:var(--lr-earth);color:var(--lr-paper)}
+.public-brand-shell .du-gallery-hint{display:none}
+.public-brand-shell .du-gallery-row-empty{background:linear-gradient(100deg,rgba(239,226,209,.9) 30%,rgba(251,245,234,.9) 50%,rgba(239,226,209,.9) 70%);background-size:200% 100%;animation:lr-sheen 1.6s linear infinite}
+@keyframes lr-sheen{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.public-brand-shell .du-gallery-row-empty{animation:none}}
