@@ -25,7 +25,7 @@ export function DyeStudioPage() {
     <div className="bar"><button id="undo" className="dis">Undo</button><button id="redo" className="dis">Redo</button><button id="copy">Copy</button><button id="png" className="pri">Save</button></div>
     <div className="app">
       <section className="stage"><div className="vw"><div className="sq"><canvas id="cv"></canvas><canvas id="ov"></canvas></div></div><div className="dock"><div className="rd" id="rd"></div></div></section>
-      <section className="panel"><div className="body" id="body"></div></section>
+      <section className="panel"><nav className="tabs" id="modes"><button data-m="stencil">Stencil</button><button data-m="design">Dye design</button></nav><div className="body" id="body"></div></section>
     </div>
     <div className="sheet" id="save"><div className="card" style={{alignItems:'center'}}><img id="svimg" alt="" style={{width:'100%',maxWidth:420,borderRadius:12}}/><div className="row" style={{width:'100%',marginTop:12}}><a id="svdl" download="disc.png" className="g" style={{textDecoration:'none'}}><button className="pri" style={{width:'100%'}} tabIndex={-1}>Download</button></a><button id="svx" className="g">Close</button></div></div></div>
     <input type="file" id="pfile" accept="image/*" hidden />

@@ -16,32 +16,34 @@ const BASES=["#F4F2E8","#F7E331","#F27A26","#E84C55","#59A9DE","#57A768","#8D62B
 const MEAS={base:"#38906F",c:{"UV Blast Green":{plate:"#8FC316",shoulder:"#69B820",rim:"#3BAF27"},"UV Blast Blaze Orange":{plate:"#B30003",shoulder:"#890507",rim:"#57090D"}}};
 const TYPES={
  stripe:{label:"Color",p:{x:0,y:0,a:Math.PI/2,h:.45}},
- ring:{label:"Rim",p:{r:.84,c:.5}},
  box:{label:"Box",p:{x:0,y:0,a:0,w:.8,h:.5}},
  stencil:{label:"Stencil",p:{x:0,y:0,s:190.5/105}}};
 const STN={};
 const uid=()=>Math.random().toString(36).slice(2,8);
 const poolOf=g=>{let L=DYELIST.filter(d=>!d.c);if(g==="Inventory")L=L.filter(d=>d.i);else if(g==="ProChem")L=L.filter(d=>d.g==="ProChem");else if(g==="UV Blast")L=L.filter(d=>/UV Blast/.test(d.g)&&!d.i||/UV Blast/.test(d.n));return L};
 const GROUPS=["Inventory"];const GL={Inventory:"Available"};
-function defState(){const a=uid();return{plastic:"star",base:"#F4F2E8",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:a,
+function defState(){const a=uid();return{plastic:"star",base:"#F4F2E8",rim:null,mode:"stencil",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:a,
  layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}}]}}
 let S=defState();
-try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);t.layers.forEach(l=>{if(l.name==="Stripe")l.name="Color";else if(/^Stripe \d+$/.test(l.name))l.name=l.name.replace("Stripe","Color")});if(t.tab==="design")t.tab="disc";if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}if(!PL.some(p=>p.id===S.plastic))S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil"){S.tab="disc";S.layers=S.layers.filter(l=>l.type==="full");S.sel=S.layers[0].id}}catch(e){}S.tab="disc";
+try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);t.layers.forEach(l=>{if(l.name==="Stripe")l.name="Color";else if(/^Stripe \d+$/.test(l.name))l.name=l.name.replace("Stripe","Color")});if(t.tab==="design")t.tab="disc";if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}if(!PL.some(p=>p.id===S.plastic))S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil"){S.tab="disc";S.layers=S.layers.filter(l=>l.type==="full");S.sel=S.layers[0].id}}catch(e){}S.tab="disc";S.mode=S.mode==="design"?"design":"stencil";try{const q=new URLSearchParams(location.search).get("tool");if(q==="stencil")S.mode="stencil";else if(q==="design")S.mode="design"}catch(e){}
 const dropGhost=()=>{S.layers=S.layers.filter(l=>l.type!=="stencil"||STN[l.id]);if(!S.layers.some(l=>l.id===S.sel))S.sel=S.layers[S.layers.length-1].id};
 const save=()=>{try{localStorage.setItem("dds11",JSON.stringify(S))}catch(e){}};
 const plastic=()=>PL.find(p=>p.id===S.plastic)||PL[0];
 const baseL=()=>S.layers[0];
 const selL=()=>S.layers.find(l=>l.id===S.sel)||S.layers[S.layers.length-1];
-const transHex=()=>{if(hexOk(S.trans))return S.trans.toUpperCase();const p=plastic(),t=p.tr||.7,l=.38+.36*t;return rgbHex(hexRgb(S.base).map(v=>v+(255-v)*l))};
+const mixHex=(a,b,k)=>{const A=hexRgb(a),B2=hexRgb(b);return rgbHex(A.map((v,i)=>v+(B2[i]-v)*k))};
+const rimK=r=>{if(!S.rim)return 0;const w=S.rim.w/100,f=.14*(1-S.rim.f)+.006;return ss(1-w-f/2,1-w+f/2,r)};
+const baseAt=r=>S.rim?mixHex(S.base,S.rim.c,rimK(r)):S.base;
+const transHex=bh=>{if(hexOk(S.trans))return S.trans.toUpperCase();const p=plastic(),t=p.tr||.7,l=.38+.36*t;return rgbHex(hexRgb(bh||S.base).map(v=>v+(255-v)*l))};
 const pathAt=(r,p)=>{if(p.fam!=="champion")return 1;if(r<.58)return .64+r*.20;if(r<.84)return .78+(r-.58)*1.25;return 1.10+(r-.84)*3.10};
 const zoneAt=r=>r<.58?"plate":r<.84?"shoulder":"rim";
-function measured(its,r){const p=plastic();if(p.fam!=="champion"||its.length!==1)return null;const a=MEAS.c[its[0].name];if(!a)return null;
+function measured(its,r){const p=plastic();if(p.fam!=="champion"||its.length!==1||rimK(r)>0)return null;const a=MEAS.c[its[0].name];if(!a)return null;
  if(Math.abs(its[0].s/p.up-1)>.1)return null;
  const m=hexRgb(MEAS.base),d=hexRgb(S.base).reduce((s,v,i)=>s+(v-m[i])**2,0);if(Math.sqrt(d)>48)return null;return a[zoneAt(r)]}
 function colorAt(its,r,mc){
  const p=plastic();
  const m=measured(its,r);if(m&&!mc)return{hex:m,measured:true};
- const sp={baseHex:S.base,transHex:transHex(),family:p.fam,scene:"outdoor",zone:zoneAt(r),path:pathAt(r,p),items:its};
+ const bh=baseAt(r),sp={baseHex:bh,transHex:transHex(bh),family:p.fam,scene:"outdoor",zone:zoneAt(r),path:pathAt(r,p),items:its};
  const o=DE.predict(sp,mc?{mc}:{});
  return{hex:m||o.hex,spread:o.spread,lab:o.lab,gamut:o.gamutExcess>.02,measured:!!m};
 }
@@ -51,7 +53,6 @@ function maskW(L,x,y,r,ang){const p=L.p;
  switch(L.type){
  case"full":return 1;
  case"stripe":{const q=loc(L,x,y);return 1-edge(p.h/2,Math.abs(q[1]),.004)}
- case"ring":{const w=.32*(1-p.c)+.004;return ss(p.r-w/2,p.r+w/2,r)}
  case"box":{const q=loc(L,x,y);return(1-edge(p.w/2,Math.abs(q[0]),.004))*(1-edge(p.h/2,Math.abs(q[1]),.004))}
  case"stencil":{const m=STN[L.id];if(!m)return 0;const hw=p.s/2,hh=hw*m.h/m.w,u=(x-p.x)/hw,v=(y-p.y)/hh;if(u<-1||u>1||v<-1||v>1)return 0;
   const fx=(u+1)/2*m.w-.5,fy=(v+1)/2*m.h-.5,x0=Math.floor(fx),y0=Math.floor(fy),tx=fx-x0,ty=fy-y0,g=(a,b)=>a<0||b<0||a>=m.w||b>=m.h?1:m.mask[b*m.w+a];
@@ -158,7 +159,7 @@ ov.addEventListener("pointerup",endDrag);ov.addEventListener("pointercancel",end
 ov.addEventListener("pointerleave",()=>{if(!UI.drag&&UI.hover){UI.hover=null;drawOv()}});
 // ---------- history ----------
 let H=[],hi=-1;
-const snap=()=>JSON.stringify({plastic:S.plastic,base:S.base,trans:S.trans,layers:S.layers,sel:S.sel});
+const snap=()=>JSON.stringify({plastic:S.plastic,base:S.base,rim:S.rim,trans:S.trans,layers:S.layers,sel:S.sel});
 function commit(){save();const s=snap();if(H[hi]===s)return;H=H.slice(0,hi+1);H.push(s);if(H.length>80)H.shift();hi=H.length-1;undoBtns()}
 function restore(s){Object.assign(S,JSON.parse(s));dropGhost();if(!S.layers.some(l=>l.id===S.sel))S.sel=S.layers[S.layers.length-1].id;save();all()}
 function undoBtns(){$("#undo").classList.toggle("dis",hi<=0);$("#redo").classList.toggle("dis",hi>=H.length-1)}
@@ -174,7 +175,7 @@ function readout(){
 // ---------- dye swatches ----------
 let swKey="",swC={};
 function dyeHex(n){const k=S.plastic+S.base+S.trans;if(k!==swKey){swKey=k;swC={}}if(!swC[n])swC[n]=colorAt([{name:n,s:upOf()}],.5).hex;return swC[n]}
-function layerHex(L){const its=L.dyes.map(d=>({name:d.n,s:d.s*upOf()}));return colorAt(its,L.type==="ring"?.95:.5).hex}
+function layerHex(L){const its=L.dyes.map(d=>({name:d.n,s:d.s*upOf()}));return colorAt(its,.5).hex}
 function hueOf(h){const[r,g,b]=hexRgb(h).map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(d<.06)return 400+(1-mx);let x=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;return(x*60+360)%360}
 // ---------- picker sheet ----------
 let pickCb=null,pickG="Inventory",pickQ="";
@@ -193,33 +194,41 @@ $("#px").onclick=closePick;$("#sheet").addEventListener("click",e=>{if(e.target.
 const EYE='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const MM=105,unitOf=k=>k==="a"?"°":k==="sz"?" mm":"%";
 const SHAPES={
- ring:[["Width","rw",5,45,L=>Math.round((1-L.p.r)*100),(L,v)=>L.p.r=1-v/100],["Fuzzy / Crisp","rc",0,100,L=>Math.round(L.p.c*100),(L,v)=>L.p.c=v/100]],
  stencil:[["Size","sz",40,200,L=>Math.round(L.p.s*MM),(L,v)=>L.p.s=v/MM],["X","sx",-100,100,L=>Math.round(L.p.x*100),(L,v)=>L.p.x=v/100],["Y","sy",-100,100,L=>Math.round(L.p.y*100),(L,v)=>L.p.y=v/100]]};
 const slider=(id,k,i,lo,hi,val,name,unit)=>`<div class="sl"><span class="nm">${name}</span><input type="range" min="${lo}" max="${hi}" value="${val}" data-id="${id}" data-k="${k}" data-i="${i}" style="--v:${(val-lo)/(hi-lo)*100}%"><span class="pc" data-for="${id}${k}${i}">${val}${unit}</span></div>`;
 const CH={up:'<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',dn:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>'};
-function layerCard(L,i,n){const sel=L.id===S.sel,full=L.type==="full",st=L.type==="stencil";
+function layerCard(L,i,n,solo){const sel=L.id===S.sel,full=L.type==="full",st=L.type==="stencil";
  const sum=L.dyes.length?L.dyes.map(d=>esc(d.n)+" "+Math.round(d.s*100)+"%").join(" + "):"No dye";
  let h=`<div class="lc${sel?" sel":""}"><div class="lh" data-act="sel" data-id="${L.id}">${st?`<div class="sw" style="background:#fff;overflow:hidden;display:flex"><canvas id="stp" width="96" height="96" style="width:100%;height:100%"></canvas></div>`:`<i class="sw" style="background:${layerHex(L)}"></i>`}<div class="ln"><b>${esc(L.name)}</b><span>${sum}</span></div>`+
-  (full?"":`<button class="ic${i>=n-1?" dis":""}" data-act="up" data-id="${L.id}" aria-label="Forward">${CH.up}</button><button class="ic${i<=1?" dis":""}" data-act="down" data-id="${L.id}" aria-label="Back">${CH.dn}</button>`)+
+  (full||solo?"":`<button class="ic${i>=n-1?" dis":""}" data-act="up" data-id="${L.id}" aria-label="Forward">${CH.up}</button><button class="ic${i<=1?" dis":""}" data-act="down" data-id="${L.id}" aria-label="Back">${CH.dn}</button>`)+
   `<button class="ic${L.vis?"":" off"}" data-act="vis" data-id="${L.id}" aria-label="Show">${EYE}</button></div>`;
  if(sel){h+=`<div class="lb">`;
   L.dyes.forEach((d,k)=>{h+=`<div class="dr"><button class="dsw" data-act="dyepick" data-i="${k}"><i style="background:${dyeHex(d.n)}"></i></button><button class="dn" data-act="dyepick" data-i="${k}">${esc(d.n)}</button><span class="pc" data-for="${L.id}s${k}">${Math.round(d.s*100)}%</span><button class="ic" data-act="dyedel" data-i="${k}">×</button></div>`+
    `<input type="range" min="5" max="150" value="${Math.round(d.s*100)}" data-id="${L.id}" data-k="s" data-i="${k}" style="--v:${(Math.round(d.s*100)-5)/145*100}%">`});
   h+=`<div class="row" style="margin-top:10px"><button class="g" data-act="dyeadd">+ Dye</button><button class="g" data-act="match">Match</button></div>`;
   if(SHAPES[L.type])h+=SHAPES[L.type].map(([nm,k,lo,hi,get],j)=>slider(L.id,"p"+k,j,lo,hi,get(L),nm,unitOf(k))).join("");
-  if(!full)h+=`<div class="foot2">${L.type==="stencil"?`<button data-act="photo">Replace photo</button>`:L.type==="ring"?"":`<button data-act="dup">Duplicate</button>`}<button data-act="del" class="dg">${L.type==="stencil"?"Delete":"Remove"}</button>${L.type==="stripe"||L.type==="box"?`<button data-act="shape" class="q">${L.type==="box"?"Stripe":"Box"}</button>`:""}</div>`;
+  if(!full)h+=`<div class="foot2">${L.type==="stencil"?`<button data-act="photo">Replace photo</button>`:`<button data-act="dup">Duplicate</button>`}<button data-act="del" class="dg">${L.type==="stencil"?"Delete":"Remove"}</button>${L.type==="stripe"||L.type==="box"?`<button data-act="shape" class="q">${L.type==="box"?"Stripe":"Box"}</button>`:""}</div>`;
   h+=`</div>`}
  return h+`</div>`}
 const IC={photo:'<svg viewBox="0 0 32 32"><path d="M4 10h5l2-3h10l2 3h5v15H4z"/><circle cx="16" cy="17" r="5"/></svg>',color:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><circle cx="11" cy="13" r="2"/><circle cx="17" cy="10" r="2"/><circle cx="21" cy="16" r="2"/></svg>',stripe:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><path d="M8 24L24 8M13 28L28 13" /></svg>',box:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><rect x="10" y="11" width="12" height="10" rx="1"/></svg>',stencil:'<svg viewBox="0 0 32 32"><rect x="5" y="5" width="22" height="22" rx="3"/><circle cx="16" cy="14" r="4"/><path d="M8 25c1-5 15-5 16 0"/></svg>'};
 const tile=(act,ic,t,x)=>`<button class="tl" data-act="${act}" ${x||""}>${IC[ic]}<span>${t}</span></button>`;
 const next=(t,l)=>`<button class="pri nx" data-act="go" data-t="${t}">${l}</button>`;
 const colorPick=(id,val)=>`<input type="color" id="${id}C" value="${val}" aria-label="Custom color">`;
-function tabDisc(){const n=S.layers.length,hasRing=S.layers.some(l=>l.type==="ring");
- let h=`<div class="ord">Plastic</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+(hasRing?`<button data-act="sel" data-id="${S.layers.find(l=>l.type==="ring").id}" class="on">Rim</button>`:`<button data-act="addlayer" data-t="ring">+ Rim</button>`)+`</div>`+
-  `<div class="ord">Disc</div><div class="bs">`+BASES.map(b=>`<button data-act="base" data-c="${b}" class="${b===S.base.toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`<span class="cpk">${colorPick("b",S.base)}</span></div><div class="seg" style="margin-top:8px"><button class="g" data-act="discphoto">Match from photo</button></div>`+
-  `<div class="ord">Add</div><div class="tg2"><button class="tl2" data-act="addlayer" data-t="stripe">+ Color</button>${S.layers.some(l=>l.type==="stencil")?"":`<button class="tl2" data-act="photo">+ Photo stencil</button>`}</div>`;
+const swRow=(act,cur,pk)=>`<div class="bs">`+BASES.map(b=>`<button data-act="${act}" data-c="${b}" class="${b===String(cur).toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`<span class="cpk">${colorPick(pk,cur)}</span></div>`;
+function discSection(){
+ let h=`<div class="sec">Disc</div><div class="ord">Plastic</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+`</div>`+
+  `<div class="ord">Color</div>`+swRow("base",S.base,"b")+`<div class="seg" style="margin-top:8px"><button class="g" data-act="discphoto">Match from photo</button></div>`+
+  `<div class="ord">Rim</div><div class="seg"><button data-act="rim" data-on="0" class="${S.rim?"":"on"}">None</button><button data-act="rim" data-on="1" class="${S.rim?"on":""}">Rim</button></div>`;
+ if(S.rim)h+=swRow("rimc",S.rim.c,"r")+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%");
+ return h}
+function usageLine(){const t=FR.tally;if(!t)return"";const f=x=>x.n+" · $"+x.usd.toFixed(2);return`<div class="usg">Today ${f(t.day)}<br>7 days ${f(t.week)}<br>Month ${f(t.month)}<br>Visitors, month ${f(t.visitors)}</div>`}
+function tabStencilMode(){const L=S.layers.find(l=>l.type==="stencil");let h=discSection()+`<div class="sec">Photo stencil</div>`;
+ if(L){S.sel=L.id;h+=layerCard(L,S.layers.indexOf(L),S.layers.length,true)}else h+=`<div class="tg2"><button class="tl2" data-act="photo">Choose a photo</button></div>`;
+ return h+`<div class="lkr"><button class="lk" data-act="mode" data-m="design">Add dye design</button></div>`+usageLine()}
+function tabDesign(){const n=S.layers.length;let h=discSection()+`<div class="sec">Dye</div><div class="tg2"><button class="tl2" data-act="addlayer" data-t="stripe">+ Color</button></div>`;
  if(n>1)h+=`<div class="ord">Layers</div>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
+ if(!S.layers.some(l=>l.type==="stencil"))h+=`<div class="lkr"><button class="lk" data-act="mode" data-m="stencil">Add photo stencil</button></div>`;
  return h}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
 const sh=n=>n.replace(/^(ProChem |iDye Poly )/,"");
@@ -233,8 +242,8 @@ function tabStencil(){const L=S.layers.find(l=>l.type==="stencil");
  return h}
 function paintThumb(){const L=S.layers.find(l=>l.type==="stencil"),c=$("#stp");if(!L||!c||!STN[L.id])return;const m=STN[L.id],x=c.getContext("2d"),k=Math.min(96/m.w,96/m.h);x.fillStyle="#fff";x.fillRect(0,0,96,96);const id=x.createImageData(96,96);for(let j=0;j<96;j++)for(let i=0;i<96;i++){const sx=Math.floor((i-(96-m.w*k)/2)/k),sy=Math.floor((j-(96-m.h*k)/2)/k),o=(j*96+i)*4;const v=sx<0||sy<0||sx>=m.w||sy>=m.h?255:m.mask[sy*m.w+sx]?255:0;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255}x.putImageData(id,0,0)}
 function panel(){const b=$("#body"),y=b.scrollTop;
- b.innerHTML=tabDisc();paintThumb();
- document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===S.tab));
+ b.innerHTML=S.mode==="design"?tabDesign():tabStencilMode();paintThumb();
+ document.querySelectorAll("#modes button").forEach(x=>x.classList.toggle("on",x.dataset.m===S.mode));
  b.scrollTop=y;if($("#match").classList.contains("open"))drawMatch()}
 function drawMatch(){$("#mbody").innerHTML=tabRecipe()}
 function all(){paint(false);drawOv();readout();panel();undoBtns()}
@@ -246,12 +255,14 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  if(a==="sel"){if(e.target.closest("[data-act]:not([data-act=sel])")!==t&&e.target.closest("[data-act]:not([data-act=sel])"))return;selectLayer(t.dataset.id)}
  else if(a==="up"||a==="down"){const i=S.layers.findIndex(x=>x.id===t.dataset.id),j=i+(a==="up"?1:-1);if(i>0&&j>=1&&j<S.layers.length){const q=S.layers[i];S.layers[i]=S.layers[j];S.layers[j]=q;commit();all()}}
  else if(a==="vis"){const l=S.layers.find(x=>x.id===t.dataset.id);l.vis=!l.vis;commit();all()}
- else if(a==="go"){S.tab=t.dataset.t;save();setEdit(false);panel()}
+ else if(a==="mode"){S.mode=t.dataset.m==="design"?"design":"stencil";if(S.mode==="design"){const l=S.layers.filter(x=>x.type!=="full").pop();S.sel=l?l.id:S.layers[0].id}save();drawOv();panel();$("#body").scrollTop=0}
+ else if(a==="rim"){S.rim=t.dataset.on==="1"?(S.rim||{c:"#2B2B2E",w:10,f:.5}):null;commit();all()}
+ else if(a==="rimc"){if(S.rim){S.rim.c=t.dataset.c;commit();all()}}
  else if(a==="discphoto"){DM=true;$("#pfile").click()}
  
  else if(a==="match"){drawMatch();$("#match").classList.add("open")}
  else if(a==="addlayer"){const ty=t.dataset.t,n=S.layers.filter(l=>l.type===ty).length,pool=poolOf("Inventory"),used=new Set(S.layers.flatMap(l=>l.dyes.map(d=>d.n))),pick=(pool.find(d=>!used.has(d.n))||pool[0]).n;
-  if(ty==="ring"&&S.layers.some(l=>l.type==="ring"))return;const N={id:uid(),type:ty,name:TYPES[ty].label+(n&&ty!=="ring"?" "+(n+1):""),vis:true,dyes:[{n:pick,s:1}],p:Object.assign({},TYPES[ty].p)};if(ty==="box"){N.p.x=.12*(n%4);N.p.y=-.12*(n%4)}if(ty==="stripe"&&n){const m=n%2?1:-1;N.p.a=wrap(N.p.a+m*.5236*Math.ceil(n/2))}S.layers.push(N);S.sel=N.id;S.tab="disc";commit();all()}
+  const N={id:uid(),type:ty,name:TYPES[ty].label+(n?" "+(n+1):""),vis:true,dyes:[{n:pick,s:1}],p:Object.assign({},TYPES[ty].p)};if(ty==="box"){N.p.x=.12*(n%4);N.p.y=-.12*(n%4)}if(ty==="stripe"&&n){const m=n%2?1:-1;N.p.a=wrap(N.p.a+m*.5236*Math.ceil(n/2))}S.layers.push(N);S.sel=N.id;S.tab="disc";commit();all()}
  else if(a==="plastic"){const np=PL.find(p=>p.id===t.dataset.p),op=plastic();if(np){if(PL.some(p=>p.base.toUpperCase()===S.base.toUpperCase())||S.base.toUpperCase()===op.base.toUpperCase())S.base=np.base;S.plastic=np.id;S.trans="";commit();all()}}
  else if(a==="shape"){const l=selL();if(l.type==="stripe"){l.type="box";l.p=Object.assign({x:0,y:0,a:0,w:.8,h:.5},{x:l.p.x,y:l.p.y})}else if(l.type==="box"){l.type="stripe";l.p={x:0,y:0,a:Math.PI/2,h:.45}}commit();all()}
  else if(a==="dyepick"){const i=+t.dataset.i;openPick(n=>{L.dyes[i].n=n;commit();all()})}
@@ -271,17 +282,19 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  else if(a==="use"){const o=lastRec[+t.dataset.r],up=upOf();L.dyes=o.items.map(x=>({n:x.name,s:clamp(x.s/up,.05,1.5)}));commit();$("#match").classList.remove("open");all();flash(900)}};
 body.addEventListener("click",onAct);$("#mbody").addEventListener("click",onAct);$("#mx").onclick=()=>$("#match").classList.remove("open");
 const onIn=e=>{const t=e.target;
+if(t.type==="range"&&t.dataset.id==="rim"){if(!S.rim)return;const v=+t.value,k=t.dataset.k,lo=+t.min,hi=+t.max;t.style.setProperty("--v",(v-lo)/(hi-lo)*100+"%");if(k==="rw")S.rim.w=v;else S.rim.f=v/100;const o=document.querySelector(`[data-for="rim${k}${t.dataset.i}"]`);if(o)o.textContent=v+"%";paint(true);readout();return}
  if(t.type==="range"){const L=S.layers.find(l=>l.id===t.dataset.id);if(!L)return;const v=+t.value,k=t.dataset.k,i=+t.dataset.i;
   const lo=+t.min,hi=+t.max;t.style.setProperty("--v",(v-lo)/(hi-lo)*100+"%");
   if(k==="s"){L.dyes[i].s=v/100;const o=document.querySelector(`[data-for="${L.id}s${i}"]`);if(o)o.textContent=v+"%"}
   else if(k==="pf"){L.p.f=v/100;const o=document.querySelector(`[data-for="${L.id}pf9"]`);if(o)o.textContent=v+"%"}
   else{const sp=SHAPES[L.type].find(x=>"p"+x[1]===k);sp[5](L,v);syncShape()}
   paint(true);readout();if(k!=="s")flash(700);return}
+ if(t.id==="rC"){const v=t.value.toUpperCase();if(S.rim&&hexOk(v)){S.rim.c=v;paint(true);readout()}}
  if(t.id==="bC"){const v=t.value.toUpperCase();if(hexOk(v)){S.base=v;paint(true);readout()}}
  if(t.id==="tC"||t.id==="tH"){const v=t.value.toUpperCase();if(hexOk(v)){S.trans=v;if(t.id==="tC")$("#tH").value=v;else $("#tC").value=v;paint(true);readout()}}
  if(t.id==="gC"){const v=t.value.toUpperCase();if(hexOk(v)){S.tg=v;save()}}};
 body.addEventListener("input",onIn);$("#mbody").addEventListener("input",onIn);
-body.addEventListener("change",e=>{const t=e.target;if(t.type==="range"||/^[bt]([CH])$/.test(t.id||"")){commit();if(t.id==="bC")panel();if(t.type==="range")panel()}});
+body.addEventListener("change",e=>{const t=e.target;if(t.type==="range"||/^[btr]([CH])$/.test(t.id||"")){commit();if(t.id==="bC"||t.id==="rC")panel();if(t.type==="range")panel()}});
 let lastRec=[];
 function solve(btn){const tg=S.tg.toUpperCase();if(!hexOk(tg))return;btn.textContent="…";const p=plastic(),pool=poolOf(S.pool).map(d=>d.n);
  setTimeout(()=>{lastRec=DE.recipe(tg,S.base,p.fam,pool,{maxDyes:S.nd,top:6,transHex:transHex()});
@@ -293,19 +306,19 @@ const flip=(b,t)=>{const o=b.dataset.o||b.textContent;b.dataset.o=o;b.textConten
 const pad=n=>String(n).padStart(2,"0"),slug=t=>t.replace(/UV Blast |iDye Poly |ProChem /g,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const deg=a=>Math.round(((a*57.296)%360+360)%360);
 function recipeText(d){d=d||new Date();const mm=r=>Math.round(r*MM),dy=l=>l.dyes.map(x=>x.n+" "+Math.round(x.s*100)+"%").join(" + ")||"no dye (keep disc color)";
- const L=["DYE RECIPE "+d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes()),"Disc color: "+S.base+" ("+plastic().name+")","Strength: 100% = standard bath for the dye.","Disc: 210 mm across. Angles: 0 deg = 3 o'clock, clockwise. Positions in mm from disc center (+x right, +y down).","Regions do not overlap: a layer in front covers layers behind it. Dye one region per step; vinyl (Cricut SVG) covers everything outside that region. SVG center = disc center.",""];
+ const L=["DYE RECIPE "+d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes()),"Disc color: "+S.base+" ("+plastic().name+")"+(S.rim?", rim "+S.rim.c+" "+Math.round(S.rim.w*1.05)+" mm wide, edge "+(S.rim.f>.66?"crisp":S.rim.f>.33?"soft":"fuzzy"):""),"Strength: 100% = standard bath for the dye.","Disc: 210 mm across. Angles: 0 deg = 3 o'clock, clockwise. Positions in mm from disc center (+x right, +y down).","Regions do not overlap: a layer in front covers layers behind it. Dye one region per step; vinyl (Cricut SVG) covers everything outside that region. SVG center = disc center.",""];
  const vis=S.layers.map((l,i)=>({l,i})).filter(o=>o.l.vis);let step=0;
  vis.forEach(({l,i})=>{const p=l.p;let g,f="";
   if(l.type==="full")g="outside all shapes (whole disc if no shapes)";
   else if(l.type==="stripe"){const n=axes(l).n,dd=p.x*n[0]+p.y*n[1];g="stripe "+mm(p.h)+" mm wide, long edges at "+deg(p.a)+" deg, center line "+mm(Math.abs(dd))+" mm from disc center ("+mm(p.x)+", "+mm(p.y)+" mm foot point)"}
-  else if(l.type==="ring")g="rim band "+mm(1-p.r)+" mm wide, edge "+(p.c>.66?"crisp":p.c>.33?"soft":"fuzzy halo");else if(l.type==="box")g="box "+mm(p.w)+" x "+mm(p.h)+" mm, rotated "+deg(p.a)+" deg, center ("+mm(p.x)+", "+mm(p.y)+") mm";
+  else if(l.type==="box")g="box "+mm(p.w)+" x "+mm(p.h)+" mm, rotated "+deg(p.a)+" deg, center ("+mm(p.x)+", "+mm(p.y)+") mm";
   else if(l.type==="stencil"){const m=STN[l.id];g=m?"photo stencil, style "+(m.style||"photo")+" (stencil.svg, Cricut, black = cut out) "+mm(p.s)+" x "+mm(p.s*m.h/m.w)+" mm, center ("+mm(p.x)+", "+mm(p.y)+") mm; dye through the holes; compile check: "+m.verdict:"stencil"}
   else g="";
   if(l.type!=="stencil"&&l.dyes.length&&vis.length>1)f=" - vinyl file layer-"+(i+1)+".svg";
   step++;L.push(step+". "+(l.type==="full"?"Whole disc":l.name)+" (layer "+(i+1)+", "+(i===0?"back":i===S.layers.length-1?"front":"middle")+"): "+dy(l)+" - "+g+f)});
  const a=Math.atan2(UI.pt.y,UI.pt.x),pts=[.35,.72,.93].map(r=>colorAtPt(Math.cos(a)*r,Math.sin(a)*r).hex);
  L.push("","Predicted (sample point): center "+pts[0]+", mid "+pts[1]+", rim "+pts[2]);return L.join("\n")}
-function fileName(d){const bl=S.layers[0],parts=[d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()),pad(d.getHours())+pad(d.getMinutes()),slug(plastic().name),slug(S.base)];
+function fileName(d){const bl=S.layers[0],parts=[d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()),pad(d.getHours())+pad(d.getMinutes()),slug(plastic().name),slug(S.base)].concat(S.rim?["Rim-"+slug(S.rim.c)]:[]);
  S.layers.forEach((l,i)=>{if(l.vis&&l.dyes.length)parts.push((i?l.name.replace(/\s+/g,""):"Base")+"-"+l.dyes.map(x=>slug(x.n)+Math.round(x.s*100)).join("+"))});return parts.join("_").slice(0,150)}
 const SB="https://wtymjxscneufjlkkywyg.supabase.co/rest/v1/du_dye_recipes",SK="sb_publishable_rimiZU1rSfq1nCEOUBw3ew_1j_GuZUx";
 const sent=new Set();
@@ -341,13 +354,13 @@ async function uploadFiles(id,spec,row){const f={},W=1200,c=document.createEleme
  if(S.layers.filter(l=>l.vis).length>1)for(let i=0;i<S.layers.length;i++){const l=S.layers[i];if(!l.vis||l.type==="stencil"||!l.dyes.length)continue;
   if(await put(id,"layer-"+(i+1)+".svg",new Blob([regionSvg(i,"Layer "+(i+1)+" "+l.name+" "+l.dyes.map(d=>d.n).join("+"))],{type:"image/svg+xml"}),"image/svg+xml"))f["layer_"+(i+1)]=true}
  return f}
-async function logRecipe(action){try{const d=new Date(),spec={plastic:S.plastic,base:S.base,trans:S.trans,layers:S.layers.map(l=>({type:l.type,name:l.name,vis:l.vis,dyes:l.dyes,p:l.p}))},key=JSON.stringify(spec);if(sent.has(key))return;sent.add(key);
+async function logRecipe(action){try{const d=new Date(),spec={plastic:S.plastic,base:S.base,rim:S.rim,trans:S.trans,layers:S.layers.map(l=>({type:l.type,name:l.name,vis:l.vis,dyes:l.dyes,p:l.p}))},key=JSON.stringify(spec);if(sent.has(key))return;sent.add(key);
  const id=uuid(),row={id,file_name:fileName(d),plastic:plastic().name,base_hex:S.base,recipe:recipeText(d),spec,action};
  row.files=await uploadFiles(id,spec,row);row.has_stencil=!!row.files.stencil_svg;
  const q=JSON.parse(localStorage.getItem("dds11q")||"[]");q.push(row);localStorage.setItem("dds11q",JSON.stringify(q.slice(-20)));flushQ()}catch(e){}}
 function flushQ(){let q;try{q=JSON.parse(localStorage.getItem("dds11q")||"[]")}catch(e){return}if(!q.length)return;
  fetch(SB,{method:"POST",keepalive:true,headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(q)}).then(r=>{if(r.ok){try{localStorage.setItem("dds11q","[]")}catch(e){}}}).catch(()=>{})}
-function publicText(){return S.layers.filter(l=>l.vis&&l.dyes.length).map(l=>l.name+": "+l.dyes.map(d=>d.n+" "+Math.round(d.s*100)+"%").join(" + ")).join("\n")+"\n"+plastic().name+" "+S.base}
+function publicText(){return S.layers.filter(l=>l.vis&&l.dyes.length).map(l=>l.name+": "+l.dyes.map(d=>d.n+" "+Math.round(d.s*100)+"%").join(" + ")).join("\n")+"\n"+plastic().name+" "+S.base+(S.rim?" rim "+S.rim.c:"")}
 function copyText(t){return(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).catch(()=>{const x=document.createElement("textarea");x.value=t;x.style.cssText="position:fixed;left:-999px;top:0;opacity:0";document.body.appendChild(x);x.focus();x.select();try{document.execCommand("copy")}catch(e){}x.remove()})}
 function makePng(){return new Promise(r=>{const W=1600,c=document.createElement("canvas");c.width=c.height=W;c.getContext("2d").putImageData(renderDisc(W),0,0);c.toBlob(r,"image/png")})}
 let pngBlob=null,pngUrl="";
@@ -367,7 +380,7 @@ const FN=640,FR={style:"photo",cut:true,line:null,lk:"",mask:null,mk:"",img:null
 const fcan=document.createElement("canvas");fcan.width=fcan.height=FN;
 function frameDraw(){const x=fcan.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,FN,FN);const im=FR.img;if(!im)return;const b=Math.max(FN/im.width,FN/im.height)*FR.z,w=im.width*b,h=im.height*b,mx=Math.max(0,(w-FN)/2),my=Math.max(0,(h-FN)/2);FR.ox=clamp(FR.ox,-mx,mx);FR.oy=clamp(FR.oy,-my,my);x.drawImage(im,FN/2-w/2+FR.ox,FN/2-h/2+FR.oy,w,h)}
 function frameShow(){const dm=FR.dm;frameDraw();const v=$("#fv"),x=v.getContext("2d");x.clearRect(0,0,FN,FN);x.drawImage(fcan,0,0);x.save();x.fillStyle="rgba(8,10,13,.72)";x.beginPath();x.rect(0,0,FN,FN);x.arc(FN/2,FN/2,FN/2-1,0,7);x.fill("evenodd");x.restore();x.beginPath();x.arc(FN/2,FN/2,FN/2-1,0,7);x.lineWidth=3;x.strokeStyle="#fff";x.stroke();if(dm){x.lineWidth=2;x.setLineDash([8,8]);for(const q of[.35,.85]){x.beginPath();x.arc(FN/2,FN/2,q*FN/2,0,7);x.stroke()}x.setLineDash([])}}
-async function frameCompute(){const my=++FR.seq;$("#fok").classList.add("dis");if(FR.dm){const d=fcan.getContext("2d").getImageData(0,0,FN,FN).data,ch=[[],[],[]];for(let y=0;y<FN;y+=3)for(let x=0;x<FN;x+=3){const r=Math.hypot(x-FN/2,y-FN/2)/(FN/2);if(r<.35||r>.85)continue;const k=(y*FN+x)*4;ch[0].push(d[k]);ch[1].push(d[k+1]);ch[2].push(d[k+2])}const hx=rgbHex(ch.map(a=>{a.sort((p,q)=>p-q);return a[a.length>>1]||0}));FR.res={hex:hx};const c=$("#fp"),x=c.getContext("2d");x.fillStyle=hx;x.fillRect(0,0,c.width,c.height);$("#fok").classList.remove("dis");return}try{const M=await stencilMod(),d=fcan.getContext("2d").getImageData(0,0,FN,FN).data;let res=null;try{res=M.buildStencil(d,{style:FR.style,detail:FR.detail,balance:FR.balance,invert:FR.invert,mask:FR.cut&&(FR.style==="photo"||FR.style==="bold")?await subjectMask(d):null,line:FR.cut&&FR.style==="photo"?await lineData(d):null})}catch(e){}
+async function frameCompute(){if(!FR.dm)return;const my=++FR.seq;$("#fok").classList.add("dis");if(FR.dm){const d=fcan.getContext("2d").getImageData(0,0,FN,FN).data,ch=[[],[],[]];for(let y=0;y<FN;y+=3)for(let x=0;x<FN;x+=3){const r=Math.hypot(x-FN/2,y-FN/2)/(FN/2);if(r<.35||r>.85)continue;const k=(y*FN+x)*4;ch[0].push(d[k]);ch[1].push(d[k+1]);ch[2].push(d[k+2])}const hx=rgbHex(ch.map(a=>{a.sort((p,q)=>p-q);return a[a.length>>1]||0}));FR.res={hex:hx};const c=$("#fp"),x=c.getContext("2d");x.fillStyle=hx;x.fillRect(0,0,c.width,c.height);$("#fok").classList.remove("dis");return}try{const M=await stencilMod(),d=fcan.getContext("2d").getImageData(0,0,FN,FN).data;let res=null;try{res=M.buildStencil(d,{style:FR.style,detail:FR.detail,balance:FR.balance,invert:FR.invert,mask:FR.cut&&(FR.style==="photo"||FR.style==="bold")?await subjectMask(d):null,line:FR.cut&&FR.style==="photo"?await lineData(d):null})}catch(e){}
  if(my!==FR.seq)return;FR.res=res;const c=$("#fp"),x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);
  if(res){const k=Math.min(c.width/res.w,c.height/res.h),id=x.createImageData(c.width,c.height);for(let j=0;j<c.height;j++)for(let i=0;i<c.width;i++){const sx=Math.floor((i-(c.width-res.w*k)/2)/k),sy=Math.floor((j-(c.height-res.h*k)/2)/k),o=(j*c.width+i)*4,v=sx<0||sy<0||sx>=res.w||sy>=res.h?255:res.mask[sy*res.w+sx]?255:0;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255}x.putImageData(id,0,0)}
  $("#fok").classList.toggle("dis",!res)}catch(e){}}
@@ -377,9 +390,9 @@ function genBlob(){return new Promise(res=>{const im=FR.img,k=Math.min(1,1024/Ma
 function drawDisc(x,S,res){const k=S/213,cx=S/2;x.fillStyle="#f3eadf";x.fillRect(0,0,S,S);x.beginPath();x.arc(cx,cx,S/2-2,0,7);x.fillStyle="#e4ded4";x.fill();x.lineWidth=S*.045;x.strokeStyle="#d3ccc0";x.beginPath();x.arc(cx,cx,S/2-2-S*.0225,0,7);x.stroke();x.lineWidth=1.5;x.strokeStyle="#b9b0a2";x.beginPath();x.arc(cx,cx,S/2-2,0,7);x.stroke();if(!res)return;const o=document.createElement("canvas");o.width=res.w;o.height=res.h;const q=o.getContext("2d"),id=q.createImageData(res.w,res.h);for(let i=0;i<res.w*res.h;i++){const j=i*4;id.data[j]=id.data[j+1]=id.data[j+2]=30;id.data[j+3]=res.mask[i]?0:255}q.putImageData(id,0,0);const sw=res.w*res.mmPerPx*k,sh=res.h*res.mmPerPx*k;x.imageSmoothingQuality="high";x.drawImage(o,cx-sw/2,cx-sh/2,sw,sh)}
 function showRes(res){const c=$("#fp"),x=c.getContext("2d");drawDisc(x,c.width,res)}
 function fmsg(t){const c=$("#fp"),x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);if(t){x.fillStyle="#555";x.font="600 22px system-ui,sans-serif";x.textAlign="center";x.fillText(t,c.width/2,c.height/2)}}
-async function genOnce(blob,dir,retry){const hd={"content-type":"image/jpeg","x-vid":vid(),apikey:SK};if(dir)hd["x-dir"]=dir;if(retry)hd["x-retry"]="1";const r=await fetch(GEN,{method:"POST",headers:hd,body:blob});const j=await r.json().catch(()=>({}));if(!r.ok||!j.png)throw Object.assign(new Error(j.error||"fail"),{code:j.error||"fail",left:j.left});const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src="data:image/png;base64,"+j.png});const n=1024,c=document.createElement("canvas");c.width=c.height=n;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,n,n);x.drawImage(im,0,0,n,n);const lum=adjLumFor(c,DEFA(),null);const M=await stencilMod();let res=null;try{res=M.compileGenerated(lum,n,190.5/1024);if(res&&!inSafe(res))res={...res,verdict:"FAIL"}}catch(e){}return{res,left:j.left,gc:c}}
+async function genOnce(blob,dir,retry){const hd={"content-type":"image/jpeg","x-vid":vid(),apikey:SK,...adminHd()};if(dir)hd["x-dir"]=dir;if(retry)hd["x-retry"]="1";const r=await fetch(GEN,{method:"POST",headers:hd,body:blob});const j=await r.json().catch(()=>({}));if(!r.ok||!j.png)throw Object.assign(new Error(j.error||"fail"),{code:j.error||"fail",left:j.left});const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src="data:image/png;base64,"+j.png});const n=1024,c=document.createElement("canvas");c.width=c.height=n;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,n,n);x.drawImage(im,0,0,n,n);const lum=adjLumFor(c,DEFA(),null);const M=await stencilMod();let res=null;try{res=M.compileGenerated(lum,n,190.5/1024);if(res&&!inSafe(res))res={...res,verdict:"FAIL"}}catch(e){}return{res,left:j.left,gc:c,tally:j.tally}}
 const LIM=3;
-function dirUI(){const off=FR.busy||!FR.gc||FR.left===0;["#gd1","#gd2","#gd3"].forEach(q=>$(q).classList.toggle("dis",off));const e=$("#fleft");e.textContent=FR.left==null||FR.left>2?"":FR.left===0?"None left today":FR.left===1?"Last one today":"2 left";e.classList.toggle("lo",FR.left!=null&&FR.left<=1)}
+function dirUI(){const off=FR.busy||!FR.gc||FR.left===0;["#gd1","#gd2","#gd3"].forEach(q=>$(q).classList.toggle("dis",off));const e=$("#fleft");if(FR.tally){const t=FR.tally,f=x=>x.n+" · $"+x.usd.toFixed(2);e.textContent="Today "+f(t.day)+"   7 days "+f(t.week)+"   Month "+f(t.month)+"   Visitors "+f(t.visitors);e.classList.remove("lo");return}e.textContent=FR.left==null||FR.left>2?"":FR.left===0?"None left today":FR.left===1?"Last one today":"2 left";e.classList.toggle("lo",FR.left!=null&&FR.left<=1)}
 function thumb(r){const c=document.createElement("canvas");c.width=c.height=72;drawDisc(c.getContext("2d"),72,r);return c.toDataURL()}
 function gensSave(){const g=FR.gens[FR.ci];if(g){g.adj={...FR.adj};g.br=FR.br;g.base=FR.base;g.th=thumb(FR.base)}}
 function thUI(){const e=$("#gth");e.innerHTML="";e.style.display=FR.gens.length>1?"flex":"none";FR.gens.forEach((g,i)=>{const b=document.createElement("button");b.className="gt"+(i===FR.ci?" on":"");const im=new Image();im.src=g.th;b.appendChild(im);b.onclick=()=>genSel(i);e.appendChild(b)})}
@@ -394,8 +407,8 @@ function hreset(){FR.hs=[{adj:{...FR.adj},br:FR.br?FR.br.slice():null}];FR.hi=0;
 function hui(){$("#gun").classList.toggle("dis",FR.hi<1);$("#grd").classList.toggle("dis",FR.hi>=FR.hs.length-1)}
 function hpush(){const s={adj:{...FR.adj},br:FR.br?FR.br.slice():null},now=Date.now();if(FR.hi===FR.hs.length-1&&FR.hi>0&&now-FR.ht<900)FR.hs[FR.hi]=s;else{FR.hs=FR.hs.slice(0,FR.hi+1);FR.hs.push(s);if(FR.hs.length>30)FR.hs.shift();FR.hi=FR.hs.length-1}FR.ht=now;hui()}
 function hgo(d){if(FR.busy||!FR.gc)return;const i=FR.hi+d;if(i<0||i>=FR.hs.length)return;FR.hi=i;const s=FR.hs[i];FR.adj={...s.adj};FR.br=s.br?s.br.slice():null;FR.last={adj:{...FR.adj},br:FR.br?FR.br.slice():null};adjSync();hui();adjRun(false)}
-async function genStencil(dir){if(FR.busy||FR.dm||!FR.img)return;FR.busy=true;const my=++FR.seq,prev=FR.gc?{gc:FR.gc,adj:{...FR.adj},br:FR.br,base:FR.base}:null;$("#fok").classList.add("dis");dirUI();if(!prev){FR.res=null;fmsg("Generating")}else{banner("Generating")}try{const blob=await genBlob();let out=await genOnce(blob,dir,false);if(my!==FR.seq)return;FR.left=out.left;if(!out.res||out.res.verdict!=="PASS"){if(!prev)fmsg("Refining");else banner("Refining");dirUI();const o2=await genOnce(blob,dir,true);if(my!==FR.seq)return;if(o2.res&&(!out.res||o2.res.verdict==="PASS"||(out.res.verdict!=="PASS"&&o2.res.change<out.res.change)))out=o2;if(o2.left!=null)FR.left=o2.left}
- if(out.res&&out.res.verdict==="PASS"){if(prev)gensSave();FR.gc=out.gc;adjReset();FR.base=out.res;FR.gens.push({gc:out.gc,adj:{...FR.adj},br:null,base:out.res,th:thumb(out.res)});FR.ci=FR.gens.length-1;thUI();FR.res=FR.invert?invRes(out.res):out.res;showRes(FR.res);$("#fok").classList.remove("dis")}else if(prev){FR.res=FR.invert?invRes(prev.base):prev.base;banner("Kept previous");$("#fok").classList.remove("dis")}else{fmsg("Try another photo")}}catch(e){if(my===FR.seq){if(e.left!=null)FR.left=e.left;const t=e.code==="limit"?"Limit reached":e.code==="cap"?"Unavailable":"Try again";if(prev){FR.res=FR.invert?invRes(prev.base):prev.base;banner(t);$("#fok").classList.remove("dis")}else fmsg(t)}}finally{FR.busy=false;dirUI()}}
+async function genStencil(dir){if(FR.busy||FR.dm||!FR.img)return;FR.busy=true;const my=++FR.seq,prev=FR.gc?{gc:FR.gc,adj:{...FR.adj},br:FR.br,base:FR.base}:null;$("#fok").classList.add("dis");dirUI();if(!prev){FR.res=null;fmsg("Generating")}else{banner("Generating")}try{const blob=await genBlob();let out=await genOnce(blob,dir,false);if(my!==FR.seq)return;FR.left=out.left;if(out.tally)FR.tally=out.tally;if(!out.res||out.res.verdict!=="PASS"){if(!prev)fmsg("Refining");else banner("Refining");dirUI();const o2=await genOnce(blob,dir,true);if(my!==FR.seq)return;if(o2.res&&(!out.res||o2.res.verdict==="PASS"||(out.res.verdict!=="PASS"&&o2.res.change<out.res.change)))out=o2;if(o2.left!=null)FR.left=o2.left;if(o2.tally)FR.tally=o2.tally}
+ if(out.res&&out.res.verdict==="PASS"){if(prev)gensSave();FR.gc=out.gc;adjReset();FR.base=out.res;FR.gens.push({gc:out.gc,adj:{...FR.adj},br:null,base:out.res,th:thumb(out.res)});FR.ci=FR.gens.length-1;thUI();FR.res=FR.invert?invRes(out.res):out.res;showRes(FR.res);$("#fok").classList.remove("dis")}else if(prev){FR.res=FR.invert?invRes(prev.base):prev.base;banner("Kept previous");$("#fok").classList.remove("dis")}else{fmsg("Try another photo")}}catch(e){if(my===FR.seq){if(e.left!=null)FR.left=e.left;const t=e.code==="limit"?"None left today":e.code==="cap"?"Unavailable":"Try again";if(prev){FR.res=FR.invert?invRes(prev.base):prev.base;banner(t);$("#fok").classList.remove("dis")}else fmsg(t)}}finally{FR.busy=false;dirUI()}}
 function mor(b,n,dil){const W=1024;let a=b,t=new Uint8Array(W*W);for(let k=0;k<n;k++){for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;let v=a[i];if(dil){if(!v&&((x>0&&a[i-1])||(x<W-1&&a[i+1])||(y>0&&a[i-W])||(y<W-1&&a[i+W])))v=1}else if(v&&((x>0&&!a[i-1])||(x<W-1&&!a[i+1])||(y>0&&!a[i-W])||(y<W-1&&!a[i+W])))v=0;t[i]=v}const q=a;a=t;t=q===b?new Uint8Array(W*W):q}return a}
 function fitOf(gc){if(gc._fit)return gc._fit;const W=1024,d=gc.getContext("2d").getImageData(0,0,W,W).data,dk=k=>d[k*4]*.3+d[k*4+1]*.59+d[k*4+2]*.11<128;let x0=W,y0=W,x1=-1,y1=-1;for(let y=0;y<W;y++)for(let x=0;x<W;x++)if(dk(y*W+x)){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}if(x1<0)return gc._fit={cx:512,cy:512,k:1};const cx=(x0+x1)/2,cy=(y0+y1)/2;let m=1;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(dk(y*W+x)){const r=(x-cx)*(x-cx)+(y-cy)*(y-cy);if(r>m)m=r}return gc._fit={cx,cy,k:457/Math.sqrt(m)}}
 function adjLumFor(gc,A,br){const W=1024,F=fitOf(gc),s=F.k*A.z,c=document.createElement("canvas");c.width=c.height=W;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,W,W);x.save();x.translate(W/2,W/2);x.scale(A.m?-s:s,s);x.translate(-F.cx,-F.cy);x.filter=A.t?"blur(3px)":"none";x.drawImage(gc,0,0);x.filter="none";x.restore();
@@ -410,10 +423,10 @@ async function adjRun(push){if(FR.busy||!FR.gc)return;const my=++FR.aseq;await n
 let adjT=null;function adjSched(){clearTimeout(adjT);adjT=setTimeout(adjRun,220)}
 function invRes(r){const m=new Uint8Array(r.mask.length);for(let i=0;i<m.length;i++)m[i]=r.mask[i]?0:1;return{...r,mask:m}}
 function frameSched(){frameShow();clearTimeout(FR.t);FR.t=setTimeout(frameCompute,260)}
-function openFrame(file){FR.dm=DM;$("#frame").classList.toggle("disc",DM);$("#fok").textContent=DM?"Use":"Add";const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(url);Object.assign(FR,{img:im,file,z:1,ox:0,oy:0,res:null});$("#fz").value=100;$("#fzv").textContent="100%";$("#fd").value=70;$("#fb").value=70;FR.style="photo";FR.detail=.7;FR.balance=.7;document.querySelectorAll("#fstyle button").forEach(b=>b.classList.toggle("on",b.dataset.st==="photo"));[$("#fz"),$("#fd"),$("#fb")].forEach(el=>el.style.setProperty("--v",(el.value-el.min)/(el.max-el.min)*100+"%"));FR.invert=false;FR.cut=true;FR.mask=null;FR.mk="";FR.line=null;FR.lk="";$("#fcut").classList.add("on");$("#finv").classList.remove("on");$("#fok").classList.add("dis");$("#frame").classList.add("open");FR.left=null;FR.busy=false;FR.gen=null;FR.base=null;FR.gc=null;FR.gens=[];FR.ci=-1;$("#gth").style.display="none";FR.br=null;FR.brm=0;FR.aseq=FR.aseq||0;adjReset();document.querySelectorAll("#frame .sl:not(.gn),#fcut,#finv").forEach(e=>e.style.display=DM?"":"none");$("#fv").style.cursor=DM?"":"default";if(DM){frameSched()}else{frameShow();fmsg("");peek();genStencil("")}};im.src=url}
+function openFrame(file){FR.dm=DM;$("#frame").classList.toggle("disc",DM);$("#fok").textContent=DM?"Use":"Add";const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(url);Object.assign(FR,{img:im,file,z:1,ox:0,oy:0,res:null});$("#fz").value=100;$("#fzv").textContent="100%";$("#fd").value=70;$("#fb").value=70;FR.style="photo";FR.detail=.7;FR.balance=.7;document.querySelectorAll("#fstyle button").forEach(b=>b.classList.toggle("on",b.dataset.st==="photo"));[$("#fz"),$("#fd"),$("#fb")].forEach(el=>el.style.setProperty("--v",(el.value-el.min)/(el.max-el.min)*100+"%"));FR.invert=false;FR.cut=true;FR.mask=null;FR.mk="";FR.line=null;FR.lk="";$("#fcut").classList.add("on");$("#finv").classList.remove("on");$("#fok").classList.add("dis");$("#frame").classList.add("open");FR.left=null;FR.busy=false;FR.gen=null;FR.base=null;FR.gc=null;FR.gens=[];FR.ci=-1;$("#gth").style.display="none";FR.br=null;FR.brm=0;FR.aseq=FR.aseq||0;adjReset();document.querySelectorAll("#frame .sl:not(.gn),#fcut,#finv").forEach(e=>e.style.display=DM?"":"none");$("#fv").style.cursor=DM?"":"default";if(DM){frameSched()}else{frameShow();fmsg("");peek().then(()=>{if(FR.left===0){fmsg("None left today");dirUI()}else genStencil("")})}};im.src=url}
 $("#pfile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(f)openFrame(f)});
 const fvp=new Map();let pinch=null;
-$("#fv").addEventListener("pointerdown",e=>{$("#fv").setPointerCapture(e.pointerId);fvp.set(e.pointerId,{x:e.clientX,y:e.clientY});if(fvp.size===2){const[a,b]=[...fvp.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:FR.z}}});
+$("#fv").addEventListener("pointerdown",e=>{if(!FR.dm)return;$("#fv").setPointerCapture(e.pointerId);fvp.set(e.pointerId,{x:e.clientX,y:e.clientY});if(fvp.size===2){const[a,b]=[...fvp.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:FR.z}}});
 $("#fv").addEventListener("pointermove",e=>{const o=fvp.get(e.pointerId);if(!o)return;const k=FN/$("#fv").getBoundingClientRect().width;
  if(fvp.size===2&&pinch){fvp.set(e.pointerId,{x:e.clientX,y:e.clientY});const[a,b]=[...fvp.values()];FR.z=clamp(pinch.z*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d,1,4);$("#fz").value=Math.round(FR.z*100);$("#fzv").textContent=Math.round(FR.z*100)+"%";$("#fz").style.setProperty("--v",(FR.z-1)/3*100+"%")}
  else{FR.ox+=(e.clientX-o.x)*k;FR.oy+=(e.clientY-o.y)*k;fvp.set(e.pointerId,{x:e.clientX,y:e.clientY})}frameSched()});
@@ -424,7 +437,8 @@ $("#fb").addEventListener("input",e=>{FR.balance=e.target.value/100;e.target.sty
 document.querySelectorAll("#fstyle button").forEach(b=>b.onclick=()=>{FR.style=b.dataset.st;document.querySelectorAll("#fstyle button").forEach(x=>x.classList.toggle("on",x===b));frameSched()});
 $("#fcut").onclick=()=>{FR.cut=!FR.cut;$("#fcut").classList.toggle("on",FR.cut);frameSched()};
 $("#finv").onclick=()=>{FR.invert=!FR.invert;$("#finv").classList.toggle("on",FR.invert);if(FR.base){FR.res=FR.invert?invRes(FR.base):FR.base;showRes(FR.res)}};
-async function peek(){try{const r=await fetch(GEN,{method:"POST",headers:{"x-vid":vid(),"x-peek":"1",apikey:SK}});const j=await r.json();if(j&&j.left!=null&&FR.left==null){FR.left=j.left;dirUI()}}catch(e){}}
+function adminHd(){try{const t=localStorage.getItem("du-admin-device-token-v1");return t?{"x-du-device-token":t}:{}}catch(e){return{}}}
+async function peek(){try{const r=await fetch(GEN,{method:"POST",headers:{"x-vid":vid(),"x-peek":"1",apikey:SK,...adminHd()}});const j=await r.json();if(j&&j.admin){FR.tally=j.tally;FR.left=null;dirUI()}else if(j&&j.left!=null&&FR.left==null){FR.left=j.left;dirUI()}}catch(e){}}
 [["#gd1","light"],["#gd2","bold"],["#gd3","tight"]].forEach(([q,d])=>{$(q).onclick=()=>{if(!FR.busy&&FR.gc&&FR.left!==0)genStencil(d)}});
 const tz=()=>{if(FR.busy||!FR.gc)return;FR.br=null;adjSync();adjSched()};
 $("#gt").oninput=()=>{FR.adj.t=+$("#gt").value;adjSync();adjSched()};$("#gz").oninput=()=>{FR.adj.z=+$("#gz").value/100;tz()};$("#gfit").onclick=()=>{if(FR.busy||!FR.gc)return;FR.adj.z=1;tz()};
@@ -450,7 +464,7 @@ $("#fok").onclick=async()=>{if(!FR.res)return;if(FR.dm){S.base=FR.res.hex;S.tran
  for(const l of S.layers.filter(x=>x.type==="stencil"))delete STN[l.id];S.layers=S.layers.filter(x=>x.type!=="stencil");
  const pool=poolOf("Inventory"),used=new Set(S.layers.flatMap(l=>l.dyes.map(d=>d.n))),pick=(pool.find(d=>!used.has(d.n))||pool[0]).n,id=uid();
  STN[id]={mask:res.mask,w:res.w,h:res.h,mm:res.mmPerPx,verdict:res.verdict,change:res.change,photo,style:res.style};
- S.layers.push({id,type:"stencil",name:"Stencil",vis:true,dyes:[{n:pick,s:1}],p:{x:0,y:0,s:res.w*res.mmPerPx/MM}});S.sel=id;S.tab="disc";$("#frame").classList.remove("open");commit();all();flash(1300)};
+ S.layers.push({id,type:"stencil",name:"Stencil",vis:true,dyes:[{n:pick,s:1}],p:{x:0,y:0,s:res.w*res.mmPerPx/MM}});S.sel=id;$("#frame").classList.remove("open");commit();all();flash(1300)};
 // layout
 function layout(){const w=vw.clientWidth,h=vw.clientHeight,s=Math.max(120,Math.floor(Math.min(w,h)-8));sq.style.width=sq.style.height=s+"px";
  const nb=clamp(Math.round(s*Math.min(2,window.devicePixelRatio||1)),480,1400);if(nb!==B||cv.width!==nb){B=nb;cv.width=cv.height=ov.width=ov.height=B;paint(false);drawOv()}}
@@ -464,5 +478,5 @@ window.addEventListener("keydown",e=>{const tg=e.target&&e.target.tagName;if(tg=
  if(mod&&e.key.toLowerCase()==="d"&&L.type!=="stencil"){e.preventDefault();const b=document.querySelector("[data-act=dup]");if(b)b.click();return}
  const st=e.shiftKey?.05:.01,m={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
  if(m){e.preventDefault();if(L.type==="stripe"){const n=axes(L).n,d=clamp(L.p.x*n[0]+L.p.y*n[1]+m[0]*n[0]+m[1]*n[1],-.98,.98);L.p.x=n[0]*d;L.p.y=n[1]*d}else{L.p.x=clamp(L.p.x+m[0],-1.15,1.15);L.p.y=clamp(L.p.y+m[1],-1.15,1.15)}paint(true);drawOv();clearTimeout(window.__nt);window.__nt=setTimeout(()=>{commit();paint(false)},300)}});
-dropGhost();flushQ();layout();H=[snap()];hi=0;all();
+dropGhost();flushQ();layout();H=[snap()];hi=0;all();document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;if(S.mode==="design"){const l=S.layers.filter(x=>x.type!=="full").pop();S.sel=l?l.id:S.layers[0].id}save();drawOv();panel()});if(Object.keys(adminHd()).length)peek().then(()=>panel());
 })();

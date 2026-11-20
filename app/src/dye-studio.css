@@ -29,8 +29,6 @@
 .ds .panel{display:flex;flex-direction:column;min-height:0;background:var(--p);border-left:1px solid var(--ln)}
 .ds .tabs{flex:none;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:10px 12px;border-bottom:1px solid var(--ln)}
 .ds .tabs button{padding:0 6px}
-.ds .tabs button b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--p3);font-size:12px}
-.ds .tabs button.on b{background:var(--ac);color:#fff}
 .ds .row{display:flex;gap:8px;align-items:center}
 .ds .row>.g{flex:1}
 .ds .seg{display:flex;gap:6px}
@@ -123,3 +121,7 @@
 .ds .cpk input{position:absolute;left:0;top:0;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
 .ds .foot2 button.q{grid-column:1/-1;background:none;border:0;box-shadow:none;color:var(--mu);font-size:12px;min-height:28px}
 .ds .tg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ds .tg2 button:only-child{grid-column:1/-1}.ds .tl2{min-height:56px;border:2px solid var(--ln);border-radius:14px;font-weight:700;font-size:15px}
+
+.ds .sec{font-weight:800;font-size:15px;margin:18px 0 2px;padding-top:14px;border-top:1px solid var(--ln)}.ds .sec:first-child{margin-top:0;padding-top:0;border:0}
+.ds .lkr{margin-top:14px;text-align:center}.ds .lk{background:none;border:0;min-height:0;padding:6px 8px;font-size:13px;font-weight:500;color:var(--mu,#7a6a5c);text-decoration:underline}
+.ds .usg{margin-top:16px;font-size:12px;line-height:1.5;color:var(--mu,#7a6a5c)}
