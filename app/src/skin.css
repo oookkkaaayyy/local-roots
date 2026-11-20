@@ -82,10 +82,10 @@
 .lr .empty-state{padding:36px 20px;border:1px dashed var(--line);border-radius:var(--r-lg);color:var(--muted);text-align:center}
 .lr .empty-state strong{display:block;color:var(--ink)}
 
-.lr .event-card{display:grid;grid-template-columns:132px minmax(0,1fr) auto;grid-column-gap:20px;margin:0 0 10px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:none;transition:box-shadow .15s,border-color .15s}
+.lr .event-card{display:grid;grid-template-columns:132px minmax(0,1fr);grid-column-gap:20px;margin:0 0 10px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:none;transition:box-shadow .15s,border-color .15s}
 .lr .event-card:hover{border-color:var(--clay)}
 .lr .event-card.is-canceled{opacity:.6}
-.lr .event-date-block{display:block;padding-right:16px;border-right:1px solid var(--line-soft)}
+.lr .event-date-block{display:block;grid-row:1/3;padding-right:16px;border-right:1px solid var(--line-soft)}
 .lr .event-date-block strong{display:block;font:700 1.1rem/1.2 var(--sans);color:var(--ink)}
 .lr .event-date-block span{display:block;margin-top:6px;color:var(--muted);font:600 .8rem/1.3 var(--sans)}
 .lr .event-main{min-width:0}
@@ -106,9 +106,8 @@
 .lr .results-title{margin-bottom:6px;font:700 .72rem/1 var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .lr .results-block ol{margin:0;padding:0;list-style:none}
 .lr .results-block li{display:flex;justify-content:space-between;padding:3px 0;font:500 .9rem/1.3 var(--sans)}
-.lr .event-actions{display:flex;flex-direction:column;align-items:stretch;min-width:138px}
-.lr .event-actions .button{margin:0 0 8px;min-height:38px;font-size:.86rem}
-.lr .event-actions .button:last-child{margin-bottom:0}
+.lr .event-actions{grid-column:2;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;margin-top:12px}
+.lr .event-actions .button{margin:0 8px 0 0;min-height:40px;padding:0 16px;font-size:.9rem}
 .lr .event-distance{color:var(--sage)}
 
 /* Submit */
@@ -126,10 +125,12 @@
 .lr .weather-page .events-layout{grid-template-columns:minmax(0,1fr);padding-top:12px}
 .lr .weather-page .filters-dialog{position:static}
 .lr .weather-page .filters{padding:14px 16px}
-.lr .weather-controls{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) minmax(0,1fr) auto;grid-column-gap:12px;align-items:end}
-.lr .weather-controls .button{min-height:44px;margin:0}
+.lr .weather-page .filters{grid-template-columns:minmax(0,1.2fr) auto minmax(0,1fr) minmax(0,1fr) auto;grid-column-gap:12px;grid-row-gap:12px;align-items:end}
+.lr .weather-page .weather-controls{display:contents}
+.lr .weather-page .weather-controls>*{grid-column:auto!important;grid-area:auto!important}
+.lr .weather-page .weather-controls .button{width:auto;min-height:44px;margin:0}
+.lr .weather-page .weather-controls input,.lr .weather-page .weather-controls select{min-height:44px;height:44px;padding:0 12px;width:100%;max-width:100%}
 
-.lr .weather-controls{display:grid;grid-row-gap:12px;padding:0;border:0;background:transparent;box-shadow:none}
 .lr .weather-course{margin:0 0 10px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:none;overflow:hidden}
 .lr .weather-course-toggle{padding:14px 18px}
 .lr .weather-course-toggle:hover{background:var(--wash)}
@@ -211,10 +212,8 @@
 
 @media(max-width:900px){
   .lr .events-layout{grid-template-columns:210px minmax(0,1fr);grid-column-gap:18px}
-  .lr .weather-page .weather-controls{grid-template-columns:repeat(3,minmax(0,1fr));grid-row-gap:12px}
-  .lr .event-card{grid-template-columns:120px minmax(0,1fr)}
-  .lr .event-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft)}
-  .lr .event-actions .button{margin:0 8px 0 0;flex:0 0 auto}
+  .lr .weather-page .filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lr .event-card{grid-template-columns:112px minmax(0,1fr)}
 }
 @media(orientation:portrait) and (min-width:700px){
   .lr.lr-tool .ds{height:auto}
@@ -241,11 +240,12 @@
   .lr .filters-sheet-heading{display:flex;justify-content:space-between;align-items:center}
   .lr .filters-sheet-heading h2{margin:0;font:700 1.1rem/1 var(--sans)}
   .lr .filters-close{min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:var(--r);background:transparent;color:var(--ink);font:700 .9rem/1 var(--sans)}
-  .lr .weather-page .weather-controls{grid-template-columns:1fr 1fr}
+  .lr .weather-page .filters{grid-template-columns:1fr 1fr}
   .lr .lr-top-aside .lr-btn{min-height:40px;padding:0 12px;white-space:nowrap}
   .lr .du-switch a{min-width:0}
   .lr .event-card{grid-template-columns:1fr;padding:14px}
-  .lr .event-date-block{padding:0 0 10px;margin-bottom:10px;border-right:0;border-bottom:1px solid var(--line-soft)}
+  .lr .event-date-block{grid-row:auto;padding:0 0 10px;margin-bottom:10px;border-right:0;border-bottom:1px solid var(--line-soft)}
+  .lr .event-actions{grid-column:1}
   .lr .event-actions .button{margin:0 8px 8px 0;flex:1 1 auto}
   .lr .submission-form{grid-template-columns:1fr}
   .lr .hb-row{grid-template-columns:1fr;padding:12px 0}
