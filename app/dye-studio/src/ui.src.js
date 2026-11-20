@@ -62,7 +62,7 @@ function maskW(L,x,y,r,ang){const p=L.p;
  return 0}
 const upOf=()=>plastic().up;
 function itemsFor(ws,layers){const up=upOf(),out=[];
- for(let i=layers.length-1;i>=0;i--){const w=ws[i];if(!(w>.02))continue;for(const d of layers[i].dyes)out.push({name:d.n,s:Math.max(0,d.s*up*w)})}
+ for(let i=layers.length-1;i>=0;i--){const w=ws[i];if(!(w>.02))continue;for(const d of layers[i].dyes)out.push({name:d.n,b:i,s:Math.max(0,d.s*up*w)})}
  return out}
 function weightsAt(x,y){const r=Math.hypot(x,y),ang=Math.atan2(y,x);return S.layers.map(L=>L.vis?maskW(L,x,y,r,ang):0)}
 function colorAtPt(x,y,mc){const r=Math.hypot(x,y);return colorAt(itemsFor(weightsAt(x,y),S.layers),r,mc)}
@@ -303,7 +303,7 @@ const flip=(b,t)=>{const o=b.dataset.o||b.textContent;b.dataset.o=o;b.textConten
 const pad=n=>String(n).padStart(2,"0"),slug=t=>t.replace(/UV Blast |iDye Poly |ProChem /g,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const deg=a=>Math.round(((a*57.296)%360+360)%360);
 function recipeText(d){d=d||new Date();const mm=r=>Math.round(r*MM),dy=l=>l.dyes.length>1?"blend in one bath: "+l.dyes.map(x=>x.n+" "+Math.round(x.s*100)+"%").join(" + "):l.dyes.map(x=>x.n+" "+Math.round(x.s*100)+"%").join("")||"no dye (keep disc color)",pr=l=>{if(!l.dyes.length)return"";const o=colorAt(l.dyes.map(d=>({name:d.n,s:d.s*upOf()})),.5);return" [predicted "+o.hex+", "+(acc(o).replace("Accuracy ","accuracy ")||"accuracy n/a")+"]"};
- const L=["DYE RECIPE "+d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes()),"Disc color: "+S.base+" ("+plastic().name+")"+(S.rim?", rim "+S.rim.c+" "+Math.round(S.rim.w*1.05)+" mm wide, edge "+(S.rim.f>.66?"crisp":S.rim.f>.33?"soft":"fuzzy"):""),"Strength: 100% = standard bath for that dye. Blends: all listed dyes go in the same bath at their listed strengths.","Disc: 210 mm across. Angles: 0 deg = 3 o'clock, clockwise. Positions in mm from disc center (+x right, +y down).","Overlaps: where regions overlap, each layer's dye is applied in its own bath and the dyes accumulate. Dye one region per step; vinyl (Cricut SVG) covers everything outside that region. SVG center = disc center.",""];
+ const L=["DYE RECIPE "+d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes()),"Disc color: "+S.base+" ("+plastic().name+")"+(S.rim?", rim "+S.rim.c+" "+Math.round(S.rim.w*1.05)+" mm wide, edge "+(S.rim.f>.66?"crisp":S.rim.f>.33?"soft":"fuzzy"):""),"Strength: 100% = standard bath for that dye. Blends: all listed dyes go in the same bath at their listed strengths.","Disc: 210 mm across. Angles: 0 deg = 3 o'clock, clockwise. Positions in mm from disc center (+x right, +y down).","Overlaps: where regions overlap, each layer is a separate bath, applied in list order from the base disc up, and later baths fill only the dye sites left free by earlier ones. Dye one region per step; vinyl (Cricut SVG) covers everything outside that region. SVG center = disc center.",""];
  const vis=S.layers.map((l,i)=>({l,i})).filter(o=>o.l.vis);let step=0;
  vis.forEach(({l,i})=>{const p=l.p;let g,f="";
   if(l.type==="full")g="outside all shapes (whole disc if no shapes)";
