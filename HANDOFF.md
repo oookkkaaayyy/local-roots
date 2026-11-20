@@ -26,9 +26,9 @@ Read this first. Everything needed to continue is in GitHub (source of truth) pl
 - hbnf-site PRs 6-8: auto-deploy workflow, CI install fix, worker-injected embed style.
 
 ## Still open (priority order)
-1. Dye design panel: restructure into steps (progressive disclosure) in dye-studio/src/ui.src.js + ui.css; Stencil empty state.
+1. DONE 2026-11-20: Dye design layout fix (flex, internal scroll), Clear with confirm, layers-first panel with disc settings collapsible. Stencil empty state still open.
 2. CSS consolidation: remove !important overrides and dead rules across the legacy CSS layers into skin.css tokens (run tests + build after each step; visual check at 1366x1024, 834x1112, 390 wide).
-3. Visual smoke script (playwright python + /usr/bin/google-chrome exist locally): overflow/horizontal-scroll check on every route at three widths. Keep out of the CI gate.
+3. DONE: scripts/visual-smoke.py (overflow check, 3 widths, all routes): run `python3 scripts/visual-smoke.py <base_url>`.
 4. Accessibility: heading hierarchy, dialog focus handling, filmstrip aria.
 5. HBNF: overlap of floating Cart Control button with the LR shell, deep links into the iframe (pass path/hash), same-origin hosting option, shared night treatment.
 6. Real-device iOS checks (date field, masked D&U wordmark, fixed shells).
