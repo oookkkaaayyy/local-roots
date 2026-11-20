@@ -23,10 +23,10 @@ const STN={};
 const uid=()=>Math.random().toString(36).slice(2,8);
 const poolOf=g=>{let L=DYELIST.filter(d=>!d.c);if(g==="Inventory")L=L.filter(d=>d.i);else if(g==="ProChem")L=L.filter(d=>d.g==="ProChem");else if(g==="UV Blast")L=L.filter(d=>/UV Blast/.test(d.g)&&!d.i||/UV Blast/.test(d.n));return L};
 const GROUPS=["Inventory"];const GL={Inventory:"Available"};
-function defState(){const a=uid(),b=uid();return{plastic:"star",base:"#F4F2E8",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:b,
- layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}},{id:b,type:"stripe",name:"Color",vis:true,dyes:[{n:"UV Blast Blaze Orange",s:1}],p:Object.assign({},TYPES.stripe.p)}]}}
+function defState(){const a=uid();return{plastic:"star",base:"#F4F2E8",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:a,
+ layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}}]}}
 let S=defState();
-try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);t.layers.forEach(l=>{if(l.name==="Stripe")l.name="Color";else if(/^Stripe \d+$/.test(l.name))l.name=l.name.replace("Stripe","Color")});if(t.tab==="design")t.tab="disc";if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}if(!PL.some(p=>p.id===S.plastic))S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil"){S.tab="stencil";S.layers=S.layers.filter(l=>l.type==="full");S.sel=S.layers[0].id}}catch(e){}if(!["disc","stencil"].includes(S.tab))S.tab="disc";
+try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);t.layers.forEach(l=>{if(l.name==="Stripe")l.name="Color";else if(/^Stripe \d+$/.test(l.name))l.name=l.name.replace("Stripe","Color")});if(t.tab==="design")t.tab="disc";if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}if(!PL.some(p=>p.id===S.plastic))S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil"){S.tab="disc";S.layers=S.layers.filter(l=>l.type==="full");S.sel=S.layers[0].id}}catch(e){}S.tab="disc";
 const dropGhost=()=>{S.layers=S.layers.filter(l=>l.type!=="stencil"||STN[l.id]);if(!S.layers.some(l=>l.id===S.sel))S.sel=S.layers[S.layers.length-1].id};
 const save=()=>{try{localStorage.setItem("dds11",JSON.stringify(S))}catch(e){}};
 const plastic=()=>PL.find(p=>p.id===S.plastic)||PL[0];
@@ -93,7 +93,7 @@ function paint(fast){
 const UI={drag:null,hover:null,guide:null,pt:{x:.5,y:0}};
 const P2=(u,v)=>[B/2+u*B*.46,B/2+v*B*.46];
 const isShape=L=>L&&(L.type==="stripe"||L.type==="box");
-const showH=()=>{const L=selL();return L&&L.type!=="full"&&L.type!=="ring"&&(L.type==="stencil"?S.tab==="stencil":S.tab==="disc")};
+const showH=()=>{const L=selL();return L&&L.type!=="full"&&L.type!=="ring"&&(true)};
 const axes=L=>{const a=L.p.a;return{t:[Math.cos(a),Math.sin(a)],n:[-Math.sin(a),Math.cos(a)]}};
 function corners(L){const p=L.p,{t,n}=axes(L),hw=p.w/2,hh=p.h/2,f=(a,b)=>[p.x+t[0]*a+n[0]*b,p.y+t[1]*a+n[1]*b];return[f(-hw,-hh),f(hw,-hh),f(hw,hh),f(-hw,hh)]}
 function chord(P,t){const b=P[0]*t[0]+P[1]*t[1],c=P[0]*P[0]+P[1]*P[1]-1,d=b*b-c;if(d<=0)return null;const q=Math.sqrt(d);return[[P[0]+t[0]*(-b-q),P[1]+t[1]*(-b-q)],[P[0]+t[0]*(-b+q),P[1]+t[1]*(-b+q)]]}
@@ -197,9 +197,9 @@ const SHAPES={
  stencil:[["Size","sz",40,200,L=>Math.round(L.p.s*MM),(L,v)=>L.p.s=v/MM],["X","sx",-100,100,L=>Math.round(L.p.x*100),(L,v)=>L.p.x=v/100],["Y","sy",-100,100,L=>Math.round(L.p.y*100),(L,v)=>L.p.y=v/100]]};
 const slider=(id,k,i,lo,hi,val,name,unit)=>`<div class="sl"><span class="nm">${name}</span><input type="range" min="${lo}" max="${hi}" value="${val}" data-id="${id}" data-k="${k}" data-i="${i}" style="--v:${(val-lo)/(hi-lo)*100}%"><span class="pc" data-for="${id}${k}${i}">${val}${unit}</span></div>`;
 const CH={up:'<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',dn:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>'};
-function layerCard(L,i,n){const sel=L.id===S.sel,full=L.type==="full";
+function layerCard(L,i,n){const sel=L.id===S.sel,full=L.type==="full",st=L.type==="stencil";
  const sum=L.dyes.length?L.dyes.map(d=>esc(d.n)+" "+Math.round(d.s*100)+"%").join(" + "):"No dye";
- let h=`<div class="lc${sel?" sel":""}"><div class="lh" data-act="sel" data-id="${L.id}"><i class="sw" style="background:${layerHex(L)}"></i><div class="ln"><b>${esc(L.name)}</b><span>${sum}</span></div>`+
+ let h=`<div class="lc${sel?" sel":""}"><div class="lh" data-act="sel" data-id="${L.id}">${st?`<div class="sw" style="background:#fff;overflow:hidden;display:flex"><canvas id="stp" width="96" height="96" style="width:100%;height:100%"></canvas></div>`:`<i class="sw" style="background:${layerHex(L)}"></i>`}<div class="ln"><b>${esc(L.name)}</b><span>${sum}</span></div>`+
   (full?"":`<button class="ic${i>=n-1?" dis":""}" data-act="up" data-id="${L.id}" aria-label="Forward">${CH.up}</button><button class="ic${i<=1?" dis":""}" data-act="down" data-id="${L.id}" aria-label="Back">${CH.dn}</button>`)+
   `<button class="ic${L.vis?"":" off"}" data-act="vis" data-id="${L.id}" aria-label="Show">${EYE}</button></div>`;
  if(sel){h+=`<div class="lb">`;
@@ -207,7 +207,7 @@ function layerCard(L,i,n){const sel=L.id===S.sel,full=L.type==="full";
    `<input type="range" min="5" max="150" value="${Math.round(d.s*100)}" data-id="${L.id}" data-k="s" data-i="${k}" style="--v:${(Math.round(d.s*100)-5)/145*100}%">`});
   h+=`<div class="row" style="margin-top:10px"><button class="g" data-act="dyeadd">+ Dye</button><button class="g" data-act="match">Match</button></div>`;
   if(SHAPES[L.type])h+=SHAPES[L.type].map(([nm,k,lo,hi,get],j)=>slider(L.id,"p"+k,j,lo,hi,get(L),nm,unitOf(k))).join("");
-  if(!full)h+=`<div class="foot2">${L.type==="stencil"||L.type==="ring"?"":`<button data-act="dup">Duplicate</button>`}<button data-act="del" class="dg">${L.type==="stencil"?"Delete":"Remove"}</button>${L.type==="stripe"||L.type==="box"?`<button data-act="shape" class="q">${L.type==="box"?"Stripe":"Box"}</button>`:""}</div>`;
+  if(!full)h+=`<div class="foot2">${L.type==="stencil"?`<button data-act="photo">Replace photo</button>`:L.type==="ring"?"":`<button data-act="dup">Duplicate</button>`}<button data-act="del" class="dg">${L.type==="stencil"?"Delete":"Remove"}</button>${L.type==="stripe"||L.type==="box"?`<button data-act="shape" class="q">${L.type==="box"?"Stripe":"Box"}</button>`:""}</div>`;
   h+=`</div>`}
  return h+`</div>`}
 const IC={photo:'<svg viewBox="0 0 32 32"><path d="M4 10h5l2-3h10l2 3h5v15H4z"/><circle cx="16" cy="17" r="5"/></svg>',color:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><circle cx="11" cy="13" r="2"/><circle cx="17" cy="10" r="2"/><circle cx="21" cy="16" r="2"/></svg>',stripe:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><path d="M8 24L24 8M13 28L28 13" /></svg>',box:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><rect x="10" y="11" width="12" height="10" rx="1"/></svg>',stencil:'<svg viewBox="0 0 32 32"><rect x="5" y="5" width="22" height="22" rx="3"/><circle cx="16" cy="14" r="4"/><path d="M8 25c1-5 15-5 16 0"/></svg>'};
@@ -217,10 +217,10 @@ const colorPick=(id,val)=>`<input type="color" id="${id}C" value="${val}" aria-l
 function tabDisc(){const n=S.layers.length,hasRing=S.layers.some(l=>l.type==="ring");
  let h=`<div class="ord">Plastic</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+(hasRing?`<button data-act="sel" data-id="${S.layers.find(l=>l.type==="ring").id}" class="on">Rim</button>`:`<button data-act="addlayer" data-t="ring">+ Rim</button>`)+`</div>`+
   `<div class="ord">Disc</div><div class="bs">`+BASES.map(b=>`<button data-act="base" data-c="${b}" class="${b===S.base.toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`<span class="cpk">${colorPick("b",S.base)}</span></div><div class="seg" style="margin-top:8px"><button class="g" data-act="discphoto">Match from photo</button></div>`+
-  `<div class="ord">Colors</div>`;
+  `<div class="ord">Add</div><div class="tg2"><button class="tl2" data-act="addlayer" data-t="stripe">+ Color</button>${S.layers.some(l=>l.type==="stencil")?"":`<button class="tl2" data-act="photo">+ Photo stencil</button>`}</div>`;
+ if(n>1)h+=`<div class="ord">Layers</div>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
- h+=`<div class="seg" style="margin:8px 0 4px"><button class="pri" data-act="addlayer" data-t="stripe">+ Add color</button></div>`;
- return h+next("stencil","Stencil")}
+ return h}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
 const sh=n=>n.replace(/^(ProChem |iDye Poly )/,"");
 const chips=()=>"";
@@ -231,14 +231,14 @@ function tabStencil(){const L=S.layers.find(l=>l.type==="stencil");
  let h=`<div class="tg">${tile("photo","stencil",L?"Replace photo":"Choose a photo",L?"":'data-big="1"')}</div>`;
  if(L){const m=STN[L.id];h+=`<div class="thumb"><div class="sw" style="width:84px;height:84px;background:#fff;overflow:hidden;display:flex"><canvas id="stp" width="96" height="96" style="width:84px;height:84px"></canvas></div><div class="ln"><b>${Math.round(L.p.s*MM)} × ${Math.round(L.p.s*MM*m.h/m.w)} mm</b></div></div>`+`<div class="seg" style="margin:10px 0"><button class="pri" data-act="stdisc">Place on disc</button></div>`+layerCard(L,S.layers.indexOf(L),S.layers.length)}
  return h}
-function paintThumb(){const L=S.layers.find(l=>l.type==="stencil"),c=$("#stp");if(!L||!c)return;const m=STN[L.id],x=c.getContext("2d"),k=Math.min(96/m.w,96/m.h);x.fillStyle="#fff";x.fillRect(0,0,96,96);const id=x.createImageData(96,96);for(let j=0;j<96;j++)for(let i=0;i<96;i++){const sx=Math.floor((i-(96-m.w*k)/2)/k),sy=Math.floor((j-(96-m.h*k)/2)/k),o=(j*96+i)*4;const v=sx<0||sy<0||sx>=m.w||sy>=m.h?255:m.mask[sy*m.w+sx]?255:0;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255}x.putImageData(id,0,0)}
+function paintThumb(){const L=S.layers.find(l=>l.type==="stencil"),c=$("#stp");if(!L||!c||!STN[L.id])return;const m=STN[L.id],x=c.getContext("2d"),k=Math.min(96/m.w,96/m.h);x.fillStyle="#fff";x.fillRect(0,0,96,96);const id=x.createImageData(96,96);for(let j=0;j<96;j++)for(let i=0;i<96;i++){const sx=Math.floor((i-(96-m.w*k)/2)/k),sy=Math.floor((j-(96-m.h*k)/2)/k),o=(j*96+i)*4;const v=sx<0||sy<0||sx>=m.w||sy>=m.h?255:m.mask[sy*m.w+sx]?255:0;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255}x.putImageData(id,0,0)}
 function panel(){const b=$("#body"),y=b.scrollTop;
- b.innerHTML=S.tab==="disc"?tabDisc():tabStencil();if(S.tab==="stencil")paintThumb();
+ b.innerHTML=tabDisc();paintThumb();
  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===S.tab));
  b.scrollTop=y;if($("#match").classList.contains("open"))drawMatch()}
 function drawMatch(){$("#mbody").innerHTML=tabRecipe()}
 function all(){paint(false);drawOv();readout();panel();undoBtns()}
-function selectLayer(id){S.sel=id;const l=S.layers.find(x=>x.id===id);if(l&&l.type!=="full")S.tab=l.type==="stencil"?"stencil":"disc";save();readout();panel();drawOv()}
+function selectLayer(id){S.sel=id;const l=S.layers.find(x=>x.id===id);if(l&&l.type!=="full")S.tab="disc";save();readout();panel();drawOv()}
 function syncShape(){const L=selL(),sp=SHAPES[L.type]||[];sp.forEach(([nm,k,lo,hi,get],i)=>{const v=get(L),inp=document.querySelector(`[data-id="${L.id}"][data-k="p${k}"]`);if(inp){inp.value=v;inp.style.setProperty("--v",(v-lo)/(hi-lo)*100+"%")}const o=document.querySelector(`[data-for="${L.id}p${k}${i}"]`);if(o)o.textContent=v+unitOf(k)})}
 // panel events
 const body=$("#body");let DM=false;
@@ -287,7 +287,7 @@ function solve(btn){const tg=S.tg.toUpperCase();if(!hexOk(tg))return;btn.textCon
  setTimeout(()=>{lastRec=DE.recipe(tg,S.base,p.fam,pool,{maxDyes:S.nd,top:6,transHex:transHex()});
   $("#rec").innerHTML=lastRec.map((o,i)=>`<div class="rc"><i class="sw" style="background:${o.hex}"></i><div class="m"><div class="a">${Math.max(0,Math.round(100-o.dE*3))}% match</div><div class="b">${o.items.map(x=>esc(x.name)+" "+Math.round(x.s/upOf()*100)+"%").join(" + ")}</div></div><button data-act="use" data-r="${i}">Use</button></div>`).join("");
   btn.textContent="Find"},20)}
-$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(b){S.tab=b.dataset.t;save();setEdit(false);panel()}});
+
 // header
 const flip=(b,t)=>{const o=b.dataset.o||b.textContent;b.dataset.o=o;b.textContent=t;clearTimeout(b._t);b._t=setTimeout(()=>b.textContent=o,1400)};
 const pad=n=>String(n).padStart(2,"0"),slug=t=>t.replace(/UV Blast |iDye Poly |ProChem /g,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -450,7 +450,7 @@ $("#fok").onclick=async()=>{if(!FR.res)return;if(FR.dm){S.base=FR.res.hex;S.tran
  for(const l of S.layers.filter(x=>x.type==="stencil"))delete STN[l.id];S.layers=S.layers.filter(x=>x.type!=="stencil");
  const pool=poolOf("Inventory"),used=new Set(S.layers.flatMap(l=>l.dyes.map(d=>d.n))),pick=(pool.find(d=>!used.has(d.n))||pool[0]).n,id=uid();
  STN[id]={mask:res.mask,w:res.w,h:res.h,mm:res.mmPerPx,verdict:res.verdict,change:res.change,photo,style:res.style};
- S.layers.push({id,type:"stencil",name:"Stencil",vis:true,dyes:[{n:pick,s:1}],p:{x:0,y:0,s:res.w*res.mmPerPx/MM}});S.sel=id;S.tab="stencil";$("#frame").classList.remove("open");commit();all();flash(1300)};
+ S.layers.push({id,type:"stencil",name:"Stencil",vis:true,dyes:[{n:pick,s:1}],p:{x:0,y:0,s:res.w*res.mmPerPx/MM}});S.sel=id;S.tab="disc";$("#frame").classList.remove("open");commit();all();flash(1300)};
 // layout
 function layout(){const w=vw.clientWidth,h=vw.clientHeight,s=Math.max(120,Math.floor(Math.min(w,h)-8));sq.style.width=sq.style.height=s+"px";
  const nb=clamp(Math.round(s*Math.min(2,window.devicePixelRatio||1)),480,1400);if(nb!==B||cv.width!==nb){B=nb;cv.width=cv.height=ov.width=ov.height=B;paint(false);drawOv()}}
