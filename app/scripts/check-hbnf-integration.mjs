@@ -13,12 +13,11 @@ const routes = read('src/LegacyRoutes.tsx');
 
 assert.match(routes, /if\(path==='\/'\)return <EventsPage landing\/>/);
 assert.match(routes, /path==='\/hb-night-flyers'\|\|path==='\/hbnf'/);
-assert.match(shell, /nav-events[^>]*href="\/events"/);
-const primaryStart=shell.indexOf('<nav id="primary-navigation"');
+assert.match(shell, /nav\('nav-events','\/events'/);
+const primaryStart=shell.lastIndexOf('<nav id="primary-navigation"');
 const primaryEnd=shell.indexOf('</nav>',primaryStart);
 assert.ok(primaryStart>0&&primaryEnd>primaryStart);
-assert.doesNotMatch(shell.slice(primaryStart,primaryEnd),/href="\/hb-night-flyers"/);
-assert.match(shell,/footer-nav[\s\S]*href="\/hb-night-flyers"[^>]*>HB Night Flyers events/);
+assert.match(shell.slice(primaryStart,primaryEnd),/nav\('nav-hbnf','\/hb-night-flyers'/);
 
 for (const label of ['Upcoming', 'Results', 'Month', 'County', 'Sanction', 'Type', 'Clear filters']) {
   assert.ok(events.includes(label), 'missing existing filter control: ' + label);

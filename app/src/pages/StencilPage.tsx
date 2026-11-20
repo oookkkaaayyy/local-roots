@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { Shell, Mast } from '../components/Shell';
+import { Shell } from '../components/Shell';
 import { DuSwitch } from '../components/DuSwitch';
 import { loadStudio } from './studioLoader';
 
 export function StencilPage() {
   useEffect(() => { loadStudio('stencil'); }, []);
-  return <Shell mast={<Mast title="Stencil" aside={<DuSwitch active="stencil"/>} />}><main id="studio" className="ds-page"><div className="ds stp">
+  return <Shell><main id="studio" className="ds-page"><div className="ds stp">
+    <div className="tbar"><DuSwitch active="stencil"/></div>
     <input type="file" id="pfile" accept="image/*" hidden />
     <div id="frame" className="stframe" data-state="empty" data-gen="0" data-busy="0">
       <div className="stpickw">
