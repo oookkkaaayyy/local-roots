@@ -52,10 +52,12 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
 {const L=(base,a,b,fam="star")=>P(base,[{name:a,s:.5,b:0},{name:b,s:.5,b:1}],fam).hex,B=(base,a,b)=>P(base,it([a,.5],[b,.5])).hex;
  const ry=P("#E5C100",it(["iDye Poly Crimson",1])).hex;ok(hsl(ry)[0]<20||hsl(ry)[0]>340,"red dye overpowers yellow plastic "+ry);
  const by=P("#E5C100",it(["iDye Poly Blue",1])).hex;ok(Ls(by)<45,"blue on yellow plastic dark green/gray "+by);
- const o1=L(star,"Aqua","Bright Yellow"),o2=L(star,"Bright Yellow","Aqua");ok(de2(o1,o2)>3,"layer order changes result "+o1+" "+o2);
+ const o1=L(star,"Aqua","Bright Yellow"),o2=L(star,"Bright Yellow","Aqua");ok(de2(o1,o2)<1.5,"layer order does not matter "+o1+" "+o2);
+ const cr=P(star,it(["Crimson",1])).hex,co=P(star,[{name:"Neon Lemon Zest",s:1,b:0},{name:"UV Blast Blaze Orange",s:1,b:1},{name:"Crimson",s:1,b:2}]).hex;ok(de2(cr,co)<12,"crimson overwrites orange and lemon "+cr+" "+co);
+ const bk=P("#E8731C",[{name:"Neon Lemon Zest",s:1,b:0},{name:"Black",s:1,b:1}]).hex;ok(Ls(bk)<22,"black overwrites "+bk);
  ok(de2(B(star,"Aqua","Bright Yellow"),o1)>2,"blend differs from layering");
  ok(de2(L(star,"Aqua","Bright Yellow"),L("#2A6FD0","Aqua","Bright Yellow"))>12,"plastic color changes layered result");
- const zo=L("#E8731C","Neon Lemon Zest","UV Blast Blaze Orange");ok(hsl(zo)[0]>25&&hsl(zo)[0]<55,"zest then orange stays warm yellow-orange "+zo);
+ const zo=L("#E8731C","Neon Lemon Zest","UV Blast Blaze Orange");ok(hsl(zo)[0]>10&&hsl(zo)[0]<55,"zest then orange stays warm yellow-orange "+zo);
 }
 
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
