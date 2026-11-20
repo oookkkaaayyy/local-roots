@@ -294,7 +294,7 @@ export function WeatherPage() {
   }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
-  return <Shell mast={<Mast title="Weather" meta={loading&&!result?'':`${sorted.length} courses`} />}><main className="events-page weather-page">
+  return <Shell mast={<Mast title="Weather" meta={loading&&!result?'':`${sorted.length} courses`} aside={<button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button>} />}><main className="events-page weather-page">
     <section className="events-layout content">
       <dialog ref={filtersDialog} id="weather-filters" className="filters-dialog" open aria-labelledby="filters-title" onCancel={()=>closeFilters()} onClose={()=>closeFilters()} onClick={event=>{if(event.target===event.currentTarget)closeFilters();}}>
         <div className="filters" role="group" aria-label="Weather filters">
@@ -309,7 +309,7 @@ export function WeatherPage() {
         </div>
       </dialog>
       <div className="event-list weather-list" aria-busy={loading}>
-        <div className="list-header"><h2>Courses</h2><span aria-live="polite" aria-atomic="true">{loading&&!result?'…':`${sorted.length} shown`}</span><span className="list-actions"><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button><button type="button" className="filters-trigger" aria-haspopup="dialog" aria-controls="weather-filters" aria-expanded={filtersOpen} aria-label={activeFilterCount?'Filters & sort, active filters':'Filters & sort'} onClick={openFilters}><span>Filters &amp; sort</span>{activeFilterCount?<span className="filter-count" aria-hidden="true">{activeFilterCount}</span>:null}</button></span></div>
+        <div className="list-header"><h2>Courses</h2><span aria-live="polite" aria-atomic="true">{loading&&!result?'…':`${sorted.length} shown`}</span><span className="list-actions"><button type="button" className="filters-trigger" aria-haspopup="dialog" aria-controls="weather-filters" aria-expanded={filtersOpen} aria-label={activeFilterCount?'Filters & sort, active filters':'Filters & sort'} onClick={openFilters}><span>Filters &amp; sort</span>{activeFilterCount?<span className="filter-count" aria-hidden="true">{activeFilterCount}</span>:null}</button></span></div>
         <label className="page-search"><span className="sr-only">Search courses</span><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search course, city, county" aria-label="Search courses" /></label>
         <div className="weather-status" aria-live="polite">
           {loading?<span className="weather-status-dot">Loading…</span>:null}
