@@ -68,7 +68,7 @@ export function DyeDesignsPanel({auth}:{auth:Auth}){
           <div className="dd-dl">{FILE_LABELS.filter(([k])=>open.urls[k]).map(([k,l,primary])=><a key={k} className={primary?'primary':''} href={open.urls[k]} download>{l}</a>)}
             <button type="button" onClick={()=>saveBlob(new Blob([open.item.recipe],{type:'text/plain'}),`${open.item.file_name}_recipe.txt`)}>Recipe</button>
             <button type="button" disabled={busy} onClick={()=>void zipAll(open)}>{busy?'…':'All files'}</button></div>
-          {open.item.spec?.layers?<div className="dd-lay">{[...open.item.spec.layers.map((l,i)=>({l,i}))].reverse().filter(o=>o.l.vis!==false).map(({l,i})=>{const u=open.urls['layer_'+(i+1)];return <div className="dd-lr" key={i}><b>{i+1}</b><span>{l.type==='full'?'Whole disc':l.name}</span><em>{l.dyes.map(d=>d.n).join(' + ')||'No dye'}</em>{u?<a href={u} download>SVG</a>:<i/>}</div>;})}</div>:null}
+          {open.item.spec?.layers?<div className="dd-lay">{[...open.item.spec.layers.map((l,i)=>({l,i}))].reverse().filter(o=>o.l.vis!==false).map(({l,i})=>{const u=open.urls['layer_'+(i+1)];return <div className="dd-lr" key={i}><b>{i+1}</b><span>{l.type==='full'?'Whole disc':l.name}</span><em>{l.dyes.map(d=>d.n).join(' + ')||'No dye'}</em>{u?<a href={u} download>SVG</a>:l.type!=='full'&&l.type!=='stencil'&&l.dyes.length?<span style={{color:'#9e3123',fontWeight:700}}>Missing</span>:<i/>}</div>;})}</div>:null}
           <pre className="dd-rec">{open.item.recipe}</pre>
           <button type="button" onClick={()=>copy(open.item.recipe)}>Copy recipe</button>
         </div>

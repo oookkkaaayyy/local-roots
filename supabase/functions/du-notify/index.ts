@@ -52,7 +52,7 @@ Deno.serve(async () => {
   } else if (wait < Number(dg.count)) await put("digest", { count: wait, last: dg.last });
   // 3 usage thresholds, once each per month
   const m = new Date(now); m.setUTCDate(1); m.setUTCHours(0, 0, 0, 0);
-  const used = await cnt(service.from("du_stencil_gen_log").select("id", { count: "exact", head: true }).eq("ok", true).gte("created_at", m.toISOString()));
+  const used = await cnt(service.from("du_stencil_gen_log").select("id", { count: "exact", head: true }).eq("ok", true).neq("ip_hash", "admin").gte("created_at", m.toISOString()));
   const key = "usage_" + m.toISOString().slice(0, 7), us = (await st(key)) || { level: 0 };
   const lvl = THRESH.filter((t) => used >= Math.round(MONTH_CAP * t)).length;
   if (lvl > Number(us.level)) {
@@ -60,7 +60,7 @@ Deno.serve(async () => {
     if (await push("D&U generation usage", body, "du-usage")) { await put(key, { level: lvl }); out.push("usage:" + lvl) }
   }
   // 4 abuse: global hourly spike, once per 6 h
-  const hr = await cnt(service.from("du_stencil_gen_log").select("id", { count: "exact", head: true }).eq("ok", true).gte("created_at", new Date(now - 3600e3).toISOString()));
+  const hr = await cnt(service.from("du_stencil_gen_log").select("id", { count: "exact", head: true }).eq("ok", true).neq("ip_hash", "admin").gte("created_at", new Date(now - 3600e3).toISOString()));
   const ab = await st("abuse");
   if (hr >= HOUR_ALERT && now - Number(ab?.last || 0) >= ABUSE_GAP_MS) {
     if (await push("D&U generation spike", `${hr} generations in the last hour. Hourly cap is active.`, "du-abuse")) { await put("abuse", { last: now }); out.push("abuse:" + hr) }

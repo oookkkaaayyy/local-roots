@@ -9,9 +9,9 @@ export function DyeStudioPage() {
     loadStudio('dye');
   }, []);
   return <Shell><main id="studio" className="ds-page"><DuSwitch active="dye"/><div className="ds dye">
-    <div className="bar"><button id="undo" className="dis">Undo</button><button id="redo" className="dis">Redo</button><button id="copy">Copy</button><button id="png" className="pri">Save</button></div>
+    <div className="bar"><button id="undo" className="dis">Undo</button><button id="redo" className="dis">Redo</button><button id="copy" hidden>Copy recipe</button><button id="png" className="pri">Save</button></div>
     <div className="app">
-      <section className="stage"><div className="vw"><div className="sq"><canvas id="cv"></canvas><canvas id="ov"></canvas></div></div><div className="dock"><div className="rd" id="rd"></div></div></section>
+      <section className="stage"><div className="vw"><div className="sq"><canvas id="cv"></canvas><canvas id="ov"></canvas></div></div></section>
       <section className="panel"><div className="body" id="body"></div></section>
     </div>
     <div className="sheet" id="save"><div className="card" style={{alignItems:'center'}}><img id="svimg" alt="" style={{width:'100%',maxWidth:420,borderRadius:12}}/><div className="row" style={{width:'100%',marginTop:12}}><a id="svdl" download="disc.png" className="g" style={{textDecoration:'none'}}><button className="pri" style={{width:'100%'}} tabIndex={-1}>Download</button></a><button id="svx" className="g">Close</button></div></div></div>
