@@ -48,4 +48,14 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
 {const PS=await import("../src/photo-stencil.mjs"),n=640,px=new Uint8ClampedArray(n*n*4);
  for(let y=0;y<n;y++)for(let x=0;x<n;x++){const k=(y*n+x)*4,dx=x-n/2,dy=y-n/2,r=Math.hypot(dx,dy),v=r<110?30:r<200?(Math.sin(x/17)*Math.cos(y/23)>0?70:190):225-r/4;px[k]=px[k+1]=px[k+2]=v;px[k+3]=255}
  for(const st of PS.STYLES){let res=null;try{res=PS.buildStencil(px,{style:st,detail:.7,balance:.7})}catch(e){}ok(res&&res.verdict==="PASS"&&res.islands===0,"stencil style "+st+" compiles "+(res?res.verdict:"error"))}}
+// 4 layering vs blending, base-color dependence (documented dye-forum behavior)
+{const L=(base,a,b,fam="star")=>P(base,[{name:a,s:.5,b:0},{name:b,s:.5,b:1}],fam).hex,B=(base,a,b)=>P(base,it([a,.5],[b,.5])).hex;
+ const ry=P("#E5C100",it(["iDye Poly Crimson",1])).hex;ok(hsl(ry)[0]<20||hsl(ry)[0]>340,"red dye overpowers yellow plastic "+ry);
+ const by=P("#E5C100",it(["iDye Poly Blue",1])).hex;ok(Ls(by)<45,"blue on yellow plastic dark green/gray "+by);
+ const o1=L(star,"Aqua","Bright Yellow"),o2=L(star,"Bright Yellow","Aqua");ok(de2(o1,o2)>3,"layer order changes result "+o1+" "+o2);
+ ok(de2(B(star,"Aqua","Bright Yellow"),o1)>2,"blend differs from layering");
+ ok(de2(L(star,"Aqua","Bright Yellow"),L("#2A6FD0","Aqua","Bright Yellow"))>12,"plastic color changes layered result");
+ const zo=L("#E8731C","Neon Lemon Zest","UV Blast Blaze Orange");ok(hsl(zo)[0]>25&&hsl(zo)[0]<55,"zest then orange stays warm yellow-orange "+zo);
+}
+
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
