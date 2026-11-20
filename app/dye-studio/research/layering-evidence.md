@@ -22,5 +22,5 @@ Used to constrain the engine and encoded in scripts/test.mjs. No source gives me
 
 ## dgcoursereview 148993 (glue bed, iPoly)
 - Red on green Star: deep red overwrites the green (sampled about #8d241c). Engine: red-dominant, darker.
-- Black on orange DX: only a subdued brown shows. Added Base plastic option (uptake x0.45, accuracy Low). Threads 61923, 124584, 110989 agree with engine: red overpowers yellow, dark blue holds, light blue goes green, dye is translucent, black near opaque.
+- DX/base plastic is not offered in the tool.
 - Clear F2: light dyes weak, dark dyes needed.

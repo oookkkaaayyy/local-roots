@@ -11,8 +11,7 @@ const wrap=a=>{a=(a+Math.PI)%(2*Math.PI);if(a<0)a+=2*Math.PI;return a-Math.PI};
 const PL=[
  {id:"star",name:"Star",fam:"star",up:1,base:"#F4F2E8"},
  {id:"champion",name:"Champion",fam:"champion",up:1,base:"#DCE8E1",tr:.78},
- {id:"glow",name:"Glow",fam:"star",up:1,base:"#D3E4A0",est:1},
- {id:"base",name:"Base",fam:"star",up:.45,base:"#E9E5D8",est:1}];
+ {id:"glow",name:"Glow",fam:"star",up:1,base:"#D3E4A0",est:1}];
 const BASES=["#F4F2E8","#DCE8E1","#D3E4A0","#F7E331","#F27A26","#E84C55","#59A9DE","#57A768","#8D62B6","#2B2B2E"];
 const MEAS={base:"#38906F",c:{"UV Blast Green":{plate:"#8FC316",shoulder:"#69B820",rim:"#3BAF27"},"UV Blast Blaze Orange":{plate:"#B30003",shoulder:"#890507",rim:"#57090D"}}};
 const TYPES={
