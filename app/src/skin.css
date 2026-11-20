@@ -323,3 +323,9 @@
 .lr .ds .dtog span{color:var(--muted);font-weight:600}
 .lr .ds .lhd:first-child{margin-top:2px}
 .lr .ds .panel .body{padding-bottom:72px}
+@media(max-width:520px){
+  .lr .lr-top{flex-wrap:wrap}
+  .lr .lr-top-aside{margin-left:0;width:100%;margin-top:10px}
+  .lr .lr-top-aside .lr-actions{display:flex}
+  .lr .lr-top-aside .lr-actions .lr-btn{flex:1 1 0;min-width:0}
+}
