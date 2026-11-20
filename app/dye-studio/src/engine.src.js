@@ -14,21 +14,19 @@ const DE=(()=>{
  const famOf=o=>/champion/.test(o||"")?"champion":"star";
  const absorb=(d,k)=>{const A=new Array(N).fill(0);if(!d)return A;for(const [mu,sg,a] of d.b)for(let i=0;i<N;i++)A[i]+=a*gau(lam[i],mu,sg);for(let i=0;i<N;i++)A[i]*=k;return A};
  // Effective per-dye concentration (relative to full single-dye film). Langmuir competition.
- // Uptake. Disperse dye sorption on polyolefin is near-linear until the plastic saturates, so loads add and the
- // total is soft-capped by one shared Langmuir-type curve G (K = load-weighted affinity). A single dye reproduces
- // the solo curve. Dyes in one bath (blend) split their bath's deposit in proportion to affinity x strength;
- // later baths (layers, item.b) only add the increment left under the shared cap, so order matters.
- const Gc=(x,K)=>x<=0?0:x*(1+K)/(1+K*x);
+ // Uptake. Dyes in ONE bath (a blend) compete for the same sites (Langmuir, affinity-weighted). Separate baths
+ // (layers, item.b) do not displace each other, so their dye loads add and absorbances add in the film (order is
+ // irrelevant); a soft total cap (TOTCAP) stands in for the plastic running out of sites altogether.
+ const TOTCAP=3.2;
  function conc(items){
-  const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))].sort((x,y)=>x-y);
-  let X=0,KX=0,Cprev=0;
+  const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))];let tot=0;
   for(const b of bs){
-   const idx=items.map((it,i)=>i).filter(i=>(items[i].b||0)===b);
-   let dx=0,dkx=0,w=0;idx.forEach(i=>{const K=(CAT[items[i].name]?.aff)??1;dx+=items[i].s;dkx+=K*items[i].s;w+=K*items[i].s});
-   X+=dx;KX+=dkx;const C=Gc(X,X>0?KX/X:1),dC=Math.max(0,C-Cprev);Cprev=C;
-   idx.forEach(i=>{const K=(CAT[items[i].name]?.aff)??1;out[i]=w>0?dC*K*items[i].s/w:0});
+   const idx=items.map((it,i)=>i).filter(i=>(items[i].b||0)===b),K=idx.map(i=>(CAT[items[i].name]?.aff)??1);
+   let t=0;idx.forEach((i,j)=>{t+=K[j]*items[i].s});
+   idx.forEach((i,j)=>{const it=items[i],solo=it.s*(1+K[j])/(1+K[j]*it.s);out[i]=t>0?solo*(1+K[j]*it.s)/(1+t):0;tot+=out[i]});
   }
-  return out;
+  const f=tot>0?1/Math.pow(1+Math.pow(tot/TOTCAP,4),.25):1;
+  return out.map(v=>v*f);
  }
  const merge=items=>{const m=new Map();for(const it of items){const k=it.name+"|"+(it.b||0);const e=m.get(k);if(e)e.s+=it.s;else m.set(k,{name:it.name,s:it.s,b:it.b||0})}return[...m.values()]};
  const tauOf=(items,mult)=>{const c=conc(items),T=new Array(N).fill(0);items.forEach((it,i)=>{const A=absorb(CAT[it.name],c[i]*(mult||1));for(let j=0;j<N;j++)T[j]+=A[j]});return T};
@@ -49,7 +47,7 @@ const DE=(()=>{
    const A=absorb(d,c[i]),qf=1/(1+Math.pow(Math.max(...A)*(opt&&opt.cscale||1)/PRM.tq,2)),share=tauTotal.map((t,j)=>t>1e-9?A[j]/t:0);
    let abs=0;for(let j=0;j<N;j++)abs+=(1-Math.exp(-2*tauTotal[j]))*share[j]*SP.d65w[j];
    const norm=d.em?(()=>{let s=0;for(let j=0;j<N;j++)s+=gau(lam[j],d.em[0],d.em[1]);return s})():1;
-   for(let j=0;j<N;j++)em[j]+=qf*d.phi*abs*gau(lam[j],d.em[0],d.em[1])/norm/SP.d65w[j];
+   for(let j=0;j<N;j++)em[j]+=qf*d.phi*abs*gau(lam[j],d.em[0],d.em[1])/norm/SP.d65w[j]*Math.exp(-.7*tauTotal[j]);
   });
   return em;
  }
@@ -62,7 +60,7 @@ const DE=(()=>{
  const PHI=.55; // later baths stay in the top fraction of the film; the first bath penetrates fully
  function filmStack(Rb,items,P,mult){
   const bs=[...new Set(items.map(it=>it.b||0))].sort((x,y)=>x-y);
-  if(bs.length<2)return kmLayer(Rb,tauOf(items,mult),P.Sx);
+  return kmLayer(Rb,tauOf(items,mult),P.Sx);
   const c=conc(items),tl=new Array(N).fill(0),tu=new Array(N).fill(0);
   items.forEach((it,i)=>{const A=absorb(CAT[it.name],c[i]*(mult||1));for(let j=0;j<N;j++){if((it.b||0)===bs[0]){tl[j]+=A[j]*(1-PHI);tu[j]+=A[j]*PHI}else tu[j]+=A[j]}});
   const Rl=kmLayer(Rb,tl,P.Sx*(1-PHI));return kmLayer(Rl,tu,P.Sx*PHI);
