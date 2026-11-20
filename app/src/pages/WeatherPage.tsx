@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Shell } from '../components/Shell';
+import { Shell, Mast } from '../components/Shell';
 import { useFilterSheet } from '../lib/useFilterSheet';
 import coursesData from '../data/weather-courses.json';
 import { buildHourlyRows, eligibleActiveAlerts, filterCourses, forecastFlags, summarizeHourly } from '../lib/weatherCore.js';
@@ -294,7 +294,7 @@ export function WeatherPage() {
   }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
-  return <Shell><main className="events-page weather-page"><h1 className="sr-only">Southern California Disc Golf Weather</h1>
+  return <Shell mast={<Mast title="Weather" meta={loading&&!result?'':`${sorted.length} courses`} />}><main className="events-page weather-page">
     <section className="events-layout content">
       <dialog ref={filtersDialog} id="weather-filters" className="filters-dialog" open aria-labelledby="filters-title" onCancel={()=>closeFilters()} onClose={()=>closeFilters()} onClick={event=>{if(event.target===event.currentTarget)closeFilters();}}>
         <div className="filters" role="group" aria-label="Weather filters">

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Shell } from '../components/Shell';
+import { Shell, Mast } from '../components/Shell';
 import { eventDateRange, eventDetailPath, isHbnfEvent, pacificToday } from '../lib/eventPresentation';
 import { supabase } from '../lib/supabase';
 import type { PublicEvent } from '../types';
@@ -33,37 +33,18 @@ export function HbnfPage() {
     [events, today],
   );
 
-  return <Shell><main className="hbnf-page content">
-    <header className="hbnf-heading">
-      <span className="hbnf-logo"><img src="/brand/hbnf-mark-authentic.png" alt="HB Night Flyers" width="36" height="36" /></span>
-      <div className="hbnf-heading-copy">
-        <h1>HB Night Flyers</h1>
-        <nav className="hbnf-play-links" aria-label="Skins and Glow">
-          {HBNF_DESTINATIONS.map(({ label, href }) => <a key={href} href={href} target="_blank" rel="noreferrer" aria-label={'Open ' + label + ' (opens in a new tab)'}>{label}</a>)}
-        </nav>
-      </div>
-    </header>
-
-    <section className="hbnf-events" aria-labelledby="hbnf-events-title">
-      <div className="hbnf-section-heading">
-        <h2 id="hbnf-events-title">Events</h2>
-      </div>
-      {loading ? <p className="hbnf-events-state" role="status">Loading events…</p> : null}
-      {error ? <p className="hbnf-events-state" role="alert">HB Night Flyers events could not be loaded.</p> : null}
-      {!loading && !error && upcomingEvents.length === 0 ? <p className="hbnf-events-state">No upcoming events are listed.</p> : null}
-      {!loading && !error && upcomingEvents.length > 0 ? <ul className="hbnf-event-list">
-        {upcomingEvents.map((event) => {
-          const venue = [event.course_name || event.venue_name, event.city].filter(Boolean).join(' · ');
-          return <li className="hbnf-event-row" key={event.id}>
-            <time className="hbnf-event-date" dateTime={event.start_date}>{eventDateRange(event.start_date, event.end_date)}</time>
-            <div className="hbnf-event-copy">
-              <h3><a href={eventDetailPath(event)}>{event.name}</a></h3>
-              {venue ? <p>{venue}</p> : null}
-            </div>
-          </li>;
-        })}
-      </ul> : null}
-    </section>
-
+  return <Shell mast={<Mast title={<><img className="hb-mark" src="/brand/hbnf-mark-authentic.png" alt="" width="44" height="44" />HB Night Flyers</>} aside={<nav className="lr-actions" aria-label="Skins and Glow">{HBNF_DESTINATIONS.map(({ label, href }) => <a key={href} className="lr-btn lr-btn-ghost" href={href} target="_blank" rel="noreferrer" aria-label={'Open ' + label + ' (opens in a new tab)'}>{label}</a>)}</nav>} />}><main className="lr-wrap hb-events">
+    {loading ? <p className="hb-state" role="status">Loading events…</p> : null}
+    {error ? <p className="hb-state" role="alert">HB Night Flyers events could not be loaded.</p> : null}
+    {!loading && !error && upcomingEvents.length === 0 ? <p className="hb-state">No upcoming events are listed.</p> : null}
+    {!loading && !error && upcomingEvents.length > 0 ? <ul className="hb-list">
+      {upcomingEvents.map((event) => {
+        const venue = [event.course_name || event.venue_name, event.city].filter(Boolean).join(' · ');
+        return <li className="hb-row" key={event.id}>
+          <time dateTime={event.start_date}>{eventDateRange(event.start_date, event.end_date)}</time>
+          <div><h2><a href={eventDetailPath(event)}>{event.name}</a></h2>{venue ? <p>{venue}</p> : null}</div>
+        </li>;
+      })}
+    </ul> : null}
   </main></Shell>;
 }
