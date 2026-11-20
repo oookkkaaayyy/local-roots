@@ -456,3 +456,14 @@
   .lr .lr-top-aside .du-switch{width:100%!important;margin-top:8px!important}
   .lr .lr-top-aside{width:100%!important;margin:0!important}
 }
+
+/* stencil photo step */
+.lr .ds .stpair{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
+.lr .ds .stpair canvas{flex:0 1 auto;width:calc(50% - 6px)!important;height:auto!important;max-height:100%;margin:0 3px;background:var(--surface);border:1px solid var(--line);border-radius:14px;object-fit:contain}
+.lr .ds .stframe[data-state=photo] #fp,.lr .ds .stframe[data-state=photo] .stctl,.lr .ds .stframe[data-state=photo] #stsave,.lr .ds .stframe[data-state=photo] #stdye,.lr .ds .stframe[data-state=photo] #stsvg,.lr .ds .stframe[data-state=photo] .gth{display:none!important}
+.lr .ds .stframe[data-state=photo] .stpair #sp{width:auto!important;max-width:100%;height:100%!important;max-height:100%;cursor:grab;-ms-touch-action:none;touch-action:none}
+.lr .ds .stframe[data-state=open] .stpre,.lr .ds .stframe[data-state=empty] .stpre{display:none}
+.lr .ds .stpre{display:flex;flex-direction:column;margin-bottom:10px}
+.lr .ds .stpre #stgo{padding:14px 10px;font-weight:700;border-radius:10px;border:0;background:var(--clay);color:#fff;font-size:16px;margin-top:8px}
+.lr .ds .stpre #stgo small{display:block;font-size:11px;opacity:.85;font-weight:600}
+@media(max-width:700px){.lr.lr-tool .ds.stp .stpair{display:flex;height:auto}.lr.lr-tool .ds.stp .stpair canvas{max-height:36vh}.lr.lr-tool .ds.stp .stframe[data-state=photo] .stpair #sp{width:auto!important;height:auto!important;max-height:46vh}}
