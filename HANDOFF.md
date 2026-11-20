@@ -40,3 +40,9 @@ Built-in browser (resize_window presets: iPad Pro landscape 1366x1024, iPad port
 ## Drive docs
 - LR Public UI System v3 (current): id 1v3xku-RxzQdXesvzcnbCjgCdGkGd8LgHbjO2jckG7c4 (design system, authoritative). Older: LR Public Skin v2 spec, LR Unified Design System (outdated).
 - AKS canonical docs: see /areas notes in Andrew's memory and "AKS — CANONICAL — Local Roots".
+
+## 2026-11-20 update
+- Events: inline expandable cards, every event links to best source (official_url, source_url, course_url, registration).
+- Dye Studio: per-layer x beside eye; Champion renders semi-translucent, disc color full range (dark bases stay dark).
+- Stencil: empty state centered picker; work state preview + controls (CSS bug: tool grid overrode empty-state hide).
+- HBNF: live worker rolled back to v438; auto-deploy from hbnf-site disabled; never deploy that repo until reconciled. Embed single-header injection is not live.
