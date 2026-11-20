@@ -35,7 +35,7 @@ test("D&U public page uses the preserved canonical brand artwork", () => {
 });
 
 test("D&U public gallery renders the portfolio from managed item records", () => {
-  assert.ok(duPublic.includes("gallery-v2.avif"));
+  assert.ok(duPublic.includes("/du-gallery/g/"));
   assert.ok(duPublic.includes("gallery_items"));
   assert.ok(duPublic.includes(".eq('is_published',true)"));
   assert.ok(duPublic.includes("gallerySlides"));

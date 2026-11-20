@@ -36,7 +36,6 @@ type BadgeNavigator = Navigator & {
 const labels:Record<WorkflowStatus,string>={draft:'Draft',intake_complete:'Intake complete',handoff_preparing:'Preparing handoff',chatgpt_ready:'ChatGPT ready',notification_sent:'Notified',stage_a_started:'Stage A started',awaiting_art_approval:'Awaiting art approval',art_approved:'Art approved',production_ready:'Production ready',complete:'Complete',handoff_failed:'Handoff failed'};
 const activeStates:WorkflowStatus[]=['draft','intake_complete','handoff_preparing','chatgpt_ready','notification_sent','stage_a_started','awaiting_art_approval','art_approved','production_ready','handoff_failed'];
 const DU_DEVICE_TOKEN_KEY='du-admin-device-token-v1';
-const LEGACY_GALLERY_SPRITE='https://wtymjxscneufjlkkywyg.supabase.co/storage/v1/object/public/du-gallery/gallery-v2.avif';
 function functionAuth(credential:AdminCredential){return credential.kind==='device'?{deviceToken:credential.value}:credential.value;}
 
 function isIos(){return /iPad|iPhone|iPod/.test(navigator.userAgent);}
@@ -152,7 +151,7 @@ function parseLegacyGalleryPath(path:string|null){
 function GalleryAdminPreview({path,label}:{path:string|null;label:string}){
   if(!path)return <span>Empty</span>;
   const legacy=parseLegacyGalleryPath(path);
-  if(legacy)return <div className="du-gallery-legacy-tile" role="img" aria-label={label} style={{backgroundImage:`url(${LEGACY_GALLERY_SPRITE})`,backgroundSize:'200% 1800%',backgroundPosition:`${legacy.side==='left'?'0%':'100%'} ${legacy.row*(100/17)}%`}}/>;
+  if(legacy)return <img className="du-gallery-legacy-tile" role="img" aria-label={label} alt={label} src={`/du-gallery/g/legacy-${legacy.row}-${legacy.side}.jpg`} />;
   const url=supabase.storage.from('du-gallery').getPublicUrl(path).data.publicUrl;
   return <img src={url} alt={label}/>;
 }
