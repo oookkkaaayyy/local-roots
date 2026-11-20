@@ -337,3 +337,14 @@
 .lr .event-more{margin-top:10px;padding-top:10px;border-top:1px solid var(--line-soft)}
 .lr .event-more .event-facts{margin:0 0 10px}
 .lr .event-more-actions .button{margin:0 8px 6px 0;min-height:36px}
+
+/* Stencil layout: one state at a time, centered empty state, preview + controls when working */
+.lr.lr-tool .ds.stp .stframe[data-state=empty] .stwork{display:none}
+.lr.lr-tool .ds.stp .stframe[data-state=open] .stpickw{display:none}
+.lr.lr-tool .ds.stp .stframe[data-state=empty]{align-items:center;justify-content:center;padding:24px}
+.lr.lr-tool .ds.stp .stpickw{width:100%;max-width:440px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+.lr.lr-tool .ds.stp .stbig{width:100%;height:auto;min-height:240px;border-radius:20px;border:2px dashed var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.15rem;font-weight:700;padding:32px 24px}
+.lr.lr-tool .ds.stp .stbig svg{width:48px;height:48px;margin-bottom:12px}
+.lr.lr-tool .ds.stp .stbig:not(:disabled):hover{border-color:var(--clay)}
+.lr.lr-tool .ds.stp .stframe[data-state=open]{align-items:stretch}
+.lr.lr-tool .ds.stp #fp{background:var(--surface);border:1px solid var(--line);border-radius:14px}
