@@ -402,3 +402,7 @@
   .lr.lr-tool .ds button{text-align:center}
   .lr.lr-tool .ds .stage{flex:0 0 30%!important}
 }
+@media(max-width:700px){
+  .lr.lr-tool .ds .dscroll{max-height:30vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .lr.lr-tool .ds .seg button,.lr.lr-tool .ds .tmode button{padding-left:10px;padding-right:10px}
+}
