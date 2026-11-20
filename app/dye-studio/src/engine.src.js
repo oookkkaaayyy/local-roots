@@ -14,16 +14,19 @@ const DE=(()=>{
  const famOf=o=>/champion/.test(o||"")?"champion":"star";
  const absorb=(d,k)=>{const A=new Array(N).fill(0);if(!d)return A;for(const [mu,sg,a] of d.b)for(let i=0;i<N;i++)A[i]+=a*gau(lam[i],mu,sg);for(let i=0;i<N;i++)A[i]*=k;return A};
  // Effective per-dye concentration (relative to full single-dye film). Langmuir competition.
- // Same bath (blend): competitive Langmuir uptake. Different baths (layering): sequential, each later bath
- // only fills sites left free by earlier ones (items carry bath index b; earlier b dyed first).
+ // Uptake. Disperse dye sorption on polyolefin is near-linear until the plastic saturates, so loads add and the
+ // total is soft-capped by one shared Langmuir-type curve G (K = load-weighted affinity). A single dye reproduces
+ // the solo curve. Dyes in one bath (blend) split their bath's deposit in proportion to affinity x strength;
+ // later baths (layers, item.b) only add the increment left under the shared cap, so order matters.
+ const Gc=(x,K)=>x<=0?0:x*(1+K)/(1+K*x);
  function conc(items){
-  const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))].sort((x,y)=>x-y);let used=0;
+  const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))].sort((x,y)=>x-y);
+  let X=0,KX=0,Cprev=0;
   for(const b of bs){
-   const idx=items.map((it,i)=>i).filter(i=>(items[i].b||0)===b),K=idx.map(i=>(CAT[items[i].name]?.aff)??1);
-   let tot=0;idx.forEach((i,j)=>{tot+=K[j]*items[i].s});
-   const cap=Math.max(0,1-used);let g=0;
-   idx.forEach((i,j)=>{const it=items[i],solo=it.s*(1+K[j])/(1+K[j]*it.s);const c=tot>0?solo*(1+K[j]*it.s)/(1+tot):0;out[i]=c*cap;g+=out[i]});
-   used+=g;
+   const idx=items.map((it,i)=>i).filter(i=>(items[i].b||0)===b);
+   let dx=0,dkx=0,w=0;idx.forEach(i=>{const K=(CAT[items[i].name]?.aff)??1;dx+=items[i].s;dkx+=K*items[i].s;w+=K*items[i].s});
+   X+=dx;KX+=dkx;const C=Gc(X,X>0?KX/X:1),dC=Math.max(0,C-Cprev);Cprev=C;
+   idx.forEach(i=>{const K=(CAT[items[i].name]?.aff)??1;out[i]=w>0?dC*K*items[i].s/w:0});
   }
   return out;
  }
@@ -50,16 +53,29 @@ const DE=(()=>{
   });
   return em;
  }
+ // Saunderson correction for the polymer/air interface (n~1.5: internal diffuse reflectance k2~.6, specular excluded).
+ // Base spectra are measured appearance, so they are mapped to internal reflectance first and back after the film model.
+ const K2=.6,K1=.04;
+ const toInt=R=>R.map(r=>r/((1-K1)*(1-K2)+K2*r));
+ const toExt=R=>R.map(r=>(1-K1)*(1-K2)*r/(1-K2*r));
  const baseSpec=h=>SP.spec(h);
+ const PHI=.55; // later baths stay in the top fraction of the film; the first bath penetrates fully
+ function filmStack(Rb,items,P,mult){
+  const bs=[...new Set(items.map(it=>it.b||0))].sort((x,y)=>x-y);
+  if(bs.length<2)return kmLayer(Rb,tauOf(items,mult),P.Sx);
+  const c=conc(items),tl=new Array(N).fill(0),tu=new Array(N).fill(0);
+  items.forEach((it,i)=>{const A=absorb(CAT[it.name],c[i]*(mult||1));for(let j=0;j<N;j++){if((it.b||0)===bs[0]){tl[j]+=A[j]*(1-PHI);tu[j]+=A[j]*PHI}else tu[j]+=A[j]}});
+  const Rl=kmLayer(Rb,tl,P.Sx*(1-PHI));return kmLayer(Rl,tu,P.Sx*PHI);
+ }
  function opaque(baseHex,items,fam,opt){
   const P=PRM[fam]||PRM.star,tau=tauOf(items,opt?.mult);
-  let R=kmLayer(baseSpec(baseHex),tau,P.Sx);
+  let R=toExt(filmStack(toInt(baseSpec(baseHex)),items,P,opt?.mult));
   if(!opt?.noFluor){const f=fluor(items,tau,opt);R=R.map((v,i)=>v+f[i])}
   return R;
  }
  function translucent(baseHex,transHex,items,fam,scene,zone,path,opt){
   const P=PRM.champion,tau=tauOf(items,opt?.mult);
-  const Rs=kmLayer(baseSpec(baseHex),tau.map(v=>v*P.kS),P.Sx);
+  const Rs=toExt(kmLayer(toInt(baseSpec(baseHex)),tau.map(v=>v*P.kS),P.Sx));
   const T0=baseSpec(transHex),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*P.gT));
   const w=(P.w[scene]||P.w.outdoor)[zone];
   let R=Rs.map((v,i)=>v*(1-w)+T[i]*w);
