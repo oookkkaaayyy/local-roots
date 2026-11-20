@@ -391,7 +391,7 @@ $("#png").onclick=async()=>{const b=$("#png");logRecipe("save");flip(b,"…");aw
  const f=new File([pngBlob],"disc.png",{type:"image/png"});
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});flip(b,"Saved");return}catch(e){if(e&&e.name==="AbortError"){flip(b,"Save");return}}}
  $("#svimg").src=pngUrl;$("#svdl").href=pngUrl;$("#save").classList.add("open");flip(b,"Save")};
-$("#clrx").onclick=()=>$("#clr").classList.remove("open");$("#clr").addEventListener("click",e=>{if(e.target.id==="clr")$("#clr").classList.remove("open")});$("#clrok").onclick=()=>{$("#clr").classList.remove("open");S=defState();for(const k in STN)delete STN[k];commit();all()};
+if($("#clr")){$("#clrx").onclick=()=>$("#clr").classList.remove("open");$("#clr").addEventListener("click",e=>{if(e.target.id==="clr")$("#clr").classList.remove("open")});$("#clrok").onclick=()=>{$("#clr").classList.remove("open");S=defState();for(const k in STN)delete STN[k];commit();all()};}
 $("#svx").onclick=()=>$("#save").classList.remove("open");$("#save").addEventListener("click",e=>{if(e.target.id==="save")$("#save").classList.remove("open")});
 const isAdmin=()=>{try{return!!localStorage.getItem("du-admin-device-token-v1")}catch(e){return false}};
 if($("#copy")){if(isAdmin()&&TOOL==="dye")$("#copy").hidden=false;$("#copy").onclick=()=>{copyText(recipeText());flip($("#copy"),"Copied")}}
