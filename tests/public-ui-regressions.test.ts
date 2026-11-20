@@ -110,9 +110,7 @@ test("results link labels identify known destinations without importing their co
 test("event cards expose permanent detail URLs, filtered return state, and calendar actions", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`'));
-  assert.ok(events.includes('className="event-title-btn"'));
-  assert.ok(events.includes('aria-expanded={open}'));
-  assert.ok(events.includes('className="event-more"'));
+  assert.ok(events.includes('className="event-time"'));
   assert.ok(source("pages/EventDetailPage.tsx").includes('>Add to Calendar</button>'));
   assert.ok(events.includes('href={`${detailHref}#results`}'));
 });

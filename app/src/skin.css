@@ -348,3 +348,5 @@
 .lr.lr-tool .ds.stp .stbig:not(:disabled):hover{border-color:var(--clay)}
 .lr.lr-tool .ds.stp .stframe[data-state=open]{align-items:stretch}
 .lr.lr-tool .ds.stp #fp{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.lr .event-time{font-weight:700;color:var(--ink)}
+.lr .event-location a{color:inherit;text-decoration:underline;text-decoration-color:var(--line)}
