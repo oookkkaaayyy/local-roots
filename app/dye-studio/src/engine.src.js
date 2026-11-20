@@ -14,12 +14,6 @@ const DE=(()=>{
  const famOf=o=>/champion/.test(o||"")?"champion":"star";
  const absorb=(d,k)=>{const A=new Array(N).fill(0);if(!d)return A;for(const [mu,sg,a] of d.b)for(let i=0;i<N;i++)A[i]+=a*gau(lam[i],mu,sg);for(let i=0;i<N;i++)A[i]*=k;return A};
  // Effective per-dye concentration (relative to full single-dye film). Langmuir competition.
-<<<<<<< Updated upstream
- function conc(items){
-  const K=items.map(it=>(CAT[it.name]?.aff)??1);
-  let tot=0;items.forEach((it,i)=>{tot+=K[i]*it.s});
-  return items.map((it,i)=>{const solo=it.s*(1+K[i])/(1+K[i]*it.s);return tot>0?solo*(1+K[i]*it.s)/(1+tot):0});
-=======
  // Uptake. Disperse dye sorption on polyolefin is near-linear until the plastic saturates, so loads add and the
  // total is soft-capped by one shared Langmuir-type curve G (K = load-weighted affinity). A single dye reproduces
  // the solo curve. Dyes in one bath (blend) split their bath's deposit in proportion to affinity x strength;
@@ -35,9 +29,8 @@ const DE=(()=>{
    idx.forEach(i=>{const K=(CAT[items[i].name]?.aff)??1;out[i]=w>0?dC*K*items[i].s/w:0});
   }
   return out;
->>>>>>> Stashed changes
  }
- const merge=items=>{const m=new Map();for(const it of items)m.set(it.name,(m.get(it.name)||0)+it.s);return[...m].map(([name,s])=>({name,s}))};
+ const merge=items=>{const m=new Map();for(const it of items){const k=it.name+"|"+(it.b||0);const e=m.get(k);if(e)e.s+=it.s;else m.set(k,{name:it.name,s:it.s,b:it.b||0})}return[...m.values()]};
  const tauOf=(items,mult)=>{const c=conc(items),T=new Array(N).fill(0);items.forEach((it,i)=>{const A=absorb(CAT[it.name],c[i]*(mult||1));for(let j=0;j<N;j++)T[j]+=A[j]});return T};
  // Kubelka-Munk finite layer (scatter optical thickness Sx) on backing Rg; tau = dye optical depth across layer
  function kmLayer(Rb,tau,Sx){
@@ -134,7 +127,7 @@ const DE=(()=>{
   if(opt.mc){
    const r=rng(opt.seed||7),n=opt.mc,labs=[];
    for(let m=0;m<n;m++){
-    const items=spec.items.map(it=>({name:it.name,s:Math.max(0,it.s*Math.exp(gaussRand(r)*((CAT[it.name]?.sd)??.15)))}));
+    const items=spec.items.map(it=>({name:it.name,b:it.b,s:Math.max(0,it.s*Math.exp(gaussRand(r)*((CAT[it.name]?.sd)??.15)))}));
     const Pm=PRM[famOf(spec.family)],sx=Pm.Sx;Pm.Sx=sx*Math.exp(gaussRand(r)*.15);
     const Rm=render({...spec,items},opt);Pm.Sx=sx;labs.push(labOf(SP.toLin(Rm).map(v=>Math.min(1,Math.max(0,v)))));
    }
