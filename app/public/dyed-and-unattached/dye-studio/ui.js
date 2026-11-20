@@ -44,7 +44,8 @@ function measured(its,r){const p=plastic();if(p.fam!=="champion"||its.length!==1
 function colorAt(its,r,mc){
  const p=plastic();
  const m=measured(its,r);if(m&&!mc)return{hex:m,measured:true};
- const bh=baseAt(r),sp={baseHex:bh,transHex:transHex(bh),family:p.fam,scene:"outdoor",zone:zoneAt(r),path:pathAt(r,p),items:its};
+ const bh=baseAt(r);if(p.fam==="champion"&&!its.length)return{hex:bh,spread:0,lab:null,gamut:false,measured:false};
+ const sp={baseHex:bh,transHex:transHex(bh),family:p.fam,scene:"outdoor",zone:zoneAt(r),path:pathAt(r,p),items:its};
  const o=DE.predict(sp,mc?{mc}:{});
  return{hex:m||o.hex,spread:o.spread,lab:o.lab,gamut:o.gamutExcess>.02,measured:!!m};
 }
