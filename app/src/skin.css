@@ -165,8 +165,8 @@
 .lr .hb-state{padding:36px 0;color:var(--muted)}
 
 /* Dyed & Unattached landing: gallery sized to the space left under the title row */
-.lr .du-stage{display:block;padding-top:12px;padding-bottom:16px}
-.lr .dug{width:100%;max-width:1120px;margin:0 auto}
+.lr .du-stage{display:block;max-width:1600px;padding-top:12px;padding-bottom:16px}
+.lr .dug{width:100%;margin:0 auto}
 @media(min-width:701px){.lr .dug{max-width:calc((100vh - 60px - 72px - 36px)*2);max-width:calc((100vh - 60px - 72px - 36px)*2)}}
 .lr .dug-frame{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--wash);-ms-touch-action:pan-y;touch-action:pan-y}
 .lr .dug-track{display:flex;transition:transform .5s cubic-bezier(.2,.75,.25,1)}
