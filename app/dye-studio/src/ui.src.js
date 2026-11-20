@@ -265,7 +265,7 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  else if(a==="discphoto"){DM=true;$("#pfile").click()}
  
  else if(a==="match"){drawMatch();$("#match").classList.add("open")}
- else if(a==="addlayer"){const ty=t.dataset.t,n=S.layers.filter(l=>l.type===ty).length,pool=poolOf("Inventory"),used=new Set(S.layers.flatMap(l=>l.dyes.map(d=>d.n))),pick=(pool.find(d=>!used.has(d.n))||pool[0]).n;
+ else if(a==="addlayer"){dOpen=false;const ty=t.dataset.t,n=S.layers.filter(l=>l.type===ty).length,pool=poolOf("Inventory"),used=new Set(S.layers.flatMap(l=>l.dyes.map(d=>d.n))),pick=(pool.find(d=>!used.has(d.n))||pool[0]).n;
   const N={id:uid(),type:ty,name:TYPES[ty].label+(n?" "+(n+1):""),vis:true,dyes:[{n:pick,s:1}],p:Object.assign({},TYPES[ty].p)};if(ty==="box"){N.p.x=.12*(n%4);N.p.y=-.12*(n%4)}if(ty==="stripe"&&n){const m=n%2?1:-1;N.p.a=wrap(N.p.a+m*.5236*Math.ceil(n/2))}S.layers.push(N);S.sel=N.id;S.tab="disc";commit();all()}
  else if(a==="plastic"){const np=PL.find(p=>p.id===t.dataset.p),op=plastic();if(np){if(np.id==="glow"||PL.some(p=>p.base.toUpperCase()===S.base.toUpperCase())||S.base.toUpperCase()===op.base.toUpperCase())S.base=np.base;S.plastic=np.id;S.trans="";commit();all()}}
  else if(a==="shape"){const l=selL();if(l.type==="stripe"){l.type="box";l.p=Object.assign({x:0,y:0,a:0,w:.8,h:.5},{x:l.p.x,y:l.p.y})}else if(l.type==="box"){l.type="stripe";l.p={x:0,y:0,a:Math.PI/2,h:.45}}commit();all()}
