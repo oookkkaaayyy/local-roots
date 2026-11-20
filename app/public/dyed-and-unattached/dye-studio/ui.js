@@ -18,16 +18,17 @@ const TYPES={
  stripe:{label:"Color",p:{x:0,y:0,a:Math.PI/2,h:.45}},
  box:{label:"Box",p:{x:0,y:0,a:0,w:.8,h:.5}},
  stencil:{label:"Stencil",p:{x:0,y:0,s:190.5/105}}};
+const TOOL=window.__dsTool==="stencil"?"stencil":"dye";
 const STN={};
 const uid=()=>Math.random().toString(36).slice(2,8);
 const poolOf=g=>{let L=DYELIST.filter(d=>!d.c);if(g==="Inventory")L=L.filter(d=>d.i);else if(g==="ProChem")L=L.filter(d=>d.g==="ProChem");else if(g==="UV Blast")L=L.filter(d=>/UV Blast/.test(d.g)&&!d.i||/UV Blast/.test(d.n));return L};
 const GROUPS=["Inventory"];const GL={Inventory:"Available"};
-function defState(){const a=uid();return{plastic:"star",base:"#F4F2E8",rim:null,mode:"stencil",trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:a,
+function defState(){const a=uid();return{plastic:"star",base:"#F4F2E8",rim:null,trans:"",pool:"Inventory",tab:"disc",mx:"mix",tg:"#2A8FD6",nd:2,sel:a,
  layers:[{id:a,type:"full",name:"Base",vis:true,dyes:[],p:{}}]}}
 let S=defState();
-try{const t=JSON.parse(localStorage.getItem("dds11")||"null");if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||TYPES[l.type]);t.layers.forEach(l=>{if(l.name==="Stripe")l.name="Color";else if(/^Stripe \d+$/.test(l.name))l.name=l.name.replace("Stripe","Color")});if(t.tab==="design")t.tab="disc";if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}if(!PL.some(p=>p.id===S.plastic))S.plastic="star";S.trans="";S.pool="Inventory";try{if(new URLSearchParams(location.search).get("tool")==="stencil"){S.tab="disc";S.layers=S.layers.filter(l=>l.type==="full");S.sel=S.layers[0].id}}catch(e){}S.tab="disc";S.mode=S.mode==="design"?"design":"stencil";try{const q=new URLSearchParams(location.search).get("tool");if(q==="stencil")S.mode="stencil";else if(q==="design")S.mode="design"}catch(e){}
+try{const t=TOOL==="dye"?JSON.parse(localStorage.getItem("dds11")||"null"):null;if(t&&t.layers&&t.layers.length){t.layers=t.layers.filter(l=>l.type==="full"||l.type!=="stencil"&&TYPES[l.type]);t.layers.forEach(l=>{if(l.name==="Stripe")l.name="Color";else if(/^Stripe \d+$/.test(l.name))l.name=l.name.replace("Stripe","Color")});if(t.tab==="design")t.tab="disc";if(t.layers.length&&t.layers[0].type==="full")S=Object.assign(S,t)}}catch(e){}if(!PL.some(p=>p.id===S.plastic))S.plastic="star";S.trans="";S.pool="Inventory";S.tab="disc";
 const dropGhost=()=>{S.layers=S.layers.filter(l=>l.type!=="stencil"||STN[l.id]);if(!S.layers.some(l=>l.id===S.sel))S.sel=S.layers[S.layers.length-1].id};
-const save=()=>{try{localStorage.setItem("dds11",JSON.stringify(S))}catch(e){}};
+const save=()=>{if(TOOL!=="dye")return;try{localStorage.setItem("dds11",JSON.stringify(S))}catch(e){}};
 const plastic=()=>PL.find(p=>p.id===S.plastic)||PL[0];
 const baseL=()=>S.layers[0];
 const selL=()=>S.layers.find(l=>l.id===S.sel)||S.layers[S.layers.length-1];
@@ -214,21 +215,17 @@ const IC={photo:'<svg viewBox="0 0 32 32"><path d="M4 10h5l2-3h10l2 3h5v15H4z"/>
 const tile=(act,ic,t,x)=>`<button class="tl" data-act="${act}" ${x||""}>${IC[ic]}<span>${t}</span></button>`;
 const next=(t,l)=>`<button class="pri nx" data-act="go" data-t="${t}">${l}</button>`;
 const colorPick=(id,val)=>`<input type="color" id="${id}C" value="${val}" aria-label="Custom color">`;
-const swRow=(act,cur,pk)=>`<div class="bs">`+BASES.map(b=>`<button data-act="${act}" data-c="${b}" class="${b===String(cur).toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`<span class="cpk">${colorPick(pk,cur)}</span></div>`;
+const swRow=(act,cur,pk)=>`<div class="bs">`+BASES.map(b=>`<button data-act="${act}" data-c="${b}" aria-label="${b}" class="${b===String(cur).toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`<span class="cpk">${colorPick(pk,cur)}</span></div>`;
 function discSection(){
- let h=`<div class="sec">Disc</div><div class="ord">Plastic</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+`</div>`+
-  `<div class="ord">Color</div>`+swRow("base",S.base,"b")+`<div class="seg" style="margin-top:8px"><button class="g" data-act="discphoto">Match from photo</button></div>`+
+ let h=`<div class="dsc"><div class="ord first">Disc</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+`</div>`+
+  `<div class="ord">Color</div>`+swRow("base",S.base,"b")+`<button class="g wide" data-act="discphoto">Match from photo</button>`+
   `<div class="ord">Rim</div><div class="seg"><button data-act="rim" data-on="0" class="${S.rim?"":"on"}">None</button><button data-act="rim" data-on="1" class="${S.rim?"on":""}">Rim</button></div>`;
- if(S.rim)h+=swRow("rimc",S.rim.c,"r")+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%");
- return h}
-function usageLine(){const t=FR.tally;if(!t)return"";const f=x=>x.n+" · $"+x.usd.toFixed(2);return`<div class="usg">Today ${f(t.day)}<br>7 days ${f(t.week)}<br>Month ${f(t.month)}<br>Visitors, month ${f(t.visitors)}</div>`}
-function tabStencilMode(){const L=S.layers.find(l=>l.type==="stencil");let h=`<div class="sec">Photo stencil</div>`;
- if(L){S.sel=L.id;h+=layerCard(L,S.layers.indexOf(L),S.layers.length,true)}else h+=`<div class="tg2"><button class="tl2" data-act="photo">Choose a photo</button></div>`;
- return h+discSection()+`<div class="lkr"><button class="lk" data-act="mode" data-m="design">Add dye design</button></div>`+usageLine()}
-function tabDesign(){const n=S.layers.length;let h=discSection()+`<div class="sec">Dye</div><div class="tg2"><button class="tl2" data-act="addlayer" data-t="stripe">+ Color</button></div>`;
- if(n>1)h+=`<div class="ord">Layers</div>`;
+ if(S.rim)h+=`<div class="sub">`+swRow("rimc",S.rim.c,"r")+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%")+`</div>`;
+ return h+`</div>`}
+function tabDesign(){const n=S.layers.length;let h=discSection();
+ if(n>1)h+=`<div class="lhd"><h3>Layers</h3><button class="pri sm" data-act="addlayer" data-t="stripe">+ Add color</button></div>`;
+ else h+=`<div class="lhd"><h3>Layers</h3></div><button class="addbig" data-act="addlayer" data-t="stripe">+ Add color</button>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
- if(!S.layers.some(l=>l.type==="stencil"))h+=`<div class="lkr"><button class="lk" data-act="mode" data-m="stencil">Add photo stencil</button></div>`;
  return h}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
 const sh=n=>n.replace(/^(ProChem |iDye Poly )/,"");
@@ -242,8 +239,7 @@ function tabStencil(){const L=S.layers.find(l=>l.type==="stencil");
  return h}
 function paintThumb(){const L=S.layers.find(l=>l.type==="stencil"),c=$("#stp");if(!L||!c||!STN[L.id])return;const m=STN[L.id],x=c.getContext("2d"),k=Math.min(96/m.w,96/m.h);x.fillStyle="#fff";x.fillRect(0,0,96,96);const id=x.createImageData(96,96);for(let j=0;j<96;j++)for(let i=0;i<96;i++){const sx=Math.floor((i-(96-m.w*k)/2)/k),sy=Math.floor((j-(96-m.h*k)/2)/k),o=(j*96+i)*4;const v=sx<0||sy<0||sx>=m.w||sy>=m.h?255:m.mask[sy*m.w+sx]?255:0;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255}x.putImageData(id,0,0)}
 function panel(){const b=$("#body"),y=b.scrollTop;
- b.innerHTML=S.mode==="design"?tabDesign():tabStencilMode();paintThumb();
- document.querySelectorAll("#modes button").forEach(x=>x.classList.toggle("on",x.dataset.m===S.mode));
+ if(TOOL!=="dye")return;b.innerHTML=tabDesign();
  b.scrollTop=y;if($("#match").classList.contains("open"))drawMatch()}
 function drawMatch(){$("#mbody").innerHTML=tabRecipe()}
 function all(){paint(false);drawOv();readout();panel();undoBtns()}
@@ -255,7 +251,6 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  if(a==="sel"){if(e.target.closest("[data-act]:not([data-act=sel])")!==t&&e.target.closest("[data-act]:not([data-act=sel])"))return;selectLayer(t.dataset.id)}
  else if(a==="up"||a==="down"){const i=S.layers.findIndex(x=>x.id===t.dataset.id),j=i+(a==="up"?1:-1);if(i>0&&j>=1&&j<S.layers.length){const q=S.layers[i];S.layers[i]=S.layers[j];S.layers[j]=q;commit();all()}}
  else if(a==="vis"){const l=S.layers.find(x=>x.id===t.dataset.id);l.vis=!l.vis;commit();all()}
- else if(a==="mode"){S.mode=t.dataset.m==="design"?"design":"stencil";if(S.mode==="design"){const l=S.layers.filter(x=>x.type!=="full").pop();S.sel=l?l.id:S.layers[0].id}save();drawOv();panel();$("#body").scrollTop=0}
  else if(a==="rim"){S.rim=t.dataset.on==="1"?(S.rim||{c:"#2B2B2E",w:10,f:.5}):null;commit();all()}
  else if(a==="rimc"){if(S.rim){S.rim.c=t.dataset.c;commit();all()}}
  else if(a==="discphoto"){DM=true;$("#pfile").click()}
@@ -392,7 +387,8 @@ function showRes(res){const c=$("#fp"),x=c.getContext("2d");drawDisc(x,c.width,r
 function fmsg(t){const c=$("#fp"),x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);if(t){x.fillStyle="#555";x.font="600 22px system-ui,sans-serif";x.textAlign="center";x.fillText(t,c.width/2,c.height/2)}}
 async function genOnce(blob,dir,retry){const hd={"content-type":"image/jpeg","x-vid":vid(),apikey:SK,...adminHd()};if(dir)hd["x-dir"]=dir;if(retry)hd["x-retry"]="1";const r=await fetch(GEN,{method:"POST",headers:hd,body:blob});const j=await r.json().catch(()=>({}));if(!r.ok||!j.png)throw Object.assign(new Error(j.error||"fail"),{code:j.error||"fail",left:j.left});const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src="data:image/png;base64,"+j.png});const n=1024,c=document.createElement("canvas");c.width=c.height=n;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,n,n);x.drawImage(im,0,0,n,n);const lum=adjLumFor(c,DEFA(),null);const M=await stencilMod();let res=null;try{res=M.compileGenerated(lum,n,190.5/1024);if(res&&!inSafe(res))res={...res,verdict:"FAIL"}}catch(e){}return{res,left:j.left,gc:c,tally:j.tally}}
 const LIM=3;
-function dirUI(){const off=FR.busy||!FR.gc||FR.left===0;["#gd1","#gd2","#gd3"].forEach(q=>$(q).classList.toggle("dis",off));const e=$("#fleft");if(FR.tally){const t=FR.tally,f=x=>x.n+" · $"+x.usd.toFixed(2);e.textContent="Today "+f(t.day)+"   7 days "+f(t.week)+"   Month "+f(t.month)+"   Visitors "+f(t.visitors);e.classList.remove("lo");return}e.textContent=FR.left==null||FR.left>2?"":FR.left===0?"None left today":FR.left===1?"Last one today":"2 left";e.classList.toggle("lo",FR.left!=null&&FR.left<=1)}
+function stUI(){const R=$("#frame");if(!R||TOOL!=="stencil")return;R.dataset.gen=FR.gc?"1":"0";R.dataset.busy=FR.busy?"1":"0";const none=FR.left===0&&!FR.tally;const b=$("#stpick"),n=$("#stnew");if(b){b.disabled=none;$("#stpl").textContent=none?"None left today":"Choose a photo"}if(n)n.disabled=none||!!FR.busy;const m=$("#stleft");if(m)m.textContent=FR.tally?"":FR.left==null||FR.left>3?"":FR.left+" left today"}
+function dirUI(){stUI();const off=FR.busy||!FR.gc||FR.left===0;["#gd1","#gd2","#gd3"].forEach(q=>$(q).classList.toggle("dis",off));const e=$("#fleft");if(FR.tally){const t=FR.tally,f=x=>x.n+" · $"+x.usd.toFixed(2);e.textContent="Today "+f(t.day)+"   7 days "+f(t.week)+"   Month "+f(t.month)+"   Visitors "+f(t.visitors);e.classList.remove("lo");const m=$("#stleft");if(m)m.textContent=e.textContent;return}e.textContent=FR.left==null||FR.left>2?"":FR.left===0?"None left today":FR.left===1?"Last one today":"2 left";e.classList.toggle("lo",FR.left!=null&&FR.left<=1)}
 function thumb(r){const c=document.createElement("canvas");c.width=c.height=72;drawDisc(c.getContext("2d"),72,r);return c.toDataURL()}
 function gensSave(){const g=FR.gens[FR.ci];if(g){g.adj={...FR.adj};g.br=FR.br;g.base=FR.base;g.th=thumb(FR.base)}}
 function thUI(){const e=$("#gth");e.innerHTML="";e.style.display=FR.gens.length>1?"flex":"none";FR.gens.forEach((g,i)=>{const b=document.createElement("button");b.className="gt"+(i===FR.ci?" on":"");const im=new Image();im.src=g.th;b.appendChild(im);b.onclick=()=>genSel(i);e.appendChild(b)})}
@@ -423,7 +419,7 @@ async function adjRun(push){if(FR.busy||!FR.gc)return;const my=++FR.aseq;await n
 let adjT=null;function adjSched(){clearTimeout(adjT);adjT=setTimeout(adjRun,220)}
 function invRes(r){const m=new Uint8Array(r.mask.length);for(let i=0;i<m.length;i++)m[i]=r.mask[i]?0:1;return{...r,mask:m}}
 function frameSched(){frameShow();clearTimeout(FR.t);FR.t=setTimeout(frameCompute,260)}
-function openFrame(file){FR.dm=DM;$("#frame").classList.toggle("disc",DM);$("#fok").textContent=DM?"Use":"Add";const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(url);Object.assign(FR,{img:im,file,z:1,ox:0,oy:0,res:null});$("#fz").value=100;$("#fzv").textContent="100%";$("#fd").value=70;$("#fb").value=70;FR.style="photo";FR.detail=.7;FR.balance=.7;document.querySelectorAll("#fstyle button").forEach(b=>b.classList.toggle("on",b.dataset.st==="photo"));[$("#fz"),$("#fd"),$("#fb")].forEach(el=>el.style.setProperty("--v",(el.value-el.min)/(el.max-el.min)*100+"%"));FR.invert=false;FR.cut=true;FR.mask=null;FR.mk="";FR.line=null;FR.lk="";$("#fcut").classList.add("on");$("#finv").classList.remove("on");$("#fok").classList.add("dis");$("#frame").classList.add("open");FR.left=null;FR.busy=false;FR.gen=null;FR.base=null;FR.gc=null;FR.gens=[];FR.ci=-1;$("#gth").style.display="none";FR.br=null;FR.brm=0;FR.aseq=FR.aseq||0;adjReset();document.querySelectorAll("#frame .sl:not(.gn),#fcut,#finv").forEach(e=>e.style.display=DM?"":"none");$("#fv").style.cursor=DM?"":"default";if(DM){frameSched()}else{frameShow();fmsg("");peek().then(()=>{if(FR.left===0){fmsg("None left today");dirUI()}else genStencil("")})}};im.src=url}
+function openFrame(file){FR.dm=DM;$("#frame").classList.toggle("disc",DM);$("#fok").textContent=DM?"Use":"Add";const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(url);Object.assign(FR,{img:im,file,z:1,ox:0,oy:0,res:null});$("#fz").value=100;$("#fzv").textContent="100%";$("#fd").value=70;$("#fb").value=70;FR.style="photo";FR.detail=.7;FR.balance=.7;document.querySelectorAll("#fstyle button").forEach(b=>b.classList.toggle("on",b.dataset.st==="photo"));[$("#fz"),$("#fd"),$("#fb")].forEach(el=>el.style.setProperty("--v",(el.value-el.min)/(el.max-el.min)*100+"%"));FR.invert=false;FR.cut=true;FR.mask=null;FR.mk="";FR.line=null;FR.lk="";$("#fcut").classList.add("on");$("#finv").classList.remove("on");$("#fok").classList.add("dis");$("#frame").classList.add("open");if(TOOL==="stencil")$("#frame").dataset.state="open";FR.left=null;FR.busy=false;FR.gen=null;FR.base=null;FR.gc=null;FR.gens=[];FR.ci=-1;$("#gth").style.display="none";FR.br=null;FR.brm=0;FR.aseq=FR.aseq||0;adjReset();document.querySelectorAll("#frame .sl:not(.gn),#fcut,#finv").forEach(e=>e.style.display=DM?"":"none");$("#fv").style.cursor=DM?"":"default";if(DM){frameSched()}else{frameShow();fmsg("");peek().then(()=>{if(FR.left===0){fmsg("None left today");dirUI()}else genStencil("")})}};im.src=url}
 $("#pfile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(f)openFrame(f)});
 const fvp=new Map();let pinch=null;
 $("#fv").addEventListener("pointerdown",e=>{if(!FR.dm)return;$("#fv").setPointerCapture(e.pointerId);fvp.set(e.pointerId,{x:e.clientX,y:e.clientY});if(fvp.size===2){const[a,b]=[...fvp.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:FR.z}}});
@@ -443,7 +439,8 @@ async function peek(){try{const r=await fetch(GEN,{method:"POST",headers:{"x-vid
 const tz=()=>{if(FR.busy||!FR.gc)return;FR.br=null;adjSync();adjSched()};
 $("#gt").oninput=()=>{FR.adj.t=+$("#gt").value;adjSync();adjSched()};$("#gz").oninput=()=>{FR.adj.z=+$("#gz").value/100;tz()};$("#gfit").onclick=()=>{if(FR.busy||!FR.gc)return;FR.adj.z=1;tz()};
 $("#gmi").onclick=()=>{if(FR.busy||!FR.gc)return;FR.adj.m=FR.adj.m?0:1;FR.br=null;adjSync();adjRun()};$("#gun").onclick=()=>hgo(-1);$("#grd").onclick=()=>hgo(1);
-$("#gsv").onclick=async()=>{const r=FR.res;if(!r||FR.busy)return;const W=700,H=752,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");drawDisc(x,W,r);const lg=await new Promise(ok=>{const m=new Image();m.onload=()=>ok(m);m.onerror=()=>ok(null);m.src="/brand/dyed-unattached-logo.png"});if(!lg)return;const tint=(col,w)=>{const h=Math.round(w*lg.height/lg.width),t=document.createElement("canvas");t.width=w;t.height=h;const q=t.getContext("2d");q.drawImage(lg,0,0,w,h);q.globalCompositeOperation="source-in";q.fillStyle=col;q.fillRect(0,0,w,h);return t};const wm=tint("#fff",230);x.save();x.beginPath();x.rect(0,0,W,W);x.clip();x.translate(W/2,W/2);x.rotate(-Math.PI/6);x.globalCompositeOperation="difference";x.globalAlpha=.5;for(let j=-6;j<=6;j++)for(let i=-3;i<=3;i++)x.drawImage(wm,i*300+(j%2?150:0)-wm.width/2,j*110-wm.height/2);x.restore();x.fillStyle="#f3eadf";x.fillRect(0,W,W,52);x.fillStyle="#b99a77";x.fillRect(0,W,W,1);const sl=tint("#5b3a24",190);x.drawImage(sl,(W-sl.width)/2,W+(52-sl.height)/2);c.toBlob(b=>{const u=URL.createObjectURL(b),a2=document.createElement("a");a2.href=u;a2.download="stencil-preview.png";document.body.appendChild(a2);a2.click();a2.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)},"image/png")};
+async function saveStencilImage(){const r=FR.res;if(!r||FR.busy)return;const W=700,H=752,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");drawDisc(x,W,r);const lg=await new Promise(ok=>{const m=new Image();m.onload=()=>ok(m);m.onerror=()=>ok(null);m.src="/brand/dyed-unattached-logo.png"});if(!lg)return;const tint=(col,w)=>{const h=Math.round(w*lg.height/lg.width),t=document.createElement("canvas");t.width=w;t.height=h;const q=t.getContext("2d");q.drawImage(lg,0,0,w,h);q.globalCompositeOperation="source-in";q.fillStyle=col;q.fillRect(0,0,w,h);return t};const wm=tint("#fff",230);x.save();x.beginPath();x.rect(0,0,W,W);x.clip();x.translate(W/2,W/2);x.rotate(-Math.PI/6);x.globalCompositeOperation="difference";x.globalAlpha=.5;for(let j=-6;j<=6;j++)for(let i=-3;i<=3;i++)x.drawImage(wm,i*300+(j%2?150:0)-wm.width/2,j*110-wm.height/2);x.restore();x.fillStyle="#f3eadf";x.fillRect(0,W,W,52);x.fillStyle="#b99a77";x.fillRect(0,W,W,1);const sl=tint("#5b3a24",190);x.drawImage(sl,(W-sl.width)/2,W+(52-sl.height)/2);c.toBlob(b=>{const u=URL.createObjectURL(b),a2=document.createElement("a");a2.href=u;a2.download="stencil-preview.png";document.body.appendChild(a2);a2.click();a2.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)},"image/png")}
+$("#gsv").onclick=saveStencilImage;
 {const er=$("#er"),ec=$("#erc"),ew=$("#erw"),ex=ec.getContext("2d");let eb=null,est=[],ez=2,rb=7,pt=new Map(),dr=false;
  const draw=()=>{const r=FR.base,id=ex.createImageData(r.w,r.h),ox=r.origin[0],oy=r.origin[1];for(let j=0;j<r.h;j++)for(let i=0;i<r.w;i++){const k=j*r.w+i,q=k*4,v=r.mask[k]||eb[(j+oy)*1024+i+ox]===2?255:0;id.data[q]=id.data[q+1]=id.data[q+2]=v;id.data[q+3]=255}ex.putImageData(id,0,0)};
  const size=()=>{const r=FR.base,b=Math.min(ew.clientWidth,ew.clientHeight)-4,m=Math.max(r.w,r.h);ec.style.width=Math.round(b*ez*r.w/m)+"px";ec.style.height=Math.round(b*ez*r.h/m)+"px"};
@@ -478,5 +475,9 @@ window.addEventListener("keydown",e=>{const tg=e.target&&e.target.tagName;if(tg=
  if(mod&&e.key.toLowerCase()==="d"&&L.type!=="stencil"){e.preventDefault();const b=document.querySelector("[data-act=dup]");if(b)b.click();return}
  const st=e.shiftKey?.05:.01,m={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
  if(m){e.preventDefault();if(L.type==="stripe"){const n=axes(L).n,d=clamp(L.p.x*n[0]+L.p.y*n[1]+m[0]*n[0]+m[1]*n[1],-.98,.98);L.p.x=n[0]*d;L.p.y=n[1]*d}else{L.p.x=clamp(L.p.x+m[0],-1.15,1.15);L.p.y=clamp(L.p.y+m[1],-1.15,1.15)}paint(true);drawOv();clearTimeout(window.__nt);window.__nt=setTimeout(()=>{commit();paint(false)},300)}});
-dropGhost();flushQ();layout();H=[snap()];hi=0;all();document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;if(S.mode==="design"){const l=S.layers.filter(x=>x.type!=="full").pop();S.sel=l?l.id:S.layers[0].id}save();drawOv();panel()});if(Object.keys(adminHd()).length)peek().then(()=>panel());
+dropGhost();flushQ();layout();H=[snap()];hi=0;all();if(TOOL==="stencil")stInit();
 })();
+async function stCommit(){const res=FR.res,photo=await photoBlob();for(const l of S.layers.filter(x=>x.type==="stencil"))delete STN[l.id];S.layers=S.layers.filter(x=>x.type!=="stencil");const id=uid();STN[id]={mask:res.mask,w:res.w,h:res.h,mm:res.mmPerPx,verdict:res.verdict,change:res.change,photo,style:res.style};S.layers.push({id,type:"stencil",name:"Stencil",vis:true,dyes:[{n:poolOf("Inventory")[0].n,s:1}],p:{x:0,y:0,s:res.w*res.mmPerPx/MM}});S.sel=id}
+function stInit(){const R=$("#frame");const pick=()=>{if(FR.busy)return;DM=false;$("#pfile").click()};$("#stpick").onclick=pick;$("#stnew").onclick=pick;
+ $("#stsave").onclick=async()=>{const b=$("#stsave");if(!FR.res||FR.busy)return;flip(b,"…");try{await stCommit();logRecipe("save");await saveStencilImage();flip(b,"Saved")}catch(e){flip(b,"Save")}};
+ peek().then(()=>stUI())}

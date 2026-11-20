@@ -1,31 +1,18 @@
 import { useEffect } from 'react';
 import { Shell } from '../components/Shell';
-
-const BASE = '/dyed-and-unattached/dye-studio/';
-function loadScript(src: string) {
-  return new Promise<void>((resolve, reject) => {
-    const el = document.createElement('script');
-    el.src = src;
-    el.onload = () => resolve();
-    el.onerror = () => reject(new Error(src));
-    document.body.appendChild(el);
-  });
-}
+import { DuSwitch } from '../components/DuSwitch';
+import { loadStudio } from './studioLoader';
 
 export function DyeStudioPage() {
   useEffect(() => {
-    const w = window as unknown as { __dyeStudio?: boolean };
-    if (w.__dyeStudio) return;
-    w.__dyeStudio = true;
-    const v = __STUDIO_BUILD__;
-    (w as unknown as { __dsv?: string }).__dsv = v;
-    loadScript(`${BASE}engine.js?v=${v}`).then(() => loadScript(`${BASE}ui.js?v=${v}`)).catch(() => { w.__dyeStudio = false; });
+    if (new URLSearchParams(window.location.search).get('tool') === 'stencil') { window.location.replace('/dyed-and-unattached/stencil'); return; }
+    loadStudio('dye');
   }, []);
-  return <Shell><main id="studio" className="ds-page"><div className="ds">
+  return <Shell><main id="studio" className="ds-page"><DuSwitch active="dye"/><div className="ds dye">
     <div className="bar"><button id="undo" className="dis">Undo</button><button id="redo" className="dis">Redo</button><button id="copy">Copy</button><button id="png" className="pri">Save</button></div>
     <div className="app">
       <section className="stage"><div className="vw"><div className="sq"><canvas id="cv"></canvas><canvas id="ov"></canvas></div></div><div className="dock"><div className="rd" id="rd"></div></div></section>
-      <section className="panel"><nav className="tabs" id="modes"><button data-m="stencil">Stencil</button><button data-m="design">Dye design</button></nav><div className="body" id="body"></div></section>
+      <section className="panel"><div className="body" id="body"></div></section>
     </div>
     <div className="sheet" id="save"><div className="card" style={{alignItems:'center'}}><img id="svimg" alt="" style={{width:'100%',maxWidth:420,borderRadius:12}}/><div className="row" style={{width:'100%',marginTop:12}}><a id="svdl" download="disc.png" className="g" style={{textDecoration:'none'}}><button className="pri" style={{width:'100%'}} tabIndex={-1}>Download</button></a><button id="svx" className="g">Close</button></div></div></div>
     <input type="file" id="pfile" accept="image/*" hidden />
