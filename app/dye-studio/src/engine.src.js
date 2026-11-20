@@ -17,15 +17,18 @@ const DE=(()=>{
  // Uptake. Dyes in ONE bath (a blend) compete for the same sites (Langmuir, affinity-weighted). Separate baths
  // (layers, item.b) do not displace each other, so their dye loads add and absorbances add in the film (order is
  // irrelevant); a soft total cap (TOTCAP) stands in for the plastic running out of sites altogether.
- const TOTCAP=3.2;
+ const TOTCAP=3.2,LAM=.6;
  function conc(items){
-  const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))];let tot=0;
+  const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))],bt=[];
   for(const b of bs){
    const idx=items.map((it,i)=>i).filter(i=>(items[i].b||0)===b),K=idx.map(i=>(CAT[items[i].name]?.aff)??1);
-   let t=0;idx.forEach((i,j)=>{t+=K[j]*items[i].s});
-   idx.forEach((i,j)=>{const it=items[i],solo=it.s*(1+K[j])/(1+K[j]*it.s);out[i]=t>0?solo*(1+K[j]*it.s)/(1+t):0;tot+=out[i]});
+   let t=0;idx.forEach((i,j)=>{t+=K[j]*items[i].s});let g=0;
+   idx.forEach((i,j)=>{const it=items[i],solo=it.s*(1+K[j])/(1+K[j]*it.s);out[i]=t>0?solo*(1+K[j]*it.s)/(1+t):0;g+=out[i]});bt.push(g);
   }
-  const f=tot>0?1/Math.pow(1+Math.pow(tot/TOTCAP,4),.25):1;
+  // separate baths partly compete for the same sites (symmetric, so order never matters)
+  const all=bt.reduce((a,v)=>a+v,0);
+  bs.forEach((b,bi)=>{const f=1/(1+LAM*(all-bt[bi]));items.forEach((it,i)=>{if((it.b||0)===b)out[i]*=f})});
+  const tot=out.reduce((a,v)=>a+v,0),f=tot>0?1/Math.pow(1+Math.pow(tot/TOTCAP,4),.25):1;
   return out.map(v=>v*f);
  }
  const merge=items=>{const m=new Map();for(const it of items){const k=it.name+"|"+(it.b||0);const e=m.get(k);if(e)e.s+=it.s;else m.set(k,{name:it.name,s:it.s,b:it.b||0})}return[...m.values()]};
@@ -44,7 +47,7 @@ const DE=(()=>{
   const em=new Array(N).fill(0),c=conc(items);
   items.forEach((it,i)=>{
    const d=CAT[it.name];if(!d||!d.phi)return;
-   const A=absorb(d,c[i]),qf=1/(1+Math.pow(Math.max(...A)*(opt&&opt.cscale||1)/PRM.tq,2)),share=tauTotal.map((t,j)=>t>1e-9?A[j]/t:0);
+   const A=absorb(d,c[i]),qf=1/(1+Math.pow(Math.min(6,Math.max(...A))*(opt&&opt.cscale||1)/PRM.tq,2)),share=tauTotal.map((t,j)=>t>1e-9?A[j]/t:0);
    let abs=0;for(let j=0;j<N;j++)abs+=(1-Math.exp(-2*tauTotal[j]))*share[j]*SP.d65w[j];
    const norm=d.em?(()=>{let s=0;for(let j=0;j<N;j++)s+=gau(lam[j],d.em[0],d.em[1]);return s})():1;
    for(let j=0;j<N;j++)em[j]+=qf*d.phi*abs*gau(lam[j],d.em[0],d.em[1])/norm/SP.d65w[j]*Math.exp(-.7*tauTotal[j]);
