@@ -31,3 +31,20 @@
 .public-brand-shell .du-gallery-row-empty{background:linear-gradient(100deg,rgba(239,226,209,.9) 30%,rgba(251,245,234,.9) 50%,rgba(239,226,209,.9) 70%);background-size:200% 100%;animation:lr-sheen 1.6s linear infinite}
 @keyframes lr-sheen{to{background-position:-200% 0}}
 @media(prefers-reduced-motion:reduce){.public-brand-shell .du-gallery-row-empty{animation:none}}
+/* Batch: Weather, event detail, HBNF alignment */
+.public-brand-shell :is(.weather-controls,.weather-course,.event-detail-card,.result-table-wrap,.weather-hourly-scroll){border:1px solid var(--line-soft);box-shadow:var(--shadow-1)}
+.public-brand-shell :is(.weather-controls,.event-detail-card){border-radius:var(--r-m)}
+.public-brand-shell .weather-course{border-radius:var(--r-m)}
+.public-brand-shell .weather-page{padding-top:var(--sp-5)}
+.public-brand-shell .weather-controls{gap:var(--sp-3);padding:var(--sp-4)}
+.public-brand-shell .weather-course-toggle{padding:var(--sp-3) var(--sp-4)}
+.public-brand-shell .weather-course-toggle:hover{background:rgba(239,226,209,.55)}
+.public-brand-shell .event-detail-page{padding-top:var(--sp-5);padding-bottom:var(--sp-6)}
+.public-brand-shell .event-detail-card{padding:var(--sp-5)}
+.public-brand-shell .event-back-link{display:inline-flex;align-items:center;min-height:40px;margin-bottom:var(--sp-3);color:var(--lr-soil);font-weight:700;text-decoration:none}
+.public-brand-shell .event-back-link:hover{color:var(--section-accent)}
+.public-brand-shell .event-detail-actions{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.public-brand-shell .hbnf-page{margin:var(--sp-5) auto var(--sp-4);padding:var(--sp-5) clamp(var(--sp-4),3vw,32px);box-shadow:var(--shadow-1)}
+.public-brand-shell .hbnf-event-row{padding:var(--sp-3) 0}
+.public-brand-shell .hbnf-play-links a{border-radius:var(--r-s)}
+@media(max-width:620px){.public-brand-shell .hbnf-page{margin-top:var(--sp-3);padding:var(--sp-4) var(--sp-3)}.public-brand-shell .event-detail-card{padding:var(--sp-4)}}
