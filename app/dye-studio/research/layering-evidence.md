@@ -39,3 +39,8 @@ Used to constrain the engine and encoded in scripts/test.mjs. No source gives me
 - 54 Google Images thumbnails (dip dye, glue bed), 3-cluster colors per disc; each darker cluster tested against best engine dye (Star or Champion, strength .5-1.3) on each lighter cluster as base.
 - 38 of 54 within dE 8, median 6.4. Worst cases are vivid blue on lime, mint and yellow plastics (photo brighter than engine).
 - Base reflectance floor 0, .05, .10: coverage 38, 34, 31 of 54 and Champion anchors 5.22, 5.57, 5.89. Floor rejected.
+
+## Image residual by hue (scripts/image_coverage.mjs, research/image-clusters.txt)
+- 169 discs, 3-cluster colors from Google Images thumbnails; dye strengths .1 to 1.3; Champion uses UI transmission color.
+- Overall bias dL +0.0, dC near 0. Per-hue mean best-fit dE 4.7 to 9.1; blue (270 deg) worst at 9.1 with n=10; light blues fit only at low strength.
+- Global parameter sensitivity (star Sx, champion kT, gT): no meaningful change. No global recalibration justified.
