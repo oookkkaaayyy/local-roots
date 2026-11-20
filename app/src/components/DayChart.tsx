@@ -98,8 +98,8 @@ export function DayChart({ hours, sun, label }: { hours: ChartHour[]; sun: DaySu
   const rainPeak = finite(rains).length ? Math.round(Math.max(...finite(rains))) : null;
   return <div className="weather-daychart" role="group" aria-label={label}>
     {sun ? <SunStrip sun={sun} /> : null}
-    <Track kind="temp" hours={hours} sun={sun} title="Temp" value={rangeText(hours.map(h => h.tempF), '°F')} height={120} />
-    <Track kind="wind" hours={hours} sun={sun} title="Wind" value={`${rangeText(winds, ' mph')}${gustMax !== null ? ` · gust ${gustMax}` : ''}`} height={80} />
-    <Track kind="rain" hours={hours} sun={sun} title="Rain" value={rainPeak === null ? '—' : rainPeak > 0 ? `peak ${rainPeak}%` : 'none forecast'} height={80} showAxis />
+    <Track kind="temp" hours={hours} sun={sun} title="Temp" value={rangeText(hours.map(h => h.tempF), '°F')} height={96} showAxis />
+    <Track kind="wind" hours={hours} sun={sun} title="Wind" value={`${rangeText(winds, ' mph')}${gustMax !== null ? ` · gust ${gustMax}` : ''}`} height={96} showAxis />
+    <Track kind="rain" hours={hours} sun={sun} title="Rain" value={rainPeak === null ? '—' : rainPeak > 0 ? `peak ${rainPeak}%` : 'none forecast'} height={96} showAxis />
   </div>;
 }

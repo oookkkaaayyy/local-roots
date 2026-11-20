@@ -281,9 +281,12 @@
   .lr .hb-row{grid-template-columns:1fr;padding:12px 0}
   .lr .du-wordmark{width:170px}
   .lr .event-detail-card{padding:18px}
-  .lr.lr-tool{position:static;overflow:visible;min-height:100vh}
-  .lr.lr-tool #main-content{display:block}
-  .lr.lr-tool .ds{height:auto}
+  .lr.lr-tool .ds .stage{flex:0 0 38%;min-height:200px}
+  .lr.lr-tool .ds.stp .stframe{overflow-y:auto;-webkit-overflow-scrolling:touch;display:block;padding:12px 14px}
+  .lr.lr-tool .ds.stp .stframe[data-state=empty]{display:flex}
+  .lr.lr-tool .ds.stp .stwork{display:block}
+  .lr.lr-tool .ds.stp #fp{display:block;width:100%;height:auto;max-height:46vh;object-fit:contain}
+  .lr.lr-tool .ds.stp .stside{display:block;overflow:visible;padding-top:10px}
 }
 @media(prefers-reduced-motion:reduce){.lr *{transition:none!important;animation:none!important}}
 .lr .weather-status{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 10px;color:var(--muted);font:400 .82rem/1.3 var(--sans)}
@@ -357,3 +360,22 @@
 .lr .weather-daychart .dc-track{min-width:0;max-width:520px;width:100%;margin:0 auto}
 .lr .weather-daychart .dc-sun{grid-column:1/-1;max-width:460px}
 .lr .weather-daychart .dc-title{font-size:15px}.lr .weather-daychart .dc-value{font-size:16px}.lr .weather-daychart .dc-label{font-size:16px}.lr .weather-daychart .dc-axis{font-size:14.5px}
+@media(max-width:700px){
+  .lr .weather-course-toggle{padding:12px 36px 12px 2px}
+  .lr .weather-course-name{padding-right:30px}
+  .lr .weather-expand-indicator{top:12px;right:4px}
+  .lr .event-card{padding:10px 12px;margin:0 0 8px}
+  .lr .event-date-block{display:flex;flex-wrap:wrap;align-items:baseline;padding:0 0 6px;margin-bottom:6px}
+  .lr .event-date-block>*{margin:0 8px 0 0}
+  .lr .event-actions{display:flex;flex-wrap:wrap;margin-top:6px}
+  .lr .event-actions .button{min-height:36px;padding:0 12px;margin:0 6px 6px 0;flex:0 1 auto;font-size:.84rem}
+}
+@media(max-width:700px){
+  .lr .events-page .event-actions{display:flex!important;flex-flow:row wrap!important;justify-content:flex-start!important;padding:6px 0 0!important;margin:4px 0 0!important;border-top:0!important}
+  .lr .events-page .event-actions .button{flex:0 1 auto!important;width:auto!important;min-height:34px!important;padding:0 12px!important;margin:0 6px 6px 0!important;font-size:.82rem!important}
+  .lr .events-page .event-main{padding:0!important}
+  .lr .events-page .event-main h3{margin:0 0 2px!important;font-size:1rem!important}
+  .lr .events-page .event-tags{margin:6px 0 2px!important}
+  .lr .events-page .event-tags span{margin:0 4px 4px 0!important;padding:3px 8px!important;font-size:.72rem!important}
+  .lr .events-page .event-card{padding:10px 12px!important;margin:0 0 8px!important}
+}
