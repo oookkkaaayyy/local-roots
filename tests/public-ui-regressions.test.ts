@@ -157,11 +157,10 @@ test("calendar downloads are all-day ICS files with exclusive end dates and cano
   assert.ok(presentation.includes("anchor.download=`${event.slug||'local-roots-event'}.ics`"));
 });
 
-test("HBNF external action discloses new-tab behavior without changing visible label", () => {
+test("HB Night Flyers page is the real HBNF site inside the Local Roots shell", () => {
   const hbnf = source("pages/HbnfPage.tsx");
-  assert.ok(hbnf.includes("target=\"_blank\" rel=\"noreferrer\" aria-label={'Open ' + label + ' (opens in a new tab)'}"));
-  assert.ok(hbnf.includes("{ label: 'Skins', href: 'https://hbnightflyers.com/skins' }"));
-  assert.ok(hbnf.includes("{ label: 'Glow', href: 'https://hbnightflyers.com/glow' }"));
+  assert.ok(hbnf.includes("HBNF_SITE = 'https://hbnightflyers.com/'"));
+  assert.ok(hbnf.includes('<iframe className="hbnf-frame" title="HB Night Flyers"'));
 });
 
 test("owner-controlled copy policy remains explicit in source control", () => {

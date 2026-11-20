@@ -14,7 +14,7 @@ export function Shell({children,admin=false,mast}:{children:ReactNode;admin?:boo
   const path=raw==='/hbnf'?'/hb-night-flyers':raw==='/du'?'/dyed-and-unattached':raw;
   const current=(href:string)=>path===href||path.startsWith(`${href}/`)?'page' as const:undefined;
   const eventsCurrent=path==='/'||path==='/events'||path.startsWith('/events/')?'page' as const:undefined;
-  const tool=path.startsWith('/dyed-and-unattached/stencil')||path.startsWith('/dyed-and-unattached/dye-studio');
+  const tool=path.startsWith('/dyed-and-unattached/stencil')||path.startsWith('/dyed-and-unattached/dye-studio')||path.startsWith('/hb-night-flyers');
   const section=path.startsWith('/weather')?'weather':path.startsWith('/hb-night-flyers')?'hbnf':path.startsWith('/dyed-and-unattached')||path.startsWith('/admin/dyed-and-unattached')?'du':'events';
 
   if(admin)return <div className="site-shell admin-shell" data-section={section}>
