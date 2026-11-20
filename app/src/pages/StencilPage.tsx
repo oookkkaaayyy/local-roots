@@ -18,13 +18,14 @@ export function StencilPage() {
         <div className="stside">
         <div id="gth" className="gth"></div>
         <div className="stctl">
-          <div className="stvar"><button id="gd1" className="dis">Lighter</button><button id="gd2" className="dis">Bolder</button><button id="gd3" className="dis">Closer</button></div>
+          <div className="stvar"><button id="gd1" className="dis">Lighter<small>1 run</small></button><button id="gd2" className="dis">Bolder<small>1 run</small></button><button id="gd3" className="dis">Closer<small>1 run</small></button></div>
           <div className="sl gn"><span className="nm">Detail</span><input id="gt" type="range" min="0" max="4" step="1" defaultValue="0"/></div>
           <div className="sl gn"><span className="nm">Size</span><input id="gz" type="range" min="40" max="100" defaultValue="100"/></div>
+          <div className="sl gn"><span className="nm">Rotate</span><input id="grt" type="range" min="-180" max="180" defaultValue="0"/></div>
           <div className="sttools"><button id="gfit">Fit</button><button id="gmi">Mirror</button><button id="ger">Erase</button><button id="gun" className="dis">Undo</button><button id="grd" className="dis">Redo</button></div>
         </div>
         <div id="fleft" className="stmeta"></div>
-        <div className="stfoot"><button id="stnew">New photo</button><button id="stsave" className="pri">Save</button><button id="stsvg" hidden>Cricut SVG</button></div>
+        <div className="stfoot"><button id="stnew">New photo</button><button id="stsave" className="pri">Save</button><button id="stdye">To dye design</button><button id="stsvg" hidden>Cricut SVG</button></div>
         </div>
       </div>
       <div id="er" className="er"><div id="erw" className="erw"><canvas id="erc" width="64" height="64"></canvas></div><div className="row"><input id="erz" type="range" min="100" max="500" defaultValue="100"/><button id="ers" className="on">Small</button><button id="erl">Large</button><button id="eru" className="dis">Undo</button><button id="erd" className="pri">Done</button></div></div>
