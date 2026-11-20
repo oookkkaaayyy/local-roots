@@ -60,7 +60,7 @@
 .lr label input,.lr label select,.lr label textarea{margin-top:6px;text-transform:none;letter-spacing:0}
 .lr .filters>*{grid-column:auto;margin-top:0;margin-bottom:0}
 .lr .event-view-switch{display:flex;grid-template-columns:none;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--wash)}
-.lr .event-view-switch .button{flex:1 1 0;min-height:38px;border:0;border-radius:8px;background:transparent;color:var(--earth)}
+.lr .event-view-switch .button{flex:1 1 0;min-width:0;padding:0 6px;min-height:38px;border:0;border-radius:8px;background:transparent;color:var(--earth)}
 .lr .event-view-switch .button.primary{background:var(--ink);color:var(--paper)}
 .lr .du-switch{display:flex;padding:4px;border:1px solid rgba(42,31,23,.18);border-radius:12px;background:rgba(255,252,246,.55);width:auto;margin:0}
 .lr .du-switch a{min-width:104px;padding:11px 16px;border-radius:8px;color:var(--earth);font:700 .9rem/1 var(--sans);text-align:center;text-decoration:none}
