@@ -217,10 +217,11 @@ const next=(t,l)=>`<button class="pri nx" data-act="go" data-t="${t}">${l}</butt
 const colorPick=(id,val)=>`<input type="color" id="${id}C" value="${val}" aria-label="Custom color">`;
 const swRow=(act,cur,pk)=>`<div class="bs">`+BASES.map(b=>`<button data-act="${act}" data-c="${b}" aria-label="${b}" class="${b===String(cur).toUpperCase()?"on":""}" style="background:${b}"></button>`).join("")+`<span class="cpk">${colorPick(pk,cur)}</span></div>`;
 function discSection(){
+ if(!S.rim)S.tgt="disc";const rim=S.tgt==="rim"&&S.rim;
  let h=`<div class="dsc"><div class="ord first">Disc</div><div class="pl">`+PL.map(p=>`<button data-act="plastic" data-p="${p.id}" class="${p.id===S.plastic?"on":""}">${p.name}</button>`).join("")+`</div>`+
-  `<div class="ord">Color</div>`+swRow("base",S.base,"b")+`<button class="g wide" data-act="discphoto">Match from photo</button>`+
-  `<div class="ord">Rim</div><div class="seg"><button data-act="rim" data-on="0" class="${S.rim?"":"on"}">None</button><button data-act="rim" data-on="1" class="${S.rim?"on":""}">Rim</button></div>`;
- if(S.rim)h+=`<div class="sub">`+swRow("rimc",S.rim.c,"r")+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%")+`</div>`;
+  `<div class="seg tg3"><button data-act="tgt" data-t="disc" class="${rim?"":"on"}">Disc</button><button data-act="tgt" data-t="rim" class="${rim?"on":""}">Rim</button>${rim?`<button class="ic x" data-act="rim" data-on="0" aria-label="Remove rim">×</button>`:""}</div>`+
+  (rim?swRow("rimc",S.rim.c,"r"):swRow("base",S.base,"b"))+`<button class="g wide" data-act="discphoto">Match from photo</button>`;
+ if(rim)h+=`<div class="sub">`+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%")+`</div>`;
  return h+`</div>`}
 function tabDesign(){const n=S.layers.length;let h=discSection();
  if(n>1)h+=`<div class="lhd"><h3>Layers</h3><button class="pri sm" data-act="addlayer" data-t="stripe">+ Add color</button></div>`;
@@ -251,7 +252,8 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  if(a==="sel"){if(e.target.closest("[data-act]:not([data-act=sel])")!==t&&e.target.closest("[data-act]:not([data-act=sel])"))return;selectLayer(t.dataset.id)}
  else if(a==="up"||a==="down"){const i=S.layers.findIndex(x=>x.id===t.dataset.id),j=i+(a==="up"?1:-1);if(i>0&&j>=1&&j<S.layers.length){const q=S.layers[i];S.layers[i]=S.layers[j];S.layers[j]=q;commit();all()}}
  else if(a==="vis"){const l=S.layers.find(x=>x.id===t.dataset.id);l.vis=!l.vis;commit();all()}
- else if(a==="rim"){S.rim=t.dataset.on==="1"?(S.rim||{c:"#2B2B2E",w:10,f:.5}):null;commit();all()}
+ else if(a==="tgt"){if(t.dataset.t==="rim"&&!S.rim)S.rim={c:"#2B2B2E",w:10,f:.5};S.tgt=t.dataset.t;commit();all()}
+ else if(a==="rim"){S.rim=null;S.tgt="disc";commit();all()}
  else if(a==="rimc"){if(S.rim){S.rim.c=t.dataset.c;commit();all()}}
  else if(a==="discphoto"){DM=true;$("#pfile").click()}
  
@@ -457,7 +459,7 @@ $("#gsv").onclick=saveStencilImage;
  ew.addEventListener("wheel",e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();ez=Math.max(1,Math.min(5,ez*(e.deltaY<0?1.1:.9)));$("#erz").value=Math.round(ez*100);size()},{passive:false})}
 $("#fx").onclick=()=>{$("#frame").classList.remove("open");clearTimeout(FR.t);FR.seq++};
 function photoBlob(){return new Promise(res=>{const im=FR.img,k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(res,"image/jpeg",.85)})}
-$("#fok").onclick=async()=>{if(!FR.res)return;if(FR.dm){S.base=FR.res.hex;S.trans="";S.tab="disc";$("#frame").classList.remove("open");commit();all();return}const res=FR.res,photo=await photoBlob();
+$("#fok").onclick=async()=>{if(!FR.res)return;if(FR.dm){if(S.tgt==="rim"&&S.rim)S.rim.c=FR.res.hex;else S.base=FR.res.hex;S.trans="";S.tab="disc";$("#frame").classList.remove("open");commit();all();return}const res=FR.res,photo=await photoBlob();
  for(const l of S.layers.filter(x=>x.type==="stencil"))delete STN[l.id];S.layers=S.layers.filter(x=>x.type!=="stencil");
  const pool=poolOf("Inventory"),used=new Set(S.layers.flatMap(l=>l.dyes.map(d=>d.n))),pick=(pool.find(d=>!used.has(d.n))||pool[0]).n,id=uid();
  STN[id]={mask:res.mask,w:res.w,h:res.h,mm:res.mmPerPx,verdict:res.verdict,change:res.change,photo,style:res.style};
