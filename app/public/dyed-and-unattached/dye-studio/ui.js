@@ -228,8 +228,8 @@ function discSection(){
  if(rim)h+=`<div class="sub">`+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%")+`</div>`;
  return h+`</div>`}
 function tabDesign(){const n=S.layers.length;let h=discSection();
- if(n>1)h+=`<div class="lhd"><h3>Layers</h3><button class="pri sm" data-act="addlayer" data-t="stripe">+ Add color</button></div>`;
- else h+=`<div class="lhd"><h3>Layers</h3></div><button class="addbig" data-act="addlayer" data-t="stripe">+ Add color</button>`;
+ if(n>1)h+=`<div class="lhd"><h3>Layers</h3><span class="lact"><button class="sm dg" data-act="clearask">Clear</button><button class="pri sm" data-act="addlayer" data-t="stripe">+ Add color</button></span></div>`;
+ else h+=`<div class="lhd"><h3>Layers</h3><span class="lact"><button class="sm dg" data-act="clearask">Clear</button></span></div><button class="addbig" data-act="addlayer" data-t="stripe">+ Add color</button>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
  return h}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
@@ -274,6 +274,7 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  else if(a==="stsvg"){const SL=S.layers.find(l=>l.type==="stencil"),m=SL&&STN[SL.id];if(m)stencilMod().then(M=>{const svg=M.maskToCutSvg(m.mask,m.w,m.h,SL.p.s*MM/m.w),u=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"})),a2=document.createElement("a");a2.href=u;a2.download="stencil.svg";document.body.appendChild(a2);a2.click();a2.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
  else if(a==="reshape"){setEdit(!UI.edit);if(UI.edit)hideSoon()}
  else if(a==="dup"){const N=JSON.parse(JSON.stringify(L));N.id=uid();N.name=L.name+" 2";if(N.type==="stripe"){N.p.x*=-1;N.p.y*=-1;if(!N.p.x&&!N.p.y){const t=axes(N).n;N.p.x=t[0]*.3;N.p.y=t[1]*.3}}else if(N.type==="box"){N.p.x=clamp(N.p.x+.12,-1,1);N.p.y=clamp(N.p.y+.12,-1,1)}S.layers.push(N);S.sel=N.id;commit();all()}
+ else if(a==="clearask"){$("#clr").classList.add("open")}
  else if(a==="del"){delete STN[L.id];S.layers=S.layers.filter(l=>l.id!==L.id);S.sel=S.layers[S.layers.length-1].id;commit();all()}
   else if(a==="base"){S.base=t.dataset.c;commit();all()}
  else if(a==="pool"){S.pool=t.dataset.g;save();panel()}
@@ -385,6 +386,7 @@ $("#png").onclick=async()=>{const b=$("#png");logRecipe("save");flip(b,"…");aw
  const f=new File([pngBlob],"disc.png",{type:"image/png"});
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});flip(b,"Saved");return}catch(e){if(e&&e.name==="AbortError"){flip(b,"Save");return}}}
  $("#svimg").src=pngUrl;$("#svdl").href=pngUrl;$("#save").classList.add("open");flip(b,"Save")};
+$("#clrx").onclick=()=>$("#clr").classList.remove("open");$("#clr").addEventListener("click",e=>{if(e.target.id==="clr")$("#clr").classList.remove("open")});$("#clrok").onclick=()=>{$("#clr").classList.remove("open");S=defState();for(const k in STN)delete STN[k];commit();all()};
 $("#svx").onclick=()=>$("#save").classList.remove("open");$("#save").addEventListener("click",e=>{if(e.target.id==="save")$("#save").classList.remove("open")});
 const isAdmin=()=>{try{return!!localStorage.getItem("du-admin-device-token-v1")}catch(e){return false}};
 if($("#copy")){if(isAdmin()&&TOOL==="dye")$("#copy").hidden=false;$("#copy").onclick=()=>{copyText(recipeText());flip($("#copy"),"Copied")}}
