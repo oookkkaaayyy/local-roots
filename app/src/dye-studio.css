@@ -27,7 +27,7 @@
 .ds .zs div{width:74px;text-align:center;font:11px/1.2 ui-monospace,Menlo,monospace;color:var(--mu)}
 .ds .zs b{display:block;height:24px;border-radius:8px;border:1px solid #0004;margin-bottom:3px}
 .ds .panel{display:flex;flex-direction:column;min-height:0;background:var(--p);border-left:1px solid var(--ln)}
-.ds .tabs{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 12px;border-bottom:1px solid var(--ln)}
+.ds .tabs{flex:none;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:10px 12px;border-bottom:1px solid var(--ln)}
 .ds .tabs button{padding:0 6px}
 .ds .tabs button b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--p3);font-size:12px}
 .ds .tabs button.on b{background:var(--ac);color:#fff}
@@ -118,3 +118,7 @@
 .ds #er{display:none;position:absolute;inset:0;z-index:5;background:#f8f2e6;border-radius:inherit;padding:12px;flex-direction:column;gap:8px}.ds #er.open{display:flex}
 .ds #er .erw{flex:1;min-height:0;overflow:auto;background:#fff;border-radius:12px;touch-action:none}.ds #erc{display:block;margin:0 auto;touch-action:none;cursor:crosshair;image-rendering:pixelated}
 .ds #er .row{align-items:center;flex-wrap:wrap}.ds #er input[type=range]{flex:1;min-width:120px}.ds #er button.on{background:#2b1d12;color:#fff}
+.ds .pl{display:flex;flex-wrap:wrap;gap:6px}.ds .pl button{flex:1 1 30%;min-height:40px;border-radius:12px;border:2px solid var(--ln);font-weight:600}
+.ds .cpk{width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid #0004;background:conic-gradient(#e84c55,#f7e331,#57a768,#59a9de,#8d62b6,#e84c55);display:block;position:relative;flex:none}
+.ds .cpk input{position:absolute;left:0;top:0;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
+.ds .foot2 button.q{grid-column:1/-1;background:none;border:0;box-shadow:none;color:var(--mu);font-size:12px;min-height:28px}
