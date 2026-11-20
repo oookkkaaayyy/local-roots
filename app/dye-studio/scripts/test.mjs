@@ -69,4 +69,13 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
 { // Google Images, Tri-Fox neon yellow with red dye lines (sampled about #9d2711)
   const e=de2(P("#E6F23A",[{name:"Fire Red",s:1,b:0}]).hex,"#9d2711");ok(e<14,"red on neon yellow near photo dE2000 "+e.toFixed(1));
 }
+{ // invariant sweep: layering two non-fluorescent dyes is order independent and never lighter than both alone
+  const bs=["#F4F2E8","#F7E331","#59A9DE","#57A768","#2B2B2E"],nm=Object.keys(DE.CAT).filter(k=>!((DE.CAT[k].phi||0)>.05));
+  const Lm=h=>{const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+  let o=0,l=0,n=0;
+  for(let i=0;i<nm.length;i+=2)for(let j=i+1;j<nm.length;j+=3)for(const b of bs)for(const f of ["star","champion"]){
+   const A={name:nm[i],s:1,b:0},B={name:nm[j],s:1,b:1},ab=P(b,[A,B],f).hex,ba=P(b,[{...A,b:1},{...B,b:0}],f).hex,a=P(b,[A],f).hex,c=P(b,[B],f).hex;n++;
+   if(ab!==ba)o++;if(Lm(ab)>Math.min(Lm(a),Lm(c))+.03)l++}
+  ok(o===0,"sweep order independent ("+n+" pairs)");ok(l===0,"sweep layered not lighter than both ("+l+")");
+}
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
