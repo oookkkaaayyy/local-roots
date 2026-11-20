@@ -222,9 +222,9 @@ function discSection(){
  if(S.rim)h+=swRow("rimc",S.rim.c,"r")+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%");
  return h}
 function usageLine(){const t=FR.tally;if(!t)return"";const f=x=>x.n+" · $"+x.usd.toFixed(2);return`<div class="usg">Today ${f(t.day)}<br>7 days ${f(t.week)}<br>Month ${f(t.month)}<br>Visitors, month ${f(t.visitors)}</div>`}
-function tabStencilMode(){const L=S.layers.find(l=>l.type==="stencil");let h=discSection()+`<div class="sec">Photo stencil</div>`;
+function tabStencilMode(){const L=S.layers.find(l=>l.type==="stencil");let h=`<div class="sec">Photo stencil</div>`;
  if(L){S.sel=L.id;h+=layerCard(L,S.layers.indexOf(L),S.layers.length,true)}else h+=`<div class="tg2"><button class="tl2" data-act="photo">Choose a photo</button></div>`;
- return h+`<div class="lkr"><button class="lk" data-act="mode" data-m="design">Add dye design</button></div>`+usageLine()}
+ return h+discSection()+`<div class="lkr"><button class="lk" data-act="mode" data-m="design">Add dye design</button></div>`+usageLine()}
 function tabDesign(){const n=S.layers.length;let h=discSection()+`<div class="sec">Dye</div><div class="tg2"><button class="tl2" data-act="addlayer" data-t="stripe">+ Color</button></div>`;
  if(n>1)h+=`<div class="ord">Layers</div>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
