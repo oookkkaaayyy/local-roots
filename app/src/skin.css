@@ -303,7 +303,7 @@
 .lr .ds #clrok{background:var(--dg);border-color:var(--dg);color:#fff}
 @media(max-width:1000px),(orientation:portrait){
   .lr.lr-tool .ds .app{flex-direction:column}
-  .lr.lr-tool .ds .stage{flex:0 0 34%;min-height:0}
+  .lr.lr-tool .ds .stage{flex:0 0 36%;min-height:0}
   .lr.lr-tool .ds .panel{flex:1 1 0;border-left:0;border-top:1px solid var(--line)}
 }
 .lr .lr-nav a{flex:none;white-space:nowrap;margin-left:0;padding:0 16px}
@@ -319,3 +319,7 @@
 @media(max-width:700px){
   .lr .event-card{padding:12px 14px}
 }
+.lr .ds .dtog{width:100%;justify-content:space-between;margin-top:6px;min-height:48px}
+.lr .ds .dtog span{color:var(--muted);font-weight:600}
+.lr .ds .lhd:first-child{margin-top:2px}
+.lr .ds .panel .body{padding-bottom:72px}

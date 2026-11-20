@@ -227,10 +227,12 @@ function discSection(){
   (rim?swRow("rimc",S.rim.c,"r"):swRow("base",S.base,"b"))+`<button class="g wide" data-act="discphoto">Match from photo</button>`;
  if(rim)h+=`<div class="sub">`+slider("rim","rw",0,3,25,Math.round(S.rim.w),"Width","%")+slider("rim","rf",1,0,100,Math.round(S.rim.f*100),"Fuzzy / Crisp","%")+`</div>`;
  return h+`</div>`}
-function tabDesign(){const n=S.layers.length;let h=discSection();
+let dOpen=false;
+function tabDesign(){const n=S.layers.length;let h="";
  if(n>1)h+=`<div class="lhd"><h3>Layers</h3><span class="lact"><button class="sm dg" data-act="clearask">Clear</button><button class="pri sm" data-act="addlayer" data-t="stripe">+ Add color</button></span></div>`;
  else h+=`<div class="lhd"><h3>Layers</h3><span class="lact"><button class="sm dg" data-act="clearask">Clear</button></span></div><button class="addbig" data-act="addlayer" data-t="stripe">+ Add color</button>`;
  for(let i=n-1;i>=1;i--)h+=layerCard(S.layers[i],i,n);
+ h+=`<button class="dtog" data-act="disctoggle" aria-expanded="${dOpen}">Disc and plastic<span>${dOpen?"Hide":"Edit"}</span></button>`+(dOpen?discSection():"");
  return h}
 function names(){return poolOf(S.pool).map(d=>d.n).slice(0,24)}
 const sh=n=>n.replace(/^(ProChem |iDye Poly )/,"");
@@ -274,6 +276,7 @@ const onAct=e=>{const t=e.target.closest("[data-act]");if(!t)return;const a=t.da
  else if(a==="stsvg"){const SL=S.layers.find(l=>l.type==="stencil"),m=SL&&STN[SL.id];if(m)stencilMod().then(M=>{const svg=M.maskToCutSvg(m.mask,m.w,m.h,SL.p.s*MM/m.w),u=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"})),a2=document.createElement("a");a2.href=u;a2.download="stencil.svg";document.body.appendChild(a2);a2.click();a2.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
  else if(a==="reshape"){setEdit(!UI.edit);if(UI.edit)hideSoon()}
  else if(a==="dup"){const N=JSON.parse(JSON.stringify(L));N.id=uid();N.name=L.name+" 2";if(N.type==="stripe"){N.p.x*=-1;N.p.y*=-1;if(!N.p.x&&!N.p.y){const t=axes(N).n;N.p.x=t[0]*.3;N.p.y=t[1]*.3}}else if(N.type==="box"){N.p.x=clamp(N.p.x+.12,-1,1);N.p.y=clamp(N.p.y+.12,-1,1)}S.layers.push(N);S.sel=N.id;commit();all()}
+ else if(a==="disctoggle"){dOpen=!dOpen;panel()}
  else if(a==="clearask"){$("#clr").classList.add("open")}
  else if(a==="del"){delete STN[L.id];S.layers=S.layers.filter(l=>l.id!==L.id);S.sel=S.layers[S.layers.length-1].id;commit();all()}
   else if(a==="base"){S.base=t.dataset.c;commit();all()}
