@@ -218,12 +218,12 @@ test("public header gives Local Roots stronger brand hierarchy without a redunda
   assert.ok(skin.includes(".lr .lr-brand span{"));
 });
 
-test("public skin uses one sans family plus one serif display family", () => {
+test("public skin uses one sans family (Cabin) and no serif", () => {
   const shell = source("components/Shell.tsx");
   const skin = source("skin.css");
   assert.ok(shell.includes("public-brand-shell lr"));
-  assert.ok(skin.includes('--sans:"Avenir Next"'));
-  assert.ok(skin.includes("--serif:Georgia"));
+  assert.ok(skin.includes("--sans:Cabin"));
+  assert.equal(/serif:|Georgia|Palatino/.test(skin), false);
   assert.ok(skin.includes(".lr .lr-nav a[aria-current=page]"));
   assert.equal(/:is\(|clamp\(|aspect-ratio/.test(skin), false);
 });
@@ -239,17 +239,15 @@ test("public brand audit does not add new marketing copy and includes D&U contro
   }
 });
 
-test("HB Night Flyers links directly from the footer, not primary navigation", () => {
+test("HB Night Flyers is in the primary navigation with the other sections", () => {
   const shell = source("components/Shell.tsx");
-  const footerStart=shell.indexOf('<footer className="lr-foot">');
-  assert.ok(footerStart>0);
-  const primaryStart=shell.indexOf('<nav id="primary-navigation"');
+  const primaryStart=shell.lastIndexOf('<nav id="primary-navigation"');
   const primaryEnd=shell.indexOf('</nav>',primaryStart);
   assert.ok(primaryStart>0&&primaryEnd>primaryStart);
-  assert.equal(shell.slice(primaryStart,primaryEnd).includes('href="/hb-night-flyers"'),false);
-  assert.ok(shell.includes('<a href="https://hbnightflyers.com/">HB Night Flyers</a>'));
-  assert.ok(shell.includes('<nav className="footer-nav" aria-label="Footer">'));
-  assert.ok(shell.includes('<a href="/hb-night-flyers">HB Night Flyers events</a>'));
+  const primary=shell.slice(primaryStart,primaryEnd);
+  assert.ok(primary.includes("nav('nav-hbnf','/hb-night-flyers'"));
+  assert.ok(primary.indexOf("nav-weather")<primary.indexOf("nav-hbnf")&&primary.indexOf("nav-hbnf")<primary.indexOf("nav-du"));
+  assert.equal(shell.includes('HB Night Flyers events'),false);
 });
 
 test("compact public navigation stays three plain links and reflows under the brand", () => {

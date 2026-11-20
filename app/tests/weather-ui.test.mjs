@@ -71,7 +71,7 @@ test('Weather interface keeps player controls and removes internal explanations'
 test('Primary navigation keeps the active links as plain reflowing links', async () => {
   const shell = await read('../src/components/Shell.tsx');
   const skin = await read('../src/skin.css');
-  assert.ok(shell.includes(`className="nav-weather" href="/weather" aria-current={current('/weather')}>Weather</a>`));
+  assert.ok(shell.includes(`nav('nav-weather','/weather',current('/weather')`));
   assert.ok(shell.includes(`href="/" aria-label="Local Roots home"`));
   assert.match(skin, /@media\(max-width:700px\)/);
 });
