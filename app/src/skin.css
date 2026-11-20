@@ -292,3 +292,8 @@
   .lr.lr-tool .ds{height:auto}
 }
 @media(prefers-reduced-motion:reduce){.lr *{transition:none!important;animation:none!important}}
+.lr .weather-status{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 10px;color:var(--muted);font:400 .82rem/1.3 var(--sans)}
+.lr .weather-status:empty{display:none}
+.lr .weather-status .weather-error{color:var(--clay-dk);font-weight:700}
+.lr .weather-status .weather-updated{margin:0}
+.lr :focus-visible{outline:2px solid var(--clay-dk);outline-offset:2px}
