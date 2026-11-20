@@ -66,4 +66,7 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
   const c=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const[a,g,b]=c(r),[kr,kg,kb]=c(k);
   ok(a>g*1.4&&a>b*1.4,"red on green Star reads red");ok(Math.max(kr,kg,kb)<60,"black on green Star is dark");
 }
+{ // Google Images, Tri-Fox neon yellow with red dye lines (sampled about #9d2711)
+  const e=de2(P("#E6F23A",[{name:"Fire Red",s:1,b:0}]).hex,"#9d2711");ok(e<14,"red on neon yellow near photo dE2000 "+e.toFixed(1));
+}
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);

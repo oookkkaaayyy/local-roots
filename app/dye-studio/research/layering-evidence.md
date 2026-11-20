@@ -24,3 +24,9 @@ Used to constrain the engine and encoded in scripts/test.mjs. No source gives me
 - Red on green Star: deep red overwrites the green (sampled about #8d241c). Engine: red-dominant, darker.
 - DX/base plastic is not offered in the tool.
 - Clear F2: light dyes weak, dark dyes needed.
+
+## Threads 61923, 65307, 124584, 110989 and image results
+- Dyers: dye darkest first then lighter; black/red/orange/yellow stack without changing much; blue over red shifts.
+- Red overpowers yellow plastic if dark enough; dark blue holds; light blue goes green; dye is translucent, black near opaque.
+- Neon yellow with red dye lines (Tri-Fox photo): red-orange about #9d2711; engine Fire Red within test tolerance.
+- Open: red on green Star darker in engine than photo (plastic shade unknown).
