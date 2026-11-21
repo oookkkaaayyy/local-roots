@@ -120,6 +120,8 @@
 .lr .submit-page .submit-disclosure summary{display:none}
 .lr .submit-disclosure summary{padding:16px 20px;font:700 1rem/1 var(--sans);cursor:pointer}
 .lr .submit-section{padding:0 20px 20px}
+.lr .submit-disclosure .submit-section{background:transparent;box-shadow:none;color:var(--ink);margin:0;border-radius:0}
+.lr .submit-disclosure .submit-section .eyebrow,.lr .submit-disclosure .submit-section label{color:var(--ink)}
 .lr .section-intro{display:none}
 .lr .submission-form{display:grid;grid-template-columns:1fr 1fr;grid-column-gap:14px;grid-row-gap:14px}
 .lr .submission-form .span-2{grid-column:1/-1}
