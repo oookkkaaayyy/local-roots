@@ -460,7 +460,7 @@
 /* stencil photo step */
 .lr .ds .stframe:not([data-state=empty]) .stpickw{display:none!important}
 .lr .ds .stpair{grid-column:1;display:flex;align-items:flex-start;justify-content:center;min-width:0;min-height:0;width:100%}
-.lr .ds .stpair canvas{flex:0 1 auto;width:calc(50% - 6px)!important;height:auto!important;max-width:calc((100vh - 220px)/2);margin:0 3px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.lr .ds .stpair canvas{flex:0 1 auto;width:calc(50% - 6px)!important;height:auto!important;max-width:calc(100vh - 200px);margin:0 3px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
 .lr .ds .stframe[data-state=photo] #fp,.lr .ds .stframe[data-state=photo] .stctl,.lr .ds .stframe[data-state=photo] #stsave,.lr .ds .stframe[data-state=photo] #stdye,.lr .ds .stframe[data-state=photo] #stsvg,.lr .ds .stframe[data-state=photo] .gth{display:none!important}
 .lr .ds .stframe[data-state=photo] .stpair #sp{width:100%!important;max-width:calc(100vh - 220px);cursor:grab;-ms-touch-action:none;touch-action:none}
 .lr .ds .stframe[data-state=open] .stpre,.lr .ds .stframe[data-state=empty] .stpre{display:none}
