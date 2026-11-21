@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run check:du-handoff && npm run test:studio && npm run test:weather && npm run test:brand && tsc --noEmit && vite build && node scripts/generate-home-screen-route-shells.mjs && node --test tests/home-screen-route-shells.test.mjs",
+    "build": "npm run check:du-handoff && npm run test:studio && npm run test:weather && npm run test:brand && npm run test:season && tsc --noEmit && vite build && node scripts/generate-home-screen-route-shells.mjs && node --test tests/home-screen-route-shells.test.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit --pretty false",
     "check:du-handoff": "node scripts/check-du-handoff.mjs",
     "test:studio": "node dye-studio/scripts/build.mjs && node dye-studio/scripts/test.mjs && node scripts/check-hbnf-integration.mjs",
     "test:weather": "node --test tests/weather*.test.mjs",
+    "test:season": "node --test tests/hbnf-season.test.mjs",
     "test:brand": "node --test tests/brand-identity-assets.test.mjs",
     "test:stencil": "node --test tests/du-stencil-constraints.test.mjs tests/png-mask.test.mjs tests/du-stencil-compiler.test.mjs tests/du-cut-sheet.test.mjs"
   },
