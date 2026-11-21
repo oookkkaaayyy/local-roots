@@ -1,0 +1,1 @@
+{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"echo 'MANDATORY: read PROJECT_MEMORY/START_HERE.md in private repo oookkkaaayyy/hbnf-site first. Document as you go: update LEDGER, DECISIONS, SESSION_LOG, INVENTORY there and commit before ending. No secrets or business-private details in this public repo.'"}]}]}}
