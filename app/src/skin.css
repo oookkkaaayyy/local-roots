@@ -468,3 +468,4 @@
 .lr .ds .stpre #stgo{padding:14px 10px;font-weight:700;border-radius:10px;border:0;background:var(--clay);color:#fff;font-size:16px;margin-top:8px}
 .lr .ds .stpre #stgo small{display:inline;margin-left:6px;font-size:11px;opacity:.85;font-weight:600}
 @media(max-width:700px){.lr.lr-tool .ds.stp .stpair canvas{max-width:none}.lr.lr-tool .ds.stp .stframe[data-state=photo] .stpair #sp{max-width:min(100%,46vh)}}
+.lr .ds .hid{display:none!important}
