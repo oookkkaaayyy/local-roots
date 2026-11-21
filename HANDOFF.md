@@ -1,3 +1,5 @@
+# SUPERSEDED POINTER: the single source of truth is the private repo oookkkaaayyy/hbnf-site, folder PROJECT_MEMORY (read START_HERE.md first, then LEDGER.md). Where this file conflicts with it, PROJECT_MEMORY wins. Document as you go per its CHANGE DISCIPLINE section.
+
 # HANDOFF: Local Roots / Dyed & Unattached / HB Night Flyers (2026-11-20)
 Read this first. Everything needed to continue is in GitHub (source of truth) plus the Drive folder "LR_DU_HBNF_BACKUP_2026-11-20" (this doc, source archives, spec docs).
 
