@@ -16,9 +16,8 @@ const duTombstone = readFileSync(new URL("../../app/public/brand/dyed-unattached
 test("D&U public page keeps only approved/functional copy and intake", () => {
   assert.ok(duPublic.includes('src="/brand/dyed-unattached-logo.png"'));
   assert.ok(duPublic.includes('alt="Dyed & Unattached"'));
-  assert.ok(duPublic.includes('href="#request-stencil"'));
+  assert.ok(duPublic.includes('href="/dyed-and-unattached/stencil"'));
   assert.ok(duPublic.includes('id="gallery"'));
-  assert.ok(duPublic.includes("SUBMIT_INTAKE_URL"));
   assert.equal(duPublic.includes("Custom disc-golf stencil portraits"), false);
   assert.equal(duPublic.includes("Turn a favorite pet photo"), false);
   assert.equal(duPublic.includes("See the transformation."), false);
@@ -30,14 +29,13 @@ test("D&U public page keeps only approved/functional copy and intake", () => {
 
 test("D&U public page uses the preserved canonical brand artwork", () => {
   assert.ok(duPublic.includes('src="/brand/dyed-unattached-logo.png"'));
-  assert.ok(duPublic.includes('src="/brand/dyed-unattached-tombstone.png"'));
   assert.equal(duPublic.includes('className="branch-monogram"'), false);
   assert.equal(createHash("sha256").update(duLogo).digest("hex"), "a9bdcd967c968008e3493f52be96c0cb2066364848e78b9987a4350bfb1f4136");
   assert.equal(createHash("sha256").update(duTombstone).digest("hex"), "89ce5f6db5fa730182610575a2bc53aa07ac8a1bd3cf7c33b26af75d23ade879");
 });
 
 test("D&U public gallery renders the portfolio from managed item records", () => {
-  assert.ok(duPublic.includes("gallery-v2.avif"));
+  assert.ok(duPublic.includes("/du-gallery/g/"));
   assert.ok(duPublic.includes("gallery_items"));
   assert.ok(duPublic.includes(".eq('is_published',true)"));
   assert.ok(duPublic.includes("gallerySlides"));
@@ -100,7 +98,7 @@ test("public gallery prioritizes reference plus finished disc and otherwise show
   assert.ok(duPublic.includes("if(source&&finished)return [source,finished]"));
   assert.ok(duPublic.includes(".slice(0,2)"));
   assert.ok(duPublic.includes("length>=1"));
-  assert.ok(duPublic.includes("du-gallery-row-single"));
+  assert.ok(duPublic.includes("dug-row-single"));
 });
 
 

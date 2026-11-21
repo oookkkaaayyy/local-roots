@@ -14,6 +14,14 @@ const routeShells = [
     iconAsset: 'brand/dyed-unattached-icon-180.png',
   },
   {
+    path: 'dyed-and-unattached/dye-studio/index.html',
+    title: 'Dye Studio · Dyed &amp; Unattached · Local Roots',
+    description: 'Design a disc dye recipe with the Dyed &amp; Unattached Disc Dye Studio.',
+    manifest: '/dyed-and-unattached/dye-studio/manifest.webmanifest?v=ios-icons-20261020',
+    appTitle: 'D&amp;U Studio',
+    iconAsset: 'brand/dyed-unattached-icon-180.png',
+  },
+  {
     path: 'weather/index.html',
     title: 'Disc Golf Weather · Local Roots',
     description: 'Compare verified Southern California course forecasts by playing hours.',
@@ -78,12 +86,6 @@ export async function generateHomeScreenRouteShells(distDir = resolve(projectRoo
     const iconDataUrl = pngDataUrl(await readFile(resolve(projectRoot, 'public', route.iconAsset)));
     await writeFile(output, makeRouteShell(rootHtml, { ...route, iconDataUrl }));
   }
-
-  // Dye Studio is an independent static app shell, so embed its approved D&U icon too.
-  const studioPath = resolve(distDir, 'dyed-and-unattached/dye-studio/index.html');
-  const studioHtml = await readFile(studioPath, 'utf8');
-  const duIcon = pngDataUrl(await readFile(resolve(projectRoot, 'public/brand/dyed-unattached-icon-180.png')));
-  await writeFile(studioPath, withInlineAppleTouchIcon(studioHtml, duIcon));
 
   // Isolated iOS 27 icon experiment: the only icon source on this page is the
   // approved Local Roots 180px Apple touch PNG embedded in the initial HTML.

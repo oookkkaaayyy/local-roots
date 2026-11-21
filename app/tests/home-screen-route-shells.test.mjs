@@ -61,8 +61,8 @@ test('Local Roots root and Dye Studio each embed their own approved artwork befo
 
   const studio = await shell('dyed-and-unattached/dye-studio/index.html');
   await assertEmbeddedIcon(studio, 'brand/dyed-unattached-icon-180.png', 'a19995150d774de113f6c8e4d10f0fcf8648ae9fbb0c20df592f275455684ecf');
-  assert.match(studio, /apple-mobile-web-app-title" content="D&U Studio"/);
-  assert.match(studio, /rel="manifest" href="\.\/manifest\.webmanifest/);
+  assert.match(studio, /apple-mobile-web-app-title" content="D&amp;U Studio"/);
+  assert.match(studio, /rel="manifest" href="\/dyed-and-unattached\/dye-studio\/manifest\.webmanifest/);
   assert.ok(studio.indexOf('rel="apple-touch-icon"') < studio.indexOf('<script'), 'the initial icon must precede app scripts');
 
   const headers = await readFile(resolve(import.meta.dirname, '..', 'public/_headers'), 'utf8');

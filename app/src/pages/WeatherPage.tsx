@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Shell } from '../components/Shell';
+import { Shell, Mast } from '../components/Shell';
 import { useFilterSheet } from '../lib/useFilterSheet';
 import coursesData from '../data/weather-courses.json';
 import { buildHourlyRows, eligibleActiveAlerts, filterCourses, forecastFlags, summarizeHourly } from '../lib/weatherCore.js';
@@ -294,7 +294,7 @@ export function WeatherPage() {
   }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
-  return <Shell><main className="events-page weather-page"><h1 className="sr-only">Southern California Disc Golf Weather</h1>
+  return <Shell mast={<Mast title="Weather" meta={loading&&!result?'':`${sorted.length} courses`} aside={<button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button>} />}><main className="events-page weather-page">
     <section className="events-layout content">
       <dialog ref={filtersDialog} id="weather-filters" className="filters-dialog" open aria-labelledby="filters-title" onCancel={()=>closeFilters()} onClose={()=>closeFilters()} onClick={event=>{if(event.target===event.currentTarget)closeFilters();}}>
         <div className="filters" role="group" aria-label="Weather filters">
@@ -309,15 +309,15 @@ export function WeatherPage() {
         </div>
       </dialog>
       <div className="event-list weather-list" aria-busy={loading}>
-        <div className="list-header"><h2>Courses</h2><span aria-live="polite" aria-atomic="true">{loading&&!result?'…':`${sorted.length} shown`}</span><span className="list-actions"><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button><button type="button" className="filters-trigger" aria-haspopup="dialog" aria-controls="weather-filters" aria-expanded={filtersOpen} aria-label={activeFilterCount?'Filters & sort, active filters':'Filters & sort'} onClick={openFilters}><span>Filters &amp; sort</span>{activeFilterCount?<span className="filter-count" aria-hidden="true">{activeFilterCount}</span>:null}</button></span></div>
+        <div className="list-header"><h2>Courses</h2><span aria-live="polite" aria-atomic="true">{loading&&!result?'…':`${sorted.length} shown`}</span><span className="list-actions"><button type="button" className="filters-trigger" aria-haspopup="dialog" aria-controls="weather-filters" aria-expanded={filtersOpen} aria-label={activeFilterCount?'Filters & sort, active filters':'Filters & sort'} onClick={openFilters}><span>Filters &amp; sort</span>{activeFilterCount?<span className="filter-count" aria-hidden="true">{activeFilterCount}</span>:null}</button></span></div>
         <label className="page-search"><span className="sr-only">Search courses</span><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search course, city, county" aria-label="Search courses" /></label>
         <div className="weather-status" aria-live="polite">
           {loading?<span className="weather-status-dot">Loading…</span>:null}
           {error?<span className="weather-error">{error}</span>:null}
           {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
           {shareMessage?<span>{shareMessage}</span>:null}
+          {result?.retrievedAt?<span className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)} · {centerLabel}</span>:null}
         </div>
-        {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)} · {centerLabel}</p>:null}
     <div className="weather-legend" aria-label="Forecast column headings"><span>Course</span><span>Temp</span><span>Wind · Gust</span><span>Conditions</span></div>
     <div className="weather-course-list">
       {!loading&&!error&&sorted.length===0?<div className="empty-state"><strong>{searchTerms.length?'No matching courses.':'No courses found.'}</strong></div>:null}
