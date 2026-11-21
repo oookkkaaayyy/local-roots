@@ -2,7 +2,7 @@ export const COMPILER_VERSION: string;
 export const COMPILER_RULES: Readonly<Record<string, any>>;
 export type CompileResult = {
   mask: Uint8Array;
-  validation: {islandCount:number;islandFails:any[];necks:any[];thinBlackAreaMm2:number;pass:boolean};
+  validation: {islandCount:number;islandFails:any[];necks:any[];thinBlackAreaMm2:number;outsideSafeZoneMm2:number;maxRadiusMm:number;pass:boolean};
   bridges: any[];
   passes: any[];
   fidelity: {vinylRemovedMm2:number;vinylAddedMm2:number;changedFraction:number;largestChangeMm2:number;regionCount:number;topRegions:any[];level:'clean'|'review'|'reject'};
