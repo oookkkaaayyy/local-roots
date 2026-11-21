@@ -53,12 +53,13 @@ test('measureChange reports removed and added vinyl', () => {
   assert.ok(c.vinylRemovedMm2 > 0 && c.vinylAddedMm2 > 0 && c.regionCount === 2);
 });
 
-test('normalizeArtwork crops to dark bounds and scales to 190.5 mm', () => {
+test('normalizeArtwork crops to dark bounds and scales to 190.5 mm, shrinking to fit the 170 mm safe zone', () => {
   const w = 100, h = 80, lum = new Uint8Array(w * h).fill(255);
   for (let y = 10; y < 50; y++) for (let x = 20; x < 70; x++) lum[y * w + x] = 0;
   const n = normalizeArtwork(lum, w, h);
   assert.equal(n.width, 50); assert.equal(n.height, 40);
-  assert.ok(Math.abs(n.mmPerPx * 50 - 190.5) < 1e-9);
+  assert.ok(n.mmPerPx * 50 <= 190.5);
+  assert.ok(Math.hypot(24.5, 19.5) * n.mmPerPx <= 85, 'corner inside the safe circle');
 });
 
 test('cut SVG is true size and closes shapes at the artwork edge', () => {
@@ -68,4 +69,15 @@ test('cut SVG is true size and closes shapes at the artwork edge', () => {
   assert.match(svg, /fill-rule="evenodd"/);
   assert.ok((svg.match(/M/g) || []).length >= 2);
   assert.ok(COMPILER_RULES.artworkWidthMm === 190.5);
+});
+
+test('safe zone: artwork is scaled inside the 170 mm circle and strays are flagged', () => {
+  const n = 400, lum = new Uint8Array(n * n).fill(255);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if ((x - 200) ** 2 + (y - 200) ** 2 <= 190 ** 2 && (x - 200) ** 2 + (y - 200) ** 2 >= 150 ** 2) lum[y * n + x] = 0;
+  const art = normalizeArtwork(lum, n, n);
+  const v = validateStencil(art.mask, art.width, art.height, art.mmPerPx);
+  assert.equal(v.outsideSafeZoneMm2, 0);
+  assert.ok(v.maxRadiusMm <= 85, 'max radius ' + v.maxRadiusMm);
+  const bad = validateStencil(art.mask, art.width, art.height, art.mmPerPx * 1.2);
+  assert.ok(bad.outsideSafeZoneMm2 > 0 && bad.pass === false);
 });

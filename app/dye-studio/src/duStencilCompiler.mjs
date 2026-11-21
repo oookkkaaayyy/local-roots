@@ -7,6 +7,7 @@ export const COMPILER_VERSION = 'du-stencil-compiler-1.0.0';
 
 export const COMPILER_RULES = Object.freeze({
   artworkWidthMm: 190.5,
+  safeZoneDiameterMm: 170,   // owner rule 2026-11-19: all cut-away artwork inside a 170 mm circle on the 213 mm disc
   islandMinBboxMm: 2.0,      // matches the existing validator
   islandMinDiameterMm: 1.5,  // inscribed circle; stops thin diagonal slivers passing a bounding-box test
   islandMinAreaMm2: 3,
@@ -95,6 +96,19 @@ function label8(mask, w, h) {
   return { labels, comps };
 }
 
+// Cut-away (black) pixels farther than diameter/2 from the mask centre. The centre is the artwork bounding-box centre.
+export function safeZoneCheck(mask, w, h, mm, diameterMm = COMPILER_RULES.safeZoneDiameterMm) {
+  const cx = (w - 1) / 2, cy = (h - 1) / 2, r2 = (diameterMm / 2 / mm) ** 2;
+  let outside = 0, maxD2 = 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (mask[y * w + x] !== 0) continue;
+    const d2 = (x - cx) ** 2 + (y - cy) ** 2;
+    if (d2 > maxD2) maxD2 = d2;
+    if (d2 > r2) outside++;
+  }
+  return { outsideMm2: +(outside * mm * mm).toFixed(3), maxRadiusMm: +(Math.sqrt(maxD2) * mm).toFixed(2) };
+}
+
 export function validateStencil(mask, w, h, mm, rules = {}) {
   const R = { ...COMPILER_RULES, ...rules };
   const { comps } = label4(mask, w, h, 1);
@@ -114,7 +128,8 @@ export function validateStencil(mask, w, h, mm, rules = {}) {
   const inv = new Uint8Array(mask.length); for (let i = 0; i < inv.length; i++) inv[i] = mask[i] ? 0 : 1;
   const rb = radiusPx(R.blackMinWidthMm, mm), blackOpen = openWhite(inv, w, h, rb);
   let thinBlackPx = 0; for (let i = 0; i < inv.length; i++) if (inv[i] && !blackOpen[i]) thinBlackPx++;
-  return { islandCount, islandFails, necks, thinBlackAreaMm2: +(thinBlackPx * mm * mm).toFixed(3), pass: islandFails.length === 0 && necks.length === 0 };
+  const sz = safeZoneCheck(mask, w, h, mm, R.safeZoneDiameterMm);
+  return { islandCount, islandFails, necks, thinBlackAreaMm2: +(thinBlackPx * mm * mm).toFixed(3), outsideSafeZoneMm2: sz.outsideMm2, maxRadiusMm: sz.maxRadiusMm, pass: islandFails.length === 0 && necks.length === 0 && sz.outsideMm2 === 0 };
 }
 
 export function compileStencil(mask0, w, h, mm, rules = {}) {
@@ -173,8 +188,17 @@ export function normalizeArtwork(lum, w, h, artworkWidthMm = COMPILER_RULES.artw
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (lum[y * w + x] < 128) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
   if (x1 < 0) throw new Error('No dark artwork found');
   const cw = x1 - x0 + 1, ch = y1 - y0 + 1, mask = new Uint8Array(cw * ch);
-  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) mask[y * cw + x] = lum[(y + y0) * w + x + x0] >= 128 ? 1 : 0;
-  return { mask, width: cw, height: ch, origin: [x0, y0], mmPerPx: artworkWidthMm / cw };
+  let maxD2 = 0; const cx = (cw - 1) / 2, cy = (ch - 1) / 2;
+  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+    const white = lum[(y + y0) * w + x + x0] >= 128;
+    mask[y * cw + x] = white ? 1 : 0;
+    if (!white) { const d2 = (x - cx) ** 2 + (y - cy) ** 2; if (d2 > maxD2) maxD2 = d2; }
+  }
+  // Scale to the artwork width, then shrink (never enlarge) so every dark pixel sits inside the safe-zone circle.
+  let mmPerPx = artworkWidthMm / cw;
+  const safeR = COMPILER_RULES.safeZoneDiameterMm / 2, extent = Math.sqrt(maxD2) * mmPerPx;
+  if (extent > safeR) mmPerPx *= (safeR / extent) * 0.97; // margin so compile repairs cannot push cut-away past the zone
+  return { mask, width: cw, height: ch, origin: [x0, y0], mmPerPx };
 }
 
 // Cut-away (black) outlines as one even-odd path in millimetres. A white margin closes shapes that touch the artwork edge.
@@ -248,7 +272,7 @@ export function buildValidatorReport({ label, mm, width, height, result, sourceS
     cases: [{
       case: label, source_sha256: sourceSha256, physical_verdict: result.verdict === 'PASS' || result.verdict === 'REGENERATE' ? (result.verdict === 'PASS' ? 'PASS' : 'FAIL') : 'FAIL',
       width_px: width, height_px: height, mm_per_px: +mm.toFixed(6),
-      islands_total: v.islandCount, island_fails: v.islandFails.length, neck_fails: v.necks.length, thin_cut_area_mm2: v.thinBlackAreaMm2,
+      islands_total: v.islandCount, island_fails: v.islandFails.length, neck_fails: v.necks.length, thin_cut_area_mm2: v.thinBlackAreaMm2, outside_safe_zone_mm2: v.outsideSafeZoneMm2, max_radius_mm: v.maxRadiusMm, safe_zone_diameter_mm: COMPILER_RULES.safeZoneDiameterMm,
       bridges_and_removals: result.bridges, change_from_input: { level: result.fidelity.level, changed_fraction: result.fidelity.changedFraction, vinyl_removed_mm2: result.fidelity.vinylRemovedMm2, vinyl_added_mm2: result.fidelity.vinylAddedMm2, largest_change_mm2: result.fidelity.largestChangeMm2 },
     }],
   };
