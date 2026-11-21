@@ -1,0 +1,604 @@
+{
+ "dyes": [
+  [
+   "UV Blast / Quick-Coat",
+   "Clear UV Blast",
+   "#F7FFF4",
+   true
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Blue UV Blast",
+   "#005BFF"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Flo Red UV Blast",
+   "#F51B2B"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Green UV Blast",
+   "#37FF14"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Hot Pink UV Blast",
+   "#FF2A9D"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Flo Orange / Blaze Orange UV",
+   "#FF6A00"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Purple UV Blast",
+   "#7A19D8"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Chartreuse / Yellow",
+   "#D9FF00"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Black",
+   "#111111"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Pumpkin Brown",
+   "#8A4B20"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Watermelon",
+   "#E84765"
+  ],
+  [
+   "UV Blast / Quick-Coat",
+   "Rind Green",
+   "#438B45"
+  ],
+  [
+   "iDye Poly",
+   "Blue",
+   "#1B1866"
+  ],
+  [
+   "iDye Poly",
+   "Crimson",
+   "#972738"
+  ],
+  [
+   "iDye Poly",
+   "Onyx",
+   "#050505"
+  ],
+  [
+   "ProChem",
+   "Neon Lemon Zest",
+   "#DEFD02"
+  ],
+  [
+   "ProChem",
+   "Dandelion",
+   "#F2BF13"
+  ],
+  [
+   "ProChem",
+   "Bright Yellow",
+   "#FFD629"
+  ],
+  [
+   "ProChem",
+   "Sun Yellow",
+   "#F6B51B"
+  ],
+  [
+   "ProChem",
+   "Buttercup",
+   "#F5D46A"
+  ],
+  [
+   "ProChem",
+   "Deep Orange",
+   "#D94C13"
+  ],
+  [
+   "ProChem",
+   "Neon Hot Orange",
+   "#E75001"
+  ],
+  [
+   "ProChem",
+   "Creamsicle",
+   "#F39454"
+  ],
+  [
+   "ProChem",
+   "Clear Orange",
+   "#EF7622"
+  ],
+  [
+   "ProChem",
+   "Fluorescent Pink",
+   "#F88DA5"
+  ],
+  [
+   "ProChem",
+   "Cherry",
+   "#B51E3A"
+  ],
+  [
+   "ProChem",
+   "Fuchsia",
+   "#D22A8A"
+  ],
+  [
+   "ProChem",
+   "Wineberry",
+   "#762448"
+  ],
+  [
+   "ProChem",
+   "Flame Scarlet",
+   "#E8392C"
+  ],
+  [
+   "ProChem",
+   "Pinkish Red",
+   "#E94D66"
+  ],
+  [
+   "ProChem",
+   "Radical Red",
+   "#E92045"
+  ],
+  [
+   "ProChem",
+   "Fire Red",
+   "#D92524"
+  ],
+  [
+   "ProChem",
+   "Blood Red",
+   "#8B121B"
+  ],
+  [
+   "ProChem",
+   "Neon Cerise Pink",
+   "#E544AB"
+  ],
+  [
+   "ProChem",
+   "Shark Blue",
+   "#2379B8"
+  ],
+  [
+   "ProChem",
+   "Caribbean",
+   "#18A7C1"
+  ],
+  [
+   "ProChem",
+   "Aqua",
+   "#29C9C7"
+  ],
+  [
+   "ProChem",
+   "Sonic Blue",
+   "#2665D8"
+  ],
+  [
+   "ProChem",
+   "Royal",
+   "#243A9A"
+  ],
+  [
+   "ProChem",
+   "Navy",
+   "#17254F"
+  ],
+  [
+   "ProChem",
+   "Sky Blue",
+   "#55A9E6"
+  ],
+  [
+   "ProChem",
+   "Pale Turquoise",
+   "#8ADFD7"
+  ],
+  [
+   "ProChem",
+   "Flag Blue",
+   "#164EAE"
+  ],
+  [
+   "ProChem",
+   "Bright Blue",
+   "#176FD1"
+  ],
+  [
+   "ProChem",
+   "Teal Blue",
+   "#147D88"
+  ],
+  [
+   "ProChem",
+   "Espresso Bean",
+   "#4D2B21"
+  ],
+  [
+   "ProChem",
+   "Chocolate",
+   "#6B3B27"
+  ],
+  [
+   "ProChem",
+   "Burnt Sienna",
+   "#9A4A2F"
+  ],
+  [
+   "ProChem",
+   "Dark Dungeon",
+   "#343238"
+  ],
+  [
+   "ProChem",
+   "Light Gray",
+   "#A9ADB2"
+  ],
+  [
+   "ProChem",
+   "Onyx",
+   "#101010"
+  ],
+  [
+   "ProChem",
+   "Cool Black",
+   "#161B23"
+  ],
+  [
+   "ProChem",
+   "Neon Key Lime",
+   "#01FE0F"
+  ],
+  [
+   "ProChem",
+   "Evergreen",
+   "#176B3A"
+  ],
+  [
+   "ProChem",
+   "Shamrock",
+   "#169447"
+  ],
+  [
+   "ProChem",
+   "Meadow",
+   "#5DAA55"
+  ],
+  [
+   "ProChem",
+   "Fern",
+   "#4C7A43"
+  ],
+  [
+   "ProChem",
+   "Aquatic Green",
+   "#169B83"
+  ],
+  [
+   "ProChem",
+   "Lavender",
+   "#A486C7"
+  ],
+  [
+   "ProChem",
+   "Concord",
+   "#4D276E"
+  ],
+  [
+   "ProChem",
+   "Iris",
+   "#6840A5"
+  ],
+  [
+   "ProChem",
+   "Orchid",
+   "#A24AA5"
+  ],
+  [
+   "ProChem",
+   "Pansy",
+   "#59328C"
+  ],
+  [
+   "ProChem",
+   "Lilac",
+   "#BB8DC9"
+  ],
+  [
+   "ProChem",
+   "Neon Royal Purple",
+   "#621187"
+  ],
+  [
+   "My Inventory",
+   "UV Blast Blaze Orange",
+   "#FF7E26"
+  ],
+  [
+   "My Inventory",
+   "UV Blast Red",
+   "#EC1B24"
+  ],
+  [
+   "My Inventory",
+   "UV Blast Green",
+   "#C3FF0C"
+  ],
+  [
+   "My Inventory",
+   "UV Blast Clear",
+   "#F7FFF4",
+   true
+  ],
+  [
+   "My Inventory",
+   "iDye Poly Blue",
+   "#1B1866"
+  ],
+  [
+   "My Inventory",
+   "iDye Poly Crimson",
+   "#972738"
+  ],
+  [
+   "My Inventory",
+   "iDye Poly Onyx",
+   "#000000"
+  ],
+  [
+   "My Inventory",
+   "ProChem Neon Lemon Zest",
+   "#DEFD02"
+  ],
+  [
+   "My Inventory",
+   "ProChem Neon Hot Orange",
+   "#E75001"
+  ],
+  [
+   "My Inventory",
+   "ProChem Fluorescent Pink",
+   "#F88DA5"
+  ],
+  [
+   "My Inventory",
+   "ProChem Neon Cerise Pink",
+   "#E544AB"
+  ],
+  [
+   "My Inventory",
+   "ProChem Neon Key Lime",
+   "#01FE0F"
+  ],
+  [
+   "My Inventory",
+   "ProChem Neon Royal Purple",
+   "#621187"
+  ]
+ ],
+ "META": {
+  "Clear UV Blast": {
+   "factor": 0,
+   "fluor": 0.95,
+   "uvColor": "#7DEBFF",
+   "reliability": 0.58
+  },
+  "UV Blast Blaze Orange": {
+   "factor": 1.08,
+   "fluor": 0.78,
+   "uvColor": "#FF6A00",
+   "reliability": 0.8
+  },
+  "Flo Orange / Blaze Orange UV": {
+   "factor": 1.08,
+   "fluor": 0.78,
+   "uvColor": "#FF6A00",
+   "reliability": 0.75
+  },
+  "UV Blast Red": {
+   "factor": 1.02,
+   "fluor": 0.58,
+   "uvColor": "#FF2442",
+   "reliability": 0.72
+  },
+  "Flo Red UV Blast": {
+   "factor": 1.02,
+   "fluor": 0.58,
+   "uvColor": "#FF2442",
+   "reliability": 0.7
+  },
+  "UV Blast Green": {
+   "factor": 1.04,
+   "fluor": 1,
+   "uvColor": "#80FF00",
+   "reliability": 0.82
+  },
+  "Green UV Blast": {
+   "factor": 1.04,
+   "fluor": 1,
+   "uvColor": "#80FF00",
+   "reliability": 0.76
+  },
+  "Blue UV Blast": {
+   "factor": 0.98,
+   "fluor": 0.68,
+   "uvColor": "#2088FF",
+   "reliability": 0.68
+  },
+  "Hot Pink UV Blast": {
+   "factor": 0.92,
+   "fluor": 0.92,
+   "uvColor": "#FF2AAE",
+   "reliability": 0.66
+  },
+  "Purple UV Blast": {
+   "factor": 0.88,
+   "fluor": 0.55,
+   "uvColor": "#A83BFF",
+   "reliability": 0.62
+  },
+  "Chartreuse / Yellow": {
+   "factor": 0.94,
+   "fluor": 1,
+   "uvColor": "#DFFF00",
+   "reliability": 0.74
+  },
+  "iDye Poly Onyx": {
+   "factor": 1.28,
+   "fluor": 0,
+   "reliability": 0.9
+  },
+  "Onyx": {
+   "factor": 1.28,
+   "fluor": 0,
+   "reliability": 0.88
+  },
+  "iDye Poly Blue": {
+   "factor": 1.05,
+   "fluor": 0,
+   "reliability": 0.86
+  },
+  "Blue": {
+   "factor": 1.05,
+   "fluor": 0,
+   "reliability": 0.78
+  },
+  "iDye Poly Crimson": {
+   "factor": 1.04,
+   "fluor": 0,
+   "reliability": 0.82
+  },
+  "Crimson": {
+   "factor": 1.04,
+   "fluor": 0,
+   "reliability": 0.8
+  },
+  "ProChem Neon Lemon Zest": {
+   "factor": 0.84,
+   "fluor": 0.88,
+   "uvColor": "#E8FF00",
+   "reliability": 0.76,
+   "champion": 0.82
+  },
+  "Neon Lemon Zest": {
+   "factor": 0.84,
+   "fluor": 0.88,
+   "uvColor": "#E8FF00",
+   "reliability": 0.76,
+   "champion": 0.82
+  },
+  "ProChem Neon Hot Orange": {
+   "factor": 0.86,
+   "fluor": 0.68,
+   "uvColor": "#FF5C00",
+   "reliability": 0.72,
+   "champion": 0.86
+  },
+  "Neon Hot Orange": {
+   "factor": 0.86,
+   "fluor": 0.68,
+   "uvColor": "#FF5C00",
+   "reliability": 0.72,
+   "champion": 0.86
+  },
+  "ProChem Fluorescent Pink": {
+   "factor": 0.76,
+   "fluor": 0.78,
+   "uvColor": "#FF7EC2",
+   "reliability": 0.7,
+   "champion": 0.62
+  },
+  "Fluorescent Pink": {
+   "factor": 0.76,
+   "fluor": 0.78,
+   "uvColor": "#FF7EC2",
+   "reliability": 0.7,
+   "champion": 0.62
+  },
+  "ProChem Neon Cerise Pink": {
+   "factor": 0.7,
+   "fluor": 0.82,
+   "uvColor": "#FF32BE",
+   "reliability": 0.58,
+   "champion": 0.55
+  },
+  "Neon Cerise Pink": {
+   "factor": 0.7,
+   "fluor": 0.82,
+   "uvColor": "#FF32BE",
+   "reliability": 0.58,
+   "champion": 0.55
+  },
+  "ProChem Neon Key Lime": {
+   "factor": 0.78,
+   "fluor": 0.96,
+   "uvColor": "#42FF00",
+   "reliability": 0.68,
+   "champion": 0.72
+  },
+  "Neon Key Lime": {
+   "factor": 0.78,
+   "fluor": 0.96,
+   "uvColor": "#42FF00",
+   "reliability": 0.68,
+   "champion": 0.72
+  },
+  "ProChem Neon Royal Purple": {
+   "factor": 0.66,
+   "fluor": 0.48,
+   "uvColor": "#8A24FF",
+   "reliability": 0.48,
+   "champion": 0.68
+  },
+  "Neon Royal Purple": {
+   "factor": 0.66,
+   "fluor": 0.48,
+   "uvColor": "#8A24FF",
+   "reliability": 0.48,
+   "champion": 0.68
+  }
+ },
+ "opaqueTargets": {
+  "UV Blast Blaze Orange": "#F15B16",
+  "UV Blast Green": "#7EE600",
+  "UV Blast Red": "#DF1026",
+  "iDye Poly Blue": "#14206E",
+  "iDye Poly Crimson": "#8C1630",
+  "iDye Poly Onyx": "#080808"
+ },
+ "anchors": {
+  "surfaceBase": "#38906F",
+  "transmissionBase": "#A6C5B5",
+  "colors": {
+   "UV Blast Green": {
+    "plate": "#8FC316",
+    "shoulder": "#69B820",
+    "rim": "#3BAF27",
+    "overall": "#72B71A"
+   },
+   "UV Blast Blaze Orange": {
+    "plate": "#B30003",
+    "shoulder": "#890507",
+    "rim": "#57090D",
+    "overall": "#890507"
+   }
+  }
+ }
+}

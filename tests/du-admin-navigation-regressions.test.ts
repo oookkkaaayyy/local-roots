@@ -7,7 +7,7 @@ const page = readFileSync(resolve(process.cwd(), 'app/src/pages/DuAdminPage.tsx'
 const styles = readFileSync(resolve(process.cwd(), 'app/src/du-admin.css'), 'utf8');
 
 test('D&U admin defaults to Submissions and keeps Gallery one tap away', () => {
-  assert.match(page, /useState<'submissions'\|'gallery'>\('submissions'\)/);
+  assert.match(page, /useState<'submissions'\|'gallery'\|'designs'>\('submissions'\)/);
   assert.match(page, /Submissions <span>/);
   assert.match(page, /onClick=\{\(\)=>setAdminView\('gallery'\)\}>Gallery/);
   assert.match(page, /adminView==='gallery'\?<GalleryPanel/);

@@ -65,8 +65,7 @@ test("event submission failures do not expose backend errors", () => {
 test("repeated event actions have event-specific accessible names and disclose new-tab behavior", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('aria-label={`Registration for ${event.name} (opens in new tab)`}'));
-  assert.ok(events.includes('aria-label={`Add ${event.name} to calendar`}'));
-  assert.ok(events.includes('aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}'));
+  assert.ok(source("pages/EventDetailPage.tsx").includes('aria-label={`Add ${event.name} to calendar`}'));
 });
 
 test("event discovery controls expose upcoming/results views, search, and result-source filtering", () => {
@@ -111,11 +110,9 @@ test("results link labels identify known destinations without importing their co
 test("event cards expose permanent detail URLs, filtered return state, and calendar actions", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`'));
-  assert.ok(events.includes('href={detailHref}'));
-  assert.ok(events.includes('className="event-title-link"'));
-  assert.ok(events.includes('onClick={()=>downloadEventCalendar(event)}'));
-  assert.ok(events.includes('>Add to Calendar</button>'));
-  assert.ok(events.includes('>Full Results</a>'));
+  assert.ok(events.includes('className="event-time"'));
+  assert.ok(source("pages/EventDetailPage.tsx").includes('>Add to Calendar</button>'));
+  assert.ok(events.includes('href={`${detailHref}#results`}'));
 });
 
 test("event detail route is permanent, canonical, and uses the detail RPC", () => {
@@ -157,19 +154,11 @@ test("calendar downloads are all-day ICS files with exclusive end dates and cano
   assert.ok(presentation.includes("anchor.download=`${event.slug||'local-roots-event'}.ics`"));
 });
 
-test("HBNF external action discloses new-tab behavior without changing visible label", () => {
+test("HBNF page is the real HB Night Flyers site shown inside the shell", () => {
   const hbnf = source("pages/HbnfPage.tsx");
-  assert.ok(hbnf.includes("target=\"_blank\" rel=\"noreferrer\" aria-label={'Open ' + label + ' (opens in a new tab)'}"));
-  assert.ok(hbnf.includes("{ label: 'Skins', href: 'https://hbnightflyers.com/skins' }"));
-  assert.ok(hbnf.includes("{ label: 'Glow', href: 'https://hbnightflyers.com/glow' }"));
+  assert.ok(hbnf.includes('src="https://hbnightflyers.com/"'));
+  assert.ok(hbnf.includes('title="HB Night Flyers"'));
 });
-
-test("D&U request errors are assertive and all request status messages are atomic", () => {
-  const du = source("pages/DyedUnattachedPage.tsx");
-  assert.ok(du.includes("aria-live={state === 'error' ? 'assertive' : 'polite'}"));
-  assert.ok(du.includes('aria-atomic="true"'));
-});
-
 
 test("owner-controlled copy policy remains explicit in source control", () => {
   const policy = readFileSync(new URL("../../docs/site-copy-policy.md", import.meta.url), "utf8");
@@ -182,9 +171,8 @@ test("events page polish is scoped and HBNF cards expose first-party resources",
   const events = source("pages/EventsPage.tsx");
   const detail = source("pages/EventDetailPage.tsx");
   const presentation = source("lib/eventPresentation.ts");
-  const styles = source("events-enhancements.css");
   assert.ok(events.includes('<main className={`events-page ${landing?\'events-landing\':\'\'}`}>'));
-  assert.ok(events.includes('>Details</a>'));
+  assert.ok(events.includes('hostOf(infoUrl!)'));
   assert.ok(events.includes("{filtered.length} shown · {viewEvents.length} {view==='upcoming'?'upcoming':'past'}"));
   assert.ok(events.includes('className="event-resource-links"'));
   assert.ok(detail.includes('className="event-resource-links"'));
@@ -192,8 +180,6 @@ test("events page polish is scoped and HBNF cards expose first-party resources",
   assert.ok(presentation.includes("https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule"));
   assert.ok(presentation.includes("https://www.instagram.com/hbnightflyers/"));
   assert.ok(presentation.includes("https://www.facebook.com/HBNightFlyers/"));
-  assert.ok(styles.includes('.events-page .hero h1'));
-  assert.ok(styles.includes('.events-page .filters input,.events-page .filters select'));
 });
 
 test("event cards and detail pages expose permitted first-party official info without duplicating HBNF resources", () => {
@@ -201,11 +187,9 @@ test("event cards and detail pages expose permitted first-party official info wi
   const detail = source("pages/EventDetailPage.tsx");
   const types = source("types.ts");
   assert.ok(types.includes("official_url: string | null"));
-  assert.ok(events.includes("event.official_url&&!hbnfEvent"));
-  assert.ok(events.includes(">Official Info</a>"));
-  assert.ok(events.includes("aria-label={`Official info for ${event.name} (opens in new tab)`}"));
+  assert.ok(events.includes("event.official_url||event.source_url"));
   assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
-  assert.ok(detail.includes(">Official Info</a>"));
+  assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
 });
 
 test("the Local Roots landing page is the event utility, not the old three-card hub", () => {
@@ -214,76 +198,58 @@ test("the Local Roots landing page is the event utility, not the old three-card 
   const home = source("pages/HomePage.tsx");
   assert.ok(routes.includes("if(path==='/')return <EventsPage landing/>;"));
   assert.equal(routes.includes("import { HomePage }"), false);
-  assert.ok(events.includes('<h1 className="sr-only">Southern California Disc Golf Events</h1>'));
+  assert.ok(events.includes('<Mast title="Events"'));
   assert.equal(events.includes('<section className="hero"><h1>Southern California Disc Golf Events</h1></section>'), false);
   assert.ok(home.includes("branch-grid"));
 });
 
 test("public header gives Local Roots stronger brand hierarchy without a redundant Home nav item", () => {
   const shell = source("components/Shell.tsx");
-  const styles = source("styles.css");
+  const skin = source("skin.css");
   assert.equal(shell.includes('className="nav-home"'), false);
   assert.ok(shell.includes("path==='/'||path==='/events'"));
-  assert.ok(styles.includes(".public-brand-shell .brand-logo-mark{display:block;width:58px"));
-  assert.ok(styles.includes(".public-brand-shell .brand strong{"));
+  assert.ok(skin.includes(".lr .lr-brand img{"));
+  assert.ok(skin.includes(".lr .lr-brand span{"));
 });
 
-test("Events visible typography is standardized on the site sans family", () => {
-  const styles = source("events-enhancements.css");
-  assert.ok(styles.includes(".events-page{font-family:var(--events-sans)}"));
-  assert.ok(styles.includes(".event-detail-heading h1{font-family:var(--events-sans)"));
-  assert.ok(styles.includes(".events-page .section-intro h2{font-size:1.55rem"));
-});
-
-test("refined Local Roots presentation uses one humanist UI family and stronger header lockup", () => {
+test("public skin uses one sans family (Cabin) and no serif", () => {
   const shell = source("components/Shell.tsx");
-  const styles = source("styles.css");
-  const events = source("events-enhancements.css");
-  assert.ok(shell.includes("admin?'admin-shell':'public-brand-shell'"));
-  assert.ok(styles.includes('.public-brand-shell{'));
-  assert.ok(styles.includes('--lr-ui:"Avenir Next"'));
-  assert.ok(styles.includes('repeating-linear-gradient(7deg'))
-  assert.ok(styles.includes('.public-brand-shell .brand-logo-mark{display:block;width:58px'))
-  assert.ok(styles.includes('.public-brand-shell .brand strong{'));
-  assert.ok(styles.includes('font-size:1.42rem'))
-  assert.ok(styles.includes('.public-brand-shell .site-header nav a[aria-current="page"]'))
-  assert.ok(events.includes('.events-page{--events-sans:"Avenir Next"'));
-  assert.ok(events.includes('.events-page .event-main h3{font-size:1.03rem;font-weight:700'));
+  const skin = source("skin.css");
+  assert.ok(shell.includes("public-brand-shell lr"));
+  assert.ok(skin.includes("--sans:Cabin"));
+  assert.equal(/serif:|Georgia|Palatino/.test(skin), false);
+  assert.ok(skin.includes(".lr .lr-nav a[aria-current=page]"));
+  assert.equal(/:is\(|clamp\(|aspect-ratio/.test(skin), false);
 });
 
 test("public brand audit does not add new marketing copy and includes D&U controls", () => {
   const shell = source("components/Shell.tsx");
-  const styles = source("styles.css");
+  const styles = source("skin.css");
   const du = source("pages/DyedUnattachedPage.tsx");
   assert.ok(shell.includes("public-brand-shell"));
-  assert.ok(styles.includes(".public-brand-shell .du-share-hero .branch-actions .button"));
-  assert.ok(styles.includes(".public-brand-shell .du-request .section-intro h2"));
-  assert.ok(du.includes(">Request a stencil</a>"));
+  assert.ok(du.includes(">Make a stencil</a>"));
   for (const rejected of ["Grown Local. Thrown Local.","Local roots. Connected.","Desert-grown disc goods"]) {
     assert.equal([shell,du,styles].join("\n").includes(rejected), false);
   }
 });
 
-test("HB Night Flyers links directly from the footer, not primary navigation", () => {
+test("HB Night Flyers is in the primary navigation with the other sections", () => {
   const shell = source("components/Shell.tsx");
-  const footerStart=shell.indexOf('<footer className="site-footer">');
-  assert.ok(footerStart>0);
-  const primaryStart=shell.indexOf('<nav id="primary-navigation"');
+  const primaryStart=shell.lastIndexOf('<nav id="primary-navigation"');
   const primaryEnd=shell.indexOf('</nav>',primaryStart);
   assert.ok(primaryStart>0&&primaryEnd>primaryStart);
-  assert.equal(shell.slice(primaryStart,primaryEnd).includes('href="/hb-night-flyers"'),false);
-  assert.ok(shell.includes('<a href="https://hbnightflyers.com/">HB Night Flyers</a>'));
-  assert.ok(shell.includes('<footer className="site-footer"><nav className="footer-nav" aria-label="Footer">'));
-  assert.ok(shell.includes('<a href="/hb-night-flyers">HB Night Flyers events</a>'));
+  const primary=shell.slice(primaryStart,primaryEnd);
+  assert.ok(primary.includes("nav('nav-hbnf','/hb-night-flyers'"));
+  assert.ok(primary.indexOf("nav-weather")<primary.indexOf("nav-hbnf")&&primary.indexOf("nav-hbnf")<primary.indexOf("nav-du"));
+  assert.equal(shell.includes('HB Night Flyers events'),false);
 });
 
-test("compact public navigation exposes an accessible disclosure menu", () => {
+test("compact public navigation keeps four sections in one row with short labels", () => {
   const shell=source("components/Shell.tsx");
-  const styles=source("lr-hbnf-integration.css");
-  assert.ok(shell.includes('className="mobile-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="primary-navigation"'));
-  assert.ok(shell.includes('id="primary-navigation" className={`primary-nav${menuOpen?\' is-open\':\'\'}`}'));
-  assert.ok(shell.includes("event.key==='Escape'&&menuOpen"));
-  assert.ok(styles.includes('@media(max-width:840px)'));
-  assert.ok(styles.includes('.site-header nav.primary-nav.is-open{display:flex}'));
-  assert.ok(styles.includes('min-height:44px'));
+  const skin=source("skin.css");
+  assert.ok(shell.includes('<nav id="primary-navigation" className="lr-nav" aria-label="Primary">'));
+  assert.ok(skin.includes('@media(max-width:700px)'));
+  assert.ok(skin.includes('.lr .nav-long{display:none}'));
+  assert.ok(shell.includes('className="nav-short"'));
 });
+

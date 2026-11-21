@@ -3,7 +3,7 @@ import { Shell } from '../components/Shell';
 const branches = [
   { title: 'SoCal Disc Golf Events', href: '/events', cta: 'Browse events' },
   { title: 'HB Night Flyers', href: '/hb-night-flyers', cta: 'Open HBNF' },
-  { title: 'Dyed & Unattached', href: '/dyed-and-unattached', cta: 'Request a stencil' },
+  { title: 'Dyed & Unattached', href: '/dyed-and-unattached', cta: 'Open D&U' },
 ];
 
 export function HomePage() {
