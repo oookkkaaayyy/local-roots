@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 export type MastProps = { title: ReactNode; meta?: ReactNode; aside?: ReactNode; titleClass?: string };
 
 export function Mast({title,meta,aside,titleClass}:MastProps){
-  return <div className="lr-wrap lr-top">
+  return <div className="lr-wrap lr-top" role="region" aria-label="Page header">
     <h1 className={titleClass}>{title}</h1>{meta?<p className="lr-top-meta" aria-live="polite">{meta}</p>:null}
     {aside?<div className="lr-top-aside">{aside}</div>:null}
   </div>;
