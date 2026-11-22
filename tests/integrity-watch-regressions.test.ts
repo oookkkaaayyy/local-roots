@@ -7,15 +7,15 @@ const watch = readFileSync(new URL("../../supabase/functions/lr-integrity-watch/
 
 test("integrity watch follows the upgraded event discovery and results contract", () => {
   assert.equal(watch.includes('"Show past events"'), false);
+  assert.equal(watch.includes('"Full Results"'), false, 'retired marker must not return');
   assert.equal(watch.includes('"Results available"'), false);
   assert.equal(watch.includes('"View official results"'), false);
   for (const marker of [
     '"Past events & results"',
     '"Add to Calendar"',
-    '"PDGA Results ↗"',
+    '"PDGA Results"',
     '"On Local Roots"',
     '"Official link"',
-    '"Full Results"',
     '"Submit organizer results"',
     '"Upcoming events"',
     '"Submit an event"',
@@ -42,6 +42,6 @@ test("integrity watch verifies upgraded event-page styles", () => {
 });
 
 test("integrity watch version advances with its deployed contract", () => {
-  assert.ok(watch.includes('LocalRootsIntegrityWatch/10.0'));
-  assert.equal(watch.includes('LocalRootsIntegrityWatch/9.0'), false);
+  assert.ok(watch.includes('LocalRootsIntegrityWatch/11.0'));
+  assert.equal(watch.includes('LocalRootsIntegrityWatch/10.0'), false);
 });
