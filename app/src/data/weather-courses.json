@@ -790,5 +790,605 @@
       "https://www.pdga.com/course-directory/course/city-hills",
       "https://www.openstreetmap.org/?mlat=35.402889&mlon=-118.892441#map=16/35.402889/-118.892441"
     ]
+  },
+  {
+    "id": "socal-team-challenge",
+    "name": "SOCAL Team Challenge",
+    "city": "Castaic",
+    "state": "CA",
+    "coordinates": [
+      34.50338,
+      -118.61509
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 24,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/socal-team-challenge-AFz3"
+    ]
+  },
+  {
+    "id": "van-buren-golf-center",
+    "name": "Van Buren Golf Center",
+    "city": "Riverside",
+    "state": "CA",
+    "coordinates": [
+      33.953,
+      -117.4557
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 22,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/van-buren-golf-center-sP6t"
+    ]
+  },
+  {
+    "id": "kit-carson-park",
+    "name": "Kit Carson Park",
+    "city": "Escondido",
+    "state": "CA",
+    "coordinates": [
+      33.07933,
+      -117.05863
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/kit-carson-park-hIET"
+    ]
+  },
+  {
+    "id": "reidy-creek-golf-course",
+    "name": "Reidy Creek Golf Course",
+    "city": "Escondido",
+    "state": "CA",
+    "coordinates": [
+      33.1665,
+      -117.09084
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/reidy-creek-golf-course-auQa"
+    ]
+  },
+  {
+    "id": "freedom-dg",
+    "name": "Freedom DG",
+    "city": "Ridgecrest",
+    "state": "CA",
+    "coordinates": [
+      35.62084,
+      -117.67388
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/freedom-dg-Fgmt"
+    ]
+  },
+  {
+    "id": "colton-golf-course",
+    "name": "Colton Golf Course",
+    "city": "Colton",
+    "state": "CA",
+    "coordinates": [
+      34.0713,
+      -117.35946
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/colton-golf-course-008V"
+    ]
+  },
+  {
+    "id": "lake-cahuilla-veterans-regional-park",
+    "name": "Lake Cahuilla Veterans Regional Park",
+    "city": "La Quinta",
+    "state": "CA",
+    "coordinates": [
+      33.63097,
+      -116.27792
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/lake-cahuilla-veterans-regional-park-ZUet"
+    ]
+  },
+  {
+    "id": "palm-royale-disc-golf",
+    "name": "Palm Royale Disc Golf",
+    "city": "La Quinta",
+    "state": "CA",
+    "coordinates": [
+      33.72822,
+      -116.29891
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/palm-royale-disc-golf-ADRd"
+    ]
+  },
+  {
+    "id": "elephant-rock",
+    "name": "Elephant Rock",
+    "city": "Simi Valley",
+    "state": "CA",
+    "coordinates": [
+      34.25423,
+      -118.74582
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 12,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/elephant-rock-X2b1"
+    ]
+  },
+  {
+    "id": "desert-sands-park",
+    "name": "Desert Sands Park",
+    "city": "Palmdale",
+    "state": "CA",
+    "coordinates": [
+      34.5919,
+      -118.1257
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 10,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/desert-sands-park-lfcZ"
+    ]
+  },
+  {
+    "id": "fallen-heroes-park",
+    "name": "Fallen Heroes Park",
+    "city": "Beaumont",
+    "state": "CA",
+    "coordinates": [
+      33.95278,
+      -116.99159
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 10,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/fallen-heroes-park-Etro"
+    ]
+  },
+  {
+    "id": "greg-rogers-park-disc-golf-course",
+    "name": "Greg Rogers Park Disc Golf Course",
+    "city": "Chula Vista",
+    "state": "CA",
+    "coordinates": [
+      32.61986,
+      -117.03457
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 10,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/greg-rogers-park-disc-golf-course-JhaC"
+    ]
+  },
+  {
+    "id": "liberty-park",
+    "name": "Liberty Park",
+    "city": "Cerritos",
+    "state": "CA",
+    "coordinates": [
+      33.85688,
+      -118.10131
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 10,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/liberty-park-qTAv"
+    ]
+  },
+  {
+    "id": "deerfield-community-dgc",
+    "name": "Deerfield Community DGC",
+    "city": "Irvine",
+    "state": "CA",
+    "coordinates": [
+      33.69059,
+      -117.79181
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/deerfield-community-dgc-nED7"
+    ]
+  },
+  {
+    "id": "twila-reid-park",
+    "name": "Twila-Reid Park",
+    "city": "Anaheim",
+    "state": "CA",
+    "coordinates": [
+      33.8237,
+      -117.9981
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/twila-reid-park-YoZ7"
+    ]
+  },
+  {
+    "id": "simi-valley-sequoia-park",
+    "name": "Simi Valley Sequoia Park",
+    "city": "Simi Valley",
+    "state": "CA",
+    "coordinates": [
+      34.2748,
+      -118.72298
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/simi-valley-sequoia-park-Yv2C"
+    ]
+  },
+  {
+    "id": "isla-vista-peace-course",
+    "name": "Isla Vista Peace Course",
+    "city": "Goleta",
+    "state": "CA",
+    "coordinates": [
+      34.4126,
+      -119.8637
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/isla-vista-peace-course-gYlB"
+    ]
+  },
+  {
+    "id": "ford-park-dgc",
+    "name": "Ford Park DGC",
+    "city": "Redlands",
+    "state": "CA",
+    "coordinates": [
+      34.04267,
+      -117.15927
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/ford-park-dgc-FLqp"
+    ]
+  },
+  {
+    "id": "hovley-disc-golf",
+    "name": "Hovley Disc Golf",
+    "city": "Palm Desert",
+    "state": "CA",
+    "coordinates": [
+      33.7463,
+      -116.3636
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/hovley-disc-golf-FgfA"
+    ]
+  },
+  {
+    "id": "nicklaus-disc-golf-park-dgc",
+    "name": "Nicklaus DiscGolfPark DGC",
+    "city": "Beaumont",
+    "state": "CA",
+    "coordinates": [
+      33.95766,
+      -117.06337
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/nicklaus-disc-golf-park-dgc-dIwu"
+    ]
+  },
+  {
+    "id": "rancho-acacias-dgc",
+    "name": "Rancho Acacias DGC",
+    "city": "Murrieta",
+    "state": "CA",
+    "coordinates": [
+      33.56967,
+      -117.17443
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/rancho-acacias-dgc-OOlP"
+    ]
+  },
+  {
+    "id": "paragon-park-disc-golf-course",
+    "name": "Paragon Park Disc Golf Course",
+    "city": "Perris",
+    "state": "CA",
+    "coordinates": [
+      33.82251,
+      -117.21962
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/paragon-park-disc-golf-course-qe3A"
+    ]
+  },
+  {
+    "id": "ralph-m-lewis-park",
+    "name": "Ralph M. Lewis Park",
+    "city": "Rancho Cucamonga",
+    "state": "CA",
+    "coordinates": [
+      34.1098,
+      -117.562
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/ralph-m-lewis-park-7RSA"
+    ]
+  },
+  {
+    "id": "montiel-park",
+    "name": "Montiel Park",
+    "city": "San Marcos",
+    "state": "CA",
+    "coordinates": [
+      33.1311,
+      -117.1142
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/montiel-park-AySh"
+    ]
+  },
+  {
+    "id": "ramona-wellfield-disc-golf-course",
+    "name": "Ramona Wellfield Disc Golf Course",
+    "city": "Ramona",
+    "state": "CA",
+    "coordinates": [
+      33.05603,
+      -116.86008
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/ramona-wellfield-disc-golf-course-mZgB"
+    ]
+  },
+  {
+    "id": "laguna-niguel-regional-park",
+    "name": "Laguna Niguel Regional Park",
+    "city": "Laguna Niguel",
+    "state": "CA",
+    "coordinates": [
+      33.552,
+      -117.70926
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/laguna-niguel-regional-park-eB1q"
+    ]
+  },
+  {
+    "id": "rolling-hills-park",
+    "name": "Rolling Hills Park",
+    "city": "Fullerton",
+    "state": "CA",
+    "coordinates": [
+      33.89989,
+      -117.89986
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/rolling-hills-park-KlCe"
+    ]
+  },
+  {
+    "id": "hollydale-disc-golf-course",
+    "name": "Hollydale Disc Golf Course",
+    "city": "South Gate",
+    "state": "CA",
+    "coordinates": [
+      33.92249,
+      -118.17558
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/hollydale-disc-golf-course-U88G"
+    ]
+  },
+  {
+    "id": "frontier-park-dgc",
+    "name": "Frontier Park DGC",
+    "city": "Tustin",
+    "state": "CA",
+    "coordinates": [
+      33.73183,
+      -117.81949
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/frontier-park-dgc-xZdE"
+    ]
+  },
+  {
+    "id": "northside-park",
+    "name": "Northside Park",
+    "city": "Azusa",
+    "state": "CA",
+    "coordinates": [
+      34.1433,
+      -117.912
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/northside-park-7yvX"
+    ]
   }
 ]

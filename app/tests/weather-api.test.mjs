@@ -30,8 +30,8 @@ test('ZIP endpoint rejects non-ZIP input without making a geocoder request',asyn
 test('weather endpoint returns only eligible nearby courses and hourly, gust, and alert data',async t=>{
   const original=globalThis.fetch;globalThis.fetch=async url=>new Response(JSON.stringify(upstream(String(url))),{status:200,headers:{'Content-Type':'application/geo+json'}});t.after(()=>{globalThis.fetch=original;});
   const response=await getWeatherResponse(new Request('https://preview.local/api/weather?lat=33.7&lon=-118&radius=25'),makeContext(),courses);assert.equal(response.status,200);
-  const body=await response.json();assert.deepEqual(body.courses.map(c=>c.id),['public']);assert.equal(body.forecasts.public.periods[0].windDirection,'NW');assert.ok(Number.isFinite(Date.parse(body.responseAt)));assert.ok(Date.parse(body.responseAt)>=Date.parse(body.lastSuccessfulUpdate),'retrieval time follows the NWS forecast publication time');
-  assert.equal(body.forecasts.public.gustUnit,'wmoUnit:km_h-1');assert.equal(body.forecasts.public.precipitation[0].value,70);assert.equal(body.forecasts.public.alertsAvailable,true);assert.equal(body.forecasts.short,undefined);
+  const body=await response.json();assert.deepEqual(body.courses.map(c=>c.id),['public','short']);assert.equal(body.forecasts.public.periods[0].windDirection,'NW');assert.ok(Number.isFinite(Date.parse(body.responseAt)));assert.ok(Date.parse(body.responseAt)>=Date.parse(body.lastSuccessfulUpdate),'retrieval time follows the NWS forecast publication time');
+  assert.equal(body.forecasts.public.gustUnit,'wmoUnit:km_h-1');assert.equal(body.forecasts.public.precipitation[0].value,70);assert.equal(body.forecasts.public.alertsAvailable,true);assert.ok(body.forecasts.short,'short layouts are returned; the 18+ holes filter is applied in the UI');
 });
 
 test('grid failure retains hourly data and clearly marks unavailable gusts',async t=>{
