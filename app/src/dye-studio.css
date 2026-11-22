@@ -11,6 +11,8 @@
 .ds button.ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .ds button.ic.off{opacity:.35}
 .ds .bar{flex:none;display:flex;gap:8px;justify-content:flex-end;padding:8px 12px;border-bottom:1px solid var(--ln);background:var(--p)}
+.ds .bar button{flex:none;white-space:nowrap}.ds .bar{flex-wrap:wrap}
+@media(max-width:480px){.lr .ds div.bar{gap:4px;padding:8px}.lr .ds div.bar button{padding:0 8px;font-size:13px;min-width:0;margin-left:0}.lr .ds div.bar .du-switch a{padding:12px 8px}}
 .ds .app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 410px}
 .ds .stage{display:flex;flex-direction:column;min-width:0;min-height:0;background:radial-gradient(ellipse at 50% 42%,#fbf5ea,#efe2d1 80%)}
 .ds .vw{flex:1;min-height:0;position:relative}
