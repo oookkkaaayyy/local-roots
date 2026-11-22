@@ -136,7 +136,7 @@ test('course locations expose source-verified ZIPs and coordinate-based NWS link
   const page=await read('../src/pages/WeatherPage.tsx');
   const courses=JSON.parse(await read('../src/data/weather-courses.json'));
   const postals=courses.filter(course=>course.postalCode);
-  assert.equal(courses.length,65);
+  assert.equal(courses.length,70);
   assert.equal(postals.length,12);
   for(const course of postals){
     assert.match(course.postalCode,/^\d{5}$/);

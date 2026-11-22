@@ -1390,5 +1390,105 @@
     "sources": [
       "https://udisc.com/courses/northside-park-7yvX"
     ]
+  },
+  {
+    "id": "lake-piru-recreation-area",
+    "name": "Lake Piru Recreation Area",
+    "city": "Piru",
+    "state": "CA",
+    "coordinates": [
+      34.47813,
+      -118.76989
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/lake-piru-recreation-area-f8Vd"
+    ]
+  },
+  {
+    "id": "buzzin-fairways",
+    "name": "Buzzin' Fairways",
+    "city": "Port Hueneme",
+    "state": "CA",
+    "coordinates": [
+      34.17286,
+      -119.20282
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/buzzin-fairways-vR35"
+    ]
+  },
+  {
+    "id": "riverbend-community-dgc",
+    "name": "Riverbend Community DGC",
+    "city": "Jurupa Valley",
+    "state": "CA",
+    "coordinates": [
+      33.96155,
+      -117.53861
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/riverbend-community-dgc-Hm86"
+    ]
+  },
+  {
+    "id": "rancho-jurupa-regional-park-dgc",
+    "name": "Rancho Jurupa Regional Park DGC",
+    "city": "Jurupa Valley",
+    "state": "CA",
+    "coordinates": [
+      33.98174,
+      -117.41279
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 9,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/rancho-jurupa-regional-park-dgc-4W2i"
+    ]
+  },
+  {
+    "id": "buttonwillow-park",
+    "name": "Buttonwillow Park",
+    "city": "Buttonwillow",
+    "state": "CA",
+    "coordinates": [
+      35.40132,
+      -119.46002
+    ],
+    "coordinateNote": "UDisc course coordinates (public course page).",
+    "holes": 11,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-11-21",
+    "sources": [
+      "https://udisc.com/courses/buttonwillow-park-Q1Pm"
+    ]
   }
 ]
