@@ -111,7 +111,7 @@
  .mobile-menu-toggle:focus-visible{outline:3px solid var(--lr-focus,#516333);outline-offset:2px}
  .site-header nav.primary-nav{position:absolute;top:100%;right:10px;left:10px;z-index:30;display:none;flex-direction:column;align-items:stretch;gap:0;padding:6px;border:1px solid rgba(91,58,36,.22);border-radius:10px;background:#fbf5ea;box-shadow:0 10px 24px rgba(58,38,24,.16)}
  .site-header nav.primary-nav.is-open{display:flex}
- .site-header nav.primary-nav a{display:block!important;min-height:44px;padding:11px 10px!important;border-bottom:1px solid rgba(91,58,36,.12);font-size:.92rem!important;line-height:1.25;white-space:normal}
+ .site-header nav.primary-nav a{display:block;min-height:44px;padding:11px 10px;border-bottom:1px solid rgba(91,58,36,.12);font-size:.92rem;line-height:1.25;white-space:normal}
  .site-header nav.primary-nav a:last-child{border-bottom:0}
  .public-brand-shell .site-header nav.primary-nav a[aria-current=page]{background:rgba(159,92,54,.09);box-shadow:inset 3px 0 0 var(--lr-clay)}
 }

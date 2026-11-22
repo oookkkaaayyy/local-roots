@@ -188,38 +188,38 @@
 
 /* D&U: keep the artwork dominant and reduce surrounding chrome. */
 .public-brand-shell .du-share-hero{
-  padding-top:32px!important;
-  padding-bottom:20px!important;
+  padding-top:32px;
+  padding-bottom:20px;
 }
 
 .public-brand-shell .du-brand-heading img{
-  width:min(700px,86vw)!important;
+  width:min(700px,86vw);
 }
 
 .public-brand-shell .du-share-hero .branch-actions{
-  margin-top:14px!important;
+  margin-top:14px;
 }
 
 .public-brand-shell .du-gallery{
-  margin-bottom:40px!important;
+  margin-bottom:40px;
 }
 
 .public-brand-shell .du-gallery-shell{
-  width:min(780px,100%)!important;
+  width:min(780px,100%);
 }
 
 .public-brand-shell .du-gallery-frame{
-  border-radius:18px!important;
+  border-radius:18px;
 }
 
 .public-brand-shell .du-gallery-controls{
-  gap:10px!important;
-  margin-top:8px!important;
+  gap:10px;
+  margin-top:8px;
 }
 
 .public-brand-shell .du-gallery-controls button{
-  width:36px!important;
-  height:36px!important;
+  width:36px;
+  height:36px;
 }
 
 .public-brand-shell .du-request{
@@ -354,15 +354,15 @@
   }
 
   .public-brand-shell .du-brand-heading img{
-    width:min(92vw,540px)!important;
+    width:min(92vw,540px);
   }
 
   .public-brand-shell .du-gallery{
-    margin-bottom:30px!important;
+    margin-bottom:30px;
   }
 
   .public-brand-shell .du-gallery-frame{
-    border-radius:14px!important;
+    border-radius:14px;
   }
 }
 
