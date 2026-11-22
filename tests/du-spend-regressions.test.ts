@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import test from 'node:test';
 
-const fn = readFileSync(new URL('../supabase/functions/du-stencil-gen/index.ts', import.meta.url), 'utf8');
-const panel = readFileSync(new URL('../app/src/components/DuSpendPanel.tsx', import.meta.url), 'utf8');
-const page = readFileSync(new URL('../app/src/pages/DuAdminPage.tsx', import.meta.url), 'utf8');
+const fn = readFileSync(resolve(process.cwd(), 'supabase/functions/du-stencil-gen/index.ts'), 'utf8');
+const panel = readFileSync(resolve(process.cwd(), 'app/src/components/DuSpendPanel.tsx'), 'utf8');
+const page = readFileSync(resolve(process.cwd(), 'app/src/pages/DuAdminPage.tsx'), 'utf8');
 
 test('stencil generation records cost per row and enforces a dollar cap for visitors', () => {
   assert.match(fn, /MONTH_USD_CAP=10/);
