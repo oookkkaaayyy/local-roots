@@ -42,7 +42,7 @@
   $('awardsBody').innerHTML=S.awards(b,g).map(function(a){return'<tr><td>'+esc(a.label)+'</td><td>'+a.names.map(esc).join(', ')+'</td><td class="n">'+esc(a.val)+'</td></tr>'}).join('')||'<tr><td colspan="3">-</td></tr>';
  }
  function renderSeason(g){
-  $('seasonTitle').textContent='2026 Season';
+  $('seasonTitle').textContent='2026 Stats';
   $('seasonBody').innerHTML=S.glowWins(g).map(function(r){return'<tr><td class="pos">'+(r.tie?'T':'')+r.pos+'</td><td>'+esc(r.n)+'</td><td class="n">'+r.w+'</td></tr>'}).join('')||'<tr><td colspan="3">-</td></tr>';
  }
  function load(){
