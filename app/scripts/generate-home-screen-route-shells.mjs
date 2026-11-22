@@ -12,6 +12,8 @@ const routeShells = [
     manifest: '/dyed-and-unattached/manifest.webmanifest?v=ios-icons-20261020',
     appTitle: 'D&amp;U',
     iconAsset: 'brand/dyed-unattached-icon-180.png',
+    ogImage: 'brand/du-og-1200x630.png',
+    ogUrl: 'https://localrootsdg.com/dyed-and-unattached/',
   },
   {
     path: 'dyed-and-unattached/dye-studio/index.html',
@@ -20,6 +22,8 @@ const routeShells = [
     manifest: '/dyed-and-unattached/dye-studio/manifest.webmanifest?v=ios-icons-20261020',
     appTitle: 'D&amp;U Studio',
     iconAsset: 'brand/dyed-unattached-icon-180.png',
+    ogImage: 'brand/du-og-1200x630.png',
+    ogUrl: 'https://localrootsdg.com/dyed-and-unattached/dye-studio',
   },
   {
     path: 'weather/index.html',
@@ -60,7 +64,7 @@ export function withInlineAppleTouchIcon(html, dataUrl) {
   return html.replace(matches[0], link);
 }
 
-export function makeRouteShell(rootHtml, { title, description, manifest, appTitle, iconDataUrl, noindex }) {
+export function makeRouteShell(rootHtml, { title, description, manifest, appTitle, iconDataUrl, noindex, ogImage, ogUrl }) {
   let html = rootHtml;
   html = replaceRequired(html, /<link\s+rel="manifest"[^>]*data-app-manifest[^>]*\/?\s*>/i,
     `<link rel="manifest" href="${manifest}" data-app-manifest />`, 'manifest link');
@@ -71,6 +75,14 @@ export function makeRouteShell(rootHtml, { title, description, manifest, appTitl
   html = replaceRequired(html, /<meta\s+name="description"[^>]*\/?\s*>/i,
     `<meta name="description" content="${description}" />`, 'description');
   html = replaceRequired(html, /<title>[^<]*<\/title>/i, `<title>${title}</title>`, 'document title');
+  html = html.replace(/(<meta property="og:title" content=")[^"]*(")/i, `$1${title}$2`);
+  html = html.replace(/(<meta property="og:description" content=")[^"]*(")/i, `$1${description}$2`);
+  if (ogUrl) html = html.replace(/(<meta property="og:url" content=")[^"]*(")/i, `$1${ogUrl}$2`);
+  if (ogImage) {
+    const imageUrl = `https://localrootsdg.com/${ogImage}?v=20261121`;
+    html = html.replace(/(<meta property="og:image" content=")[^"]*(")/i, `$1${imageUrl}$2`);
+    html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/i, `$1${imageUrl}$2`);
+  }
   if (noindex) html = html.replace('</head>', '    <meta name="robots" content="noindex,nofollow,noarchive" />\n  </head>');
   return html;
 }
