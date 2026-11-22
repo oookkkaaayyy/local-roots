@@ -6,6 +6,7 @@ import { Shell } from '../components/Shell';
 import { ImageDropField } from '../components/ImageDropField';
 import { DuGenerationWorkflow } from '../components/DuGenerationWorkflow';
 import { DyeDesignsPanel } from '../components/DyeDesignsPanel';
+import { DuSpendPanel } from '../components/DuSpendPanel';
 
 type WorkflowStatus = 'draft'|'intake_complete'|'handoff_preparing'|'chatgpt_ready'|'notification_sent'|'stage_a_started'|'awaiting_art_approval'|'art_approved'|'production_ready'|'complete'|'handoff_failed';
 type JobSummary = {
@@ -107,7 +108,7 @@ function JobCard({job,credential,refresh,autoOpen}:{job:JobSummary;credential:Ad
     {detail?<div className="du-job-detail">
       <dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
       <p><strong>Original source photos</strong> · originals remain private and unchanged.</p>
-      <div className="du-source-grid">{detail.photos.map((photo,index)=><div className="du-source-item" key={photo.id}><img src={photo.signed_url||undefined} alt={'Source '+(index+1)} style={{display:'block',width:'96px',height:'96px',objectFit:'cover',marginBottom:'8px',borderRadius:'10px'}}/><span>Source {index+1}</span></div>)}</div>
+      <div className="du-source-grid">{detail.photos.map((photo,index)=><div className="du-source-item" key={photo.id}><img src={photo.signed_url||undefined} alt={'Source '+(index+1)} style={{display:'block',width:'96px',height:'96px',objectFit:'cover',marginBottom:'8px',borderRadius:'10px'}}/><span>Source {index+1}</span>{photo.signed_url?<a className="button ghost" href={photo.signed_url} download={photo.original_filename||`${job.job_number}-source-${index+1}.jpg`}>Download</a>:null}</div>)}</div>
       <DuGenerationWorkflow jobId={job.id} jobNumber={job.job_number} notes={job.notes} photos={detail.photos} credential={credential}/>
       <label>Workflow stage<select value={job.workflow_status} disabled={busy} onChange={event=>void setWorkflow(event.target.value as WorkflowStatus)}>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
     </div>:null}
@@ -266,6 +267,7 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
         return <section className="du-gallery-role" key={role.key}>
           <div className="du-gallery-role-preview"><GalleryAdminPreview path={path} label={role.label}/></div>
           <ImageDropField name={role.key} label={role.label} hint={path?'drop to replace':'drop here'} accept="image/*" />
+          {path&&!parseLegacyGalleryPath(path)?<a className="button ghost" href={supabase.storage.from('du-gallery').getPublicUrl(path).data.publicUrl} download>Download {role.label.toLowerCase()}</a>:null}
           {path?<button className="button ghost du-gallery-remove" type="button" disabled={busy} onClick={()=>void removeImage(role)}>Remove {role.label.toLowerCase()}</button>:null}
         </section>;
       })}
@@ -345,7 +347,7 @@ export function DuAdminPage(){
   const [dashboard,setDashboard]=useState<Dashboard|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
   const [pushBusy,setPushBusy]=useState(false),[pushEnabled,setPushEnabled]=useState(false),[pushMessage,setPushMessage]=useState('');
   const [pairBusy,setPairBusy]=useState(false),[pairCode,setPairCode]=useState(''),[pairMessage,setPairMessage]=useState('');
-  const [adminView,setAdminView]=useState<'submissions'|'gallery'|'designs'>('submissions');
+  const [adminView,setAdminView]=useState<'submissions'|'gallery'|'designs'|'spend'>('submissions');
   const targetJob=useMemo(()=>{
     const queryJob=new URLSearchParams(window.location.search).get('job')?.trim().toUpperCase()||null;
     if(queryJob){sessionStorage.setItem('du-target-job',queryJob);return queryJob;}
@@ -446,8 +448,8 @@ export function DuAdminPage(){
     {pairCode?<div className="notice"><strong>{pairCode}</strong><span>{pairMessage||'Paste this single-use code into D&U on the new device. It expires after 5 minutes.'}</span><button className="button ghost" type="button" onClick={()=>void copyPairCode()}>Copy code</button></div>:pairMessage?<div className="notice">{pairMessage}</div>:null}
     {deviceToken?<div className="notice"><strong>This device is paired.</strong><span>D&amp;U will remember it across normal site builds. Its authorization renews automatically while you keep using it.</span></div>:null}
     {pushMessage?<div className="notice">{pushMessage}</div>:null}
-    <nav className="du-admin-tabs" aria-label="Admin sections"><button type="button" className={adminView==='submissions'?'active':''} aria-current={adminView==='submissions'?'page':undefined} onClick={()=>setAdminView('submissions')}>Submissions <span>{jobs.length}</span></button><button type="button" className={adminView==='gallery'?'active':''} aria-current={adminView==='gallery'?'page':undefined} onClick={()=>setAdminView('gallery')}>Gallery</button><button type="button" className={adminView==='designs'?'active':''} aria-current={adminView==='designs'?'page':undefined} onClick={()=>setAdminView('designs')}>Designs</button></nav>
-    {adminView==='designs'?<DyeDesignsPanel auth={functionAuth(credential)}/>:adminView==='gallery'?<GalleryPanel credential={credential}/>:<section className="du-submissions" aria-label="Stencil submissions">
+    <nav className="du-admin-tabs" aria-label="Admin sections"><button type="button" className={adminView==='submissions'?'active':''} aria-current={adminView==='submissions'?'page':undefined} onClick={()=>setAdminView('submissions')}>Submissions <span>{jobs.length}</span></button><button type="button" className={adminView==='gallery'?'active':''} aria-current={adminView==='gallery'?'page':undefined} onClick={()=>setAdminView('gallery')}>Gallery</button><button type="button" className={adminView==='designs'?'active':''} aria-current={adminView==='designs'?'page':undefined} onClick={()=>setAdminView('designs')}>Designs</button><button type="button" className={adminView==='spend'?'active':''} aria-current={adminView==='spend'?'page':undefined} onClick={()=>setAdminView('spend')}>Spend</button></nav>
+    {adminView==='spend'?<DuSpendPanel deviceToken={deviceToken}/>:adminView==='designs'?<DyeDesignsPanel auth={functionAuth(credential)}/>:adminView==='gallery'?<GalleryPanel credential={credential}/>:<section className="du-submissions" aria-label="Stencil submissions">
     {loading?<div className="empty-state">Loading production queue…</div>:error?<div className="notice error"><strong>Could not load queue.</strong><span>{error}</span></div>:jobs.length?<section className="admin-grid">{jobs.map(job=><JobCard key={job.id} job={job} credential={credential} refresh={()=>void load(credential)} autoOpen={targetJob===job.job_number}/>)}</section>:<div className="empty-state"><strong>Production queue is clear.</strong><span>No stencil jobs currently require action.</span></div>}
       {completedJobs.length?<details className="du-completed-jobs"><summary>Completed <span>{completedJobs.length}</span></summary><section className="admin-grid">{completedJobs.map(job=><JobCard key={job.id} job={job} credential={credential} refresh={()=>void load(credential)} autoOpen={targetJob===job.job_number}/>)}</section></details>:null}
     </section>}</div></main></Shell>;

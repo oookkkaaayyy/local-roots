@@ -35,3 +35,4 @@
 .du-compile-views img{width:100%;height:auto;border:1px solid var(--line,#d8d3cb);border-radius:8px;background:#fff}
 
 .du-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px}.du-compare figure{margin:0;display:grid;gap:4px;min-width:0}.du-compare figcaption{font-size:.78rem;color:#5e625d;text-align:center}
+.du-spend .admin-metrics{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.du-spend .admin-metrics div{flex:1 1 140px}.du-spend-scroll{overflow-x:auto;margin-top:10px}.du-spend-table{width:100%;border-collapse:collapse;font-size:.85rem}.du-spend-table th,.du-spend-table td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.du-spend-table th:last-child,.du-spend-table td:last-child{text-align:right}
