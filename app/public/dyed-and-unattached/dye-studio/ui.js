@@ -45,9 +45,9 @@ function colorAt(its,r,mc){
  const p=plastic();
  const m=measured(its,r);if(m&&!mc)return{hex:m,measured:true};
  const bh=baseAt(r);if(p.fam==="champion"&&!its.length)return{hex:bh,spread:0,lab:null,gamut:false,measured:false};
- const sp={baseHex:bh,transHex:transHex(bh),family:p.fam,scene:"outdoor",zone:zoneAt(r),path:pathAt(r,p),items:its};
+ const sp={baseHex:bh,transHex:hexOk(S.trans)?S.trans.toUpperCase():undefined,family:p.fam,scene:"outdoor",zone:zoneAt(r),path:pathAt(r,p),items:its};
  const o=DE.predict(sp,mc?{mc}:{});
- return{hex:m||o.hex,spread:o.spread,lab:o.lab,gamut:o.gamutExcess>.02,measured:!!m};
+ return{hex:m||o.hex,spread:o.spread,evidence:o.evidence,lab:o.lab,gamut:o.gamutExcess>.02,measured:!!m};
 }
 // ---------- layer masks ----------
 function loc(L,u,v){const p=L.p,c=Math.cos(p.a),s=Math.sin(p.a),dx=u-p.x,dy=v-p.y;return[dx*c+dy*s,-dx*s+dy*c]}
@@ -170,7 +170,7 @@ $("#undo").onclick=()=>{if(hi>0){hi--;restore(H[hi]);undoBtns()}};
 $("#redo").onclick=()=>{if(hi<H.length-1){hi++;restore(H[hi]);undoBtns()}};
 // ---------- readout ----------
 function lch(lab){return lab?{L:lab[0],C:Math.hypot(lab[1],lab[2]),h:(Math.atan2(lab[2],lab[1])*57.296+360)%360}:null}
-function acc(m){if(plastic().est)return"Accuracy Low";if(m.measured)return"Accuracy Exact";if(m.spread===undefined)return"";return"Accuracy "+(m.spread<3?"High":m.spread<6?"Medium":"Low")}
+function acc(m){if(plastic().est)return"Accuracy Low";if(m.measured)return"Accuracy Exact";if(m.spread===undefined)return"";const lv=(m.spread<3?2:m.spread<6?1:0)-((m.evidence||[]).length>0&&m.spread>=1.5?1:0);return"Accuracy "+["Low","Medium","High"][Math.max(0,lv)]}
 function readout(){if(!$("#rd"))return;
  const a=Math.atan2(UI.pt.y,UI.pt.x),pr=Math.hypot(UI.pt.x,UI.pt.y);
  const main=colorAtPt(UI.pt.x,UI.pt.y,32);

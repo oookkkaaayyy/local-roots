@@ -1,0 +1,47 @@
+{
+ "version": 1,
+ "note": "Public-source calibration and validation dataset for the dye engine. Quantitative rows carry an observed hex; direction rows carry hue/lightness windows derived from practitioner text. No private owner photos.",
+ "sources": [
+  {"id":"dgcr-148993","url":"https://www.dgcoursereview.com/threads/148993","kind":"forum photo thread (glue bed, iDye Poly)"},
+  {"id":"dgcr-134835","url":"https://www.dgcoursereview.com/threads/how-to-get-true-colors-on-non-white-plastics.134835/","kind":"forum labelled photos"},
+  {"id":"dgcr-52246","url":"https://Dgcoursereview.com/threads/noobie-dye-question-thread.52246/page-34","kind":"forum text"},
+  {"id":"dgcr-154739","url":"https://dgcoursereview.com/threads/acids-dye-tutorial.154739","kind":"forum tutorial"},
+  {"id":"dgcr-132674","url":"https://www.dgcoursereview.com/threads/plastic-color-and-dye-color.132674/","kind":"forum text"},
+  {"id":"dgcr-130367","url":"https://dgcoursereview.com/threads/130367","kind":"forum photo thread (Dye A Day III)"},
+  {"id":"dgcr-61923","url":"https://dgcoursereview.com/threads/61923","kind":"forum text"},
+  {"id":"dgcr-65307","url":"https://dgcoursereview.com/threads/65307","kind":"forum text"},
+  {"id":"dgcr-124584","url":"https://dgcoursereview.com/threads/124584","kind":"forum text"},
+  {"id":"dgcr-110989","url":"https://dgcoursereview.com/threads/110989","kind":"forum text"},
+  {"id":"dgcr-147871","url":"https://dgcoursereview.com/threads/any-hope-ideas-for-making-these-awful-f2-colors-at-least-a-little-more-visible.147871","kind":"forum text (clear plastic, light dyes weak)"},
+  {"id":"dgcr-129659","url":"https://www.dgcoursereview.com/threads/how-do-i-get-good-green-colors.129659/","kind":"forum text (greens)"},
+  {"id":"dgcr-134711","url":"https://www.dgcoursereview.com/threads/quick-coat-worm-dye-questions.134711/","kind":"forum text (Quick-Coat brightness)"},
+  {"id":"dgcr-144364","url":"https://dgcoursereview.com/threads/brightest-silver-dye-and-champion-plastic.144364","kind":"forum text (Champion, clear UV Blast)"},
+  {"id":"reddit-iau6dk","url":"https://lr.eu.psf.lt/r/discdyeing/comments/iau6dk/pipedreamer79s_guide_to_clear_glue_bed_dyes","kind":"reddit guide mirror"},
+  {"id":"gi-thumbs","url":"https://www.google.com/search?tbm=isch&q=glue+bed+disc+dye","kind":"image result thumbnails, 169 discs, 3-cluster colors (image-clusters.txt)"},
+  {"id":"owner-hbnf","url":"private owner photos (anchors only)","kind":"6 measured Champion zone colors; UV Blast Green and Blaze Orange on one green Champion"},
+  {"id":"jacquard-idye-poly","url":"https://jacquardproducts.com/idye-poly","kind":"product page, 24 color names, disperse dye class"},
+  {"id":"rsc-d3ra06452b","url":"https://pubs.rsc.org/en/content/articlepdf/2024/ra/d3ra06452b","kind":"literature: blue disperse dyes lambda max 582-592 nm in DMF, hyacinth/purple-blue on polyester"}
+ ],
+ "films": "see groundtruth.json opaqueTargets (6 measured Star film colors)",
+ "anchors": "see groundtruth.json anchors (6 measured Champion zone colors)",
+ "photoSamples": [
+  {"id":"ps1","src":"dgcr-148993","base":"#3F9A4A","family":"star","dye":"iDye Poly Crimson","s":1,"observed":"#8D241C","w":1,"note":"deep red overwrites green Star"},
+  {"id":"ps2","src":"gi-thumbs","base":"#E6F23A","family":"star","dye":"Fire Red","s":1,"observed":"#9D2711","w":1,"note":"neon yellow with red dye lines"}
+ ],
+ "direction": [
+  {"id":"d1","src":"reddit-iau6dk","plastic":"star","base":"#F7E331","dyes":["iDye Poly Blue"],"hue":[80,200],"Lmax":60,"claim":"yellow disc + blue dye = green"},
+  {"id":"d1c","src":"dgcr-52246","plastic":"champion","base":"#F7E331","dyes":["iDye Poly Blue"],"hue":[80,200],"Lmax":60,"claim":"yellow + blue = greenish (any plastic)"},
+  {"id":"d2","src":"reddit-iau6dk","plastic":"star","base":"#3F9A4A","dyes":["iDye Poly Crimson"],"hue":[345,70],"Lmax":45,"claim":"green + red = brown/red"},
+  {"id":"d3a","src":"dgcr-134835","plastic":"star","base":"#E8661C","dyes":["iDye Poly Blue"],"Lmax":25,"Cmax":28,"claim":"orange + blue = gray/black"},
+  {"id":"d3b","src":"dgcr-134835","plastic":"star","base":"#E8661C","dyes":["Concord"],"hue":[330,30],"Lmax":32,"claim":"orange + purple = maroon"},
+  {"id":"d4","src":"dgcr-154739","plastic":"star","base":"#E84C55","dyes":["iDye Poly Blue"],"hue":[280,60],"Lmax":40,"claim":"red + blue = brown/purple-brown"},
+  {"id":"d4b","src":"dgcr-154739","plastic":"star","base":"#59A9DE","dyes":["iDye Poly Crimson"],"hue":[280,60],"Lmax":40,"claim":"blue + red = murky purple-brown"},
+  {"id":"d4c","src":"dgcr-154739","plastic":"champion","base":"#59A9DE","dyes":["iDye Poly Crimson"],"hue":[280,60],"Lmax":40,"claim":"blue + red = murky purple-brown (Champion)"},
+  {"id":"d5","src":"dgcr-52246","plastic":"star","base":"#F27A26","dyes":["iDye Poly Blue"],"Lmax":40,"claim":"orange + blue = brownish dark"},
+  {"id":"d6","src":"dgcr-154739","plastic":"star","base":"#8D62B6","dyes":["iDye Poly Crimson"],"hue":[270,360],"Lmax":45,"claim":"purple + red = purple/darker"},
+  {"id":"d7","src":"dgcr-132674","plastic":"champion","base":"#EF822F","dyes":["iDye Poly Blue"],"Lmax":38,"claim":"orange Champion + blue = dark"},
+  {"id":"d8","src":"dgcr-154739","plastic":"star","base":"#F4F2E8","dyes":["iDye Poly Blue"],"hue":[225,265],"Lmax":35,"claim":"white + blue = blue"},
+  {"id":"d9","src":"dgcr-61923","plastic":"star","base":"#E5C100","dyes":["iDye Poly Crimson"],"hue":[345,25],"claim":"red overpowers yellow plastic"},
+  {"id":"d10","src":"dgcr-134835","plastic":"star","base":"#8EC5E6","dyes":["iDye Poly Blue"],"hue":[205,260],"claim":"same blue stays true on light blue"}
+ ]
+}
