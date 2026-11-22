@@ -13,15 +13,19 @@ export function distanceMiles(a, b) {
 }
 
 export function isEligibleCourse(course) {
-  return Boolean(course && course.kind === 'disc-golf' && Number.isInteger(course.holes) && course.holes >= 18 &&
+  return isEligibleWithMinHoles(course, 18);
+}
+
+export function isEligibleWithMinHoles(course, minHoles) {
+  return Boolean(course && course.kind === 'disc-golf' && Number.isInteger(course.holes) && course.holes >= minHoles &&
     (/^(public|seasonal public)(?:$|[; ]|[-])/i.test(course.access || '') || course.access === 'public-fee') && (course.status === 'open' || course.status === 'INCLUDE') &&
     course.college !== true && course.privateOnly !== true && Array.isArray(course.coordinates) &&
     course.coordinates.length === 2 && course.coordinates.every(Number.isFinite) && Array.isArray(course.sources) && course.sources.length > 0);
 }
 
-export function filterCourses(courses, center, radiusMiles) {
+export function filterCourses(courses, center, radiusMiles, minHoles = 18) {
   if (!Array.isArray(center) || center.length !== 2 || !center.every(Number.isFinite) || !Number.isFinite(radiusMiles) || radiusMiles < 0 || radiusMiles > 500) return [];
-  return courses.filter(isEligibleCourse).map((course) => ({ ...course, distanceMiles: distanceMiles(center, course.coordinates) }))
+  return courses.filter((c) => isEligibleWithMinHoles(c, minHoles)).map((course) => ({ ...course, distanceMiles: distanceMiles(center, course.coordinates) }))
     .filter((course) => course.distanceMiles <= radiusMiles)
     .sort((a, b) => a.distanceMiles - b.distanceMiles);
 }

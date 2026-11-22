@@ -80,7 +80,7 @@ test('Primary navigation keeps the active links as plain reflowing links', async
 
 test('Weather first visits default to today all-day without a passed-window notice; explicit shared filters still work', async()=>{
   const page=await read('../src/pages/WeatherPage.tsx');
-  assert.match(page,/const initial:Preferences=\{location:'92648',useDevice:true,radius:ALL_COURSES_MILES,date:today,start:8,end:16,allDay:true,sort:'distance'\}/);
+  assert.match(page,/const initial:Preferences=\{location:'92648',useDevice:true,radius:ALL_COURSES_MILES,date:today,start:8,end:16,allDay:true,sort:'distance',min18:true\}/);
   assert.doesNotMatch(page,/This time window has passed|Tomorrow · 8 AM–4 PM|chooseNextAvailableWindow|forecastWindowHasPassed/);
   assert.doesNotMatch(page,/date:isCalendarDate\(saved\.date\)|allDay:Boolean\(saved\.allDay\)/);
   assert.match(page,/sharedDate=query\.get\('date'\); if\(isCalendarDate\(sharedDate\)\) initial\.date=sharedDate/);

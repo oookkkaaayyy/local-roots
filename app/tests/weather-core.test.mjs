@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import courses from '../src/data/weather-courses.json' with { type: 'json' };
-import { buildHourlyRows, buildRolling24HourRows, formatHourlyTimeLabel, distanceMiles, eligibleActiveAlerts, filterCourses, forecastFlags, gridSeriesValueAt, gridSpeedToMph, isEligibleCourse, summarizeHourly, zonedWindow, forecastWindowHasPassed } from '../src/lib/weatherCore.js';
+import { buildHourlyRows, buildRolling24HourRows, formatHourlyTimeLabel, distanceMiles, eligibleActiveAlerts, filterCourses, forecastFlags, gridSeriesValueAt, gridSpeedToMph, isEligibleCourse, isEligibleWithMinHoles, summarizeHourly, zonedWindow, forecastWindowHasPassed } from '../src/lib/weatherCore.js';
 
 const period=(startTime,endTime,v={})=>({startTime,endTime,temperature:v.temp,temperatureUnit:'F',windSpeed:v.wind,windDirection:v.dir,probabilityOfPrecipitation:{value:v.rain},shortForecast:v.conditions});
 
+test('minHoles option admits shorter layouts',()=>{assert.ok(isEligibleWithMinHoles({...courses[0],holes:9},1));assert.ok(!isEligibleCourse({...courses[0],holes:9}));});
 test('course list has only sourced public disc golf layouts with at least 18 holes',()=>{
   assert.equal(courses.length,35);assert.ok(courses.every(isEligibleCourse));
   const bad=[{holes:9},{kind:'ball-golf'},{college:true},{status:'closed'},{access:'private',privateOnly:true},{sources:[]}];

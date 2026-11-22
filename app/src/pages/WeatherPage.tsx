@@ -9,7 +9,7 @@ import { DayChart } from '../components/DayChart';
 import { toChartHours } from '../lib/dayChart';
 import { sunTimes } from '../lib/sun.js';
 
-type Preferences = { location:string; useDevice:boolean; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
+type Preferences = { location:string; useDevice:boolean; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust'; min18:boolean };
 type CourseForecast = { periods:unknown[]; gusts:unknown[]; precipitation?:Array<{validTime:string;value:number|null}>; precipitationUnit?:string; gustUnit?:string; alerts:unknown[]; alertsAvailable:boolean; lastUpdatedAt?:string|null; stale?:boolean; staleMessage?:string; partialError?:string; error?:string };
 type WeatherResponse = { courses:Array<WeatherCourse & {distanceMiles:number}>; forecasts:Record<string,CourseForecast>; lastSuccessfulUpdate:string|null; responseAt:string; retrievedAt?:string|null };
 type GeocodeResult = { coordinates:[number,number]; label:string; source:string; stale?:boolean; staleMessage?:string };
@@ -38,10 +38,10 @@ function plusDays(date:string,days:number) { const [y,m,d]=date.split('-').map(N
 function isCalendarDate(value:unknown): value is string { if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parsed=new Date(`${value}T00:00:00.000Z`);return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value; }
 function defaultPreferences():Preferences {
   const today=dateInPacific();
-  const initial:Preferences={location:'92648',useDevice:true,radius:ALL_COURSES_MILES,date:today,start:8,end:16,allDay:true,sort:'distance'};
+  const initial:Preferences={location:'92648',useDevice:true,radius:ALL_COURSES_MILES,date:today,start:8,end:16,allDay:true,sort:'distance',min18:true};
   try {
     const saved=JSON.parse(localStorage.getItem(PREF_KEY)||'null') as Partial<Preferences>|null;
-    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,useDevice:typeof saved.useDevice==='boolean'?saved.useDevice:true,radius:ALL_COURSES_MILES,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance'});
+    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,useDevice:typeof saved.useDevice==='boolean'?saved.useDevice:true,radius:ALL_COURSES_MILES,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance',min18:saved.min18!==false});
   } catch { /* browser storage may be unavailable */ }
   const query=new URLSearchParams(window.location.search);
   const zip=query.get('zip'); if(zip&&/^\d{5}$/.test(zip)){initial.location=zip;initial.useDevice=false;}
@@ -135,7 +135,7 @@ export function WeatherPage() {
         const key=`${geo.coordinates.join(',')}:${preferences.radius}`;
         let saved:WeatherResponse|null=null;
         try { const cache=JSON.parse(localStorage.getItem(LAST_KEY)||'null'); if(cache?.key===key&&Date.now()-Date.parse(cache.savedAt)<24*3600000)saved=cache.response as WeatherResponse; } catch { /* optional */ }
-        const nearby=filterCourses(COURSES,geo.coordinates,preferences.radius);
+        const nearby=filterCourses(COURSES,geo.coordinates,preferences.radius,1);
         const weather:WeatherResponse={courses:nearby,forecasts:{},lastSuccessfulUpdate:null,responseAt:new Date().toISOString(),retrievedAt:null};
         setResult(weather);
         const batches=Array.from({length:Math.ceil(nearby.length/2)},(_,i)=>nearby.slice(i*2,i*2+2));
@@ -181,7 +181,7 @@ export function WeatherPage() {
 
   const views=useMemo(()=>{
     if(!center)return [] as CourseView[];
-    const nearby=filterCourses(COURSES,center,preferences.radius);
+    const nearby=filterCourses(COURSES,center,preferences.radius,1);
     return nearby.map(course=>{
       const raw=result?.forecasts?.[course.id];
       const extracted=extractHourRows(raw,course,preferences);
@@ -195,8 +195,9 @@ export function WeatherPage() {
   const sortedAll=useMemo(()=>sortedCourses(views,preferences.sort),[views,preferences.sort]);
   const searchTerms=search.toLowerCase().split(/\s+/).filter(Boolean);
   const courseText=(c:WeatherCourse)=>`${c.name} ${c.city} ${c.state} ${c.county||''} ${c.postalCode||''} ${SEARCH_ALIASES[c.id]||''}`.toLowerCase();
-  const sorted=searchTerms.length?sortedAll.filter(v=>searchTerms.every(t=>courseText(v.course).includes(t))):sortedAll;
-  const activeFilterCount=[preferences.date!==dateInPacific(),preferences.sort!=='distance'].filter(Boolean).length;
+  const holeFiltered=preferences.min18?sortedAll.filter(v=>v.course.holes>=18):sortedAll;
+  const sorted=searchTerms.length?holeFiltered.filter(v=>searchTerms.every(t=>courseText(v.course).includes(t))):holeFiltered;
+  const activeFilterCount=[preferences.date!==dateInPacific(),preferences.sort!=='distance',!preferences.min18].filter(Boolean).length;
 
   function updateDraft<K extends keyof Preferences>(key:K,value:Preferences[K]) {
     setDraft(prev=>{
@@ -303,7 +304,7 @@ export function WeatherPage() {
             <label className="weather-field-zip">Near ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>{updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5));updateDraft('useDevice',false);}} aria-label="ZIP code for course search" /></label>
             <button type="button" className="button ghost weather-use-location" onClick={useMyLocation}>Use my location</button>
             <label className="weather-field-date">Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
-            <label className="weather-field-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label>
+            <label className="weather-field-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label><label className="weather-field-holes"><input type="checkbox" checked={preferences.min18} onChange={e=>setPreferences(prev=>({...prev,min18:e.target.checked}))}/> 18+ holes only</label>
             <button className="button primary weather-search" type="submit" disabled={loading}>Update</button>
           </form>
         </div>
