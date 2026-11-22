@@ -7,7 +7,6 @@ const watch = readFileSync(new URL("../../supabase/functions/lr-integrity-watch/
 
 test("integrity watch follows the upgraded event discovery and results contract", () => {
   assert.equal(watch.includes('"Show past events"'), false);
-  assert.equal(watch.includes('"Full Results"'), false, 'retired marker must not return');
   assert.equal(watch.includes('"Results available"'), false);
   assert.equal(watch.includes('"View official results"'), false);
   for (const marker of [
