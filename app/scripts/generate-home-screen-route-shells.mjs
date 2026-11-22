@@ -26,6 +26,16 @@ const routeShells = [
     ogUrl: 'https://localrootsdg.com/dyed-and-unattached/dye-studio',
   },
   {
+    path: 'dyed-and-unattached/stencil/index.html',
+    title: 'Stencil · Dyed &amp; Unattached · Local Roots',
+    description: 'Turn a pet photo into a Cricut-ready vinyl disc stencil with Dyed &amp; Unattached.',
+    manifest: '/dyed-and-unattached/manifest.webmanifest?v=ios-icons-20261020',
+    appTitle: 'D&amp;U',
+    iconAsset: 'brand/dyed-unattached-icon-180.png',
+    ogImage: 'brand/du-og-1200x630.png',
+    ogUrl: 'https://localrootsdg.com/dyed-and-unattached/stencil',
+  },
+  {
     path: 'weather/index.html',
     title: 'Disc Golf Weather · Local Roots',
     description: 'Compare verified Southern California course forecasts by playing hours.',
