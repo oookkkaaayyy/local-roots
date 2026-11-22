@@ -72,7 +72,7 @@ export async function getWeatherResponse(request, context, courses) {
     return jsonResponse({ error: 'Enter a valid location and a radius from 0 to 500 miles.' }, 400);
   }
 
-  const nearbyAll = filterCourses(courses, [lat, lon], radius);
+  const nearbyAll = filterCourses(courses, [lat, lon], radius, 1);
   const idsParam = url.searchParams.get('ids');
   const requestedIds = idsParam ? [...new Set(idsParam.split(',').filter(Boolean))] : nearbyAll.map((course) => course.id);
   if (requestedIds.length > 2) return jsonResponse({ error: 'Weather requests are limited to two courses per batch.' }, 400);

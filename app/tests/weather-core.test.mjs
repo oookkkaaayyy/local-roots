@@ -7,7 +7,7 @@ const period=(startTime,endTime,v={})=>({startTime,endTime,temperature:v.temp,te
 
 test('minHoles option admits shorter layouts',()=>{assert.ok(isEligibleWithMinHoles({...courses[0],holes:9},1));assert.ok(!isEligibleCourse({...courses[0],holes:9}));});
 test('course list has only sourced public disc golf layouts with at least 18 holes',()=>{
-  assert.equal(courses.length,35);assert.ok(courses.every(isEligibleCourse));
+  assert.equal(courses.length,65);assert.ok(courses.every(c=>isEligibleWithMinHoles(c,1)));assert.equal(courses.filter(isEligibleCourse).length,43);assert.ok(courses.some(c=>c.id==='kit-carson-park'&&isEligibleCourse(c)));
   const bad=[{holes:9},{kind:'ball-golf'},{college:true},{status:'closed'},{access:'private',privateOnly:true},{sources:[]}];
   assert.ok(bad.every(change=>!isEligibleCourse({...courses[0],...change})));
 });
@@ -83,8 +83,8 @@ test('grid precipitation probability fills missing hourly values and preserves n
 test('fixed directory has accurate straight-line radius counts around ZIP 92648',()=>{
   const fromZip=[33.6757,-117.9980];
   const within=(radius)=>filterCourses(courses,fromZip,radius);
-  assert.deepEqual([within(50).length,within(80).length,within(150).length],[15,23,35]);
-  assert.ok(!courses.some(c=>/Kit Carson/.test(c.name)));assert.ok(courses.some(c=>/Sky High/.test(c.name)&&c.access.startsWith('public-fee')));assert.ok(courses.some(c=>c.id==='mt-waterman'&&c.access.startsWith('public-fee')));assert.ok(courses.some(c=>c.id==='ken-malloy'));
+  assert.deepEqual([within(50).length,within(80).length,within(150).length],[17,28,43]);
+  assert.ok(courses.some(c=>/Kit Carson/.test(c.name)));assert.ok(courses.some(c=>/Sky High/.test(c.name)&&c.access.startsWith('public-fee')));assert.ok(courses.some(c=>c.id==='mt-waterman'&&c.access.startsWith('public-fee')));assert.ok(courses.some(c=>c.id==='ken-malloy'));
 });
 
 test('NWS temperature units convert Celsius and unknown wind units remain missing',()=>{
