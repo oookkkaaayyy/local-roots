@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#292119">
-<title>HBNF | Live Round and Season</title>
+<title>HBNF | Stats</title>
 <meta name="robots" content="noindex">
 <style>
 @font-face{font-family:Cabin;src:url('/fonts/cabin-latin-400.woff2') format('woff2');font-weight:400;font-display:swap}
@@ -50,7 +50,7 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
  <button type="button" id="tab-live" role="tab" aria-controls="pane-live" aria-selected="true" tabindex="0">Live Round</button>
  <button type="button" id="tab-trophy" role="tab" aria-controls="pane-trophy" aria-selected="false" tabindex="-1">Trophy Race</button>
  <button type="button" id="tab-awards" role="tab" aria-controls="pane-awards" aria-selected="false" tabindex="-1">Awards</button>
- <button type="button" id="tab-season" role="tab" aria-controls="pane-season" aria-selected="false" tabindex="-1">Season Stats</button>
+ <button type="button" id="tab-season" role="tab" aria-controls="pane-season" aria-selected="false" tabindex="-1">Stats</button>
 </div>
 <section id="pane-live" role="tabpanel" aria-labelledby="tab-live">
  <div class="heading"><div><h2>Glow Doubles</h2><span class="small" id="liveWeek"></span></div></div>
@@ -66,7 +66,7 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
  <div class="panel"><table aria-label="Awards"><thead><tr><th>Award</th><th>Leader</th><th class="n">Value</th></tr></thead><tbody id="awardsBody"></tbody></table></div>
 </section>
 <section id="pane-season" role="tabpanel" aria-labelledby="tab-season" hidden>
- <div class="heading"><div><h2 id="seasonTitle">Season</h2></div></div>
+ <div class="heading"><div><h2 id="seasonTitle">Stats</h2></div></div>
  <div class="panel"><h3>Glow wins</h3><table aria-label="Season Glow wins"><thead><tr><th>Rank</th><th>Player</th><th class="n">Wins</th></tr></thead><tbody id="seasonBody"></tbody></table></div>
 </section>
 <script src="/hbnf-season/season.js"></script>
