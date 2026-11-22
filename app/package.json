@@ -12,7 +12,7 @@
     "test:studio": "node dye-studio/scripts/build.mjs && node dye-studio/scripts/test.mjs && node scripts/check-hbnf-integration.mjs",
     "test:weather": "node --test tests/weather*.test.mjs",
     "test:season": "node --test tests/hbnf-season.test.mjs",
-    "test:completeness": "node --test tests/event-completeness.test.mjs",
+    "test:completeness": "node --test tests/event-completeness.test.mjs tests/coverage-watch.test.mjs",
     "test:brand": "node --test tests/brand-identity-assets.test.mjs",
     "test:stencil": "node --test tests/du-stencil-constraints.test.mjs tests/png-mask.test.mjs tests/du-stencil-compiler.test.mjs tests/du-cut-sheet.test.mjs"
   },
