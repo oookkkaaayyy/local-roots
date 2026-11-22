@@ -42,7 +42,7 @@ const toBands=p=>{const b=[];for(let i=0;i<p.length;i+=3)if(p[i+2]>1e-3)b.push([
 const white="#F4F2E8";
 function fitDye(n,info){
  const tg=filmTarget(n,info.hex),tl=lab2(tg.hex),m=META[n]||META[alias(n)]||{};
- SMAX=Math.hypot(tl[1],tl[2])<9&&tl[0]<45?260:95;ACAP=tl[0]<35?40:tl[0]<55?24:14;
+ SMAX=Math.hypot(tl[1],tl[2])<9&&tl[0]<45?260:+(process.env.DYE_SMAX||95);ACAP=tl[0]<35?40:tl[0]<55?24:14;
  const neutral=Math.hypot(tl[1],tl[2])<9&&tl[0]<45;
  let phi0=Math.min(.7,(m.fluor||0)*.45);
  // emission band from the dye's UV color

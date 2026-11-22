@@ -84,4 +84,17 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
   const h=hsl(pu);ok(Ls(pu)<30&&(h[0]<30||h[0]>330),"purple on orange Star is maroon "+pu);
   const hb=hsl(blL);ok(hb[0]>205&&hb[0]<260,"blue on light blue stays blue "+blL);
 }
+{ // public-dataset evaluation (research/dataset/observations.json): direction-of-shift cases and fit quality
+  const {evaluate}=await import("./eval_dataset.mjs"),R=evaluate();
+  ok(R.direction.pass===R.direction.n,"dataset direction cases "+R.direction.pass+"/"+R.direction.n+" "+R.direction.rows.filter(r=>!r.ok).map(r=>r.id));
+  ok(R.films.mean<1.5&&R.anchors.mean<6.5,"dataset fit films "+R.films.mean+" anchors "+R.anchors.mean);
+}
+{ // plastic-aware uptake (wiki ratings) and translucent default transmission
+  const base="#F4F2E8",dx=DE.predict({baseHex:base,plastic:"dx",items:it(["iDye Poly Blue",1])}).hex,st=DE.predict({baseHex:base,plastic:"star",items:it(["iDye Poly Blue",1])}).hex;
+  ok(Ls(dx)>Ls(st)+2,"DX takes less dye than Star "+dx+" "+st);
+  ok(DE.plasticOf("fuzion").fam==="champion"&&DE.plasticOf("dx").up<DE.plasticOf("echostar").up,"plastic table families and uptake order");
+  const th=DE.predict({baseHex:"#F7E331",family:"champion",path:.5,items:it(["iDye Poly Blue",.05])});
+  ok(th.hex!==undefined&&hsl(th.hex)[0]<260&&hsl(th.hex)[0]>150||Ls(th.hex)<25,"thin blue on yellow Champion is not violet "+th.hex);
+  const ev=DE.predict({baseHex:champ,family:"champion",items:it(["iDye Poly Blue",1],["Crimson",1])}).evidence;ok(ev.includes("translucent multi-dye"),"evidence flag for Champion two-dye");
+}
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);

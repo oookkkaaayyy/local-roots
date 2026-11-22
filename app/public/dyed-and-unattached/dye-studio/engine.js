@@ -79,8 +79,14 @@ const DE=(()=>{
  const CAT={};            // name -> {b:[[mu,sig,a]...],phi,em:[mu,sig],aff,sd}
  const PRM={tq:3,             // process parameters per optical family, fitted by scripts/fit_engine.mjs
   star:{Sx:1.6,cmax:1.0,rim:.08,tr:0},
-  champion:{Sx:.35,cmax:1.0,rim:.12,tr:1,kS:.55,kT:1.5,pw:.75,gT:1.38,w:{outdoor:{plate:1,shoulder:.75,rim:.5},surface:{plate:.09,shoulder:.04,rim:.04},backlit:{plate:1,shoulder:.95,rim:.8}}}
+  champion:{bt:.38,bf:.08,Sx:.35,cmax:1.0,rim:.12,tr:1,kS:.55,kT:1.5,pw:.75,gT:1.38,w:{outdoor:{plate:1,shoulder:.75,rim:.5},surface:{plate:.09,shoulder:.04,rim:.04},backlit:{plate:1,shoulder:.95,rim:.8}}}
  };
+ // Plastic table. fam = optical family; rating = r/discdyeing wiki dye-uptake scale 1-5 (null = unrated, assumed like family);
+ // up = dye strength multiplier derived from the rating. Sources: research/dataset/observations.json (wiki ratings).
+ const UPR=[0,.15,.35,.6,.8,1];
+ const PLASTICS={star:{fam:"star",rating:5},gstar:{fam:"star",rating:5},echostar:{fam:"star",rating:4},pro:{fam:"star",rating:4},dx:{fam:"star",rating:2},prime:{fam:"star",rating:2},
+  champion:{fam:"champion",rating:5},fuzion:{fam:"champion",rating:5},glow:{fam:"champion",rating:null,est:1}};
+ const plasticOf=id=>{const p=PLASTICS[id]||PLASTICS.star;return{...p,up:p.rating?UPR[p.rating]:1}};
  const famOf=o=>/champion/.test(o||"")?"champion":"star";
  const absorb=(d,k)=>{const A=new Array(N).fill(0);if(!d)return A;for(const [mu,sg,a] of d.b)for(let i=0;i<N;i++)A[i]+=a*gau(lam[i],mu,sg);for(let i=0;i<N;i++)A[i]*=k;return A};
  // Effective per-dye concentration (relative to full single-dye film). Langmuir competition.
@@ -147,7 +153,7 @@ const DE=(()=>{
  function translucent(baseHex,transHex,items,fam,scene,zone,path,opt){
   const P=PRM.champion,tau=tauOf(items,opt?.mult);
   const Rs=toExt(kmLayer(toInt(baseSpec(baseHex)),tau.map(v=>v*P.kS),P.Sx));
-  const T0=baseSpec(transHex),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*P.gT));
+  const T0=transHex?baseSpec(transHex):baseSpec(baseHex).map(v=>Math.pow(Math.max(0,v-P.bf)/(1-P.bf),P.bt)),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*P.gT));
   const w=(P.w[scene]||P.w.outdoor)[zone];
   let R=Rs.map((v,i)=>v*(1-w)+T[i]*w);
   if(!opt?.noFluor){const f=fluor(items,tau.map(v=>v*P.kS),{cscale:P.kS*P.kT*Math.pow(path,P.pw)});R=R.map((v,i)=>v+f[i]*(scene==="backlit"?.3:1))}
@@ -185,13 +191,15 @@ const DE=(()=>{
  const gaussRand=r=>{const u=Math.max(1e-9,r()),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
  // spec: {baseHex,transHex,family,scene,zone,path,items:[{name,s}]}
  function render(spec,opt){
-  spec={...spec,items:merge(spec.items)};
-  const fam=famOf(spec.family);
-  const R=fam==="champion"?translucent(spec.baseHex,spec.transHex||spec.baseHex,spec.items,fam,spec.scene||"outdoor",spec.zone||"plate",spec.path??.5,opt)
+  const pl=spec.plastic?plasticOf(spec.plastic):null;
+  spec={...spec,items:merge(spec.items).map(it=>pl?{...it,s:it.s*pl.up}:it)};
+  const fam=famOf(pl?pl.fam:spec.family);
+  const R=fam==="champion"?translucent(spec.baseHex,spec.transHex,spec.items,fam,spec.scene||"outdoor",spec.zone||"plate",spec.path??.5,opt)
                            :opaque(spec.baseHex,spec.items,fam,opt);
   return R;
  }
  function predict(spec,opt={}){
+  if(spec.plastic&&!spec.family)spec={...spec,family:plasticOf(spec.plastic).fam};
   const R=render(spec,opt);let out=present(R,famOf(spec.family)==='champion'?VEIL:0);
   const P=PRM[famOf(spec.family)];
   if(spec.zone==="rim"||spec.rim){const k=P.rim*(spec.items.length?1:0);if(k){out={...out,hex:SP.linHex(SP.toLin(R).map(v=>Math.min(1,Math.max(0,v*(1-k)))))}}}
@@ -205,6 +213,14 @@ const DE=(()=>{
    const c=labOf(out.lin.map(v=>Math.min(1,Math.max(0,v)))),d=labs.map(l=>de2000(c,l)).sort((a,b)=>a-b);
    out.spread=d[Math.floor(.9*(d.length-1))];out.lo=labs.reduce((a,l)=>l[0]<a[0]?l:a);out.hi=labs.reduce((a,l)=>l[0]>a[0]?l:a);
   }
+  // evidence flags: situations the public dataset covers poorly (used by the UI to lower the confidence label)
+  {const ev=[],its=spec.items,bths=new Set(its.map(i=>i.b||0)).size,pl=spec.plastic?plasticOf(spec.plastic):null;
+   if(famOf(spec.family)==='champion'&&its.length>1)ev.push('translucent multi-dye');
+   if(bths>1)ev.push('overlap');
+   if(its.some(i=>(CAT[i.name]?.sd??.18)>.15))ev.push('estimated dye');
+   if(pl&&(pl.rating===null||pl.est))ev.push('unrated plastic');
+   if(out.gamutExcess>.05)ev.push('out of gamut');
+   out.evidence=ev}
   out.lab=labOf(out.lin.map(v=>Math.min(1,Math.max(0,v))));
   return out;
  }
@@ -250,7 +266,7 @@ const DE=(()=>{
   out.sort((a,b)=>a.dE-b.dE||a.names.length-b.names.length);
   return out.slice(0,opt.top||6).map(o=>{const items=o.names.map((n,i)=>({name:n,s:o.s[i]}));const p=predict({baseHex:base,transHex:opt.transHex,family,scene:"outdoor",zone:"plate",path:.45,items},{mc:24});return{items,dE:o.dE,hex:p.hex,spread:p.spread}});
  }
- return{CAT,PRM,famOf,absorb,conc,tauOf,kmLayer,fluor,render,predict,uv365,glow,recipe,labOf,labOfSpec,de2000,hexLab,dEhex,present,rng,gaussRand,gau,lam};
+ return{CAT,PRM,PLASTICS,plasticOf,famOf,absorb,conc,tauOf,kmLayer,fluor,render,predict,uv365,glow,recipe,labOf,labOfSpec,de2000,hexLab,dEhex,present,rng,gaussRand,gau,lam};
 })();
 /*ENGINE-END*/
 
