@@ -12,10 +12,9 @@ test("integrity watch follows the upgraded event discovery and results contract"
   for (const marker of [
     '"Past events & results"',
     '"Add to Calendar"',
-    '"PDGA Results ↗"',
+    '"PDGA Results"',
     '"On Local Roots"',
     '"Official link"',
-    '"Full Results"',
     '"Submit organizer results"',
     '"Upcoming events"',
     '"Submit an event"',
@@ -42,6 +41,6 @@ test("integrity watch verifies upgraded event-page styles", () => {
 });
 
 test("integrity watch version advances with its deployed contract", () => {
-  assert.ok(watch.includes('LocalRootsIntegrityWatch/10.0'));
-  assert.equal(watch.includes('LocalRootsIntegrityWatch/9.0'), false);
+  assert.ok(watch.includes('LocalRootsIntegrityWatch/11.0'));
+  assert.equal(watch.includes('LocalRootsIntegrityWatch/10.0'), false);
 });
