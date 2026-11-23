@@ -486,3 +486,9 @@
 .lr th{font-size:max(.7rem,11px)}
 .lr dd,.lr dt,.lr td,.lr th,.lr p,.lr li{overflow-wrap:anywhere;min-width:0}
 .lr .footer-nav a{min-height:44px;padding:0 8px}
+html .lr a.button,html .lr button.button,html .lr summary,html .lr .lr-foot a,html .lr [class*=social] a,html .lr .lr-wrap a.pill,html .lr .chip a{min-height:44px!important;display:inline-flex;align-items:center}
+html .lr .event-card a,html .lr .event-actions a,html .lr footer a,html .lr .lr-top-aside a{min-height:44px;display:inline-flex;align-items:center}
+html .lr .event-meta{overflow-wrap:anywhere;min-width:0}
+html .lr h2{overflow-wrap:anywhere;min-width:0}
+html .lr .event-resource-links a,html .lr .event-actions a,html .lr .event-actions button,html .lr .event-card .button,html .lr .event-card button,html .lr details>summary{min-height:44px!important;display:inline-flex;align-items:center;box-sizing:border-box}
+html .lr .event-resource-links{display:flex;flex-wrap:wrap;gap:8px}
