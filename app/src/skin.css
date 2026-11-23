@@ -476,3 +476,24 @@
 .lr .ds .stpre #stgo small{display:inline;margin-left:6px;font-size:11px;opacity:.85;font-weight:600}
 @media(max-width:700px){.lr.lr-tool .ds.stp .stpair canvas{max-width:none}.lr.lr-tool .ds.stp .stframe[data-state=photo] .stpair #sp{max-width:min(100%,46vh)}}
 .lr .ds .hid{display:none}
+
+/* ---- layout-guard structural defenses (hbnf-site scripts/layout_guard); keep last ---- */
+.lr .lr-nav{gap:4px}
+.lr .lr-brand{min-height:44px;min-width:44px}
+.lr a,.lr button,.lr .button,.lr .lr-btn{min-height:44px}
+.lr a:not(.lr-brand):not(.skip-link):not(.lr-btn):not(.button):not([class*=nav]){display:inline-flex;align-items:center}
+.lr .lr-btn,.lr .lr-top-aside .lr-btn,.lr .lr-top-aside .lr-actions .lr-btn{min-height:44px}
+.lr th{font-size:max(.7rem,11px)}
+.lr dd,.lr dt,.lr td,.lr th,.lr p,.lr li{overflow-wrap:anywhere;min-width:0}
+.lr .footer-nav a{min-height:44px;padding:0 8px}
+html .lr a.button,html .lr button.button,html .lr summary,html .lr .lr-foot a,html .lr [class*=social] a,html .lr .lr-wrap a.pill,html .lr .chip a{min-height:44px!important;display:inline-flex;align-items:center}
+html .lr .event-card a,html .lr .event-actions a,html .lr footer a,html .lr .lr-top-aside a{min-height:44px;display:inline-flex;align-items:center}
+html .lr .event-meta{overflow-wrap:anywhere;min-width:0}
+html .lr h2{overflow-wrap:anywhere;min-width:0}
+html .lr .event-resource-links a,html .lr .event-actions a,html .lr .event-actions button,html .lr .event-card .button,html .lr .event-card button,html .lr details>summary{min-height:44px!important;display:inline-flex;align-items:center;box-sizing:border-box}
+html .lr .event-resource-links{display:flex;flex-wrap:wrap;gap:8px}
+html .lr small,html .lr .weather-flag,html .lr .weather-page small{font-size:max(.7rem,11px)}
+html .lr .dug-nav button,html .lr .dug-main button{z-index:3}
+html .lr .dug-strip{justify-content:safe center}
+html .lr .dug-controls{position:relative;z-index:3}
+html .lr .dug-controls button{position:relative;z-index:3}
