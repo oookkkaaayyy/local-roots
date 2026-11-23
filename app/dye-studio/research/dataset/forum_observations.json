@@ -733,18 +733,6 @@
  },
  {
   "source_url": "https://dgcoursereview.com/threads/cool-dye-combinations2-the-dyed-discs.56037/page-18",
-  "plastic": "Champion Eagle",
-  "base_color": "N/A",
-  "dye": "dip",
-  "method": "flip and dip",
-  "result_description": "Multiple shades",
-  "result_color_hex": null,
-  "uv_notes": null,
-  "confidence": "medium",
-  "id": 62
- },
- {
-  "source_url": "https://dgcoursereview.com/threads/cool-dye-combinations2-the-dyed-discs.56037/page-18",
   "plastic": "not stated",
   "base_color": "black (dip)",
   "dye": "dip + detergent/dye/fabric softener paint",
@@ -753,7 +741,7 @@
   "result_color_hex": null,
   "uv_notes": "fluorescent yellow dye used, UV not stated",
   "confidence": "medium",
-  "id": 63
+  "id": 62
  },
  {
   "source_url": "https://dgcoursereview.com/threads/cool-dye-combinations2-the-dyed-discs.56037/page-18",
@@ -765,19 +753,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 64
- },
- {
-  "source_url": "https://dgcoursereview.com/threads/cool-dye-combinations2-the-dyed-discs.56037/page-18",
-  "plastic": "Opto",
-  "base_color": "not stated",
-  "dye": "tie dye",
-  "method": "tie dye",
-  "result_description": "Failed tie dye",
-  "result_color_hex": null,
-  "uv_notes": null,
-  "confidence": "low",
-  "id": 65
+  "id": 63
  },
  {
   "source_url": "https://dgcoursereview.com/threads/my-first-disc-dyes-shaving-cream.143692",
@@ -789,7 +765,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 66
+  "id": 64
  },
  {
   "source_url": "https://dgcoursereview.com/threads/my-first-disc-dyes-shaving-cream.143692",
@@ -801,7 +777,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 67
+  "id": 65
  },
  {
   "source_url": "https://www.dgcoursereview.com/threads/first-attempt-with-a-star-destroyer.146551/",
@@ -813,7 +789,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 68
+  "id": 66
  },
  {
   "source_url": "https://dgcoursereview.com/threads/dyed-disc-changes-over-time.143566",
@@ -825,7 +801,7 @@
   "result_color_hex": null,
   "uv_notes": "sun exposure worsened deterioration",
   "confidence": "medium",
-  "id": 69
+  "id": 67
  },
  {
   "source_url": "https://dgcoursereview.com/threads/dyed-disc-changes-over-time.143566",
@@ -837,7 +813,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 70
+  "id": 68
  },
  {
   "source_url": "https://dgcoursereview.com/threads/dyed-disc-changes-over-time.143566",
@@ -849,7 +825,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "low",
-  "id": 71
+  "id": 69
  },
  {
   "source_url": "https://www.dgcoursereview.com/threads/nebula-style-dye-tutorial.109862",
@@ -861,7 +837,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 72
+  "id": 70
  },
  {
   "source_url": "https://www.dgcoursereview.com/threads/first-try-dying-discs-marble-and-galaxy-techniques.145182",
@@ -873,7 +849,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 73
+  "id": 71
  },
  {
   "source_url": "https://www.dgcoursereview.com/threads/first-try-dying-discs-marble-and-galaxy-techniques.145182",
@@ -885,7 +861,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 74
+  "id": 72
  },
  {
   "source_url": "https://dgcoursereview.com/threads/brightest-silver-dye-and-champion-plastic.144364",
@@ -897,7 +873,7 @@
   "result_color_hex": null,
   "uv_notes": "Asked if UV Blast a dye or coating",
   "confidence": "low",
-  "id": 75
+  "id": 73
  },
  {
   "source_url": "https://www.dgcoursereview.com/threads/noobie-dye-question-thread.52246/page-4",
@@ -909,7 +885,7 @@
   "result_color_hex": null,
   "uv_notes": "neon pink visible",
   "confidence": "medium",
-  "id": 76
+  "id": 74
  },
  {
   "source_url": "https://www.dgcoursereview.com/threads/noobie-dye-question-thread.52246/page-4",
@@ -921,7 +897,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "medium",
-  "id": 77
+  "id": 75
  },
  {
   "source_url": "https://udisc.com/blog/post/how-to-dye-a-disc-golf-disc-easy-step-by-step-guide",
@@ -933,7 +909,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "high",
-  "id": 78
+  "id": 76
  },
  {
   "source_url": "https://udisc.com/blog/post/the-colorful-world-of-disc-golf-disc-dyeing",
@@ -945,7 +921,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 79
+  "id": 77
  },
  {
   "source_url": "https://prodigydisc.com/blogs/tips-tricks/how-to-dye-disc-golf-discs",
@@ -957,7 +933,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 80
+  "id": 78
  },
  {
   "source_url": "https://discountdiscgolf.com/how-to-dye-disc-golf-discs/",
@@ -969,7 +945,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 81
+  "id": 79
  },
  {
   "source_url": "https://abcrafty.com/disc-dyeing/",
@@ -981,7 +957,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 82
+  "id": 80
  },
  {
   "source_url": "https://disctree.com/blogs/disc-golf/barberskums-metoden-til-disc-dye",
@@ -993,19 +969,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 83
- },
- {
-  "source_url": "https://golferhive.com/how-to-dye-disc-golf-discs/",
-  "plastic": "premium",
-  "base_color": "N/A",
-  "dye": "generic",
-  "method": "shaving cream 10-15 min claims",
-  "result_description": "Heat lamps warp if close",
-  "result_color_hex": null,
-  "uv_notes": "not stated",
-  "confidence": "low",
-  "id": 84
+  "id": 81
  },
  {
   "source_url": "https://lr.eu.psf.lt/r/discdyeing/comments/11an9b6/disc_dyeing_wiki",
@@ -1017,7 +981,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 85
+  "id": 82
  },
  {
   "source_url": "https://lr.eu.psf.lt/r/discdyeing/comments/11an9b6/disc_dyeing_wiki",
@@ -1029,7 +993,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 86
+  "id": 83
  },
  {
   "source_url": "https://lr.eu.psf.lt/r/discdyeing/comments/11an9b6/disc_dyeing_wiki",
@@ -1041,7 +1005,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 87
+  "id": 84
  },
  {
   "source_url": "https://lr.eu.psf.lt/r/discdyeing/comments/11an9b6/disc_dyeing_wiki",
@@ -1053,7 +1017,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "medium",
-  "id": 88
+  "id": 85
  },
  {
   "source_url": "https://lr.eu.psf.lt/r/discdyeing/comments/11an9b6/disc_dyeing_wiki",
@@ -1065,7 +1029,7 @@
   "result_color_hex": null,
   "uv_notes": "glow base dyes less saturated",
   "confidence": "low",
-  "id": 89
+  "id": 86
  },
  {
   "source_url": "https://lr.eu.psf.lt/r/discdyeing/comments/11an9b6/disc_dyeing_wiki",
@@ -1077,31 +1041,7 @@
   "result_color_hex": null,
   "uv_notes": null,
   "confidence": "low",
-  "id": 90
- },
- {
-  "source_url": "https://reddit.rtrace.io/r/discdyeing",
-  "plastic": "Zone/Glitch/Star Destroyer",
-  "base_color": "varied",
-  "dye": "Pro Chem / Rit DyeMore",
-  "method": "stencil, lotion, spin",
-  "result_description": "Glitch stencil minor bleeds; neon yellow looked dim after staggered heat lamp; river look black muddied; brown from too many colors",
-  "result_color_hex": null,
-  "uv_notes": "neon yellow muted",
-  "confidence": "low",
-  "id": 91
- },
- {
-  "source_url": "https://reddit.rtrace.io/r/discdyeing",
-  "plastic": "ESP Zone",
-  "base_color": "N/A",
-  "dye": "light pink/violet",
-  "method": "glue bed PCAD/acetone, 2 h bulb",
-  "result_description": "Posted for feedback",
-  "result_color_hex": null,
-  "uv_notes": null,
-  "confidence": "medium",
-  "id": 92
+  "id": 87
  },
  {
   "source_url": "https://dyersguild.co/best-black-dye/",
@@ -1113,7 +1053,7 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "low",
-  "id": 93
+  "id": 88
  },
  {
   "source_url": "https://dyersguild.co/disc-dyeing-acceptability-chart",
@@ -1125,30 +1065,378 @@
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "low",
+  "id": 89
+ },
+ {
+  "source_url": "https://pdga.com/files/discussion/archive/t-19940.html",
+  "plastic": "Innova DX (white or CE clear/white)",
+  "base_color": "white or clear",
+  "dye": "RIT (color not named), water + laundry detergent + salt",
+  "method": "170F, 1 pack per 2 qt (~4x label), 10 min soaks repeated, rinse between",
+  "result_description": "Even color but no sharp edges on DX",
+  "result_color_hex": null,
+  "uv_notes": null,
+  "confidence": "medium",
+  "id": 90
+ },
+ {
+  "source_url": "https://pdga.com/files/discussion/archive/t-19940.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Rit powder + acetone paste",
+  "method": "room temp",
+  "result_description": "n/a",
+  "result_color_hex": "Contact paper curled and bled; tape-masked or unmasked gave only decent results",
+  "uv_notes": null,
+  "confidence": null,
+  "id": 91
+ },
+ {
+  "source_url": "https://www.pdga.com/discussion/archive/t-20383.html",
+  "plastic": "Proline (near-clear, stamp removed)",
+  "base_color": "clear",
+  "dye": "laundry bluing + acetone",
+  "method": "room temp ~30 s",
+  "result_description": "Washed off in rinse; acetone softened plastic",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 92
+ },
+ {
+  "source_url": "https://www.pdga.com/discussion/archive/t-20383.html",
+  "plastic": "Proline (seasoned)",
+  "base_color": "not stated",
+  "dye": "black Rit (20+ yr old) + acetone paste",
+  "method": "room temp",
+  "result_description": "Dark near-opaque black with blue spots",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 93
+ },
+ {
+  "source_url": "https://www.pdga.com/discussion/archive/t-20383.html",
+  "plastic": "Proline (seasoned)",
+  "base_color": "not stated",
+  "dye": "black Rit + red/yellow ink markers",
+  "method": "room temp, glue resist for whites",
+  "result_description": "Black read as blue",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
   "id": 94
  },
  {
-  "source_url": "https://discrepublic.ca/products/disc-golf-dye-pro-chemical-dye-neon-colours-disc-golf-dyeing-kit",
-  "plastic": "six UV-reflective neon ProChem kit",
-  "base_color": "N/A",
-  "dye": "ProChem Neon kit",
-  "method": "retail description",
-  "result_description": "Describes six UV-reflective colours; no data",
+  "source_url": "https://www.pdga.com/discussion/archive/t-20383.html",
+  "plastic": "Champion 150 Valkyrie (gummy)",
+  "base_color": "not stated",
+  "dye": "Rit + non-acetone nail polish remover",
+  "method": "room temp",
+  "result_description": "Beaded and rolled off",
   "result_color_hex": null,
-  "uv_notes": "vendor claim UV-reflective",
-  "confidence": "low",
+  "uv_notes": "not stated",
+  "confidence": "medium",
   "id": 95
  },
  {
-  "source_url": "https://www.youtube.com/results?search_query=disc+golf+dyeing+tutorial",
-  "plastic": "N/A",
-  "base_color": "N/A",
-  "dye": "Rit DyeMore / ProChem / iDye",
-  "method": "titles only",
-  "result_description": "Video list: dip dye 10 min Rit, lazy wave lotion, clear glue, shaving cream, Floetrol ring; no transcripts read",
+  "source_url": "https://www.pdga.com/discussion/archive/t-20383.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Rit + non-acetone remover with frisket",
+  "method": "room temp",
+  "result_description": "Last 5 of 15 discs good; acetone dissolved frisket and bled",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 96
+ },
+ {
+  "source_url": "https://www.pdga.com/discussion/archive/t-20383.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Lake Hawk worm dye",
+  "method": "room temp spin dye",
+  "result_description": "Spin-dye beat cotton balls/Q-tips",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 97
+ },
+ {
+  "source_url": "https://www.pdga.com/discussion/archive/t-20383.html",
+  "plastic": "DX (white)",
+  "base_color": "white",
+  "dye": "dip dye, 24 h",
+  "method": "dip",
+  "result_description": "Worked after 24 h dip though DX reported hard to dye",
   "result_color_hex": null,
   "uv_notes": "not stated",
   "confidence": "low",
-  "id": 96
+  "id": 98
+ },
+ {
+  "source_url": "https://www.pdga.com/discussion/archive/t-20383.html",
+  "plastic": "Gateway",
+  "base_color": "not stated",
+  "dye": "various",
+  "method": "\u2014",
+  "result_description": "Fastest fading of mentioned plastics",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 99
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-17532.html",
+  "plastic": "Champion (CE Firebird, Wraith)",
+  "base_color": "not stated",
+  "dye": "RIT + Tide thick paste",
+  "method": "press disc in, lift, repeat (Brainwave pattern)",
+  "result_description": "Brainwave pattern achieved with practice",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 100
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-17532.html",
+  "plastic": "DX",
+  "base_color": "not stated",
+  "dye": "RIT red + detergent",
+  "method": "3-4 days",
+  "result_description": "Pastel pink possible; DX resists dye",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 101
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-17532.html",
+  "plastic": "Star",
+  "base_color": "not stated",
+  "dye": "Spinart or RIT",
+  "method": "\u2014",
+  "result_description": "Absorbs heavily and blurs over time; Star bleeds",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 102
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-17532.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Rit + acetone (hot, 1 cup each), face down",
+  "method": "few hours",
+  "result_description": "Minimal bleeding",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 103
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-17532.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "PROsperse black + blue + green via Carrier NSC",
+  "method": "~3 scoops black, 0.5 scoop blue/green; 5 min to hours",
+  "result_description": "Crisp lines; black alone looked brownish",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 104
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-17532.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Spike It dye",
+  "method": "\u2014",
+  "result_description": "Washed off with soap, poor stick",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 105
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-17532.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Pylam powder",
+  "method": "\u2014",
+  "result_description": "Bright colors that stick well (poster)",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 106
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-18885.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "red dye in Bruce mix",
+  "method": "24 h vs 48 h",
+  "result_description": "48 h gave deeper red than 24 h",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 107
+ },
+ {
+  "source_url": "https://www.pdga.com/files/discussion/archive/t-18885.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Jelly dye thickener",
+  "method": "sat a few days",
+  "result_description": "Colors less bright after days",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 108
+ },
+ {
+  "source_url": "https://dgcoursereview.com/threads/airbrush-dye-show-n-tell-and-helpful-hints-to-get-started-airbrushing.122223",
+  "plastic": "MVP Proton Mini (plastic type not stated)",
+  "base_color": "not stated",
+  "dye": "ProChem dyes: 1 scoop light, 2 dark, 3 black/red",
+  "method": "airbrush <10 psi; 1 tbsp denatured alcohol + 1 tbsp acetone + 1 tbsp hot water + 2-3 scoops; steam 5-10 min",
+  "result_description": "Successful gradients",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 109
+ },
+ {
+  "source_url": "https://www.dgcoursereview.com/threads/dye-alternatives-and-broader-ranges-of-colors.108852/page-17",
+  "plastic": "MVP Proton Mini (plastic type not stated)",
+  "base_color": "not stated",
+  "dye": "Pylam hand painted",
+  "method": "hot water, ~75 min; 0.5% dye 99.5% water + vinegar, Synthrapol, ProChem Carrier NSC; dye mixed 1:1 with ProChem Thick F",
+  "result_description": "Bright hand painted results (images only)",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 110
+ },
+ {
+  "source_url": "https://dgcoursereview.com/threads/skittlebomb-technique-thread.125348",
+  "plastic": "White premium (Star, ESP, Neutron, GL)",
+  "base_color": "white",
+  "dye": "powder dye red/pink, blue, yellow in lard + liquid hand soap (2 tbsp each)",
+  "method": "microwave ~1 min bursts, chill, blow dry, 24 h",
+  "result_description": "Buttery smooth feel; about 1 in 50 turned as expected",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "medium",
+  "id": 111
+ },
+ {
+  "source_url": "https://dgcoursereview.com/threads/noobie-dye-question-thread.52246/page-9",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "dark red",
+  "method": "30 min dip, then 5 and 2 min dips",
+  "result_description": "Lighter shades lacked definition",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 112
+ },
+ {
+  "source_url": "https://dgcoursereview.com/threads/noobie-dye-question-thread.52246/page-20",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Pylam green; blue to darken; Pylam fluorescent yellow for neon green",
+  "method": "\u2014",
+  "result_description": "Pylam considered best consistent green; blue darkens, fluorescent yellow gives neon greens",
+  "result_color_hex": null,
+  "uv_notes": "fluorescent yellow mentioned",
+  "confidence": "low",
+  "id": 113
+ },
+ {
+  "source_url": "https://www.dgcoursereview.com/threads/rit-dye-questions.45301/page-4",
+  "plastic": "Star",
+  "base_color": "yellow",
+  "dye": "Rit Kelly Green",
+  "method": "question only",
+  "result_description": "Not reported",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 114
+ },
+ {
+  "source_url": "https://www.ritdye.com/?p=2842",
+  "plastic": "polyester/nylon/some plastics",
+  "base_color": "white or any",
+  "dye": "Rit DyeMore (Daffodil Yellow named)",
+  "method": "stovetop ~180F near boil, 30 min stir, polyester at least 30 min, 1 bottle (2 for dark)",
+  "result_description": "Manufacturer says suitable for some plastics; 1000+ colors; colors look lighter dry",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "high",
+  "id": 115
+ },
+ {
+  "source_url": "https://cdn.shopify.com/s/files/1/0704/5453/files/RIT_Dyemore_instructions.pdf",
+  "plastic": "heat-sensitive small items (beads, Lego)",
+  "base_color": "not stated",
+  "dye": "Rit DyeMore",
+  "method": "0.5 cup dye in 4 cups water; just-boiled water 2-5 min up to 30; hard items simmer 1-2 min then off heat",
+  "result_description": "Melt risk; test with scrap, add dye if light",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "high",
+  "id": 116
+ },
+ {
+  "source_url": "https://ammiller19.infprojects.fhsu.edu/finalproject/discdyeing.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Pro Chem (any color suiting base)",
+  "method": "heat lamp; Floetrol marble (Marble Judge)",
+  "result_description": "Colors separated into quadrants",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 117
+ },
+ {
+  "source_url": "https://ammiller19.infprojects.fhsu.edu/finalproject/discdyeing.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Pro Chem (any color suiting base)",
+  "method": "heat lamp; lotion bed (Lotion Destroyer)",
+  "result_description": "Dye mixed into and on top of lotion",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 118
+ },
+ {
+  "source_url": "https://ammiller19.infprojects.fhsu.edu/finalproject/discdyeing.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Pro Chem (any color suiting base)",
+  "method": "heat lamp; Floetrol + acrylic oil (Cosmic Destroyer)",
+  "result_description": "Cellular separation effect",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 119
+ },
+ {
+  "source_url": "https://ammiller19.infprojects.fhsu.edu/finalproject/discdyeing.html",
+  "plastic": "not stated",
+  "base_color": "not stated",
+  "dye": "Pro Chem (any color suiting base)",
+  "method": "heat lamp; clear glue bed",
+  "result_description": "Intricate designs with straw",
+  "result_color_hex": null,
+  "uv_notes": "not stated",
+  "confidence": "low",
+  "id": 120
  }
 ]

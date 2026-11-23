@@ -1,0 +1,26 @@
+{
+ "series": 11,
+ "mean_rel_mse": {
+  "lin": 0.1826,
+  "power": 0.1248,
+  "exp": 0.1338,
+  "lang": 0.1356
+ },
+ "median_cs_pct_owf": {
+  "exp": 50.0,
+  "lang": 50.0
+ },
+ "power_exponent_median": 0.75,
+ "power_exponent_iqr": [
+  0.53,
+  1.09
+ ],
+ "ramp_levels_pct": [
+  0.25,
+  0.5,
+  1,
+  1.5,
+  2,
+  3
+ ]
+}

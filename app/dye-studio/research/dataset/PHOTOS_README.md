@@ -22,3 +22,8 @@ Data: photos.json (2532 rows). Analysis use only: numbers derived from images; n
 - Stock photos have unknown white balance beyond background neutralisation; several have bluish or warm backgrounds (not corrected, flagged).
 - Glow plastics were photographed in daylight (not charged); no glow-emission data.
 - Single retailer: one photographer/lighting rig, so systematic bias is shared across rows (useful for relative comparison, less for absolute accuracy).
+
+## Update (second pass)
+- Added Neo (Discmania): 260 rows (Neo 163, Evolution Neo 50, Soft Neo 22, Neo Lumen glow 20, Neo Horizon 5) from discmania.net, discrepublic.ca and rareairdiscs.com. Total rows now 2792. Opus: no Opus-plastic products found in the catalogs checked (latitude64.com, discrepublic.ca, rareairdiscs.com), so zero Opus rows.
+- photos_clean.json: rows (all, with flags), medians (829 plastic x stated-color groups; 17 with 3+ usable rows). Exclusions from medians: low confidence, swirl/multicolor, flagged rows, and outliers (dE76 > max(12, 2.5 x median distance)). Flags: label_mismatch (hue more than 50 deg from the median hue of that color name, or achromatic sample for a chromatic label) 106, black_label_light_sample 25, white_label_chromatic_sample 10, outlier_vs_group_median 9. Most groups have only 1-2 rows, so medians are mostly single samples.
+- Hobbyist recipe rows: 0. Etsy dyer shops render in Chrome (e.g. PepperDyeWorks) but listings state only plastic, weight and "hand-dyed", with multicolor patterns and no dye brand, base color or time, and photos on non-standard backgrounds. True before/after pairs: 0. Not met.

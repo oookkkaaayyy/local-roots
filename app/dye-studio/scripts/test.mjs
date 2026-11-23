@@ -107,4 +107,10 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
   ok(e1.includes("low-uptake plastic")&&e2.includes("dark base")&&e3.includes("black dye hue varies"),"forum-rule evidence flags "+[e1,e2,e3].join("|"));
   const {evaluate}=await import("./eval_dataset.mjs"),R=evaluate();ok(R.champRimBase.median<R.champRimNoModel.median-1,"Champion rim model beats plate-as-rim on 330 photos "+R.champRimBase.median+" vs "+R.champRimNoModel.median);
 }
+{ // blending-model evidence (research/mixing/*.json, regenerate with fit_mixing.py / fit_mixing_lodo.py): KM additive K/S must beat Beer-Lambert and RGB subtractive on held-out mixes
+  const fs=await import("node:fs"),cv=JSON.parse(fs.readFileSync(new URL("../research/mixing/cv_results.json",import.meta.url),"utf8")),lo=JSON.parse(fs.readFileSync(new URL("../research/mixing/lodo_results.json",import.meta.url),"utf8"));
+  for(const c of["polyester","cotton"])ok(cv[c].km.kfold.mean<cv[c].bl.kfold.mean-1&&cv[c].km.kfold.mean<cv[c].rgb.kfold.mean-1,"KM additive wins "+c);
+  ok(lo.km.mean<lo.bl.mean&&lo.km.mean<lo.rgb.mean&&lo.km.mean<lo.geo.mean,"KM additive wins leave-one-dye-out");
+  const src=fs.readFileSync(new URL("../src/engine.src.js",import.meta.url),"utf8");ok(/ks=kb\+tau\[i\]\/Sx/.test(src),"engine opaque path adds dye K/S to the base K/S (KM additive)");
+}
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
