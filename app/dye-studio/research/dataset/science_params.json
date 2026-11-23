@@ -1,0 +1,817 @@
+{
+ "_meta": {
+  "generated": "2026-11-22",
+  "note": "Values with source URL are extracted; entries marked basis='textbook/estimate' are NOT from a fetched source and need fitting against Andrew's disc observations."
+ },
+ "photochemcad_fluor": {
+  "license": "PhotochemCAD 2.1a (Du 1998; Dixon 2005), distributed by S. Prahl at omlc.org, (c) 2018 Prahl; free for research use with citation, no explicit open license -> keep as private fitting data, do not republish raw files in public repo",
+  "solution_note": "Solution spectra in ethanol etc.; polymer-matrix peaks red-shift ~5-20 nm and QY differs (often lower at high loading from concentration quenching).",
+  "dyes": {
+   "002": {
+    "name": "Coumarin 314 in ethanol",
+    "qy": 0.68,
+    "qy_ref": "Reynolds, 1975",
+    "abs_peak_nm": 435.0,
+    "eps_peak": 46337.2,
+    "em_peak_nm": 475.5,
+    "eps_365": 1993.8,
+    "eps_395": 13554.8,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/002.html"
+   },
+   "004": {
+    "name": "Riboflavin in ethanol",
+    "qy": 0.3,
+    "qy_ref": "Koziol, 1966; Sun, 1972",
+    "abs_peak_nm": 350.0,
+    "eps_peak": 13680.0,
+    "em_peak_nm": 531.0,
+    "eps_365": 13449.0,
+    "eps_395": 12010.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/004.html"
+   },
+   "005": {
+    "name": "Nile Blue in methanol",
+    "qy": 0.27,
+    "qy_ref": "Sens, 1981",
+    "abs_peak_nm": 625.0,
+    "eps_peak": 76648.7,
+    "em_peak_nm": 659.0,
+    "eps_365": 3807.2,
+    "eps_395": 2142.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/005.html"
+   },
+   "007": {
+    "name": "Nile Red in Dioxane",
+    "qy": 0.7,
+    "qy_ref": "Sackett, 1987",
+    "abs_peak_nm": 520.0,
+    "eps_peak": 37894.0,
+    "em_peak_nm": 580.0,
+    "eps_365": 1716.0,
+    "eps_395": 1729.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/007.html"
+   },
+   "008": {
+    "name": "Rhodamine 123 in ethanol",
+    "qy": 0.9,
+    "qy_ref": "Kubin, 1982",
+    "abs_peak_nm": 510.0,
+    "eps_peak": 84211.7,
+    "em_peak_nm": 530.5,
+    "eps_365": -317.8,
+    "eps_395": -14.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/008.html"
+   },
+   "009": {
+    "name": "Rhodamine B in ethanol",
+    "qy": 0.7,
+    "qy_ref": "LLopez-Arbeloa, 1989",
+    "abs_peak_nm": 545.0,
+    "eps_peak": 104228.4,
+    "em_peak_nm": 565.0,
+    "eps_365": 5176.6,
+    "eps_395": 2039.5,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/009.html"
+   },
+   "010": {
+    "name": "Fluorescein in ethanol",
+    "qy": 0.79,
+    "qy_ref": "Kellogg, 1964",
+    "abs_peak_nm": 480.0,
+    "eps_peak": 91692.3,
+    "em_peak_nm": 515.5,
+    "eps_365": 13157.8,
+    "eps_395": 13536.8,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/010.html"
+   },
+   "011": {
+    "name": "Indotricarbocyanine (C7) in ethanol",
+    "qy": 0.28,
+    "qy_ref": "Duggan, 1983",
+    "abs_peak_nm": 745.0,
+    "eps_peak": 238244.2,
+    "em_peak_nm": 771.0,
+    "eps_365": 5005.4,
+    "eps_395": 2393.1,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/011.html"
+   },
+   "012": {
+    "name": "Sulforhodamine 101 in ethanol",
+    "qy": 0.9,
+    "qy_ref": "Birge, 1987",
+    "abs_peak_nm": 575.0,
+    "eps_peak": 138446.6,
+    "em_peak_nm": 591.0,
+    "eps_365": 7826.2,
+    "eps_395": 1161.8,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/012.html"
+   },
+   "014": {
+    "name": "Oxazine 1 in methanol",
+    "qy": 0.11,
+    "qy_ref": "Sens, 1981",
+    "abs_peak_nm": 645.0,
+    "eps_peak": 121550.7,
+    "em_peak_nm": 665.0,
+    "eps_365": 1897.7,
+    "eps_395": 1878.6,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/014.html"
+   },
+   "015": {
+    "name": "Oxacarbocyanine (C3) in ethanol",
+    "qy": 0.05,
+    "qy_ref": "Waggoner, 1989",
+    "abs_peak_nm": 485.0,
+    "eps_peak": 148995.9,
+    "em_peak_nm": 497.5,
+    "eps_365": -1441.2,
+    "eps_395": -41.8,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/015.html"
+   },
+   "016": {
+    "name": "Indocarbocyanine (C3) in methanol",
+    "qy": 0.07,
+    "qy_ref": "Waggoner, 1989",
+    "abs_peak_nm": 545.0,
+    "eps_peak": 132128.4,
+    "em_peak_nm": 557.0,
+    "eps_365": 163.8,
+    "eps_395": 109.8,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/016.html"
+   },
+   "017": {
+    "name": "Indodicarbocyanine (C5) in methanol",
+    "qy": 0.4,
+    "qy_ref": "Sims, 1974",
+    "abs_peak_nm": 635.0,
+    "eps_peak": 235876.4,
+    "em_peak_nm": 657.0,
+    "eps_365": 1893.3,
+    "eps_395": 356.5,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/017.html"
+   },
+   "018": {
+    "name": "Coumarin 30 in acetonitrile",
+    "qy": 0.67,
+    "qy_ref": "Jones, 1985",
+    "abs_peak_nm": 405.0,
+    "eps_peak": 42730.3,
+    "em_peak_nm": 478.0,
+    "eps_365": 13709.7,
+    "eps_395": 38175.6,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/018.html"
+   },
+   "019": {
+    "name": "4-(dicyanomethylene)-2-methyl-6-(p-dimethylaminostyryl)-4H-pyran, [DCM] in acetonitrile",
+    "qy": 0.6,
+    "qy_ref": "Bourson, 1989",
+    "abs_peak_nm": 460.0,
+    "eps_peak": 44953.0,
+    "em_peak_nm": 624.0,
+    "eps_365": 10560.0,
+    "eps_395": 15184.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/019.html"
+   },
+   "020": {
+    "name": "2,5-Diphenyloxazole, [PPO] in cyclohexane",
+    "qy": 1.0,
+    "qy_ref": "Berlman, 1971",
+    "abs_peak_nm": 350.0,
+    "eps_peak": 508.0,
+    "em_peak_nm": 354.5,
+    "eps_365": 222.0,
+    "eps_395": 261.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/020.html"
+   },
+   "021": {
+    "name": "9,10-Diphenylanthracene in cyclohexane",
+    "qy": 1.0,
+    "qy_ref": "Berlman, 1965",
+    "abs_peak_nm": 375.0,
+    "eps_peak": 13206.0,
+    "em_peak_nm": 404.0,
+    "eps_365": 7462.0,
+    "eps_395": 12389.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/021.html"
+   },
+   "023": {
+    "name": "Perylene in cyclohexane",
+    "qy": 0.94,
+    "qy_ref": "Berlman, 1965",
+    "abs_peak_nm": 435.0,
+    "eps_peak": 37729.0,
+    "em_peak_nm": 435.5,
+    "eps_365": 4467.0,
+    "eps_395": 10823.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/023.html"
+   },
+   "024": {
+    "name": "1,6-Diphenylhexatriene in cyclohexane",
+    "qy": 0.78,
+    "qy_ref": "Berlman, 1965",
+    "abs_peak_nm": 355.0,
+    "eps_peak": 81463.0,
+    "em_peak_nm": 425.0,
+    "eps_365": 51223.0,
+    "eps_395": 1479.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/024.html"
+   },
+   "027": {
+    "name": "Auramine O in water",
+    "qy": 0.03,
+    "qy_ref": "Brey, 1977",
+    "abs_peak_nm": 430.0,
+    "eps_peak": 25103.0,
+    "em_peak_nm": 499.5,
+    "eps_365": 10142.0,
+    "eps_395": 10788.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/027.html"
+   },
+   "028": {
+    "name": "7-Methoxycoumarin-4-acetic acid in methanol",
+    "qy": 0.18,
+    "qy_ref": "Farinotti, 1983",
+    "abs_peak_nm": 350.0,
+    "eps_peak": 2533.8,
+    "em_peak_nm": 379.5,
+    "eps_365": 99.0,
+    "eps_395": -6.7,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/028.html"
+   },
+   "032": {
+    "name": "Acridine orange in basic ethanol",
+    "qy": 0.2,
+    "qy_ref": "Soep, 1972",
+    "abs_peak_nm": 430.0,
+    "eps_peak": 26888.0,
+    "em_peak_nm": 521.5,
+    "eps_365": 3294.0,
+    "eps_395": 11466.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/032.html"
+   },
+   "035": {
+    "name": "Acridine yellow in ethanol",
+    "qy": 0.47,
+    "qy_ref": "Olmsted, 1979",
+    "abs_peak_nm": 460.0,
+    "eps_peak": 39176.2,
+    "em_peak_nm": 492.0,
+    "eps_365": 2037.9,
+    "eps_395": 6842.9,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/035.html"
+   },
+   "037": {
+    "name": "Fluorescein in basic ethanol",
+    "qy": 0.97,
+    "qy_ref": "Seybold, 1969b",
+    "abs_peak_nm": 500.0,
+    "eps_peak": 91988.0,
+    "em_peak_nm": 540.0,
+    "eps_365": 2018.0,
+    "eps_395": 1538.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/037.html"
+   },
+   "038": {
+    "name": "4-(dicyanomethylene)-2-methyl-6-(p-dimethylaminostyryl)-4H-pyran, [DCM] in methanol",
+    "qy": 0.43,
+    "qy_ref": "Drake, 1985",
+    "abs_peak_nm": 465.0,
+    "eps_peak": 41856.0,
+    "em_peak_nm": 624.5,
+    "eps_365": 10313.0,
+    "eps_395": 13356.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/038.html"
+   },
+   "044": {
+    "name": "9,10-Bis(phenylethynyl)anthracene in cyclohexane",
+    "qy": 1.0,
+    "qy_ref": "Berlman, 1971",
+    "abs_peak_nm": 450.0,
+    "eps_peak": 35151.0,
+    "em_peak_nm": 467.5,
+    "eps_365": 2948.0,
+    "eps_395": 11697.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/044.html"
+   },
+   "045": {
+    "name": "Coumarin 1 in ethanol",
+    "qy": 0.73,
+    "qy_ref": "Jones, 1985",
+    "abs_peak_nm": 375.0,
+    "eps_peak": 23487.9,
+    "em_peak_nm": 446.5,
+    "eps_365": 21957.9,
+    "eps_395": 11582.9,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/045.html"
+   },
+   "046": {
+    "name": "Coumarin 343 in ethanol",
+    "qy": 0.63,
+    "qy_ref": "Reynolds, 1975",
+    "abs_peak_nm": 445.0,
+    "eps_peak": 44063.0,
+    "em_peak_nm": 462.0,
+    "eps_365": 8460.0,
+    "eps_395": 25108.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/046.html"
+   },
+   "053": {
+    "name": "Oxatricarbocyanine (C7) in ethanol",
+    "qy": 0.49,
+    "qy_ref": "Birge, 1987",
+    "abs_peak_nm": 685.0,
+    "eps_peak": 218028.3,
+    "em_peak_nm": 712.0,
+    "eps_365": 5620.9,
+    "eps_395": 3018.2,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/053.html"
+   },
+   "059": {
+    "name": "4',6-Diamidino-2-phenylindole, [DAPI] in water",
+    "qy": 0.043,
+    "qy_ref": "HHard, 1990",
+    "abs_peak_nm": 350.0,
+    "eps_peak": 26140.6,
+    "em_peak_nm": 486.5,
+    "eps_365": 19588.2,
+    "eps_395": 1986.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/059.html"
+   },
+   "061": {
+    "name": "Eosin Y in basic ethanol",
+    "qy": 0.67,
+    "qy_ref": "Seybold, 1969b",
+    "abs_peak_nm": 525.0,
+    "eps_peak": 111854.0,
+    "em_peak_nm": 543.0,
+    "eps_365": 1414.0,
+    "eps_395": 2036.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/061.html"
+   },
+   "064": {
+    "name": "Hoechst 33258 in water",
+    "qy": 0.034,
+    "qy_ref": "HHard, 1990",
+    "abs_peak_nm": 350.0,
+    "eps_peak": 43705.6,
+    "em_peak_nm": 507.5,
+    "eps_365": 29380.1,
+    "eps_395": 5945.8,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/064.html"
+   },
+   "065": {
+    "name": "Lucifer yellow CH in water",
+    "qy": 0.21,
+    "qy_ref": "Stewart, 1981",
+    "abs_peak_nm": 425.0,
+    "eps_peak": 11194.0,
+    "em_peak_nm": 538.5,
+    "eps_365": 2443.0,
+    "eps_395": 6852.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/065.html"
+   },
+   "066": {
+    "name": "Merocyanine 540 in ethanol",
+    "qy": 0.39,
+    "qy_ref": "Hoebeke, 1990",
+    "abs_peak_nm": 560.0,
+    "eps_peak": 137672.6,
+    "em_peak_nm": 579.0,
+    "eps_365": -2470.9,
+    "eps_395": -2038.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/066.html"
+   },
+   "068": {
+    "name": "Nile Blue in ethanol",
+    "qy": 0.27,
+    "qy_ref": "Sens, 1981",
+    "abs_peak_nm": 630.0,
+    "eps_peak": 76680.0,
+    "em_peak_nm": 623.5,
+    "eps_365": 2406.0,
+    "eps_395": 531.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/068.html"
+   },
+   "071": {
+    "name": "Oxazine 170 in methanol",
+    "qy": 0.63,
+    "qy_ref": "Sens, 1981",
+    "abs_peak_nm": 615.0,
+    "eps_peak": 82839.0,
+    "em_peak_nm": 641.0,
+    "eps_365": 5648.0,
+    "eps_395": 3511.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/071.html"
+   },
+   "075": {
+    "name": "Pinacyanol iodide in methanol",
+    "qy": 0.001,
+    "qy_ref": "Rentsch, 1984",
+    "abs_peak_nm": 605.0,
+    "eps_peak": 127311.8,
+    "em_peak_nm": 624.5,
+    "eps_365": 2183.7,
+    "eps_395": 2150.8,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/075.html"
+   },
+   "077": {
+    "name": "POPOP in cyclohexane",
+    "qy": 0.93,
+    "qy_ref": "Berlman, 1971",
+    "abs_peak_nm": 360.0,
+    "eps_peak": 47771.0,
+    "em_peak_nm": 407.5,
+    "eps_365": 37423.0,
+    "eps_395": 404.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/077.html"
+   },
+   "078": {
+    "name": "Proflavin in water, pH 7",
+    "qy": 0.34,
+    "qy_ref": "Melhuish, 1964",
+    "abs_peak_nm": 445.0,
+    "eps_peak": 38805.0,
+    "em_peak_nm": 511.0,
+    "eps_365": 3484.0,
+    "eps_395": 11131.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/078.html"
+   },
+   "079": {
+    "name": "Pyrene in cyclohexane",
+    "qy": 0.32,
+    "qy_ref": "Berlman, 1971",
+    "abs_peak_nm": 415.0,
+    "eps_peak": 826.0,
+    "em_peak_nm": 381.0,
+    "eps_365": 473.0,
+    "eps_395": 304.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/079.html"
+   },
+   "080": {
+    "name": "Quinine sulfate in 0.05 M H2SO4",
+    "qy": 0.546,
+    "qy_ref": "Eaton, 1988",
+    "abs_peak_nm": 350.0,
+    "eps_peak": 5607.0,
+    "em_peak_nm": 450.0,
+    "eps_365": 3652.0,
+    "eps_395": 220.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/080.html"
+   },
+   "081": {
+    "name": "Quinine sulfate in 0.5 M H2SO4",
+    "qy": 0.546,
+    "qy_ref": "Eaton, 1988",
+    "abs_peak_nm": 350.0,
+    "eps_peak": 5572.0,
+    "em_peak_nm": 451.0,
+    "eps_365": 3691.0,
+    "eps_395": 220.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/081.html"
+   },
+   "083": {
+    "name": "Rhodamine 6G in ethanol",
+    "qy": 0.95,
+    "qy_ref": "Kubin, 1982",
+    "abs_peak_nm": 530.0,
+    "eps_peak": 115939.2,
+    "em_peak_nm": 552.0,
+    "eps_365": 2828.0,
+    "eps_395": 1790.9,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/083.html"
+   },
+   "084": {
+    "name": "Rose bengal in basic ethanol",
+    "qy": 0.11,
+    "qy_ref": "Seybold, 1969b",
+    "abs_peak_nm": 560.0,
+    "eps_peak": 89878.0,
+    "em_peak_nm": 571.5,
+    "eps_365": 1486.0,
+    "eps_395": 518.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/084.html"
+   },
+   "086": {
+    "name": "Stains all in ethanol",
+    "qy": null,
+    "qy_ref": null,
+    "abs_peak_nm": 575.0,
+    "eps_peak": 96430.0,
+    "em_peak_nm": 610.5,
+    "eps_365": 2454.6,
+    "eps_395": -877.1,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/086.html"
+   },
+   "087": {
+    "name": "Thiadicarbocyanine (C5) in ethanol",
+    "qy": 0.35,
+    "qy_ref": "Dempster, 1972",
+    "abs_peak_nm": 655.0,
+    "eps_peak": 248041.6,
+    "em_peak_nm": 673.5,
+    "eps_365": -425.7,
+    "eps_395": -2888.4,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/087.html"
+   },
+   "088": {
+    "name": "Thiacarbocyanine (C3) in ethanol",
+    "qy": 0.05,
+    "qy_ref": "Kuzmin, 1978",
+    "abs_peak_nm": 560.0,
+    "eps_peak": 125999.0,
+    "em_peak_nm": 571.0,
+    "eps_365": 183.0,
+    "eps_395": -331.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/088.html"
+   },
+   "094": {
+    "name": "Oxadicarbocyanine (C5) in ethanol",
+    "qy": 0.49,
+    "qy_ref": "Dempster, 1972",
+    "abs_peak_nm": 580.0,
+    "eps_peak": 233119.1,
+    "em_peak_nm": 603.5,
+    "eps_365": -3931.4,
+    "eps_395": -3192.3,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/094.html"
+   },
+   "099": {
+    "name": "Tetraphenylporphyrin, [TPP] in toluene",
+    "qy": 0.11,
+    "qy_ref": "Seybold, 1969a",
+    "abs_peak_nm": 420.0,
+    "eps_peak": 401659.0,
+    "em_peak_nm": 649.0,
+    "eps_365": 24493.0,
+    "eps_395": 56615.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/099.html"
+   },
+   "100": {
+    "name": "Zinc tetraphenylporphyrin, [ZnTPP] in toluene",
+    "qy": 0.033,
+    "qy_ref": "Strachan, 1997",
+    "abs_peak_nm": 425.0,
+    "eps_peak": 531597.8,
+    "em_peak_nm": 645.0,
+    "eps_365": 12150.6,
+    "eps_395": 29501.9,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/100.html"
+   },
+   "143": {
+    "name": "Perylene-diimide, [PDI] in toluene",
+    "qy": 0.97,
+    "qy_ref": "Prathapan, 2001",
+    "abs_peak_nm": 530.0,
+    "eps_peak": 68056.0,
+    "em_peak_nm": 537.0,
+    "eps_365": 3682.0,
+    "eps_395": 2266.0,
+    "source": "https://omlc.org/spectra/PhotochemCAD/html/143.html"
+   }
+  }
+ },
+ "kubelka_munk": {
+  "single_constant": {
+   "K_over_S": "(1-R)^2/(2R)",
+   "R_inf": "1+K/S-sqrt((K/S)^2+2K/S)",
+   "mix": "(K/S)_mix=(K/S)_sub+sum_i c_i*[(K/S)_i,masstone-(K/S)_sub]",
+   "valid_when": "scattering dominated by white/substrate, particles small vs layer, diffuse light",
+   "sources": [
+    "https://arxiv.org/pdf/2104.04884",
+    "https://app.unpkg.com/spectral.js@3.0.0/files/README.md (MIT, 380-750nm@10nm, 7 basis curves from Burns LHTSS)"
+   ]
+  },
+  "finite_layer_on_backing": {
+   "a": "(K+S)/S",
+   "b": "sqrt(a^2-1)",
+   "R": "(1-Rg*(a-b*coth(b*S*h)))/(a+b*coth(b*S*h)-Rg)",
+   "T": "b/(a*sinh(bSh)+b*cosh(bSh))",
+   "source": "https://arxiv.org/pdf/2104.04884 (R eq); T form is standard textbook (Kubelka 1948), unverified here"
+  },
+  "transfer_matrix": {
+   "gamma": "sqrt(K*(K+2S))",
+   "note": "Layers compose by 2x2 matrix product (Hebert/Hersch; Zeller 2026).",
+   "sources": [
+    "https://arxiv.org/pdf/2603.09139",
+    "https://lspwww.epfl.ch/publications/colour/cmfpmraticr_06.pdf"
+   ]
+  },
+  "saunderson": {
+   "formula": "R_meas=r_s+(1-r_s)(1-r_i)R/(1-r_i*R)",
+   "r_s_n1p5": 0.04,
+   "r_i_diffuse_n1p5": 0.6,
+   "source": "r_i=0.6,r_ext=0.1 Lambertian n=1.5 from https://lspwww.epfl.ch/publications/colour/cmfpmraticr_06.pdf ; r_s=0.04 Fresnel normal n=1.5 (standard)"
+  },
+  "transparent_dyed_layer_over_scatterer": {
+   "formula": "R=Rg*exp(-2*A_total/cos_eff) with A_total=sum_i eps_i*integral c_i(z)dz (ln-base); double pass, cos_eff~0.7-0.8 for diffuse",
+   "implication": "Absorbance adds and depends only on the depth-integrated amount of each dye, not on whether dyes were applied sequentially or simultaneously, as long as no scattering inside dyed zone and dyes do not interact.",
+   "basis": "Beer-Lambert + KM limit S->0 ; Hebert transparent-layer Beer law t=exp(-alpha h) (EPFL URL above)"
+  },
+  "layering_vs_blending_deviations": [
+   "Competitive site occupancy (Langmuir/dual-mode sorption): second dye uptake reduced where first dye saturates free volume -> sub-additive absorbance at high strength",
+   "Different D per dye: first-dipped dye diffuses deeper; order changes depth profile, only matters via scattering geometry (dye near surface vs near white scatterer) or via saturation",
+   "Dye-dye aggregation/charge-transfer shifts lambda_max (not captured by additivity)",
+   "Surface-limited dyes (high MW disperse) stay in top microns: profile erfc with small sqrt(Dt)",
+   "Fluorescent dye under non-fluorescent filter dye: inner-filter effect, emission re-absorbed (see fluorescence section)"
+  ]
+ },
+ "diffusion": {
+  "fick_semi_infinite": {
+   "profile": "C(x,t)=Cs*erfc(x/(2*sqrt(D*t)))",
+   "amount_per_area": "Cs*2*sqrt(D*t/pi)",
+   "penetration_1e": "x_e~2*sqrt(D*t)",
+   "arrhenius": "D=D0*exp(-Ea/(R*T))",
+   "basis": "textbook Fick/Crank"
+  },
+  "hill_half_time": {
+   "D": "0.06292*r^2/t_half",
+   "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12430684"
+  },
+  "polyester_disperse_D_x1e-9_cm2_per_min": {
+   "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12430684 Table 1 (fibre radius not reported -> absolute D unverifiable; use ratios)",
+   "DisperseRed60_MW331": {
+    "PET": {
+     "100C": 0.16,
+     "110C": 0.17,
+     "120C": 0.64,
+     "130C": 9.85
+    },
+    "PCP": {
+     "100C": 0.45,
+     "110C": 1.05,
+     "120C": 8.31,
+     "130C": 54.85
+    },
+    "spandex": {
+     "100C": 1.35,
+     "110C": 1.91,
+     "120C": 6.78,
+     "130C": 7.83
+    }
+   },
+   "DisperseRed167_MW506": {
+    "PET": {
+     "100C": 0.51,
+     "110C": 0.45,
+     "120C": 0.65,
+     "130C": 2.4
+    },
+    "spandex": {
+     "100C": 2.28,
+     "110C": 10.29,
+     "120C": 23.92,
+     "130C": 37.9
+    }
+   },
+   "takeaway": "D rises ~10-60x from 100 to 130C (above Tg ~70-80C for PET); 10C step ~ x2 to x6 at best, implying apparent Ea of order 150-300 kJ/mol near Tg; amorphous elastic (spandex) matrix has far larger D at low T"
+  },
+  "polyester_dyeing_activation_energy_kcal_per_mol": {
+   "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6414876 Table 6",
+   "values": {
+    "DR167_ovanillin": 59.3,
+    "DR167_coumarin": 37.8,
+    "DB79_ovanillin": 46.6,
+    "DB79_coumarin": 40.8
+   },
+   "kJ_per_mol": "158-248",
+   "conditions": "83-100C, 120 min, 2% owf, bath 1:60, Tg~80C"
+  },
+  "exhaustion_after_120min_pct": {
+   "source": "same PMC6414876 Table 5",
+   "100C": [
+    88.2,
+    81.2,
+    88.0,
+    81.4
+   ],
+   "95C": [
+    79.8,
+    71.5,
+    78.4,
+    71.4
+   ],
+   "90C": [
+    65.7,
+    62.0,
+    72.0,
+    63.4
+   ],
+   "83C": [
+    50.3,
+    53.5,
+    58.3,
+    53.6
+   ],
+   "order": "DR167 vanillin, DR167 coumarin, DB79 vanillin, DB79 coumarin"
+  },
+  "uptake_KS_vs_time_100C_DR167_ovanillin": {
+   "t_min": [
+    5,
+    10,
+    30,
+    50,
+    70,
+    90,
+    105
+   ],
+   "KS": [
+    3.487,
+    9.26,
+    13.19,
+    14.934,
+    18.378,
+    19.305,
+    21.383
+   ],
+   "note": "approx sqrt(t)-like then slow growth; carrier-assisted"
+  },
+  "polypropylene_disperse": {
+   "qualitative": "D and rate constant increase with temperature; no numbers accessible (paper behind paywall): https://agris.fao.org/search/en/records/65e01bde0f3e94b9e5df53fd",
+   "gap": "No open quantitative D/Ea for dyes in polyolefin/TPU found. Fit D0 and Ea per plastic from Andrew's time/temperature dips."
+  },
+  "recommended_prior_for_fit": {
+   "Ea_kJ_per_mol": [
+    60,
+    250
+   ],
+   "note": "Wide prior: 60 (swollen/plasticized, solvent-mediated) to 250 (glassy polyester near Tg). Use log-uniform D at reference temp; fit Ea from two temperatures; estimate basis='prior from polyester literature, not disc plastic'"
+  }
+ },
+ "plastic_optics": {
+  "basis": "textbook/estimate, not fetched",
+  "refractive_index": {
+   "PP": 1.49,
+   "HDPE": 1.54,
+   "LDPE": 1.51,
+   "TPU": 1.5,
+   "PET": 1.575
+  },
+  "fresnel_surface_reflect_normal": "((n-1)/(n+1))^2 ~0.04",
+  "visible_absorption": "neat PP/PE/TPU: negligible in 400-700 nm (alpha<0.05 /cm clear grade); cutoff UV ~300 nm; yellowing from antioxidants/oxidation raises 400-450nm absorption",
+  "scattering": "translucent semicrystalline PP/PE scatters from spherulites/crystallite (haze 10-60% at 1-2mm) -> model as S_sub 0.2-1.5 /mm; opaque white with TiO2 ~ S 5-20 /mm at 1-2 wt% ... estimate, FIT",
+  "fit_hint": "Fit per-plastic S_sub(lambda) ~ S0*(lambda/550)^-p with p in [0,1.5] and Rg; Champion/Star translucent: lower S0; DX/Prime: higher S0",
+  "public_gap": "No open per-plastic K,S,thickness found; the existing 0.38 power-law transmittance heuristic is equivalent to scaling absorbance A by 0.38 (A_thin = 0.38*A_base) and is physically consistent with Beer-Lambert."
+ },
+ "fluorescence": {
+  "radiance_factor": {
+   "model": "R_total(lam)=R_refl(lam)+sum over excitation: Phi_QY * integral[ A_abs(lam_ex)*E_illum(lam_ex) dlam_ex ] * phi_em(lam)/(norm). Bispectral Donaldson matrix D(lam_ex,lam_em)=QY*abs_frac(lam_ex)*phi_em(lam_em)*(lam_ex/lam_em)? (energy conserving: photon QY, with energy factor lam_ex/lam_em)",
+   "day_glo_evidence": {
+    "AlbertaYellow_peak_radiance_factor": 1.77,
+    "nonfluorescent_reflectance": 0.8,
+    "combos_exceed": 3.0,
+    "source": "https://osa.magnet.fsu.edu/teachersparents/articles/pdfs/fluorescence and the color of day glo paints.pdf",
+    "note": "sensitizer coumarin yellow + rhodamine F5G cascade"
+   }
+  },
+  "emission_shape": "Gaussian/mirror-image of absorption band; use fluor csv columns; Stokes shifts: fluorescein 20-35 nm, rhodamine6G 22, RhB 20, coumarins 20-60, DCM 160 nm (CT)",
+  "uv_excitation_365_395": "eps at 365 and 395 nm per dye in photochemcad_fluor (eps_365, eps_395). Coumarin 1 (373 nm), coumarin 30 (407), DPH, POPOP(359), quinine(350), DAPI/Hoechst(345): strong 365 absorbers emitting blue 430-510. Fluorescein/rhodamines have weak 365 absorption (~5-15% of visible peak) -> under blacklight look dim unless UV sensitizer present.",
+  "blacklight_sources": "365 nm LED ~10 nm FWHM; 395 nm LED also emits visible tail 400-420 (violet) which excites more dyes",
+  "quenching": "Concentration quenching: in polymers, QY falls above ~1e-3 to 1e-2 M; aggregates H-type non-emissive (qualitative, textbook)"
+ },
+ "glow_SrAl2O4": {
+  "source": "https://www.osti.gov/servlets/purl/1376499",
+  "emission_peak_nm": 520,
+  "FWHM_nm": 83,
+  "band_nm": [
+   450,
+   650
+  ],
+  "excitation_nm": [
+   300,
+   450
+  ],
+  "excitation_peak_nm": [
+   365,
+   370
+  ],
+  "decay_exponential_times_s": {
+   "fast": 11.74,
+   "mid": 53.25,
+   "slow": 255.11
+  },
+  "after": "10 min 365 nm excitation, observable ~320 s in the sample (lab detector), perceptually visible far longer (up to hours)",
+  "optimal_doping_mol_pct": {
+   "Eu": 6,
+   "Dy": 1,
+   "flux_H3BO3": 20
+  },
+  "model": "I(t)=sum a_i exp(-t/tau_i) or power law I0/(1+t/t0)^n (n~1.0-1.3 textbook); daylight appearance is pigment body color (nearly white-yellow-green) + weak"
+ },
+ "perceptual": {
+  "ciede2000": {
+   "test_data": "https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/dataNprograms/ciede2000testdata.txt",
+   "paper": "https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/ciede2000noteCRNA.pdf",
+   "pitfalls": [
+    "mean hue and delta-h' branching when |h1-h2|>180",
+    "C'=0 gives h'=0",
+    "use degrees; G term uses mean C* of a*,b* before a' scaling",
+    "validate with 34 Sharma pairs"
+   ],
+   "thresholds": {
+    "JND": "~1",
+    "visible_side_by_side": "2-3",
+    "acceptable_match": "<=5 (textbook)"
+   }
+  }
+ }
+}
