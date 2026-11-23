@@ -87,14 +87,19 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
 { // public-dataset evaluation (research/dataset/observations.json): direction-of-shift cases and fit quality
   const {evaluate}=await import("./eval_dataset.mjs"),R=evaluate();
   ok(R.direction.pass===R.direction.n,"dataset direction cases "+R.direction.pass+"/"+R.direction.n+" "+R.direction.rows.filter(r=>!r.ok).map(r=>r.id));
-  ok(R.films.mean<1.5&&R.anchors.mean<6.5,"dataset fit films "+R.films.mean+" anchors "+R.anchors.mean);
+  ok(R.uv.pass===R.uv.n,"UV365 emission hue classes "+R.uv.pass+"/"+R.uv.n+" "+R.uv.rows.filter(r=>!r.ok).map(r=>r.dye+" "+r.hex));
+  ok(R.films.mean<1.5&&R.anchors.mean<7,"dataset fit films "+R.films.mean+" anchors "+R.anchors.mean);
 }
 { // plastic-aware uptake (wiki ratings) and translucent default transmission
   const base="#F4F2E8",dx=DE.predict({baseHex:base,plastic:"dx",items:it(["iDye Poly Blue",1])}).hex,st=DE.predict({baseHex:base,plastic:"star",items:it(["iDye Poly Blue",1])}).hex;
   ok(Ls(dx)>Ls(st)+2,"DX takes less dye than Star "+dx+" "+st);
-  ok(DE.plasticOf("fuzion").fam==="champion"&&DE.plasticOf("dx").up<DE.plasticOf("echostar").up,"plastic table families and uptake order");
+  ok(DE.plasticOf("star").up===1&&DE.plasticOf("champion").up===1&&DE.plasticOf("fuzion").fam==="champion"&&DE.plasticOf("dx").up<DE.plasticOf("echostar").up,"plastic table families and uptake order");
   const th=DE.predict({baseHex:"#F7E331",family:"champion",path:.5,items:it(["iDye Poly Blue",.05])});
   ok(th.hex!==undefined&&hsl(th.hex)[0]<260&&hsl(th.hex)[0]>150||Ls(th.hex)<25,"thin blue on yellow Champion is not violet "+th.hex);
   const ev=DE.predict({baseHex:champ,family:"champion",items:it(["iDye Poly Blue",1],["Crimson",1])}).evidence;ok(ev.includes("translucent multi-dye"),"evidence flag for Champion two-dye");
+}
+{ // fluorescent emission priors: pink/red dyes must not emit at the violet end; UV365 pink glows warm, blue glows blue
+  for(const n of["Hot Pink UV Blast","Flo Red UV Blast","Fluorescent Pink","Neon Cerise Pink"])ok(DE.CAT[n].em[0]>=590,"emission band of "+n+" "+DE.CAT[n].em[0]);
+  ok(DE.CAT["Blue UV Blast"].em[0]<490&&Ls(DE.uv365({baseHex:star,family:"star",items:it(["Blue UV Blast",1])}))>20,"blue UV Blast glows blue under UV365");
 }
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);

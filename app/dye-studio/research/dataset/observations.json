@@ -2,46 +2,566 @@
  "version": 1,
  "note": "Public-source calibration and validation dataset for the dye engine. Quantitative rows carry an observed hex; direction rows carry hue/lightness windows derived from practitioner text. No private owner photos.",
  "sources": [
-  {"id":"dgcr-148993","url":"https://www.dgcoursereview.com/threads/148993","kind":"forum photo thread (glue bed, iDye Poly)"},
-  {"id":"dgcr-134835","url":"https://www.dgcoursereview.com/threads/how-to-get-true-colors-on-non-white-plastics.134835/","kind":"forum labelled photos"},
-  {"id":"dgcr-52246","url":"https://Dgcoursereview.com/threads/noobie-dye-question-thread.52246/page-34","kind":"forum text"},
-  {"id":"dgcr-154739","url":"https://dgcoursereview.com/threads/acids-dye-tutorial.154739","kind":"forum tutorial"},
-  {"id":"dgcr-132674","url":"https://www.dgcoursereview.com/threads/plastic-color-and-dye-color.132674/","kind":"forum text"},
-  {"id":"dgcr-130367","url":"https://dgcoursereview.com/threads/130367","kind":"forum photo thread (Dye A Day III)"},
-  {"id":"dgcr-61923","url":"https://dgcoursereview.com/threads/61923","kind":"forum text"},
-  {"id":"dgcr-65307","url":"https://dgcoursereview.com/threads/65307","kind":"forum text"},
-  {"id":"dgcr-124584","url":"https://dgcoursereview.com/threads/124584","kind":"forum text"},
-  {"id":"dgcr-110989","url":"https://dgcoursereview.com/threads/110989","kind":"forum text"},
-  {"id":"dgcr-147871","url":"https://dgcoursereview.com/threads/any-hope-ideas-for-making-these-awful-f2-colors-at-least-a-little-more-visible.147871","kind":"forum text (clear plastic, light dyes weak)"},
-  {"id":"dgcr-129659","url":"https://www.dgcoursereview.com/threads/how-do-i-get-good-green-colors.129659/","kind":"forum text (greens)"},
-  {"id":"dgcr-134711","url":"https://www.dgcoursereview.com/threads/quick-coat-worm-dye-questions.134711/","kind":"forum text (Quick-Coat brightness)"},
-  {"id":"dgcr-144364","url":"https://dgcoursereview.com/threads/brightest-silver-dye-and-champion-plastic.144364","kind":"forum text (Champion, clear UV Blast)"},
-  {"id":"reddit-iau6dk","url":"https://lr.eu.psf.lt/r/discdyeing/comments/iau6dk/pipedreamer79s_guide_to_clear_glue_bed_dyes","kind":"reddit guide mirror"},
-  {"id":"gi-thumbs","url":"https://www.google.com/search?tbm=isch&q=glue+bed+disc+dye","kind":"image result thumbnails, 169 discs, 3-cluster colors (image-clusters.txt)"},
-  {"id":"owner-hbnf","url":"private owner photos (anchors only)","kind":"6 measured Champion zone colors; UV Blast Green and Blaze Orange on one green Champion"},
-  {"id":"jacquard-idye-poly","url":"https://jacquardproducts.com/idye-poly","kind":"product page, 24 color names, disperse dye class"},
-  {"id":"rsc-d3ra06452b","url":"https://pubs.rsc.org/en/content/articlepdf/2024/ra/d3ra06452b","kind":"literature: blue disperse dyes lambda max 582-592 nm in DMF, hyacinth/purple-blue on polyester"}
+  {
+   "id": "dgcr-148993",
+   "url": "https://www.dgcoursereview.com/threads/148993",
+   "kind": "forum photo thread (glue bed, iDye Poly)"
+  },
+  {
+   "id": "dgcr-134835",
+   "url": "https://www.dgcoursereview.com/threads/how-to-get-true-colors-on-non-white-plastics.134835/",
+   "kind": "forum labelled photos"
+  },
+  {
+   "id": "dgcr-52246",
+   "url": "https://Dgcoursereview.com/threads/noobie-dye-question-thread.52246/page-34",
+   "kind": "forum text"
+  },
+  {
+   "id": "dgcr-154739",
+   "url": "https://dgcoursereview.com/threads/acids-dye-tutorial.154739",
+   "kind": "forum tutorial"
+  },
+  {
+   "id": "dgcr-132674",
+   "url": "https://www.dgcoursereview.com/threads/plastic-color-and-dye-color.132674/",
+   "kind": "forum text"
+  },
+  {
+   "id": "dgcr-130367",
+   "url": "https://dgcoursereview.com/threads/130367",
+   "kind": "forum photo thread (Dye A Day III)"
+  },
+  {
+   "id": "dgcr-61923",
+   "url": "https://dgcoursereview.com/threads/61923",
+   "kind": "forum text"
+  },
+  {
+   "id": "dgcr-65307",
+   "url": "https://dgcoursereview.com/threads/65307",
+   "kind": "forum text"
+  },
+  {
+   "id": "dgcr-124584",
+   "url": "https://dgcoursereview.com/threads/124584",
+   "kind": "forum text"
+  },
+  {
+   "id": "dgcr-110989",
+   "url": "https://dgcoursereview.com/threads/110989",
+   "kind": "forum text"
+  },
+  {
+   "id": "dgcr-147871",
+   "url": "https://dgcoursereview.com/threads/any-hope-ideas-for-making-these-awful-f2-colors-at-least-a-little-more-visible.147871",
+   "kind": "forum text (clear plastic, light dyes weak)"
+  },
+  {
+   "id": "dgcr-129659",
+   "url": "https://www.dgcoursereview.com/threads/how-do-i-get-good-green-colors.129659/",
+   "kind": "forum text (greens)"
+  },
+  {
+   "id": "dgcr-134711",
+   "url": "https://www.dgcoursereview.com/threads/quick-coat-worm-dye-questions.134711/",
+   "kind": "forum text (Quick-Coat brightness)"
+  },
+  {
+   "id": "dgcr-144364",
+   "url": "https://dgcoursereview.com/threads/brightest-silver-dye-and-champion-plastic.144364",
+   "kind": "forum text (Champion, clear UV Blast)"
+  },
+  {
+   "id": "reddit-iau6dk",
+   "url": "https://lr.eu.psf.lt/r/discdyeing/comments/iau6dk/pipedreamer79s_guide_to_clear_glue_bed_dyes",
+   "kind": "reddit guide mirror"
+  },
+  {
+   "id": "gi-thumbs",
+   "url": "https://www.google.com/search?tbm=isch&q=glue+bed+disc+dye",
+   "kind": "image result thumbnails, 169 discs, 3-cluster colors (image-clusters.txt)"
+  },
+  {
+   "id": "owner-hbnf",
+   "url": "private owner photos (anchors only)",
+   "kind": "6 measured Champion zone colors; UV Blast Green and Blaze Orange on one green Champion"
+  },
+  {
+   "id": "jacquard-idye-poly",
+   "url": "https://jacquardproducts.com/idye-poly",
+   "kind": "product page, 24 color names, disperse dye class"
+  },
+  {
+   "id": "rsc-d3ra06452b",
+   "url": "https://pubs.rsc.org/en/content/articlepdf/2024/ra/d3ra06452b",
+   "kind": "literature: blue disperse dyes lambda max 582-592 nm in DMF, hyacinth/purple-blue on polyester"
+  },
+  {
+   "id": "dgcr-52170",
+   "url": "https://www.dgcoursereview.com/threads/what-plastics-take-dye.52170/post-880755",
+   "kind": "forum text: ESP and Star great, Champion and Z ok, DX very poor, soft plastics bleed"
+  },
+  {
+   "id": "dgcr-140438",
+   "url": "https://www.dgcoursereview.com/threads/different-plastics-test-dyed.140438/",
+   "kind": "forum labelled test: Rit orange, 13 plastics, longer soak redder, purple base burnt red, white strongest"
+  },
+  {
+   "id": "dgcr-146551",
+   "url": "https://dgcoursereview.com/threads/first-attempt-with-a-star-destroyer.146551/",
+   "kind": "forum: graphite dye on bright yellow Star gives teal"
+  },
+  {
+   "id": "dgcr-3763963",
+   "url": "https://www.dgcoursereview.com/goto/post?id=3763963",
+   "kind": "forum: Floetrol beds 12 h at 90 F, yellow/neon/glow Champion and Star came out weak vs bed color"
+  },
+  {
+   "id": "dgcr-154739b",
+   "url": "https://dgcoursereview.com/threads/acids-dye-tutorial.154739/post-3883491",
+   "kind": "forum: Star and Champion take dye very dark, DX lighter with pink tint, 15 min at 125 F"
+  },
+  {
+   "id": "udisc-howto",
+   "url": "https://udisc.com/blog/post/how-to-dye-a-disc-golf-disc-easy-step-by-step-guide",
+   "kind": "guide: Star/ESP/Opto/S-Line/400 best, Champion/Crystal/C-Line workable but less vibrant, DX/Pro D poor; heat lamp 4 h"
+  },
+  {
+   "id": "discountdg",
+   "url": "https://discountdiscgolf.com/how-to-dye-disc-golf-discs/",
+   "kind": "guide: translucent Champion absorbs dye poorly but holds longer, dyed color looks lighter than the mix"
+  },
+  {
+   "id": "prodigy-howto",
+   "url": "https://prodigydisc.com/blogs/tips-tricks/how-to-dye-disc-golf-discs",
+   "kind": "guide: translucent discs let dye penetrate deeply"
+  },
+  {
+   "id": "dyersguild-formulas",
+   "url": "https://dyersguild.co/disc-dyeing-formulas/",
+   "kind": "formula sheet: dye 1/2 tsp per 2 oz acetone, 1 tsp hot water; 1 tsp per 16 oz water bath"
+  },
+  {
+   "id": "dyersguild-vault",
+   "url": "https://dyersguild.co/colorvault/",
+   "kind": "66 dye names with iDye / Pro Chem (PCAD) codes"
+  },
+  {
+   "id": "dyersguild-chart",
+   "url": "https://dyersguild.co/disc-dyeing-color-reference-chart/",
+   "kind": "note: on a red disc almost all dyes read red or black; chart swatches are fabric, not plastic"
+  },
+  {
+   "id": "prochem-swatch-blog",
+   "url": "https://trombone-purple-jsgz.squarespace.com/tie-dye-blog/g015hvpebf1bj188sjg0u7gbnhngc2",
+   "kind": "dose: 1/2 tsp pale, 2 tsp medium, 4 tsp dark, 8 tsp black per cup (Pro Chemical guidance)"
+  },
+  {
+   "id": "tacklewarehouse-uvblast",
+   "url": "https://www.tacklewarehouse.com/CS_Coatings_UV_Blast_Worm_Dip/descpage-CSWORMDIP.html",
+   "kind": "manufacturer page: UV Blast is a clear overcoat reflecting UV, not a color dye"
+  },
+  {
+   "id": "wiki-disperse",
+   "url": "https://en.wikipedia.org/wiki/Disperse_dye",
+   "kind": "disperse dyes are non-ionic, bind by van der Waals and dipole forces, diffuse better hot"
+  },
+  {
+   "id": "wiki-km",
+   "url": "https://en.wikipedia.org/wiki/Kubelka%E2%80%93Munk_theory",
+   "kind": "K/S additive in colorant concentration; scatter dominated by base at low loading"
+  },
+  {
+   "id": "mixbox",
+   "url": "https://dcgi.fel.cvut.cz/wp-content/wpallimport-dist/publications/pdf/publications-2021-sochorova-tog-pigments-paper.pdf",
+   "kind": "pigment mixing paper: blue + yellow gives green only with spectral (KM) mixing; RGB mixing gives gray"
+  },
+  {
+   "id": "wiki-rh6g",
+   "url": "https://en.wikipedia.org/wiki/Rhodamine_6G",
+   "kind": "abs 530 nm, lasing peak 590 nm, QY 0.95"
+  },
+  {
+   "id": "wiki-rhb",
+   "url": "https://en.wikipedia.org/wiki/Rhodamine_B",
+   "kind": "QY 0.49 to 0.68"
+  },
+  {
+   "id": "jaic-fluor",
+   "url": "https://cool.culturalheritage.org/jaic/articles/jaic44-02-002_2.html",
+   "kind": "fluorescent paints: pinkish red emission 600 to 630 nm, orange 600 nm, yellow 510 and 600; reflectance exceeds 100 percent"
+  },
+  {
+   "id": "fsu-dayglo",
+   "url": "https://osa.magnet.fsu.edu/teachersparents/articles/pdfs/fluorescence and the color of day glo paints.pdf",
+   "kind": "yellow-green coumarin emits 500 to 550 nm; rhodamine emits red"
+  },
+  {
+   "id": "rsc-blue",
+   "url": "https://pubs.rsc.org/en/content/articlepdf/2024/ra/d3ra06452b",
+   "kind": "blue disperse dyes 582 to 592 nm in DMF"
+  }
  ],
  "films": "see groundtruth.json opaqueTargets (6 measured Star film colors)",
  "anchors": "see groundtruth.json anchors (6 measured Champion zone colors)",
  "photoSamples": [
-  {"id":"ps1","src":"dgcr-148993","base":"#3F9A4A","family":"star","dye":"iDye Poly Crimson","s":1,"observed":"#8D241C","w":1,"note":"deep red overwrites green Star"},
-  {"id":"ps2","src":"gi-thumbs","base":"#E6F23A","family":"star","dye":"Fire Red","s":1,"observed":"#9D2711","w":1,"note":"neon yellow with red dye lines"}
+  {
+   "id": "ps1",
+   "src": "dgcr-148993",
+   "base": "#3F9A4A",
+   "family": "star",
+   "dye": "iDye Poly Crimson",
+   "s": 1,
+   "observed": "#8D241C",
+   "w": 1,
+   "note": "deep red overwrites green Star"
+  },
+  {
+   "id": "ps2",
+   "src": "gi-thumbs",
+   "base": "#E6F23A",
+   "family": "star",
+   "dye": "Fire Red",
+   "s": 1,
+   "observed": "#9D2711",
+   "w": 1,
+   "note": "neon yellow with red dye lines"
+  }
  ],
  "direction": [
-  {"id":"d1","src":"reddit-iau6dk","plastic":"star","base":"#F7E331","dyes":["iDye Poly Blue"],"hue":[80,200],"Lmax":60,"claim":"yellow disc + blue dye = green"},
-  {"id":"d1c","src":"dgcr-52246","plastic":"champion","base":"#F7E331","dyes":["iDye Poly Blue"],"hue":[80,200],"Lmax":60,"claim":"yellow + blue = greenish (any plastic)"},
-  {"id":"d2","src":"reddit-iau6dk","plastic":"star","base":"#3F9A4A","dyes":["iDye Poly Crimson"],"hue":[345,70],"Lmax":45,"claim":"green + red = brown/red"},
-  {"id":"d3a","src":"dgcr-134835","plastic":"star","base":"#E8661C","dyes":["iDye Poly Blue"],"Lmax":25,"Cmax":28,"claim":"orange + blue = gray/black"},
-  {"id":"d3b","src":"dgcr-134835","plastic":"star","base":"#E8661C","dyes":["Concord"],"hue":[330,30],"Lmax":32,"claim":"orange + purple = maroon"},
-  {"id":"d4","src":"dgcr-154739","plastic":"star","base":"#E84C55","dyes":["iDye Poly Blue"],"hue":[280,60],"Lmax":40,"claim":"red + blue = brown/purple-brown"},
-  {"id":"d4b","src":"dgcr-154739","plastic":"star","base":"#59A9DE","dyes":["iDye Poly Crimson"],"hue":[280,60],"Lmax":40,"claim":"blue + red = murky purple-brown"},
-  {"id":"d4c","src":"dgcr-154739","plastic":"champion","base":"#59A9DE","dyes":["iDye Poly Crimson"],"hue":[280,60],"Lmax":40,"claim":"blue + red = murky purple-brown (Champion)"},
-  {"id":"d5","src":"dgcr-52246","plastic":"star","base":"#F27A26","dyes":["iDye Poly Blue"],"Lmax":40,"claim":"orange + blue = brownish dark"},
-  {"id":"d6","src":"dgcr-154739","plastic":"star","base":"#8D62B6","dyes":["iDye Poly Crimson"],"hue":[270,360],"Lmax":45,"claim":"purple + red = purple/darker"},
-  {"id":"d7","src":"dgcr-132674","plastic":"champion","base":"#EF822F","dyes":["iDye Poly Blue"],"Lmax":38,"claim":"orange Champion + blue = dark"},
-  {"id":"d8","src":"dgcr-154739","plastic":"star","base":"#F4F2E8","dyes":["iDye Poly Blue"],"hue":[225,265],"Lmax":35,"claim":"white + blue = blue"},
-  {"id":"d9","src":"dgcr-61923","plastic":"star","base":"#E5C100","dyes":["iDye Poly Crimson"],"hue":[345,25],"claim":"red overpowers yellow plastic"},
-  {"id":"d10","src":"dgcr-134835","plastic":"star","base":"#8EC5E6","dyes":["iDye Poly Blue"],"hue":[205,260],"claim":"same blue stays true on light blue"}
+  {
+   "id": "d1",
+   "src": "reddit-iau6dk",
+   "plastic": "star",
+   "base": "#F7E331",
+   "dyes": [
+    "iDye Poly Blue"
+   ],
+   "hue": [
+    80,
+    200
+   ],
+   "Lmax": 60,
+   "claim": "yellow disc + blue dye = green"
+  },
+  {
+   "id": "d1c",
+   "src": "dgcr-52246",
+   "plastic": "champion",
+   "base": "#F7E331",
+   "dyes": [
+    "iDye Poly Blue"
+   ],
+   "hue": [
+    80,
+    200
+   ],
+   "Lmax": 60,
+   "claim": "yellow + blue = greenish (any plastic)"
+  },
+  {
+   "id": "d2",
+   "src": "reddit-iau6dk",
+   "plastic": "star",
+   "base": "#3F9A4A",
+   "dyes": [
+    "iDye Poly Crimson"
+   ],
+   "hue": [
+    345,
+    70
+   ],
+   "Lmax": 45,
+   "claim": "green + red = brown/red"
+  },
+  {
+   "id": "d3a",
+   "src": "dgcr-134835",
+   "plastic": "star",
+   "base": "#E8661C",
+   "dyes": [
+    "iDye Poly Blue"
+   ],
+   "Lmax": 25,
+   "Cmax": 28,
+   "claim": "orange + blue = gray/black"
+  },
+  {
+   "id": "d3b",
+   "src": "dgcr-134835",
+   "plastic": "star",
+   "base": "#E8661C",
+   "dyes": [
+    "Concord"
+   ],
+   "hue": [
+    330,
+    30
+   ],
+   "Lmax": 32,
+   "claim": "orange + purple = maroon"
+  },
+  {
+   "id": "d4",
+   "src": "dgcr-154739",
+   "plastic": "star",
+   "base": "#E84C55",
+   "dyes": [
+    "iDye Poly Blue"
+   ],
+   "hue": [
+    280,
+    60
+   ],
+   "Lmax": 40,
+   "claim": "red + blue = brown/purple-brown"
+  },
+  {
+   "id": "d4b",
+   "src": "dgcr-154739",
+   "plastic": "star",
+   "base": "#59A9DE",
+   "dyes": [
+    "iDye Poly Crimson"
+   ],
+   "hue": [
+    280,
+    60
+   ],
+   "Lmax": 40,
+   "claim": "blue + red = murky purple-brown"
+  },
+  {
+   "id": "d4c",
+   "src": "dgcr-154739",
+   "plastic": "champion",
+   "base": "#59A9DE",
+   "dyes": [
+    "iDye Poly Crimson"
+   ],
+   "hue": [
+    280,
+    60
+   ],
+   "Lmax": 40,
+   "claim": "blue + red = murky purple-brown (Champion)"
+  },
+  {
+   "id": "d5",
+   "src": "dgcr-52246",
+   "plastic": "star",
+   "base": "#F27A26",
+   "dyes": [
+    "iDye Poly Blue"
+   ],
+   "Lmax": 40,
+   "claim": "orange + blue = brownish dark"
+  },
+  {
+   "id": "d6",
+   "src": "dgcr-154739",
+   "plastic": "star",
+   "base": "#8D62B6",
+   "dyes": [
+    "iDye Poly Crimson"
+   ],
+   "hue": [
+    270,
+    360
+   ],
+   "Lmax": 45,
+   "claim": "purple + red = purple/darker"
+  },
+  {
+   "id": "d7",
+   "src": "dgcr-132674",
+   "plastic": "champion",
+   "base": "#EF822F",
+   "dyes": [
+    "iDye Poly Blue"
+   ],
+   "Lmax": 38,
+   "claim": "orange Champion + blue = dark"
+  },
+  {
+   "id": "d8",
+   "src": "dgcr-154739",
+   "plastic": "star",
+   "base": "#F4F2E8",
+   "dyes": [
+    "iDye Poly Blue"
+   ],
+   "hue": [
+    225,
+    265
+   ],
+   "Lmax": 35,
+   "claim": "white + blue = blue"
+  },
+  {
+   "id": "d9",
+   "src": "dgcr-61923",
+   "plastic": "star",
+   "base": "#E5C100",
+   "dyes": [
+    "iDye Poly Crimson"
+   ],
+   "hue": [
+    345,
+    25
+   ],
+   "claim": "red overpowers yellow plastic"
+  },
+  {
+   "id": "d10",
+   "src": "dgcr-134835",
+   "plastic": "star",
+   "base": "#8EC5E6",
+   "dyes": [
+    "iDye Poly Blue"
+   ],
+   "hue": [
+    205,
+    260
+   ],
+   "claim": "same blue stays true on light blue"
+  },
+  {
+   "id": "d11",
+   "src": "dgcr-146551",
+   "plastic": "star",
+   "base": "#F7E331",
+   "dyes": [
+    "Cool Black"
+   ],
+   "hue": [
+    90,
+    260
+   ],
+   "Lmax": 60,
+   "claim": "graphite (blue-gray) on bright yellow Star turns teal"
+  },
+  {
+   "id": "d12",
+   "src": "dgcr-129659",
+   "plastic": "star",
+   "base": "#F4F2E8",
+   "dyes": [
+    "Fern"
+   ],
+   "hue": [
+    80,
+    170
+   ],
+   "Lmax": 75,
+   "claim": "green dye on white reads green"
+  },
+  {
+   "id": "d13",
+   "src": "dgcr-140438",
+   "plastic": "star",
+   "base": "#8D62B6",
+   "dyes": [
+    "Deep Orange"
+   ],
+   "hue": [
+    330,
+    40
+   ],
+   "Lmax": 45,
+   "claim": "orange dye on purple disc gives deep burnt red"
+  },
+  {
+   "id": "d14",
+   "src": "dyersguild-chart",
+   "plastic": "star",
+   "base": "#E84C55",
+   "dyes": [
+    "Shark Blue"
+   ],
+   "Lmax": 45,
+   "claim": "on a red disc most dyes read red or black (dark)"
+  }
+ ],
+ "uv": [
+  {
+   "dye": "Green UV Blast",
+   "hue": [
+    85,
+    160
+   ],
+   "src": "jaic-fluor"
+  },
+  {
+   "dye": "Chartreuse / Yellow",
+   "hue": [
+    55,
+    120
+   ],
+   "src": "jaic-fluor"
+  },
+  {
+   "dye": "Blue UV Blast",
+   "hue": [
+    200,
+    260
+   ],
+   "src": "jaic-fluor"
+  },
+  {
+   "dye": "Flo Orange / Blaze Orange UV",
+   "hue": [
+    10,
+    45
+   ],
+   "src": "jaic-fluor"
+  },
+  {
+   "dye": "Flo Red UV Blast",
+   "hue": [
+    340,
+    25
+   ],
+   "src": "jaic-fluor"
+  },
+  {
+   "dye": "Hot Pink UV Blast",
+   "hue": [
+    330,
+    30
+   ],
+   "src": "jaic-fluor"
+  },
+  {
+   "dye": "Fluorescent Pink",
+   "hue": [
+    330,
+    40
+   ],
+   "src": "jaic-fluor"
+  },
+  {
+   "dye": "Neon Key Lime",
+   "hue": [
+    80,
+    160
+   ],
+   "src": "jaic-fluor"
+  }
+ ],
+ "uptake": [
+  {
+   "plastic": "dx",
+   "vs": "star",
+   "claim": "DX takes dye much lighter than Star",
+   "src": "dgcr-154739b"
+  },
+  {
+   "plastic": "champion",
+   "vs": "star",
+   "claim": "Champion less vibrant than Star",
+   "src": "udisc-howto"
+  }
  ]
 }

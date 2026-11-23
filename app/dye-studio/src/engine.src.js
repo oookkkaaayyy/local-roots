@@ -15,8 +15,9 @@ const DE=(()=>{
  // up = dye strength multiplier derived from the rating. Sources: research/dataset/observations.json (wiki ratings).
  const UPR=[0,.15,.35,.6,.8,1];
  const PLASTICS={star:{fam:"star",rating:5},gstar:{fam:"star",rating:5},echostar:{fam:"star",rating:4},pro:{fam:"star",rating:4},dx:{fam:"star",rating:2},prime:{fam:"star",rating:2},
-  champion:{fam:"champion",rating:5},fuzion:{fam:"champion",rating:5},glow:{fam:"champion",rating:null,est:1}};
- const plasticOf=id=>{const p=PLASTICS[id]||PLASTICS.star;return{...p,up:p.rating?UPR[p.rating]:1}};
+  champion:{fam:"champion",rating:4},fuzion:{fam:"champion",rating:4},glow:{fam:"champion",rating:null,est:1}};
+ const REFR={star:5,champion:4}; // the fitted star and champion process parameters already embody these ratings, so up is relative to the family reference
+ const plasticOf=id=>{const p=PLASTICS[id]||PLASTICS.star;return{...p,up:p.rating?Math.min(1.25,UPR[p.rating]/UPR[REFR[p.fam]]):1}};
  const famOf=o=>/champion/.test(o||"")?"champion":"star";
  const absorb=(d,k)=>{const A=new Array(N).fill(0);if(!d)return A;for(const [mu,sg,a] of d.b)for(let i=0;i<N;i++)A[i]+=a*gau(lam[i],mu,sg);for(let i=0;i<N;i++)A[i]*=k;return A};
  // Effective per-dye concentration (relative to full single-dye film). Langmuir competition.
@@ -163,7 +164,7 @@ const DE=(()=>{
    for(let j=0;j<N;j++)em[j]=gau(lam[j],d.em[0],d.em[1]);
    // emission re-absorbed by dyes present
    for(let j=0;j<N;j++)em[j]*=Math.exp(-tau[j]*.55);
-   const l=SP.toLin(em.map(v=>v*d.phi*sh*2.4));for(let k=0;k<3;k++)rgb[k]+=l[k];});
+   const l=SP.toLin(em.map(v=>v*(d.uvphi??d.phi)*sh*2.4));for(let k=0;k<3;k++)rgb[k]+=l[k];});
   return SP.linHex(rgb.map(v=>1-Math.exp(-v*1.6)));
  }
  // charged glow: afterglow emission (SrAl2O4-like, 520 nm) filtered by dye absorbance on the way out
