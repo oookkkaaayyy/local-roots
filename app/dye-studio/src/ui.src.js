@@ -70,7 +70,14 @@ function colorAtPt(x,y,mc){const r=Math.hypot(x,y);return colorAt(itemsFor(weigh
 function layerAt(x,y){const ws=weightsAt(x,y);for(let i=S.layers.length-1;i>0;i--)if(ws[i]>.5)return S.layers[i];return S.layers[0]}
 // ---------- rendering ----------
 const cv=$("#cv"),ov=$("#ov"),sq=$(".sq"),vw=$(".vw");let B=800;const oc=document.createElement("canvas");
-const NB=96;
+const NB=160;
+const L2S=new Float32Array(256),S2L=new Uint8Array(4096);
+for(let i=0;i<256;i++){const u=i/255;L2S[i]=u<=.04045?u/12.92:Math.pow((u+.055)/1.055,2.4)}
+for(let i=0;i<4096;i++){const l=i/4095;S2L[i]=Math.round(255*(l<=.0031308?12.92*l:1.055*Math.pow(l,1/2.4)-.055))}
+const hhn=(x,y)=>{let h=(x*374761393+y*668265263)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967296};
+const HL=Math.hypot(-.42,-.52,1.74),HX=-.42/HL,HY=-.52/HL,HZ=1.74/HL;
+const MPROF=(()=>{const T=new Float32Array(1025),h=r=>{let v=.055*(1-r*r);for(const c of[.46,.64,.8])v+=.006*Math.exp(-Math.pow((r-c)/.02,2));return v+.8*.07*ss(.9,.972,r)-.8*.2*ss(.975,1,r)};
+ for(let i=0;i<=1024;i++){const r=i/1024;T[i]=(h(Math.min(1.03,r+.003))-h(Math.max(0,r-.003)))/.006}return T})();
 function renderDisc(W){
  const PL_T=plastic().fam==='champion';
  const layers=S.layers,n=layers.length,hasW=false;
@@ -83,10 +90,13 @@ function renderDisc(W){
   for(let i=0;i<n;i++){const w=act[i]?maskW(layers[i],u,v,r,ang):0;const q=Math.round(w*12);qs[i]=q;key=key*13+q}
   let rgb=cache.get(key);
   if(!rgb){for(let i=0;i<n;i++)ws[i]=qs[i]/12;const rr=Math.min(NB-1,Math.round(r*(NB-1)))/(NB-1);rgb=hexRgb(colorAt(itemsFor(ws,layers),rr).hex);cache.set(key,rgb)}
-  const lip=ss(.88,.99,r),lit=1+.05*(-(u+v)*.7);
-  const sh=lit*(1-.16*lip)*(PL_T?1-.05*ss(.84,.99,r):1);
+  // lighting in linear light: slope of a mold height profile (dome, flight rings, rim bead), Lambert plus Blinn specular, grain
+  const sl=MPROF[Math.min(1024,Math.round(r*1024))],ur=u/(r||1),vr=v/(r||1);
+  let gx=-sl*ur*2.4,gy=-sl*vr*2.4;const nn=Math.hypot(gx,gy,1);gx/=nn;gy/=nn;const gz=1/nn;
+  const dif=Math.max(0,gx*-.42+gy*-.52+gz*.74)/.74,sp=Math.pow(Math.max(0,gx*HX+gy*HY+gz*HZ),PL_T?110:55)*(PL_T?.2:.07);
+  const lip=ss(.955,.995,r),sh=(.9+.1*dif)*(1-.1*lip)+(hhn(x,y)-.5)*(PL_T?.01:.03),tl=PL_T?.06*ss(.45,.97,r)*(1-lip*.6):0,ex=sp+.012;
   const a=clamp((1-r)*R/1.1,0,1);
-  const k=(y*W+x)*4;d[k]=rgb[0]*sh;d[k+1]=rgb[1]*sh;d[k+2]=rgb[2]*sh;d[k+3]=a*255*(PL_T?.8+.14*lip:1)}
+  const k=(y*W+x)*4;d[k]=S2L[Math.min(4095,Math.max(0,(L2S[rgb[0]]*(sh+tl)+ex)*4095|0))];d[k+1]=S2L[Math.min(4095,Math.max(0,(L2S[rgb[1]]*(sh+tl)+ex)*4095|0))];d[k+2]=S2L[Math.min(4095,Math.max(0,(L2S[rgb[2]]*(sh+tl)+ex)*4095|0))];d[k+3]=a*255*(PL_T?.8+.14*lip:1)}
  return img}
 let fastT=null;
 function paint(fast){
