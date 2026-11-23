@@ -502,3 +502,8 @@ html .lr .dug-controls{z-index:5}
 .lr .lr-head-in{gap:8px}
 @media(max-width:480px){.lr .lr-nav a{padding:0 6px;font-size:.8rem}}
 @media(max-width:380px){.lr .lr-nav a{padding:0 5px;font-size:.74rem}}
+@media(min-width:701px){.lr .events-layout>.event-list{grid-column:2}.lr .events-layout>.filters-dialog{grid-column:1;grid-row:1}}
+.lr .lr-nav a{min-width:44px;justify-content:center}
+.lr .status-pill{max-width:100%;white-space:normal;overflow-wrap:break-word}
+.lr .event-meta,.lr .event-location,.lr .event-main h3,.lr .event-main p{min-width:0;white-space:normal;overflow-wrap:break-word}
+.lr .event-view-switch .button,.lr .event-view-switch button{white-space:normal;padding-left:10px;padding-right:10px;min-width:0}
