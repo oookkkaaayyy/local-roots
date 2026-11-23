@@ -517,3 +517,5 @@ html .lr .dug-controls{z-index:5}
 html .lr .status-pill,html .lr .event-detail-card .status-pill{max-width:100%!important;white-space:normal!important;box-sizing:border-box;position:static}
 html .lr .event-view-switch .button,html .lr .event-view-switch button{white-space:normal!important;padding-left:8px!important;padding-right:8px!important;min-width:0!important;overflow-wrap:break-word}
 html .lr .event-view-switch .button{font-size:.82rem!important;padding-left:4px!important;padding-right:4px!important;overflow-wrap:anywhere}
+html .lr .event-detail-heading,html .lr .event-heading-row{grid-template-columns:minmax(0,1fr)!important;min-width:0}
+html .lr .event-detail-heading>*,html .lr .event-heading-row>*{min-width:0;max-width:100%}
