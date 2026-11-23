@@ -8,6 +8,8 @@ export const DEF=engine(false);
 const {DE,SP}=DEF;
 const h={dyes:GROUND.dyes,opaqueTargets:GROUND.opaqueTargets,hbnfChampionPointAnchors:GROUND.anchors,opticalPathAt:(r)=>{let x;if(r<.58)x=.64+r*.20;else if(r<.84)x=.78+(r-.58)*1.25;else x=1.10+(r-.84)*3.10;return x}};
 const META=GROUND.META;
+const FP=JSON.parse(fs.readFileSync(here('../research/dataset/fluor_priors.json'),'utf8'));
+const hueOfHex=h=>{const[r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(!d)return 0;let H=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;return(H*60+360)%360};
 const lab2=hex=>DE.hexLab(hex);
 // unique dye names used in the catalog; prefer My Inventory swatch
 const names={};for(const d of h.dyes){const n=d[1];if(d[3]){names[n]={clear:true,hex:d[2]};continue}if(!names[n]||d[0]==="My Inventory")names[n]={hex:d[2],group:d[0]}}
@@ -47,7 +49,8 @@ function fitDye(n,info){
  let phi0=Math.min(.7,(m.fluor||0)*.45);
  // emission band from the dye's UV color
  let em=null;
- if(m.fluor>0&&m.uvColor){const ul=lab(m.uvColor);let best=1e9,bm=520;for(let mu=430;mu<=690;mu+=5){const s=DE.lam.map(l=>DE.gau(l,mu,22)*1.3);const e=Math.abs(Math.atan2(DE.labOfSpec(s)[2],DE.labOfSpec(s)[1])-Math.atan2(ul[2],ul[1]));const ee=Math.min(e,2*Math.PI-e);if(ee<best){best=ee;bm=mu}}em=[bm,22]}
+ let uvphi=0;
+ if(m.fluor>0&&m.uvColor){const hh=hueOfHex(m.uvColor),cls=FP.classes[hh<15||hh>=340?"red":hh<45?"orange":hh<80?"yellow":hh<100?"lime":hh<170?"green":hh<200?"cyan":hh<250?"blue":hh<300?"purple":"pink"];em=cls.em.slice();uvphi=+(cls.uvphi*Math.min(1,.5+m.fluor/2)).toFixed(3)}
  {let hd=1e9;if(em&&m.uvColor){const ul=lab(m.uvColor);const e=Math.abs(Math.atan2(ul[2],ul[1])-Math.atan2(tl[2],tl[1]));hd=Math.min(e,2*Math.PI-e)*57.3}MUMAX=em&&hd<40&&em[0]>=525?em[0]-35:720;if(!(em&&hd<40&&em[0]>=525))phi0=Math.min(.7,(m.fluor||0)*.08);}
  const evalP=(p,phi)=>{const q=clampP(p);DE.CAT[n]={b:toBands(q),phi:phi,em:em||[520,22],aff:1,sd:.15};
   const Rr=DE.opaque?null:null;
@@ -74,7 +77,7 @@ function fitDye(n,info){
  const q=clampP(best.x);
  // refit residual (strip regulariser)
  const entry={b:toBands(q).map(b=>b.map(v=>+v.toFixed(3))),phi:+phi.toFixed(3),aff:/iDye|Onyx|Black/.test(n)?1.6:1.0,sd:tg.measured?.08:.18};
- if(em)entry.em=em;
+ if(em){entry.em=em;entry.uvphi=uvphi}
  DE.CAT[n]=entry;
  const o=DE.render({baseHex:white,family:"star",items:[{name:n,s:1}]},{});
  return{n,entry,dE:DE.de2000(tl,DE.labOfSpec(o)),target:tg.hex,measured:tg.measured,got:DE.present(o).hex};
