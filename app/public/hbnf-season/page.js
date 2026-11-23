@@ -1,6 +1,6 @@
 (function(){
  'use strict';
- var S=window.HBNFSeason,ids=['live','trophy','awards','season'];
+ var S=window.HBNFSeason,ids=['live','trophy','finals','awards','season'];
  function $(i){return document.getElementById(i)}
  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
  function select(v,focus){
@@ -38,6 +38,11 @@
   $('trophyBody').innerHTML=b.rows.map(function(r){
    return'<tr class="'+(r.q?'':'dim')+'"><td class="pos">'+pos(r)+'</td><td>'+esc(r.n)+'</td><td class="n">'+r.r+'</td><td class="n">'+S.fmt1(r.avg)+'</td><td class="n">'+S.fmt(r.rel)+'</td><td class="n">'+S.fmt(r.live)+'</td></tr>'}).join('')||'<tr><td colspan="6">-</td></tr>';
  }
+ function renderFinals(b){
+  var f=S.finals(b);
+  $('finalsDate').textContent=f.date;
+  $('finalsBody').innerHTML=f.field.map(function(r){return'<tr><td class="pos">'+pos(r)+'</td><td>'+esc(r.n)+'</td><td class="n">'+r.r+'</td><td class="n">'+S.fmt1(r.avg)+'</td></tr>'}).join('')||'<tr><td colspan="4">-</td></tr>';
+ }
  function renderAwards(b,g){
   $('awardsBody').innerHTML=S.awards(b,g).map(function(a){return'<tr><td>'+esc(a.label)+'</td><td>'+a.names.map(esc).join(', ')+'</td><td class="n">'+esc(a.val)+'</td></tr>'}).join('')||'<tr><td colspan="3">-</td></tr>';
  }
@@ -48,7 +53,7 @@
  function load(){
   fetch(S.BASE+'/rest/v1/league_state?select=state_json,updated_at&id=eq.1',{headers:{apikey:S.KEY,Authorization:'Bearer '+S.KEY},cache:'no-store'})
    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
-   .then(function(a){if(!a||!a[0])throw new Error('empty');var g=a[0].state_json.glow||{},b=S.build(g);renderLive(g,a[0].updated_at);renderTrophy(b);renderAwards(b,g);renderSeason(g)})
+   .then(function(a){if(!a||!a[0])throw new Error('empty');var g=a[0].state_json.glow||{},b=S.build(g);renderLive(g,a[0].updated_at);renderTrophy(b);renderFinals(b);renderAwards(b,g);renderSeason(g)})
    .catch(function(){$('mAge').textContent='Offline';$('mAge').className='warn'});
  }
  load();setInterval(load,20000);

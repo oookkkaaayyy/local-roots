@@ -16,7 +16,7 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
 .hbnf-live h1{font-size:clamp(1.4rem,4vw,2rem);margin:0}
 .hbnf-live .nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 20px}
 .hbnf-live .nav a{min-height:44px;display:inline-flex;align-items:center;padding:9px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);text-decoration:none;background:#3a3024;font-weight:700;font-size:.88rem}
-.hbnf-live .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 18px}
+.hbnf-live .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 0 18px}
 .hbnf-live .tabs button{min-height:48px;border:1px solid var(--line);border-radius:9px;background:#3a3024;color:var(--ink);font:700 .95rem Cabin,Arial,sans-serif;cursor:pointer}
 .hbnf-live .tabs button[aria-selected="true"]{background:#4b5038;border-color:var(--accent)}
 .hbnf-live button:focus-visible,.hbnf-live a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
@@ -38,7 +38,7 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
 .hbnf-live .pos{font-weight:700;color:var(--accent)}
 .hbnf-live .ok{color:var(--accent);font-weight:700}
 .hbnf-live .warn{color:#e9d39b;font-weight:700}
-@media(max-width:600px){.hbnf-live .wrap{padding:14px 12px 36px}.hbnf-live .tabs{grid-template-columns:1fr 1fr}.hbnf-live .metrics{grid-template-columns:1fr 1fr}.hbnf-live .metrics .metric:last-child{grid-column:1/-1}.hbnf-live table{min-width:0;font-size:.8rem}.hbnf-live th,.hbnf-live td{padding:8px 4px}}
+@media(max-width:600px){.hbnf-live .wrap{padding:14px 12px 36px}.hbnf-live .tabs{grid-template-columns:1fr 1fr}.hbnf-live .tabs button:last-child{grid-column:1/-1}.hbnf-live .metrics{grid-template-columns:1fr 1fr}.hbnf-live .metrics .metric:last-child{grid-column:1/-1}.hbnf-live table{min-width:0;font-size:.8rem}.hbnf-live th,.hbnf-live td{padding:8px 4px}}
 .hbnf-live tr.dim td{opacity:.55}
 </style>
 </head>
@@ -49,6 +49,7 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
 <div class="tabs" role="tablist" aria-label="Statistics">
  <button type="button" id="tab-live" role="tab" aria-controls="pane-live" aria-selected="true" tabindex="0">Live Round</button>
  <button type="button" id="tab-trophy" role="tab" aria-controls="pane-trophy" aria-selected="false" tabindex="-1">Trophy Race</button>
+ <button type="button" id="tab-finals" role="tab" aria-controls="pane-finals" aria-selected="false" tabindex="-1">Finals</button>
  <button type="button" id="tab-awards" role="tab" aria-controls="pane-awards" aria-selected="false" tabindex="-1">Awards</button>
  <button type="button" id="tab-season" role="tab" aria-controls="pane-season" aria-selected="false" tabindex="-1">Stats</button>
 </div>
@@ -60,6 +61,10 @@ body.hbnf-live{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.45
 <section id="pane-trophy" role="tabpanel" aria-labelledby="tab-trophy" hidden>
  <div class="heading"><div><h2>Trophy Race</h2><span class="small" id="trophyRounds"></span></div></div>
  <div class="panel"><table aria-label="Trophy Race"><thead><tr><th>Rank</th><th>Player</th><th class="n">Rounds</th><th class="n">Avg</th><th class="n">To par</th><th class="n">Tonight</th></tr></thead><tbody id="trophyBody"></tbody></table></div>
+</section>
+<section id="pane-finals" role="tabpanel" aria-labelledby="tab-finals" hidden>
+ <div class="heading"><div><h2>Finals</h2><span class="small" id="finalsDate"></span></div></div>
+ <div class="panel"><table aria-label="Finals field"><thead><tr><th>Seed</th><th>Player</th><th class="n">Rounds</th><th class="n">Avg</th></tr></thead><tbody id="finalsBody"></tbody></table></div>
 </section>
 <section id="pane-awards" role="tabpanel" aria-labelledby="tab-awards" hidden>
  <div class="heading"><div><h2>Awards</h2></div></div>
