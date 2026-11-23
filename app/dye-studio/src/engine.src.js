@@ -55,7 +55,7 @@ const DE=(()=>{
    const d=CAT[it.name];if(!d||!d.phi)return;
    const A=absorb(d,c[i]),qf=1/(1+Math.pow(Math.max(...A)*(opt&&opt.cscale||1)/PRM.tq,2)),share=tauTotal.map((t,j)=>t>1e-9?A[j]/t:0);
    const bk=opt&&opt.beta;
-   let abs=0;for(let j=0;j<N;j++)abs+=(1-Math.exp(-2*tauTotal[j]*(bk?bk[j]:1)))*share[j]*SP.d65w[j];
+   let abs=0;for(let j=0;j<N;j++){if(lam[j]<=d.em[0]+10)abs+=(1-Math.exp(-2*tauTotal[j]*(bk?bk[j]:1)))*share[j]*SP.d65w[j]}// excitation only at or below the emission band (Stokes shift; no anti-Stokes pumping)
    const norm=d.em?(()=>{let s=0;for(let j=0;j<N;j++)s+=gau(lam[j],d.em[0],d.em[1]);return s})():1;
    let be=1;if(bk){let ws=0,wb=0;for(let j=0;j<N;j++){const g=gau(lam[j],d.em[0],d.em[1]);ws+=g;wb+=g*bk[j]}be=ws>0?wb/ws:1}
    for(let j=0;j<N;j++)em[j]+=qf*d.phi*abs*be*gau(lam[j],d.em[0],d.em[1])/norm/SP.d65w[j]*Math.exp(-(opt&&opt.outf!==undefined?opt.outf:.7)*tauTotal[j]);
