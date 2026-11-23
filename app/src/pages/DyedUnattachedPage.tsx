@@ -41,7 +41,7 @@ function parseLegacyPath(path:string){
 function GalleryMediaView({media,eager}:{media:GalleryMedia;eager?:boolean}){
   const legacy=parseLegacyPath(media.path);
   const url=legacy?`${LEGACY_IMAGE_BASE}legacy-${legacy.row}-${legacy.side}.jpg?v=3`:supabase.storage.from('du-gallery').getPublicUrl(media.path).data.publicUrl;
-  return <div className="dug-media"><img src={url} alt={media.label} width="720" height="720" loading={eager?'eager':'lazy'} decoding="async"/></div>;
+  return <div className="dug-media"><img src={url} alt={media.label} width="720" height="720" loading={eager?'eager':'lazy'} decoding="async" onError={event=>{event.currentTarget.parentElement?.classList.add('is-missing');}}/></div>;
 }
 
 export function DyedUnattachedPage() {

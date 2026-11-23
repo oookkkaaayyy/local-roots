@@ -37,7 +37,7 @@ export function StencilPage() {
       <div id="fstyle"></div><button id="fcut" className="on">Cutout</button><button id="finv">Invert</button><button id="fx">Cancel</button><button id="fok" className="dis">Add</button><button id="gsv">Save image</button>
       <div className="bar"><button id="undo">Undo</button><button id="redo">Redo</button><button id="copy">Copy</button><button id="png">Save</button></div>
       <div className="vw"><div className="sq"><canvas id="cv"></canvas><canvas id="ov"></canvas></div></div><div id="rd"></div><div id="body"></div>
-      <div id="save"><img id="svimg" alt=""/><a id="svdl"></a><button id="svx">Close</button></div>
+      <div id="save"><img id="svimg" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAACAkQBADs="/><a id="svdl"></a><button id="svx">Close</button></div>
       <div id="sheet"><input id="pq"/><button id="px">Close</button><div id="pch"></div><div id="pgr"></div></div>
       <div id="match"><button id="mx">Close</button><div id="mbody"></div></div>
     </div>
