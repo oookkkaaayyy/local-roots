@@ -7,7 +7,7 @@ const OBS=JSON.parse(fs.readFileSync(new URL("../research/dataset/observations.j
 const THc=(B)=>"#"+[1,3,5].map(i=>Math.round(parseInt(B.slice(i,i+2),16)*.34+255*.66).toString(16).padStart(2,"0")).join("");
 const pred=(base,fam,items,zone="plate",path=.5,o={})=>DE.predict({baseHex:base,transHex:o.trans||(process.env.LEGACY_TRANS&&fam==="champion"?THc(base):undefined),family:fam,scene:"outdoor",zone,path,items});
 const q=(a,p)=>{const s=[...a].sort((x,y)=>x-y);return s[Math.min(s.length-1,Math.floor(p*(s.length-1)+.5))]};
-const stats=a=>({n:a.length,mean:+(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2),median:+q(a,.5).toFixed(2),p95:+q(a,.95).toFixed(2),max:+Math.max(...a).toFixed(2)});
+const stats=a=>(a=a.filter(Number.isFinite),{n:a.length,mean:+(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2),median:+q(a,.5).toFixed(2),p95:+q(a,.95).toFixed(2),max:+Math.max(...a).toFixed(2)});
 export function coverage(){
  const lin=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
  const rows=fs.readFileSync(new URL("../research/image-clusters.txt",import.meta.url),"utf8").split(/[;\n]/).map(r=>r.trim().split(" ").filter(Boolean).map(x=>"#"+x)).filter(r=>r.length>=2);
@@ -25,6 +25,9 @@ export function evaluate(){
  {const A=h.hbnfChampionPointAnchors,Z={plate:.35,shoulder:.72,rim:.93},e=[];
   for(const n of Object.keys(A.colors))for(const z of["plate","shoulder","rim"])e.push(DE.dEhex(pred(A.surfaceBase,"champion",[{name:n,s:1}],z,h.opticalPathAt(Z[z]),{trans:A.transmissionBase}).hex,A.colors[n][z]));
   R.anchors=stats(e)}
+ {const rows=fs.readFileSync(new URL("../research/dataset/photo_base_colors.csv",import.meta.url),"utf8").trim().split("\n").slice(1).map(l=>l.split(",")),CH=new Set(["Champion","Fuzion","Halo Champion","Proto Glow Champion","Champion Glow","Eclipse","Eclipse 2.0","Glow","Lucid","Opto","VIP"]);const hx=a=>"#"+a.map(v=>(+v).toString(16).padStart(2,"0")).join("").toUpperCase(),e=[],e0=[];
+  for(const r of rows){if(!CH.has(r[0])||r[2]==="dyed_factory"||r[3]==="low")continue;const pl=hx(r.slice(4,7)),rim=hx(r.slice(7,10));const pe=Math.pow(h.opticalPathAt(.93)/.74,DE.PRM.champion.qb||0);e.push(DE.dEhex(h.SP.specHex(h.SP.spec(pl).map(v=>Math.pow(Math.max(v,1e-3),pe))),rim));e0.push(DE.dEhex(pl,rim))}
+  R.champRimBase=stats(e);R.champRimNoModel=stats(e0)}
  R.photoSamples=stats(OBS.photoSamples.map(p=>DE.dEhex(pred(p.base,p.family,[{name:p.dye,s:p.s}]).hex,p.observed)));
  // direction
  const hue=hex=>{const l=DE.hexLab(hex);return (Math.atan2(l[2],l[1])*180/Math.PI+360)%360};
@@ -45,4 +48,4 @@ export function evaluate(){
  return R}
 if(process.argv[1]&&process.argv[1].endsWith("eval_dataset.mjs")){const R=evaluate();
  if(process.argv.includes("--json"))console.log(JSON.stringify(R));else{for(const k of["films","anchors","photoSamples"])console.log(k.padEnd(13),JSON.stringify(R[k]));
- if(process.argv.includes("--coverage"))console.log("coverage     ",JSON.stringify(coverage()));console.log("uv365 hue",R.uv.pass+"/"+R.uv.n,R.uv.rows.filter(r=>!r.ok).map(r=>r.dye+" "+r.hex).join(", "));console.log("direction",R.direction.pass+"/"+R.direction.n);R.direction.rows.filter(r=>!r.ok).forEach(r=>console.log("  FAIL",r.id,r.hex,"H",r.H,"L",r.L,r.why))}}
+ if(process.argv.includes("--coverage"))console.log("coverage     ",JSON.stringify(coverage()));console.log("champ rim (undyed, 330 photos)",JSON.stringify(R.champRimBase),"plate-as-rim",JSON.stringify(R.champRimNoModel));console.log("uv365 hue",R.uv.pass+"/"+R.uv.n,R.uv.rows.filter(r=>!r.ok).map(r=>r.dye+" "+r.hex).join(", "));console.log("direction",R.direction.pass+"/"+R.direction.n);R.direction.rows.filter(r=>!r.ok).forEach(r=>console.log("  FAIL",r.id,r.hex,"H",r.H,"L",r.L,r.why))}}

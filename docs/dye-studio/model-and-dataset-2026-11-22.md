@@ -41,3 +41,15 @@ Finding: the fitter placed pink, cerise, magenta and purple dye emission at 430 
 Films and anchors got slightly worse (fit trade-off against the corrected emission bands); the Champion rim zone residual (Blaze Orange rim 13.9) is unchanged.
 
 Plastic ratings conflict across sources (wiki 5 for Champion; UDisc and Prodigy call it workable or poor). Champion and Fuzion are now rated 4 and the uptake multiplier is relative to the family reference, so Star and Champion are unchanged.
+
+## Update 3: agent datasets merged (forums, photo base colors, science parameters)
+Files in `app/dye-studio/research/dataset/`: `forum_observations.json` (96 labelled forum rows, qualitative, no stated hex), `photo_base_colors.csv` (2,300 retail-photo color rows, plate and rim sRGB medians, derived numbers only, no images; one retailer, exposure not normalized), `science_params.json` (diffusion, Kubelka-Munk, plastic optics, fluorescence parameters and PhotochemCAD peak/QY table; raw PhotochemCAD spectra are NOT in the repo, license unclear) and the three READMEs. `/home/claude/dye_research` is ephemeral; the repo copy is the durable one.
+
+Changes
+- Champion rim: base transmission exponent scales with optical path, `(path/0.74)^0.52`. The 0.52 comes from the photo data, not from the anchors (330 Champion-family discs: raising the plate spectrum to the 1.4 power best matches the rim, equivalent to 0.52 at the rim path ratio). Undyed rim error on those photos: median 9.15 to 7.35 dE2000 (mean 14.0 to 12.2); the two dyed anchor rims improved slightly (Blaze Orange rim 12.8 to 12.1).
+- UV emission is now a separate `uvem`/`uvphi` pair per dye. Daylight `em` stays an effective fitted parameter, because changing it changed measured films (0.37 to 2.35 mean dE2000). Sanity bound: PhotochemCAD median Stokes shift of 21 visible fluorophores is 22 nm (IQR 17 to 35).
+- Practitioner rules from the forum rows are evidence flags that lower the UI Accuracy label: low-uptake plastic (DX, Prime), dark base, black dye hue varies (plus the earlier translucent multi-dye, overlap, estimated dye). Layer order, plastic uptake ratings and Champion slowness were already encoded.
+
+Final metrics (original engine at 4d6f7f47 to now): films mean 0.37 to 0.37; Champion anchors mean 6.15 to 6.09; image coverage mean/median/p95 3.02/2.64/6.45 to 2.99/2.64/6.31; UV365 hue classes 4/8 to 8/8; direction cases 17/18 to 18/18.
+
+Not done: leave-one-source-out cross-validation (the only quantitative dyed sources are the 6 films and 6 anchors from one owner disc, and the 97 factory-dyed photo rows have no recipe); per-plastic N_sat fit (no dye-on-plastic recipe data to fit it); base-color replacement table per plastic (retail photo exposure is not normalized; absolute lightness unreliable, so photo_base_colors.csv is validation data only; the Glow default base has r:g:b ratios inside the spread of the 8 Glow Champion photo rows).

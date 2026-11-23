@@ -4,7 +4,8 @@
   "https://cool.culturalheritage.org/jaic/articles/jaic44-02-002_2.html (raspberry/pinkish red emission 600-630 nm, sunset orange and tahiti red 600 nm, sunshine yellow 510 and 600)",
   "https://en.wikipedia.org/wiki/Rhodamine_6G (abs 530, lasing peak 590, QY 0.95)",
   "https://en.wikipedia.org/wiki/Rhodamine_B (QY 0.49-0.68)",
-  "https://osa.magnet.fsu.edu/teachersparents/articles/pdfs/fluorescence and the color of day glo paints.pdf (yellow-green coumarin emits 500-550)"
+  "https://osa.magnet.fsu.edu/teachersparents/articles/pdfs/fluorescence and the color of day glo paints.pdf (yellow-green coumarin emits 500-550)",
+  "PhotochemCAD 2.1a (omlc.org/spectra/PhotochemCAD): median Stokes shift of 21 visible fluorophores with QY>=0.3 is 22 nm (IQR 17-35), used as a sanity bound; raw spectra kept private (no open license)"
  ],
  "classes": {
   "blue": {
@@ -23,21 +24,21 @@
   },
   "green": {
    "em": [
-    528,
+    520,
     24
    ],
    "uvphi": 0.8
   },
   "lime": {
    "em": [
-    540,
+    530,
     24
    ],
    "uvphi": 0.8
   },
   "yellow": {
    "em": [
-    552,
+    542,
     24
    ],
    "uvphi": 0.8

@@ -9,7 +9,7 @@ const DE=(()=>{
  const CAT={};            // name -> {b:[[mu,sig,a]...],phi,em:[mu,sig],aff,sd}
  const PRM={tq:3,             // process parameters per optical family, fitted by scripts/fit_engine.mjs
   star:{Sx:1.6,cmax:1.0,rim:.08,tr:0},
-  champion:{bt:.38,bf:.08,Sx:.35,cmax:1.0,rim:.12,tr:1,kS:.55,kT:1.5,pw:.75,gT:1.38,w:{outdoor:{plate:1,shoulder:.75,rim:.5},surface:{plate:.09,shoulder:.04,rim:.04},backlit:{plate:1,shoulder:.95,rim:.8}}}
+  champion:{qb:.52,bt:.38,bf:.08,Sx:.35,cmax:1.0,rim:.12,tr:1,kS:.55,kT:1.5,pw:.75,gT:1.38,w:{outdoor:{plate:1,shoulder:.75,rim:.5},surface:{plate:.09,shoulder:.04,rim:.04},backlit:{plate:1,shoulder:.95,rim:.8}}}
  };
  // Plastic table. fam = optical family; rating = r/discdyeing wiki dye-uptake scale 1-5 (null = unrated, assumed like family);
  // up = dye strength multiplier derived from the rating. Sources: research/dataset/observations.json (wiki ratings).
@@ -84,7 +84,7 @@ const DE=(()=>{
  function translucent(baseHex,transHex,items,fam,scene,zone,path,opt){
   const P=PRM.champion,tau=tauOf(items,opt?.mult);
   const Rs=toExt(kmLayer(toInt(baseSpec(baseHex)),tau.map(v=>v*P.kS),P.Sx));
-  const T0=transHex?baseSpec(transHex):baseSpec(baseHex).map(v=>Math.pow(Math.max(0,v-P.bf)/(1-P.bf),P.bt)),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*P.gT));
+  const pe=Math.pow(Math.max(path,.2)/.74,P.qb||0),T0=transHex?baseSpec(transHex).map(v=>Math.pow(v,pe)):baseSpec(baseHex).map(v=>Math.pow(Math.max(0,v-P.bf)/(1-P.bf),P.bt*pe)),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*P.gT));
   const w=(P.w[scene]||P.w.outdoor)[zone];
   let R=Rs.map((v,i)=>v*(1-w)+T[i]*w);
   if(!opt?.noFluor){const f=fluor(items,tau.map(v=>v*P.kS),{cscale:P.kS*P.kT*Math.pow(path,P.pw)});R=R.map((v,i)=>v+f[i]*(scene==="backlit"?.3:1))}
@@ -151,6 +151,10 @@ const DE=(()=>{
    if(its.some(i=>(CAT[i.name]?.sd??.18)>.15))ev.push('estimated dye');
    if(pl&&(pl.rating===null||pl.est))ev.push('unrated plastic');
    if(out.gamutExcess>.05)ev.push('out of gamut');
+   // practitioner rules (research/dataset/forum_observations.json): dye cannot lighten, dark bases swallow dye, black dye hue drifts, DX/Prime take dye poorly
+   if(pl&&pl.rating!==null&&pl.rating<=2)ev.push('low-uptake plastic');
+   if(labOf(SP.hexLin(spec.baseHex))[0]<32)ev.push('dark base');
+   if(its.some(i=>/Black|Onyx|Gun Metal/.test(i.name)))ev.push('black dye hue varies');
    out.evidence=ev}
   out.lab=labOf(out.lin.map(v=>Math.min(1,Math.max(0,v))));
   return out;
@@ -161,7 +165,7 @@ const DE=(()=>{
   const items=merge(spec.items),tau=tauOf(items,1),c=conc(items),rgb=[0,0,0];
   items.forEach((it,i)=>{const d=CAT[it.name];if(!d||!d.phi)return;
    const sh=1-Math.exp(-2*c[i]*(d.uvAbs??1)),em=new Array(N).fill(0);
-   for(let j=0;j<N;j++)em[j]=gau(lam[j],d.em[0],d.em[1]);
+   for(let j=0;j<N;j++)em[j]=gau(lam[j],(d.uvem||d.em)[0],(d.uvem||d.em)[1]);
    // emission re-absorbed by dyes present
    for(let j=0;j<N;j++)em[j]*=Math.exp(-tau[j]*.55);
    const l=SP.toLin(em.map(v=>v*(d.uvphi??d.phi)*sh*2.4));for(let k=0;k<3;k++)rgb[k]+=l[k];});
