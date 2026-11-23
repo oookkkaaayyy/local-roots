@@ -11,7 +11,7 @@ const stats=a=>({n:a.length,mean:+(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2),m
 export function coverage(){
  const lin=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
  const rows=fs.readFileSync(new URL("../research/image-clusters.txt",import.meta.url),"utf8").split(/[;\n]/).map(r=>r.trim().split(" ").filter(Boolean).map(x=>"#"+x)).filter(r=>r.length>=2);
- const names=Object.keys(DE.CAT).filter((_,i)=>i%2==0),best=[];
+ const names=Object.keys(DE.CAT).filter(n=>!/^(ProChem |iDye Poly |UV Blast )/.test(n)||!DE.CAT[n.replace(/^(ProChem |iDye Poly )/,"")]),best=[];
  for(const row of rows){let b=1e9;
   for(const B of row)for(const C of row){if(B===C)continue;const LC=DE.hexLab(C);if(LC[0]>DE.hexLab(B)[0]-4)continue;
    for(const f of["star","champion"])for(const nm of names)for(const s of[.1,.25,.5,.8,1.2]){const e=DE.de2000(LC,DE.hexLab(pred(B,f,[{name:nm,s}],"plate",.8).hex));if(e<b)b=e}}
@@ -40,8 +40,9 @@ export function evaluate(){
   if(d.Cmax!=null&&full.C>d.Cmax){ok=false;why+="C"}
   if(d.hue&&!SW.some(s=>{const x=at(s);return x.C>=10&&x.l[0]>=8&&inRange(x.H,d.hue)})){ok=false;why+="H"}
   rows.push({id:d.id,hex:full.hx,H:Math.round(full.H),L:Math.round(full.l[0]),ok,why})}
+ {const hs=[];for(const u of OBS.uv||[]){const hx=DE.uv365({baseHex:"#F4F2E8",family:"star",items:[{name:u.dye,s:1}]}),l=DE.hexLab(hx);hs.push({dye:u.dye,hex:hx,ok:inRange(hsl(hx),u.hue)&&l[0]>25})}R.uv={n:hs.length,pass:hs.filter(x=>x.ok).length,rows:hs}}
  R.direction={n:rows.length,pass:rows.filter(r=>r.ok).length,rows};
  return R}
 if(process.argv[1]&&process.argv[1].endsWith("eval_dataset.mjs")){const R=evaluate();
  if(process.argv.includes("--json"))console.log(JSON.stringify(R));else{for(const k of["films","anchors","photoSamples"])console.log(k.padEnd(13),JSON.stringify(R[k]));
- if(process.argv.includes("--coverage"))console.log("coverage     ",JSON.stringify(coverage()));console.log("direction",R.direction.pass+"/"+R.direction.n);R.direction.rows.filter(r=>!r.ok).forEach(r=>console.log("  FAIL",r.id,r.hex,"H",r.H,"L",r.L,r.why))}}
+ if(process.argv.includes("--coverage"))console.log("coverage     ",JSON.stringify(coverage()));console.log("uv365 hue",R.uv.pass+"/"+R.uv.n,R.uv.rows.filter(r=>!r.ok).map(r=>r.dye+" "+r.hex).join(", "));console.log("direction",R.direction.pass+"/"+R.direction.n);R.direction.rows.filter(r=>!r.ok).forEach(r=>console.log("  FAIL",r.id,r.hex,"H",r.H,"L",r.L,r.why))}}

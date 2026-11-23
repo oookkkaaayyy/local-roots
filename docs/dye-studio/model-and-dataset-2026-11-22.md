@@ -25,3 +25,19 @@ Quantitative sets are unchanged within noise; the gain is structural (direction,
 
 ## Not resolved
 UV Blast Green daylight look (model yellow-green, close to the one measured anchor) cannot be separated from real discs without a photo of that dye on a known plastic. Layering vs blending keeps the additive-baths model; no public quantitative overlap data exists.
+
+## Update 2 (same day): fluorescence priors, bigger source set
+Sources now 40 (see observations.json). New evidence read: plastic-uptake forum threads and guides (UDisc, Prodigy, discountdiscgolf, dgcr 52170/140438/146551/3763963/129659), Dyers Guild formulas and color vault, Pro Chemical dose guidance, fluorescent colorant literature (JAIC, FSU Day-Glo, Rhodamine 6G/B), Kubelka-Munk and Mixbox references. Reddit, several dgcr threads and prochemicalanddye.com were not fetchable; swatch and gallery photos could not be read as pixels.
+
+Finding: the fitter placed pink, cerise, magenta and purple dye emission at 430 nm (nearest wavelength to a magenta hue has no meaning), and red at 690 nm. Under UV365 hot pink rendered dark violet and blue rendered near black. `research/dataset/fluor_priors.json` now sets emission by hue class from the literature (pink and red 600 to 625 nm, orange 595, yellow-green 528 to 552, blue 470) and a separate UV quantum yield (`uvphi`). The catalog was refit.
+
+| set (pre-313 engine to now) | before | after |
+|---|---|---|
+| UV365 emission hue classes (n=8) | 4 of 8 | 8 of 8 |
+| direction cases (n=18) | 17 of 18 | 18 of 18 |
+| image coverage mean / median / p95 (all catalog dyes, n=169) | 3.02 / 2.64 / 6.45 | 3.00 / 2.41 / 6.74 |
+| films mean | 0.37 | 0.47 |
+| Champion anchors mean | 6.15 | 6.47 |
+Films and anchors got slightly worse (fit trade-off against the corrected emission bands); the Champion rim zone residual (Blaze Orange rim 13.9) is unchanged.
+
+Plastic ratings conflict across sources (wiki 5 for Champion; UDisc and Prodigy call it workable or poor). Champion and Fuzion are now rated 4 and the uptake multiplier is relative to the family reference, so Star and Champion are unchanged.
