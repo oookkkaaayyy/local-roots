@@ -484,12 +484,12 @@
 .lr a:not(.lr-brand):not(.skip-link):not(.lr-btn):not(.button):not([class*=nav]){display:inline-flex;align-items:center}
 .lr .lr-btn,.lr .lr-top-aside .lr-btn,.lr .lr-top-aside .lr-actions .lr-btn{min-height:44px}
 .lr th{font-size:max(.7rem,11px)}
-.lr dd,.lr dt,.lr td,.lr th,.lr p,.lr li{overflow-wrap:anywhere;min-width:0}
+.lr dd,.lr dt,.lr td,.lr th,.lr p,.lr li{overflow-wrap:break-word;min-width:0}
 .lr .footer-nav a{min-height:44px;padding:0 8px}
 html .lr a.button,html .lr button.button,html .lr summary,html .lr .lr-foot a,html .lr [class*=social] a,html .lr .lr-wrap a.pill,html .lr .chip a{min-height:44px!important;display:inline-flex;align-items:center}
 html .lr .event-card a,html .lr .event-actions a,html .lr footer a,html .lr .lr-top-aside a{min-height:44px;display:inline-flex;align-items:center}
-html .lr .event-meta{overflow-wrap:anywhere;min-width:0}
-html .lr h2{overflow-wrap:anywhere;min-width:0}
+html .lr .event-meta{overflow-wrap:break-word;min-width:0}
+html .lr h2{overflow-wrap:break-word;min-width:0}
 html .lr .event-resource-links a,html .lr .event-actions a,html .lr .event-actions button,html .lr .event-card .button,html .lr .event-card button,html .lr details>summary{min-height:44px!important;display:inline-flex;align-items:center;box-sizing:border-box}
 html .lr .event-resource-links{display:flex;flex-wrap:wrap;gap:8px}
 html .lr small,html .lr .weather-flag,html .lr .weather-page small{font-size:max(.7rem,11px)}
@@ -499,3 +499,24 @@ html .lr .dug-controls{z-index:5}
 .lr .dug-media.is-missing{background:var(--wash)}
 .lr .dug-media.is-missing img{display:none}
 .lr .dug-media.is-missing:after{content:"Photo unavailable";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--earth);font:600 .85rem/1.2 var(--sans);text-align:center;padding:8px}
+.lr .lr-head-in{gap:8px}
+@media(max-width:480px){.lr .lr-nav a{padding:0 6px;font-size:.8rem}}
+@media(max-width:380px){.lr .lr-nav a{padding:0 5px;font-size:.74rem}}
+@media(min-width:701px){.lr .events-page .events-layout>.event-list{grid-column:2}.lr .events-page .events-layout>.filters-dialog{grid-column:1;grid-row:1}.lr .weather-page .events-layout>.event-list,.lr .weather-page .events-layout>.filters-dialog{grid-column:1;grid-row:auto}}
+.lr .lr-nav a{min-width:44px;justify-content:center}
+.lr .status-pill{max-width:100%;white-space:normal;overflow-wrap:break-word}
+.lr .event-meta,.lr .event-location,.lr .event-main h3,.lr .event-main p{min-width:0;white-space:normal;overflow-wrap:break-word}
+.lr .event-view-switch .button,.lr .event-view-switch button{white-space:normal;padding-left:10px;padding-right:10px;min-width:0}
+@media(min-width:701px) and (max-width:900px){
+  .lr .events-page .event-card,.lr .event-card{grid-template-columns:112px minmax(0,1fr);grid-template-rows:auto auto;align-items:start}
+  .lr .events-page .event-date-block,.lr .event-date-block{grid-row:1/span 2;grid-column:1}
+  .lr .events-page .event-main,.lr .event-main{grid-column:2;grid-row:1}
+  .lr .events-page .event-actions,.lr .event-actions{grid-column:2;grid-row:2;flex-direction:row;flex-wrap:wrap;align-items:center;margin:8px 0 0}
+  .lr .event-actions .button{margin:0 8px 8px 0;white-space:normal}
+}
+html .lr .status-pill,html .lr .event-detail-card .status-pill{max-width:100%!important;white-space:normal!important;box-sizing:border-box;position:static}
+html .lr .event-view-switch .button,html .lr .event-view-switch button{white-space:normal!important;padding-left:8px!important;padding-right:8px!important;min-width:0!important;overflow-wrap:break-word}
+html .lr .event-view-switch .button{font-size:.82rem!important;padding-left:4px!important;padding-right:4px!important;overflow-wrap:anywhere}
+html .lr .event-detail-heading,html .lr .event-heading-row{grid-template-columns:minmax(0,1fr)!important;min-width:0}
+html .lr .event-detail-heading>*,html .lr .event-heading-row>*{min-width:0;max-width:100%}
+html .lr .event-detail-heading h1,html .lr .event-detail-card h1{overflow-wrap:anywhere;min-width:0;max-width:100%}
