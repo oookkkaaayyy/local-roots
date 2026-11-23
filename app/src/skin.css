@@ -500,4 +500,5 @@ html .lr .dug-controls{z-index:5}
 .lr .dug-media.is-missing img{display:none}
 .lr .dug-media.is-missing:after{content:"Photo unavailable";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--earth);font:600 .85rem/1.2 var(--sans);text-align:center;padding:8px}
 .lr .lr-head-in{gap:8px}
-@media(max-width:480px){.lr .lr-nav a{padding:0 6px;font-size:clamp(.7rem,3.4vw,.88rem)}}
+@media(max-width:480px){.lr .lr-nav a{padding:0 6px;font-size:.8rem}}
+@media(max-width:380px){.lr .lr-nav a{padding:0 5px;font-size:.74rem}}
