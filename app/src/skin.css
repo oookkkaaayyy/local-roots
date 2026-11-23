@@ -476,3 +476,13 @@
 .lr .ds .stpre #stgo small{display:inline;margin-left:6px;font-size:11px;opacity:.85;font-weight:600}
 @media(max-width:700px){.lr.lr-tool .ds.stp .stpair canvas{max-width:none}.lr.lr-tool .ds.stp .stframe[data-state=photo] .stpair #sp{max-width:min(100%,46vh)}}
 .lr .ds .hid{display:none}
+
+/* ---- layout-guard structural defenses (hbnf-site scripts/layout_guard); keep last ---- */
+.lr .lr-nav{gap:4px}
+.lr .lr-brand{min-height:44px;min-width:44px}
+.lr a,.lr button,.lr .button,.lr .lr-btn{min-height:44px}
+.lr a:not(.lr-brand):not(.skip-link):not(.lr-btn):not(.button):not([class*=nav]){display:inline-flex;align-items:center}
+.lr .lr-btn,.lr .lr-top-aside .lr-btn,.lr .lr-top-aside .lr-actions .lr-btn{min-height:44px}
+.lr th{font-size:max(.7rem,11px)}
+.lr dd,.lr dt,.lr td,.lr th,.lr p,.lr li{overflow-wrap:anywhere;min-width:0}
+.lr .footer-nav a{min-height:44px;padding:0 8px}
