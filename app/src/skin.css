@@ -507,3 +507,10 @@ html .lr .dug-controls{z-index:5}
 .lr .status-pill{max-width:100%;white-space:normal;overflow-wrap:break-word}
 .lr .event-meta,.lr .event-location,.lr .event-main h3,.lr .event-main p{min-width:0;white-space:normal;overflow-wrap:break-word}
 .lr .event-view-switch .button,.lr .event-view-switch button{white-space:normal;padding-left:10px;padding-right:10px;min-width:0}
+@media(min-width:701px) and (max-width:900px){
+  .lr .events-page .event-card,.lr .event-card{grid-template-columns:112px minmax(0,1fr);grid-template-rows:auto auto;align-items:start}
+  .lr .events-page .event-date-block,.lr .event-date-block{grid-row:1/span 2;grid-column:1}
+  .lr .events-page .event-main,.lr .event-main{grid-column:2;grid-row:1}
+  .lr .events-page .event-actions,.lr .event-actions{grid-column:2;grid-row:2;flex-direction:row;flex-wrap:wrap;align-items:center;margin:8px 0 0}
+  .lr .event-actions .button{margin:0 8px 8px 0;white-space:normal}
+}
