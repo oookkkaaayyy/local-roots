@@ -1,0 +1,10 @@
+{"harvest":"2026-11-22","note":"Open-access textile disperse-dye rows; derived numbers only. Figures not readable via text fetch were not transcribed.","rows":[
+{"source_url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC9130219","dye":"orange vinyl sulfone disperse reactive dye","substrate":"polypropylene fabric","medium":"scCO2 25 MPa","temp_c":130,"time_min":60,"conc_pct":1,"ks":4.55,"confidence":"medium (text says range 4.55 to 7.22, 1% inferred)"},
+{"source_url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC9130219","dye":"same","substrate":"polypropylene fabric","medium":"scCO2 25 MPa","temp_c":130,"time_min":60,"conc_pct":4,"ks":7.22,"confidence":"medium (plateau from 4%)"},
+{"source_url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC9130219","dye":"same","substrate":"polypropylene fabric","medium":"scCO2","temp_c":130,"time_min":120,"conc_pct":3,"ks":6.74,"lab":[64.47,31.16,52.33],"confidence":"medium (K/S 6.74 vs 6.47 in two tables)"},
+{"source_url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC9130219","dye":"same","substrate":"polypropylene fabric","medium":"water","temp_c":130,"time_min":120,"conc_pct":3,"ks":4.0,"lab":[60.21,26.5,48.06],"confidence":"medium"},
+{"source_url":"https://www.mdpi.com/2073-4360/16/4/453","dye":"5a (yellow disperse)","substrate":"polyester","temp_c":100,"time_min":60,"conc_pct":2,"ks":12.21,"lab":[84.81,-14.26,52.16],"confidence":"medium"},
+{"source_url":"https://www.mdpi.com/2073-4360/16/4/453","dye":"5b (yellow disperse)","substrate":"polyester","temp_c":100,"time_min":60,"conc_pct":2,"ks":8.97,"lab":[78.08,-0.21,51.2],"confidence":"medium"},
+{"source_url":"https://www.mdpi.com/2073-4360/16/4/453","dye":"5a","substrate":"polyester","temp_c":130,"time_min":60,"conc_pct":2,"ks":17.59,"lab":[77.22,-20.37,53.94],"confidence":"medium"},
+{"source_url":"https://www.mdpi.com/2073-4360/16/4/453","dye":"5b","substrate":"polyester","temp_c":130,"time_min":60,"conc_pct":2,"ks":16.69,"lab":[67.58,9.29,61.34],"confidence":"medium"}
+]}
