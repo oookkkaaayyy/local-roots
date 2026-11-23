@@ -492,3 +492,8 @@ html .lr .event-meta{overflow-wrap:anywhere;min-width:0}
 html .lr h2{overflow-wrap:anywhere;min-width:0}
 html .lr .event-resource-links a,html .lr .event-actions a,html .lr .event-actions button,html .lr .event-card .button,html .lr .event-card button,html .lr details>summary{min-height:44px!important;display:inline-flex;align-items:center;box-sizing:border-box}
 html .lr .event-resource-links{display:flex;flex-wrap:wrap;gap:8px}
+html .lr small,html .lr .weather-flag,html .lr .weather-page small{font-size:max(.7rem,11px)}
+html .lr .dug-nav button,html .lr .dug-main button{z-index:3}
+html .lr .dug-strip{justify-content:safe center}
+html .lr .dug-controls{position:relative;z-index:3}
+html .lr .dug-controls button{position:relative;z-index:3}
