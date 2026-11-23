@@ -99,7 +99,12 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
   const ev=DE.predict({baseHex:champ,family:"champion",items:it(["iDye Poly Blue",1],["Crimson",1])}).evidence;ok(ev.includes("translucent multi-dye"),"evidence flag for Champion two-dye");
 }
 { // fluorescent emission priors: pink/red dyes must not emit at the violet end; UV365 pink glows warm, blue glows blue
-  for(const n of["Hot Pink UV Blast","Flo Red UV Blast","Fluorescent Pink","Neon Cerise Pink"])ok(DE.CAT[n].em[0]>=590,"emission band of "+n+" "+DE.CAT[n].em[0]);
-  ok(DE.CAT["Blue UV Blast"].em[0]<490&&Ls(DE.uv365({baseHex:star,family:"star",items:it(["Blue UV Blast",1])}))>20,"blue UV Blast glows blue under UV365");
+  for(const n of["Hot Pink UV Blast","Flo Red UV Blast","Fluorescent Pink","Neon Cerise Pink"])ok((DE.CAT[n].uvem||DE.CAT[n].em)[0]>=590,"UV emission band of "+n+" "+(DE.CAT[n].uvem||DE.CAT[n].em)[0]);
+  ok((DE.CAT["Blue UV Blast"].uvem||DE.CAT["Blue UV Blast"].em)[0]<490&&Ls(DE.uv365({baseHex:star,family:"star",items:it(["Blue UV Blast",1])}))>20,"blue UV Blast glows blue under UV365");
+}
+{ // practitioner-rule flags
+  const e1=DE.predict({baseHex:star,plastic:"dx",items:it(["iDye Poly Blue",1])}).evidence,e2=DE.predict({baseHex:"#2B2B2E",family:"star",items:it(["iDye Poly Blue",1])}).evidence,e3=DE.predict({baseHex:star,family:"star",items:it(["Onyx",1])}).evidence;
+  ok(e1.includes("low-uptake plastic")&&e2.includes("dark base")&&e3.includes("black dye hue varies"),"forum-rule evidence flags "+[e1,e2,e3].join("|"));
+  const {evaluate}=await import("./eval_dataset.mjs"),R=evaluate();ok(R.champRimBase.median<R.champRimNoModel.median-1,"Champion rim model beats plate-as-rim on 330 photos "+R.champRimBase.median+" vs "+R.champRimNoModel.median);
 }
 console.log(`tests: ${pass} passed, ${fail} failed`);process.exit(fail?1:0);
