@@ -53,3 +53,22 @@ Changes
 Final metrics (original engine at 4d6f7f47 to now): films mean 0.37 to 0.37; Champion anchors mean 6.15 to 6.09; image coverage mean/median/p95 3.02/2.64/6.45 to 2.99/2.64/6.31; UV365 hue classes 4/8 to 8/8; direction cases 17/18 to 18/18.
 
 Not done: leave-one-source-out cross-validation (the only quantitative dyed sources are the 6 films and 6 anchors from one owner disc, and the 97 factory-dyed photo rows have no recipe); per-plastic N_sat fit (no dye-on-plastic recipe data to fit it); base-color replacement table per plastic (retail photo exposure is not normalized; absolute lightness unreliable, so photo_base_colors.csv is validation data only; the Glow default base has r:g:b ratios inside the spread of the 8 Glow Champion photo rows).
+
+## Update 4: blending-model cross-validation on recipe-to-swatch data
+Data: `research/dataset/mixing_rows.json` (890 rows; derived numbers only; `MIXING_README.md` has caveats). Rit swatches are flat digital fills (exact colors but renderings), cup assumed 48 tsp, Procion photos noisy, wool ramps noisy. Scripts: `scripts/fit_mixing.py` (5-fold CV), `fit_mixing_lodo.py` (leave-one-dye-out), `fit_ramps.py`. Each model fits per-dye absorbance (7-knot smooth spectrum) plus one saturation constant per class by least squares in Lab; dE2000 on held-out rows.
+
+| model | polyester DyeMore (n=194, 14 dyes) mean / median | cotton Rit (n=529, 48 dyes) | Procion (n=77, noisy) | leave-one-dye-out polyester (n=330) |
+|---|---|---|---|---|
+| KM single-constant additive K/S | 5.74 / 4.97 | 5.64 / 4.63 | 15.25 | 9.26 |
+| KM + competitive Langmuir uptake | 5.84 / 4.93 | 5.64 / 4.64 | 11.76 | n/a |
+| Beer-Lambert additive absorbance | 8.10 / 7.41 | 8.17 / 6.48 | 16.13 | 18.66 |
+| spectral.js-style weighted geometric | 7.51 / 6.60 | 6.91 / 5.51 | 12.44 | 16.90 |
+| per-channel RGB subtractive | 8.54 / 7.87 | 8.22 / 6.83 | 15.12 | 15.19 |
+| linear RGB average | 9.91 / 9.10 | 8.18 / 7.05 | 17.35 | n/a |
+Binary and ternary classes behave alike (polyester KM 5.37 binary, 5.91 ternary). Winner: Kubelka-Munk additive K/S (about 2.4 dE2000 better than Beer-Lambert on scattering substrates). The engine's opaque (Star) path already adds dye K/S to the base K/S, so the blend law is confirmed rather than changed; a test pins this. Competitive uptake is neutral (so the Langmuir competition term is kept but not evidence-backed). Procion results are too noisy to rank. Leave-one-brand-out is not possible: brands share no dye identities.
+
+Concentration response (11 Osborn acid-dye ramps, 0.25 to 3 percent owf): K/S grows sub-linearly, power exponent median 0.75 (IQR 0.53 to 1.09); relative MSE power 0.125, exp 0.134, Langmuir 0.136, linear 0.183. The engine's Langmuir dye strength curve has an effective exponent of about 0.66 over a 4x range, consistent with the ramps; no change. The UI has no strength slider (owner decision).
+
+Not applicable: replacing estimated catalog dyes with fitted spectra. None of the Rit, Procion, Jacquard or CHT dyes in the data is chemically the same product as a studio catalog dye (iDye Poly, ProChem, UV Blast), so the 'estimated dye' flags stay. Per-plastic saturation (TOTCAP) stays global: no dye-on-plastic recipe data exists to fit it.
+
+UV Blast Green daylight look: unchanged (yellow-green on white Star, about #8DE82F, consistent with the one measured Champion anchor and with forum statements that worm-dye greens read as chartreuse or fluorescent green). No public swatch of that dye on a known plastic was found.

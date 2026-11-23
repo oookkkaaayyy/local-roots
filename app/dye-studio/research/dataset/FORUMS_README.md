@@ -20,3 +20,6 @@ Dgcoursereview threads (different-plastics-test-dyed.140438, success-champion-my
 - Reddit direct (old.reddit.com) refused by Chrome safety restrictions; only third-party mirrors read.
 - YouTube transcripts/descriptions not opened (search listings only).
 - Dyers Guild formulas PDF and chart contents not retrievable; dgcr/DGN/UDisc forum threads beyond those listed, Facebook, Innova/Discraft/MVP/Dynamic/Latitude pages, Tulip, Sharpie, sublimation/hydro dip not covered.
+
+## Round 2 update
+Removed vendor-claim, YouTube-title-only and N/A placeholder rows; added PDGA archive threads (t-19940, t-20383, t-17532, t-18885), Rit DyeMore manufacturer pages (stovetop ~180F, 30 min, polyester 30 min minimum), airbrush/skittlebomb/Pylam dgcr threads, Fort Hays disc dyeing page. Total now 120 rows. Many dgcr noobie-thread pages (5,6,13,14) returned fetch errors; goto/post 3613169 robots-blocked. Reddit not accessed beyond mirrors (browser block respected). 250 target not reached: most sources give process but not labelled outcomes.
