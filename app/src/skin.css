@@ -519,4 +519,4 @@ html .lr .event-view-switch .button,html .lr .event-view-switch button{white-spa
 html .lr .event-view-switch .button{font-size:.82rem!important;padding-left:4px!important;padding-right:4px!important;overflow-wrap:anywhere}
 html .lr .event-detail-heading,html .lr .event-heading-row{grid-template-columns:minmax(0,1fr)!important;min-width:0}
 html .lr .event-detail-heading>*,html .lr .event-heading-row>*{min-width:0;max-width:100%}
-html .lr .event-detail-heading h1,html .lr .event-detail-card h1{overflow-wrap:anywhere;min-width:0;max-width:100%}
+html .lr .event-detail-heading h1,html .lr .event-detail-card h1{overflow-wrap:break-word;hyphens:auto;min-width:0;max-width:100%;font-size:1.45rem;line-height:1.2}
