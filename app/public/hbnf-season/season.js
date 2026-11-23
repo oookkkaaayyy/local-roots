@@ -81,7 +81,15 @@
   var rows=Object.keys(wins).map(function(n){return{n:n,w:wins[n],key:String(wins[n])}}).sort(function(a,b){return b.w-a.w||a.n.localeCompare(b.n)});
   return rank(rows);
  }
- var api={build:build,awards:awards,glowWins:glowWins,fmt:fmt,fmt1:fmt1,rank:rank,played:played,total:total,weekRel:weekRel,BASE:BASE,KEY:KEY};
+ // Finals: top 8 qualified by season average to par (all tied at 8th), one round on the first Tuesday after New Year.
+ function finalsDate(year){var d=new Date(Date.UTC(Number(year)+1,0,2));while(d.getUTCDay()!==2)d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
+ function finals(b){
+  var q=b.rows.filter(function(r){return r.q});
+  var cut=q.length>8?q[7].avg:null;
+  var field=q.filter(function(r,i){return i<8||(cut!==null&&r.avg===cut)});
+  return{date:finalsDate(SEASON),field:field};
+ }
+ var api={finals:finals,finalsDate:finalsDate,build:build,awards:awards,glowWins:glowWins,fmt:fmt,fmt1:fmt1,rank:rank,played:played,total:total,weekRel:weekRel,BASE:BASE,KEY:KEY};
  if(typeof module!=='undefined'&&module.exports){module.exports=api;return}
  root.HBNFSeason=api;
 })(typeof window!=='undefined'?window:globalThis);

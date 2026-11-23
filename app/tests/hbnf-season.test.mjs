@@ -42,3 +42,13 @@ test('page is explanation free, read only and uses external scripts', () => {
   assert.doesNotMatch(readFileSync(new URL('../public/hbnf-season/page.js', import.meta.url), 'utf8'), /method:\s*['"](POST|PUT|PATCH|DELETE)/i);
   assert.match(html, /Cabin/);
 });
+
+test('finals field is the top 8 qualified and the date is the first Tuesday after New Year', () => {
+  assert.equal(S.finalsDate('2026'), '2027-01-05');
+  assert.equal(S.finalsDate('2027'), '2028-01-04');
+  const h = {};
+  for (let d = 1; d <= 3; d++) h['2026-02-0' + d] = 'ABCDEFGHIJ'.split('').map((n, i) => ({ partners: [n], rel: -10 + i, raw: 50 }));
+  const f = S.finals(S.build({ activeWeek: '', trophyHistory: h, weeks: {} }));
+  assert.deepEqual(f.field.map((r) => r.n), ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
+  assert.equal(f.date, '2027-01-05');
+});
