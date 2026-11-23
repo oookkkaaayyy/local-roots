@@ -1,0 +1,12 @@
+{
+ "status": "UNVERIFIED PRIORS. Values are approximate textbook/handbook figures recalled, not read from a fetched source this session (a web search for quantitative lambda-max tables returned no readable page). Do not use to refit the catalog until each row is checked against a cited source.",
+ "dyes": [
+  {"ci":"Disperse Red 60","class":"anthraquinone","lmax_nm":"~515-530","used_as":"iDye Poly / ProSperse reds (assumed)"},
+  {"ci":"Disperse Blue 56","class":"anthraquinone","lmax_nm":"~590-620","used_as":"blues (assumed)"},
+  {"ci":"Disperse Blue 79","class":"azo","lmax_nm":"~590-610","used_as":"navy/blues (assumed)"},
+  {"ci":"Disperse Yellow 54","class":"quinophthalone","lmax_nm":"~440-450","fluorescent":"weak"},
+  {"ci":"Disperse Orange 25","class":"azo","lmax_nm":"~450-470"},
+  {"ci":"Rhodamine 6G / B (fluorescent red-orange model)","lmax_nm":"530 / 543-555","em_nm":"~555-590","source":"https://en.wikipedia.org/wiki/Rhodamine_6G"},
+  {"polymer":"PETG / polyolefin / TPU","n":"~1.5 (used as Saunderson K2=.6 already in engine)"}
+ ]
+}
