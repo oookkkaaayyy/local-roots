@@ -553,7 +553,7 @@
   {
    "dye": "Hot Pink UV Blast",
    "hue": [
-    330,
+    315,
     30
    ],
    "src": "jaic-fluor"
@@ -561,7 +561,7 @@
   {
    "dye": "Fluorescent Pink",
    "hue": [
-    330,
+    315,
     40
    ],
    "src": "jaic-fluor"
