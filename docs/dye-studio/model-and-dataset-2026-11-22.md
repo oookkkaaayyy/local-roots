@@ -81,3 +81,12 @@ Tried and rejected (no gain, recorded so they are not retried):
 Applied: plastic table expanded from 9 to 41 plastics from the r/discdyeing wiki rating table (the full table, including Opto, Lucid, Neutron, K1, VIP, Tournament, C-Line, S-Line, Z FLX, Titanium; 1 for Retro, K3, Electron, Prodigy 300/350, D-Line, Pro-D, Megasoft), with translucent grades in the Champion family. This affects `DE.predict({plastic})` only; the Dye lab UI still offers Star, Champion, Glow.
 Sources checked with no quantitative yield: reddit mirror listing (18 posts, no stated hex), UDisc and Prodigy guides, Rit official PDF (same formulas), Jaffer AATCC dye names (no spectra), YouTube search listings (titles only). Blocked: web.archive.org, ritdye.com pages. Not parsed: Dianix XF2 and Bemacron SEL/SEB cards (flat swatch PDFs not yet extracted).
 Disc-tool metrics are unchanged by this update: films 0.37, anchors 6.09, UV365 8/8, direction 18/18.
+
+## Update 6: physics experiments on the dyed Champion rim (all rejected, engine unchanged)
+Baseline (orange rim 13.6, green rim 9.6, anchors mean 6.09). The rim residual: observed Blaze Orange rim #57090D (G 9) vs model #6F2D07 (G 45). Fluorescence adds about 13 R to the rim.
+- Rim transmission weight w (0.3 to 1) and rim darkening (0.12 to 0.3): orange rim improves to 5.6 to 8, green rim worsens to 14 to 19 (green needs brighter, orange darker). Net no gain.
+- Extra absorption band on the orange dye at 510 to 570 nm: kills rim green (rim 7.5 with a 540 nm band, amplitude 10) but breaks the measured film color (film dE 0.0 to over 3). Spectrum alone cannot satisfy film and rim; the conflict is in the process model, not the dye.
+- Path-dependent fluorescence attenuation (exponent 1 to 4) and rim fluorescence weight 0.3 to 1: anchors 6.09 to 7.2 to 12.4. Worse.
+- Diffusion-skin saturation of dye path (1-exp(-path/d), d 0.25 to 1000 mm-units, kT and gT rescaled): 6.05 to 6.20 vs 6.09. No gain, not shipped.
+Metrics unchanged: films 0.37, anchors 6.09, undyed rim median 7.35, UV 8/8, direction 18/18.
+Literature spectral library: a search for quantitative C.I. disperse dye lambda-max tables returned nothing readable; research/dataset/../physics/spectral_library.json holds clearly flagged unverified priors only. Needs: measured photos of the same dyes on white plastic (issue 62) to separate spectrum from process.
