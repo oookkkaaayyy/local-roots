@@ -26,7 +26,7 @@ export function evaluate(){
   for(const n of Object.keys(A.colors))for(const z of["plate","shoulder","rim"])e.push(DE.dEhex(pred(A.surfaceBase,"champion",[{name:n,s:1}],z,h.opticalPathAt(Z[z]),{trans:A.transmissionBase}).hex,A.colors[n][z]));
   R.anchors=stats(e)}
  {const rows=fs.readFileSync(new URL("../research/dataset/photo_base_colors.csv",import.meta.url),"utf8").trim().split("\n").slice(1).map(l=>l.split(",")),CH=new Set(["Champion","Fuzion","Halo Champion","Proto Glow Champion","Champion Glow","Eclipse","Eclipse 2.0","Glow","Lucid","Opto","VIP"]);const hx=a=>"#"+a.map(v=>(+v).toString(16).padStart(2,"0")).join("").toUpperCase(),e=[],e0=[];
-  for(const r of rows){if(!CH.has(r[0])||r[2]==="dyed_factory"||r[3]==="low")continue;const pl=hx(r.slice(4,7)),rim=hx(r.slice(7,10));const pe=Math.pow(h.opticalPathAt(.93)/.74,DE.PRM.champion.qb||0);e.push(DE.dEhex(h.SP.specHex(h.SP.spec(pl).map(v=>Math.pow(Math.max(v,1e-3),pe))),rim));e0.push(DE.dEhex(pl,rim))}
+  for(const r of rows){if(!CH.has(r[0])||r[2]==="dyed_factory"||r[3]==="low")continue;const pl=hx(r.slice(4,7)),rim=hx(r.slice(7,10));const pe=Math.pow(h.opticalPathAt(.93)/.74,DE.PRM.champion.qb==='tie'?DE.PRM.champion.pw:(DE.PRM.champion.qb||0));e.push(DE.dEhex(h.SP.specHex(h.SP.spec(pl).map(v=>Math.pow(Math.max(v,1e-3),pe))),rim));e0.push(DE.dEhex(pl,rim))}
   R.champRimBase=stats(e);R.champRimNoModel=stats(e0)}
  R.photoSamples=stats(OBS.photoSamples.map(p=>DE.dEhex(pred(p.base,p.family,[{name:p.dye,s:p.s}]).hex,p.observed)));
  // direction

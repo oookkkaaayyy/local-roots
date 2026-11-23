@@ -8,7 +8,7 @@ const DE=(()=>{
  const gau=(l,mu,s)=>{const t=(l-mu)/s;return Math.exp(-.5*t*t)};
  const CAT={};            // name -> {b:[[mu,sig,a]...],phi,em:[mu,sig],aff,sd}
  const PRM={tq:3,             // process parameters per optical family, fitted by scripts/fit_engine.mjs
-  star:{Sx:1.6,cmax:1.0,rim:.08,tr:0},
+  star:{Sx:1.0,cmax:1.0,rim:.08,tr:0},
   champion:{qb:.52,bt:.38,bf:.08,Sx:.35,cmax:1.0,rim:.12,tr:1,kS:.55,kT:1.5,pw:.75,gT:1.38,w:{outdoor:{plate:1,shoulder:.75,rim:.5},surface:{plate:.09,shoulder:.04,rim:.04},backlit:{plate:1,shoulder:.95,rim:.8}}}
  };
  // Plastic table. fam = optical family; rating = r/discdyeing wiki dye-uptake scale 1-5 (null = unrated, assumed like family);
@@ -23,7 +23,7 @@ const DE=(()=>{
  // Uptake. Dyes in ONE bath (a blend) compete for the same sites (Langmuir, affinity-weighted). Separate baths
  // (layers, item.b) do not displace each other, so their dye loads add and absorbances add in the film (order is
  // irrelevant); a soft total cap (TOTCAP) stands in for the plastic running out of sites altogether.
- const TOTCAP=3.2,LAM=.4,VEIL=.008;
+ const TOTCAP=3.2,LAM=.2,VEIL=.008;
  function conc(items){
   const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))],bt=[];
   for(const b of bs){
@@ -83,7 +83,7 @@ const DE=(()=>{
  function translucent(baseHex,transHex,items,fam,scene,zone,path,opt){
   const P=PRM.champion,tau=tauOf(items,opt?.mult);
   const Rs=toExt(kmLayer(toInt(baseSpec(baseHex)),tau.map(v=>v*P.kS),P.Sx));
-  const pe=Math.pow(Math.max(path,.2)/.74,P.qb||0),T0=transHex?baseSpec(transHex).map(v=>Math.pow(v,pe)):baseSpec(baseHex).map(v=>Math.pow(Math.max(0,v-P.bf)/(1-P.bf),P.bt*pe)),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*P.gT));
+  const pe=Math.pow(Math.max(path,.2)/.74,P.qb==="tie"?P.pw:(P.qb||0)),T0=transHex?baseSpec(transHex).map(v=>Math.pow(v,pe)):baseSpec(baseHex).map(v=>Math.pow(Math.max(0,v-P.bf)/(1-P.bf),P.bt*pe)),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*P.gT));
   const w=(P.w[scene]||P.w.outdoor)[zone];
   let R=Rs.map((v,i)=>v*(1-w)+T[i]*w);
   if(!opt?.noFluor){const f=fluor(items,tau.map(v=>v*P.kS),{cscale:P.kS*P.kT*Math.pow(path,P.pw)});R=R.map((v,i)=>v+f[i]*(scene==="backlit"?.3:1))}
@@ -164,7 +164,7 @@ const DE=(()=>{
   const items=merge(spec.items),tau=tauOf(items,1),c=conc(items),rgb=[0,0,0];
   items.forEach((it,i)=>{const d=CAT[it.name];if(!d||!d.phi)return;
    const sh=1-Math.exp(-2*c[i]*(d.uvAbs??1)),em=new Array(N).fill(0);
-   for(let j=0;j<N;j++)em[j]=gau(lam[j],(d.uvem||d.em)[0],(d.uvem||d.em)[1]);
+   for(let j=0;j<N;j++)em[j]=gau(lam[j],(d.uvem||d.em)[0],(d.uvem||d.em)[1])+(d.uvem2?d.uvem2[2]*gau(lam[j],d.uvem2[0],d.uvem2[1]):0);
    // emission re-absorbed by dyes present
    for(let j=0;j<N;j++)em[j]*=Math.exp(-tau[j]*.55);
    const l=SP.toLin(em.map(v=>v*(d.uvphi??d.phi)*sh*2.4));for(let k=0;k<3;k++)rgb[k]+=l[k];});

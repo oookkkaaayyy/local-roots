@@ -16,8 +16,10 @@ const names={};for(const d of h.dyes){const n=d[1];if(d[3]){names[n]={clear:true
 const alias=n=>n.replace(/^iDye Poly /,"").replace(/^ProChem /,"");
 function filmTarget(n,hex){
  const t=h.opaqueTargets[n]||h.opaqueTargets[alias(n)];if(t)return{hex:t,measured:true};
- const l=lab(hex);const L=l[0]>25?l[0]*.9:l[0];
- const a=l[1],b=l[2];const lin=labToLinHex([L,a,b]);return{hex:lin,measured:false};
+ // swatch -> film map learned from the 6 measured dyes: L* x0.92, chroma x0.93 (x0.91 for C>40), hue -4 deg (-8 for light yellow-greens)
+ const l=lab(hex),C=Math.hypot(l[1],l[2]),H=Math.atan2(l[2],l[1])-(C>20?(l[0]>70?8:4)*Math.PI/180:0);
+ const L=l[0]>25?l[0]*.92:l[0],Cn=C*(C>40?.91:.97);
+ return{hex:labToLinHex([L,Cn*Math.cos(H),Cn*Math.sin(H)]),measured:false};
 }
 function labToLinHex([L,a,b]){const fy=(L+16)/116,fx=fy+a/500,fz=fy-b/200,f=t=>t**3>216/24389?t**3:(116*t-16)/(24389/27);
  const X=f(fx)*.95047,Y=L>8?fy**3:L/(24389/27),Z=f(fz)*1.08883;
@@ -51,10 +53,10 @@ function fitDye(n,info){
  let em=null;
  let uvphi=0;
  if(m.fluor>0&&m.uvColor){const hh=hueOfHex(m.uvColor),cls=FP.classes[hh<15||hh>=340?"red":hh<45?"orange":hh<80?"yellow":hh<100?"lime":hh<170?"green":hh<200?"cyan":hh<250?"blue":hh<300?"purple":"pink"];em=cls.em.slice();uvphi=+(cls.uvphi*Math.min(1,.5+m.fluor/2)).toFixed(3)}
- {let hd=1e9;if(em&&m.uvColor){const ul=lab(m.uvColor);const e=Math.abs(Math.atan2(ul[2],ul[1])-Math.atan2(tl[2],tl[1]));hd=Math.min(e,2*Math.PI-e)*57.3}MUMAX=em&&hd<40&&em[0]>=525?em[0]-35:720;if(!(em&&hd<40&&em[0]>=525))phi0=Math.min(.7,(m.fluor||0)*.08);}
+ {let hd=1e9;if(em&&m.uvColor){const ul=lab(m.uvColor);const e=Math.abs(Math.atan2(ul[2],ul[1])-Math.atan2(tl[2],tl[1]));hd=Math.min(e,2*Math.PI-e)*57.3}MUMAX=720;if(!(em&&hd<40&&em[0]>=525))phi0=Math.min(.7,(m.fluor||0)*.08);}
  const evalP=(p,phi)=>{const q=clampP(p);DE.CAT[n]={b:toBands(q),phi:phi,em:em||[520,22],aff:1,sd:.15};
   const Rr=DE.opaque?null:null;
-  const items=[{name:n,s:1}];const o=DE.render({baseHex:white,family:"star",items},{});let pen=0;if(em&&MUMAX<720){const A=DE.absorb(DE.CAT[n],1),ix=Math.round((em[0]-400)/10);pen=2*Math.max(0,A[Math.min(30,Math.max(0,ix))]-1.0)}
+  const items=[{name:n,s:1}];const o=DE.render({baseHex:white,family:"star",items},{});let pen=0;if(em&&em[0]>=525){const A=DE.absorb(DE.CAT[n],1),ix=Math.round((em[0]-400)/10);pen=.6*Math.max(0,A[Math.min(30,Math.max(0,ix))]-2.0)}
   let e=pen+(USE_ANCH&&h.hbnfChampionPointAnchors.colors[n]?2.2:1)*DE.de2000(tl,DE.labOfSpec(o))+.004*q.reduce((a,v,i)=>a+(i%3===2?v:0),0);if(USE_ANCH&&h.hbnfChampionPointAnchors.colors[n]){let t=0;for(const z of["plate","shoulder","rim"]){const pr=DE.predict({baseHex:h.hbnfChampionPointAnchors.surfaceBase,transHex:h.hbnfChampionPointAnchors.transmissionBase,family:"champion",scene:"outdoor",zone:z,path:ZP(zoneOf[z]),items},{});t+=DE.de2000(lab2(h.hbnfChampionPointAnchors.colors[n][z]),DE.labOf(pr.lin.map(v=>Math.min(1,Math.max(0,v)))))}e+=t/3*1.2}return e};
  let starts;
  if(neutral){starts=[[450,90,4,550,90,4,650,90,4],[480,80,8,560,90,8,640,90,8]]}
@@ -99,18 +101,18 @@ const nameMap={"UV Blast Green":"UV Blast Green","UV Blast Blaze Orange":"UV Bla
 const ZP=h.opticalPathAt?zr=>h.opticalPathAt(zr,{translucency:78}):zr=>zr;
 const P=DE.PRM.champion;
 function champErr(p,verbose){
- if(p.length>4)DE.PRM.tq=Math.abs(p[4]);P.kS=Math.abs(p[0]);P.kT=Math.abs(p[1]);P.pw=Math.abs(p[2]);P.gT=Math.abs(p[3]);
+ const cl=(v,a,b)=>Math.min(b,Math.max(a,v));P.kS=Math.abs(p[0]);P.kT=Math.abs(p[1]);P.pw=Math.abs(p[2]);P.gT=Math.abs(p[3]);if(p.length>4){P.Sx=cl(Math.abs(p[4]),.03,.6);P.w.outdoor.rim=cl(p[5],.1,1);P.w.outdoor.shoulder=cl(p[6],.1,1);P.rim=cl(p[7],0,.4)}
  let s=0,n=0;const rows=[];
  for(const dn of Object.keys(nameMap))for(const z of["plate","shoulder","rim"]){
   const items=[{name:dn,s:1}],pr=DE.predict({baseHex:base,transHex:trans,family:"champion",scene:"outdoor",zone:z,path:Math.pow(ZP(zoneOf[z]),1),items},{});
   const e=DE.de2000(lab2(A.colors[dn][z]),DE.labOf(pr.lin.map(v=>Math.min(1,Math.max(0,v)))));s+=e;n++;if(verbose)rows.push([dn,z,A.colors[dn][z],pr.hex,e.toFixed(1)]);}
  if(verbose)rows.forEach(r=>console.log(r.join(" ")));return s/n;
 }
-let r0=nm(champErr,[P.kS,P.kT,P.pw,P.gT],[.15,.4,.15,.2],300);
-for(let round=0;round<3;round++){USE_ANCH=round>=1;for(const k of Object.keys(DE.CAT))delete DE.CAT[k];results=fitFilms();const q=nm(x=>champErr(x),r0.x.slice(0,4),[.1,.3,.1,.15],250);r0=q}
+let r0=nm(champErr,[P.kS,P.kT,P.pw,P.gT,.2,.5,.75,.12],[.15,.4,.15,.2,.1,.1,.1,.03],500);
+for(let round=0;round<3;round++){USE_ANCH=round>=1;for(const k of Object.keys(DE.CAT))delete DE.CAT[k];results=fitFilms();const q=nm(x=>champErr(x),r0.x,[.1,.3,.1,.15,.05,.08,.08,.03],400);r0=q}
 console.log("champion anchors mean dE2000",r0.f.toFixed(2));champErr(r0.x,true);
 const AL={"Green UV Blast":"UV Blast Green","Flo Red UV Blast":"UV Blast Red","Flo Orange / Blaze Orange UV":"UV Blast Blaze Orange","Clear UV Blast":"UV Blast Clear","Blue":"iDye Poly Blue","Crimson":"iDye Poly Crimson","Onyx":"iDye Poly Onyx"};
 for(const [a,b] of Object.entries(AL))if(DE.CAT[b])DE.CAT[a]=DE.CAT[b];
 for(const k of Object.keys(DE.CAT)){const pk="ProChem "+k;if(DE.CAT[pk]&&!DE.CAT[k])DE.CAT[k]=DE.CAT[pk]}
-fs.writeFileSync(here("../src/catalog.generated.js"),"/*CATALOG-BEGIN*/\nObject.assign(DE.CAT,"+JSON.stringify(DE.CAT)+");\nObject.assign(DE.PRM.champion,"+JSON.stringify({kS:P.kS,kT:P.kT,pw:P.pw,gT:P.gT})+");\nDE.PRM.tq="+DE.PRM.tq+";\n/*CATALOG-END*/\n");
+fs.writeFileSync(here("../src/catalog.generated.js"),"/*CATALOG-BEGIN*/\nObject.assign(DE.CAT,"+JSON.stringify(DE.CAT)+");\nObject.assign(DE.PRM.champion,"+JSON.stringify({kS:P.kS,kT:P.kT,pw:P.pw,gT:P.gT,Sx:P.Sx,rim:P.rim})+");\nDE.PRM.champion.w.outdoor.rim="+P.w.outdoor.rim+";DE.PRM.champion.w.outdoor.shoulder="+P.w.outdoor.shoulder+";\nDE.PRM.star.Sx="+DE.PRM.star.Sx+";\nDE.PRM.tq="+DE.PRM.tq+";\n/*CATALOG-END*/\n");
 const ds=results.map(r=>r.dE);console.log("films mean dE",(ds.reduce((a,b)=>a+b,0)/ds.length).toFixed(2),"max",Math.max(...ds).toFixed(2));

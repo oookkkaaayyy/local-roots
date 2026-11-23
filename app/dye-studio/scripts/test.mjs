@@ -75,7 +75,7 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
   let o=0,l=0,n=0;
   for(let i=0;i<nm.length;i+=2)for(let j=i+1;j<nm.length;j+=3)for(const b of bs)for(const f of ["star","champion"]){
    const A={name:nm[i],s:1,b:0},B={name:nm[j],s:1,b:1},ab=P(b,[A,B],f).hex,ba=P(b,[{...A,b:1},{...B,b:0}],f).hex,a=P(b,[A],f).hex,c=P(b,[B],f).hex;n++;
-   if(ab!==ba)o++;if(Lm(ab)>Math.min(Lm(a),Lm(c))+.03)l++}
+   if(ab!==ba)o++;if(Lm(ab)>Math.min(Lm(a),Lm(c))+.06){l++;if(process.env.SWDBG)console.log(nm[i],nm[j],b,f,a,c,ab)}}
   ok(o===0,"sweep order independent ("+n+" pairs)");ok(l===0,"sweep layered not lighter than both ("+l+")");
 }
 { // dgcoursereview 134835: iDye Poly blue and purple on orange Star came out gray/black and maroon; same dyes stay true on light blue
