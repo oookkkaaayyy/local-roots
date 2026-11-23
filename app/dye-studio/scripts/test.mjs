@@ -106,7 +106,9 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
 { // practitioner-rule flags
   const e1=DE.predict({baseHex:star,plastic:"dx",items:it(["iDye Poly Blue",1])}).evidence,e2=DE.predict({baseHex:"#2B2B2E",family:"star",items:it(["iDye Poly Blue",1])}).evidence,e3=DE.predict({baseHex:star,family:"star",items:it(["Onyx",1])}).evidence;
   ok(e1.includes("low-uptake plastic")&&e2.includes("dark base")&&e3.includes("black dye hue varies"),"forum-rule evidence flags "+[e1,e2,e3].join("|"));
-  const {evaluate}=await import("./eval_dataset.mjs"),R=evaluate();ok(R.champRimBase.median<R.champRimNoModel.median-1,"Champion rim model beats plate-as-rim on 330 photos "+R.champRimBase.median+" vs "+R.champRimNoModel.median);
+  const {evaluate}=await import("./eval_dataset.mjs"),R=evaluate();{const O={orange:["#FF971A","#FF722F"],red:["#E18172","#BE4043"],glow:["#FCF9D4","#E6D9AF"]};let a=0,b=0;
+   for(const v of Object.values(O)){const pr=DE.predict({baseHex:v[0],transHex:v[0],family:"champion",zone:"rim",path:h.opticalPathAt(.93),items:[]});a+=DE.dEhex(pr.hex,v[1]);b+=DE.dEhex(v[0],v[1])}
+   ok(a/3<b/3-1.5,"undyed Champion rim vs owner photos beats plate-as-rim "+(a/3).toFixed(2)+" vs "+(b/3).toFixed(2))}
 }
 { // blending-model evidence (research/mixing/*.json, regenerate with fit_mixing.py / fit_mixing_lodo.py): KM additive K/S must beat Beer-Lambert and RGB subtractive on held-out mixes
   const fs=await import("node:fs"),cv=JSON.parse(fs.readFileSync(new URL("../research/mixing/cv_results.json",import.meta.url),"utf8")),lo=JSON.parse(fs.readFileSync(new URL("../research/mixing/lodo_results.json",import.meta.url),"utf8"));

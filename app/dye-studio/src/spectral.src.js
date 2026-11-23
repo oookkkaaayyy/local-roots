@@ -11,11 +11,19 @@ const SP=(()=>{
   .821*g(l,568.8,46.9,40.5)+.286*g(l,530.9,16.3,31.1),
   1.217*g(l,437.0,11.8,36.0)+.681*g(l,459.0,26.0,13.8)]);
  const d65=[82.75,91.49,93.43,86.68,104.86,117.01,117.81,114.86,115.92,108.81,109.35,107.80,104.79,107.69,104.41,104.05,100.00,96.33,95.79,88.69,90.01,89.60,87.70,83.29,83.70,80.03,80.21,82.28,78.28,69.72,71.61];
- let kn=0;for(let i=0;i<31;i++)kn+=cmf[i][1]*d65[i];
+ // illuminants (400-700 nm, 10 nm, normalized to 100 at 560 nm). D65 tabulated; A = CIE standard incandescent (Planck 2848 K);
+ // LED = CIE 15:2018 illuminant LED-B3 (3045 K phosphor-converted white LED, via colour-science 0.4.7 SDS_ILLUMINANTS), resampled to 10 nm and normalized at 560 nm; used for indoor scenes.
+ const gs=(l,mu,sg)=>Math.exp(-.5*((l-mu)/sg)**2);
+ const planck=T=>l=>Math.pow(560/l,5)*(Math.exp(1.435e7/(T*560))-1)/(Math.exp(1.435e7/(T*l))-1)*100;
+ const ILL={D65:d65,A:lam.map(planck(2848)),LED:[0.33,1.66,7.96,28.12,80.31,125.13,65.65,39.92,34.28,44.89,59.28,69.76,76.33,82.03,88.26,94.56,100.0,104.24,107.29,109.42,109.42,106.1,99.2,89.39,77.65,65.32,53.32,42.57,33.29,25.73,19.56]};
+ let illName="D65",E=d65,kn=0,kn65=0;for(let i=0;i<31;i++)kn65+=cmf[i][1]*d65[i];kn=kn65;
  const M=[[3.2406,-1.5372,-.4986],[-.9689,1.8758,.0415],[.0557,-.2040,1.0570]];
- const rawRgb=s=>{let X=0,Y=0,Z=0;for(let i=0;i<31;i++){const w=s[i]*d65[i];X+=w*cmf[i][0];Y+=w*cmf[i][1];Z+=w*cmf[i][2]}X/=kn;Y/=kn;Z/=kn;return M.map(r=>r[0]*X+r[1]*Y+r[2]*Z)};
- const wp=rawRgb(new Array(31).fill(1));
- const toLin=s=>{const r=rawRgb(s);return[r[0]/wp[0],r[1]/wp[1],r[2]/wp[2]]};
+ const rawWith=(s,Ei,k)=>{let X=0,Y=0,Z=0;for(let i=0;i<31;i++){const w=s[i]*Ei[i];X+=w*cmf[i][0];Y+=w*cmf[i][1];Z+=w*cmf[i][2]}X/=k;Y/=k;Z/=k;return M.map(r=>r[0]*X+r[1]*Y+r[2]*Z)};
+ const ones=new Array(31).fill(1),wp65=rawWith(ones,d65,kn65);let wp=wp65;
+ // sRGB<->spectrum lifting is always done under D65; display under another illuminant is white-balanced (camera/eye adapted), so only metamerism and fluorescence excitation change
+ const toLin65=s=>{const r=rawWith(s,d65,kn65);return[r[0]/wp65[0],r[1]/wp65[1],r[2]/wp65[2]]};
+ const toLin=s=>{const r=rawWith(s,E,kn);return[r[0]/wp[0],r[1]/wp[1],r[2]/wp[2]]};
+ function setIllum(n){if(!ILL[n])n="D65";illName=n;E=ILL[n];kn=0;for(let i=0;i<31;i++)kn+=cmf[i][1]*E[i];wp=rawWith(ones,E,kn)}
  const sig=x=>.5+x/(2*Math.sqrt(1+x*x));
  const specFromC=c=>lam.map(l=>{const u=(l-400)/300;return sig(c[0]*u*u+c[1]*u+c[2])});
  const solve3=(A,b)=>{const d=A[0][0]*(A[1][1]*A[2][2]-A[1][2]*A[2][1])-A[0][1]*(A[1][0]*A[2][2]-A[1][2]*A[2][0])+A[0][2]*(A[1][0]*A[2][1]-A[1][1]*A[2][0]);if(Math.abs(d)<1e-18)return null;
@@ -27,7 +35,7 @@ const SP=(()=>{
   const target=t.map(v=>Math.min(.995,Math.max(.0015,v)));
   const gray=(target[0]+target[1]+target[2])/3;
   let c=[0,0,Math.log(gray/(1-gray))*0+ (gray-.5)*4];
-  const ev=(c)=>toLin(specFromC(c));
+  const ev=(c)=>toLin65(specFromC(c));
   for(let step=1;step<=10;step++){
    const a=step/10,tg=[0,1,2].map(i=>gray+(target[i]-gray)*a);
    for(let it=0;it<30;it++){
@@ -55,7 +63,7 @@ const SP=(()=>{
   return t.map((v,i)=>Math.max(0,-.5*Math.log(Math.max(.004,Math.min(1.5,v/w[i])))))
  }
  const apply=(s,A,k)=>s.map((v,i)=>v*Math.exp(-2*A[i]*k));
- return{lam,spec,specHex,toLin,linHex,dyeAbsorbance,apply,hexLin,d65w:d65}
+ return{lam,spec,specHex,toLin,toLin65,linHex,dyeAbsorbance,apply,hexLin,get d65w(){return E},ILL,setIllum,get illum(){return illName}}
 })();
 
 SP.REF_WHITE="#F4F2E8";

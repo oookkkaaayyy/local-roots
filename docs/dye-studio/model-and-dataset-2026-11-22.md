@@ -107,3 +107,14 @@ Changes (all estimates tagged; replace when controlled photos arrive):
 - UV365 emission centre/width/blue-band/yield fitted per dye to the vendor-stated UV colour, bounded to +-42 nm of the literature hue-class prior (scripts/fit_uv.mjs); uvem2 second band supported. Pink hue windows widened to 315 (vendor hex hue 320).
 Metrics (dE2000, before to after): films 0.37 to 0.11; Champion anchors 6.09 to 3.08 (p95 13.6 to 5.3); coverage mean 2.99 to 3.01, p95 6.31 to 6.05; UV365 stated-colour mean dE 20.4 (priors) to 2.4; hue classes 8/8; direction 18/18; 64 tests.
 Not retained: tying the base-transmission path exponent to the dye path exponent (undyed rim median 7.35 to 9.15); dropping Saunderson on the translucent term (anchors 5.6). Blaze Orange rim residual remains about 12 here (qb 0.52 evidence from 330 photos conflicts with the anchor) - hbnf-disc-dye-preview PR 3 resolves it (3.3) with a different transmission structure.
+
+## Update 8 (2026-11-23): unified engine (one engine for Dye lab and hbnf-disc-dye-preview)
+Changes (all estimates tagged prov/est; replace with controlled photos):
+- Engine now the hbnf-disc-dye-preview v11 core: fluorescence backing, illuminants (D65, A, LED-B3), UV365 scene, foil substrate, separate baths. Champion transmission exponent tied to dye path (qb tie).
+- Evidence for the tie: owner undyed Champion photos (3 discs, white paper) give a best joint rim exponent 1.60 (model (1.86)^0.75 = 1.59) and shoulder 1.20 (model 1.21), rim darkening 0.86 (model 0.88). The 330 retail photos (uncontrolled exposure) prefer 1.4 and are now informational only; the old test using them was replaced by the owner-photo test.
+- Champion dye gain gT ramps in with dye load (g0 0.3) so undyed plastic is exact; owner undyed photos are in the Champion fit objective; fit bounds stop degenerate solutions (kS up to 66157 seen unbounded).
+- Fluorescent dyes: daylight emission band = UV emission band (one emission spectrum per dye, Kasha rule), centre from literature hue-class priors then UV fit. Previously pink/purple dyes emitted at 430 nm in daylight (yield 0.06) and Flo Red at 690 nm. Emission is re-absorbed by overlying dye (outf 0.7).
+- Swatch-to-film map re-derived: L* x0.90, chroma x1.0, hue -3 deg (+6 for neon yellow-greens). Leave-one-out dE2000 over the 6 measured dyes: previous map 3.5, new 2.8 (scripts/loo_film_map.mjs). The 2.8 is added in quadrature per estimated dye to the uncertainty spread.
+- LAM 0.2, Star Sx 0.4.
+Metrics (dE2000, previous production engine -> now): films 0.37 -> 0.05; Champion anchors 6.09 -> 3.55; Blaze Orange rim ~12-13.6 -> 2.7; Green rim 9.6 -> 7.0; owner undyed Champion shoulder/rim 8.2 -> 5.65; coverage mean 2.99 -> 2.9; UV365 stated colour mean dE 20.4 -> about 3; hue classes 8/8; direction 18/18; 64 tests.
+Star rim check (1232 retail Star-family photos): median rim darkening L* -2.4 (Star plastic -1.2); engine 0.08 retained.

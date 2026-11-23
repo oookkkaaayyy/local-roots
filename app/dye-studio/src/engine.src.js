@@ -8,22 +8,22 @@ const DE=(()=>{
  const gau=(l,mu,s)=>{const t=(l-mu)/s;return Math.exp(-.5*t*t)};
  const CAT={};            // name -> {b:[[mu,sig,a]...],phi,em:[mu,sig],aff,sd}
  const PRM={tq:3,             // process parameters per optical family, fitted by scripts/fit_engine.mjs
-  star:{Sx:1.0,cmax:1.0,rim:.08,tr:0},
-  champion:{qb:.52,bt:.38,bf:.08,Sx:.35,cmax:1.0,rim:.12,tr:1,kS:.55,kT:1.5,pw:.75,gT:1.38,w:{outdoor:{plate:1,shoulder:.75,rim:.5},surface:{plate:.09,shoulder:.04,rim:.04},backlit:{plate:1,shoulder:.95,rim:.8}}}
+  star:{Sx:.4,cmax:1.0,rim:.08,tr:0,sd:0},
+  metal:{Sx:.06},
+  champion:{g0:.3,qb:"tie",bt:.38,bf:.08,Sx:.35,cmax:1.0,rim:.12,tr:1,sd:0,kS:.55,kT:1.5,pw:.75,gT:1.38,w:{outdoor:{plate:1,shoulder:.75,rim:.5},surface:{plate:.09,shoulder:.04,rim:.04},backlit:{plate:1,shoulder:.95,rim:.8}}}
  };
+ const famOf=o=>/champion/.test(o||"")?"champion":"star";
+ const absorb=(d,k)=>{const A=new Array(N).fill(0);if(!d)return A;for(const [mu,sg,a] of d.b)for(let i=0;i<N;i++)A[i]+=a*gau(lam[i],mu,sg);for(let i=0;i<N;i++)A[i]*=k;return A};
  // Plastic table. fam = optical family; rating = r/discdyeing wiki dye-uptake scale 1-5 (null = unrated, assumed like family);
  // up = dye strength multiplier derived from the rating. Sources: research/dataset/observations.json (wiki ratings).
  const UPR=[0,.15,.35,.6,.8,1];
  const PLASTICS={star:{fam:"star",rating:5},gstar:{fam:"star",rating:5},echostar:{fam:"star",rating:4},pro:{fam:"star",rating:4},dx:{fam:"star",rating:2},prime:{fam:"star",rating:2},champion:{fam:"champion",rating:5},fuzion:{fam:"champion",rating:5},biofuzion:{fam:"champion",rating:4},lucid:{fam:"champion",rating:5},glow:{fam:"champion",rating:null,est:1},retro:{fam:"star",rating:1},opto:{fam:"star",rating:5},goldline:{fam:"star",rating:5},k3:{fam:"star",rating:1},k1:{fam:"star",rating:5},electron:{fam:"star",rating:1},neutron:{fam:"star",rating:5},proton:{fam:"star",rating:4},glitch:{fam:"star",rating:5},prodigy300:{fam:"star",rating:1},prodigy350:{fam:"star",rating:1},prodigy400:{fam:"star",rating:5},megasoft:{fam:"star",rating:1},bthard:{fam:"star",rating:2},tournament:{fam:"star",rating:5},vip:{fam:"star",rating:5},dline:{fam:"star",rating:1},cline:{fam:"champion",rating:5},sline:{fam:"star",rating:5},prod:{fam:"star",rating:1},zflx:{fam:"star",rating:2},elitex:{fam:"star",rating:4},esp:{fam:"star",rating:5},z:{fam:"star",rating:5},titanium:{fam:"star",rating:4},crystal:{fam:"champion",rating:5},alpha:{fam:"star",rating:5},beta:{fam:"star",rating:2},strata:{fam:"star",rating:1}}; // r/discdyeing wiki table (https://lr.eu.psf.lt/r/discdyeing/comments/11an9b6/disc_dyeing_wiki) plus guides; opaque = star family, translucent = champion family
  const REFR={star:5,champion:5}; // the fitted star and champion process parameters already embody these ratings, so up is relative to the family reference
  const plasticOf=id=>{const p=PLASTICS[id]||PLASTICS.star;return{...p,up:p.rating?Math.min(1.25,UPR[p.rating]/UPR[REFR[p.fam]]):1}};
- const famOf=o=>/champion/.test(o||"")?"champion":"star";
- const absorb=(d,k)=>{const A=new Array(N).fill(0);if(!d)return A;for(const [mu,sg,a] of d.b)for(let i=0;i<N;i++)A[i]+=a*gau(lam[i],mu,sg);for(let i=0;i<N;i++)A[i]*=k;return A};
- // Effective per-dye concentration (relative to full single-dye film). Langmuir competition.
  // Uptake. Dyes in ONE bath (a blend) compete for the same sites (Langmuir, affinity-weighted). Separate baths
  // (layers, item.b) do not displace each other, so their dye loads add and absorbances add in the film (order is
  // irrelevant); a soft total cap (TOTCAP) stands in for the plastic running out of sites altogether.
- const TOTCAP=3.2,LAM=.2,VEIL=.008;
+ const EST_DE=2.8,TOTCAP=3.2,LAM=.2,VEIL=.008;
  function conc(items){
   const out=new Array(items.length).fill(0),bs=[...new Set(items.map(it=>it.b||0))],bt=[];
   for(const b of bs){
@@ -53,10 +53,12 @@ const DE=(()=>{
   const em=new Array(N).fill(0),c=conc(items);
   items.forEach((it,i)=>{
    const d=CAT[it.name];if(!d||!d.phi)return;
-   const A=absorb(d,c[i]),qf=1/(1+Math.pow(Math.min(6,Math.max(...A))*(opt&&opt.cscale||1)/PRM.tq,2)),share=tauTotal.map((t,j)=>t>1e-9?A[j]/t:0);
-   let abs=0;for(let j=0;j<N;j++)abs+=(1-Math.exp(-2*tauTotal[j]))*share[j]*SP.d65w[j];
+   const A=absorb(d,c[i]),qf=1/(1+Math.pow(Math.max(...A)*(opt&&opt.cscale||1)/PRM.tq,2)),share=tauTotal.map((t,j)=>t>1e-9?A[j]/t:0);
+   const bk=opt&&opt.beta;
+   let abs=0;for(let j=0;j<N;j++)abs+=(1-Math.exp(-2*tauTotal[j]*(bk?bk[j]:1)))*share[j]*SP.d65w[j];
    const norm=d.em?(()=>{let s=0;for(let j=0;j<N;j++)s+=gau(lam[j],d.em[0],d.em[1]);return s})():1;
-   for(let j=0;j<N;j++)em[j]+=qf*d.phi*abs*gau(lam[j],d.em[0],d.em[1])/norm/SP.d65w[j]*Math.exp(-.7*tauTotal[j]);
+   let be=1;if(bk){let ws=0,wb=0;for(let j=0;j<N;j++){const g=gau(lam[j],d.em[0],d.em[1]);ws+=g;wb+=g*bk[j]}be=ws>0?wb/ws:1}
+   for(let j=0;j<N;j++)em[j]+=qf*d.phi*abs*be*gau(lam[j],d.em[0],d.em[1])/norm/SP.d65w[j]*Math.exp(-(opt&&opt.outf!==undefined?opt.outf:.7)*tauTotal[j]);
   });
   return em;
  }
@@ -66,24 +68,19 @@ const DE=(()=>{
  const toInt=R=>R.map(r=>r/((1-K1)*(1-K2)+K2*r));
  const toExt=R=>R.map(r=>(1-K1)*(1-K2)*r/(1-K2*r));
  const baseSpec=h=>SP.spec(h);
- const PHI=.55; // later baths stay in the top fraction of the film; the first bath penetrates fully
- function filmStack(Rb,items,P,mult){
-  const bs=[...new Set(items.map(it=>it.b||0))].sort((x,y)=>x-y);
-  return kmLayer(Rb,tauOf(items,mult),P.Sx);
-  const c=conc(items),tl=new Array(N).fill(0),tu=new Array(N).fill(0);
-  items.forEach((it,i)=>{const A=absorb(CAT[it.name],c[i]*(mult||1));for(let j=0;j<N;j++){if((it.b||0)===bs[0]){tl[j]+=A[j]*(1-PHI);tu[j]+=A[j]*PHI}else tu[j]+=A[j]}});
-  const Rl=kmLayer(Rb,tl,P.Sx*(1-PHI));return kmLayer(Rl,tu,P.Sx*PHI);
- }
+ // fluorescence backing model: excitation path and emission outcoupling scale with (1+Rbase)/(1+Rref); Rref = white Star, so fitted Star films are unchanged
+ const REF_BASE="#F4F2E8";
  function opaque(baseHex,items,fam,opt){
-  const P=PRM[fam]||PRM.star,tau=tauOf(items,opt?.mult);
-  let R=toExt(filmStack(toInt(baseSpec(baseHex)),items,P,opt?.mult));
-  if(!opt?.noFluor){const f=fluor(items,tau,opt);R=R.map((v,i)=>v+f[i])}
+  const P=PRM[fam]||PRM.star,tau=tauOf(items,opt?.mult),Sx=opt?.metal?PRM.metal.Sx:P.Sx;
+  // metal/foil substrate: specular, non-scattering backing, so the dye skin acts as a Beer-Lambert double pass (Sx small), no interface mapping
+  let R=opt?.metal?kmLayer(baseSpec(baseHex),tau,Sx):(P.sd?toExt(kmLayer(toInt(baseSpec(baseHex)),tau,Sx)):kmLayer(baseSpec(baseHex),tau,Sx));
+  if(!opt?.noFluor){const Rb=baseSpec(baseHex),Rr=baseSpec(REF_BASE);const beta=Rb.map((v,i)=>(1+v)/(1+Rr[i]));const f=fluor(items,tau,{...opt,beta});R=R.map((v,i)=>v+f[i])}
   return R;
  }
  function translucent(baseHex,transHex,items,fam,scene,zone,path,opt){
   const P=PRM.champion,tau=tauOf(items,opt?.mult);
-  const Rs=toExt(kmLayer(toInt(baseSpec(baseHex)),tau.map(v=>v*P.kS),P.Sx));
-  const pe=Math.pow(Math.max(path,.2)/.74,P.qb==="tie"?P.pw:(P.qb||0)),T0=transHex?baseSpec(transHex).map(v=>Math.pow(v,pe)):baseSpec(baseHex).map(v=>Math.pow(Math.max(0,v-P.bf)/(1-P.bf),P.bt*pe)),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*P.gT));
+  const Rs=P.sd?toExt(kmLayer(toInt(baseSpec(baseHex)),tau.map(v=>v*P.kS),P.Sx)):kmLayer(baseSpec(baseHex),tau.map(v=>v*P.kS),P.Sx);
+  const pe=Math.pow(Math.max(path,.2)/.74,P.qb==="tie"?P.pw:(P.qb||0)),T0=(transHex?baseSpec(transHex).map(v=>Math.pow(v,pe)):baseSpec(baseHex).map(v=>Math.pow(Math.max(0,v-P.bf)/(1-P.bf),P.bt*pe))),tm=Math.max(0,...tau)*P.kT*Math.pow(path,P.pw),gE=1+(P.gT-1)*(1-Math.exp(-tm/P.g0)),T=T0.map((v,i)=>Math.min(1.4,v*Math.exp(-2*tau[i]*P.kT*Math.pow(path,P.pw))*gE));
   const w=(P.w[scene]||P.w.outdoor)[zone];
   let R=Rs.map((v,i)=>v*(1-w)+T[i]*w);
   if(!opt?.noFluor){const f=fluor(items,tau.map(v=>v*P.kS),{cscale:P.kS*P.kT*Math.pow(path,P.pw)});R=R.map((v,i)=>v+f[i]*(scene==="backlit"?.3:1))}
@@ -124,6 +121,7 @@ const DE=(()=>{
   const pl=spec.plastic?plasticOf(spec.plastic):null;
   spec={...spec,items:merge(spec.items).map(it=>pl?{...it,s:it.s*pl.up}:it)};
   const fam=famOf(pl?pl.fam:spec.family);
+  if(spec.metal)opt={...(opt||{}),metal:true};
   const R=fam==="champion"?translucent(spec.baseHex,spec.transHex,spec.items,fam,spec.scene||"outdoor",spec.zone||"plate",spec.path??.5,opt)
                            :opaque(spec.baseHex,spec.items,fam,opt);
   return R;
@@ -141,7 +139,7 @@ const DE=(()=>{
     const Rm=render({...spec,items},opt);Pm.Sx=sx;labs.push(labOf(SP.toLin(Rm).map(v=>Math.min(1,Math.max(0,v)))));
    }
    const c=labOf(out.lin.map(v=>Math.min(1,Math.max(0,v)))),d=labs.map(l=>de2000(c,l)).sort((a,b)=>a-b);
-   out.spread=d[Math.floor(.9*(d.length-1))];out.lo=labs.reduce((a,l)=>l[0]<a[0]?l:a);out.hi=labs.reduce((a,l)=>l[0]>a[0]?l:a);
+   out.spread=Math.hypot(d[Math.floor(.9*(d.length-1))],EST_DE*Math.sqrt(spec.items.filter(i=>CAT[i.name]?.est).length));out.lo=labs.reduce((a,l)=>l[0]<a[0]?l:a);out.hi=labs.reduce((a,l)=>l[0]>a[0]?l:a);
   }
   // evidence flags: situations the public dataset covers poorly (used by the UI to lower the confidence label)
   {const ev=[],its=spec.items,bths=new Set(its.map(i=>i.b||0)).size,pl=spec.plastic?plasticOf(spec.plastic):null;
@@ -150,9 +148,9 @@ const DE=(()=>{
    if(its.some(i=>(CAT[i.name]?.sd??.18)>.15))ev.push('estimated dye');
    if(pl&&(pl.rating===null||pl.est))ev.push('unrated plastic');
    if(out.gamutExcess>.05)ev.push('out of gamut');
-   // practitioner rules (research/dataset/forum_observations.json): dye cannot lighten, dark bases swallow dye, black dye hue drifts, DX/Prime take dye poorly
    if(pl&&pl.rating!==null&&pl.rating<=2)ev.push('low-uptake plastic');
    if(labOf(SP.hexLin(spec.baseHex))[0]<32)ev.push('dark base');
+   if(spec.metal)ev.push('metal substrate');
    if(its.some(i=>/Black|Onyx|Gun Metal/.test(i.name)))ev.push('black dye hue varies');
    out.evidence=ev}
   out.lab=labOf(out.lin.map(v=>Math.min(1,Math.max(0,v))));
@@ -160,15 +158,25 @@ const DE=(()=>{
  }
  // ---------- UV365 / charged glow ----------
  // emission color of fluorescent dyes under 365 nm, with inner-filter quenching by every other dye
- function uv365(spec){
+ function uvLin(spec){
   const items=merge(spec.items),tau=tauOf(items,1),c=conc(items),rgb=[0,0,0];
   items.forEach((it,i)=>{const d=CAT[it.name];if(!d||!d.phi)return;
    const sh=1-Math.exp(-2*c[i]*(d.uvAbs??1)),em=new Array(N).fill(0);
    for(let j=0;j<N;j++)em[j]=gau(lam[j],(d.uvem||d.em)[0],(d.uvem||d.em)[1])+(d.uvem2?d.uvem2[2]*gau(lam[j],d.uvem2[0],d.uvem2[1]):0);
    // emission re-absorbed by dyes present
    for(let j=0;j<N;j++)em[j]*=Math.exp(-tau[j]*.55);
-   const l=SP.toLin(em.map(v=>v*(d.uvphi??d.phi)*sh*2.4));for(let k=0;k<3;k++)rgb[k]+=l[k];});
-  return SP.linHex(rgb.map(v=>1-Math.exp(-v*1.6)));
+   const l=SP.toLin65(em.map(v=>v*(d.uvphi??d.phi)*sh*2.4));for(let k=0;k<3;k++)rgb[k]+=l[k];});
+  return rgb;
+ }
+ const uvTone=rgb=>SP.linHex(rgb.map(v=>1-Math.exp(-Math.max(0,v)*1.6)));
+ function uv365(spec){return uvTone(uvLin(spec))}
+ // UV365 scene as seen on a disc: dye emission plus the 395-420 nm violet leakage of a 365 nm LED reflected by the (dye-filtered) base.
+ // ESTIMATE: leakage 6% of emitter power at 405 nm (sigma 9) times a visual exposure gain 60 (undyed white Star reads about #2D0066); undyed white plastic reads deep violet, yellow/orange dyes absorb the leakage and read darker.
+ function uvScene(spec){
+  const items=merge(spec.items),tau=tauOf(items,1),Rb=baseSpec(spec.baseHex),rgb=uvLin(spec);
+  const leak=lam.map((l,j)=>3.6*gau(l,405,9)*Rb[j]*Math.exp(-2*tau[j]));
+  const l=SP.toLin65(leak.map(v=>v*1.0));for(let k=0;k<3;k++)rgb[k]+=l[k]*.9;
+  return uvTone(rgb);
  }
  // charged glow: afterglow emission (SrAl2O4-like, 520 nm) filtered by dye absorbance on the way out
  function glow(spec){
@@ -200,6 +208,6 @@ const DE=(()=>{
   out.sort((a,b)=>a.dE-b.dE||a.names.length-b.names.length);
   return out.slice(0,opt.top||6).map(o=>{const items=o.names.map((n,i)=>({name:n,s:o.s[i]}));const p=predict({baseHex:base,transHex:opt.transHex,family,scene:"outdoor",zone:"plate",path:.45,items},{mc:24});return{items,dE:o.dE,hex:p.hex,spread:p.spread}});
  }
- return{CAT,PRM,PLASTICS,plasticOf,famOf,absorb,conc,tauOf,kmLayer,fluor,render,predict,uv365,glow,recipe,labOf,labOfSpec,de2000,hexLab,dEhex,present,rng,gaussRand,gau,lam};
+ return{CAT,PRM,PLASTICS,plasticOf,famOf,uvScene,setIllum:n=>SP.setIllum(n),absorb,conc,tauOf,kmLayer,fluor,render,predict,uv365,glow,recipe,labOf,labOfSpec,de2000,hexLab,dEhex,present,rng,gaussRand,gau,lam};
 })();
 /*ENGINE-END*/
