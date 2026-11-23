@@ -76,7 +76,7 @@ for(let i=0;i<256;i++){const u=i/255;L2S[i]=u<=.04045?u/12.92:Math.pow((u+.055)/
 for(let i=0;i<4096;i++){const l=i/4095;S2L[i]=Math.round(255*(l<=.0031308?12.92*l:1.055*Math.pow(l,1/2.4)-.055))}
 const hhn=(x,y)=>{let h=(x*374761393+y*668265263)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967296};
 const HL=Math.hypot(-.42,-.52,1.74),HX=-.42/HL,HY=-.52/HL,HZ=1.74/HL;
-const MPROF=(()=>{const T=new Float32Array(1025),h=r=>{let v=.055*(1-r*r);for(const c of[.46,.64,.8])v+=.006*Math.exp(-Math.pow((r-c)/.02,2));return v+.8*.07*ss(.9,.972,r)-.8*.2*ss(.975,1,r)};
+const MPROF=(()=>{const T=new Float32Array(1025),h=r=>{let v=.055*(1-r*r);return v+.8*.07*ss(.9,.972,r)-.8*.2*ss(.975,1,r)};
  for(let i=0;i<=1024;i++){const r=i/1024;T[i]=(h(Math.min(1.03,r+.003))-h(Math.max(0,r-.003)))/.006}return T})();
 function renderDisc(W){
  const PL_T=plastic().fam==='champion';
@@ -90,7 +90,7 @@ function renderDisc(W){
   for(let i=0;i<n;i++){const w=act[i]?maskW(layers[i],u,v,r,ang):0;const q=Math.round(w*12);qs[i]=q;key=key*13+q}
   let rgb=cache.get(key);
   if(!rgb){for(let i=0;i<n;i++)ws[i]=qs[i]/12;const rr=Math.min(NB-1,Math.round(r*(NB-1)))/(NB-1);rgb=hexRgb(colorAt(itemsFor(ws,layers),rr).hex);cache.set(key,rgb)}
-  // lighting in linear light: slope of a mold height profile (dome, flight rings, rim bead), Lambert plus Blinn specular, grain
+  // lighting in linear light: slope of a mold height profile (dome, rim bead), Lambert plus Blinn specular, grain
   const sl=MPROF[Math.min(1024,Math.round(r*1024))],ur=u/(r||1),vr=v/(r||1);
   let gx=-sl*ur*2.4,gy=-sl*vr*2.4;const nn=Math.hypot(gx,gy,1);gx/=nn;gy/=nn;const gz=1/nn;
   const dif=Math.max(0,gx*-.42+gy*-.52+gz*.74)/.74,sp=Math.pow(Math.max(0,gx*HX+gy*HY+gz*HZ),PL_T?110:55)*(PL_T?.2:.07);
