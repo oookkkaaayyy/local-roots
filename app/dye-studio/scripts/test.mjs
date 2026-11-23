@@ -93,6 +93,7 @@ ok(bad===0,"bounded outputs "+bad);ok(mono===0,"monotonic strength "+mono);ok(cm
 { // plastic-aware uptake (wiki ratings) and translucent default transmission
   const base="#F4F2E8",dx=DE.predict({baseHex:base,plastic:"dx",items:it(["iDye Poly Blue",1])}).hex,st=DE.predict({baseHex:base,plastic:"star",items:it(["iDye Poly Blue",1])}).hex;
   ok(Ls(dx)>Ls(st)+2,"DX takes less dye than Star "+dx+" "+st);
+  ok(Object.keys(DE.PLASTICS).length>=35&&DE.plasticOf("k3").up<DE.plasticOf("k1").up&&DE.plasticOf("cline").fam==="champion","plastic table covers wiki ratings");
   ok(DE.plasticOf("star").up===1&&DE.plasticOf("champion").up===1&&DE.plasticOf("fuzion").fam==="champion"&&DE.plasticOf("dx").up<DE.plasticOf("echostar").up,"plastic table families and uptake order");
   const th=DE.predict({baseHex:"#F7E331",family:"champion",path:.5,items:it(["iDye Poly Blue",.05])});
   ok(th.hex!==undefined&&hsl(th.hex)[0]<260&&hsl(th.hex)[0]>150||Ls(th.hex)<25,"thin blue on yellow Champion is not violet "+th.hex);

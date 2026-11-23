@@ -201,6 +201,31 @@
    "id": "rsc-blue",
    "url": "https://pubs.rsc.org/en/content/articlepdf/2024/ra/d3ra06452b",
    "kind": "blue disperse dyes 582 to 592 nm in DMF"
+  },
+  {
+   "id": "reddit-wiki",
+   "url": "https://lr.eu.psf.lt/r/discdyeing/comments/11an9b6/disc_dyeing_wiki",
+   "kind": "wiki plastic dye rating table, 42 plastics (1 to 5)"
+  },
+  {
+   "id": "reddit-rtrace",
+   "url": "https://reddit.rtrace.io/r/discdyeing",
+   "kind": "subreddit listing: 18 posts, no stated hex or complete recipes"
+  },
+  {
+   "id": "dgcr-168965",
+   "url": "https://dgcoursereview.com/threads/success-champion-my-technique.168965",
+   "kind": "Rit black in alcohol 15 min on Champion: solid black, purplish in transmitted light"
+  },
+  {
+   "id": "jaffer-dyecolors",
+   "url": "https://people.csail.mit.edu/jaffer/Color/A.htm",
+   "kind": "AATCC/SDC dye color names only, no spectra"
+  },
+  {
+   "id": "mit-rit-guide",
+   "url": "https://www.ritdye.com/wp-content/uploads/2020/03/Rit-Color-Formula-Guide.pdf",
+   "kind": "official Rit formula PDF (same formulas as the oxlades copy already ingested)"
   }
  ],
  "films": "see groundtruth.json opaqueTargets (6 measured Star film colors)",
