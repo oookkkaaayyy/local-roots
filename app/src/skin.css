@@ -514,3 +514,5 @@ html .lr .dug-controls{z-index:5}
   .lr .events-page .event-actions,.lr .event-actions{grid-column:2;grid-row:2;flex-direction:row;flex-wrap:wrap;align-items:center;margin:8px 0 0}
   .lr .event-actions .button{margin:0 8px 8px 0;white-space:normal}
 }
+html .lr .status-pill,html .lr .event-detail-card .status-pill{max-width:100%!important;white-space:normal!important;box-sizing:border-box;position:static}
+html .lr .event-view-switch .button,html .lr .event-view-switch button{white-space:normal!important;padding-left:8px!important;padding-right:8px!important;min-width:0!important;overflow-wrap:break-word}
