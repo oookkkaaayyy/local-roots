@@ -429,7 +429,7 @@
   .lr .dug-media:first-child:not(:last-child){inset:auto;top:8px;left:8px;width:26%;height:26%;z-index:2;border:2px solid #fffaf0;border-radius:12px;box-shadow:0 2px 10px rgba(42,31,23,.35)}
   .lr .dug-media:first-child:not(:last-child) img{object-fit:cover}
   .lr .dug-row-single .dug-media{width:100%;margin:0}
-  .lr .dug-controls{position:static;padding:8px 0 10px}
+  .lr .dug-controls{position:relative;z-index:5;padding:8px 0 10px}
   .lr .dug-thumb{position:relative}
   .lr .dug-strip{justify-content:flex-start}
 }
