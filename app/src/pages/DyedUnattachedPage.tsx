@@ -34,7 +34,7 @@ function parseLegacyPath(path:string){
   const match=path.match(/^legacy:(\d+):(left|right)$/);
   if(!match)return null;
   const row=Number(match[1]);
-  if(!Number.isInteger(row)||row<0||row>16)return null;
+  if(!Number.isInteger(row)||row<0||row>99)return null;
   return {row,side:match[2] as 'left'|'right'};
 }
 
