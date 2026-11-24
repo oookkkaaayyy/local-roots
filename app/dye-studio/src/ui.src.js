@@ -41,11 +41,11 @@ const zoneAt=r=>"plate";
 function measured(its,r){const p=plastic();if(p.fam!=="champion"||its.length!==1||rimK(r)>0)return null;const a=MEAS.c[its[0].name];if(!a)return null;
  if(Math.abs(its[0].s/p.up-1)>.1)return null;
  const m=hexRgb(MEAS.base),d=hexRgb(S.base).reduce((s,v,i)=>s+(v-m[i])**2,0);if(Math.sqrt(d)>48)return null;return a[zoneAt(r)]}
-function colorAt(its,r,mc){
+function colorAt(its,r,mc,scn){
  const p=plastic();
- const m=measured(its,r);if(m&&!mc)return{hex:m,measured:true};
+ const m=scn?null:measured(its,r);if(m&&!mc)return{hex:m,measured:true};
  const bh=baseAt(r);if(p.fam==="champion"&&!its.length)return{hex:bh,spread:0,lab:null,gamut:false,measured:false};
- const sp={baseHex:bh,transHex:hexOk(S.trans)?S.trans.toUpperCase():undefined,family:p.fam,scene:"outdoor",zone:zoneAt(r),path:pathAt(r,p),items:its};
+ const sp={baseHex:bh,transHex:hexOk(S.trans)?S.trans.toUpperCase():undefined,family:p.fam,scene:scn||"outdoor",zone:zoneAt(r),path:pathAt(r,p),items:its};
  const o=DE.predict(sp,mc?{mc}:{});
  return{hex:m||o.hex,spread:o.spread,evidence:o.evidence,lab:o.lab,gamut:o.gamutExcess>.02,measured:!!m};
 }
@@ -88,15 +88,16 @@ function renderDisc(W){
   const u=(x+.5-c)/R,v=(y+.5-c)/R,r=Math.hypot(u,v);if(r>1.02)continue;
   const ang=hasW?Math.atan2(v,u):0;let key=Math.min(NB-1,Math.round(r*(NB-1)));
   for(let i=0;i<n;i++){const w=act[i]?maskW(layers[i],u,v,r,ang):0;const q=Math.round(w*12);qs[i]=q;key=key*13+q}
-  let rgb=cache.get(key);
-  if(!rgb){for(let i=0;i<n;i++)ws[i]=qs[i]/12;const rr=Math.min(NB-1,Math.round(r*(NB-1)))/(NB-1);rgb=hexRgb(colorAt(itemsFor(ws,layers),rr).hex);cache.set(key,rgb)}
+  let ent=cache.get(key),rgb;
+  if(!rgb){for(let i=0;i<n;i++)ws[i]=qs[i]/12;const rr=Math.min(NB-1,Math.round(r*(NB-1)))/(NB-1);const its=itemsFor(ws,layers);ent={c:hexRgb(colorAt(its,rr).hex),t:PL_T?hexRgb(colorAt(its,rr,0,"backlit").hex):null};cache.set(key,ent)}
+  rgb=ent.c;
   // lighting in linear light: slope of a mold height profile (dome, rim bead), Lambert plus Blinn specular, grain
   const sl=MPROF[Math.min(1024,Math.round(r*1024))],ur=u/(r||1),vr=v/(r||1);
   let gx=-sl*ur*2.4,gy=-sl*vr*2.4;const nn=Math.hypot(gx,gy,1);gx/=nn;gy/=nn;const gz=1/nn;
   const dif=Math.max(0,gx*-.42+gy*-.52+gz*.74)/.74,sp=Math.pow(Math.max(0,gx*HX+gy*HY+gz*HZ),PL_T?110:55)*(PL_T?.2:.07);
-  const lip=ss(.955,.995,r),sh=(.9+.1*dif)*(1-.1*lip)+(hhn(x,y)-.5)*(PL_T?.01:.03),tl=PL_T?.06*ss(.45,.97,r)*(1-lip*.6):0,ex=sp+.012;
+  const lip=ss(.955,.995,r),sh=(.93+.07*dif)*(1-.1*lip)+(hhn(x,y)-.5)*(PL_T?.01:.03),sub=PL_T&&ent.t?.17*ss(.4,.97,r)*(1-lip*.3)*(.5+.5*Math.max(0,-(gx*-.42+gy*-.52)/.7)):0,ex=sp;   // diffuse colour is the photographed target, so no ambient lift; translucent discs add light scattered through the plastic, tinted by the transmission colour
   const a=clamp((1-r)*R/1.1,0,1);
-  const k=(y*W+x)*4;d[k]=S2L[Math.min(4095,Math.max(0,(L2S[rgb[0]]*(sh+tl)+ex)*4095|0))];d[k+1]=S2L[Math.min(4095,Math.max(0,(L2S[rgb[1]]*(sh+tl)+ex)*4095|0))];d[k+2]=S2L[Math.min(4095,Math.max(0,(L2S[rgb[2]]*(sh+tl)+ex)*4095|0))];d[k+3]=a*255*(PL_T?.8+.14*lip:1)}
+  const k=(y*W+x)*4,tc=sub>0?ent.t:null,q=v=>S2L[Math.min(4095,Math.max(0,v*4095|0))];d[k]=q(L2S[rgb[0]]*sh+(tc?L2S[tc[0]]*sub:0)+ex);d[k+1]=q(L2S[rgb[1]]*sh+(tc?L2S[tc[1]]*sub:0)+ex);d[k+2]=q(L2S[rgb[2]]*sh+(tc?L2S[tc[2]]*sub:0)+ex);d[k+3]=a*255*(PL_T?.8+.14*lip:1)}
  return img}
 let fastT=null;
 function paint(fast){
