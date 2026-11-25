@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var KEY = 'hbnf-studio-v1', MIN_N = 4;
+  var KEY = 'hbnf-studio-v1', MIN_N = 4, K = 6, PRIOR = { 3: -0.4, 4: 0.3 }, BPRIOR = 25, hist = [], histRel = [];
   var $ = function (id) { return document.getElementById(id); };
   var enc = null, H = {}, pool = [], seq = {}, dates = [];
   var st = { base: null, slots: [], sel: 0, tab: 'swap', sort: 'easy', all: false, q: '', goal: 'easier' };
@@ -46,30 +46,43 @@
       }
     }
     dates.sort().reverse();
+    var sr = { 3: [0, 0], 4: [0, 0] }, sb = [0, 0];
+    for (i = 0; i < enc.holes.length; i++) {
+      h = H[enc.holes[i].hole_id];
+      if (h.n >= MIN_N && h.avg !== undefined && h.avg !== null) {
+        var pp = h.par >= 4 ? 4 : 3; sr[pp][0] += (h.avg - h.par) * h.n; sr[pp][1] += h.n; sb[0] += (h.bird || 0) * h.n; sb[1] += h.n;
+      }
+    }
+    if (sr[3][1]) { PRIOR[3] = sr[3][0] / sr[3][1]; } if (sr[4][1]) { PRIOR[4] = sr[4][0] / sr[4][1]; } if (sb[1]) { BPRIOR = sb[0] / sb[1]; }
     for (i = 0; i < enc.holes.length; i++) {
       h = H[enc.holes[i].hole_id];
       if (h.id.indexOf('unresolved') < 0 && h.id.indexOf('temp') < 0) { pool.push(h); }
     }
   }
   function tested(h) { return h.n >= MIN_N; }
-  function exp(h, par) { return tested(h) ? h.avg : par - 0.5; }
+  function exp(h, par) {
+    var n = h.n || 0, pr = par + (PRIOR[par] !== undefined ? PRIOR[par] : PRIOR[4]);
+    return n && h.avg !== null && h.avg !== undefined ? (n * h.avg + K * pr) / (n + K) : pr;
+  }
+  function bird(h) { var n = h.n || 0; return n ? (n * (h.bird || 0) + K * BPRIOR) / (n + K) : BPRIOR; }
+  function dupBsk(slots) { var m = {}, d = 0, i; for (i = 0; i < slots.length; i++) { var b = H[slots[i].id].bsk; if (m[b]) { d++; } m[b] = 1; } return d; }
   function grade(slots) {
     var g = { exp: 0, par: 0, bird: 0, front: 0, back: 0, hard: 0, untested: 0, par4: 0, rels: [] }, i, h, r;
     for (i = 0; i < slots.length; i++) {
       h = H[slots[i].id]; r = exp(h, slots[i].par) - slots[i].par;
       g.exp += exp(h, slots[i].par); g.par += slots[i].par; g.rels.push(r);
       if (i < 9) { g.front += r; } else { g.back += r; }
-      if (tested(h)) { g.bird += (h.bird || 0) / 100; if (h.bog >= 15) { g.hard++; } } else { g.untested++; }
+      g.bird += bird(h) / 100; if (tested(h)) { if (h.bog >= 15) { g.hard++; } } else { g.untested++; }
       if (slots[i].par >= 4) { g.par4++; }
     }
-    g.rel = g.exp - g.par;
+    g.rel = g.exp - g.par; g.dup = dupBsk(slots);
     var m = g.rels.reduce(function (a, b) { return a + b; }, 0) / g.rels.length;
     g.sd = Math.sqrt(g.rels.reduce(function (a, b) { return a + (b - m) * (b - m); }, 0) / g.rels.length);
     return g;
   }
   function objective(goal, g) {
-    if (goal === 'easier') { return -g.exp; }
-    if (goal === 'harder') { return g.exp; }
+    if (goal === 'easier') { return -g.rel; }
+    if (goal === 'harder') { return g.rel; }
     if (goal === 'birdies') { return g.bird; }
     if (goal === 'faster') { return -(g.exp + 0.5 * g.par4); }
     return -(g.sd + 0.5 * Math.abs(g.front - g.back));
@@ -84,7 +97,7 @@
     st.base = d;
     st.slots = seq[d].map(function (s) { return { id: s.id, par: s.par }; });
     baseGrade = grade(st.slots);
-    st.sel = 0; save();
+    st.sel = 0; hist = []; save();
   }
   function renderBase() {
     var h = '<option value="">Blank</option>', i;
@@ -109,8 +122,11 @@
       c('Score', f(g.exp, 1), d(g.exp, b.exp)) + c('To par', sg(g.rel, 1), d(g.rel, b.rel)) + c('Birdies', f(g.bird, 1), d(g.bird, b.bird), true) +
       c('Par', g.par, d(g.par, b.par)) + c('Front', sg(g.front, 1), d(g.front, b.front)) + c('Back', sg(g.back, 1), d(g.back, b.back)) +
       c('Hard', g.hard, d(g.hard, b.hard)) + c('Untested', g.untested, d(g.untested, b.untested)) +
-      c('Spread', f(g.sd, 2), d(g.sd, b.sd)) + c('Par 4+', g.par4, d(g.par4, b.par4));
+      c('Spread', f(g.sd, 2), d(g.sd, b.sd)) + c('Par 4+', g.par4, d(g.par4, b.par4)) + c('Rank', rank(g.rel) + '/' + (histRel.length + 1), null) + c('Dup bsk', g.dup, d(g.dup, b.dup));
   }
+  function rank(rel) { var r = 1, i; for (i = 0; i < histRel.length; i++) { if (histRel[i] < rel) { r++; } } return r; }
+  function snap() { hist.push(JSON.stringify(st.slots)); if (hist.length > 50) { hist.shift(); } }
+  function undo() { if (hist.length) { st.slots = JSON.parse(hist.pop()); save(); renderAll(); } }
   function inLayout(id, except) { for (var i = 0; i < 18; i++) { if (i !== except && st.slots[i].id === id) { return true; } } return false; }
   function renderTools() {
     var h = '', i, cur = st.slots[st.sel], ch = H[cur.id];
@@ -129,7 +145,7 @@
       h += '<p class="sub">Slot ' + (st.sel + 1) + ' ' + esc(ch.label.replace(/\s*\(.*\)\s*$/, '')) + '</p>';
       for (i = 0; i < list.length && i < 120; i++) {
         var p = list[i], used = inLayout(p.id, st.sel), dl = exp(p, p.par) - exp(ch, cur.par);
-        h += '<button type="button" class="row" data-pick="' + esc(p.id) + '"' + (used ? ' disabled' : '') + '><span class="l">' + esc(p.label.replace(/\s*\(.*\)\s*$/, '')) + '</span><span class="v">P' + p.par + '</span><span class="v">' + (tested(p) ? f(p.avg, 2) : '-') + '</span><span class="v ' + cl(dl) + '">' + sg(dl, 2) + '</span></button>';
+        h += '<button type="button" class="row" data-pick="' + esc(p.id) + '"' + (used ? ' disabled' : '') + '><span class="l">' + esc(p.label.replace(/\s*\(.*\)\s*$/, '')) + '</span><span class="v">P' + p.par + '</span><span class="v">' + f(exp(p, p.par), 2) + '</span><span class="v ' + cl(dl) + '">' + sg(dl, 2) + '</span></button>';
       }
       if (!list.length) { h += '<div class="empty">-</div>'; }
     } else {
@@ -139,7 +155,7 @@
       var sug = suggest(st.goal);
       for (i = 0; i < sug.length; i++) {
         var s = sug[i];
-        h += '<button type="button" class="row" data-apply="' + s.i + '|' + esc(s.to) + '"><span class="l">' + (s.i + 1) + ': ' + esc(H[st.slots[s.i].id].label.replace(/\s*\(.*\)\s*$/, '')) + ' > ' + esc(H[s.to].label.replace(/\s*\(.*\)\s*$/, '')) + '</span><span class="v">P' + H[s.to].par + '</span><span class="v">' + f(H[s.to].avg, 2) + '</span><span class="v neg">' + sg(s.gain, 2) + '</span></button>';
+        h += '<button type="button" class="row" data-apply="' + s.i + '|' + esc(s.to) + '"><span class="l">' + (s.i + 1) + ': ' + esc(H[st.slots[s.i].id].label.replace(/\s*\(.*\)\s*$/, '')) + ' > ' + esc(H[s.to].label.replace(/\s*\(.*\)\s*$/, '')) + '</span><span class="v">P' + H[s.to].par + '</span><span class="v">' + f(exp(H[s.to], H[s.to].par), 2) + '</span><span class="v neg">' + sg(s.gain, 2) + '</span></button>';
       }
       if (!sug.length) { h += '<div class="empty">-</div>'; }
     }
@@ -182,14 +198,15 @@
   }
   function move(d) {
     var j = st.sel + d; if (j < 0 || j > 17) { return; }
-    var t = st.slots[st.sel]; st.slots[st.sel] = st.slots[j]; st.slots[j] = t; st.sel = j; save(); renderAll();
+    snap(); var t = st.slots[st.sel]; st.slots[st.sel] = st.slots[j]; st.slots[j] = t; st.sel = j; save(); renderAll();
   }
   function init() {
     $('base').addEventListener('change', function () {
       if (this.value) { loadBase(this.value); } else { st.base = ''; baseGrade = grade(st.slots); save(); }
       renderAll();
     });
-    $('reset').addEventListener('click', function () { loadBase(st.base || dates[0]); renderBase(); renderAll(); });
+    $('undo').addEventListener('click', undo);
+    $('reset').addEventListener('click', function () { var h0 = JSON.stringify(st.slots); loadBase(st.base || dates[0]); hist = [h0]; renderBase(); renderAll(); });
     $('copy').addEventListener('click', copyText);
     $('slots').addEventListener('click', function (e) {
       var t = e.target; while (t && t !== this && !(t.getAttribute && t.getAttribute('data-i'))) { t = t.parentNode; }
@@ -206,12 +223,12 @@
       var a = t.getAttribute('data-a'), s = t.getAttribute('data-s'), g = t.getAttribute('data-g'), pk = t.getAttribute('data-pick'), ap = t.getAttribute('data-apply');
       if (a === 'up') { move(-1); } else if (a === 'down') { move(1); } else if (a === 'all') { st.all = !st.all; renderTools(); }
       else if (s) { st.sort = s; renderTools(); } else if (g) { st.goal = g; renderTools(); }
-      else if (pk) { st.slots[st.sel] = { id: pk, par: H[pk].par }; save(); renderAll(); }
-      else if (ap) { var p = ap.split('|'); st.slots[parseInt(p[0], 10)] = { id: p[1], par: H[p[1]].par }; st.sel = parseInt(p[0], 10); save(); renderAll(); }
+      else if (pk) { snap(); st.slots[st.sel] = { id: pk, par: H[pk].par }; save(); renderAll(); }
+      else if (ap) { snap(); var p = ap.split('|'); st.slots[parseInt(p[0], 10)] = { id: p[1], par: H[p[1]].par }; st.sel = parseInt(p[0], 10); save(); renderAll(); }
     });
     get('/hbnf-holes/hole_encyclopedia.json', function (d) {
       if (!d) { return; }
-      enc = d; prep();
+      enc = d; prep(); histRel = dates.map(function (x) { return grade(seq[x]).rel; });
       var saved = load();
       if (saved) { st.base = saved.base; st.slots = saved.slots; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
       else { loadBase(dates[0]); }
