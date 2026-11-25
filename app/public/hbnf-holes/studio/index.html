@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#292119">
+<title>HBNF | Studio</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Cabin;src:url('/fonts/cabin-latin-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Cabin;src:url('/fonts/cabin-latin-700.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{color-scheme:dark;--canvas:#292119;--panel:#352b20;--ink:#f4e9d6;--muted:#d9cebb;--accent:#b4c58f;--warn:#e9d39b;--line:#6d7354;--tap:44px}
+*{box-sizing:border-box}
+html,body{height:100%}
+body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.3 Cabin,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+.hbnf-studio .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line)}
+.hbnf-studio h1{font-size:1.2rem;margin:0 6px 0 0;white-space:nowrap}
+.hbnf-studio .bar a,.hbnf-studio button,.hbnf-studio select,.hbnf-studio input{min-height:var(--tap);border:1px solid var(--line);border-radius:7px;background:#3a3024;color:var(--ink);font:700 .88rem Cabin,Arial,sans-serif;padding:0 12px}
+.hbnf-studio .bar a{display:inline-flex;align-items:center;text-decoration:none}
+.hbnf-studio input{font-weight:400;min-width:0}
+.hbnf-studio .sp{flex:1 1 auto}
+.hbnf-studio select{min-width:0;max-width:100%}
+.hbnf-studio button[aria-pressed="true"],.hbnf-studio button[aria-selected="true"]{background:#4b5038;border-color:var(--accent)}
+.hbnf-studio button:focus-visible,.hbnf-studio a:focus-visible,.hbnf-studio select:focus-visible,.hbnf-studio input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hbnf-studio button:disabled{opacity:.55}
+.hbnf-studio .main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4fr);gap:10px;padding:10px 12px}
+.hbnf-studio .col{min-height:0;min-width:0;display:flex;flex-direction:column;gap:10px}
+.hbnf-studio .panel{border:1px solid #6d735499;border-radius:10px;background:var(--panel);min-height:0;min-width:0;overflow:auto;padding:10px}
+.hbnf-studio #slotPanel{flex:1 1 auto}
+.hbnf-studio #slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(9,minmax(var(--tap),1fr));grid-auto-flow:column;gap:6px;height:100%}
+.hbnf-studio .slot{display:grid;grid-template-columns:1.6em minmax(0,1fr) auto auto;align-items:center;gap:6px;text-align:left;padding:4px 8px;min-width:0;font-weight:400}
+.hbnf-studio .slot .n{color:var(--accent);font-weight:700}
+.hbnf-studio .slot .l{overflow-wrap:anywhere;font-size:.84rem}
+.hbnf-studio .slot .p,.hbnf-studio .slot .r{font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hbnf-studio .neg{color:var(--accent);font-weight:700}
+.hbnf-studio .pos{color:var(--warn);font-weight:700}
+.hbnf-studio .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:6px}
+.hbnf-studio .cell{border:1px solid #6d735477;border-radius:8px;padding:5px 6px;min-width:0}
+.hbnf-studio .cell small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:0}
+.hbnf-studio .cell strong{font-size:1.05rem;font-variant-numeric:tabular-nums}
+.hbnf-studio .cell em{font-style:normal;font-size:.75rem;margin-left:4px;font-variant-numeric:tabular-nums}
+.hbnf-studio .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.hbnf-studio .tabs button{flex:1 1 0}
+.hbnf-studio #tools{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.hbnf-studio .toolbody{flex:1 1 auto;min-height:0;overflow:auto}
+.hbnf-studio .row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;width:100%;text-align:left;margin-bottom:6px;font-weight:400;padding:6px 10px}
+.hbnf-studio .row .l{overflow-wrap:anywhere;font-size:.86rem}
+.hbnf-studio .row .v{font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hbnf-studio .sub{color:var(--muted);font-size:.8rem;margin:0 0 6px}
+.hbnf-studio .tools-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.hbnf-studio .tools-bar input{flex:1 1 120px}
+.hbnf-studio .empty{padding:12px;color:var(--muted)}
+.hbnf-studio .mnav{display:none}
+.hbnf-studio [hidden]{display:none!important}
+@media(max-width:760px){
+.hbnf-studio .main{grid-template-columns:1fr;padding:8px;gap:8px}
+.hbnf-studio .col{display:contents}
+.hbnf-studio .panel{display:none}
+.hbnf-studio[data-view="slots"] #slotPanel,.hbnf-studio[data-view="grade"] #gradePanel,.hbnf-studio[data-view="tools"] #tools{display:flex;flex-direction:column}
+.hbnf-studio[data-view="slots"] #slotPanel{display:block}
+.hbnf-studio[data-view="grade"] #gradePanel{display:block}
+.hbnf-studio .main>.col>.panel{min-height:0}
+.hbnf-studio .mnav{display:flex;gap:6px;padding:6px 8px;border-top:1px solid var(--line)}
+.hbnf-studio .mnav button{flex:1 1 0}
+.hbnf-studio .cards{grid-template-columns:repeat(auto-fit,minmax(74px,1fr))}
+.hbnf-studio h1{font-size:1.05rem}
+.hbnf-studio .bar{padding:6px 8px}
+.hbnf-studio #slots{grid-template-rows:repeat(9,minmax(52px,1fr))}
+}
+</style>
+</head>
+<body class="hbnf-studio" data-view="slots">
+<div class="bar">
+ <h1>Studio</h1>
+ <a href="/hbnf-holes/">Holes</a>
+ <select id="base" aria-label="Base layout"></select>
+ <span class="sp"></span>
+ <button type="button" id="reset">Reset</button>
+ <button type="button" id="copy">Copy</button>
+</div>
+<div class="main">
+ <div class="col">
+  <div class="panel" id="slotPanel"><div id="slots" role="list" aria-label="Slots"></div></div>
+ </div>
+ <div class="col">
+  <div class="panel" id="gradePanel"><div class="cards" id="cards" aria-label="Grade"></div></div>
+  <div class="panel" id="tools">
+   <div class="tabs" role="tablist"><button type="button" role="tab" id="tSwap" aria-selected="true">Swap</button><button type="button" role="tab" id="tSug" aria-selected="false">Suggest</button></div>
+   <div class="toolbody" id="toolBody"></div>
+  </div>
+ </div>
+</div>
+<nav class="mnav" aria-label="View"><button type="button" data-v="slots" aria-pressed="true">Slots</button><button type="button" data-v="grade" aria-pressed="false">Grade</button><button type="button" data-v="tools" aria-pressed="false">Tools</button></nav>
+<script src="/hbnf-holes/studio/studio.js"></script>
+</body>
+</html>
