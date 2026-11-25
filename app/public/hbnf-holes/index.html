@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#292119">
+<title>HBNF | Holes</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Cabin;src:url('/fonts/cabin-latin-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Cabin;src:url('/fonts/cabin-latin-700.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{color-scheme:dark;--canvas:#292119;--panel:#352b20;--ink:#f4e9d6;--muted:#d9cebb;--accent:#b4c58f;--line:#6d7354}
+*{box-sizing:border-box}
+html,body{height:100%}
+body.hbnf-holes{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.35 Cabin,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+.hbnf-holes .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line)}
+.hbnf-holes h1{font-size:1.25rem;margin:0 8px 0 0;white-space:nowrap}
+.hbnf-holes .bar a,.hbnf-holes .bar button,.hbnf-holes .bar input,.hbnf-holes .bar select{min-height:44px;border:1px solid var(--line);border-radius:7px;background:#3a3024;color:var(--ink);font:700 .88rem Cabin,Arial,sans-serif;padding:0 12px}
+.hbnf-holes .bar a{display:inline-flex;align-items:center;text-decoration:none}
+.hbnf-holes .bar input{flex:1 1 140px;min-width:0;font-weight:400}
+.hbnf-holes .bar .sp{flex:1 1 auto}
+.hbnf-holes .bar button[aria-pressed="true"]{background:#4b5038;border-color:var(--accent)}
+.hbnf-holes button:focus-visible,.hbnf-holes a:focus-visible,.hbnf-holes input:focus-visible,.hbnf-holes select:focus-visible,.hbnf-holes tr:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hbnf-holes .main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px;padding:12px 14px}
+.hbnf-holes .panel{border:1px solid #6d735499;border-radius:10px;background:var(--panel);min-height:0;overflow:auto}
+.hbnf-holes table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.hbnf-holes th,.hbnf-holes td{text-align:left;padding:7px 8px;border-bottom:1px solid #6d735455;white-space:nowrap}
+.hbnf-holes thead th{position:sticky;top:0;background:var(--panel);color:var(--accent);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;z-index:1;cursor:pointer}
+.hbnf-holes td.n,.hbnf-holes th.n{text-align:right}
+.hbnf-holes td.l{white-space:normal;min-width:130px}
+.hbnf-holes tbody tr{cursor:pointer;min-height:44px}
+.hbnf-holes tbody tr[aria-selected="true"]{background:#4b5038}
+.hbnf-holes .neg{color:var(--accent);font-weight:700}
+.hbnf-holes .pos{color:#e9d39b;font-weight:700}
+.hbnf-holes .detail{padding:14px}
+.hbnf-holes .detail h2{font-size:1.15rem;margin:0 0 4px}
+.hbnf-holes .sub{color:var(--muted);font-size:.8rem;margin:0 0 12px}
+.hbnf-holes .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.hbnf-holes .cell{border:1px solid #6d735477;border-radius:8px;padding:8px 10px}
+.hbnf-holes .cell small{display:block;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
+.hbnf-holes .cell strong{font-size:1.1rem}
+.hbnf-holes h3{font-size:.85rem;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px}
+.hbnf-holes .empty{padding:16px;color:var(--muted)}
+.hbnf-holes [hidden]{display:none!important}
+@media(max-width:760px){.hbnf-holes .bar input{order:5;flex:1 1 100%}.hbnf-holes .bar .tg{order:4}.hbnf-holes .main{grid-template-columns:1fr;grid-template-rows:minmax(0,3fr) minmax(0,2fr);padding:8px}.hbnf-holes .bar{padding:8px}.hbnf-holes h1{font-size:1.05rem}.hbnf-holes .grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hbnf-holes .col-sd,.hbnf-holes .col-bog{display:none}}
+</style>
+</head>
+<body class="hbnf-holes">
+<div class="bar">
+ <h1>Holes</h1>
+ <a href="/hbnf-season/">Stats</a>
+ <span class="sp"></span>
+ <input id="q" type="search" placeholder="Search" aria-label="Search holes" autocomplete="off">
+ <button type="button" class="tg" id="fPlayed" aria-pressed="true">Played</button>
+ <button type="button" class="tg" id="fAll" aria-pressed="false">All</button>
+</div>
+<div class="main">
+ <div class="panel" id="listPanel">
+  <table aria-label="Holes">
+   <thead><tr><th data-k="label">Hole</th><th class="n" data-k="par">Par</th><th class="n" data-k="n">N</th><th class="n" data-k="avg">Avg</th><th class="n" data-k="rel">+/-</th><th class="n" data-k="birdie">Bird %</th><th class="n col-bog" data-k="bogey">Bog %</th><th class="n" data-k="rank">Rank</th></tr></thead>
+   <tbody id="rows"></tbody>
+  </table>
+ </div>
+ <div class="panel" id="detailPanel"><div class="empty" id="empty">&nbsp;</div><div class="detail" id="detail" hidden></div></div>
+</div>
+<script src="/hbnf-holes/holes.js"></script>
+</body>
+</html>

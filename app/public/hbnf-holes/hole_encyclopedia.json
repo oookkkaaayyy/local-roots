@@ -1,0 +1,8389 @@
+{
+ "schema_version": 1,
+ "owner": "claude",
+ "contract": "data/glow/CONTRACT.md",
+ "generated_from": [
+  "layouts.json",
+  "scores.json"
+ ],
+ "scope": "Safari (custom Glow) holes. Skins rounds and standard Main-layout rounds excluded.",
+ "layouts": {
+  "2026-01-13": {
+   "name": "1.13.26 Glow Layout",
+   "source": "Drive 1ewINPe0dW5kU-mrqE96Qv7yRFhYQYtU6",
+   "holes": 18,
+   "guide_par_total": 54,
+   "udisc_par_total": null,
+   "par_reconciled": true,
+   "scored": false,
+   "notes": null
+  },
+  "2026-07-18": {
+   "name": "7.18.26 Glow Layout",
+   "source": "Drive 1U6h-PAoVsUc3vP7XQ3_pt0_JtxuLhkii",
+   "holes": 18,
+   "guide_par_total": 56,
+   "udisc_par_total": null,
+   "par_reconciled": true,
+   "scored": false,
+   "notes": null
+  },
+  "2026-10-24": {
+   "name": "10.24.26 Glow Layout",
+   "source": "Drive 1q7Dp6-KNiox6cnEE6PHw5NLodXOK4FNc",
+   "holes": 18,
+   "guide_par_total": 57,
+   "udisc_par_total": null,
+   "par_reconciled": true,
+   "scored": false,
+   "notes": null
+  },
+  "2026-11-17": {
+   "name": "11.17.26 Glow Layout",
+   "source": "Drive 1veh1BO8anuYPGBPBZ1lfnvvw46RBdcva4l_id4XJko8",
+   "holes": 18,
+   "guide_par_total": 58,
+   "udisc_par_total": 57,
+   "par_reconciled": false,
+   "scored": true,
+   "notes": null
+  },
+  "2026-11-24": {
+   "name": "HB Glow Dubs 11.24.26 (UDisc layout 150408)",
+   "source": "course_geometry/optimized_glo_layout_2026-11-24.md; hole 8 per LEDGER UDisc Layout Manager readback (17 Short)",
+   "holes": 18,
+   "guide_par_total": 56,
+   "udisc_par_total": 56,
+   "par_reconciled": true,
+   "scored": true,
+   "notes": {
+    "8": "owner plan text says Main 17; LEDGER records UDisc layout 150408 hole 8 as 17 Short (note '8. 17 short to 8'); Short used",
+    "2,3": "LEDGER notes a live-readback discrepancy at holes 2/3 against the owner sequence; unreconciled"
+   }
+  }
+ },
+ "unresolved_rounds": {
+  "2026-11-03": "Safari round, scores stored, layout guide not found in Drive (searched titles for 11.3/10.31/11.03; folders contain .pages/.pkgf not yet exported)"
+ },
+ "positions": [
+  {
+   "position_id": "bsk:1",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 1",
+   "number": 1,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:10",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 10",
+   "number": 10,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:11",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 11",
+   "number": 11,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:12",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 12",
+   "number": 12,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:13",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 13",
+   "number": 13,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:14",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 14",
+   "number": 14,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-10-24",
+    "2026-11-17"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:14-tall",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 14 (tall)",
+   "number": 14,
+   "variant": null,
+   "flags": [],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:15",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 15",
+   "number": 15,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:16",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 16",
+   "number": 16,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:17",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 17",
+   "number": 17,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:18",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 18",
+   "number": 18,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:2",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 2",
+   "number": 2,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:4",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 4",
+   "number": 4,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:5",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 5",
+   "number": 5,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:6",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 6",
+   "number": 6,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:7",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 7",
+   "number": 7,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:8",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 8",
+   "number": 8,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:9",
+   "side": "basket",
+   "kind": "basket",
+   "label": "Basket 9",
+   "number": 9,
+   "variant": null,
+   "flags": [
+    "target_variant_unidentified"
+   ],
+   "layouts": [
+    "2026-07-18",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:practice-1",
+   "side": "basket",
+   "kind": "practice",
+   "label": "Practice 1 (shop)",
+   "number": 1,
+   "variant": null,
+   "flags": [],
+   "layouts": [
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:practice-2",
+   "side": "basket",
+   "kind": "practice",
+   "label": "Practice 2 (tall)",
+   "number": 2,
+   "variant": null,
+   "flags": [],
+   "layouts": [
+    "2026-01-13",
+    "2026-11-17"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:practice-3",
+   "side": "basket",
+   "kind": "practice",
+   "label": "Practice 3 (long, CTP)",
+   "number": 3,
+   "variant": null,
+   "flags": [],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:practice-4",
+   "side": "basket",
+   "kind": "practice",
+   "label": "Practice 4 (memorial)",
+   "number": 4,
+   "variant": null,
+   "flags": [],
+   "layouts": [
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:tree-above-9-pad",
+   "side": "basket",
+   "kind": "special",
+   "label": "Tree above 9 tee pad",
+   "number": null,
+   "variant": null,
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:unresolved-1-or-8",
+   "side": "basket",
+   "kind": "special",
+   "label": "1 (or 8)",
+   "number": null,
+   "variant": null,
+   "flags": [
+    "needs_review"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "bsk:unresolved-corner-practice",
+   "side": "basket",
+   "kind": "special",
+   "label": "corner practice",
+   "number": null,
+   "variant": null,
+   "flags": [
+    "needs_review"
+   ],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-1",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 1",
+   "number": 1,
+   "variant": "main",
+   "flags": [],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-11",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 11",
+   "number": 11,
+   "variant": "main",
+   "flags": [
+    "variant_inferred_main"
+   ],
+   "layouts": [
+    "2026-10-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-12",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 12",
+   "number": 12,
+   "variant": "main",
+   "flags": [],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-14",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 14",
+   "number": 14,
+   "variant": "main",
+   "flags": [
+    "variant_inferred_main"
+   ],
+   "layouts": [
+    "2026-10-24",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-15",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 15",
+   "number": 15,
+   "variant": "main",
+   "flags": [],
+   "layouts": [
+    "2026-11-17"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-16",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 16",
+   "number": 16,
+   "variant": "main",
+   "flags": [],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-18",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 18",
+   "number": 18,
+   "variant": "main",
+   "flags": [
+    "variant_inferred_main"
+   ],
+   "layouts": [
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-4",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 4",
+   "number": 4,
+   "variant": "main",
+   "flags": [
+    "variant_inferred_main"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-6",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 6",
+   "number": 6,
+   "variant": "main",
+   "flags": [],
+   "layouts": [
+    "2026-11-17"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-7",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 7",
+   "number": 7,
+   "variant": "main",
+   "flags": [
+    "variant_inferred_main"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-8",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 8",
+   "number": 8,
+   "variant": "main",
+   "flags": [
+    "variant_inferred_main"
+   ],
+   "layouts": [
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:main-9",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Main 9",
+   "number": 9,
+   "variant": "main",
+   "flags": [],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:near-basket-6",
+   "side": "pad",
+   "kind": "special",
+   "label": "Near basket 6",
+   "number": null,
+   "variant": "near",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:near-pad-11",
+   "side": "pad",
+   "kind": "special",
+   "label": "Near pad 11",
+   "number": null,
+   "variant": "near",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:near-pad-18",
+   "side": "pad",
+   "kind": "special",
+   "label": "Near pad 18",
+   "number": null,
+   "variant": "near",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:near-pad-8",
+   "side": "pad",
+   "kind": "special",
+   "label": "Near pad 8",
+   "number": null,
+   "variant": "near",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:near-pad-9",
+   "side": "pad",
+   "kind": "special",
+   "label": "Near pad 9",
+   "number": null,
+   "variant": "near",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:parking-lot",
+   "side": "pad",
+   "kind": "special",
+   "label": "Parking lot",
+   "number": null,
+   "variant": "parking",
+   "flags": [],
+   "layouts": [
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:parking-near-pad-10",
+   "side": "pad",
+   "kind": "special",
+   "label": "Parking near pad 10",
+   "number": null,
+   "variant": "parking",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:parking-near-practice-2",
+   "side": "pad",
+   "kind": "special",
+   "label": "Parking near tall practice basket",
+   "number": null,
+   "variant": "parking",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:path-by-16",
+   "side": "pad",
+   "kind": "special",
+   "label": "Path by 16",
+   "number": null,
+   "variant": "path",
+   "flags": [],
+   "layouts": [
+    "2026-01-13",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:path-by-stairs",
+   "side": "pad",
+   "kind": "special",
+   "label": "Path by stairs",
+   "number": null,
+   "variant": "path",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-1",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 1",
+   "number": 1,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-10",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 10",
+   "number": 10,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-10-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-12",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 12",
+   "number": 12,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-13",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 13",
+   "number": 13,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-10-24",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-15",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 15",
+   "number": 15,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-01-13",
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-16",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 16",
+   "number": 16,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-10-24",
+    "2026-11-17"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-17",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 17",
+   "number": 17,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-18",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 18",
+   "number": 18,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-10-24",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-3",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 3",
+   "number": 3,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-6",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 6",
+   "number": 6,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-7",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 7",
+   "number": 7,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-10-24",
+    "2026-11-17"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-9",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short 9",
+   "number": 9,
+   "variant": "short",
+   "flags": [],
+   "layouts": [
+    "2026-07-18",
+    "2026-10-24",
+    "2026-11-17",
+    "2026-11-24"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-mod-15",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short (Modified) 15",
+   "number": 15,
+   "variant": "short-mod",
+   "flags": [],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-mod-16",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short (Modified) 16",
+   "number": 16,
+   "variant": "short-mod",
+   "flags": [],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:short-mod-17",
+   "side": "pad",
+   "kind": "tee",
+   "label": "Short (Modified) 17",
+   "number": 17,
+   "variant": "short-mod",
+   "flags": [],
+   "layouts": [
+    "2026-01-13"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:sidewalk-by-16-basket",
+   "side": "pad",
+   "kind": "special",
+   "label": "Sidewalk by 16 basket",
+   "number": null,
+   "variant": "sidewalk",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  },
+  {
+   "position_id": "pad:sidewalk-by-memorial-basket",
+   "side": "pad",
+   "kind": "special",
+   "label": "Sidewalk by memorial basket",
+   "number": null,
+   "variant": "sidewalk",
+   "flags": [
+    "location_unverified"
+   ],
+   "layouts": [
+    "2026-07-18"
+   ],
+   "udisc_ref": null
+  }
+ ],
+ "holes": [
+  {
+   "hole_id": "H:main-12>5",
+   "pad_id": "pad:main-12",
+   "basket_id": "bsk:5",
+   "label": "Main 12 to Basket 5",
+   "variant": "main",
+   "pars_seen": {
+    "4": 3,
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 16,
+     "par": 4,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "12 to 5 (par 4)",
+     "scored": false
+    },
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 13,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "12 to 5",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 11,
+     "par": 4,
+     "par_state": "guide_round_total_mismatch",
+     "star": false,
+     "source_text": "12 main → 5 (par 4)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      5,
+      4,
+      4,
+      4,
+      4,
+      5,
+      4,
+      4
+     ],
+     "avg": 4.25,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 12,
+     "par": 4,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Main 12 to 5 (par 4)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      4,
+      4,
+      4,
+      5,
+      4,
+      4,
+      4,
+      4
+     ],
+     "avg": 4.125,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 4,
+   "times_in_layouts": 4,
+   "stats": {
+    "rounds_scored": 2,
+    "team_holes": 16,
+    "avg_strokes": 4.188,
+    "avg_rel_par": 0.188,
+    "sd": 0.403,
+    "birdie_pct": 0.0,
+    "par_pct": 81.2,
+    "bogey_pct": 18.8,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 1.41,
+    "discrimination_item_rest_r": -0.297,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 2,
+      "avg": 0.5
+     },
+     "Ben": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 2,
+      "avg": 0.5
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 2,
+      "avg": 0.5
+     }
+    },
+    "par_uncertain_team_holes": 8,
+    "difficulty_rank": 1,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-1>practice-3",
+   "pad_id": "pad:main-1",
+   "basket_id": "bsk:practice-3",
+   "label": "Main 1 to Practice 3 (long, CTP)",
+   "variant": "main",
+   "pars_seen": {
+    "3": 5
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 12,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "1 main to Practice 3 (long)",
+     "scored": false
+    },
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 11,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "1 to Practice Basket 3 (CTP)",
+     "scored": false
+    },
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 11,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "1 to Practice 3 (CTP)",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 9,
+     "par": 3,
+     "par_state": "guide",
+     "star": true,
+     "source_text": "1 main ★ → Practice 3 (long, CTP)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      2,
+      2,
+      3,
+      2,
+      3,
+      2
+     ],
+     "avg": 2.25,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 1,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Main 1 to Practice 3 (CTP)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      2,
+      3,
+      2,
+      3,
+      2,
+      2,
+      3
+     ],
+     "avg": 2.5,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "variant_inferred_main"
+   ],
+   "par": 3,
+   "times_in_layouts": 5,
+   "stats": {
+    "rounds_scored": 2,
+    "team_holes": 16,
+    "avg_strokes": 2.375,
+    "avg_rel_par": -0.625,
+    "sd": 0.5,
+    "birdie_pct": 62.5,
+    "par_pct": 37.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.403,
+    "discrimination_item_rest_r": -0.044,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 2,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 26,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-8>16",
+   "pad_id": "pad:main-8",
+   "basket_id": "bsk:16",
+   "label": "Main 8 to Basket 16",
+   "variant": "main",
+   "pars_seen": {
+    "3": 4
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 13,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "8 to 16",
+     "scored": false
+    },
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 3,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "8 to 16",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 10,
+     "par": 3,
+     "par_state": "guide",
+     "star": true,
+     "source_text": "8 main ★ → 16",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      3,
+      2,
+      2,
+      3,
+      3,
+      3
+     ],
+     "avg": 2.5,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 3,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Main 8 to 16",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      3
+     ],
+     "avg": 2.375,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 3,
+   "times_in_layouts": 4,
+   "stats": {
+    "rounds_scored": 2,
+    "team_holes": 16,
+    "avg_strokes": 2.438,
+    "avg_rel_par": -0.562,
+    "sd": 0.512,
+    "birdie_pct": 56.2,
+    "par_pct": 43.8,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.34,
+    "discrimination_item_rest_r": 0.417,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Harley": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 2,
+      "avg": -0.5
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 24,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:path-by-16>11",
+   "pad_id": "pad:path-by-16",
+   "basket_id": "bsk:11",
+   "label": "Path by 16 to Basket 11",
+   "variant": "path",
+   "pars_seen": {
+    "3": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 3,
+     "par": 3,
+     "par_state": "guide",
+     "star": true,
+     "source_text": "Path by 16 long ★ → 11",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 2.875,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 4,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Path by 16 to 11",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      2,
+      3,
+      2,
+      3
+     ],
+     "avg": 2.75,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 2,
+    "team_holes": 16,
+    "avg_strokes": 2.812,
+    "avg_rel_par": -0.188,
+    "sd": 0.403,
+    "birdie_pct": 18.8,
+    "par_pct": 81.2,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.035,
+    "discrimination_item_rest_r": -0.124,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Harley": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 2,
+      "avg": -0.5
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 15,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:path-by-16>practice-1",
+   "pad_id": "pad:path-by-16",
+   "basket_id": "bsk:practice-1",
+   "label": "Path by 16 to Practice 1 (shop)",
+   "variant": "path",
+   "pars_seen": {
+    "3": 3
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 18,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Path near 16 long to Practice 1",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 8,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Path by 16 long → Practice 1 (short)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      3,
+      2,
+      2,
+      3,
+      3,
+      2,
+      3
+     ],
+     "avg": 2.5,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 18,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Path by 16 to Practice 1 (shop)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      2,
+      3,
+      2,
+      3,
+      3,
+      3
+     ],
+     "avg": 2.5,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [],
+   "par": 3,
+   "times_in_layouts": 3,
+   "stats": {
+    "rounds_scored": 2,
+    "team_holes": 16,
+    "avg_strokes": 2.5,
+    "avg_rel_par": -0.5,
+    "sd": 0.516,
+    "birdie_pct": 50.0,
+    "par_pct": 50.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.278,
+    "discrimination_item_rest_r": 0.254,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Andrew": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Fox": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Harley": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Michael": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 2,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 22,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-15>6",
+   "pad_id": "pad:short-15",
+   "basket_id": "bsk:6",
+   "label": "Short 15 to Basket 6",
+   "variant": "short",
+   "pars_seen": {
+    "3": 4
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 7,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "15 short to 6",
+     "scored": false
+    },
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 5,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "15 short to 6",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 13,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "15 short → 6",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      2,
+      2,
+      3,
+      3,
+      2,
+      3,
+      2
+     ],
+     "avg": 2.5,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 14,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Short 15 to 6",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      2,
+      2
+     ],
+     "avg": 2.25,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 4,
+   "stats": {
+    "rounds_scored": 2,
+    "team_holes": 16,
+    "avg_strokes": 2.375,
+    "avg_rel_par": -0.625,
+    "sd": 0.5,
+    "birdie_pct": 62.5,
+    "par_pct": 37.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.403,
+    "discrimination_item_rest_r": -0.14,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Dylan": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Fox": {
+      "n": 2,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 2,
+      "avg": -0.5
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 2,
+      "avg": -1.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 2,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 27,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-12>17",
+   "pad_id": "pad:main-12",
+   "basket_id": "bsk:17",
+   "label": "Main 12 to Basket 17",
+   "variant": "main",
+   "pars_seen": {
+    "4": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 5,
+     "par": 4,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Main 12 to 17 (par 4)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      4,
+      3,
+      3,
+      3,
+      4,
+      3
+     ],
+     "avg": 3.25,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 4,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.25,
+    "avg_rel_par": -0.75,
+    "sd": 0.463,
+    "birdie_pct": 75.0,
+    "par_pct": 25.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.486,
+    "discrimination_item_rest_r": -0.16,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 2,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-14>15",
+   "pad_id": "pad:main-14",
+   "basket_id": "bsk:15",
+   "label": "Main 14 to Basket 15",
+   "variant": "main",
+   "pars_seen": {
+    "3": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 14,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "14 to 15",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 13,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Main 14 to 15",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      3,
+      2,
+      3,
+      2,
+      2,
+      3
+     ],
+     "avg": 2.375,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 3,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.375,
+    "avg_rel_par": -0.625,
+    "sd": 0.518,
+    "birdie_pct": 62.5,
+    "par_pct": 37.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.389,
+    "discrimination_item_rest_r": 0.137,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 25,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-15>14",
+   "pad_id": "pad:main-15",
+   "basket_id": "bsk:14",
+   "label": "Main 15 to Basket 14",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 6,
+     "par": 3,
+     "par_state": "guide",
+     "star": true,
+     "source_text": "15 main ★ → 14",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      3,
+      2
+     ],
+     "avg": 2.375,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.375,
+    "avg_rel_par": -0.625,
+    "sd": 0.518,
+    "birdie_pct": 62.5,
+    "par_pct": 37.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.417,
+    "discrimination_item_rest_r": 0.06,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 28,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-15>16",
+   "pad_id": "pad:main-15",
+   "basket_id": "bsk:16",
+   "label": "Main 15 to Basket 16",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 7,
+     "par": 3,
+     "par_state": "guide",
+     "star": true,
+     "source_text": "15 main → 16 ★",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      3,
+      3,
+      3,
+      2,
+      2,
+      2,
+      3
+     ],
+     "avg": 2.5,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.5,
+    "avg_rel_par": -0.5,
+    "sd": 0.535,
+    "birdie_pct": 50.0,
+    "par_pct": 50.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.292,
+    "discrimination_item_rest_r": -0.405,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 23,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-16>11",
+   "pad_id": "pad:main-16",
+   "basket_id": "bsk:11",
+   "label": "Main 16 to Basket 11",
+   "variant": "main",
+   "pars_seen": {
+    "3": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 6,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "16 main to 11",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 11,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Main 16 to 11",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      3,
+      3,
+      2,
+      3,
+      3,
+      3
+     ],
+     "avg": 2.625,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.625,
+    "avg_rel_par": -0.375,
+    "sd": 0.518,
+    "birdie_pct": 37.5,
+    "par_pct": 62.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.139,
+    "discrimination_item_rest_r": 0.399,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 16,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-16>18",
+   "pad_id": "pad:main-16",
+   "basket_id": "bsk:18",
+   "label": "Main 16 to Basket 18",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 7,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Main 16 to 18",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 3.125,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.125,
+    "avg_rel_par": 0.125,
+    "sd": 0.354,
+    "birdie_pct": 0.0,
+    "par_pct": 87.5,
+    "bogey_pct": 12.5,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.361,
+    "discrimination_item_rest_r": -0.686,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 4,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-18>16",
+   "pad_id": "pad:main-18",
+   "basket_id": "bsk:16",
+   "label": "Main 18 to Basket 16",
+   "variant": "main",
+   "pars_seen": {
+    "4": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 17,
+     "par": 4,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "18 to 16 (par 4)",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 5,
+     "par": 4,
+     "par_state": "guide_round_total_mismatch",
+     "star": true,
+     "source_text": "18 main ★ → 16 ★ (par 4)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      4,
+      3,
+      3
+     ],
+     "avg": 3.125,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 4,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.125,
+    "avg_rel_par": -0.875,
+    "sd": 0.354,
+    "birdie_pct": 87.5,
+    "par_pct": 12.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.333,
+    "discrimination_item_rest_r": -0.028,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 8,
+    "difficulty_rank": 5,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-18>7",
+   "pad_id": "pad:main-18",
+   "basket_id": "bsk:7",
+   "label": "Main 18 to Basket 7",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 14,
+     "par": 3,
+     "par_state": "guide",
+     "star": true,
+     "source_text": "18 main → 7 ★",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 3.0,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.0,
+    "avg_rel_par": 0.0,
+    "sd": 0.0,
+    "birdie_pct": 0.0,
+    "par_pct": 100.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.208,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 10,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-1>7",
+   "pad_id": "pad:main-1",
+   "basket_id": "bsk:7",
+   "label": "Main 1 to Basket 7",
+   "variant": "main",
+   "pars_seen": {
+    "4": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 18,
+     "par": 4,
+     "par_state": "guide_round_total_mismatch",
+     "star": false,
+     "source_text": "1 main → 7 (par 4)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      2,
+      2,
+      3,
+      4,
+      2,
+      4
+     ],
+     "avg": 2.625,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 4,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.625,
+    "avg_rel_par": -1.375,
+    "sd": 0.916,
+    "birdie_pct": 75.0,
+    "par_pct": 25.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.167,
+    "discrimination_item_rest_r": 0.208,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": -2.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 8,
+    "difficulty_rank": 20,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-6>15",
+   "pad_id": "pad:main-6",
+   "basket_id": "bsk:15",
+   "label": "Main 6 to Basket 15",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 12,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "6 main → 15",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      3,
+      3,
+      3,
+      2,
+      2,
+      3,
+      3
+     ],
+     "avg": 2.625,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.625,
+    "avg_rel_par": -0.375,
+    "sd": 0.518,
+    "birdie_pct": 37.5,
+    "par_pct": 62.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.167,
+    "discrimination_item_rest_r": -0.168,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 19,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-8>1",
+   "pad_id": "pad:main-8",
+   "basket_id": "bsk:1",
+   "label": "Main 8 to Basket 1",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 15,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "8 main → 1",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      3,
+      3
+     ],
+     "avg": 2.875,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.875,
+    "avg_rel_par": -0.125,
+    "sd": 0.354,
+    "birdie_pct": 12.5,
+    "par_pct": 87.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.083,
+    "discrimination_item_rest_r": -0.342,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 14,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-8>practice-4",
+   "pad_id": "pad:main-8",
+   "basket_id": "bsk:practice-4",
+   "label": "Main 8 to Practice 4 (memorial)",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 17,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Main 8 to Practice 4 (memorial)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2
+     ],
+     "avg": 2.625,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.625,
+    "avg_rel_par": -0.375,
+    "sd": 0.518,
+    "birdie_pct": 37.5,
+    "par_pct": 62.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.139,
+    "discrimination_item_rest_r": 0.22,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 18,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:parking-lot>7",
+   "pad_id": "pad:parking-lot",
+   "basket_id": "bsk:7",
+   "label": "Parking lot to Basket 7",
+   "variant": "parking",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 2,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Parking lot to 7",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      3,
+      2,
+      2,
+      3,
+      2,
+      3,
+      3
+     ],
+     "avg": 2.5,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.5,
+    "avg_rel_par": -0.5,
+    "sd": 0.535,
+    "birdie_pct": 50.0,
+    "par_pct": 50.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.264,
+    "discrimination_item_rest_r": 0.0,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 21,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:parking-lot>8",
+   "pad_id": "pad:parking-lot",
+   "basket_id": "bsk:8",
+   "label": "Parking lot to Basket 8",
+   "variant": "parking",
+   "pars_seen": {
+    "4": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 1,
+     "par": 4,
+     "par_state": "guide_round_total_mismatch",
+     "star": true,
+     "source_text": "Parking lot ★ → 8 (par 4)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 3.0,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 4,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.0,
+    "avg_rel_par": -1.0,
+    "sd": 0.0,
+    "birdie_pct": 100.0,
+    "par_pct": 0.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.208,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 8,
+    "difficulty_rank": 8,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:parking-lot>9",
+   "pad_id": "pad:parking-lot",
+   "basket_id": "bsk:9",
+   "label": "Parking lot to Basket 9",
+   "variant": "parking",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 17,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Parking lot → 9",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      2,
+      3,
+      2,
+      2,
+      2,
+      2,
+      3
+     ],
+     "avg": 2.25,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.25,
+    "avg_rel_par": -0.75,
+    "sd": 0.463,
+    "birdie_pct": 75.0,
+    "par_pct": 25.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.542,
+    "discrimination_item_rest_r": 0.0,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": -1.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 30,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-12>15",
+   "pad_id": "pad:short-12",
+   "basket_id": "bsk:15",
+   "label": "Short 12 to Basket 15",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 6,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Short 12 to 15",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 2.875,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.875,
+    "avg_rel_par": -0.125,
+    "sd": 0.354,
+    "birdie_pct": 12.5,
+    "par_pct": 87.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.111,
+    "discrimination_item_rest_r": 0.439,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 12,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-13>12",
+   "pad_id": "pad:short-13",
+   "basket_id": "bsk:12",
+   "label": "Short 13 to Basket 12",
+   "variant": "short",
+   "pars_seen": {
+    "3": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 15,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "13 short to 12",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 10,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Short 13 to 12",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      4,
+      3,
+      3
+     ],
+     "avg": 3.125,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.125,
+    "avg_rel_par": 0.125,
+    "sd": 0.354,
+    "birdie_pct": 0.0,
+    "par_pct": 87.5,
+    "bogey_pct": 12.5,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.361,
+    "discrimination_item_rest_r": 0.082,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 3,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-16>15",
+   "pad_id": "pad:short-16",
+   "basket_id": "bsk:15",
+   "label": "Short 16 to Basket 15",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 4,
+     "par": 3,
+     "par_state": "guide",
+     "star": true,
+     "source_text": "16 short → 15 ★",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 3.0,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.0,
+    "avg_rel_par": 0.0,
+    "sd": 0.0,
+    "birdie_pct": 0.0,
+    "par_pct": 100.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.208,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 9,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-17>8",
+   "pad_id": "pad:short-17",
+   "basket_id": "bsk:8",
+   "label": "Short 17 to Basket 8",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 8,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Short 17 to 8",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      3,
+      2,
+      2,
+      2,
+      2,
+      3,
+      2
+     ],
+     "avg": 2.25,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.25,
+    "avg_rel_par": -0.75,
+    "sd": 0.463,
+    "birdie_pct": 75.0,
+    "par_pct": 25.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.514,
+    "discrimination_item_rest_r": -0.447,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 29,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-18>1",
+   "pad_id": "pad:short-18",
+   "basket_id": "bsk:1",
+   "label": "Short 18 to Basket 1",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 15,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Short 18 to 1",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      2,
+      3,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 2.625,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.625,
+    "avg_rel_par": -0.375,
+    "sd": 0.518,
+    "birdie_pct": 37.5,
+    "par_pct": 62.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": -0.139,
+    "discrimination_item_rest_r": 0.22,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 17,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-7>18",
+   "pad_id": "pad:short-7",
+   "basket_id": "bsk:18",
+   "label": "Short 7 to Basket 18",
+   "variant": "short",
+   "pars_seen": {
+    "3": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 6,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "7 short to 18",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 2,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "7 short → 18",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 2.875,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.875,
+    "avg_rel_par": -0.125,
+    "sd": 0.354,
+    "birdie_pct": 12.5,
+    "par_pct": 87.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.083,
+    "discrimination_item_rest_r": 0.086,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 13,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-9>17",
+   "pad_id": "pad:short-9",
+   "basket_id": "bsk:17",
+   "label": "Short 9 to Basket 17",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 9,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Short 9 to 17",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 3.0,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.0,
+    "avg_rel_par": 0.0,
+    "sd": 0.0,
+    "birdie_pct": 0.0,
+    "par_pct": 100.0,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.236,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 7,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-9>9",
+   "pad_id": "pad:short-9",
+   "basket_id": "bsk:9",
+   "label": "Short 9 to Basket 9",
+   "variant": "short",
+   "pars_seen": {
+    "3": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 10,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "9 short to 9",
+     "scored": false
+    },
+    {
+     "event_date": "2026-11-24",
+     "layout_hole": 16,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Short 9 to 9",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3
+     ],
+     "avg": 2.875,
+     "players": [
+      [
+       "Dylan",
+       "Harley"
+      ],
+      [
+       "JB",
+       "Cam"
+      ],
+      [
+       "Karl",
+       "Jacob C"
+      ],
+      [
+       "Jacob O",
+       "Andrew"
+      ],
+      [
+       "Fox",
+       "Rusty"
+      ],
+      [
+       "Mason",
+       "Ryan"
+      ],
+      [
+       "Tony",
+       "Quiotee"
+      ],
+      [
+       "Daniel"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 2.875,
+    "avg_rel_par": -0.125,
+    "sd": 0.354,
+    "birdie_pct": 12.5,
+    "par_pct": 87.5,
+    "bogey_pct": 0.0,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.111,
+    "discrimination_item_rest_r": -0.027,
+    "by_player_avg_rel_par_team_based": {
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Cam": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Daniel": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "JB": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jacob C": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Jacob O": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": -1.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Rusty": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ryan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 11,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:short-9>practice-2",
+   "pad_id": "pad:short-9",
+   "basket_id": "bsk:practice-2",
+   "label": "Short 9 to Practice 2 (tall)",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-11-17",
+     "layout_hole": 16,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "9 short → Practice 2 (tall)",
+     "scored": true,
+     "n": 8,
+     "scores": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      4,
+      3
+     ],
+     "avg": 3.125,
+     "players": [
+      [
+       "Ben",
+       "Karl"
+      ],
+      [
+       "Quiotee",
+       "Carlos"
+      ],
+      [
+       "Jeremy",
+       "Mason"
+      ],
+      [
+       "Andrew",
+       "Harley"
+      ],
+      [
+       "Fox",
+       "Dylan"
+      ],
+      [
+       "Jason",
+       "Tony"
+      ],
+      [
+       "Michael",
+       "Alejandro villa"
+      ],
+      [
+       "Kyle",
+       "Richard"
+      ]
+     ]
+    }
+   ],
+   "identity_flags": [],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 1,
+    "team_holes": 8,
+    "avg_strokes": 3.125,
+    "avg_rel_par": 0.125,
+    "sd": 0.354,
+    "birdie_pct": 0.0,
+    "par_pct": 87.5,
+    "bogey_pct": 12.5,
+    "double_plus_pct": 0.0,
+    "aces": 0,
+    "vs_team_avg": 0.333,
+    "discrimination_item_rest_r": 0.205,
+    "by_player_avg_rel_par_team_based": {
+     "Alejandro villa": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "Andrew": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Ben": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Carlos": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Dylan": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Fox": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Harley": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Jeremy": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Karl": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Kyle": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Mason": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Michael": {
+      "n": 1,
+      "avg": 1.0
+     },
+     "Quiotee": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Richard": {
+      "n": 1,
+      "avg": 0.0
+     },
+     "Tony": {
+      "n": 1,
+      "avg": 0.0
+     }
+    },
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": 6,
+    "difficulty_of": 30
+   }
+  },
+  {
+   "hole_id": "H:main-11>17",
+   "pad_id": "pad:main-11",
+   "basket_id": "bsk:17",
+   "label": "Main 11 to Basket 17",
+   "variant": "main",
+   "pars_seen": {
+    "4": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 9,
+     "par": 4,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "11 to 17 (par 4, double mando)",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 4,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:main-12>12",
+   "pad_id": "pad:main-12",
+   "basket_id": "bsk:12",
+   "label": "Main 12 to Basket 12",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 7,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "12 main to 12",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:main-16>10",
+   "pad_id": "pad:main-16",
+   "basket_id": "bsk:10",
+   "label": "Main 16 to Basket 10",
+   "variant": "main",
+   "pars_seen": {
+    "4": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 15,
+     "par": 4,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "16 to 10 (par 4)",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 4,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:main-18>8",
+   "pad_id": "pad:main-18",
+   "basket_id": "bsk:8",
+   "label": "Main 18 to Basket 8",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 8,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "18 to 8",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:main-4>6",
+   "pad_id": "pad:main-4",
+   "basket_id": "bsk:6",
+   "label": "Main 4 to Basket 6",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 4,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "4 to 6",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:main-7>18",
+   "pad_id": "pad:main-7",
+   "basket_id": "bsk:18",
+   "label": "Main 7 to Basket 18",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 17,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "7 to 18",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified",
+    "variant_inferred_main"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:main-9>1",
+   "pad_id": "pad:main-9",
+   "basket_id": "bsk:1",
+   "label": "Main 9 to Basket 1",
+   "variant": "main",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 11,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "9 main to 1",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:near-basket-6>15",
+   "pad_id": "pad:near-basket-6",
+   "basket_id": "bsk:15",
+   "label": "Near basket 6 to Basket 15",
+   "variant": "near",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 5,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Near basket 6 to 15",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:near-pad-11>unresolved-corner-practice",
+   "pad_id": "pad:near-pad-11",
+   "basket_id": "bsk:unresolved-corner-practice",
+   "label": "Near pad 11 to corner practice",
+   "variant": "near",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 17,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Near pad 11 to corner practice",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "needs_review"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:near-pad-18>8",
+   "pad_id": "pad:near-pad-18",
+   "basket_id": "bsk:8",
+   "label": "Near pad 18 to Basket 8",
+   "variant": "near",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 10,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Near pad 18 to 8",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:near-pad-8>1",
+   "pad_id": "pad:near-pad-8",
+   "basket_id": "bsk:1",
+   "label": "Near pad 8 to Basket 1",
+   "variant": "near",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 2,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Near pad 8 to 1",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:near-pad-8>16",
+   "pad_id": "pad:near-pad-8",
+   "basket_id": "bsk:16",
+   "label": "Near pad 8 to Basket 16",
+   "variant": "near",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 13,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Near pad 8 to 16",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:near-pad-9>17",
+   "pad_id": "pad:near-pad-9",
+   "basket_id": "bsk:17",
+   "label": "Near pad 9 to Basket 17",
+   "variant": "near",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 4,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Near pad 9 to 17",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:parking-near-pad-10>7",
+   "pad_id": "pad:parking-near-pad-10",
+   "basket_id": "bsk:7",
+   "label": "Parking near pad 10 to Basket 7",
+   "variant": "parking",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 1,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Parking near pad 10 to 7",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:parking-near-practice-2>unresolved-1-or-8",
+   "pad_id": "pad:parking-near-practice-2",
+   "basket_id": "bsk:unresolved-1-or-8",
+   "label": "Parking near tall practice basket to 1 (or 8)",
+   "variant": "parking",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 1,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Parking near tall practice basket to 1 (or 8)",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "needs_review"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:path-by-16>17",
+   "pad_id": "pad:path-by-16",
+   "basket_id": "bsk:17",
+   "label": "Path by 16 to Basket 17",
+   "variant": "path",
+   "pars_seen": {
+    "4": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 4,
+     "par": 4,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Path near 16 long to 17 (par 4)",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 4,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:path-by-16>practice-2",
+   "pad_id": "pad:path-by-16",
+   "basket_id": "bsk:practice-2",
+   "label": "Path by 16 to Practice 2 (tall)",
+   "variant": "path",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 18,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Path near 16 long to Practice 2 (tall)",
+     "scored": false
+    }
+   ],
+   "identity_flags": [],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:path-by-stairs>13",
+   "pad_id": "pad:path-by-stairs",
+   "basket_id": "bsk:13",
+   "label": "Path by stairs to Basket 13",
+   "variant": "path",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 5,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Path by stairs to 13",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-10>10",
+   "pad_id": "pad:short-10",
+   "basket_id": "bsk:10",
+   "label": "Short 10 to Basket 10",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 12,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "10 short to 10",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-15>14-tall",
+   "pad_id": "pad:short-15",
+   "basket_id": "bsk:14-tall",
+   "label": "Short 15 to Basket 14 (tall)",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 8,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "15 short to 14 (tall basket)",
+     "scored": false
+    }
+   ],
+   "identity_flags": [],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-15>16",
+   "pad_id": "pad:short-15",
+   "basket_id": "bsk:16",
+   "label": "Short 15 to Basket 16",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 15,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "15 short to 16",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-16>10",
+   "pad_id": "pad:short-16",
+   "basket_id": "bsk:10",
+   "label": "Short 16 to Basket 10",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 8,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "16 short to 10",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-16>14",
+   "pad_id": "pad:short-16",
+   "basket_id": "bsk:14",
+   "label": "Short 16 to Basket 14",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 16,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "16 short to 14",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-17>12",
+   "pad_id": "pad:short-17",
+   "basket_id": "bsk:12",
+   "label": "Short 17 to Basket 12",
+   "variant": "short",
+   "pars_seen": {
+    "3": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 14,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "17 short to 12",
+     "scored": false
+    },
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 7,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "17 short to 12",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-18>8",
+   "pad_id": "pad:short-18",
+   "basket_id": "bsk:8",
+   "label": "Short 18 to Basket 8",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 10,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "18 short to 8",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-1>2",
+   "pad_id": "pad:short-1",
+   "basket_id": "bsk:2",
+   "label": "Short 1 to Basket 2",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 2,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "1 short to 2",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-1>8",
+   "pad_id": "pad:short-1",
+   "basket_id": "bsk:8",
+   "label": "Short 1 to Basket 8",
+   "variant": "short",
+   "pars_seen": {
+    "3": 2
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 3,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "1 short to 8",
+     "scored": false
+    },
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 1,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "1 short to 8",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 2,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-3>4",
+   "pad_id": "pad:short-3",
+   "basket_id": "bsk:4",
+   "label": "Short 3 to Basket 4",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 3,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "3 short to 4",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-6>17",
+   "pad_id": "pad:short-6",
+   "basket_id": "bsk:17",
+   "label": "Short 6 to Basket 17",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 6,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "6 short to 17",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-9>7",
+   "pad_id": "pad:short-9",
+   "basket_id": "bsk:7",
+   "label": "Short 9 to Basket 7",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-10-24",
+     "layout_hole": 2,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "9 short to 7",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-9>tree-above-9-pad",
+   "pad_id": "pad:short-9",
+   "basket_id": "bsk:tree-above-9-pad",
+   "label": "Short 9 to Tree above 9 tee pad",
+   "variant": "short",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 9,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "9 short to tree above 9 tee pad",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-mod-15>6",
+   "pad_id": "pad:short-mod-15",
+   "basket_id": "bsk:6",
+   "label": "Short (Modified) 15 to Basket 6",
+   "variant": "short-mod",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 9,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "15 short (modified) to 6",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-mod-16>10",
+   "pad_id": "pad:short-mod-16",
+   "basket_id": "bsk:10",
+   "label": "Short (Modified) 16 to Basket 10",
+   "variant": "short-mod",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 16,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "16 short (modified) to 10",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:short-mod-17>12",
+   "pad_id": "pad:short-mod-17",
+   "basket_id": "bsk:12",
+   "label": "Short (Modified) 17 to Basket 12",
+   "variant": "short-mod",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-01-13",
+     "layout_hole": 14,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "17 short (modified) to 12",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:sidewalk-by-16-basket>practice-1",
+   "pad_id": "pad:sidewalk-by-16-basket",
+   "basket_id": "bsk:practice-1",
+   "label": "Sidewalk by 16 basket to Practice 1 (shop)",
+   "variant": "sidewalk",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 18,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Sidewalk by 16 basket to Practice 1",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  },
+  {
+   "hole_id": "H:sidewalk-by-memorial-basket>7",
+   "pad_id": "pad:sidewalk-by-memorial-basket",
+   "basket_id": "bsk:7",
+   "label": "Sidewalk by memorial basket to Basket 7",
+   "variant": "sidewalk",
+   "pars_seen": {
+    "3": 1
+   },
+   "distance_ft": null,
+   "elevation_change_m": null,
+   "geometry_status": "pending_geometry_contract",
+   "safety": {
+    "state": "unknown",
+    "crossfire": null
+   },
+   "notes": [],
+   "occurrences": [
+    {
+     "event_date": "2026-07-18",
+     "layout_hole": 12,
+     "par": 3,
+     "par_state": "guide",
+     "star": false,
+     "source_text": "Sidewalk by memorial basket to 7",
+     "scored": false
+    }
+   ],
+   "identity_flags": [
+    "location_unverified",
+    "target_variant_unidentified"
+   ],
+   "par": 3,
+   "times_in_layouts": 1,
+   "stats": {
+    "rounds_scored": 0,
+    "team_holes": 0,
+    "avg_strokes": null,
+    "avg_rel_par": null,
+    "sd": null,
+    "birdie_pct": null,
+    "par_pct": null,
+    "bogey_pct": null,
+    "double_plus_pct": null,
+    "aces": 0,
+    "vs_team_avg": null,
+    "discrimination_item_rest_r": null,
+    "by_player_avg_rel_par_team_based": {},
+    "par_uncertain_team_holes": 0,
+    "difficulty_rank": null
+   }
+  }
+ ]
+}
