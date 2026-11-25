@@ -92,9 +92,9 @@
    "name": "2.24.26 Glow Layout",
    "source": "Drive 11G793PRJ8LWKksFbTmqc3VN0Z9gEX-3S",
    "holes": 18,
-   "guide_par_total": 59,
+   "guide_par_total": 60,
    "udisc_par_total": 60,
-   "par_reconciled": false,
+   "par_reconciled": true,
    "scored": true,
    "notes": null
   },
@@ -3643,7 +3643,7 @@
      "event_date": "2026-02-24",
      "layout_hole": 5,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "12 main to 5 (par 4)",
      "scored": true,
@@ -4256,7 +4256,7 @@
       "avg": 0.0
      }
     },
-    "par_uncertain_team_holes": 24,
+    "par_uncertain_team_holes": 20,
     "difficulty_rank": 2,
     "difficulty_of": 112
    }
@@ -13941,7 +13941,7 @@
      "event_date": "2026-02-24",
      "layout_hole": 14,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "Path by 9 to 12 (par 4)",
      "scored": true,
@@ -14054,7 +14054,7 @@
       "avg": -1.0
      }
     },
-    "par_uncertain_team_holes": 4,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 26,
     "difficulty_of": 112
    }
@@ -14603,7 +14603,7 @@
      "event_date": "2026-02-24",
      "layout_hole": 11,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "15 short to 1 (par 4)",
      "scored": true,
@@ -14715,7 +14715,7 @@
       "avg": 0.0
      }
     },
-    "par_uncertain_team_holes": 4,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 20,
     "difficulty_of": 112
    }
@@ -18798,7 +18798,7 @@
      "event_date": "2026-02-24",
      "layout_hole": 2,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "8 main to 14 (par 4)",
      "scored": true,
@@ -18898,7 +18898,7 @@
       "avg": 0.0
      }
     },
-    "par_uncertain_team_holes": 4,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 4,
     "difficulty_of": 112
    }
@@ -25876,7 +25876,7 @@
      "event_date": "2026-02-24",
      "layout_hole": 17,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "16 main to Practice 3 (par 4)",
      "scored": true,
@@ -25958,7 +25958,7 @@
       "avg": 0.0
      }
     },
-    "par_uncertain_team_holes": 4,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 3,
     "difficulty_of": 112
    }
@@ -25970,7 +25970,7 @@
    "label": "Main 18 to Basket 10",
    "variant": "main",
    "pars_seen": {
-    "3": 1
+    "4": 1
    },
    "distance_ft": null,
    "elevation_change_m": null,
@@ -25984,10 +25984,10 @@
     {
      "event_date": "2026-02-24",
      "layout_hole": 8,
-     "par": 3,
+     "par": 4,
      "par_state": "guide",
      "star": false,
-     "source_text": "18 main to 10",
+     "source_text": "18 main to 10 (par 4)",
      "scored": true,
      "n": 4,
      "scores": [
@@ -26020,17 +26020,17 @@
    "identity_flags": [
     "target_variant_unidentified"
    ],
-   "par": 3,
+   "par": 4,
    "times_in_layouts": 1,
    "stats": {
     "rounds_scored": 1,
     "team_holes": 4,
     "avg_strokes": 3.5,
-    "avg_rel_par": 0.5,
+    "avg_rel_par": -0.5,
     "sd": 0.577,
-    "birdie_pct": 0.0,
+    "birdie_pct": 50.0,
     "par_pct": 50.0,
-    "bogey_pct": 50.0,
+    "bogey_pct": 0.0,
     "double_plus_pct": 0.0,
     "aces": 0,
     "vs_team_avg": 0.514,
@@ -26038,35 +26038,35 @@
     "by_player_avg_rel_par_team_based": {
      "Andrew": {
       "n": 1,
-      "avg": 0.0
+      "avg": -1.0
      },
      "Erik": {
       "n": 1,
-      "avg": 1.0
+      "avg": 0.0
      },
      "Fox": {
       "n": 1,
-      "avg": 1.0
+      "avg": 0.0
      },
      "Karl": {
       "n": 1,
-      "avg": 0.0
+      "avg": -1.0
      },
      "Matt": {
       "n": 1,
-      "avg": 0.0
+      "avg": -1.0
      },
      "Nicholas": {
       "n": 1,
-      "avg": 1.0
+      "avg": 0.0
      },
      "Quiotee": {
       "n": 1,
-      "avg": 1.0
+      "avg": 0.0
      },
      "Rusty": {
       "n": 1,
-      "avg": 0.0
+      "avg": -1.0
      }
     },
     "par_uncertain_team_holes": 0,
