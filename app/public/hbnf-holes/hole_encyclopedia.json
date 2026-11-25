@@ -16,7 +16,7 @@
    "udisc_par_total": null,
    "par_reconciled": true,
    "scored": false,
-   "notes": null
+   "notes": "No UDisc event id found; not scored."
   },
   "2025-12-02": {
    "name": "12:2 Glow Layout",
@@ -26,7 +26,7 @@
    "udisc_par_total": null,
    "par_reconciled": true,
    "scored": false,
-   "notes": null
+   "notes": "Guide reads '1 main to practice'; transcribed as long practice (1 main always targeted practice 3). No UDisc event id found; not scored."
   },
   "2025-12-09": {
    "name": "12/9/25 Glow Layout",
@@ -96,7 +96,7 @@
    "udisc_par_total": 60,
    "par_reconciled": true,
    "scored": true,
-   "notes": null
+   "notes": "Hole 8 par 4 taken from the UDisc layout (guide left it unmarked); total matches UDisc 60."
   },
   "2026-03-03": {
    "name": "3.3.26 Glow Layout",
@@ -114,7 +114,7 @@
    "holes": 18,
    "guide_par_total": 59,
    "udisc_par_total": 58,
-   "par_reconciled": false,
+   "par_reconciled": true,
    "scored": true,
    "notes": null
   },
@@ -162,9 +162,9 @@
    "name": "11.17.26 Glow Layout",
    "source": "Drive 1veh1BO8anuYPGBPBZ1lfnvvw46RBdcva4l_id4XJko8",
    "holes": 18,
-   "guide_par_total": 58,
+   "guide_par_total": 57,
    "udisc_par_total": 57,
-   "par_reconciled": false,
+   "par_reconciled": true,
    "scored": true,
    "notes": null
   },
@@ -3717,7 +3717,7 @@
      "event_date": "2026-04-18",
      "layout_hole": 7,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "12 main to 5 (par 4)",
      "scored": true,
@@ -3949,7 +3949,7 @@
      "event_date": "2026-11-17",
      "layout_hole": 11,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "12 main → 5 (par 4)",
      "scored": true,
@@ -4256,7 +4256,7 @@
       "avg": 0.0
      }
     },
-    "par_uncertain_team_holes": 20,
+    "par_uncertain_team_holes": 5,
     "difficulty_rank": 2,
     "difficulty_of": 112
    }
@@ -13442,7 +13442,7 @@
      "event_date": "2026-11-17",
      "layout_hole": 5,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": true,
      "source_text": "18 main ★ → 16 ★ (par 4)",
      "scored": true,
@@ -13599,7 +13599,7 @@
       "avg": -1.0
      }
     },
-    "par_uncertain_team_holes": 8,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 23,
     "difficulty_of": 112
    }
@@ -15444,7 +15444,7 @@
      "event_date": "2026-04-18",
      "layout_hole": 15,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "16 to 10 (par 4)",
      "scored": true,
@@ -15629,7 +15629,7 @@
       "avg": -1.0
      }
     },
-    "par_uncertain_team_holes": 7,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 69,
     "difficulty_of": 112
    }
@@ -18422,7 +18422,7 @@
    "label": "Main 1 to Basket 7",
    "variant": "main",
    "pars_seen": {
-    "4": 1
+    "3": 1
    },
    "distance_ft": null,
    "elevation_change_m": null,
@@ -18436,10 +18436,10 @@
     {
      "event_date": "2026-11-17",
      "layout_hole": 18,
-     "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par": 3,
+     "par_state": "guide",
      "star": false,
-     "source_text": "1 main → 7 (par 4)",
+     "source_text": "1 main → 7",
      "scored": true,
      "n": 8,
      "scores": [
@@ -18492,17 +18492,17 @@
    "identity_flags": [
     "target_variant_unidentified"
    ],
-   "par": 4,
+   "par": 3,
    "times_in_layouts": 1,
    "stats": {
     "rounds_scored": 1,
     "team_holes": 8,
     "avg_strokes": 2.625,
-    "avg_rel_par": -1.375,
+    "avg_rel_par": -0.375,
     "sd": 0.916,
-    "birdie_pct": 75.0,
-    "par_pct": 25.0,
-    "bogey_pct": 0.0,
+    "birdie_pct": 62.5,
+    "par_pct": 12.5,
+    "bogey_pct": 25.0,
     "double_plus_pct": 0.0,
     "aces": 0,
     "vs_team_avg": -0.167,
@@ -18510,70 +18510,70 @@
     "by_player_avg_rel_par_team_based": {
      "Alejandro villa": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Andrew": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Ben": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Carlos": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Dylan": {
       "n": 1,
-      "avg": -1.0
+      "avg": 0.0
      },
      "Fox": {
       "n": 1,
-      "avg": -1.0
+      "avg": 0.0
      },
      "Harley": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Jason": {
       "n": 1,
-      "avg": 0.0
+      "avg": 1.0
      },
      "Jeremy": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Karl": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Kyle": {
       "n": 1,
-      "avg": 0.0
+      "avg": 1.0
      },
      "Mason": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Michael": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Quiotee": {
       "n": 1,
-      "avg": -2.0
+      "avg": -1.0
      },
      "Richard": {
       "n": 1,
-      "avg": 0.0
+      "avg": 1.0
      },
      "Tony": {
       "n": 1,
-      "avg": 0.0
+      "avg": 1.0
      }
     },
-    "par_uncertain_team_holes": 8,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 73,
     "difficulty_of": 112
    }
@@ -19081,7 +19081,7 @@
      "event_date": "2026-11-17",
      "layout_hole": 1,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": true,
      "source_text": "Parking lot ★ → 8 (par 4)",
      "scored": true,
@@ -19217,7 +19217,7 @@
       "avg": -1.0
      }
     },
-    "par_uncertain_team_holes": 8,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 38,
     "difficulty_of": 112
    }
@@ -20828,7 +20828,7 @@
      "event_date": "2026-04-18",
      "layout_hole": 1,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "1 main to 2 (par 4)",
      "scored": true,
@@ -20951,7 +20951,7 @@
       "avg": 0.0
      }
     },
-    "par_uncertain_team_holes": 7,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 9,
     "difficulty_of": 112
    }
@@ -20978,7 +20978,7 @@
      "event_date": "2026-04-18",
      "layout_hole": 2,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "3 main to 4 (par 4)",
      "scored": true,
@@ -21101,7 +21101,7 @@
       "avg": -1.0
      }
     },
-    "par_uncertain_team_holes": 7,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 30,
     "difficulty_of": 112
    }
@@ -21128,7 +21128,7 @@
      "event_date": "2026-04-18",
      "layout_hole": 3,
      "par": 4,
-     "par_state": "guide_round_total_mismatch",
+     "par_state": "guide",
      "star": false,
      "source_text": "5 main to 13 (par 4)",
      "scored": true,
@@ -21251,7 +21251,7 @@
       "avg": 0.0
      }
     },
-    "par_uncertain_team_holes": 7,
+    "par_uncertain_team_holes": 0,
     "difficulty_rank": 6,
     "difficulty_of": 112
    }
