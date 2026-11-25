@@ -23,7 +23,7 @@ body.hbnf-holes{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.3
 .hbnf-holes button:focus-visible,.hbnf-holes a:focus-visible,.hbnf-holes input:focus-visible,.hbnf-holes select:focus-visible,.hbnf-holes tr:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .hbnf-holes .main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px;padding:12px 14px}
 .hbnf-holes .panel{border:1px solid #6d735499;border-radius:10px;background:var(--panel);min-height:0;overflow:auto}
-.hbnf-holes table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.hbnf-holes table{width:100%;border-collapse:separate;border-spacing:0 4px;font-variant-numeric:tabular-nums}
 .hbnf-holes th,.hbnf-holes td{text-align:left;padding:12px 8px;border-bottom:1px solid #6d735455;white-space:nowrap}
 .hbnf-holes thead th{position:sticky;top:0;background:var(--panel);color:var(--accent);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;z-index:1;cursor:pointer}
 .hbnf-holes td.n,.hbnf-holes th.n{text-align:right}
@@ -37,7 +37,7 @@ body.hbnf-holes{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.3
 .hbnf-holes .sub{color:var(--muted);font-size:.8rem;margin:0 0 12px}
 .hbnf-holes .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
 .hbnf-holes .cell{border:1px solid #6d735477;border-radius:8px;padding:8px 10px}
-.hbnf-holes .cell small{display:block;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
+.hbnf-holes .cell small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;letter-spacing:0;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
 .hbnf-holes .cell strong{font-size:1.1rem}
 .hbnf-holes h3{font-size:.85rem;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px}
 .hbnf-holes .empty{padding:16px;color:var(--muted)}
