@@ -104,6 +104,13 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
 .hbnf-studio #auto{background:#4b4361;border-color:#c9b4f0}
 .hbnf-studio #auto[aria-pressed="true"]{background:#625685}
 .hbnf-studio .empty{padding:12px;color:var(--muted)}
+.hbnf-studio .legend span[hidden]{display:none}
+.hbnf-studio .legend i.sq{border-radius:3px;background:#f4e9d6;width:14px;height:14px}
+.hbnf-studio .hr.nobdg{grid-template-columns:minmax(0,1fr) auto 14px}
+.hbnf-studio .pin.bk span{border-radius:6px;width:auto;min-width:26px;height:26px;padding:0 6px;background:#f4e9d6;border-color:#1d1812;font-size:12px;cursor:move}
+.hbnf-studio .pin.sel span{cursor:move}
+.leaflet-tooltip{background:#292119;color:#f4e9d6;border:1px solid #5a4a38;font:400 13px Cabin,Arial,sans-serif;box-shadow:none}
+.leaflet-tooltip-top:before{border-top-color:#5a4a38}
 .hbnf-studio .pin{background:none;border:0}
 .hbnf-studio .pin span{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:2px solid #1d1812;color:#1d1812;font:700 13px Cabin,Arial,sans-serif;box-shadow:0 0 0 1px #0008}
 .hbnf-studio .pin.sel span{width:34px;height:34px;margin:-3px;border-color:#f4e9d6;font-size:15px}
@@ -138,10 +145,10 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
  <button type="button" id="copy">Copy</button>
 </div>
 <div class="main">
- <div class="mapwrap"><div id="map" data-lg-ignore="third-party tile map; Leaflet controls sized to 44px in CSS" aria-label="Course map"></div><div id="ret" hidden aria-hidden="true"></div><div class="legend" aria-label="Map key"><span><i style="background:#8fcf8f"></i>Easier</span><span><i style="background:#e9d39b"></i>Even</span><span><i style="background:#e2a066"></i>Harder</span><span><i class="x">X</i>Overlap</span></div><div class="mbtns"><button type="button" id="loc" aria-pressed="false">Me</button><button type="button" id="fit">Fit</button></div></div>
+ <div class="mapwrap"><div id="map" data-lg-ignore="third-party tile map; Leaflet controls sized to 44px in CSS" aria-label="Course map"></div><div id="ret" hidden aria-hidden="true"></div><div class="legend" aria-label="Map key"><span><i style="background:#8fcf8f"></i>Easier</span><span><i style="background:#e9d39b"></i>Even</span><span><i style="background:#e2a066"></i>Harder</span><span><i class="x">X</i>Overlap</span><span id="lgsw" hidden><i style="background:#c9b4f0"></i>Swap option</span><span id="lgdr" hidden><i class="sq"></i>Draggable</span></div><div class="mbtns"><button type="button" id="loc" aria-pressed="false">Me</button><button type="button" id="fit">Fit</button></div></div>
  <div class="panel"><div class="tabs" role="toolbar" aria-label="Views"><button type="button" id="layoutTab" aria-pressed="true">Layout</button><button type="button" id="auto" aria-pressed="false">Auto</button><button type="button" id="pinsBtn" aria-pressed="false">Pins</button><button type="button" id="histBtn" aria-pressed="false">History</button><button type="button" id="grip" aria-label="Show or hide panel">&#9662;</button></div><div id="sheet"></div></div>
 </div>
 <script src="/hbnf-holes/studio/vendor/leaflet.js?v=1"></script>
-<script src="/hbnf-holes/studio/studio.js?v=12"></script>
+<script src="/hbnf-holes/studio/studio.js?v=14"></script>
 </body>
 </html>
