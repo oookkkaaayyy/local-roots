@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#292119">
-<title>HBNF | Studio</title>
+<title>HBNF | Layout Builder</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/hbnf-holes/studio/vendor/leaflet.css">
 <style>
@@ -40,11 +40,16 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
 .hbnf-studio .ph{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .hbnf-studio .ph h2{font-size:1.05rem;margin:0;min-width:0;overflow-wrap:anywhere}
 .hbnf-studio .list{display:flex;flex-direction:column;gap:6px}
-.hbnf-studio .slot{display:grid;grid-template-columns:1.6em minmax(0,1fr) auto auto auto;align-items:center;gap:8px;text-align:left;padding:4px 10px;min-width:0;font-weight:400;width:100%}
+.hbnf-studio .slot{display:grid;grid-template-columns:1.6em minmax(0,1fr) auto auto auto auto;align-items:center;gap:8px;text-align:left;padding:4px 10px;min-width:0;font-weight:400;width:100%}
 .hbnf-studio .slot.warn{border-left:3px solid #ff4d4d}
 .hbnf-studio .slot .n,.hbnf-studio .row .n{color:var(--accent);font-weight:700}
 .hbnf-studio .slot .l{overflow-wrap:anywhere;font-size:.9rem}
 .hbnf-studio .slot .p,.hbnf-studio .slot .r,.hbnf-studio .slot .v{font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hbnf-studio .hd{display:grid;grid-template-columns:1.6em minmax(0,1fr) auto auto auto auto;gap:8px;padding:0 10px 4px;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:0}
+.hbnf-studio .hd.pk{grid-template-columns:minmax(0,1fr) auto auto auto auto auto}
+.hbnf-studio .hd.hl{grid-template-columns:minmax(0,1fr) auto auto auto auto}
+.hbnf-studio .row.pk{grid-template-columns:minmax(0,1fr) auto auto auto auto auto}
+.hbnf-studio .row.hl{grid-template-columns:minmax(0,1fr) auto auto auto auto}
 .hbnf-studio .neg{color:var(--accent);font-weight:700}
 .hbnf-studio .pos{color:var(--warn);font-weight:700}
 .hbnf-studio .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:8px}
@@ -90,11 +95,12 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
 </head>
 <body class="hbnf-studio" data-sheet="open">
 <div class="bar">
- <h1>Studio</h1>
+ <h1>Layout Builder</h1>
  <a href="/hbnf-holes/">Holes</a>
  <select id="base" aria-label="Base layout"></select>
  <button type="button" id="auto" aria-pressed="false">Auto</button>
  <button type="button" id="pinsBtn" aria-pressed="false">Pins</button>
+ <button type="button" id="histBtn" aria-pressed="false">History</button>
  <span class="sp"></span>
  <button type="button" id="undo">Undo</button>
  <button type="button" id="reset">Reset</button>
@@ -105,6 +111,6 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
  <div class="panel"><button type="button" id="grip" aria-label="Toggle panel">&#8212;</button><div id="sheet"></div></div>
 </div>
 <script src="/hbnf-holes/studio/vendor/leaflet.js?v=1"></script>
-<script src="/hbnf-holes/studio/studio.js?v=6"></script>
+<script src="/hbnf-holes/studio/studio.js?v=8"></script>
 </body>
 </html>
