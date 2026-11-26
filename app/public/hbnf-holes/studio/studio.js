@@ -402,7 +402,12 @@
     if (!map) { return; }
     layers.pins.clearLayers(); layers.marks.clearLayers(); layers.tgt.clearLayers();
     var id, i, m, ic, L2 = { tree: 'T', ob: 'OB', overlap: 'X', note: 'N' };
-    for (id in pins) { if (pins.hasOwnProperty(id)) { L.circleMarker(pins[id], { radius: 5, color: '#1d1812', weight: 1, fillColor: '#c9b4f0', fillOpacity: 1, interactive: false }).addTo(layers.pins); } }
+    for (id in pins) {
+      if (!pins.hasOwnProperty(id)) { continue; }
+      if (id.indexOf(':new-') > 0) {
+        (function (nid) { var nm = L.marker(pins[nid], { icon: L.divIcon({ className: 'pin bk', html: '<span>' + esc(tlabel(nid.replace(':new-', ':'))) + '</span>', iconSize: [90, 26], iconAnchor: [45, 13] }), draggable: st.view === 'pins', keyboard: false }).addTo(layers.pins); nm.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(nid, q.lat, q.lng); }, 0); }); })(id);
+      } else { L.circleMarker(pins[id], { radius: 5, color: '#1d1812', weight: 1, fillColor: '#c9b4f0', fillOpacity: 1, interactive: false }).addTo(layers.pins); }
+    }
     for (i = 0; i < marks.length; i++) {
       m = marks[i]; ic = L.divIcon({ className: 'pin mk', html: '<span>' + L2[m.kind] + '</span>', iconSize: [22, 22], iconAnchor: [11, 11] });
       L.marker([m.lat, m.lon], { icon: ic, interactive: false, keyboard: false }).addTo(layers.marks);
@@ -412,11 +417,13 @@
       if (pos) { L.circle(pos, { radius: 6, color: '#c9b4f0', weight: 3, fillOpacity: 0, dashArray: '4 4', interactive: false }).addTo(layers.tgt); }
     }
     $('lgsw').hidden = st.view !== 'swap'; $('lgdr').hidden = st.view !== 'swap';
-    $('ret').hidden = !(st.view === 'pins' && (st.tgt || st.pf === 'marks'));
+    $('ret').hidden = !(st.view === 'pins' && (st.tgt || st.pf === 'marks' || st.pf === 'new'));
   }
   function tgtObj(id) { var a = targets(), i; for (i = 0; i < a.length; i++) { if (a[i].id === id) { return a[i]; } } return null; }
   function placeAt(lat, lon) {
-    if (st.pf === 'marks' && !st.tgt) {
+    if (st.pf === 'new' && st.nn) {
+      var nid2 = (st.nk === 'bsk' ? 'bsk:' : 'pad:') + 'new-' + st.nn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); pins[nid2] = [lat, lon]; pushPin(nid2, 'point', lat, lon);
+    } else if (st.pf === 'marks' && !st.tgt) {
       var mm = { id: 'mark:' + st.mk + ':' + Date.now(), kind: st.mk, lat: lat, lon: lon }; marks.push(mm); pushPin(mm.id, mm.kind, lat, lon);
     } else if (st.tgt) {
       pins[st.tgt] = [lat, lon]; pushPin(st.tgt, 'point', lat, lon); applyPins();
@@ -434,13 +441,22 @@
   }
   function pinsHtml() {
     var h = sheetHead('Pins', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
-    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs a pin</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All points</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button></div>';
+    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs a pin</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All points</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">New point</button></div>';
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
       h += '<div class="facts"><strong>' + esc(tlabel(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Set' : t && t.need === 2 ? 'Missing' : t && t.need === 1 ? 'Approx' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
       h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button><button type="button" data-a="list">List</button></div>';
       if (t) { h += '<div class="sub">Used by</div><div class="list">'; for (i = 0; i < t.holes.length && i < 6; i++) { h += '<div class="row"><span class="l">' + esc(short(t.holes[i])) + '</span><span class="v">P' + H[t.holes[i]].par + '</span><span class="v"></span><span class="v"></span></div>'; } h += '</div>'; }
       return h;
+    }
+    if (st.pf === 'new') {
+      var nid, nl = [];
+      h += '<div class="chips"><button type="button" data-nk="pad" aria-pressed="' + (st.nk !== 'bsk') + '">Pad</button><button type="button" data-nk="bsk" aria-pressed="' + (st.nk === 'bsk') + '">Basket</button></div>';
+      h += '<div class="tools-bar"><input id="nn" type="text" placeholder="Name" aria-label="Point name" value="' + esc(st.nn || '') + '" autocomplete="off"></div>';
+      h += '<div class="tools-bar"><button type="button" class="pri" data-a="place"' + (st.nn ? '' : ' disabled') + '>Place at crosshair</button><button type="button" data-a="here"' + (me && st.nn ? '' : ' disabled') + '>My location</button></div><div class="list">';
+      for (nid in pins) { if (pins.hasOwnProperty(nid) && nid.indexOf(':new-') > 0) { nl.push(nid); } }
+      for (i = 0; i < nl.length; i++) { h += '<div class="row"><span class="l">' + esc(tlabel(nl[i].replace(':new-', ':'))) + '</span><span class="v">' + pins[nl[i]][0].toFixed(5) + ', ' + pins[nl[i]][1].toFixed(5) + '</span><span class="v"></span><span class="v"></span></div>'; }
+      return h + '</div>';
     }
     if (st.pf === 'marks') {
       var ks = [['tree', 'Tree'], ['ob', 'OB'], ['overlap', 'Overlap'], ['note', 'Note']];
@@ -662,7 +678,8 @@
     $('loc').addEventListener('click', function () { locate(true); });
     $('fit').addEventListener('click', function () { st.fit = true; drawMap(); });
     $('grip').addEventListener('click', function () { setCollapsed(document.body.getAttribute('data-sheet') !== 'min'); });
-    $('sheet').addEventListener('input', function (e) { if (e.target.id === 'q') { st.q = e.target.value; st.focusQ = true; renderSheet(); } });
+    $('sheet').addEventListener('input', function (e) { if (e.target.id === 'nn') { st.nn = e.target.value; var pb = $('sheet').querySelector('[data-a=place]'), hb = $('sheet').querySelector('[data-a=here]'); if (pb) { pb.disabled = !st.nn; } if (hb) { hb.disabled = !(me && st.nn); } return; }
+      if (e.target.id === 'q') { st.q = e.target.value; st.focusQ = true; renderSheet(); } });
     $('sheet').addEventListener('mouseover', function (e) {
       var t = e.target; while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pick'))) { t = t.parentNode; }
       var id = t && t.getAttribute ? t.getAttribute('data-pick') : null; if (id !== st.hover) { st.hover = id; drawMap(); }
@@ -673,6 +690,7 @@
       var hv = t.getAttribute('data-h'); if (hv) { st.hd = hv; st.prev = seq[hv].map(function (q) { return { id: q.id, par: q.par }; }); st.fit = true; renderAll(); return; }
       var tg = t.getAttribute('data-t'), pfv = t.getAttribute('data-pf'), mkv = t.getAttribute('data-mk'), mdv = t.getAttribute('data-md'), snv = t.getAttribute('data-sn');
       if (tg) { st.tgt = tg; st.pf = st.pf === 'marks' ? 'need' : st.pf; var tt0 = tgtObj(tg), pp0 = tt0 ? tpos(tt0) : null; if (pp0 && map) { map.setView(pp0, 19, { animate: false }); } renderAll(); return; }
+      var nkv = t.getAttribute('data-nk'); if (nkv) { st.nk = nkv; renderSheet(); return; }
       if (pfv) { st.pf = pfv; st.tgt = null; renderAll(); return; }
       if (mkv) { st.mk = mkv; renderSheet(); return; }
       if (mdv) { delMark(mdv); return; }
