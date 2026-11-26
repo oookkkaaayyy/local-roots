@@ -39,7 +39,7 @@
       var d, i, c, have, ok = true;
       st.pulled = true;
       if (!rows) { st.cloud = 'offline'; renderSheet(); return; }
-      if (!rows.length) { if (st.ts) { cloudPush(); } return; }
+      if (!rows.length) { st.ts = st.ts || Date.now(); cloudPush(); return; }
       d = rows[0].data || {};
       if ((d.ts || 0) <= (st.ts || 0)) { if ((d.ts || 0) < (st.ts || 0)) { cloudPush(); } else { st.cloud = 'saved'; renderSheet(); } return; }
       c = customs(); have = {}; for (i = 0; i < c.length; i++) { have[c[i].pad + '>' + c[i].bsk] = 1; }
