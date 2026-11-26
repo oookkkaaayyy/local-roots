@@ -268,6 +268,8 @@
         }
       }
     }
+    var grp = {}, gi = {};
+    for (i = 0; i < slots.length; i++) { h = H[slots[i].id]; if (h.geo) { grp[h.geo.p] = (grp[h.geo.p] || 0) + 1; gi[i] = grp[h.geo.p] - 1; } }
     for (i = 0; i < slots.length; i++) {
       h = H[slots[i].id]; if (!h.geo) { continue; }
       p = ll2(h.geo.p); b = ll2(h.geo.b);
@@ -276,7 +278,8 @@
       var ln = L.polyline([p, b], { color: bad ? '#ff4d4d' : col, weight: sel ? 8 : 5, opacity: o.ghost ? 0.9 : 0.95, dashArray: o.ghost ? '8 6' : null, lineCap: 'round' }).addTo(group);
       if (!o.ghost) { (function (k) { ln.on('click', function () { pick(k); }); })(i); }
       L.circleMarker(b, { radius: 4, color: '#1d1812', weight: 1, fillColor: col, fillOpacity: 1, interactive: false }).addTo(group);
-      var ic = L.divIcon({ className: 'pin' + (sel ? ' sel' : '') + (o.ghost ? ' gh' : ''), html: '<span style="background:' + col + '">' + (o.nums ? o.nums[i] : i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14, 14] });
+      var gn = grp[h.geo.p], fa = 2 * Math.PI * gi[i] / gn - Math.PI / 2, fx = gn > 1 && !sel ? Math.round(Math.cos(fa) * (gn > 3 ? 26 : 19)) : 0, fy = gn > 1 && !sel ? Math.round(Math.sin(fa) * (gn > 3 ? 26 : 19)) : 0;
+      var ic = L.divIcon({ className: 'pin' + (sel ? ' sel' : '') + (o.ghost ? ' gh' : ''), html: '<span style="background:' + col + '">' + (o.nums ? o.nums[i] : i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14 - fx, 14 - fy] });
       var m = L.marker(p, { icon: ic, keyboard: false, draggable: !!sel, zIndexOffset: sel ? 1000 : 0 }).addTo(group);
       if (!o.ghost) { (function (k) { m.on('click', function () { pick(k); }); })(i); }
       if (sel) {
@@ -308,7 +311,7 @@
       L.circleMarker(ll2(pg.p), { radius: 7, color: '#c9b4f0', weight: 3, fillColor: '#1d1812', fillOpacity: 1, interactive: false }).addTo(layers.hov);
     }
     var fit = st.view !== 'build' && st.sel >= 0 && H[st.slots[st.sel].id].geo ? [ll2(H[st.slots[st.sel].id].geo.p), ll2(H[st.slots[st.sel].id].geo.b)] : null;
-    if (st.fit) { st.fit = false; var pts = [], i, fs = st.view === 'build' ? dc(-1, -1, null).s : st.slots; for (i = 0; i < fs.length; i++) { if (H[fs[i].id].geo) { pts.push(ll2(H[fs[i].id].geo.p), ll2(H[fs[i].id].geo.b)); } } if (st.view === 'build' && !pts.length) { var kk, bk = []; for (kk in GEO.nodes) { if (GEO.nodes.hasOwnProperty(kk) && kk.indexOf('pin:') !== 0) { bk.push(ll2(kk)); } } pts = bk; } if (pts.length) { map.invalidateSize(); map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], animate: false }); } }
+    if (st.fit) { st.fit = false; var pts = [], i, fs = st.view === 'build' ? dc(-1, -1, null).s : st.slots; for (i = 0; i < fs.length; i++) { if (H[fs[i].id].geo) { pts.push(ll2(H[fs[i].id].geo.p), ll2(H[fs[i].id].geo.b)); } } if (st.view === 'build' && !pts.length) { var kk, bk = []; for (kk in GEO.nodes) { if (GEO.nodes.hasOwnProperty(kk) && kk.indexOf('pin:') !== 0) { bk.push(ll2(kk)); } } pts = bk; } if (pts.length) { map.invalidateSize(); map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [40, 40], paddingBottomRight: [40, 78], animate: false }); } }
     else if (st.view !== 'build' && fit && st.focus) { st.focus = false; map.invalidateSize(); map.fitBounds(L.latLngBounds(fit), { padding: [90, 90], maxZoom: 18, animate: false }); }
   }
   function initMap() {
