@@ -28,7 +28,7 @@
   }
   function cloudPush() {
     cloudT = null; st.cloud = 'saving';
-    sb2('POST', '?on_conflict=id', { id: 'layout-builder', data: { base: st.base, slots: st.slots, lock: st.lock, draft: st.draft, customs: customs(), ts: st.ts || Date.now() }, updated_at: new Date(st.ts || Date.now()).toISOString() }, function (r) {
+    sb2('POST', '?on_conflict=id', { id: 'layout-builder', data: { base: st.base, slots: st.slots, lock: st.lock, draft: st.draft, customs: customs(), mg: MG, ts: st.ts || Date.now() }, updated_at: new Date(st.ts || Date.now()).toISOString() }, function (r) {
       st.cloud = r ? 'saved' : 'offline'; var el = $('cloud'); if (el) { el.textContent = st.cloud === 'saved' ? 'Saved to cloud' : 'Offline, saved on this device'; }
     });
   }
@@ -45,6 +45,7 @@
       c = customs(); have = {}; for (i = 0; i < c.length; i++) { have[c[i].pad + '>' + c[i].bsk] = 1; }
       (d.customs || []).forEach(function (x) { if (!have[x.pad + '>' + x.bsk]) { c.push(x); } });
       try { localStorage.setItem(CKEY, JSON.stringify(c)); } catch (e) { /* storage unavailable */ }
+      if (d.mg) { var mk2; for (mk2 in (d.mg.m || {})) { if (d.mg.m.hasOwnProperty(mk2)) { MG.m[mk2] = d.mg.m[mk2]; } } (d.mg.no || []).forEach(function (z) { if (MG.no.indexOf(z) < 0) { MG.no.push(z); } }); try { localStorage.setItem(MGK, JSON.stringify(MG)); } catch (e) { /* storage unavailable */ } DDC = null; }
       loadCustoms(); applyPins();
       if (d.slots && d.slots.length === 18) { for (i = 0; i < 18; i++) { if (!H[d.slots[i].id]) { ok = false; } } } else { ok = false; }
       if (ok) { st.slots = d.slots; st.base = d.base; st.lock = d.lock || {}; baseGrade = st.base && seq[st.base] ? grade(st.slots) : grade(st.slots); }
@@ -497,7 +498,8 @@
   }
   function pinsHtml() {
     var h = sheetHead('Locations', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
-    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>';
+    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="dup" aria-pressed="' + (st.pf === 'dup') + '">Same place ' + (dupGroups('pad:').length + dupGroups('bsk:').length) + '</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>';
+    if (st.pf === 'dup' && !st.tgt) { return dupHtml(h); }
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
       h += '<div class="facts"><strong>' + (st.tgt.indexOf('bsk:') === 0 ? 'Basket' : 'Pad') + ' · ' + esc(tname(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Moved by you' : t && t.need === 2 ? 'No location' : t && t.need === 1 ? 'Approximate' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
@@ -566,6 +568,50 @@
     return best;
   }
 
+  var MG = { m: {}, no: [] }, MGK = 'hbnf-studio-merge', DDC = null;
+  function loadMG() { try { var r = JSON.parse(localStorage.getItem(MGK) || 'null'); if (r) { MG = { m: r.m || {}, no: r.no || [] }; } } catch (e) { /* none */ } DDC = null; }
+  function saveMG() { try { localStorage.setItem(MGK, JSON.stringify(MG)); } catch (e) { /* storage unavailable */ } DDC = null; save(); }
+  function canon(id) { var n = 0; while (MG.m[id] && n++ < 8) { id = MG.m[id]; } return id; }
+  function hkey(h) { return canon(h.pad) + '>' + canon(h.bsk); }
+  function isDup(h) {
+    var i, b, k;
+    if (!DDC || DDC.n !== pool.length) { DDC = { n: pool.length, b: {} }; for (i = 0; i < pool.length; i++) { k = hkey(pool[i]); b = DDC.b[k]; if (!b || pool[i].n > b.n || (pool[i].n === b.n && !MG.m[pool[i].pad] && MG.m[b.pad])) { DDC.b[k] = pool[i]; } } }
+    return DDC.b[hkey(h)] !== h;
+  }
+  function dupGroups(kind) {
+    var ts = targets().filter(function (t) { return t.id.indexOf(kind) === 0 && !MG.m[t.id] && t.need !== 2; }), n = ts.length, par = [], i, j, g = {}, out = [], pi, pj, a, b, r;
+    function f(x) { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; }
+    for (i = 0; i < n; i++) { par.push(i); }
+    for (i = 0; i < n; i++) {
+      pi = tpos(ts[i]); if (!pi) { continue; }
+      for (j = i + 1; j < n; j++) {
+        pj = tpos(ts[j]); if (!pj) { continue; }
+        a = ts[i].id; b = ts[j].id;
+        if (MG.no.indexOf(a < b ? a + '|' + b : b + '|' + a) >= 0) { continue; }
+        if (mdist(pi, pj) < 7.5) { par[f(i)] = f(j); }
+      }
+    }
+    for (i = 0; i < n; i++) { r = f(i); (g[r] = g[r] || []).push(ts[i]); }
+    for (r in g) { if (g.hasOwnProperty(r) && g[r].length > 1) { out.push(g[r].sort(function (x, y) { var bx = /near|mod|path|temp/.test(x.id) ? 1 : 0, by = /near|mod|path|temp/.test(y.id) ? 1 : 0; return bx - by || y.holes.length - x.holes.length || (x.id < y.id ? -1 : 1); })); } }
+    out.sort(function (x, y) { return x[0].id < y[0].id ? -1 : 1; });
+    return out;
+  }
+  function dupKey(g) { return g.map(function (x) { return x.id; }).sort().join('|'); }
+  function dupHtml(h) {
+    var gs = dupGroups(st.tk === 'bsk' ? 'bsk:' : 'pad:'), i, j, g, k, keep, arm;
+    h += '<div class="chips"><button type="button" data-tk="pad" aria-pressed="' + (st.tk !== 'bsk') + '">Pads</button><button type="button" data-tk="bsk" aria-pressed="' + (st.tk === 'bsk') + '">Baskets</button></div>';
+    for (i = 0; i < gs.length; i++) {
+      g = gs[i]; k = dupKey(g); keep = st.dkeep && st.dkeep[k] && g.some(function (x) { return x.id === st.dkeep[k]; }) ? st.dkeep[k] : g[0].id; arm = st.dm === k;
+      h += '<div class="card"><div class="ttl"><b>Same location</b><span>' + g.length + ' ' + (st.tk === 'bsk' ? 'baskets' : 'pads') + '</span></div><div class="list nb">';
+      for (j = 0; j < g.length; j++) { h += '<button type="button" class="hr nobdg" data-dk="' + esc(k) + '" data-did="' + esc(g[j].id) + '" aria-pressed="' + (g[j].id === keep) + '"><span class="mid"><b>' + esc(tname(g[j].id)) + '</b><small>' + g[j].holes.length + ' hole' + (g[j].holes.length === 1 ? '' : 's') + (g[j].id === keep ? ' · Keep this name' : '') + '</small></span></button>'; }
+      h += '</div>';
+      if (arm) { h += '<div class="tools-bar"><button type="button" class="pri" data-a="dgo" data-dk="' + esc(k) + '">Confirm: merge into ' + esc(tname(keep)) + '</button><button type="button" data-a="dback">Back</button></div>'; }
+      else { h += '<div class="tools-bar"><button type="button" class="pri" data-a="darm" data-dk="' + esc(k) + '">Merge into ' + esc(tname(keep)) + '</button><button type="button" data-a="dno" data-dk="' + esc(k) + '">Not the same</button></div>'; }
+      h += '</div>';
+    }
+    if (!gs.length) { h += '<div class="empty">-</div>'; }
+    return h;
+  }
   function posKey(id) { return pins[id] ? 'pin:' + id : (PN[id] || null); }
   function slug(n) { return n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
   function customs() { try { return JSON.parse(localStorage.getItem(CKEY) || '[]'); } catch (e) { return []; } }
@@ -601,7 +647,7 @@
   function usedB() { var m = {}, d = D(), i; for (i = 0; i < 18; i++) { if (d[i] && i !== st.bi) { m[H[d[i].id].bsk] = 1; } } return m; }
   function padList() {
     var seen = {}, out = [], i, k, lk = prevKey(st.bi), pid;
-    function add(x) { if (!x || seen[x] || x.indexOf('unresolved') >= 0 || x.indexOf('temp') >= 0 || x.indexOf('pad:') !== 0) { return; } seen[x] = 1; k = posKey(x); if (k) { out.push({ id: x, w: walk(lk, k) }); } }
+    function add(x) { if (!x || seen[x] || MG.m[x] || x.indexOf('unresolved') >= 0 || x.indexOf('temp') >= 0 || x.indexOf('pad:') !== 0) { return; } seen[x] = 1; k = posKey(x); if (k) { out.push({ id: x, w: walk(lk, k) }); } }
     for (i = 0; i < pool.length; i++) { add(pool[i].pad); }
     for (pid in pins) { if (pins.hasOwnProperty(pid)) { add(pid); } }
     out.sort(function (a, b) { return a.w - b.w; });
@@ -610,10 +656,10 @@
   function bskList(padId) {
     var seen = {}, ub = usedB(), pair = [], rest = [], i, x, k, pk = posKey(padId), pid, d;
     function add(b) {
-      if (!b || seen[b] || ub[b] || b.indexOf('unresolved') >= 0 || b.indexOf('temp') >= 0 || b.indexOf('bsk:') !== 0) { return; }
+      if (!b || seen[b] || MG.m[b] || ub[b] || b.indexOf('unresolved') >= 0 || b.indexOf('temp') >= 0 || b.indexOf('bsk:') !== 0) { return; }
       seen[b] = 1; k = posKey(b); if (!k) { return; }
       d = pk ? mdist(ll2(pk), ll2(k)) * 3.28084 : 0;
-      x = { id: b, d: d, played: !!H['H:' + padId + '>' + b] };
+      x = { id: b, d: d, played: pool.some(function (q) { return canon(q.pad) === padId && canon(q.bsk) === b; }) };
       (x.played ? pair : rest).push(x);
     }
     for (i = 0; i < pool.length; i++) { add(pool[i].bsk); }
@@ -625,6 +671,7 @@
     var b = st.bp, h, id;
     if (!b.pad || !b.bsk) { return null; }
     id = 'H:' + b.pad + '>' + b.bsk; h = H[id];
+    if (!h) { var ex = pool.filter(function (q) { return canon(q.pad) === b.pad && canon(q.bsk) === b.bsk; }).sort(function (x, y) { return y.n - x.n; })[0]; if (ex) { h = ex; } }
     if (!h) { h = mkHole(b.pad, b.bsk, b.par); applyPins(); }
     return h;
   }
@@ -638,7 +685,7 @@
     for (i = 0; i < 18; i++) { if (d[i] && i !== st.bi) { used[d[i].id] = 1; if (d[i].par >= 4) { par4++; } } }
     for (j = st.bi - 1; j >= 0; j--) { if (d[j]) { if (!pv) { pv = d[j]; } else if (!pv2) { pv2 = d[j]; } } }
     for (i = 0; i < pool.length; i++) {
-      p = pool[i]; if (!p.geo || used[p.id] || ub[p.bsk] || p.syn) { continue; }
+      p = pool[i]; if (!p.geo || used[p.id] || ub[p.bsk] || p.syn || isDup(p)) { continue; }
       fl = flow(p.id, p.par);
       c = fl.i + fl.o * 0.7 + 2 * fl.x + (st.bi >= 15 ? fl.e * (st.bi >= 16 ? 1 : 0.4) : 0);
       if (pv && pv2 && pv.par === p.par && pv2.par === p.par) { c += 0.8; }
@@ -942,6 +989,12 @@
       if (slv !== null) { selSlot(parseInt(slv, 10)); st.fit = false; renderAll(); return; }
       if (sgv) { addDraft(sgv, H[sgv].par); return; }
       if (bpv) { st.bp.par = parseInt(bpv, 10); if (D()[st.bi] && selHole() && D()[st.bi].id === selHole().id) { st.draft = D(); st.draft[st.bi].par = st.bp.par; save(); renderAll(); } else { renderSheet(); } return; }
+      var dkv = t.getAttribute('data-dk'), did = t.getAttribute('data-did');
+      if (dkv && did) { st.dkeep = st.dkeep || {}; st.dkeep[dkv] = did; renderSheet(); return; }
+      if (aa === 'darm') { st.dm = dkv; renderSheet(); return; }
+      if (aa === 'dback') { st.dm = null; renderSheet(); return; }
+      if (aa === 'dno') { var gg = dupGroups(st.tk === 'bsk' ? 'bsk:' : 'pad:').filter(function (g0) { return dupKey(g0) === dkv; })[0], x1, y1; if (gg) { for (x1 = 0; x1 < gg.length; x1++) { for (y1 = x1 + 1; y1 < gg.length; y1++) { MG.no.push(gg[x1].id < gg[y1].id ? gg[x1].id + '|' + gg[y1].id : gg[y1].id + '|' + gg[x1].id); } } saveMG(); } renderAll(); return; }
+      if (aa === 'dgo') { var g2 = dupGroups(st.tk === 'bsk' ? 'bsk:' : 'pad:').filter(function (g0) { return dupKey(g0) === dkv; })[0], kp = st.dkeep && st.dkeep[dkv], z1; if (g2) { kp = g2.some(function (x) { return x.id === kp; }) ? kp : g2[0].id; for (z1 = 0; z1 < g2.length; z1++) { if (g2[z1].id !== kp) { MG.m[g2[z1].id] = kp; } } st.dm = null; saveMG(); } renderAll(); return; }
       if (aa === 'newl') { startBuild(); return; }
       if (aa === 'drm') { st.draft = D(); st.draft[st.bi] = null; st.bp = { pad: '', bsk: '', par: 3 }; save(); renderAll(); return; }
       if (aa === 'dclr') { st.draft = []; selSlot(0); save(); renderAll(); return; }
@@ -994,7 +1047,7 @@
     });
   }
   function start() {
-    loadCustoms();
+    loadMG(); loadCustoms();
     histRel = dates.map(function (x) { return grade(seq[x]).rel; });
     var saved = load();
     if (saved) { st.base = saved.base; st.slots = saved.slots; st.lock = saved.lock || {}; st.draft = (saved.draft || []).map(function (x) { return x && H[x.id] ? x : null; }); st.ts = saved.ts || 0; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
