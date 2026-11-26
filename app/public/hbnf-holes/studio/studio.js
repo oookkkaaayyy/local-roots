@@ -300,6 +300,7 @@
 
   function mxy(a) { return [a[1] * 111320 * Math.cos(33.698 * Math.PI / 180), a[0] * 111320]; }
   function mdist(a, b) { var u = mxy(a), v = mxy(b); return Math.sqrt(Math.pow(u[0] - v[0], 2) + Math.pow(u[1] - v[1], 2)); }
+  function tname(id) { var n = id.replace(/^(pad|bsk):/, '').replace(/-/g, ' '); return n.charAt(0).toUpperCase() + n.slice(1); }
   function tlabel(id) { return (id.indexOf('pad:') === 0 ? 'Pad ' : id.indexOf('bsk:') === 0 ? 'Basket ' : '') + id.replace(/^(pad|bsk):/, '').replace(/-/g, ' '); }
   function sb(method, url, body, cb) {
     var x = new XMLHttpRequest();
@@ -414,7 +415,7 @@
     }
     if (st.view === 'pins' && st.tgt) {
       var t = tgtObj(st.tgt), pos = t ? tpos(t) : null;
-      if (pos) { L.circle(pos, { radius: 6, color: '#c9b4f0', weight: 3, fillOpacity: 0, dashArray: '4 4', interactive: false }).addTo(layers.tgt); }
+      if (pos) { var tid = st.tgt, tm = L.marker(pos, { icon: L.divIcon({ className: 'pin bk', html: '<span>' + esc(tname(tid)) + '</span>', iconSize: [120, 26], iconAnchor: [60, 13] }), draggable: true, keyboard: false, zIndexOffset: 1200 }).addTo(layers.tgt); tm.bindTooltip('Drag to move', { direction: 'top', offset: [0, -14] }); tm.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(tid, q.lat, q.lng); }, 0); }); }
     }
     $('lgsw').hidden = st.view !== 'swap'; $('lgdr').hidden = st.view !== 'swap';
     $('ret').hidden = !(st.view === 'pins' && (st.tgt || st.pf === 'marks' || st.pf === 'new'));
@@ -440,11 +441,11 @@
     return out;
   }
   function pinsHtml() {
-    var h = sheetHead('Pins', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
-    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs a pin</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All points</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">New point</button></div>';
+    var h = sheetHead('Locations', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
+    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>';
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
-      h += '<div class="facts"><strong>' + esc(tlabel(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Set' : t && t.need === 2 ? 'Missing' : t && t.need === 1 ? 'Approx' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
+      h += '<div class="facts"><strong>' + esc(tlabel(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Moved by you' : t && t.need === 2 ? 'No location' : t && t.need === 1 ? 'Approximate' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
       h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button><button type="button" data-a="list">List</button></div>';
       if (t) { h += '<div class="sub">Used by</div><div class="list">'; for (i = 0; i < t.holes.length && i < 6; i++) { h += '<div class="row"><span class="l">' + esc(short(t.holes[i])) + '</span><span class="v">P' + H[t.holes[i]].par + '</span><span class="v"></span><span class="v"></span></div>'; } h += '</div>'; }
       return h;
@@ -465,12 +466,16 @@
       for (i = marks.length - 1; i >= 0 && i > marks.length - 40; i--) { h += '<div class="row"><span class="l">' + marks[i].kind + ' ' + marks[i].lat.toFixed(5) + ', ' + marks[i].lon.toFixed(5) + '</span><span class="v"></span><span class="v"></span><button type="button" class="v" data-md="' + esc(marks[i].id) + '">Delete</button></div>'; }
       return h + '</div>';
     }
-    a = targets().filter(function (x) { return st.pf === 'all' || x.need > 0; });
+    var all0 = targets(), kd = st.tk === 'bsk' ? 'bsk:' : 'pad:', cn = { 'pad:': [0, 0], 'bsk:': [0, 0] }, kk;
+    all0.forEach(function (x) { kk = x.id.indexOf('bsk:') === 0 ? 'bsk:' : 'pad:'; cn[kk][1]++; if (x.need > 0) { cn[kk][0]++; } });
+    var need = st.pf !== 'all';
+    h += '<div class="chips"><button type="button" data-tk="pad" aria-pressed="' + (kd === 'pad:') + '">Pads ' + (need ? cn['pad:'][0] : cn['pad:'][1]) + '</button><button type="button" data-tk="bsk" aria-pressed="' + (kd === 'bsk:') + '">Baskets ' + (need ? cn['bsk:'][0] : cn['bsk:'][1]) + '</button></div>';
+    a = all0.filter(function (x) { return x.id.indexOf(kd) === 0 && (st.pf === 'all' || x.need > 0); });
     a.forEach(function (x) { var q = tpos(x); x.dist = me && q ? mdist([me.lat, me.lon], q) : null; });
     a.sort(function (x, y) { if (x.dist !== null && y.dist !== null) { return x.dist - y.dist; } return y.need - x.need || (x.id < y.id ? -1 : 1); });
     h += '<div class="list">';
-    for (i = 0; i < a.length && i < 120; i++) {
-      t = a[i]; h += '<button type="button" class="hr" data-t="' + esc(t.id) + '"><span class="bdg dot" style="background:' + (t.need === -1 ? '#8fcf8f' : t.need === 2 ? '#e2a066' : t.need === 1 ? '#e9d39b' : '#9a9a9a') + '"></span><span class="mid"><b>' + esc(tlabel(t.id)) + '</b><small>' + (t.need === -1 ? 'Pin set' : t.need === 2 ? 'No location' : t.need === 1 ? 'Approximate location' : 'Mapped') + ' · Used by ' + t.holes.length + (t.holes.length === 1 ? ' hole' : ' holes') + (t.dist !== null ? ' · ' + Math.round(t.dist) + ' m away' : '') + '</small></span><span class="chev" aria-hidden="true">&rsaquo;</span></button>';
+    for (i = 0; i < a.length && i < 150; i++) {
+      t = a[i]; h += '<button type="button" class="hr nobdg" data-t="' + esc(t.id) + '"><span class="mid"><b>' + esc(tname(t.id)) + '</b><small class="' + (t.need === 2 ? 'pos' : '') + '">' + (t.need === -1 ? 'Moved by you' : t.need === 2 ? 'No location' : t.need === 1 ? 'Approximate' : 'Mapped') + ' · ' + t.holes.length + (t.holes.length === 1 ? ' hole' : ' holes') + (t.dist !== null ? ' · ' + Math.round(t.dist) + ' m away' : '') + '</small></span><span class="chev" aria-hidden="true">&rsaquo;</span></button>';
     }
     if (!a.length) { h += '<div class="empty">-</div>'; }
     return h + '</div>';
@@ -690,6 +695,7 @@
       var hv = t.getAttribute('data-h'); if (hv) { st.hd = hv; st.prev = seq[hv].map(function (q) { return { id: q.id, par: q.par }; }); st.fit = true; renderAll(); return; }
       var tg = t.getAttribute('data-t'), pfv = t.getAttribute('data-pf'), mkv = t.getAttribute('data-mk'), mdv = t.getAttribute('data-md'), snv = t.getAttribute('data-sn');
       if (tg) { st.tgt = tg; st.pf = st.pf === 'marks' ? 'need' : st.pf; var tt0 = tgtObj(tg), pp0 = tt0 ? tpos(tt0) : null; if (pp0 && map) { map.setView(pp0, 19, { animate: false }); } renderAll(); return; }
+      var tkv = t.getAttribute('data-tk'); if (tkv) { st.tk = tkv; renderSheet(); return; }
       var nkv = t.getAttribute('data-nk'); if (nkv) { st.nk = nkv; renderSheet(); return; }
       if (pfv) { st.pf = pfv; st.tgt = null; renderAll(); return; }
       if (mkv) { st.mk = mkv; renderSheet(); return; }
