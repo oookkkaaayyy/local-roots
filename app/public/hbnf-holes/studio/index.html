@@ -139,6 +139,8 @@ body.hbnf-studio{position:fixed;top:0;left:0;right:0;bottom:0;height:auto;width:
 @media(max-width:760px){
 .hbnf-studio .main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(120px,1fr) auto;padding:8px;gap:8px}
 .hbnf-studio .panel{height:48vh;max-height:none}
+.hbnf-studio[data-view="build"] .panel{height:60vh}
+.hbnf-studio[data-place="1"] .panel{height:36vh}
 .hbnf-studio[data-sheet="min"] .panel{height:auto}
 .hbnf-studio[data-sheet="min"] #sheet{display:none}
 .hbnf-studio .tabs #grip{display:inline-flex;align-items:center;justify-content:center}
@@ -146,6 +148,7 @@ body.hbnf-studio{position:fixed;top:0;left:0;right:0;bottom:0;height:auto;width:
 .hbnf-studio .bar{padding:6px 8px;gap:6px}
 .hbnf-studio h1{flex:1 1 auto;margin:0}.hbnf-studio .bar select{order:5;flex:1 1 100%}.hbnf-studio .legend{font-size:.72rem;gap:6px 8px;padding:4px 7px}
 .hbnf-studio .sp{display:none}
+.hbnf-studio .legend{max-width:calc(100% - 76px);flex-wrap:wrap}
 .hbnf-studio .bar button{padding:0 9px}
 .hbnf-studio .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
@@ -182,6 +185,6 @@ body.hbnf-studio{position:fixed;top:0;left:0;right:0;bottom:0;height:auto;width:
  <div class="panel"><div class="tabs" role="toolbar" aria-label="Views"><button type="button" id="layoutTab" aria-pressed="true">Layout</button><button type="button" id="auto" aria-pressed="false">Auto</button><button type="button" id="pinsBtn" aria-pressed="false">Locations</button><button type="button" id="histBtn" aria-pressed="false">History</button><button type="button" id="grip" aria-label="Show or hide panel">&#9662;</button></div><div id="sheet"></div></div>
 </div>
 <script src="/hbnf-holes/studio/vendor/leaflet.js?v=1"></script>
-<script src="/hbnf-holes/studio/studio.js?v=34"></script>
+<script src="/hbnf-holes/studio/studio.js?v=35"></script>
 </body>
 </html>

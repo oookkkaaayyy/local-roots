@@ -474,6 +474,7 @@
       if (pos) { var tid = st.tgt, tm = L.marker(pos, { icon: L.divIcon({ className: 'pin bk', html: '<span>' + esc(tname(tid)) + '</span>', iconSize: [120, 26], iconAnchor: [60, 13] }), draggable: true, keyboard: false, zIndexOffset: 1200 }).addTo(layers.tgt); tm.bindTooltip('Drag to move', { direction: 'top', offset: [0, -14] }); tm.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(tid, q.lat, q.lng); }, 0); }); }
     }
     $('lgsw').hidden = !(st.view === 'swap' || st.view === 'build'); $('lgpast').hidden = !(st.view === 'hist' && st.hd);
+    document.body.setAttribute('data-place', (st.view === 'pins' && (st.tgt || st.pf === 'marks' || st.pf === 'new')) || (st.view === 'build' && st.cr) ? '1' : '0'); document.body.setAttribute('data-view', st.view);
     $('ret').hidden = !((st.view === 'pins' && (st.tgt || st.pf === 'marks' || st.pf === 'new')) || (st.view === 'build' && st.cr));
   }
   function tgtObj(id) { var a = targets(), i; for (i = 0; i < a.length; i++) { if (a[i].id === id) { return a[i]; } } return null; }
@@ -498,7 +499,7 @@
   }
   function pinsHtml() {
     var h = sheetHead('Locations', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
-    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="dup" aria-pressed="' + (st.pf === 'dup') + '">Same place ' + (dupGroups('pad:').length + dupGroups('bsk:').length) + '</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>';
+    if (!st.tgt) { h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="dup" aria-pressed="' + (st.pf === 'dup') + '">Same place ' + (dupGroups('pad:').length + dupGroups('bsk:').length) + '</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>'; }
     if (st.pf === 'dup' && !st.tgt) { return dupHtml(h); }
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
