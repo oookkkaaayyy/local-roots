@@ -3,7 +3,7 @@
   var bldCache0 = null, GEO = null, TI = {}, KEY = 'hbnf-studio-v2', MIN_N = 4, K = 6, PRIOR = { 3: -0.4, 4: 0.3 }, BPRIOR = 25, hist = [], histRel = [];
   var $ = function (id) { return document.getElementById(id); };
   var enc = null, H = {}, pool = [], seq = {}, dates = [];
-  var st = { base: null, slots: [], sel: -1, view: 'route', sort: 'easy', all: false, q: '', goal: 'easier', more: false, lock: {}, note: null, busy: null, tgt: null, pf: 'need', mk: 'tree', cards: 0, prev: null, pgoal: null, hover: null };
+  var st = { base: null, slots: [], sel: -1, view: 'route', sort: 'fit', all: false, q: '', goal: 'easier', more: false, lock: {}, note: null, busy: null, tgt: null, pf: 'need', mk: 'tree', cards: 0, prev: null, pgoal: null, hover: null };
   var baseGrade = null;
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
   function f(v, d) { return v === null || v === undefined || isNaN(v) ? '-' : Number(v).toFixed(d); }
@@ -549,11 +549,14 @@
 
   function lastLbl(id) { var u = USE[id]; if (!u) { return 'New hole'; } return u.last === 0 ? 'Used last round' : 'Last used ' + u.last + (u.last === 1 ? ' round ago' : ' rounds ago'); }
   function ftLbl(h) { return h.geo ? ftOf(h) + ' ft' : 'Unmapped'; }
+  function metHead() { return '<div class="mh"><span>Par</span><span>Length</span><span>Used</span><span>Last used</span></div>'; }
   function holeRow(id, par, o) {
-    var h = H[id], ok = tested(h), col = relColor(exp(h, par) - par, ok), tag = o.attr ? 'button' : 'div', ex = o.extra || '';
-    return '<' + tag + ' type="' + (o.attr ? 'button' : '') + '" class="hr' + (o.warn ? ' warn' : '') + (o.nb ? ' nobdg' : '') + '" ' + (o.attr || '') + (o.role ? ' role="listitem"' : '') + '>' + (o.nb ? '' : '<span class="bdg" style="background:' + col + '">' + (o.n !== undefined ? o.n : '') + '</span>') +
-      '<span class="mid"><b>' + esc(short(id)) + '</b><small>Par ' + par + ' · ' + ftLbl(h) + ' · Used ' + usedTxt(id) + ' rounds</small><small class="' + (USE[id] ? '' : 'pos') + '">' + lastLbl(id) + ex + '</small></span>' +
-      '<span class="rt"><b class="' + (ok ? cl(h.rel) : '') + '">' + (ok ? sg(h.rel, 2) : '-') + '</b><small>' + (ok ? 'to par' : 'no data') + '</small></span>' + '<span class="chev" aria-hidden="true">' + (o.attr ? '&rsaquo;' : '') + '</span></' + tag + '>';
+    var h = H[id], ok = tested(h), col = relColor(exp(h, par) - par, ok), tag = o.attr ? 'button' : 'div', u = USE[id], ex = o.extra || '';
+    var len = h.geo ? (h.geo.pf === 'a' || h.geo.bf === 'a' ? '<em class="est">est </em>' : '') + ftOf(h).replace('approx ', '') + ' ft' : 'Unmapped';
+    var last = !u ? '<span class="pos">New</span>' : u.last === 0 ? 'Latest' : u.last + ' ago';
+    return '<' + tag + ' type="' + (o.attr ? 'button' : '') + '" class="hr' + (o.nb ? ' nobdg' : '') + '" ' + (o.attr || '') + (o.role ? ' role="listitem"' : '') + '>' + (o.nb ? '' : '<span class="bdg" style="background:' + col + '">' + (o.n !== undefined ? o.n : '') + '</span>') +
+      '<span class="mid"><b>' + esc(short(id)) + '</b><span class="met"><span>' + par + '</span><span>' + len + '</span><span>' + usedTxt(id) + '</span><span>' + last + '</span></span>' + (ex ? '<small>' + ex + '</small>' : '') + '</span>' +
+      '<span class="rt"><b class="' + (ok ? cl(h.rel) : '') + '">' + (ok ? sg(h.rel, 2) : '-') + '</b><small>' + (ok ? 'avg vs par' : 'no data') + '</small></span>' + '<span class="chev" aria-hidden="true">' + (o.attr ? '&rsaquo;' : '') + '</span></' + tag + '>';
   }
   function histHtml() {
     var h, i, d, r, lay = enc.layouts || {}, sl;
@@ -563,7 +566,7 @@
       h += '<div class="sub">' + esc((lay[st.hd] || {}).name || '') + '</div>';
       h += '<div class="cards">' + (rr ? statCell('Team avg', sg(rr.avg_rel, 1), 'to par, actual', '') + statCell('Best team', sg(rr.best_rel, 0), 'to par', '') + statCell('Teams', rr.teams, 'played', '') : statCell('Results', 'None yet', 'not scored', 'pos')) + statCell('Expected', sg(g.rel, 1), 'to par, model', '') + '</div>';
       h += '<div class="tools-bar"><button type="button" class="pri" data-a="loadh">Load into builder</button></div><div class="list">';
-      for (i = 0; i < 18; i++) { h += holeRow(sl[i].id, sl[i].par, { n: i + 1 }); }
+      h += metHead(); for (i = 0; i < 18; i++) { h += holeRow(sl[i].id, sl[i].par, { n: i + 1 }); }
       return h + '</div>';
     }
     h = sheetHead('Past layouts', false) + '<div class="list">';
@@ -581,7 +584,7 @@
   function dd(x, y) { return Math.abs(x - y) < 0.05 ? null : x - y; }
   function dsub(d, unit) { return d === null ? 'same as start' : sg(d, 1) + (unit || '') + ' vs start'; }
   function scoreHtml(g, b) {
-    var n = histRel.length + 1, h = '<div class="cards">' + statCell('To par', sg(g.rel, 1), dsub(dd(g.rel, b.rel)), cl(dd(g.rel, b.rel) || 0)) + statCell('Walk', f(g.walk, 0) + ' min', dsub(dd(g.walk, b.walk), ' min'), '') +
+    var n = histRel.length + 1, h = '<div class="cards">' + statCell('Vs par', sg(g.rel, 1), dsub(dd(g.rel, b.rel)), cl(dd(g.rel, b.rel) || 0)) + statCell('Walk', f(g.walk, 0) + ' min', dsub(dd(g.walk, b.walk), ' min'), '') +
       statCell('Overlaps', g.cross, 'crossing fairways', g.cross ? 'pos' : '') + statCell('Difficulty', rank(g.rel) + ' of ' + n, '1 = easiest layout', '') + '</div>';
     if (st.more) {
       h += '<div class="cards">' + statCell('Expected score', f(g.exp, 1), 'team strokes', '') + statCell('Birdie chances', f(g.bird, 1), 'per round', '') + statCell('Front 9', sg(g.front, 1), 'to par', '') + statCell('Back 9', sg(g.back, 1), 'to par', '') +
@@ -592,17 +595,17 @@
   function routeHtml() {
     var g = grade(st.slots), b = baseGrade || g, cg = geoStats(st.slots), h = '', i, s;
     if (st.note) { h += '<div class="note"><span>' + esc(st.note.t) + '</span><strong class="' + cl(st.note.d) + '">' + sg(st.note.d, 1) + ' to par</strong><button type="button" data-a="undo">Undo</button></div>'; }
-    h += '<div class="ttl"><b>Your layout</b><span>18 holes · Par ' + g.par + '</span></div>' + scoreHtml(g, b) + '<div class="list" role="list">';
+    h += '<div class="ttl"><b>Your layout</b><span>18 holes · Par ' + g.par + '</span></div>' + scoreHtml(g, b) + '<div class="list" role="list">' + metHead();
     for (i = 0; i < 18; i++) {
       s = st.slots[i];
-      h += holeRow(s.id, s.par, { n: i + 1, attr: 'data-i="' + i + '"', role: true, warn: !!cg.hit[i], extra: (cg.hit[i] ? ' · Overlaps hole ' + cg.hit[i].join(', ') : '') + (st.lock[i] ? ' · Locked' : '') });
+      h += holeRow(s.id, s.par, { n: i + 1, attr: 'data-i="' + i + '"', role: true, warn: !!cg.hit[i], extra: (cg.hit[i] ? '<span class="ox"><i>X</i>Overlaps hole ' + cg.hit[i].join(', ') + '</span>' : '') + (st.lock[i] ? (cg.hit[i] ? ' · ' : '') + 'Locked' : '') });
     }
     return h + '</div>';
   }
   function swapHtml() {
     var cur = st.slots[st.sel], ch = H[cur.id], cgs = geoStats(st.slots), x = cgs.hit[st.sel], i, h = sheetHead('Hole ' + (st.sel + 1) + ' of 18', true), m = marksOn(ch), g0 = grade(st.slots), b0 = baseGrade || g0;
     h += '<div class="ttl"><b>' + esc(short(cur.id)) + '</b></div>';
-    h += '<div class="cards c3">' + statCell('Length', ftOf(ch) + ' ft', ch.geo ? '' : 'not mapped', '') + statCell('Walk in', f(cgs.legs[st.sel], 1) + ' min', 'from previous hole', '') + statCell('To par', tested(ch) ? sg(ch.rel, 2) : '-', 'past team average', tested(ch) ? cl(ch.rel) : '') +
+    h += '<div class="cards c3">' + statCell('Length', ftOf(ch) + ' ft', ch.geo ? '' : 'not mapped', '') + statCell('Walk in', f(cgs.legs[st.sel], 1) + ' min', 'from previous hole', '') + statCell('Avg vs par', tested(ch) ? sg(ch.rel, 2) : '-', 'below 0 = easier', tested(ch) ? cl(ch.rel) : '') +
       statCell('Used', usedTxt(cur.id), 'rounds', '') + statCell('Last used', USE[cur.id] ? USE[cur.id].dates[0] : 'New hole', USE[cur.id] ? (USE[cur.id].last === 0 ? 'latest round' : USE[cur.id].last + ' rounds ago') : 'never played', USE[cur.id] ? '' : 'pos') +
       statCell('Overlaps', x ? x.join(', ') : 'None', 'crossing holes', x ? 'pos' : '') + '</div>';
     if (m.tree || m.ob || m.overlap) { h += '<div class="facts">' + (m.tree ? '<span class="pos">Trees on line ' + m.tree + '</span>' : '') + (m.ob ? '<span class="pos">OB on line ' + m.ob + '</span>' : '') + (m.overlap ? '<span class="pos">Marked overlaps ' + m.overlap + '</span>' : '') + '</div>'; }
@@ -612,16 +615,24 @@
     h += '</div><div class="tools-bar"><button type="button" data-a="up"' + (st.sel === 0 ? ' disabled' : '') + '>Move earlier</button><button type="button" data-a="down"' + (st.sel === 17 ? ' disabled' : '') + '>Move later</button><button type="button" data-a="lock" aria-pressed="' + !!st.lock[st.sel] + '">' + (st.lock[st.sel] ? 'Locked' : 'Lock hole') + '</button></div>';
     h += '<div class="ttl"><b>Replace hole ' + (st.sel + 1) + ' with</b><span>' + (st.all ? 'All holes' : 'Tested holes') + '</span></div>';
     h += '<div class="tools-bar"><input id="q" type="search" placeholder="Search holes" aria-label="Search holes" value="' + esc(st.q) + '" autocomplete="off"></div>';
-    h += '<div class="chips"><button type="button" data-s="easy" aria-pressed="' + (st.sort === 'easy') + '">Easiest first</button><button type="button" data-s="hard" aria-pressed="' + (st.sort === 'hard') + '">Hardest first</button><button type="button" data-s="bird" aria-pressed="' + (st.sort === 'bird') + '">Most birdies</button><button type="button" data-a="all" aria-pressed="' + st.all + '">Include untested</button></div>';
+    h += '<div class="chips"><button type="button" data-s="fit" aria-pressed="' + (st.sort === 'fit') + '">Best fit</button><button type="button" data-s="easy" aria-pressed="' + (st.sort === 'easy') + '">Easiest first</button><button type="button" data-s="hard" aria-pressed="' + (st.sort === 'hard') + '">Hardest first</button><button type="button" data-s="bird" aria-pressed="' + (st.sort === 'bird') + '">Most birdies</button><button type="button" data-a="all" aria-pressed="' + st.all + '">Include untested</button></div>';
     var list = pool.filter(function (p) { return (st.all || tested(p)) && !inLayout(p.id, st.sel) && p.id !== cur.id && (!st.q || p.label.toLowerCase().indexOf(st.q.toLowerCase()) >= 0); });
+    var FT = {}, k0;
+    list.forEach(function (p) {
+      var tr = st.slots.slice(), gs; tr[st.sel] = { id: p.id, par: p.par };
+      if (!p.geo) { FT[p.id] = null; return; }
+      gs = geoStats(tr); FT[p.id] = { i: gs.legs[st.sel], o: st.sel < 17 ? gs.legs[st.sel + 1] : 0, x: (gs.hit[st.sel] || []).length };
+      FT[p.id].c = FT[p.id].i + FT[p.id].o + 2 * FT[p.id].x + (tested(p) ? 0 : 0.5);
+    });
     list.sort(function (a, b) {
+      if (st.sort === 'fit') { if (!FT[a.id] || !FT[b.id]) { return (FT[a.id] ? 0 : 1) - (FT[b.id] ? 0 : 1); } return FT[a.id].c - FT[b.id].c; }
       if (st.sort === 'bird') { return (b.bird || 0) - (a.bird || 0); }
       var u = exp(a, a.par) - a.par, w = exp(b, b.par) - b.par; return st.sort === 'hard' ? w - u : u - w;
     });
-    h += '<div class="list">';
+    h += '<div class="list nb">' + metHead();
     for (i = 0; i < list.length && i < 80; i++) {
       var p = list[i], dl = exp(p, p.par) - exp(ch, cur.par);
-      h += holeRow(p.id, p.par, { nb: true, attr: 'data-pick="' + esc(p.id) + '"', extra: ' · <span class="' + cl(dl) + '">' + sg(dl, 2) + ' strokes vs this hole</span>' });
+      h += holeRow(p.id, p.par, { nb: true, attr: 'data-pick="' + esc(p.id) + '"', extra: (FT[p.id] ? 'Walk in ' + f(FT[p.id].i, 1) + ' · out ' + f(FT[p.id].o, 1) + ' min' + (FT[p.id].x ? ' · <span class="ox"><i>X</i>' + FT[p.id].x + ' overlap' + (FT[p.id].x > 1 ? 's' : '') + '</span>' : '') + ' · ' : 'No location · ') + '<span class="' + cl(dl) + '">' + sg(dl, 2) + ' vs current</span>' });
     }
     if (!list.length) { h += '<div class="empty">-</div>'; }
     return h + '</div>';
