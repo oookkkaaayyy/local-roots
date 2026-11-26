@@ -121,6 +121,22 @@
    "avg_rel": -8.33,
    "best_rel": -14,
    "birdies": 9.2
+  },
+  "2026-11-17": {
+   "name": "11.17.26 Glow Layout",
+   "par": 57,
+   "teams": 8,
+   "avg_rel": -6.75,
+   "best_rel": -9,
+   "birdies": 7.4
+  },
+  "2026-11-24": {
+   "name": "HB Glow Dubs 11.24.26 (UDisc layout 150408)",
+   "par": 56,
+   "teams": 8,
+   "avg_rel": -6.25,
+   "best_rel": -9,
+   "birdies": 6.6
   }
  }
 }
