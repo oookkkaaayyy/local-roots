@@ -569,6 +569,7 @@
   }
 
   var MG = { m: {}, no: [] }, MGK = 'hbnf-studio-merge', DDC = null;
+  window.addEventListener('scroll', function () { if (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop) { window.scrollTo(0, 0); document.body.scrollTop = 0; document.documentElement.scrollTop = 0; } }, false);
   function loadMG() { try { var r = JSON.parse(localStorage.getItem(MGK) || 'null'); if (r) { MG = { m: r.m || {}, no: r.no || [] }; } } catch (e) { /* none */ } DDC = null; }
   function saveMG() { try { localStorage.setItem(MGK, JSON.stringify(MG)); } catch (e) { /* storage unavailable */ } DDC = null; save(); }
   function canon(id) { var n = 0; while (MG.m[id] && n++ < 8) { id = MG.m[id]; } return id; }
