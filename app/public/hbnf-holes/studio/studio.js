@@ -3,7 +3,7 @@
   var bldCache0 = null, GEO = null, TI = {}, KEY = 'hbnf-studio-v2', MIN_N = 4, K = 6, PRIOR = { 3: -0.4, 4: 0.3 }, BPRIOR = 25, hist = [], histRel = [];
   var $ = function (id) { return document.getElementById(id); };
   var enc = null, H = {}, pool = [], seq = {}, dates = [];
-  var st = { base: null, slots: [], sel: -1, view: 'route', sort: 'fit', all: false, q: '', goal: 'easier', more: false, lock: {}, note: null, busy: null, tgt: null, pf: 'need', mk: 'tree', cards: 0, prev: null, pgoal: null, hover: null, draft: [], bp: { pad: '', bsk: '', par: 3 }, cr: null, di: -1 };
+  var st = { base: null, slots: [], sel: -1, view: 'route', sort: 'fit', all: false, q: '', goal: 'easier', more: false, lock: {}, note: null, busy: null, tgt: null, pf: 'need', mk: 'tree', cards: 0, prev: null, pgoal: null, hover: null, draft: [], bp: { pad: '', bsk: '', par: 3 }, cr: null, di: -1, bi: 0 };
   var baseGrade = null, PN = {}, CKEY = 'hbnf-studio-custom';
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
   function f(v, d) { return v === null || v === undefined || isNaN(v) ? '-' : Number(v).toFixed(d); }
@@ -48,7 +48,7 @@
       loadCustoms(); applyPins();
       if (d.slots && d.slots.length === 18) { for (i = 0; i < 18; i++) { if (!H[d.slots[i].id]) { ok = false; } } } else { ok = false; }
       if (ok) { st.slots = d.slots; st.base = d.base; st.lock = d.lock || {}; baseGrade = st.base && seq[st.base] ? grade(st.slots) : grade(st.slots); }
-      st.draft = (d.draft || []).filter(function (x) { return H[x.id]; });
+      st.draft = (d.draft || []).map(function (x) { return x && H[x.id] ? x : null; });
       st.ts = d.ts; st.cloud = 'saved'; save2Local(); renderBase(); renderAll();
     });
   }
@@ -276,7 +276,7 @@
       var ln = L.polyline([p, b], { color: bad ? '#ff4d4d' : col, weight: sel ? 8 : 5, opacity: o.ghost ? 0.9 : 0.95, dashArray: o.ghost ? '8 6' : null, lineCap: 'round' }).addTo(group);
       if (!o.ghost) { (function (k) { ln.on('click', function () { pick(k); }); })(i); }
       L.circleMarker(b, { radius: 4, color: '#1d1812', weight: 1, fillColor: col, fillOpacity: 1, interactive: false }).addTo(group);
-      var ic = L.divIcon({ className: 'pin' + (sel ? ' sel' : '') + (o.ghost ? ' gh' : ''), html: '<span style="background:' + col + '">' + (i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14, 14] });
+      var ic = L.divIcon({ className: 'pin' + (sel ? ' sel' : '') + (o.ghost ? ' gh' : ''), html: '<span style="background:' + col + '">' + (o.nums ? o.nums[i] : i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14, 14] });
       var m = L.marker(p, { icon: ic, keyboard: false, draggable: !!sel, zIndexOffset: sel ? 1000 : 0 }).addTo(group);
       if (!o.ghost) { (function (k) { m.on('click', function () { pick(k); }); })(i); }
       if (sel) {
@@ -293,7 +293,7 @@
   }
   function drawMap() {
     if (!map) { return; }
-    drawLayout(layers.route, st.view === 'build' ? st.draft : st.view === 'hist' && st.hd ? [] : st.slots, {});
+    if (st.view === 'build') { var bc = dc(-1, -1, null); drawLayout(layers.route, bc.s, { nums: bc.ix }); } else { drawLayout(layers.route, st.view === 'hist' && st.hd ? [] : st.slots, {}); }
     layers.ghost.clearLayers();
     if (st.prev) { drawLayout(layers.ghost, st.prev, { ghost: true }); }
     layers.hov.clearLayers();
@@ -308,7 +308,7 @@
       L.circleMarker(ll2(pg.p), { radius: 7, color: '#c9b4f0', weight: 3, fillColor: '#1d1812', fillOpacity: 1, interactive: false }).addTo(layers.hov);
     }
     var fit = st.view !== 'build' && st.sel >= 0 && H[st.slots[st.sel].id].geo ? [ll2(H[st.slots[st.sel].id].geo.p), ll2(H[st.slots[st.sel].id].geo.b)] : null;
-    if (st.fit) { st.fit = false; var pts = [], i, fs = st.view === 'build' ? st.draft : st.slots; for (i = 0; i < fs.length; i++) { if (H[fs[i].id].geo) { pts.push(ll2(H[fs[i].id].geo.p), ll2(H[fs[i].id].geo.b)); } } if (st.view === 'build' && !pts.length) { var kk, bk = []; for (kk in GEO.nodes) { if (GEO.nodes.hasOwnProperty(kk) && kk.indexOf('pin:') !== 0) { bk.push(ll2(kk)); } } pts = bk; } if (pts.length) { map.invalidateSize(); map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], animate: false }); } }
+    if (st.fit) { st.fit = false; var pts = [], i, fs = st.view === 'build' ? dc(-1, -1, null).s : st.slots; for (i = 0; i < fs.length; i++) { if (H[fs[i].id].geo) { pts.push(ll2(H[fs[i].id].geo.p), ll2(H[fs[i].id].geo.b)); } } if (st.view === 'build' && !pts.length) { var kk, bk = []; for (kk in GEO.nodes) { if (GEO.nodes.hasOwnProperty(kk) && kk.indexOf('pin:') !== 0) { bk.push(ll2(kk)); } } pts = bk; } if (pts.length) { map.invalidateSize(); map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], animate: false }); } }
     else if (st.view !== 'build' && fit && st.focus) { st.focus = false; map.invalidateSize(); map.fitBounds(L.latLngBounds(fit), { padding: [90, 90], maxZoom: 18, animate: false }); }
   }
   function initMap() {
@@ -327,10 +327,10 @@
     if (!map) { return; }
     layers.all.clearLayers();
     if (st.view === 'build') {
-      var lk0 = ll(lastKey()), bi, bp2, ub0 = usedB(), used0 = {}; for (bi = 0; bi < st.draft.length; bi++) { used0[st.draft[bi].id] = 1; }
+      var lk0 = ll(prevKey(st.bi)), bi, bp2, ub0 = usedB(), used0 = {}, dd0 = D(); for (bi = 0; bi < 18; bi++) { if (dd0[bi] && bi !== st.bi) { used0[dd0[bi].id] = 1; } }
       for (bi = 0; bi < pool.length; bi++) {
         bp2 = pool[bi]; if (!bp2.geo || used0[bp2.id] || ub0[bp2.bsk] || bp2.syn || dist2(ll(bp2.geo.p), lk0) > 120) { continue; }
-        (function (pp) { var ln2 = L.polyline([ll2(pp.geo.p), ll2(pp.geo.b)], { color: '#d9cebb', weight: 3, opacity: 0.4 }).addTo(layers.all); ln2.bindTooltip(short(pp.id) + ' (add as hole ' + (st.draft.length + 1) + ')', { sticky: true }); ln2.on('mouseover', function () { st.hover = pp.id; drawMap(); }).on('mouseout', function () { st.hover = null; drawMap(); }).on('click', function () { addDraft(pp.id, pp.par); }); })(bp2);
+        (function (pp) { var ln2 = L.polyline([ll2(pp.geo.p), ll2(pp.geo.b)], { color: '#d9cebb', weight: 3, opacity: 0.4 }).addTo(layers.all); ln2.bindTooltip(short(pp.id) + ' (set as hole ' + (st.bi + 1) + ')', { sticky: true }); ln2.on('mouseover', function () { st.hover = pp.id; drawMap(); }).on('mouseout', function () { st.hover = null; drawMap(); }).on('click', function () { addDraft(pp.id, pp.par); }); })(bp2);
       }
       return;
     }
@@ -583,10 +583,21 @@
     for (i = 0; i < c.length; i++) { if (c[i].pad === h.pad && c[i].bsk === h.bsk) { return; } }
     c.push({ pad: h.pad, bsk: h.bsk, par: h.par }); try { localStorage.setItem(CKEY, JSON.stringify(c)); } catch (e) { /* storage unavailable */ }
   }
-  function lastKey() { var n = st.draft.length; return n && H[st.draft[n - 1].id].geo ? H[st.draft[n - 1].id].geo.b : GEO.park; }
-  function usedB() { var m = {}, i; for (i = 0; i < st.draft.length; i++) { m[H[st.draft[i].id].bsk] = 1; } return m; }
+  function D() { var o = [], i; for (i = 0; i < 18; i++) { o.push(st.draft && st.draft[i] && H[st.draft[i].id] ? st.draft[i] : null); } return o; }
+  function cnt() { var c = 0, i; for (i = 0; i < 18; i++) { if (st.draft && st.draft[i] && H[st.draft[i].id]) { c++; } } return c; }
+  function dc(excl, at, ins) {
+    var d = D(), s0 = [], ix = [], i, item, pos = -1;
+    for (i = 0; i < 18; i++) {
+      item = i === at && ins ? ins : (i === excl ? null : d[i]);
+      if (i === at && ins) { pos = s0.length; }
+      if (item) { s0.push(item); ix.push(i + 1); }
+    }
+    return { s: s0, ix: ix, pos: pos };
+  }
+  function prevKey(i) { var d = D(), j; for (j = i - 1; j >= 0; j--) { if (d[j] && H[d[j].id].geo) { return H[d[j].id].geo.b; } } return GEO.park; }
+  function usedB() { var m = {}, d = D(), i; for (i = 0; i < 18; i++) { if (d[i] && i !== st.bi) { m[H[d[i].id].bsk] = 1; } } return m; }
   function padList() {
-    var seen = {}, out = [], i, id, k, lk = lastKey(), pid;
+    var seen = {}, out = [], i, k, lk = prevKey(st.bi), pid;
     function add(x) { if (!x || seen[x] || x.indexOf('unresolved') >= 0 || x.indexOf('temp') >= 0 || x.indexOf('pad:') !== 0) { return; } seen[x] = 1; k = posKey(x); if (k) { out.push({ id: x, w: walk(lk, k) }); } }
     for (i = 0; i < pool.length; i++) { add(pool[i].pad); }
     for (pid in pins) { if (pins.hasOwnProperty(pid)) { add(pid); } }
@@ -616,50 +627,73 @@
   }
   function defPar(h) { return h.geo && !h.syn ? h.par : h.geo && h.geo.d * 3.28084 > 350 ? 4 : 3; }
   function flow(id, par) {
-    var n = st.draft.length, tr = st.draft.concat([{ id: id, par: par }]), gs = geoStats(tr), g = H[id].geo;
-    return { i: gs.legs[n], x: (gs.hit[n] || []).length, e: g && n >= 15 ? walk(g.b, GEO.park) : 0 };
+    var c = dc(-1, st.bi, { id: id, par: par }), gs = geoStats(c.s), g = H[id].geo, n = c.pos;
+    return { i: gs.legs[n], o: n < c.s.length - 1 ? gs.legs[n + 1] : 0, x: (gs.hit[n] || []).length, e: g && st.bi >= 15 ? walk(g.b, GEO.park) : 0 };
   }
   function suggestNext() {
-    var n = st.draft.length, ub = usedB(), used = {}, out = [], i, p, fl, c, last = n ? st.draft[n - 1] : null, last2 = n > 1 ? st.draft[n - 2] : null, par4 = 0, why;
-    for (i = 0; i < n; i++) { used[st.draft[i].id] = 1; if (st.draft[i].par >= 4) { par4++; } }
+    var d = D(), ub = usedB(), used = {}, out = [], i, p, fl, c, par4 = 0, pv = null, pv2 = null, j;
+    for (i = 0; i < 18; i++) { if (d[i] && i !== st.bi) { used[d[i].id] = 1; if (d[i].par >= 4) { par4++; } } }
+    for (j = st.bi - 1; j >= 0; j--) { if (d[j]) { if (!pv) { pv = d[j]; } else if (!pv2) { pv2 = d[j]; } } }
     for (i = 0; i < pool.length; i++) {
       p = pool[i]; if (!p.geo || used[p.id] || ub[p.bsk] || p.syn) { continue; }
-      fl = flow(p.id, p.par); why = [];
-      c = fl.i + 2 * fl.x + (n >= 15 ? fl.e * (n >= 16 ? 1 : 0.4) : 0);
-      if (last && last2 && last.par === p.par && last2.par === p.par) { c += 0.8; }
+      fl = flow(p.id, p.par);
+      c = fl.i + fl.o * 0.7 + 2 * fl.x + (st.bi >= 15 ? fl.e * (st.bi >= 16 ? 1 : 0.4) : 0);
+      if (pv && pv2 && pv.par === p.par && pv2.par === p.par) { c += 0.8; }
       if (p.par >= 4 && par4 >= 3) { c += 1.5; }
-      if (last && holeRel(last) > 0.1 && exp(p, p.par) - p.par > 0.1) { c += 0.6; }
+      if (pv && holeRel(pv) > 0.1 && exp(p, p.par) - p.par > 0.1) { c += 0.6; }
       if (USE[p.id] && USE[p.id].last === 0) { c += 0.5; }
       if (!tested(p)) { c += 0.7; }
-      if (last && last.par !== p.par) { c -= 0.2; }
+      if (pv && pv.par !== p.par) { c -= 0.2; }
       if (!USE[p.id]) { c -= 0.2; }
-      out.push({ p: p, c: c, fl: fl });
+      out.push({ p: p, c: c, fl: fl, pv: pv });
     }
     out.sort(function (a, b) { return a.c - b.c; });
-    return out.slice(0, 5);
+    out = out.slice(0, 5);
+    var minW = 1e9, minE = 1e9, maxB = -1, iw = -1, ie = -1, ib = -1;
+    out.forEach(function (o, k) {
+      var e = exp(o.p, o.p.par) - o.p.par;
+      if (o.fl.i < minW) { minW = o.fl.i; iw = k; } if (e < minE) { minE = e; ie = k; } if (bird(o.p) > maxB) { maxB = bird(o.p); ib = k; }
+    });
+    out.forEach(function (o, k) {
+      o.tags = k === 0 ? ['Best fit'] : [];
+      if (k === iw && k !== 0) { o.tags.push('Shortest walk'); } if (k === ie && o.tags.length < 2) { o.tags.push('Easiest'); } if (k === ib && o.tags.length < 2) { o.tags.push('Most birdies'); }
+      if (o.pv && o.pv.par !== o.p.par && o.tags.length < 2) { o.tags.push('Par change'); }
+      if (!USE[o.p.id] && o.tags.length < 2) { o.tags.push('New hole'); }
+    });
+    return out;
+  }
+  function nextBlank(from) { var d = D(), i; for (i = from + 1; i < 18; i++) { if (!d[i]) { return i; } } for (i = 0; i < 18; i++) { if (!d[i]) { return i; } } return from; }
+  function selSlot(i) {
+    var d = D(), h;
+    st.bi = i; st.cr = null; st.hover = null;
+    if (d[i]) { h = H[d[i].id]; st.bp = { pad: h.pad, bsk: h.bsk, par: d[i].par }; } else { st.bp = { pad: '', bsk: '', par: 3 }; }
+    st.focus = false;
   }
   function addDraft(id, par) {
-    var h = H[id];
+    var h = H[id], d = D();
     if (!h) { return; }
-    keepHole(h); st.draft.push({ id: id, par: par }); st.di = -1; st.bp.bsk = ''; st.hover = null;
-    if (st.draft.length === 18) {
-      snap(); st.slots = st.draft.slice(); st.draft = []; st.base = ''; st.lock = {}; baseGrade = grade(st.slots); st.view = 'route'; st.sel = -1; st.note = null; st.fit = true; renderBase();
-    }
+    keepHole(h); d[st.bi] = { id: id, par: par }; st.draft = d; st.hover = null;
+    if (cnt() === 18) {
+      snap(); st.slots = d.slice(); st.draft = []; st.base = ''; st.lock = {}; baseGrade = grade(st.slots); st.view = 'route'; st.sel = -1; st.note = null; st.fit = true; renderBase();
+    } else { selSlot(nextBlank(st.bi)); }
     save(); renderAll();
   }
-  function startBuild() { $('base').value = ''; st.view = 'build'; st.sel = -1; st.prev = null; st.hd = null; st.tgt = null; st.di = -1; st.cr = null; st.bp = { pad: '', bsk: '', par: 3 }; st.fit = true; setCollapsed(false); renderAll(); }
+  function startBuild() { $('base').value = ''; st.draft = D(); st.view = 'build'; st.sel = -1; st.prev = null; st.hd = null; st.tgt = null; selSlot(st.bi >= 0 && st.bi < 18 ? st.bi : nextBlank(-1)); st.fit = true; setCollapsed(false); renderAll(); }
   function opt(v, t, sel) { return '<option value="' + esc(v) + '"' + (sel ? ' selected' : '') + '>' + esc(t) + '</option>'; }
-  function buildHtml() {
-    var n = st.draft.length, g = n ? grade(st.draft) : null, h = sheetHead('New layout', false), i, d, b = st.bp, sh, pl, bl, fl;
-    h += '<div class="ttl"><b>Hole ' + (n + 1) + ' of 18</b><span>' + (n ? 'Par ' + g.par + ' so far · ' : '') + '<span id="cloud">' + (st.cloud === 'saved' ? 'Saved to cloud' : st.cloud === 'offline' ? 'Offline, saved on this device' : st.cloud === 'saving' ? 'Saving' : '') + '</span></span></div>';
-    if (n) { h += '<div class="cards">' + statCell('Vs par', sg(g.rel, 1), 'so far', '') + statCell('Walk', f(g.walk, 0) + ' min', 'so far', '') + statCell('Overlaps', g.cross, 'crossing fairways', g.cross ? 'pos' : '') + statCell('Par 4+', g.par4, 'holes', '') + '</div>'; }
-    if (st.di >= 0 && st.draft[st.di]) {
-      d = st.draft[st.di];
-      h += '<div class="ttl"><b>Hole ' + (st.di + 1) + ': ' + esc(short(d.id)) + '</b></div><div class="chips">';
-      for (i = 3; i <= 5; i++) { h += '<button type="button" data-dpar="' + i + '" aria-pressed="' + (d.par === i) + '">Par ' + i + '</button>'; }
-      h += '<button type="button" data-a="drm">Remove hole</button><button type="button" data-a="ddone">Done</button></div>';
+  function stripHtml() {
+    var d = D(), i, h = '<div class="strip" role="group" aria-label="Holes">', cl0, par;
+    for (i = 0; i < 18; i++) {
+      par = d[i] ? d[i].par : 0;
+      h += '<button type="button" class="sc' + (d[i] ? ' on' : '') + '" data-sl="' + i + '" aria-pressed="' + (st.bi === i) + '" aria-label="Hole ' + (i + 1) + (d[i] ? ', par ' + par : ', empty') + '"' + (d[i] ? ' style="background:' + relColor(holeRel(d[i]), tested(H[d[i].id])) + '"' : '') + '><b>' + (i + 1) + '</b>' + (d[i] ? '<small>P' + par + '</small>' : '') + '</button>';
     }
-    h += '<div class="ttl"><b>Add hole ' + (n + 1) + '</b></div>';
+    return h + '</div>';
+  }
+  function buildHtml() {
+    var d = D(), n = cnt(), c = dc(-1, -1, null), g = n ? grade(c.s) : null, h = sheetHead('New layout', false), i, b = st.bp, sh, pl, bl, fl, cur = d[st.bi];
+    h += '<div class="ttl"><b>' + n + ' of 18 holes set</b><span><span id="cloud">' + (st.cloud === 'saved' ? 'Saved to cloud' : st.cloud === 'offline' ? 'Offline, saved on this device' : st.cloud === 'saving' ? 'Saving' : '') + '</span></span></div>';
+    h += stripHtml();
+    if (n) { h += '<div class="cards">' + statCell('Vs par', sg(g.rel, 1), 'holes set', '') + statCell('Walk', f(g.walk, 0) + ' min', 'holes set', '') + statCell('Overlaps', g.cross, 'crossing fairways', g.cross ? 'pos' : '') + statCell('Par', g.par, n + ' holes', '') + '</div>'; }
+    h += '<div class="card"><div class="ttl"><b>Hole ' + (st.bi + 1) + (cur ? ': ' + esc(short(cur.id)) : '') + '</b><span>' + (cur ? 'Set' : 'Empty') + '</span></div>';
     if (st.cr) {
       h += '<div class="sub">New ' + (st.cr.k === 'pad' ? 'pad' : 'basket') + '</div><div class="tools-bar"><input id="cn" type="text" placeholder="Name" aria-label="Name" value="' + esc(st.cr.name) + '" autocomplete="off"></div>';
       h += '<div class="tools-bar"><button type="button" class="pri" data-a="crok"' + (st.cr.name ? '' : ' disabled') + '>Confirm crosshair location</button><button type="button" data-a="crme"' + (me && st.cr.name ? '' : ' disabled') + '>My location</button><button type="button" data-a="crx">Cancel</button></div>';
@@ -681,22 +715,19 @@
         for (i = 3; i <= 5; i++) { h += '<button type="button" data-bpar="' + i + '" aria-pressed="' + (b.par === i) + '">Par ' + i + '</button>'; }
         h += '</div><div class="list nb">' + metHead();
         fl = sh.geo ? flow(sh.id, b.par) : null;
-        h += holeRow(sh.id, b.par, { nb: true, extra: sh.syn ? 'New combination · no history' : '' }) + '</div>';
-        if (fl) { h += '<div class="facts"><span>Walk in ' + f(fl.i, 1) + ' min</span><span class="' + (fl.x ? 'pos' : '') + '">' + fl.x + ' overlap' + (fl.x === 1 ? '' : 's') + '</span></div>'; }
-        h += '<div class="tools-bar"><button type="button" class="pri" data-a="dadd">Add as hole ' + (n + 1) + '</button></div>';
-      }
-    }
-    var sg0 = suggestNext();
-    h += '<div class="ttl"><b>Suggested next</b><span>by flow and variety</span></div><div class="list nb">' + metHead();
-    for (i = 0; i < sg0.length; i++) {
-      h += holeRow(sg0[i].p.id, sg0[i].p.par, { nb: true, attr: 'data-sg="' + esc(sg0[i].p.id) + '"', extra: 'Walk in ' + f(sg0[i].fl.i, 1) + ' min' + (sg0[i].fl.x ? ' · <span class="ox"><i>X</i>' + sg0[i].fl.x + ' overlap' + (sg0[i].fl.x > 1 ? 's' : '') + '</span>' : '') + (USE[sg0[i].p.id] ? '' : ' · <span class="pos">New</span>') });
+        h += holeRow(sh.id, b.par, { nb: true, pb: true, extra: sh.syn ? 'New combination · no history' : '' }) + '</div>';
+        if (fl) { h += '<div class="facts"><span>Walk in ' + f(fl.i, 1) + ' min</span>' + (fl.o ? '<span>Walk out ' + f(fl.o, 1) + ' min</span>' : '') + '<span class="' + (fl.x ? 'pos' : '') + '">' + fl.x + ' overlap' + (fl.x === 1 ? '' : 's') + '</span></div>'; }
+        h += '<div class="tools-bar"><button type="button" class="pri" data-a="dadd">' + (cur ? 'Replace hole ' : 'Set as hole ') + (st.bi + 1) + '</button>' + (cur ? '<button type="button" data-a="drm">Clear hole</button>' : '') + '</div>';
+      } else if (cur) { h += '<div class="tools-bar"><button type="button" data-a="drm">Clear hole</button></div>'; }
     }
     h += '</div>';
-    if (n) {
-      h += '<div class="ttl"><b>Holes so far</b><span><button type="button" data-a="dlast">Remove last</button> <button type="button" data-a="dclr">Start over</button></span></div><div class="list">' + metHead();
-      for (i = 0; i < n; i++) { h += holeRow(st.draft[i].id, st.draft[i].par, { n: i + 1, attr: 'data-di="' + i + '"' }); }
-      h += '</div>';
+    var sg0 = suggestNext();
+    h += '<div class="card sug"><div class="ttl"><b>Suggested for hole ' + (st.bi + 1) + '</b><span>by flow and variety</span></div><div class="list nb">' + metHead();
+    for (i = 0; i < sg0.length; i++) {
+      h += holeRow(sg0[i].p.id, sg0[i].p.par, { nb: true, pb: true, attr: 'data-sg="' + esc(sg0[i].p.id) + '"', extra: sg0[i].tags.map(function (t) { return '<span class="tg' + (t === 'Best fit' ? ' top' : '') + '">' + t + '</span>'; }).join('') + 'Walk in ' + f(sg0[i].fl.i, 1) + ' min' + (sg0[i].fl.x ? ' · <span class="ox"><i>X</i>' + sg0[i].fl.x + ' overlap' + (sg0[i].fl.x > 1 ? 's' : '') + '</span>' : '') });
     }
+    h += '</div></div>';
+    if (n) { h += '<div class="tools-bar"><button type="button" data-a="dclr">Start over</button></div>'; }
     return h;
   }
   function startHtml() {
@@ -743,7 +774,7 @@
     var h = H[id], ok = tested(h), col = relColor(exp(h, par) - par, ok), tag = o.attr ? 'button' : 'div', u = USE[id], ex = o.extra || '';
     var len = h.geo ? (h.geo.pf === 'a' || h.geo.bf === 'a' ? '<em class="est">est </em>' : '') + ftOf(h).replace('approx ', '') + ' ft' : 'Unmapped';
     var last = !u ? '<span class="pos">New</span>' : u.last === 0 ? 'Latest' : u.last + ' ago';
-    return '<' + tag + ' type="' + (o.attr ? 'button' : '') + '" class="hr' + (o.nb ? ' nobdg' : '') + '" ' + (o.attr || '') + (o.role ? ' role="listitem"' : '') + '>' + (o.nb ? '' : '<span class="bdg" style="background:' + col + '">' + (o.n !== undefined ? o.n : '') + '</span>') +
+    return '<' + tag + ' type="' + (o.attr ? 'button' : '') + '" class="hr' + (o.nb && !o.pb ? ' nobdg' : '') + '" ' + (o.attr || '') + (o.role ? ' role="listitem"' : '') + '>' + (o.nb && !o.pb ? '' : '<span class="bdg" style="background:' + col + '">' + (o.pb ? 'P' + par : o.n !== undefined ? o.n : '') + '</span>') +
       '<span class="mid"><b>' + esc(short(id)) + '</b><span class="met"><span>' + par + '</span><span>' + len + '</span><span>' + usedTxt(id) + '</span><span>' + last + '</span></span>' + (ex ? '<small>' + ex + '</small>' : '') + '</span>' +
       (ok || !h.geo ? '<span class="rt"><b class="' + (ok ? cl(h.rel) : '') + '">' + (ok ? sg(h.rel, 2) : '-') + '</b><small>' + (ok ? 'avg vs par' : 'no data') + '</small></span>' : '<span class="rt"><b class="' + cl(exp(h, par) - par) + '">' + sg(exp(h, par) - par, 2) + '</b><small>model est</small></span>') + '<span class="chev" aria-hidden="true">' + (o.attr ? '&rsaquo;' : '') + '</span></' + tag + '>';
   }
@@ -784,7 +815,7 @@
   function routeHtml() {
     var g = grade(st.slots), b = baseGrade || g, cg = geoStats(st.slots), h = '', i, s;
     if (st.note) { h += '<div class="note"><span>' + esc(st.note.t) + '</span><strong class="' + cl(st.note.d) + '">' + sg(st.note.d, 1) + ' to par</strong><button type="button" data-a="undo">Undo</button></div>'; }
-    h += '<div class="tools-bar"><button type="button" class="pri" data-a="newl">' + (st.draft.length ? 'Continue new layout ' + st.draft.length + '/18' : 'New layout') + '</button></div>';
+    h += '<div class="tools-bar"><button type="button" class="pri" data-a="newl">' + (cnt() ? 'Continue new layout ' + cnt() + '/18' : 'New layout') + '</button></div>';
     h += '<div class="ttl"><b>Your layout</b><span>18 holes · Par ' + g.par + '</span></div>' + scoreHtml(g, b) + '<div class="list" role="list">' + metHead();
     for (i = 0; i < 18; i++) {
       s = st.slots[i];
@@ -837,7 +868,7 @@
   }
   function renderSheet() {
     var h = st.view === 'build' ? buildHtml() : st.view === 'swap' && st.sel >= 0 ? swapHtml() : st.view === 'auto' ? autoHtml() : st.view === 'pins' ? pinsHtml() : st.view === 'hist' ? histHtml() : routeHtml();
-    var vk = st.view + '|' + st.sel + '|' + st.tgt + '|' + st.hd + '|' + st.pf + '|' + st.tk + '|' + st.draft.length + '|' + st.di + '|' + (st.cr ? st.cr.k : '');
+    var vk = st.view + '|' + st.sel + '|' + st.tgt + '|' + st.hd + '|' + st.pf + '|' + st.tk + '|' + cnt() + '|' + st.bi + '|' + (st.cr ? st.cr.k : '');
     $('sheet').innerHTML = h;
     if (vk !== st.vk) { st.vk = vk; $('sheet').scrollTop = 0; }
     $('layoutTab').setAttribute('aria-pressed', st.view === 'route' || st.view === 'swap' || st.view === 'build'); $('auto').setAttribute('aria-pressed', st.view === 'auto'); $('pinsBtn').setAttribute('aria-pressed', st.view === 'pins'); $('histBtn').setAttribute('aria-pressed', st.view === 'hist');
@@ -904,17 +935,14 @@
       var hv = t.getAttribute('data-h'); if (hv) { st.hd = hv; st.prev = seq[hv].map(function (q) { return { id: q.id, par: q.par }; }); st.fit = true; renderAll(); return; }
       var tg = t.getAttribute('data-t'), pfv = t.getAttribute('data-pf'), mkv = t.getAttribute('data-mk'), mdv = t.getAttribute('data-md'), snv = t.getAttribute('data-sn');
       if (tg) { st.tgt = tg; st.pf = st.pf === 'marks' ? 'need' : st.pf; var tt0 = tgtObj(tg), pp0 = tt0 ? tpos(tt0) : null; if (pp0 && map) { map.setView(pp0, 19, { animate: false }); } renderAll(); return; }
-      var sgv = t.getAttribute('data-sg'), dpv = t.getAttribute('data-dpar'), bpv = t.getAttribute('data-bpar'), dv = t.getAttribute('data-di'), aa = t.getAttribute('data-a');
+      var sgv = t.getAttribute('data-sg'), bpv = t.getAttribute('data-bpar'), slv = t.getAttribute('data-sl'), aa = t.getAttribute('data-a');
+      if (slv !== null) { selSlot(parseInt(slv, 10)); st.fit = false; renderAll(); return; }
       if (sgv) { addDraft(sgv, H[sgv].par); return; }
-      if (dv !== null && st.view === 'build') { st.di = parseInt(dv, 10); renderAll(); return; }
-      if (dpv) { st.draft[st.di].par = parseInt(dpv, 10); save(); renderAll(); return; }
-      if (bpv) { st.bp.par = parseInt(bpv, 10); renderSheet(); return; }
-      if (aa === 'newl') { if (!st.draft.length) { st.draft = []; } startBuild(); return; }
-      if (aa === 'drm') { st.draft.splice(st.di, 1); st.di = -1; save(); renderAll(); return; }
-      if (aa === 'ddone') { st.di = -1; renderAll(); return; }
-      if (aa === 'dlast') { st.draft.pop(); st.di = -1; save(); renderAll(); return; }
-      if (aa === 'dclr') { st.draft = []; st.di = -1; save(); renderAll(); return; }
-      if (aa === 'dadd') { var sh0 = selHole(); if (sh0) { sh0.par = sh0.syn ? st.bp.par : sh0.par; addDraft(sh0.id, st.bp.par); } return; }
+      if (bpv) { st.bp.par = parseInt(bpv, 10); if (D()[st.bi] && selHole() && D()[st.bi].id === selHole().id) { st.draft = D(); st.draft[st.bi].par = st.bp.par; save(); renderAll(); } else { renderSheet(); } return; }
+      if (aa === 'newl') { startBuild(); return; }
+      if (aa === 'drm') { st.draft = D(); st.draft[st.bi] = null; st.bp = { pad: '', bsk: '', par: 3 }; save(); renderAll(); return; }
+      if (aa === 'dclr') { st.draft = []; selSlot(0); save(); renderAll(); return; }
+      if (aa === 'dadd') { var sh0 = selHole(); if (sh0) { addDraft(sh0.id, st.bp.par); } return; }
       if (aa === 'newpad' || aa === 'newbsk') { st.cr = { k: aa === 'newpad' ? 'pad' : 'bsk', name: '' }; renderAll(); return; }
       if (aa === 'crx') { st.cr = null; renderAll(); return; }
       if (aa === 'crok' || aa === 'crme') {
@@ -966,7 +994,7 @@
     loadCustoms();
     histRel = dates.map(function (x) { return grade(seq[x]).rel; });
     var saved = load();
-    if (saved) { st.base = saved.base; st.slots = saved.slots; st.lock = saved.lock || {}; st.draft = (saved.draft || []).filter(function (x) { return H[x.id]; }); st.ts = saved.ts || 0; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
+    if (saved) { st.base = saved.base; st.slots = saved.slots; st.lock = saved.lock || {}; st.draft = (saved.draft || []).map(function (x) { return x && H[x.id] ? x : null; }); st.ts = saved.ts || 0; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
     else { loadBase(dates[0]); st.ts = 0; }
     buildUse(); loadPinsLocal(); applyPins(); renderBase(); initMap(); renderAll(); cloudPull(); document.addEventListener('visibilitychange', function () { if (!document.hidden) { cloudPull(); } }); pullPins(function () { applyPins(); histRel = dates.map(function (x) { return grade(seq[x]).rel; }); renderAll(); });
   }
