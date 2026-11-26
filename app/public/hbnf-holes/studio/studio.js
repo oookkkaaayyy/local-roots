@@ -204,7 +204,7 @@
   var RD = {}, USE = {}, pins = {}, marks = [], me = null, watchId = null, SB = 'https://phcpbvuqibyarpfrftgx.supabase.co/rest/v1/hbnf_studio_pins', SK = 'sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC', PKEY = 'hbnf-pins-v1';
   var map = null, L = window.L, layers = { all: null, route: null, ghost: null, hov: null, pins: null, marks: null, me: null, tgt: null, xs: null }, MAPOK = false;
   function short(id) { return H[id].label.replace(/\s*\(.*\)\s*$/, ''); }
-  function ftOf(p) { return p.geo ? (p.geo.pf === 'a' || p.geo.bf === 'a' ? '~' : '') + Math.round(p.geo.d * 3.28084 / 5) * 5 : '-'; }
+  function ftOf(p) { return p.geo ? (p.geo.pf === 'a' || p.geo.bf === 'a' ? 'approx ' : '') + Math.round(p.geo.d * 3.28084 / 5) * 5 : '-'; }
   function rank(rel) { var r = 1, i; for (i = 0; i < histRel.length; i++) { if (histRel[i] < rel) { r++; } } return r; }
   function snap() { hist.push(JSON.stringify(st.slots)); if (hist.length > 50) { hist.shift(); } st.note = null; }
   function undo() { if (hist.length) { st.slots = JSON.parse(hist.pop()); st.note = null; save(); renderAll(); } }
@@ -240,8 +240,17 @@
       if (!o.ghost) { (function (k) { ln.on('click', function () { pick(k); }); })(i); }
       L.circleMarker(b, { radius: 4, color: '#1d1812', weight: 1, fillColor: col, fillOpacity: 1, interactive: false }).addTo(group);
       var ic = L.divIcon({ className: 'pin' + (sel ? ' sel' : '') + (o.ghost ? ' gh' : ''), html: '<span style="background:' + col + '">' + (i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14, 14] });
-      var m = L.marker(p, { icon: ic, keyboard: false, zIndexOffset: sel ? 1000 : 0 }).addTo(group);
+      var m = L.marker(p, { icon: ic, keyboard: false, draggable: !!sel, zIndexOffset: sel ? 1000 : 0 }).addTo(group);
       if (!o.ghost) { (function (k) { m.on('click', function () { pick(k); }); })(i); }
+      if (sel) {
+        (function (hh) {
+          m.bindTooltip('Drag to move pad', { direction: 'top', offset: [0, -14] });
+          m.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(hh.pad, q.lat, q.lng); }, 0); });
+          var bm = L.marker(b, { icon: L.divIcon({ className: 'pin bk', html: '<span>Basket</span>', iconSize: [64, 26], iconAnchor: [32, 13] }), draggable: true, keyboard: false, zIndexOffset: 1100 }).addTo(group);
+          bm.bindTooltip('Drag to move basket', { direction: 'top', offset: [0, -14] });
+          bm.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(hh.bsk, q.lat, q.lng); }, 0); });
+        })(h);
+      }
       prevB = h.geo.b;
     }
   }
@@ -283,7 +292,8 @@
       if (a) { d = Math.min(dist2(ll(g.p), a[0]), dist2(ll(g.p), a[1]), dist2(ll(g.b), a[0]), dist2(ll(g.b), a[1])); if (d > 120) { continue; } }
       (function (pp) {
         var ln = L.polyline([ll2(pp.geo.p), ll2(pp.geo.b)], { color: '#d9cebb', weight: 2, opacity: 0.28 }).addTo(layers.all);
-        ln.on('mouseover', function () { st.hover = pp.id; drawMap(); }).on('click', function () { replaceWith(pp.id); });
+        ln.bindTooltip('Replace with ' + short(pp.id) + ' (click)', { sticky: true });
+        ln.on('mouseover', function () { st.hover = pp.id; drawMap(); }).on('mouseout', function () { st.hover = null; drawMap(); }).on('click', function () { replaceWith(pp.id); });
       })(p);
     }
   }
@@ -392,7 +402,12 @@
     if (!map) { return; }
     layers.pins.clearLayers(); layers.marks.clearLayers(); layers.tgt.clearLayers();
     var id, i, m, ic, L2 = { tree: 'T', ob: 'OB', overlap: 'X', note: 'N' };
-    for (id in pins) { if (pins.hasOwnProperty(id)) { L.circleMarker(pins[id], { radius: 5, color: '#1d1812', weight: 1, fillColor: '#c9b4f0', fillOpacity: 1, interactive: false }).addTo(layers.pins); } }
+    for (id in pins) {
+      if (!pins.hasOwnProperty(id)) { continue; }
+      if (id.indexOf(':new-') > 0) {
+        (function (nid) { var nm = L.marker(pins[nid], { icon: L.divIcon({ className: 'pin bk', html: '<span>' + esc(tlabel(nid.replace(':new-', ':'))) + '</span>', iconSize: [90, 26], iconAnchor: [45, 13] }), draggable: st.view === 'pins', keyboard: false }).addTo(layers.pins); nm.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(nid, q.lat, q.lng); }, 0); }); })(id);
+      } else { L.circleMarker(pins[id], { radius: 5, color: '#1d1812', weight: 1, fillColor: '#c9b4f0', fillOpacity: 1, interactive: false }).addTo(layers.pins); }
+    }
     for (i = 0; i < marks.length; i++) {
       m = marks[i]; ic = L.divIcon({ className: 'pin mk', html: '<span>' + L2[m.kind] + '</span>', iconSize: [22, 22], iconAnchor: [11, 11] });
       L.marker([m.lat, m.lon], { icon: ic, interactive: false, keyboard: false }).addTo(layers.marks);
@@ -401,17 +416,21 @@
       var t = tgtObj(st.tgt), pos = t ? tpos(t) : null;
       if (pos) { L.circle(pos, { radius: 6, color: '#c9b4f0', weight: 3, fillOpacity: 0, dashArray: '4 4', interactive: false }).addTo(layers.tgt); }
     }
-    $('ret').hidden = !(st.view === 'pins' && (st.tgt || st.pf === 'marks'));
+    $('lgsw').hidden = st.view !== 'swap'; $('lgdr').hidden = st.view !== 'swap';
+    $('ret').hidden = !(st.view === 'pins' && (st.tgt || st.pf === 'marks' || st.pf === 'new'));
   }
   function tgtObj(id) { var a = targets(), i; for (i = 0; i < a.length; i++) { if (a[i].id === id) { return a[i]; } } return null; }
   function placeAt(lat, lon) {
-    if (st.pf === 'marks' && !st.tgt) {
+    if (st.pf === 'new' && st.nn) {
+      var nid2 = (st.nk === 'bsk' ? 'bsk:' : 'pad:') + 'new-' + st.nn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); pins[nid2] = [lat, lon]; pushPin(nid2, 'point', lat, lon);
+    } else if (st.pf === 'marks' && !st.tgt) {
       var mm = { id: 'mark:' + st.mk + ':' + Date.now(), kind: st.mk, lat: lat, lon: lon }; marks.push(mm); pushPin(mm.id, mm.kind, lat, lon);
     } else if (st.tgt) {
       pins[st.tgt] = [lat, lon]; pushPin(st.tgt, 'point', lat, lon); applyPins();
     } else { return; }
     savePinsLocal(); st.placed = true; renderAll();
   }
+  function movePoint(id, lat, lon) { pins[id] = [lat, lon]; pushPin(id, 'point', lat, lon); applyPins(); savePinsLocal(); histRel = dates.map(function (x) { return grade(seq[x]).rel; }); renderAll(); }
   function delMark(id) { var i; for (i = 0; i < marks.length; i++) { if (marks[i].id === id) { marks.splice(i, 1); } } sb('DELETE', '?id=eq.' + encodeURIComponent(id), null, function () { /* best effort */ }); savePinsLocal(); renderAll(); }
   function marksOn(h) {
     var out = { tree: 0, ob: 0, overlap: 0 }, g = h.geo, i, a, b, m;
@@ -422,13 +441,22 @@
   }
   function pinsHtml() {
     var h = sheetHead('Pins', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
-    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs a pin</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All points</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button></div>';
+    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs a pin</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All points</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">New point</button></div>';
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
       h += '<div class="facts"><strong>' + esc(tlabel(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Set' : t && t.need === 2 ? 'Missing' : t && t.need === 1 ? 'Approx' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
       h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button><button type="button" data-a="list">List</button></div>';
       if (t) { h += '<div class="sub">Used by</div><div class="list">'; for (i = 0; i < t.holes.length && i < 6; i++) { h += '<div class="row"><span class="l">' + esc(short(t.holes[i])) + '</span><span class="v">P' + H[t.holes[i]].par + '</span><span class="v"></span><span class="v"></span></div>'; } h += '</div>'; }
       return h;
+    }
+    if (st.pf === 'new') {
+      var nid, nl = [];
+      h += '<div class="chips"><button type="button" data-nk="pad" aria-pressed="' + (st.nk !== 'bsk') + '">Pad</button><button type="button" data-nk="bsk" aria-pressed="' + (st.nk === 'bsk') + '">Basket</button></div>';
+      h += '<div class="tools-bar"><input id="nn" type="text" placeholder="Name" aria-label="Point name" value="' + esc(st.nn || '') + '" autocomplete="off"></div>';
+      h += '<div class="tools-bar"><button type="button" class="pri" data-a="place"' + (st.nn ? '' : ' disabled') + '>Place at crosshair</button><button type="button" data-a="here"' + (me && st.nn ? '' : ' disabled') + '>My location</button></div><div class="list">';
+      for (nid in pins) { if (pins.hasOwnProperty(nid) && nid.indexOf(':new-') > 0) { nl.push(nid); } }
+      for (i = 0; i < nl.length; i++) { h += '<div class="row"><span class="l">' + esc(tlabel(nl[i].replace(':new-', ':'))) + '</span><span class="v">' + pins[nl[i]][0].toFixed(5) + ', ' + pins[nl[i]][1].toFixed(5) + '</span><span class="v"></span><span class="v"></span></div>'; }
+      return h + '</div>';
     }
     if (st.pf === 'marks') {
       var ks = [['tree', 'Tree'], ['ob', 'OB'], ['overlap', 'Overlap'], ['note', 'Note']];
@@ -518,7 +546,7 @@
   function ftLbl(h) { return h.geo ? ftOf(h) + ' ft' : 'Unmapped'; }
   function holeRow(id, par, o) {
     var h = H[id], ok = tested(h), col = relColor(exp(h, par) - par, ok), tag = o.attr ? 'button' : 'div', ex = o.extra || '';
-    return '<' + tag + ' type="' + (o.attr ? 'button' : '') + '" class="hr' + (o.warn ? ' warn' : '') + '" ' + (o.attr || '') + (o.role ? ' role="listitem"' : '') + '><span class="bdg" style="background:' + col + '">' + (o.n !== undefined ? o.n : '') + '</span>' +
+    return '<' + tag + ' type="' + (o.attr ? 'button' : '') + '" class="hr' + (o.warn ? ' warn' : '') + (o.nb ? ' nobdg' : '') + '" ' + (o.attr || '') + (o.role ? ' role="listitem"' : '') + '>' + (o.nb ? '' : '<span class="bdg" style="background:' + col + '">' + (o.n !== undefined ? o.n : '') + '</span>') +
       '<span class="mid"><b>' + esc(short(id)) + '</b><small>Par ' + par + ' · ' + ftLbl(h) + ' · Used ' + usedTxt(id) + ' rounds</small><small class="' + (USE[id] ? '' : 'pos') + '">' + lastLbl(id) + ex + '</small></span>' +
       '<span class="rt"><b class="' + (ok ? cl(h.rel) : '') + '">' + (ok ? sg(h.rel, 2) : '-') + '</b><small>' + (ok ? 'to par' : 'no data') + '</small></span>' + '<span class="chev" aria-hidden="true">' + (o.attr ? '&rsaquo;' : '') + '</span></' + tag + '>';
   }
@@ -573,10 +601,11 @@
       statCell('Used', usedTxt(cur.id), 'rounds', '') + statCell('Last used', USE[cur.id] ? USE[cur.id].dates[0] : 'New hole', USE[cur.id] ? (USE[cur.id].last === 0 ? 'latest round' : USE[cur.id].last + ' rounds ago') : 'never played', USE[cur.id] ? '' : 'pos') +
       statCell('Overlaps', x ? x.join(', ') : 'None', 'crossing holes', x ? 'pos' : '') + '</div>';
     if (m.tree || m.ob || m.overlap) { h += '<div class="facts">' + (m.tree ? '<span class="pos">Trees on line ' + m.tree + '</span>' : '') + (m.ob ? '<span class="pos">OB on line ' + m.ob + '</span>' : '') + (m.overlap ? '<span class="pos">Marked overlaps ' + m.overlap + '</span>' : '') + '</div>'; }
+    if (ch.geo) { var pa = ll2(ch.geo.p), ba = ll2(ch.geo.b); h += '<div class="facts"><span>Pad ' + pa[0].toFixed(5) + ', ' + pa[1].toFixed(5) + ' (' + (pins[ch.pad] ? 'set' : ch.geo.pf === 'a' ? 'approx' : 'mapped') + ')</span><span>Basket ' + ba[0].toFixed(5) + ', ' + ba[1].toFixed(5) + ' (' + (pins[ch.bsk] ? 'set' : ch.geo.bf === 'a' ? 'approx' : 'mapped') + ')</span></div>'; }
     h += '<div class="sub">Par</div><div class="chips">';
     for (i = 3; i <= 5; i++) { h += '<button type="button" data-par="' + i + '" aria-pressed="' + (cur.par === i) + '">Par ' + i + '</button>'; }
     h += '</div><div class="tools-bar"><button type="button" data-a="up"' + (st.sel === 0 ? ' disabled' : '') + '>Move earlier</button><button type="button" data-a="down"' + (st.sel === 17 ? ' disabled' : '') + '>Move later</button><button type="button" data-a="lock" aria-pressed="' + !!st.lock[st.sel] + '">' + (st.lock[st.sel] ? 'Locked' : 'Lock hole') + '</button></div>';
-    h += '<div class="ttl"><b>Swap for another hole</b><span>' + (st.all ? 'All holes' : 'Tested holes') + '</span></div>';
+    h += '<div class="ttl"><b>Replace hole ' + (st.sel + 1) + ' with</b><span>' + (st.all ? 'All holes' : 'Tested holes') + '</span></div>';
     h += '<div class="tools-bar"><input id="q" type="search" placeholder="Search holes" aria-label="Search holes" value="' + esc(st.q) + '" autocomplete="off"></div>';
     h += '<div class="chips"><button type="button" data-s="easy" aria-pressed="' + (st.sort === 'easy') + '">Easiest first</button><button type="button" data-s="hard" aria-pressed="' + (st.sort === 'hard') + '">Hardest first</button><button type="button" data-s="bird" aria-pressed="' + (st.sort === 'bird') + '">Most birdies</button><button type="button" data-a="all" aria-pressed="' + st.all + '">Include untested</button></div>';
     var list = pool.filter(function (p) { return (st.all || tested(p)) && !inLayout(p.id, st.sel) && p.id !== cur.id && (!st.q || p.label.toLowerCase().indexOf(st.q.toLowerCase()) >= 0); });
@@ -587,7 +616,7 @@
     h += '<div class="list">';
     for (i = 0; i < list.length && i < 80; i++) {
       var p = list[i], dl = exp(p, p.par) - exp(ch, cur.par);
-      h += holeRow(p.id, p.par, { attr: 'data-pick="' + esc(p.id) + '"', extra: ' · <span class="' + cl(dl) + '">' + sg(dl, 2) + ' strokes vs this hole</span>' });
+      h += holeRow(p.id, p.par, { nb: true, attr: 'data-pick="' + esc(p.id) + '"', extra: ' · <span class="' + cl(dl) + '">' + sg(dl, 2) + ' strokes vs this hole</span>' });
     }
     if (!list.length) { h += '<div class="empty">-</div>'; }
     return h + '</div>';
@@ -649,7 +678,8 @@
     $('loc').addEventListener('click', function () { locate(true); });
     $('fit').addEventListener('click', function () { st.fit = true; drawMap(); });
     $('grip').addEventListener('click', function () { setCollapsed(document.body.getAttribute('data-sheet') !== 'min'); });
-    $('sheet').addEventListener('input', function (e) { if (e.target.id === 'q') { st.q = e.target.value; st.focusQ = true; renderSheet(); } });
+    $('sheet').addEventListener('input', function (e) { if (e.target.id === 'nn') { st.nn = e.target.value; var pb = $('sheet').querySelector('[data-a=place]'), hb = $('sheet').querySelector('[data-a=here]'); if (pb) { pb.disabled = !st.nn; } if (hb) { hb.disabled = !(me && st.nn); } return; }
+      if (e.target.id === 'q') { st.q = e.target.value; st.focusQ = true; renderSheet(); } });
     $('sheet').addEventListener('mouseover', function (e) {
       var t = e.target; while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pick'))) { t = t.parentNode; }
       var id = t && t.getAttribute ? t.getAttribute('data-pick') : null; if (id !== st.hover) { st.hover = id; drawMap(); }
@@ -660,6 +690,7 @@
       var hv = t.getAttribute('data-h'); if (hv) { st.hd = hv; st.prev = seq[hv].map(function (q) { return { id: q.id, par: q.par }; }); st.fit = true; renderAll(); return; }
       var tg = t.getAttribute('data-t'), pfv = t.getAttribute('data-pf'), mkv = t.getAttribute('data-mk'), mdv = t.getAttribute('data-md'), snv = t.getAttribute('data-sn');
       if (tg) { st.tgt = tg; st.pf = st.pf === 'marks' ? 'need' : st.pf; var tt0 = tgtObj(tg), pp0 = tt0 ? tpos(tt0) : null; if (pp0 && map) { map.setView(pp0, 19, { animate: false }); } renderAll(); return; }
+      var nkv = t.getAttribute('data-nk'); if (nkv) { st.nk = nkv; renderSheet(); return; }
       if (pfv) { st.pf = pfv; st.tgt = null; renderAll(); return; }
       if (mkv) { st.mk = mkv; renderSheet(); return; }
       if (mdv) { delMark(mdv); return; }
