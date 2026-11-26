@@ -201,7 +201,7 @@
     for (i = 0; i < out.length && res.length < 10; i++) { if (!seen[out[i].i] && !seenTo[out[i].to]) { seen[out[i].i] = 1; seenTo[out[i].to] = 1; res.push(out[i]); } }
     return res;
   }
-  var pins = {}, marks = [], me = null, watchId = null, SB = 'https://phcpbvuqibyarpfrftgx.supabase.co/rest/v1/hbnf_studio_pins', SK = 'sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC', PKEY = 'hbnf-pins-v1';
+  var RD = {}, USE = {}, pins = {}, marks = [], me = null, watchId = null, SB = 'https://phcpbvuqibyarpfrftgx.supabase.co/rest/v1/hbnf_studio_pins', SK = 'sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC', PKEY = 'hbnf-pins-v1';
   var map = null, L = window.L, layers = { all: null, route: null, ghost: null, hov: null, pins: null, marks: null, me: null, tgt: null, xs: null }, MAPOK = false;
   function short(id) { return H[id].label.replace(/\s*\(.*\)\s*$/, ''); }
   function ftOf(p) { return p.geo ? (p.geo.pf === 'a' || p.geo.bf === 'a' ? '~' : '') + Math.round(p.geo.d * 3.28084 / 5) * 5 : '-'; }
@@ -247,7 +247,7 @@
   }
   function drawMap() {
     if (!map) { return; }
-    drawLayout(layers.route, st.slots, {});
+    drawLayout(layers.route, st.view === 'hist' && st.hd ? [] : st.slots, {});
     layers.ghost.clearLayers();
     if (st.prev) { drawLayout(layers.ghost, st.prev, { ghost: true }); }
     layers.hov.clearLayers();
@@ -497,6 +497,42 @@
     }
     return h;
   }
+
+  function buildUse() {
+    var i, j, id, seen;
+    USE = {};
+    for (i = 0; i < dates.length; i++) {
+      seen = {};
+      for (j = 0; j < 18; j++) {
+        id = seq[dates[i]][j].id; if (seen[id]) { continue; } seen[id] = 1;
+        USE[id] = USE[id] || { n: 0, last: -1, dates: [] };
+        USE[id].n++; USE[id].dates.push(dates[i]); if (USE[id].last < 0) { USE[id].last = i; }
+      }
+    }
+  }
+  function usedTxt(id) { var u = USE[id]; return (u ? u.n : 0) + '/' + dates.length; }
+  function lastTxt(id) { var u = USE[id]; return u ? String(u.last) : 'New'; }
+  function relTxt(id) { var o = H[id]; return tested(o) ? sg(o.rel, 2) : '-'; }
+  function histHtml() {
+    var h, i, d, r, lay = enc.layouts || {};
+    if (st.hd) {
+      var sl = seq[st.hd], g = grade(sl), rr = RD[st.hd];
+      h = sheetHead(st.hd, true);
+      h += '<div class="facts"><span>' + esc((lay[st.hd] || {}).name || '') + '</span></div>';
+      h += '<div class="cards">' + statCell('Team', rr ? sg(rr.avg_rel, 1) : '-', null) + statCell('Best', rr ? sg(rr.best_rel, 0) : '-', null) + statCell('Teams', rr ? rr.teams : '-', null) + statCell('Expect', sg(g.rel, 1), null) + '</div>';
+      h += '<div class="tools-bar"><button type="button" class="pri" data-a="loadh">Load</button></div>';
+      h += '<div class="hd"><span></span><span>Hole</span><span>Par</span><span>Used</span><span>Ago</span><span>To par</span></div><div class="list">';
+      for (i = 0; i < 18; i++) { h += '<div class="slot"><span class="n">' + (i + 1) + '</span><span class="l">' + esc(short(sl[i].id)) + '</span><span class="p">P' + sl[i].par + '</span><span class="v">' + usedTxt(sl[i].id) + '</span><span class="v">' + lastTxt(sl[i].id) + '</span><span class="r ' + (tested(H[sl[i].id]) ? cl(H[sl[i].id].rel) : '') + '">' + relTxt(sl[i].id) + '</span></div>'; }
+      return h + '</div>';
+    }
+    h = sheetHead('History', true) + '<div class="hd hl"><span>Date</span><span>Par</span><span>Team</span><span>Best</span><span>Teams</span></div><div class="list">';
+    for (i = 0; i < dates.length; i++) {
+      d = dates[i]; r = RD[d];
+      h += '<button type="button" class="row hl" data-h="' + d + '"><span class="l">' + d + '</span><span class="v">' + g18(seq[d]) + '</span><span class="v ' + (r ? cl(r.avg_rel) : '') + '">' + (r ? sg(r.avg_rel, 1) : '-') + '</span><span class="v">' + (r ? sg(r.best_rel, 0) : '-') + '</span><span class="v">' + (r ? r.teams : '-') + '</span></button>';
+    }
+    return h + '</div>';
+  }
+  function g18(sl) { var t = 0, i; for (i = 0; i < sl.length; i++) { t += sl[i].par; } return t; }
   function sheetHead(title, back) {
     return '<div class="ph">' + (back ? '<button type="button" class="bk" data-a="back" aria-label="Back">&lsaquo; Back</button>' : '') + '<h2>' + esc(title) + '</h2></div>';
   }
@@ -512,10 +548,10 @@
   }
   function routeHtml() {
     var g = grade(st.slots), b = baseGrade || g, cg = geoStats(st.slots), h = scoreHtml(g, b), i, s, o;
-    h += '<div class="list" role="list">';
+    h += '<div class="hd"><span></span><span>Hole</span><span>Par</span><span>Used</span><span>Ago</span><span>To par</span></div><div class="list" role="list">';
     for (i = 0; i < 18; i++) {
       s = st.slots[i]; o = H[s.id];
-      h += '<button type="button" class="slot' + (cg.hit[i] ? ' warn' : '') + '" role="listitem" data-i="' + i + '"><span class="n">' + (i + 1) + '</span><span class="l">' + esc(short(s.id)) + '</span><span class="p">P' + s.par + '</span><span class="v">' + ftOf(o) + '</span><span class="r ' + (tested(o) ? cl(o.rel) : '') + '">' + (tested(o) ? sg(o.rel, 1) : '-') + '</span></button>';
+      h += '<button type="button" class="slot' + (cg.hit[i] ? ' warn' : '') + '" role="listitem" data-i="' + i + '"><span class="n">' + (i + 1) + '</span><span class="l">' + esc(short(s.id)) + '</span><span class="p">P' + s.par + '</span><span class="v">' + usedTxt(s.id) + '</span><span class="v' + (USE[s.id] ? '' : ' pos') + '">' + lastTxt(s.id) + '</span><span class="r ' + (tested(o) ? cl(o.rel) : '') + '">' + relTxt(s.id) + '</span></button>';
     }
     return h + '</div>';
   }
@@ -523,11 +559,11 @@
     var cur = st.slots[st.sel], ch = H[cur.id], cgs = geoStats(st.slots), x = cgs.hit[st.sel], i, h = sheetHead('Hole ' + (st.sel + 1) + ' ' + short(cur.id), true);
     var g0 = grade(st.slots), b0 = baseGrade || g0;
     h += '<div class="cards">' + statCell('To par', sg(g0.rel, 1), dd(g0.rel, b0.rel)) + statCell('Walk min', f(g0.walk, 0), dd(g0.walk, b0.walk)) + statCell('Cross', g0.cross, dd(g0.cross, b0.cross)) + statCell('Rank', rank(g0.rel) + '/' + (histRel.length + 1), null) + '</div>';
-    h += '<div class="facts"><span>P' + cur.par + '</span><span>' + ftOf(ch) + ' ft</span><span>Walk in ' + f(cgs.legs[st.sel], 1) + ' min</span><span class="' + cl(holeRel(cur)) + '">' + sg(holeRel(cur), 2) + '</span>' + (x ? '<span class="pos">Crosses ' + x.join(', ') + '</span>' : '') + (function () { var m = marksOn(ch), r = ''; if (m.tree) { r += '<span class="pos">Trees ' + m.tree + '</span>'; } if (m.ob) { r += '<span class="pos">OB ' + m.ob + '</span>'; } if (m.overlap) { r += '<span class="pos">Overlap ' + m.overlap + '</span>'; } return r; })() + '</div>';
+    h += '<div class="facts"><span>P' + cur.par + '</span><span>' + ftOf(ch) + ' ft</span><span>Walk in ' + f(cgs.legs[st.sel], 1) + ' min</span><span class="' + cl(holeRel(cur)) + '">' + sg(holeRel(cur), 2) + '</span><span>Used ' + usedTxt(cur.id) + '</span><span class="' + (USE[cur.id] ? '' : 'pos') + '">' + (USE[cur.id] ? 'Last ' + USE[cur.id].dates[0] : 'New') + '</span>' + (x ? '<span class="pos">Crosses ' + x.join(', ') + '</span>' : '') + (function () { var m = marksOn(ch), r = ''; if (m.tree) { r += '<span class="pos">Trees ' + m.tree + '</span>'; } if (m.ob) { r += '<span class="pos">OB ' + m.ob + '</span>'; } if (m.overlap) { r += '<span class="pos">Overlap ' + m.overlap + '</span>'; } return r; })() + '</div>';
     h += '<div class="tools-bar"><button type="button" data-a="up"' + (st.sel === 0 ? ' disabled' : '') + '>Earlier</button><button type="button" data-a="down"' + (st.sel === 17 ? ' disabled' : '') + '>Later</button></div>';
     h += '<div class="tools-bar"><input id="q" type="search" placeholder="Search" aria-label="Search holes" value="' + esc(st.q) + '" autocomplete="off">' +
       '<button type="button" data-s="easy" aria-pressed="' + (st.sort === 'easy') + '">Easy</button><button type="button" data-s="hard" aria-pressed="' + (st.sort === 'hard') + '">Hard</button><button type="button" data-s="bird" aria-pressed="' + (st.sort === 'bird') + '">Birdie</button><button type="button" data-a="all" aria-pressed="' + st.all + '">All</button></div>';
-    h += '<div class="sub">Replace with</div>';
+    h += '<div class="hd pk"><span>Replace with</span><span>Par</span><span>Used</span><span>Ago</span><span>To par</span><span>Change</span></div>';
     var list = pool.filter(function (p) { return (st.all || tested(p)) && !inLayout(p.id, st.sel) && p.id !== cur.id && (!st.q || p.label.toLowerCase().indexOf(st.q.toLowerCase()) >= 0); });
     list.sort(function (a, b) {
       if (st.sort === 'bird') { return (b.bird || 0) - (a.bird || 0); }
@@ -536,7 +572,7 @@
     h += '<div class="list">';
     for (i = 0; i < list.length && i < 80; i++) {
       var p = list[i], dl = exp(p, p.par) - exp(ch, cur.par);
-      h += '<button type="button" class="row" data-pick="' + esc(p.id) + '"><span class="l">' + esc(short(p.id)) + '</span><span class="v">P' + p.par + '</span><span class="v">' + ftOf(p) + '</span><span class="v ' + cl(dl) + '">' + sg(dl, 2) + '</span></button>';
+      h += '<button type="button" class="row pk" data-pick="' + esc(p.id) + '"><span class="l">' + esc(short(p.id)) + '</span><span class="v">P' + p.par + '</span><span class="v">' + usedTxt(p.id) + '</span><span class="v' + (USE[p.id] ? '' : ' pos') + '">' + lastTxt(p.id) + '</span><span class="v ' + cl(p.rel) + '">' + relTxt(p.id) + '</span><span class="v ' + cl(dl) + '">' + sg(dl, 2) + '</span></button>';
     }
     if (!list.length) { h += '<div class="empty">-</div>'; }
     return h + '</div>';
@@ -561,9 +597,9 @@
     return h + startHtml();
   }
   function renderSheet() {
-    var h = st.view === 'swap' && st.sel >= 0 ? swapHtml() : st.view === 'auto' ? autoHtml() : st.view === 'pins' ? pinsHtml() : routeHtml();
+    var h = st.view === 'swap' && st.sel >= 0 ? swapHtml() : st.view === 'auto' ? autoHtml() : st.view === 'pins' ? pinsHtml() : st.view === 'hist' ? histHtml() : routeHtml();
     $('sheet').innerHTML = h;
-    $('auto').setAttribute('aria-pressed', st.view === 'auto'); $('pinsBtn').setAttribute('aria-pressed', st.view === 'pins');
+    $('auto').setAttribute('aria-pressed', st.view === 'auto'); $('pinsBtn').setAttribute('aria-pressed', st.view === 'pins'); $('histBtn').setAttribute('aria-pressed', st.view === 'hist');
     if (st.focusQ) { var q = $('q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } st.focusQ = false; }
   }
   function renderBase() {
@@ -576,7 +612,7 @@
   function replaceWith(id) { snap(); st.slots[st.sel] = { id: id, par: H[id].par }; st.hover = null; save(); st.focus = true; renderAll(); }
   function applyOrder() { var r = bestOrder(); if (!r) { return; } snap(); st.slots = r.perm.map(function (k) { return st.slots[k]; }); st.sel = -1; st.view = 'route'; save(); renderAll(); }
   function move(d) { var j = st.sel + d; if (j < 0 || j > 17) { return; } snap(); var t = st.slots[st.sel]; st.slots[st.sel] = st.slots[j]; st.slots[j] = t; st.sel = j; save(); renderAll(); }
-  function back() { if (st.view === 'pins' && st.tgt) { st.tgt = null; renderAll(); return; } st.view = 'route'; st.sel = -1; st.tgt = null; st.prev = null; st.pgoal = null; st.hover = null; st.fit = true; renderAll(); }
+  function back() { if (st.view === 'hist' && st.hd) { st.hd = null; st.prev = null; st.fit = true; renderAll(); return; } if (st.view === 'pins' && st.tgt) { st.tgt = null; renderAll(); return; } st.hd = null; st.view = 'route'; st.sel = -1; st.tgt = null; st.prev = null; st.pgoal = null; st.hover = null; st.fit = true; renderAll(); }
   function copyText() {
     var t = st.slots.map(function (s, i) { return (i + 1) + '. ' + guideText(s.id, s.par); }).join('\n');
     var done = function () { $('copy').textContent = 'Copied'; setTimeout(function () { $('copy').textContent = 'Copy'; }, 1200); };
@@ -594,6 +630,7 @@
     $('copy').addEventListener('click', copyText);
     $('auto').addEventListener('click', function () { if (st.view === 'auto') { back(); } else { st.view = 'auto'; st.sel = -1; st.prev = null; st.pgoal = null; setCollapsed(false); renderAll(); } });
     $('pinsBtn').addEventListener('click', function () { if (st.view === 'pins') { back(); } else { st.view = 'pins'; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); } });
+    $('histBtn').addEventListener('click', function () { if (st.view === 'hist') { st.hd = null; st.prev = null; back(); } else { st.view = 'hist'; st.hd = null; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); } });
     $('loc').addEventListener('click', function () { locate(true); });
     $('fit').addEventListener('click', function () { st.fit = true; drawMap(); });
     $('grip').addEventListener('click', function () { setCollapsed(document.body.getAttribute('data-sheet') !== 'min'); });
@@ -605,6 +642,7 @@
     $('sheet').addEventListener('click', function (e) {
       var t = e.target; while (t && t !== this && t.tagName !== 'BUTTON') { t = t.parentNode; }
       if (!t || t.tagName !== 'BUTTON' || t.disabled) { return; }
+      var hv = t.getAttribute('data-h'); if (hv) { st.hd = hv; st.prev = seq[hv].map(function (q) { return { id: q.id, par: q.par }; }); st.fit = true; renderAll(); return; }
       var tg = t.getAttribute('data-t'), pfv = t.getAttribute('data-pf'), mkv = t.getAttribute('data-mk'), mdv = t.getAttribute('data-md'), snv = t.getAttribute('data-sn');
       if (tg) { st.tgt = tg; st.pf = st.pf === 'marks' ? 'need' : st.pf; var tt0 = tgtObj(tg), pp0 = tt0 ? tpos(tt0) : null; if (pp0 && map) { map.setView(pp0, 19, { animate: false }); } renderAll(); return; }
       if (pfv) { st.pf = pfv; st.tgt = null; renderAll(); return; }
@@ -619,6 +657,7 @@
       else if (a === 'back') { back(); } else if (a === 'up') { move(-1); } else if (a === 'down') { move(1); }
       else if (a === 'all') { st.all = !st.all; renderSheet(); } else if (a === 'more') { st.more = !st.more; renderSheet(); }
       else if (a === 'order') { applyOrder(); }
+      else if (a === 'loadh') { if (st.hd) { loadBase(st.hd); st.view = 'route'; st.hd = null; st.prev = null; renderBase(); st.fit = true; renderAll(); } }
       else if (a === 'place') { var c0 = map.getCenter(); placeAt(c0.lat, c0.lng); }
       else if (a === 'here') { if (me) { placeAt(me.lat, me.lon); } }
       else if (a === 'list') { st.tgt = null; renderAll(); }
@@ -629,6 +668,7 @@
     get('/hbnf-holes/hole_encyclopedia.json', function (d) {
       if (!d) { return; }
       enc = d; prep();
+      get('/hbnf-holes/studio/rounds.json', function (rj) { if (rj) { RD = rj.rounds || {}; } });
       get('/hbnf-holes/studio/geo.json', function (gj) {
         if (gj) { GEO = gj; var q; for (q = 0; q < gj.tkeys.length; q++) { TI[gj.tkeys[q]] = q; } for (q in gj.holes) { if (gj.holes.hasOwnProperty(q) && H[q]) { H[q].geo = gj.holes[q]; } } }
         start();
@@ -640,7 +680,7 @@
     var saved = load();
     if (saved) { st.base = saved.base; st.slots = saved.slots; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
     else { loadBase(dates[0]); }
-    loadPinsLocal(); applyPins(); renderBase(); initMap(); renderAll(); pullPins(function () { applyPins(); histRel = dates.map(function (x) { return grade(seq[x]).rel; }); renderAll(); });
+    buildUse(); loadPinsLocal(); applyPins(); renderBase(); initMap(); renderAll(); pullPins(function () { applyPins(); histRel = dates.map(function (x) { return grade(seq[x]).rel; }); renderAll(); });
   }
   init();
 })();

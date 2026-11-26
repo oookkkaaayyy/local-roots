@@ -1,0 +1,126 @@
+{
+ "schema_version": 1,
+ "unit": "two-player team strokes",
+ "rounds": {
+  "2025-12-09": {
+   "name": "HB Glow Dubs 12.9.25",
+   "par": 54,
+   "teams": 6,
+   "avg_rel": -8.83,
+   "best_rel": -14,
+   "birdies": 9.2
+  },
+  "2025-12-16": {
+   "name": "HB Glow Dubs 12.15.25",
+   "par": 54,
+   "teams": 8,
+   "avg_rel": -9.25,
+   "best_rel": -12,
+   "birdies": 9.4
+  },
+  "2025-12-22": {
+   "name": "HB Glow Dubs 12.22.25",
+   "par": 54,
+   "teams": 3,
+   "avg_rel": -5.0,
+   "best_rel": -8,
+   "birdies": 5.3
+  },
+  "2026-01-13": {
+   "name": "HB Glow Dubs 1.13.26",
+   "par": 54,
+   "teams": 4,
+   "avg_rel": -10.0,
+   "best_rel": -14,
+   "birdies": 10.0
+  },
+  "2026-01-20": {
+   "name": "HB Glow Dubs 1.20.26",
+   "par": 60,
+   "teams": 6,
+   "avg_rel": -6.5,
+   "best_rel": -9,
+   "birdies": 8.0
+  },
+  "2026-02-10": {
+   "name": "HB Glow Dubs 2.10.26",
+   "par": 60,
+   "teams": 4,
+   "avg_rel": -8.5,
+   "best_rel": -11,
+   "birdies": 9.0
+  },
+  "2026-02-24": {
+   "name": "HB Glow Dubs 2.24.26",
+   "par": 60,
+   "teams": 4,
+   "avg_rel": -6.25,
+   "best_rel": -8,
+   "birdies": 7.5
+  },
+  "2026-03-03": {
+   "name": "HB Glow Dubs 3.3.26",
+   "par": 61,
+   "teams": 5,
+   "avg_rel": -10.8,
+   "best_rel": -14,
+   "birdies": 10.4
+  },
+  "2026-04-18": {
+   "name": "HB Glow Dubs 4.18.26",
+   "par": 58,
+   "teams": 7,
+   "avg_rel": -6.0,
+   "best_rel": -10,
+   "birdies": 7.1
+  },
+  "2026-05-23": {
+   "name": "HB Glow Dubs 5.23.26",
+   "par": 55,
+   "teams": 6,
+   "avg_rel": -6.5,
+   "best_rel": -9,
+   "birdies": 7.7
+  },
+  "2026-06-20": {
+   "name": "HB Glow Dubs 6.20.26",
+   "par": 57,
+   "teams": 7,
+   "avg_rel": -8.57,
+   "best_rel": -12,
+   "birdies": 9.1
+  },
+  "2026-07-18": {
+   "name": "HB Glow Dubs 7.18.26",
+   "par": 56,
+   "teams": 6,
+   "avg_rel": -6.0,
+   "best_rel": -12,
+   "birdies": 7.5
+  },
+  "2026-08-22": {
+   "name": "HB Glow Dubs 8.22.26",
+   "par": 58,
+   "teams": 7,
+   "avg_rel": -9.14,
+   "best_rel": -13,
+   "birdies": 9.7
+  },
+  "2026-09-19": {
+   "name": "HB Glow Dubs 9.19.26",
+   "par": 56,
+   "teams": 10,
+   "avg_rel": -6.3,
+   "best_rel": -10,
+   "birdies": 7.3
+  },
+  "2026-10-24": {
+   "name": "HB Glow Dubs 10.24.26",
+   "par": 58,
+   "teams": 6,
+   "avg_rel": -8.33,
+   "best_rel": -14,
+   "birdies": 9.2
+  }
+ }
+}
