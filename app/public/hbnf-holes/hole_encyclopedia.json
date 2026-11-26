@@ -2309,7 +2309,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -2483,12 +2483,8 @@
       "avg": -1.0
      },
      "Brian": {
-      "n": 1,
-      "avg": 0.0
-     },
-     "Brian Rose": {
-      "n": 1,
-      "avg": -1.0
+      "n": 2,
+      "avg": -0.5
      },
      "Cam": {
       "n": 1,
@@ -3183,7 +3179,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -3353,12 +3349,8 @@
       "avg": -1.0
      },
      "Brian": {
-      "n": 2,
-      "avg": -1.0
-     },
-     "Brian Rose": {
-      "n": 1,
-      "avg": 0.0
+      "n": 3,
+      "avg": -0.67
      },
      "Cam": {
       "n": 1,
@@ -3925,7 +3917,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -4095,7 +4087,7 @@
       "n": 1,
       "avg": 0.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -4599,7 +4591,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -4766,7 +4758,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -5284,7 +5276,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -5341,11 +5333,7 @@
       "avg": 0.0
      },
      "Brian": {
-      "n": 1,
-      "avg": 0.0
-     },
-     "Brian Rose": {
-      "n": 1,
+      "n": 2,
       "avg": 0.0
      },
      "Carlos": {
@@ -5798,7 +5786,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -5908,7 +5896,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -6397,7 +6385,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -6454,11 +6442,7 @@
       "avg": 0.0
      },
      "Brian": {
-      "n": 1,
-      "avg": 0.0
-     },
-     "Brian Rose": {
-      "n": 1,
+      "n": 2,
       "avg": 0.0
      },
      "Carlos": {
@@ -7339,7 +7323,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -7446,7 +7430,7 @@
       "n": 2,
       "avg": -0.5
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": 0.0
      },
@@ -10109,7 +10093,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -10157,7 +10141,7 @@
       "n": 2,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -13418,7 +13402,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -13526,7 +13510,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -15237,7 +15221,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -15344,7 +15328,7 @@
       "n": 1,
       "avg": 0.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -15725,7 +15709,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -15773,7 +15757,7 @@
       "n": 1,
       "avg": 0.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -22327,7 +22311,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -22372,7 +22356,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -23283,7 +23267,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -23327,7 +23311,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -23695,7 +23679,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -23739,7 +23723,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -23827,7 +23811,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -23871,7 +23855,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": 0.0
      },
@@ -24229,7 +24213,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -24273,7 +24257,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
@@ -24361,7 +24345,7 @@
        "Matt"
       ],
       [
-       "Brian Rose",
+       "Brian",
        "Mason"
       ],
       [
@@ -24405,7 +24389,7 @@
       "n": 1,
       "avg": -1.0
      },
-     "Brian Rose": {
+     "Brian": {
       "n": 1,
       "avg": -1.0
      },
