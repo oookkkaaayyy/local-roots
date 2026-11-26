@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#292119">
 <title>HBNF | Studio</title>
 <meta name="robots" content="noindex">
+<link rel="stylesheet" href="/hbnf-holes/studio/vendor/leaflet.css">
 <style>
 @font-face{font-family:Cabin;src:url('/fonts/cabin-latin-400.woff2') format('woff2');font-weight:400;font-display:swap}
 @font-face{font-family:Cabin;src:url('/fonts/cabin-latin-700.woff2') format('woff2');font-weight:700;font-display:swap}
@@ -23,78 +24,78 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
 .hbnf-studio button[aria-pressed="true"],.hbnf-studio button[aria-selected="true"]{background:#4b5038;border-color:var(--accent)}
 .hbnf-studio button:focus-visible,.hbnf-studio a:focus-visible,.hbnf-studio select:focus-visible,.hbnf-studio input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .hbnf-studio button:disabled{opacity:.55}
-.hbnf-studio .main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4fr);gap:10px;padding:10px 12px}
-.hbnf-studio .col{min-height:0;min-width:0;display:flex;flex-direction:column;gap:10px}
-.hbnf-studio #gradePanel{flex:0 0 auto;overflow:visible}
-.hbnf-studio .panel{border:1px solid #6d735499;border-radius:10px;background:var(--panel);min-height:0;min-width:0;overflow:auto;padding:10px}
-.hbnf-studio #slotPanel{flex:1 1 auto}
-.hbnf-studio #slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(9,minmax(var(--tap),1fr));grid-auto-flow:column;gap:6px;height:100%}
-.hbnf-studio .slot{display:grid;grid-template-columns:1.6em minmax(0,1fr) auto auto;align-items:center;gap:6px;text-align:left;padding:4px 8px;min-width:0;font-weight:400}
-.hbnf-studio .slot.warn{border-left:3px solid #c9a24a}
-.hbnf-studio .slot .n{color:var(--accent);font-weight:700}
-.hbnf-studio .slot .l{overflow-wrap:anywhere;font-size:.84rem}
-.hbnf-studio .slot .p,.hbnf-studio .slot .r{font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hbnf-studio .main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,400px);gap:10px;padding:10px 12px}
+.hbnf-studio #map{min-height:0;min-width:0;border:1px solid #6d735499;border-radius:10px;background:#1d1812}
+.hbnf-studio .panel{border:1px solid #6d735499;border-radius:10px;background:var(--panel);min-height:0;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.hbnf-studio #grip{display:none}
+.hbnf-studio #sheet{flex:1 1 auto;min-height:0;overflow:auto;padding:10px}
+.hbnf-studio .ph{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.hbnf-studio .ph h2{font-size:1.05rem;margin:0;min-width:0;overflow-wrap:anywhere}
+.hbnf-studio .list{display:flex;flex-direction:column;gap:6px}
+.hbnf-studio .slot{display:grid;grid-template-columns:1.6em minmax(0,1fr) auto auto auto;align-items:center;gap:8px;text-align:left;padding:4px 10px;min-width:0;font-weight:400;width:100%}
+.hbnf-studio .slot.warn{border-left:3px solid #ff4d4d}
+.hbnf-studio .slot .n,.hbnf-studio .row .n{color:var(--accent);font-weight:700}
+.hbnf-studio .slot .l{overflow-wrap:anywhere;font-size:.9rem}
+.hbnf-studio .slot .p,.hbnf-studio .slot .r,.hbnf-studio .slot .v{font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
 .hbnf-studio .neg{color:var(--accent);font-weight:700}
 .hbnf-studio .pos{color:var(--warn);font-weight:700}
-.hbnf-studio .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(66px,1fr));gap:6px}
-.hbnf-studio .cell{border:1px solid #6d735477;border-radius:8px;padding:4px 5px;min-width:0}
-.hbnf-studio .cell small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:0}
-.hbnf-studio .cell strong{font-size:1.05rem;font-variant-numeric:tabular-nums}
+.hbnf-studio .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:8px}
+.hbnf-studio .cell{border:1px solid #6d735477;border-radius:8px;padding:4px 6px;min-width:0}
+.hbnf-studio .cell small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:0}
+.hbnf-studio .cell strong{font-size:1.1rem;font-variant-numeric:tabular-nums}
 .hbnf-studio .cell em{font-style:normal;font-size:.75rem;margin-left:4px;font-variant-numeric:tabular-nums}
-.hbnf-studio .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.hbnf-studio .tabs button{flex:1 1 0}
-.hbnf-studio #tools{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
-.hbnf-studio .toolbody{flex:1 1 auto;min-height:0;overflow:auto}
-.hbnf-studio .row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto auto;gap:8px;align-items:center;width:100%;text-align:left;margin-bottom:6px;font-weight:400;padding:6px 10px}
-.hbnf-studio .row .l{overflow-wrap:anywhere;font-size:.86rem}
+.hbnf-studio .more{width:100%;margin-bottom:8px}
+.hbnf-studio .row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;width:100%;text-align:left;font-weight:400;padding:6px 10px}
+.hbnf-studio .row.num{grid-template-columns:1.6em minmax(0,1fr) auto auto}
+.hbnf-studio div.row{border:1px solid #6d735455;border-radius:7px;min-height:var(--tap)}
+.hbnf-studio .row.chg{border-color:#c9b4f0}
+.hbnf-studio .row .l{overflow-wrap:anywhere;font-size:.88rem}
 .hbnf-studio .row .v{font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
-.hbnf-studio .sub{color:var(--muted);font-size:.8rem;margin:0 0 6px}
-.hbnf-studio .tools-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.hbnf-studio .tools-bar button{padding-left:9px;padding-right:9px;min-width:44px}
+.hbnf-studio .sub{color:var(--muted);font-size:.8rem;margin:8px 0 6px}
+.hbnf-studio .facts{display:flex;gap:12px;flex-wrap:wrap;font-size:.86rem;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.hbnf-studio .tools-bar,.hbnf-studio .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.hbnf-studio .tools-bar button,.hbnf-studio .chips button{padding-left:9px;padding-right:9px;min-width:44px}
 .hbnf-studio .tools-bar input{flex:1 1 120px}
+.hbnf-studio button.pri{background:#55603f;border-color:var(--accent)}
+.hbnf-studio #auto{background:#4b4361;border-color:#c9b4f0}
+.hbnf-studio #auto[aria-pressed="true"]{background:#625685}
 .hbnf-studio .empty{padding:12px;color:var(--muted)}
-.hbnf-studio .mnav{display:none}
+.hbnf-studio .pin{background:none;border:0}
+.hbnf-studio .pin span{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:2px solid #1d1812;color:#1d1812;font:700 13px Cabin,Arial,sans-serif;box-shadow:0 0 0 1px #0008}
+.hbnf-studio .pin.sel span{width:34px;height:34px;margin:-3px;border-color:#f4e9d6;font-size:15px}
+.hbnf-studio .pin.gh span{border-style:dashed;border-color:#c9b4f0}
+.hbnf-studio .pin.park span{background:#f4e9d6}
+.hbnf-studio .leaflet-bar a{width:44px;height:44px;line-height:44px;font-size:22px}
+.hbnf-studio .leaflet-container{font-family:Cabin,Arial,sans-serif;background:#1d1812}
 .hbnf-studio [hidden]{display:none!important}
 @media(max-width:760px){
-.hbnf-studio .main{grid-template-columns:1fr;padding:8px;gap:8px}
-.hbnf-studio .col{display:contents}
-.hbnf-studio .panel{display:none}
-.hbnf-studio[data-view="slots"] #slotPanel,.hbnf-studio[data-view="grade"] #gradePanel,.hbnf-studio[data-view="tools"] #tools{display:flex;flex-direction:column}
-.hbnf-studio[data-view="slots"] #slotPanel{display:block}
-.hbnf-studio[data-view="grade"] #gradePanel{display:block}
-.hbnf-studio .main>.col>.panel{min-height:0}
-.hbnf-studio .mnav{display:flex;gap:6px;padding:6px 8px;border-top:1px solid var(--line)}
-.hbnf-studio .mnav button{flex:1 1 0}
-.hbnf-studio .cards{grid-template-columns:repeat(auto-fit,minmax(66px,1fr))}
+.hbnf-studio .main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(120px,1fr) auto;padding:8px;gap:8px}
+.hbnf-studio .panel{max-height:58vh}
+.hbnf-studio[data-sheet="min"] .panel{max-height:none}
+.hbnf-studio[data-sheet="min"] #sheet{display:none}
+.hbnf-studio #grip{display:flex;align-items:center;justify-content:center;width:100%;border:0;border-radius:0;background:transparent;min-height:var(--tap)}
 .hbnf-studio h1{font-size:1.05rem}
 .hbnf-studio .bar{padding:6px 8px}
-.hbnf-studio #slots{grid-template-rows:repeat(9,minmax(52px,1fr))}
+.hbnf-studio .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 </style>
 </head>
-<body class="hbnf-studio" data-view="slots">
+<body class="hbnf-studio" data-sheet="open">
 <div class="bar">
  <h1>Studio</h1>
  <a href="/hbnf-holes/">Holes</a>
  <select id="base" aria-label="Base layout"></select>
+ <button type="button" id="auto" aria-pressed="false">Auto</button>
  <span class="sp"></span>
  <button type="button" id="undo">Undo</button>
  <button type="button" id="reset">Reset</button>
  <button type="button" id="copy">Copy</button>
 </div>
 <div class="main">
- <div class="col">
-  <div class="panel" id="slotPanel"><div id="slots" role="list" aria-label="Slots"></div></div>
- </div>
- <div class="col">
-  <div class="panel" id="gradePanel"><div class="cards" id="cards" aria-label="Grade"></div></div>
-  <div class="panel" id="tools">
-   <div class="tabs" role="tablist"><button type="button" role="tab" id="tSwap" aria-selected="true">Swap</button><button type="button" role="tab" id="tSug" aria-selected="false">Suggest</button><button type="button" role="tab" id="tOrd" aria-selected="false">Order</button><button type="button" role="tab" id="tBld" aria-selected="false">Build</button></div>
-   <div class="toolbody" id="toolBody"></div>
-  </div>
- </div>
+ <div id="map" data-lg-ignore="third-party tile map; Leaflet controls sized to 44px in CSS" aria-label="Course map"></div>
+ <div class="panel"><button type="button" id="grip" aria-label="Toggle panel">&#8212;</button><div id="sheet"></div></div>
 </div>
-<nav class="mnav" aria-label="View"><button type="button" data-v="slots" aria-pressed="true">Slots</button><button type="button" data-v="grade" aria-pressed="false">Grade</button><button type="button" data-v="tools" aria-pressed="false">Tools</button></nav>
+<script src="/hbnf-holes/studio/vendor/leaflet.js"></script>
 <script src="/hbnf-holes/studio/studio.js"></script>
 </body>
 </html>
