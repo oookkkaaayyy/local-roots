@@ -44,7 +44,7 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
 .hbnf-studio .ph h2{font-size:1.05rem;margin:0;min-width:0;overflow-wrap:anywhere}
 .hbnf-studio .list{display:flex;flex-direction:column;gap:6px}
 .hbnf-studio .slot{display:grid;grid-template-columns:1.6em minmax(0,1fr) auto auto auto auto;align-items:center;gap:8px;text-align:left;padding:4px 10px;min-width:0;font-weight:400;width:100%}
-.hbnf-studio .slot.warn{border-left:3px solid #ff4d4d}
+
 .hbnf-studio .slot .n,.hbnf-studio .row .n{color:var(--accent);font-weight:700}
 .hbnf-studio .slot .l{overflow-wrap:anywhere;font-size:.9rem}
 .hbnf-studio .slot .p,.hbnf-studio .slot .r,.hbnf-studio .slot .v{font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -63,11 +63,16 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
 .hbnf-studio .note span{flex:1 1 auto}
 .hbnf-studio .hr{display:grid;grid-template-columns:34px minmax(0,1fr) auto 14px;gap:10px;align-items:center;width:100%;text-align:left;font-weight:400;padding:8px 10px;min-height:56px;border:1px solid var(--line);border-radius:8px;background:#3a3024;color:var(--ink)}
 .hbnf-studio div.hr{background:transparent}
-.hbnf-studio .hr.warn{border-left:4px solid #ff4d4d}
+.hbnf-studio .ox{display:inline-flex;align-items:center;gap:4px}.hbnf-studio .ox i{display:inline-block;width:14px;height:14px;border-radius:3px;background:#f4e9d6;color:#1d1812;font:700 11px/14px Cabin,Arial,sans-serif;text-align:center;font-style:normal}
 .hbnf-studio .bdg{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:2px solid #1d1812;color:#1d1812;font:700 .85rem Cabin,Arial,sans-serif}
 .hbnf-studio .bdg.dot{width:18px;height:18px;margin:0 6px}
 .hbnf-studio .mid{display:flex;flex-direction:column;min-width:0;gap:1px}
 .hbnf-studio .mid b{font-size:.95rem;overflow-wrap:anywhere}
+.hbnf-studio .met,.hbnf-studio .mh{display:grid;grid-template-columns:26px 76px 50px minmax(52px,1fr);gap:3px;align-items:baseline}
+.hbnf-studio .met{font-size:.9rem;font-weight:700;color:var(--ink);margin:2px 0}
+.hbnf-studio .met .est{font-style:normal;font-weight:400;color:var(--muted);font-size:.76rem}
+.hbnf-studio .mh{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:0 10px 2px 54px;white-space:nowrap}
+.hbnf-studio .list.nb .mh{padding-left:10px}
 .hbnf-studio .mid small{font-size:.76rem;color:var(--muted);overflow-wrap:anywhere}
 .hbnf-studio .rt{display:flex;flex-direction:column;align-items:flex-end}
 .hbnf-studio .rt b{font-size:1rem;font-variant-numeric:tabular-nums}
@@ -149,6 +154,6 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
  <div class="panel"><div class="tabs" role="toolbar" aria-label="Views"><button type="button" id="layoutTab" aria-pressed="true">Layout</button><button type="button" id="auto" aria-pressed="false">Auto</button><button type="button" id="pinsBtn" aria-pressed="false">Locations</button><button type="button" id="histBtn" aria-pressed="false">History</button><button type="button" id="grip" aria-label="Show or hide panel">&#9662;</button></div><div id="sheet"></div></div>
 </div>
 <script src="/hbnf-holes/studio/vendor/leaflet.js?v=1"></script>
-<script src="/hbnf-holes/studio/studio.js?v=17"></script>
+<script src="/hbnf-holes/studio/studio.js?v=22"></script>
 </body>
 </html>
