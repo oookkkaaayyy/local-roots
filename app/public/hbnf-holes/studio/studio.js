@@ -16,7 +16,44 @@
     x.onerror = function () { cb(null); };
     x.send();
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify({ base: st.base, slots: st.slots, lock: st.lock, draft: st.draft })); } catch (e) { /* storage unavailable */ } }
+  var SB2 = 'https://phcpbvuqibyarpfrftgx.supabase.co/rest/v1/hbnf_studio_state', cloudT = null;
+  function sb2(method, url, body, cb) {
+    var x = new XMLHttpRequest();
+    x.open(method, SB2 + url, true);
+    x.setRequestHeader('apikey', 'sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC'); x.setRequestHeader('Content-Type', 'application/json');
+    if (method === 'POST') { x.setRequestHeader('Prefer', 'resolution=merge-duplicates,return=minimal'); }
+    x.onload = function () { cb(x.status >= 200 && x.status < 300 ? (x.responseText ? JSON.parse(x.responseText) : true) : null); };
+    x.onerror = function () { cb(null); };
+    x.send(body ? JSON.stringify(body) : null);
+  }
+  function cloudPush() {
+    cloudT = null; st.cloud = 'saving';
+    sb2('POST', '?on_conflict=id', { id: 'layout-builder', data: { base: st.base, slots: st.slots, lock: st.lock, draft: st.draft, customs: customs(), ts: st.ts || Date.now() }, updated_at: new Date(st.ts || Date.now()).toISOString() }, function (r) {
+      st.cloud = r ? 'saved' : 'offline'; var el = $('cloud'); if (el) { el.textContent = st.cloud === 'saved' ? 'Saved to cloud' : 'Offline, saved on this device'; }
+    });
+  }
+  function cloudSoon() { if (cloudT) { clearTimeout(cloudT); } st.cloud = 'saving'; var el = $('cloud'); if (el) { el.textContent = 'Saving'; } cloudT = setTimeout(cloudPush, 1500); }
+  function cloudPull() {
+    if (cloudT) { return; }
+    sb2('GET', '?select=data,updated_at&id=eq.layout-builder', null, function (rows) {
+      var d, i, c, have, ok = true;
+      st.pulled = true;
+      if (!rows) { st.cloud = 'offline'; renderSheet(); return; }
+      if (!rows.length) { if (st.ts) { cloudPush(); } return; }
+      d = rows[0].data || {};
+      if ((d.ts || 0) <= (st.ts || 0)) { if ((d.ts || 0) < (st.ts || 0)) { cloudPush(); } else { st.cloud = 'saved'; renderSheet(); } return; }
+      c = customs(); have = {}; for (i = 0; i < c.length; i++) { have[c[i].pad + '>' + c[i].bsk] = 1; }
+      (d.customs || []).forEach(function (x) { if (!have[x.pad + '>' + x.bsk]) { c.push(x); } });
+      try { localStorage.setItem(CKEY, JSON.stringify(c)); } catch (e) { /* storage unavailable */ }
+      loadCustoms(); applyPins();
+      if (d.slots && d.slots.length === 18) { for (i = 0; i < 18; i++) { if (!H[d.slots[i].id]) { ok = false; } } } else { ok = false; }
+      if (ok) { st.slots = d.slots; st.base = d.base; st.lock = d.lock || {}; baseGrade = st.base && seq[st.base] ? grade(st.slots) : grade(st.slots); }
+      st.draft = (d.draft || []).filter(function (x) { return H[x.id]; });
+      st.ts = d.ts; st.cloud = 'saved'; save2Local(); renderBase(); renderAll();
+    });
+  }
+  function save2Local() { try { localStorage.setItem(KEY, JSON.stringify({ base: st.base, slots: st.slots, lock: st.lock, draft: st.draft, ts: st.ts })); } catch (e) { /* storage unavailable */ } }
+  function save() { st.ts = Date.now(); save2Local(); if (st.pulled) { cloudSoon(); } }
   function load() {
     try {
       var d = JSON.parse(localStorage.getItem(KEY) || 'null');
@@ -614,7 +651,7 @@
   function opt(v, t, sel) { return '<option value="' + esc(v) + '"' + (sel ? ' selected' : '') + '>' + esc(t) + '</option>'; }
   function buildHtml() {
     var n = st.draft.length, g = n ? grade(st.draft) : null, h = sheetHead('New layout', false), i, d, b = st.bp, sh, pl, bl, fl;
-    h += '<div class="ttl"><b>Hole ' + (n + 1) + ' of 18</b><span>' + (n ? 'Par ' + g.par + ' so far' : 'Blank layout') + '</span></div>';
+    h += '<div class="ttl"><b>Hole ' + (n + 1) + ' of 18</b><span>' + (n ? 'Par ' + g.par + ' so far · ' : '') + '<span id="cloud">' + (st.cloud === 'saved' ? 'Saved to cloud' : st.cloud === 'offline' ? 'Offline, saved on this device' : st.cloud === 'saving' ? 'Saving' : '') + '</span></span></div>';
     if (n) { h += '<div class="cards">' + statCell('Vs par', sg(g.rel, 1), 'so far', '') + statCell('Walk', f(g.walk, 0) + ' min', 'so far', '') + statCell('Overlaps', g.cross, 'crossing fairways', g.cross ? 'pos' : '') + statCell('Par 4+', g.par4, 'holes', '') + '</div>'; }
     if (st.di >= 0 && st.draft[st.di]) {
       d = st.draft[st.di];
@@ -929,9 +966,9 @@
     loadCustoms();
     histRel = dates.map(function (x) { return grade(seq[x]).rel; });
     var saved = load();
-    if (saved) { st.base = saved.base; st.slots = saved.slots; st.lock = saved.lock || {}; st.draft = (saved.draft || []).filter(function (x) { return H[x.id]; }); baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
-    else { loadBase(dates[0]); }
-    buildUse(); loadPinsLocal(); applyPins(); renderBase(); initMap(); renderAll(); pullPins(function () { applyPins(); histRel = dates.map(function (x) { return grade(seq[x]).rel; }); renderAll(); });
+    if (saved) { st.base = saved.base; st.slots = saved.slots; st.lock = saved.lock || {}; st.draft = (saved.draft || []).filter(function (x) { return H[x.id]; }); st.ts = saved.ts || 0; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
+    else { loadBase(dates[0]); st.ts = 0; }
+    buildUse(); loadPinsLocal(); applyPins(); renderBase(); initMap(); renderAll(); cloudPull(); document.addEventListener('visibilitychange', function () { if (!document.hidden) { cloudPull(); } }); pullPins(function () { applyPins(); histRel = dates.map(function (x) { return grade(seq[x]).rel; }); renderAll(); });
   }
   init();
 })();
