@@ -256,13 +256,16 @@
     if (p) { L.marker(p, { icon: L.divIcon({ className: 'pin park', html: '<span>P</span>', iconSize: [28, 28], iconAnchor: [14, 14] }), interactive: false, keyboard: false }).addTo(map); }
     MAPOK = true; st.fit = true;
   }
+  function dist2(u, v) { return Math.sqrt(Math.pow(u[0] - v[0], 2) + Math.pow(u[1] - v[1], 2)); }
   function drawAll() {
     if (!map) { return; }
     layers.all.clearLayers();
     if (st.view !== 'swap') { return; }
-    var i, p, g;
+    var i, p, g, c = st.sel >= 0 && H[st.slots[st.sel].id].geo ? H[st.slots[st.sel].id].geo : null, a, d;
+    a = c ? [ll(c.p), ll(c.b)] : null;
     for (i = 0; i < pool.length; i++) {
-      p = pool[i]; g = p.geo; if (!g || inLayout(p.id, st.sel)) { continue; }
+      p = pool[i]; g = p.geo; if (!g || inLayout(p.id, st.sel) || p.n < MIN_N) { continue; }
+      if (a) { d = Math.min(dist2(ll(g.p), a[0]), dist2(ll(g.p), a[1]), dist2(ll(g.b), a[0]), dist2(ll(g.b), a[1])); if (d > 120) { continue; } }
       (function (pp) {
         var ln = L.polyline([ll2(pp.geo.p), ll2(pp.geo.b)], { color: '#d9cebb', weight: 2, opacity: 0.28 }).addTo(layers.all);
         ln.on('mouseover', function () { st.hover = pp.id; drawMap(); }).on('click', function () { replaceWith(pp.id); });
