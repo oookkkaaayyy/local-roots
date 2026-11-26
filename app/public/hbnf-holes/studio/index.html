@@ -127,7 +127,7 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
 .hbnf-studio .tabs #grip{display:inline-flex;align-items:center;justify-content:center}
 .hbnf-studio h1{font-size:1.05rem}
 .hbnf-studio .bar{padding:6px 8px;gap:6px}
-.hbnf-studio .bar select{flex:1 1 120px}
+.hbnf-studio h1{flex:1 1 auto;margin:0}.hbnf-studio .bar select{order:5;flex:1 1 100%}.hbnf-studio .legend{font-size:.72rem;gap:6px 8px;padding:4px 7px}
 .hbnf-studio .sp{display:none}
 .hbnf-studio .bar button{padding:0 9px}
 .hbnf-studio .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -145,10 +145,10 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
  <button type="button" id="copy">Copy</button>
 </div>
 <div class="main">
- <div class="mapwrap"><div id="map" data-lg-ignore="third-party tile map; Leaflet controls sized to 44px in CSS" aria-label="Course map"></div><div id="ret" hidden aria-hidden="true"></div><div class="legend" aria-label="Map key"><span><i style="background:#8fcf8f"></i>Easier</span><span><i style="background:#e9d39b"></i>Even</span><span><i style="background:#e2a066"></i>Harder</span><span><i class="x">X</i>Overlap</span><span id="lgsw" hidden><i style="background:#c9b4f0"></i>Swap option</span><span id="lgdr" hidden><i class="sq"></i>Draggable</span></div><div class="mbtns"><button type="button" id="loc" aria-pressed="false">Me</button><button type="button" id="fit">Fit</button></div></div>
+ <div class="mapwrap"><div id="map" data-lg-ignore="third-party tile map; Leaflet controls sized to 44px in CSS" aria-label="Course map"></div><div id="ret" hidden aria-hidden="true"></div><div class="legend" aria-label="Map key"><span><i style="background:#8fcf8f"></i>Easier</span><span><i style="background:#e9d39b"></i>Even</span><span><i style="background:#e2a066"></i>Harder</span><span><i class="x">X</i>Overlap</span><span id="lgsw" hidden><i style="background:#c9b4f0"></i>Swap option</span><span id="lgpast" hidden><i style="background:#c9b4f0"></i>Past layout</span></div><div class="mbtns"><button type="button" id="loc" aria-pressed="false">Me</button><button type="button" id="fit">Fit</button></div></div>
  <div class="panel"><div class="tabs" role="toolbar" aria-label="Views"><button type="button" id="layoutTab" aria-pressed="true">Layout</button><button type="button" id="auto" aria-pressed="false">Auto</button><button type="button" id="pinsBtn" aria-pressed="false">Locations</button><button type="button" id="histBtn" aria-pressed="false">History</button><button type="button" id="grip" aria-label="Show or hide panel">&#9662;</button></div><div id="sheet"></div></div>
 </div>
 <script src="/hbnf-holes/studio/vendor/leaflet.js?v=1"></script>
-<script src="/hbnf-holes/studio/studio.js?v=16"></script>
+<script src="/hbnf-holes/studio/studio.js?v=17"></script>
 </body>
 </html>

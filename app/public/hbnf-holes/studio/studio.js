@@ -381,7 +381,7 @@
     return null;
   }
   function locate(follow) {
-    if (!navigator.geolocation) { st.gps = 'No GPS'; renderSheet(); return; }
+    if (!navigator.geolocation) { st.gps = 'No GPS'; $('loc').textContent = 'No GPS'; setTimeout(function () { $('loc').textContent = 'Me'; }, 2500); return; }
     st.follow = follow !== false;
     if (watchId !== null) { if (me && map && st.follow) { map.setView([me.lat, me.lon], Math.max(map.getZoom(), 18), { animate: false }); } return; }
     watchId = navigator.geolocation.watchPosition(function (p) {
@@ -391,7 +391,7 @@
       if (first && st.follow && map) { map.setView([me.lat, me.lon], 18, { animate: false }); }
       if (st.view === 'pins' || st.view === 'auto') { renderSheet(); }
       $('loc').setAttribute('aria-pressed', 'true');
-    }, function () { st.gps = 'No GPS'; watchId = null; $('loc').setAttribute('aria-pressed', 'false'); if (st.view === 'pins') { renderSheet(); } }, { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
+    }, function () { st.gps = 'No GPS'; watchId = null; $('loc').textContent = 'No GPS'; setTimeout(function () { $('loc').textContent = 'Me'; }, 2500); $('loc').setAttribute('aria-pressed', 'false'); if (st.view === 'pins') { renderSheet(); } }, { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
   }
   function drawMe() {
     if (!map || !me) { return; }
@@ -417,7 +417,7 @@
       var t = tgtObj(st.tgt), pos = t ? tpos(t) : null;
       if (pos) { var tid = st.tgt, tm = L.marker(pos, { icon: L.divIcon({ className: 'pin bk', html: '<span>' + esc(tname(tid)) + '</span>', iconSize: [120, 26], iconAnchor: [60, 13] }), draggable: true, keyboard: false, zIndexOffset: 1200 }).addTo(layers.tgt); tm.bindTooltip('Drag to move', { direction: 'top', offset: [0, -14] }); tm.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(tid, q.lat, q.lng); }, 0); }); }
     }
-    $('lgsw').hidden = st.view !== 'swap'; $('lgdr').hidden = st.view !== 'swap';
+    $('lgsw').hidden = st.view !== 'swap'; $('lgpast').hidden = !(st.view === 'hist' && st.hd);
     $('ret').hidden = !(st.view === 'pins' && (st.tgt || st.pf === 'marks' || st.pf === 'new'));
   }
   function tgtObj(id) { var a = targets(), i; for (i = 0; i < a.length; i++) { if (a[i].id === id) { return a[i]; } } return null; }
@@ -445,7 +445,7 @@
     h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>';
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
-      h += '<div class="facts"><strong>' + esc(tlabel(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Moved by you' : t && t.need === 2 ? 'No location' : t && t.need === 1 ? 'Approximate' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
+      h += '<div class="facts"><strong>' + (st.tgt.indexOf('bsk:') === 0 ? 'Basket' : 'Pad') + ' · ' + esc(tname(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Moved by you' : t && t.need === 2 ? 'No location' : t && t.need === 1 ? 'Approximate' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
       h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button><button type="button" data-a="list">List</button></div>';
       if (t) { h += '<div class="sub">Used by</div><div class="list">'; for (i = 0; i < t.holes.length && i < 6; i++) { h += '<div class="row"><span class="l">' + esc(short(t.holes[i])) + '</span><span class="v">P' + H[t.holes[i]].par + '</span><span class="v"></span><span class="v"></span></div>'; } h += '</div>'; }
       return h;
@@ -561,7 +561,7 @@
       sl = seq[st.hd]; var g = grade(sl), rr = RD[st.hd];
       h = sheetHead(st.hd, true, 'History');
       h += '<div class="sub">' + esc((lay[st.hd] || {}).name || '') + '</div>';
-      h += '<div class="cards">' + statCell('Team avg', rr ? sg(rr.avg_rel, 1) : '-', 'to par, actual', '') + statCell('Best team', rr ? sg(rr.best_rel, 0) : '-', 'to par', '') + statCell('Teams', rr ? rr.teams : '-', 'played', '') + statCell('Expected', sg(g.rel, 1), 'to par, model', '') + '</div>';
+      h += '<div class="cards">' + (rr ? statCell('Team avg', sg(rr.avg_rel, 1), 'to par, actual', '') + statCell('Best team', sg(rr.best_rel, 0), 'to par', '') + statCell('Teams', rr.teams, 'played', '') : statCell('Results', 'None yet', 'not scored', 'pos')) + statCell('Expected', sg(g.rel, 1), 'to par, model', '') + '</div>';
       h += '<div class="tools-bar"><button type="button" class="pri" data-a="loadh">Load into builder</button></div><div class="list">';
       for (i = 0; i < 18; i++) { h += holeRow(sl[i].id, sl[i].par, { n: i + 1 }); }
       return h + '</div>';
@@ -636,7 +636,9 @@
   }
   function renderSheet() {
     var h = st.view === 'swap' && st.sel >= 0 ? swapHtml() : st.view === 'auto' ? autoHtml() : st.view === 'pins' ? pinsHtml() : st.view === 'hist' ? histHtml() : routeHtml();
+    var vk = st.view + '|' + st.sel + '|' + st.tgt + '|' + st.hd + '|' + st.pf + '|' + st.tk;
     $('sheet').innerHTML = h;
+    if (vk !== st.vk) { st.vk = vk; $('sheet').scrollTop = 0; }
     $('layoutTab').setAttribute('aria-pressed', st.view === 'route' || st.view === 'swap'); $('auto').setAttribute('aria-pressed', st.view === 'auto'); $('pinsBtn').setAttribute('aria-pressed', st.view === 'pins'); $('histBtn').setAttribute('aria-pressed', st.view === 'hist');
     if (st.focusQ) { var q = $('q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } st.focusQ = false; }
   }
