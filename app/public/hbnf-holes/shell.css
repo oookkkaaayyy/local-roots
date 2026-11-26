@@ -1,0 +1,5 @@
+/* Shared page shell for the HBNF pages (log, season, layout builder): palette, root background, installed-app safe areas. */
+:root{color-scheme:dark;--canvas:#292119;--panel:#352b20;--ink:#f4e9d6;--muted:#d9cebb;--accent:#b4c58f;--warn:#e9d39b;--line:#6d7354;--tap:44px}
+*{box-sizing:border-box}
+html{background:var(--canvas);height:100%}
+body{margin:0;height:100%;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);background:var(--canvas);color:var(--ink)}
