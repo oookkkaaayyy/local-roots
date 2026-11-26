@@ -3,7 +3,7 @@
   var bldCache0 = null, GEO = null, TI = {}, KEY = 'hbnf-studio-v2', MIN_N = 4, K = 6, PRIOR = { 3: -0.4, 4: 0.3 }, BPRIOR = 25, hist = [], histRel = [];
   var $ = function (id) { return document.getElementById(id); };
   var enc = null, H = {}, pool = [], seq = {}, dates = [];
-  var st = { base: null, slots: [], sel: -1, view: 'route', sort: 'easy', all: false, q: '', goal: 'easier', more: false, prev: null, pgoal: null, hover: null };
+  var st = { base: null, slots: [], sel: -1, view: 'route', sort: 'easy', all: false, q: '', goal: 'easier', more: false, tgt: null, pf: 'need', mk: 'tree', cards: 0, prev: null, pgoal: null, hover: null };
   var baseGrade = null;
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
   function f(v, d) { return v === null || v === undefined || isNaN(v) ? '-' : Number(v).toFixed(d); }
@@ -201,7 +201,8 @@
     for (i = 0; i < out.length && res.length < 10; i++) { if (!seen[out[i].i] && !seenTo[out[i].to]) { seen[out[i].i] = 1; seenTo[out[i].to] = 1; res.push(out[i]); } }
     return res;
   }
-  var map = null, L = window.L, layers = { all: null, route: null, ghost: null, hov: null }, MAPOK = false;
+  var pins = {}, marks = [], me = null, watchId = null, SB = 'https://phcpbvuqibyarpfrftgx.supabase.co/rest/v1/hbnf_studio_pins', SK = 'sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC', PKEY = 'hbnf-pins-v1';
+  var map = null, L = window.L, layers = { all: null, route: null, ghost: null, hov: null, pins: null, marks: null, me: null, tgt: null, xs: null }, MAPOK = false;
   function short(id) { return H[id].label.replace(/\s*\(.*\)\s*$/, ''); }
   function ftOf(p) { return p.geo ? (p.geo.pf === 'a' || p.geo.bf === 'a' ? '~' : '') + Math.round(p.geo.d * 3.28084 / 5) * 5 : '-'; }
   function rank(rel) { var r = 1, i; for (i = 0; i < histRel.length; i++) { if (histRel[i] < rel) { r++; } } return r; }
@@ -216,6 +217,20 @@
   function drawLayout(group, slots, o) {
     var i, h, p, b, cg = geoStats(slots), pts = [], prevB = GEO.park;
     group.clearLayers();
+    if (!o.ghost) {
+      var a1, b1, c1, d1, j1, gj1, ii, jj;
+      for (ii = 0; ii < slots.length; ii++) {
+        a1 = H[slots[ii].id].geo; if (!a1) { continue; }
+        for (jj = ii + 1; jj < slots.length && jj <= ii + 2; jj++) {
+          gj1 = H[slots[jj].id].geo; if (!gj1 || gj1.b === a1.b || gj1.p === a1.p) { continue; }
+          b1 = ll(a1.p); c1 = ll(a1.b); d1 = ll(gj1.p); var e1 = ll(gj1.b);
+          if (segX(b1, c1, d1, e1)) {
+            var den = (c1[0] - b1[0]) * (e1[1] - d1[1]) - (c1[1] - b1[1]) * (e1[0] - d1[0]), tt = ((d1[0] - b1[0]) * (e1[1] - d1[1]) - (d1[1] - b1[1]) * (e1[0] - d1[0])) / den, px = b1[0] + tt * (c1[0] - b1[0]), py = b1[1] + tt * (c1[1] - b1[1]);
+            L.marker([py / 111320, px / (111320 * Math.cos(33.698 * Math.PI / 180))], { icon: L.divIcon({ className: 'pin mk', html: '<span>X</span>', iconSize: [22, 22], iconAnchor: [11, 11] }), interactive: false, keyboard: false }).addTo(group);
+          }
+        }
+      }
+    }
     for (i = 0; i < slots.length; i++) {
       h = H[slots[i].id]; if (!h.geo) { continue; }
       p = ll2(h.geo.p); b = ll2(h.geo.b);
@@ -249,7 +264,7 @@
     if (!L || !GEO) { return; }
     map = L.map('map', { zoomControl: true, attributionControl: true, maxZoom: 20, zoomSnap: 0.5 });
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 19, maxZoom: 20, attribution: 'Esri' }).addTo(map);
-    layers.all = L.layerGroup().addTo(map); layers.route = L.layerGroup().addTo(map); layers.ghost = L.layerGroup().addTo(map); layers.hov = L.layerGroup().addTo(map);
+    layers.all = L.layerGroup().addTo(map); layers.route = L.layerGroup().addTo(map); layers.ghost = L.layerGroup().addTo(map); layers.hov = L.layerGroup().addTo(map); layers.xs = L.layerGroup().addTo(map); layers.pins = L.layerGroup().addTo(map); layers.marks = L.layerGroup().addTo(map); layers.tgt = L.layerGroup().addTo(map); layers.me = L.layerGroup().addTo(map);
     var k, kp = []; for (k in GEO.nodes) { if (GEO.nodes.hasOwnProperty(k)) { kp.push(ll2(k)); } }
     map.fitBounds(L.latLngBounds(kp), { padding: [20, 20], animate: false });
     var p = GEO.park && GEO.nodes[GEO.park] ? ll2(GEO.park) : null;
@@ -271,6 +286,216 @@
         ln.on('mouseover', function () { st.hover = pp.id; drawMap(); }).on('click', function () { replaceWith(pp.id); });
       })(p);
     }
+  }
+
+  function mxy(a) { return [a[1] * 111320 * Math.cos(33.698 * Math.PI / 180), a[0] * 111320]; }
+  function mdist(a, b) { var u = mxy(a), v = mxy(b); return Math.sqrt(Math.pow(u[0] - v[0], 2) + Math.pow(u[1] - v[1], 2)); }
+  function tlabel(id) { return (id.indexOf('pad:') === 0 ? 'Pad ' : id.indexOf('bsk:') === 0 ? 'Basket ' : '') + id.replace(/^(pad|bsk):/, '').replace(/-/g, ' '); }
+  function sb(method, url, body, cb) {
+    var x = new XMLHttpRequest();
+    x.open(method, SB + url, true);
+    x.setRequestHeader('apikey', SK); x.setRequestHeader('Content-Type', 'application/json');
+    if (method === 'POST') { x.setRequestHeader('Prefer', 'resolution=merge-duplicates,return=minimal'); }
+    x.onload = function () { cb(x.status >= 200 && x.status < 300 ? (x.responseText ? JSON.parse(x.responseText) : true) : null); };
+    x.onerror = function () { cb(null); };
+    x.send(body ? JSON.stringify(body) : null);
+  }
+  function savePinsLocal() { try { localStorage.setItem(PKEY, JSON.stringify({ pins: pins, marks: marks })); } catch (e) { /* storage unavailable */ } }
+  function loadPinsLocal() { try { var d = JSON.parse(localStorage.getItem(PKEY) || 'null'); if (d) { pins = d.pins || {}; marks = d.marks || []; } } catch (e) { /* ignore */ } }
+  function pushPin(id, kind, lat, lon) { sb('POST', '?on_conflict=id', { id: id, kind: kind, lat: lat, lon: lon, updated_at: new Date().toISOString() }, function (r) { st.sync = r ? 'saved' : 'offline'; if (st.view === 'pins') { renderSheet(); } }); }
+  function pullPins(cb) {
+    sb('GET', '?select=id,kind,lat,lon', null, function (rows) {
+      if (!rows) { cb(); return; }
+      var srv = {}, i, r, out = [];
+      for (i = 0; i < rows.length; i++) {
+        r = rows[i]; srv[r.id] = 1;
+        if (r.kind === 'point') { pins[r.id] = [r.lat, r.lon]; } else { out.push({ id: r.id, kind: r.kind, lat: r.lat, lon: r.lon }); }
+      }
+      for (i = 0; i < marks.length; i++) { if (!srv[marks[i].id] && !marks[i].del) { pushPin(marks[i].id, marks[i].kind, marks[i].lat, marks[i].lon); out.push(marks[i]); } }
+      marks = out;
+      for (r in pins) { if (pins.hasOwnProperty(r) && !srv[r]) { pushPin(r, 'point', pins[r][0], pins[r][1]); } }
+      savePinsLocal(); cb();
+    });
+  }
+  function applyPins() {
+    if (!GEO) { return; }
+    var q, h, m = GEO.meta.model, pp, bp, g, d, idn = {}, idf = {};
+    for (q in H) {
+      if (!H.hasOwnProperty(q)) { continue; }
+      h = H[q];
+      if (h.geo0 === undefined) { h.geo0 = h.geo ? JSON.parse(JSON.stringify(h.geo)) : null; }
+      if (h.geo0) {
+        if (!idn[h.pad] || (idf[h.pad] === 'a' && h.geo0.pf === 'v')) { idn[h.pad] = h.geo0.p; idf[h.pad] = h.geo0.pf; }
+        if (!idn[h.bsk] || (idf[h.bsk] === 'a' && h.geo0.bf === 'v')) { idn[h.bsk] = h.geo0.b; idf[h.bsk] = h.geo0.bf; }
+      }
+    }
+    for (q in H) {
+      if (!H.hasOwnProperty(q)) { continue; }
+      h = H[q];
+      h.geo = h.geo0 ? JSON.parse(JSON.stringify(h.geo0)) : null;
+      pp = pins[h.pad]; bp = pins[h.bsk];
+      if (!pp && !bp && h.geo) { continue; }
+      if (!h.geo && !((pp || idn[h.pad]) && (bp || idn[h.bsk]))) { continue; }
+      if (pp) { GEO.nodes['pin:' + h.pad] = [pp[0], pp[1], 0, 0]; }
+      if (bp) { GEO.nodes['pin:' + h.bsk] = [bp[0], bp[1], 0, 0]; }
+      if (!h.geo) {
+        h.geo = { p: pp ? 'pin:' + h.pad : idn[h.pad], b: bp ? 'pin:' + h.bsk : idn[h.bsk], pf: pp ? 'v' : idf[h.pad] || 'a', bf: bp ? 'v' : idf[h.bsk] || 'a', n: h.n, par: h.par, d: 0, pred: 0, up: 0.5 };
+      } else {
+        if (pp) { h.geo.p = 'pin:' + h.pad; h.geo.pf = 'v'; }
+        if (bp) { h.geo.b = 'pin:' + h.bsk; h.geo.bf = 'v'; }
+      }
+      g = h.geo; d = mdist(ll2(g.p), ll2(g.b)); g.d = d;
+      g.pred = Math.round((m.c0 + m.per100m * d / 100 + (g.par >= 4 ? m.par4 : 0)) * 100) / 100;
+    }
+  }
+  function targets() {
+    var m = {}, i, h, ids, k, id, t;
+    for (i = 0; i < pool.length; i++) {
+      h = pool[i]; ids = [[h.pad, h.geo0 ? h.geo0.pf : null], [h.bsk, h.geo0 ? h.geo0.bf : null]];
+      for (k = 0; k < 2; k++) {
+        id = ids[k][0]; if (!id || id.indexOf('unresolved') >= 0 || id.indexOf('temp') >= 0) { continue; }
+        t = m[id] = m[id] || { id: id, holes: [], need: 2, ok: false, ap: false };
+        t.holes.push(h.id);
+        if (h.geo0) { if (ids[k][1] === 'a') { t.ap = true; } else { t.ok = true; } }
+      }
+    }
+    var out = [];
+    for (id in m) { if (m.hasOwnProperty(id)) { t = m[id]; t.need = t.ok ? 0 : t.ap ? 1 : 2; if (pins[id]) { t.need = -1; } out.push(t); } }
+    return out;
+  }
+  function tpos(t) {
+    if (pins[t.id]) { return pins[t.id]; }
+    var i, h, g;
+    for (i = 0; i < t.holes.length; i++) { h = H[t.holes[i]]; g = h.geo; if (g) { return ll2(h.pad === t.id ? g.p : g.b); } }
+    return null;
+  }
+  function locate(follow) {
+    if (!navigator.geolocation) { st.gps = 'No GPS'; renderSheet(); return; }
+    st.follow = follow !== false;
+    if (watchId !== null) { if (me && map && st.follow) { map.setView([me.lat, me.lon], Math.max(map.getZoom(), 18), { animate: false }); } return; }
+    watchId = navigator.geolocation.watchPosition(function (p) {
+      var first = !me; me = { lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy };
+      st.gps = '';
+      drawMe();
+      if (first && st.follow && map) { map.setView([me.lat, me.lon], 18, { animate: false }); }
+      if (st.view === 'pins' || st.view === 'auto') { renderSheet(); }
+      $('loc').setAttribute('aria-pressed', 'true');
+    }, function () { st.gps = 'No GPS'; watchId = null; $('loc').setAttribute('aria-pressed', 'false'); if (st.view === 'pins') { renderSheet(); } }, { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
+  }
+  function drawMe() {
+    if (!map || !me) { return; }
+    layers.me.clearLayers();
+    L.circle([me.lat, me.lon], { radius: me.acc, color: '#7fb2ff', weight: 1, fillColor: '#7fb2ff', fillOpacity: 0.12, interactive: false }).addTo(layers.me);
+    L.circleMarker([me.lat, me.lon], { radius: 7, color: '#1d1812', weight: 2, fillColor: '#7fb2ff', fillOpacity: 1, interactive: false }).addTo(layers.me);
+  }
+  function drawPins() {
+    if (!map) { return; }
+    layers.pins.clearLayers(); layers.marks.clearLayers(); layers.tgt.clearLayers();
+    var id, i, m, ic, L2 = { tree: 'T', ob: 'OB', overlap: 'X', note: 'N' };
+    for (id in pins) { if (pins.hasOwnProperty(id)) { L.circleMarker(pins[id], { radius: 5, color: '#1d1812', weight: 1, fillColor: '#c9b4f0', fillOpacity: 1, interactive: false }).addTo(layers.pins); } }
+    for (i = 0; i < marks.length; i++) {
+      m = marks[i]; ic = L.divIcon({ className: 'pin mk', html: '<span>' + L2[m.kind] + '</span>', iconSize: [22, 22], iconAnchor: [11, 11] });
+      L.marker([m.lat, m.lon], { icon: ic, interactive: false, keyboard: false }).addTo(layers.marks);
+    }
+    if (st.view === 'pins' && st.tgt) {
+      var t = tgtObj(st.tgt), pos = t ? tpos(t) : null;
+      if (pos) { L.circle(pos, { radius: 6, color: '#c9b4f0', weight: 3, fillOpacity: 0, dashArray: '4 4', interactive: false }).addTo(layers.tgt); }
+    }
+    $('ret').hidden = !(st.view === 'pins' && (st.tgt || st.pf === 'marks'));
+  }
+  function tgtObj(id) { var a = targets(), i; for (i = 0; i < a.length; i++) { if (a[i].id === id) { return a[i]; } } return null; }
+  function placeAt(lat, lon) {
+    if (st.pf === 'marks' && !st.tgt) {
+      var mm = { id: 'mark:' + st.mk + ':' + Date.now(), kind: st.mk, lat: lat, lon: lon }; marks.push(mm); pushPin(mm.id, mm.kind, lat, lon);
+    } else if (st.tgt) {
+      pins[st.tgt] = [lat, lon]; pushPin(st.tgt, 'point', lat, lon); applyPins();
+    } else { return; }
+    savePinsLocal(); st.placed = true; renderAll();
+  }
+  function delMark(id) { var i; for (i = 0; i < marks.length; i++) { if (marks[i].id === id) { marks.splice(i, 1); } } sb('DELETE', '?id=eq.' + encodeURIComponent(id), null, function () { /* best effort */ }); savePinsLocal(); renderAll(); }
+  function marksOn(h) {
+    var out = { tree: 0, ob: 0, overlap: 0 }, g = h.geo, i, a, b, m;
+    if (!g) { return out; }
+    a = ll(g.p); b = ll(g.b);
+    for (i = 0; i < marks.length; i++) { m = marks[i]; if (out[m.kind] !== undefined && pd(mxy([m.lat, m.lon]), a, b) < 10) { out[m.kind]++; } }
+    return out;
+  }
+  function pinsHtml() {
+    var h = sheetHead('Pins', true), i, a, t, pos, d, label;
+    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Missing</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Marks</button></div>';
+    if (st.tgt) {
+      t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
+      h += '<div class="facts"><strong>' + esc(tlabel(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Set' : t && t.need === 2 ? 'Missing' : t && t.need === 1 ? 'Approx' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
+      h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button><button type="button" data-a="list">List</button></div>';
+      if (t) { h += '<div class="sub">Used by</div><div class="list">'; for (i = 0; i < t.holes.length && i < 6; i++) { h += '<div class="row"><span class="l">' + esc(short(t.holes[i])) + '</span><span class="v">P' + H[t.holes[i]].par + '</span><span class="v"></span><span class="v"></span></div>'; } h += '</div>'; }
+      return h;
+    }
+    if (st.pf === 'marks') {
+      var ks = [['tree', 'Tree'], ['ob', 'OB'], ['overlap', 'Overlap'], ['note', 'Note']];
+      h += '<div class="chips">'; for (i = 0; i < ks.length; i++) { h += '<button type="button" data-mk="' + ks[i][0] + '" aria-pressed="' + (st.mk === ks[i][0]) + '">' + ks[i][1] + '</button>'; } h += '</div>';
+      h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button></div><div class="list">';
+      for (i = marks.length - 1; i >= 0 && i > marks.length - 40; i--) { h += '<div class="row"><span class="l">' + marks[i].kind + ' ' + marks[i].lat.toFixed(5) + ', ' + marks[i].lon.toFixed(5) + '</span><span class="v"></span><span class="v"></span><button type="button" class="v" data-md="' + esc(marks[i].id) + '">Delete</button></div>'; }
+      return h + '</div>';
+    }
+    a = targets().filter(function (x) { return st.pf === 'all' || x.need > 0; });
+    a.forEach(function (x) { var q = tpos(x); x.dist = me && q ? mdist([me.lat, me.lon], q) : null; });
+    a.sort(function (x, y) { if (x.dist !== null && y.dist !== null) { return x.dist - y.dist; } return y.need - x.need || (x.id < y.id ? -1 : 1); });
+    h += '<div class="list">';
+    for (i = 0; i < a.length && i < 120; i++) {
+      t = a[i]; h += '<button type="button" class="row" data-t="' + esc(t.id) + '"><span class="l">' + esc(tlabel(t.id)) + '</span><span class="v">' + (t.need === -1 ? 'Set' : t.need === 2 ? 'Missing' : t.need === 1 ? 'Approx' : 'Mapped') + '</span><span class="v">' + (t.dist !== null ? Math.round(t.dist) + ' m' : '') + '</span><span class="v">' + t.holes.length + '</span></button>';
+    }
+    if (!a.length) { h += '<div class="empty">-</div>'; }
+    return h + '</div>';
+  }
+  var XM = null;
+  function conflictTable() {
+    var X = [], i, j, gi, gj;
+    for (i = 0; i < 18; i++) { X.push([]); }
+    for (i = 0; i < 18; i++) {
+      for (j = 0; j < 18; j++) {
+        gi = H[st.slots[i].id].geo; gj = H[st.slots[j].id].geo;
+        X[i][j] = i !== j && gi && gj && (gi.b === gj.b || segX(ll(gi.p), ll(gi.b), ll(gj.p), ll(gj.b))) ? 1 : 0;
+      }
+    }
+    return X;
+  }
+  function startPlan(n) {
+    var i, g, X, S = [], W, best = null, bc = 1e9, idx = [], wrap;
+    for (i = 0; i < 18; i++) { g = H[st.slots[i].id].geo; if (!g) { return null; } S.push(walk(GEO.park, g.p)); }
+    X = conflictTable(); wrap = walk(H[st.slots[17].id].geo.b, H[st.slots[0].id].geo.p);
+    function cost(c) {
+      var t, a, b, k = 0, cf = 0, w = 0;
+      for (a = 0; a < c.length; a++) { w += S[c[a]] + (c[a] > 0 ? wrap : 0); }
+      for (t = 0; t < 18; t++) { for (a = 0; a < c.length; a++) { for (b = a + 1; b < c.length; b++) { cf += X[(c[a] + t) % 18][(c[b] + t) % 18]; } } }
+      return { cf: cf, w: w, c: cf * 10 + w };
+    }
+    function rec(start, c) {
+      if (c.length === n) { var r = cost(c); if (r.c < bc) { bc = r.c; best = { starts: c.slice(), cf: r.cf, w: r.w }; } return; }
+      for (var k = start; k < 18; k++) { c.push(k); rec(k + 1, c); c.pop(); }
+    }
+    rec(0, []);
+    if (best) { best.S = S; best.wrap = wrap; }
+    return best;
+  }
+  function startHtml() {
+    var h = '<div class="sub">Starts</div><div class="chips">', i, p, k, g;
+    for (i = 1; i <= 6; i++) { h += '<button type="button" data-sn="' + i + '" aria-pressed="' + (st.cards === i) + '">' + i + (i === 1 ? ' card' : ' cards') + '</button>'; }
+    h += '</div>';
+    if (st.cards) {
+      p = startPlan(st.cards);
+      if (!p) { return h + '<div class="empty">-</div>'; }
+      h += '<div class="facts"><span>Conflicts ' + p.cf + '</span><span>Walk ' + f(p.w, 0) + ' min</span></div><div class="list">';
+      for (k = 0; k < p.starts.length; k++) {
+        i = p.starts[k]; h += '<div class="row num"><span class="n">' + (k + 1) + '</span><span class="l">Start hole ' + (i + 1) + ' ' + esc(short(st.slots[i].id)) + '</span><span class="v">' + f(p.S[i], 1) + ' min</span><span class="v"></span></div>';
+      }
+      h += '</div>';
+      if (st.cards === 1 && p.starts[0] > 0) { h += '<button type="button" class="row" data-a="rot" data-s0="' + p.starts[0] + '"><span class="l">Rotate layout to start at hole ' + (p.starts[0] + 1) + '</span></button>'; }
+    }
+    if (me) {
+      var bi = -1, bd = 1e9; for (i = 0; i < 18; i++) { g = H[st.slots[i].id].geo; if (g) { var dd2 = mdist([me.lat, me.lon], ll2(g.p)); if (dd2 < bd) { bd = dd2; bi = i; } } }
+      if (bi >= 0) { h += '<div class="sub">Nearest to me</div><button type="button" class="row" data-i="' + bi + '"><span class="l">Hole ' + (bi + 1) + ' ' + esc(short(st.slots[bi].id)) + '</span><span class="v">' + Math.round(bd) + ' m</span><span class="v"></span><span class="v"></span></button>'; }
+    }
+    return h;
   }
   function sheetHead(title, back) {
     return '<div class="ph">' + (back ? '<button type="button" class="bk" data-a="back" aria-label="Back">&lsaquo; Back</button>' : '') + '<h2>' + esc(title) + '</h2></div>';
@@ -298,7 +523,7 @@
     var cur = st.slots[st.sel], ch = H[cur.id], cgs = geoStats(st.slots), x = cgs.hit[st.sel], i, h = sheetHead('Hole ' + (st.sel + 1) + ' ' + short(cur.id), true);
     var g0 = grade(st.slots), b0 = baseGrade || g0;
     h += '<div class="cards">' + statCell('To par', sg(g0.rel, 1), dd(g0.rel, b0.rel)) + statCell('Walk min', f(g0.walk, 0), dd(g0.walk, b0.walk)) + statCell('Cross', g0.cross, dd(g0.cross, b0.cross)) + statCell('Rank', rank(g0.rel) + '/' + (histRel.length + 1), null) + '</div>';
-    h += '<div class="facts"><span>P' + cur.par + '</span><span>' + ftOf(ch) + ' ft</span><span>Walk in ' + f(cgs.legs[st.sel], 1) + ' min</span><span class="' + cl(holeRel(cur)) + '">' + sg(holeRel(cur), 2) + '</span>' + (x ? '<span class="pos">Crosses ' + x.join(', ') + '</span>' : '') + '</div>';
+    h += '<div class="facts"><span>P' + cur.par + '</span><span>' + ftOf(ch) + ' ft</span><span>Walk in ' + f(cgs.legs[st.sel], 1) + ' min</span><span class="' + cl(holeRel(cur)) + '">' + sg(holeRel(cur), 2) + '</span>' + (x ? '<span class="pos">Crosses ' + x.join(', ') + '</span>' : '') + (function () { var m = marksOn(ch), r = ''; if (m.tree) { r += '<span class="pos">Trees ' + m.tree + '</span>'; } if (m.ob) { r += '<span class="pos">OB ' + m.ob + '</span>'; } if (m.overlap) { r += '<span class="pos">Overlap ' + m.overlap + '</span>'; } return r; })() + '</div>';
     h += '<div class="tools-bar"><button type="button" data-a="up"' + (st.sel === 0 ? ' disabled' : '') + '>Earlier</button><button type="button" data-a="down"' + (st.sel === 17 ? ' disabled' : '') + '>Later</button></div>';
     h += '<div class="tools-bar"><input id="q" type="search" placeholder="Search" aria-label="Search holes" value="' + esc(st.q) + '" autocomplete="off">' +
       '<button type="button" data-s="easy" aria-pressed="' + (st.sort === 'easy') + '">Easy</button><button type="button" data-s="hard" aria-pressed="' + (st.sort === 'hard') + '">Hard</button><button type="button" data-s="bird" aria-pressed="' + (st.sort === 'bird') + '">Birdie</button><button type="button" data-a="all" aria-pressed="' + st.all + '">All</button></div>';
@@ -333,12 +558,12 @@
       h += '</div>';
     } else if (st.pgoal) { h += '<div class="empty">-</div>'; }
     h += '<div class="sub">Reorder only</div><button type="button" class="row" data-a="order"><span class="l">Shortest walk, same holes</span></button>';
-    return h;
+    return h + startHtml();
   }
   function renderSheet() {
-    var h = st.view === 'swap' && st.sel >= 0 ? swapHtml() : st.view === 'auto' ? autoHtml() : routeHtml();
+    var h = st.view === 'swap' && st.sel >= 0 ? swapHtml() : st.view === 'auto' ? autoHtml() : st.view === 'pins' ? pinsHtml() : routeHtml();
     $('sheet').innerHTML = h;
-    var a = $('auto'); a.setAttribute('aria-pressed', st.view === 'auto');
+    $('auto').setAttribute('aria-pressed', st.view === 'auto'); $('pinsBtn').setAttribute('aria-pressed', st.view === 'pins');
     if (st.focusQ) { var q = $('q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } st.focusQ = false; }
   }
   function renderBase() {
@@ -346,12 +571,12 @@
     for (i = 0; i < dates.length; i++) { h += '<option value="' + dates[i] + '"' + (dates[i] === st.base ? ' selected' : '') + '>' + dates[i] + '</option>'; }
     $('base').innerHTML = h;
   }
-  function renderAll() { renderSheet(); drawAll(); drawMap(); $('undo').disabled = !hist.length; }
+  function renderAll() { renderSheet(); drawAll(); drawMap(); drawPins(); $('undo').disabled = !hist.length; }
   function pick(i) { st.sel = i; st.view = 'swap'; st.hover = null; st.focus = true; setCollapsed(false); renderAll(); }
   function replaceWith(id) { snap(); st.slots[st.sel] = { id: id, par: H[id].par }; st.hover = null; save(); st.focus = true; renderAll(); }
   function applyOrder() { var r = bestOrder(); if (!r) { return; } snap(); st.slots = r.perm.map(function (k) { return st.slots[k]; }); st.sel = -1; st.view = 'route'; save(); renderAll(); }
   function move(d) { var j = st.sel + d; if (j < 0 || j > 17) { return; } snap(); var t = st.slots[st.sel]; st.slots[st.sel] = st.slots[j]; st.slots[j] = t; st.sel = j; save(); renderAll(); }
-  function back() { st.view = 'route'; st.sel = -1; st.prev = null; st.pgoal = null; st.hover = null; st.fit = true; renderAll(); }
+  function back() { if (st.view === 'pins' && st.tgt) { st.tgt = null; renderAll(); return; } st.view = 'route'; st.sel = -1; st.tgt = null; st.prev = null; st.pgoal = null; st.hover = null; st.fit = true; renderAll(); }
   function copyText() {
     var t = st.slots.map(function (s, i) { return (i + 1) + '. ' + guideText(s.id, s.par); }).join('\n');
     var done = function () { $('copy').textContent = 'Copied'; setTimeout(function () { $('copy').textContent = 'Copy'; }, 1200); };
@@ -368,6 +593,9 @@
     $('reset').addEventListener('click', function () { var h0 = JSON.stringify(st.slots); loadBase(st.base || dates[0]); hist = [h0]; renderBase(); st.fit = true; renderAll(); });
     $('copy').addEventListener('click', copyText);
     $('auto').addEventListener('click', function () { if (st.view === 'auto') { back(); } else { st.view = 'auto'; st.sel = -1; st.prev = null; st.pgoal = null; setCollapsed(false); renderAll(); } });
+    $('pinsBtn').addEventListener('click', function () { if (st.view === 'pins') { back(); } else { st.view = 'pins'; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); } });
+    $('loc').addEventListener('click', function () { locate(true); });
+    $('fit').addEventListener('click', function () { st.fit = true; drawMap(); });
     $('grip').addEventListener('click', function () { setCollapsed(document.body.getAttribute('data-sheet') !== 'min'); });
     $('sheet').addEventListener('input', function (e) { if (e.target.id === 'q') { st.q = e.target.value; st.focusQ = true; renderSheet(); } });
     $('sheet').addEventListener('mouseover', function (e) {
@@ -377,6 +605,12 @@
     $('sheet').addEventListener('click', function (e) {
       var t = e.target; while (t && t !== this && t.tagName !== 'BUTTON') { t = t.parentNode; }
       if (!t || t.tagName !== 'BUTTON' || t.disabled) { return; }
+      var tg = t.getAttribute('data-t'), pfv = t.getAttribute('data-pf'), mkv = t.getAttribute('data-mk'), mdv = t.getAttribute('data-md'), snv = t.getAttribute('data-sn');
+      if (tg) { st.tgt = tg; st.pf = st.pf === 'marks' ? 'need' : st.pf; var tt0 = tgtObj(tg), pp0 = tt0 ? tpos(tt0) : null; if (pp0 && map) { map.setView(pp0, 19, { animate: false }); } renderAll(); return; }
+      if (pfv) { st.pf = pfv; st.tgt = null; renderAll(); return; }
+      if (mkv) { st.mk = mkv; renderSheet(); return; }
+      if (mdv) { delMark(mdv); return; }
+      if (snv) { st.cards = parseInt(snv, 10); renderSheet(); return; }
       var a = t.getAttribute('data-a'), s = t.getAttribute('data-s'), pk = t.getAttribute('data-pick'), ag = t.getAttribute('data-ag'), di = t.getAttribute('data-i');
       if (di !== null) { pick(parseInt(di, 10)); }
       else if (pk) { st.hover = pk; replaceWith(pk); }
@@ -385,6 +619,10 @@
       else if (a === 'back') { back(); } else if (a === 'up') { move(-1); } else if (a === 'down') { move(1); }
       else if (a === 'all') { st.all = !st.all; renderSheet(); } else if (a === 'more') { st.more = !st.more; renderSheet(); }
       else if (a === 'order') { applyOrder(); }
+      else if (a === 'place') { var c0 = map.getCenter(); placeAt(c0.lat, c0.lng); }
+      else if (a === 'here') { if (me) { placeAt(me.lat, me.lon); } }
+      else if (a === 'list') { st.tgt = null; renderAll(); }
+      else if (a === 'rot') { var s0 = parseInt(t.getAttribute('data-s0'), 10); snap(); st.slots = st.slots.slice(s0).concat(st.slots.slice(0, s0)); st.cards = 0; save(); renderAll(); }
       else if (a === 'apply') { if (st.prev) { snap(); st.slots = st.prev.slice(); st.prev = null; st.pgoal = null; st.view = 'route'; save(); renderAll(); } }
       else if (a === 'discard') { st.prev = null; st.pgoal = null; renderAll(); }
     });
@@ -402,7 +640,7 @@
     var saved = load();
     if (saved) { st.base = saved.base; st.slots = saved.slots; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
     else { loadBase(dates[0]); }
-    renderBase(); initMap(); renderAll();
+    loadPinsLocal(); applyPins(); renderBase(); initMap(); renderAll(); pullPins(function () { applyPins(); histRel = dates.map(function (x) { return grade(seq[x]).rel; }); renderAll(); });
   }
   init();
 })();
