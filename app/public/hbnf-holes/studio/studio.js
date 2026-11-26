@@ -3,7 +3,7 @@
   var bldCache0 = null, GEO = null, TI = {}, KEY = 'hbnf-studio-v2', MIN_N = 4, K = 6, PRIOR = { 3: -0.4, 4: 0.3 }, BPRIOR = 25, hist = [], histRel = [];
   var $ = function (id) { return document.getElementById(id); };
   var enc = null, H = {}, pool = [], seq = {}, dates = [];
-  var st = { base: null, slots: [], sel: -1, view: 'route', sort: 'easy', all: false, q: '', goal: 'easier', more: false, tgt: null, pf: 'need', mk: 'tree', cards: 0, prev: null, pgoal: null, hover: null };
+  var st = { base: null, slots: [], sel: -1, view: 'route', sort: 'easy', all: false, q: '', goal: 'easier', more: false, lock: {}, note: null, busy: null, tgt: null, pf: 'need', mk: 'tree', cards: 0, prev: null, pgoal: null, hover: null };
   var baseGrade = null;
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
   function f(v, d) { return v === null || v === undefined || isNaN(v) ? '-' : Number(v).toFixed(d); }
@@ -16,7 +16,7 @@
     x.onerror = function () { cb(null); };
     x.send();
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify({ base: st.base, slots: st.slots })); } catch (e) { /* storage unavailable */ } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ base: st.base, slots: st.slots, lock: st.lock })); } catch (e) { /* storage unavailable */ } }
   function load() {
     try {
       var d = JSON.parse(localStorage.getItem(KEY) || 'null');
@@ -127,7 +127,7 @@
     if (goal === 'safe') { return -(g.cross + g.walk * 0.001); }
     return -(g.sd + 0.5 * Math.abs(g.front - g.back));
   }
-  var GOALS = [['easier', 'Easier'], ['harder', 'Harder'], ['birdies', 'Birdies'], ['faster', 'Faster'], ['balance', 'Balance'], ['walk', 'Walk'], ['safe', 'Safer']];
+  var GOALS = [['easier', 'Easier', 'Lowest expected score'], ['harder', 'Harder', 'Highest expected score'], ['birdies', 'More birdies', 'Most birdie chances'], ['faster', 'Faster rounds', 'Fewest strokes, shortest holes'], ['balance', 'Even difficulty', 'Front and back nine matched'], ['walk', 'Less walking', 'Shortest total walk'], ['safe', 'No overlaps', 'Fewest crossing fairways']];
   function guideText(id, par) {
     var h = H[id], t = h.occ.length ? h.occ[h.occ.length - 1].source_text : h.label;
     t = t.replace(/→/g, 'to').replace(/★/g, '').replace(/\(par[^)]*\)/ig, '').replace(/\s+/g, ' ').trim();
@@ -170,12 +170,12 @@
     for (it = 0; it < N; it++) {
       T = 0.6 * (1 - it / N) + 0.005; tr = cur.slice();
       if (rnd() < 0.7) {
-        i = Math.floor(rnd() * 18); p = cand[Math.floor(rnd() * cand.length)]; used = false;
+        i = Math.floor(rnd() * 18); if (st.lock[i]) { continue; } p = cand[Math.floor(rnd() * cand.length)]; used = false;
         for (k = 0; k < 18; k++) { if (tr[k].id === p.id) { used = true; } }
         if (used) { continue; }
         tr[i] = { id: p.id, par: p.par };
       } else {
-        i = Math.floor(rnd() * 18); j = Math.floor(rnd() * 18); if (i === j) { continue; }
+        i = Math.floor(rnd() * 18); j = Math.floor(rnd() * 18); if (i === j || st.lock[i] || st.lock[j]) { continue; }
         k = tr[i]; tr[i] = tr[j]; tr[j] = k;
       }
       tg = grade(tr); ts = objective(goal, tg) - penalty(tg);
@@ -206,10 +206,10 @@
   function short(id) { return H[id].label.replace(/\s*\(.*\)\s*$/, ''); }
   function ftOf(p) { return p.geo ? (p.geo.pf === 'a' || p.geo.bf === 'a' ? '~' : '') + Math.round(p.geo.d * 3.28084 / 5) * 5 : '-'; }
   function rank(rel) { var r = 1, i; for (i = 0; i < histRel.length; i++) { if (histRel[i] < rel) { r++; } } return r; }
-  function snap() { hist.push(JSON.stringify(st.slots)); if (hist.length > 50) { hist.shift(); } }
-  function undo() { if (hist.length) { st.slots = JSON.parse(hist.pop()); save(); renderAll(); } }
+  function snap() { hist.push(JSON.stringify(st.slots)); if (hist.length > 50) { hist.shift(); } st.note = null; }
+  function undo() { if (hist.length) { st.slots = JSON.parse(hist.pop()); st.note = null; save(); renderAll(); } }
   function inLayout(id, except) { for (var i = 0; i < 18; i++) { if (i !== except && st.slots[i].id === id) { return true; } } return false; }
-  function loadBase(d) { st.base = d; st.slots = seq[d].map(function (s) { return { id: s.id, par: s.par }; }); baseGrade = grade(st.slots); st.sel = -1; st.view = 'route'; st.prev = null; hist = []; save(); }
+  function loadBase(d) { st.base = d; st.slots = seq[d].map(function (s) { return { id: s.id, par: s.par }; }); baseGrade = grade(st.slots); st.sel = -1; st.view = 'route'; st.prev = null; st.lock = {}; st.note = null; hist = []; save(); }
   function ll2(k) { var n = GEO.nodes[k]; return [n[0], n[1]]; }
   function relColor(r, ok) { if (!ok) { return '#9a9a9a'; } return r < -0.15 ? '#8fcf8f' : r < 0.15 ? '#e9d39b' : '#e2a066'; }
   function holeRel(s) { var h = H[s.id]; return exp(h, s.par) - s.par; }
@@ -421,8 +421,8 @@
     return out;
   }
   function pinsHtml() {
-    var h = sheetHead('Pins', true), i, a, t, pos, d, label;
-    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Missing</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Marks</button></div>';
+    var h = sheetHead('Pins', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
+    h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs a pin</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All points</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button></div>';
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
       h += '<div class="facts"><strong>' + esc(tlabel(st.tgt)) + '</strong><span>' + (pins[st.tgt] ? 'Set' : t && t.need === 2 ? 'Missing' : t && t.need === 1 ? 'Approx' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
@@ -442,7 +442,7 @@
     a.sort(function (x, y) { if (x.dist !== null && y.dist !== null) { return x.dist - y.dist; } return y.need - x.need || (x.id < y.id ? -1 : 1); });
     h += '<div class="list">';
     for (i = 0; i < a.length && i < 120; i++) {
-      t = a[i]; h += '<button type="button" class="row" data-t="' + esc(t.id) + '"><span class="l">' + esc(tlabel(t.id)) + '</span><span class="v">' + (t.need === -1 ? 'Set' : t.need === 2 ? 'Missing' : t.need === 1 ? 'Approx' : 'Mapped') + '</span><span class="v">' + (t.dist !== null ? Math.round(t.dist) + ' m' : '') + '</span><span class="v">' + t.holes.length + '</span></button>';
+      t = a[i]; h += '<button type="button" class="hr" data-t="' + esc(t.id) + '"><span class="bdg dot" style="background:' + (t.need === -1 ? '#8fcf8f' : t.need === 2 ? '#e2a066' : t.need === 1 ? '#e9d39b' : '#9a9a9a') + '"></span><span class="mid"><b>' + esc(tlabel(t.id)) + '</b><small>' + (t.need === -1 ? 'Pin set' : t.need === 2 ? 'No location' : t.need === 1 ? 'Approximate location' : 'Mapped') + ' · Used by ' + t.holes.length + (t.holes.length === 1 ? ' hole' : ' holes') + (t.dist !== null ? ' · ' + Math.round(t.dist) + ' m away' : '') + '</small></span><span class="chev" aria-hidden="true">&rsaquo;</span></button>';
     }
     if (!a.length) { h += '<div class="empty">-</div>'; }
     return h + '</div>';
@@ -478,22 +478,22 @@
     return best;
   }
   function startHtml() {
-    var h = '<div class="sub">Starts</div><div class="chips">', i, p, k, g;
+    var h = '<div class="ttl"><b>Starting holes</b><span>by number of cards</span></div><div class="chips">', i, p, k, g;
     for (i = 1; i <= 6; i++) { h += '<button type="button" data-sn="' + i + '" aria-pressed="' + (st.cards === i) + '">' + i + (i === 1 ? ' card' : ' cards') + '</button>'; }
     h += '</div>';
     if (st.cards) {
       p = startPlan(st.cards);
       if (!p) { return h + '<div class="empty">-</div>'; }
-      h += '<div class="facts"><span>Conflicts ' + p.cf + '</span><span>Walk ' + f(p.w, 0) + ' min</span></div><div class="list">';
+      h += '<div class="facts"><span>Overlap conflicts ' + p.cf + '</span><span>Total walk ' + f(p.w, 0) + ' min</span></div><div class="list">';
       for (k = 0; k < p.starts.length; k++) {
-        i = p.starts[k]; h += '<div class="row num"><span class="n">' + (k + 1) + '</span><span class="l">Start hole ' + (i + 1) + ' ' + esc(short(st.slots[i].id)) + '</span><span class="v">' + f(p.S[i], 1) + ' min</span><span class="v"></span></div>';
+        i = p.starts[k]; h += '<div class="row num"><span class="n">' + (k + 1) + '</span><span class="l">Start hole ' + (i + 1) + ' ' + esc(short(st.slots[i].id)) + '</span><span class="v">' + f(p.S[i], 1) + ' min walk</span><span class="v"></span></div>';
       }
       h += '</div>';
       if (st.cards === 1 && p.starts[0] > 0) { h += '<button type="button" class="row" data-a="rot" data-s0="' + p.starts[0] + '"><span class="l">Rotate layout to start at hole ' + (p.starts[0] + 1) + '</span></button>'; }
     }
     if (me) {
       var bi = -1, bd = 1e9; for (i = 0; i < 18; i++) { g = H[st.slots[i].id].geo; if (g) { var dd2 = mdist([me.lat, me.lon], ll2(g.p)); if (dd2 < bd) { bd = dd2; bi = i; } } }
-      if (bi >= 0) { h += '<div class="sub">Nearest to me</div><button type="button" class="row" data-i="' + bi + '"><span class="l">Hole ' + (bi + 1) + ' ' + esc(short(st.slots[bi].id)) + '</span><span class="v">' + Math.round(bd) + ' m</span><span class="v"></span><span class="v"></span></button>'; }
+      if (bi >= 0) { h += '<div class="ttl"><b>Nearest hole to you</b></div><button type="button" class="row" data-i="' + bi + '"><span class="l">Hole ' + (bi + 1) + ' ' + esc(short(st.slots[bi].id)) + '</span><span class="v">' + Math.round(bd) + ' m</span><span class="v"></span><span class="v"></span></button>'; }
     }
     return h;
   }
@@ -513,57 +513,72 @@
   function usedTxt(id) { var u = USE[id]; return (u ? u.n : 0) + '/' + dates.length; }
   function lastTxt(id) { var u = USE[id]; return u ? String(u.last) : 'New'; }
   function relTxt(id) { var o = H[id]; return tested(o) ? sg(o.rel, 2) : '-'; }
+
+  function lastLbl(id) { var u = USE[id]; if (!u) { return 'New hole'; } return u.last === 0 ? 'Used last round' : 'Last used ' + u.last + (u.last === 1 ? ' round ago' : ' rounds ago'); }
+  function ftLbl(h) { return h.geo ? ftOf(h) + ' ft' : 'Unmapped'; }
+  function holeRow(id, par, o) {
+    var h = H[id], ok = tested(h), col = relColor(exp(h, par) - par, ok), tag = o.attr ? 'button' : 'div', ex = o.extra || '';
+    return '<' + tag + ' type="' + (o.attr ? 'button' : '') + '" class="hr' + (o.warn ? ' warn' : '') + '" ' + (o.attr || '') + (o.role ? ' role="listitem"' : '') + '><span class="bdg" style="background:' + col + '">' + (o.n !== undefined ? o.n : '') + '</span>' +
+      '<span class="mid"><b>' + esc(short(id)) + '</b><small>Par ' + par + ' · ' + ftLbl(h) + ' · Used ' + usedTxt(id) + ' rounds</small><small class="' + (USE[id] ? '' : 'pos') + '">' + lastLbl(id) + ex + '</small></span>' +
+      '<span class="rt"><b class="' + (ok ? cl(h.rel) : '') + '">' + (ok ? sg(h.rel, 2) : '-') + '</b><small>' + (ok ? 'to par' : 'no data') + '</small></span>' + '<span class="chev" aria-hidden="true">' + (o.attr ? '&rsaquo;' : '') + '</span></' + tag + '>';
+  }
   function histHtml() {
-    var h, i, d, r, lay = enc.layouts || {};
+    var h, i, d, r, lay = enc.layouts || {}, sl;
     if (st.hd) {
-      var sl = seq[st.hd], g = grade(sl), rr = RD[st.hd];
-      h = sheetHead(st.hd, true);
-      h += '<div class="facts"><span>' + esc((lay[st.hd] || {}).name || '') + '</span></div>';
-      h += '<div class="cards">' + statCell('Team', rr ? sg(rr.avg_rel, 1) : '-', null) + statCell('Best', rr ? sg(rr.best_rel, 0) : '-', null) + statCell('Teams', rr ? rr.teams : '-', null) + statCell('Expect', sg(g.rel, 1), null) + '</div>';
-      h += '<div class="tools-bar"><button type="button" class="pri" data-a="loadh">Load</button></div>';
-      h += '<div class="hd"><span></span><span>Hole</span><span>Par</span><span>Used</span><span>Ago</span><span>To par</span></div><div class="list">';
-      for (i = 0; i < 18; i++) { h += '<div class="slot"><span class="n">' + (i + 1) + '</span><span class="l">' + esc(short(sl[i].id)) + '</span><span class="p">P' + sl[i].par + '</span><span class="v">' + usedTxt(sl[i].id) + '</span><span class="v">' + lastTxt(sl[i].id) + '</span><span class="r ' + (tested(H[sl[i].id]) ? cl(H[sl[i].id].rel) : '') + '">' + relTxt(sl[i].id) + '</span></div>'; }
+      sl = seq[st.hd]; var g = grade(sl), rr = RD[st.hd];
+      h = sheetHead(st.hd, true, 'History');
+      h += '<div class="sub">' + esc((lay[st.hd] || {}).name || '') + '</div>';
+      h += '<div class="cards">' + statCell('Team avg', rr ? sg(rr.avg_rel, 1) : '-', 'to par, actual', '') + statCell('Best team', rr ? sg(rr.best_rel, 0) : '-', 'to par', '') + statCell('Teams', rr ? rr.teams : '-', 'played', '') + statCell('Expected', sg(g.rel, 1), 'to par, model', '') + '</div>';
+      h += '<div class="tools-bar"><button type="button" class="pri" data-a="loadh">Load into builder</button></div><div class="list">';
+      for (i = 0; i < 18; i++) { h += holeRow(sl[i].id, sl[i].par, { n: i + 1 }); }
       return h + '</div>';
     }
-    h = sheetHead('History', true) + '<div class="hd hl"><span>Date</span><span>Par</span><span>Team</span><span>Best</span><span>Teams</span></div><div class="list">';
+    h = sheetHead('Past layouts', false) + '<div class="list">';
     for (i = 0; i < dates.length; i++) {
       d = dates[i]; r = RD[d];
-      h += '<button type="button" class="row hl" data-h="' + d + '"><span class="l">' + d + '</span><span class="v">' + g18(seq[d]) + '</span><span class="v ' + (r ? cl(r.avg_rel) : '') + '">' + (r ? sg(r.avg_rel, 1) : '-') + '</span><span class="v">' + (r ? sg(r.best_rel, 0) : '-') + '</span><span class="v">' + (r ? r.teams : '-') + '</span></button>';
+      h += '<button type="button" class="hr" data-h="' + d + '"><span class="bdg dot" style="background:' + (r ? relColor(r.avg_rel / 18 * 1, true) : '#9a9a9a') + '"></span><span class="mid"><b>' + d + '</b><small>Par ' + g18(seq[d]) + ' · ' + (r ? r.teams + ' teams · best ' + sg(r.best_rel, 0) : 'Not scored') + '</small></span><span class="rt"><b class="' + (r ? cl(r.avg_rel) : '') + '">' + (r ? sg(r.avg_rel, 1) : '-') + '</b><small>' + (r ? 'team avg' : '') + '</small></span><span class="chev" aria-hidden="true">&rsaquo;</span></button>';
     }
     return h + '</div>';
   }
   function g18(sl) { var t = 0, i; for (i = 0; i < sl.length; i++) { t += sl[i].par; } return t; }
-  function sheetHead(title, back) {
-    return '<div class="ph">' + (back ? '<button type="button" class="bk" data-a="back" aria-label="Back">&lsaquo; Back</button>' : '') + '<h2>' + esc(title) + '</h2></div>';
+  function sheetHead(title, back, backLabel) {
+    return '<div class="ph">' + (back ? '<button type="button" class="bk" data-a="back" aria-label="Back">&lsaquo; ' + (backLabel || 'Layout') + '</button>' : '') + '<h2>' + esc(title) + '</h2></div>';
   }
-  function statCell(label, val, delta, inv) { return '<div class="cell"><small>' + label + '</small><strong>' + val + '</strong>' + (delta !== null ? '<em class="' + cl(delta, inv) + '">' + sg(delta, 1) + '</em>' : '') + '</div>'; }
+  function statCell(label, val, sub, cls) { return '<div class="cell"><small>' + label + '</small><strong class="' + (cls || '') + '">' + val + '</strong><small class="sb ' + (cls || '') + '">' + (sub || '') + '</small></div>'; }
   function dd(x, y) { return Math.abs(x - y) < 0.05 ? null : x - y; }
+  function dsub(d, unit) { return d === null ? 'same as start' : sg(d, 1) + (unit || '') + ' vs start'; }
   function scoreHtml(g, b) {
-    var h = '<div class="cards">' + statCell('To par', sg(g.rel, 1), dd(g.rel, b.rel)) + statCell('Walk min', f(g.walk, 0), dd(g.walk, b.walk)) + statCell('Cross', g.cross, dd(g.cross, b.cross)) + statCell('Rank', rank(g.rel) + '/' + (histRel.length + 1), null) + '</div>';
+    var n = histRel.length + 1, h = '<div class="cards">' + statCell('To par', sg(g.rel, 1), dsub(dd(g.rel, b.rel)), cl(dd(g.rel, b.rel) || 0)) + statCell('Walk', f(g.walk, 0) + ' min', dsub(dd(g.walk, b.walk), ' min'), '') +
+      statCell('Overlaps', g.cross, 'crossing fairways', g.cross ? 'pos' : '') + statCell('Difficulty', rank(g.rel) + ' of ' + n, '1 = easiest layout', '') + '</div>';
     if (st.more) {
-      h += '<div class="cards">' + statCell('Score', f(g.exp, 1), dd(g.exp, b.exp)) + statCell('Birdies', f(g.bird, 1), dd(g.bird, b.bird), true) + statCell('Front', sg(g.front, 1), dd(g.front, b.front)) + statCell('Back', sg(g.back, 1), dd(g.back, b.back)) +
-        statCell('Hard', g.hard, dd(g.hard, b.hard)) + statCell('Spread', f(g.sd, 2), dd(g.sd, b.sd)) + statCell('Par', g.par, dd(g.par, b.par)) + statCell('Throw ft', Math.round(g.ft / 10) * 10, null) + '</div>';
+      h += '<div class="cards">' + statCell('Expected score', f(g.exp, 1), 'team strokes', '') + statCell('Birdie chances', f(g.bird, 1), 'per round', '') + statCell('Front 9', sg(g.front, 1), 'to par', '') + statCell('Back 9', sg(g.back, 1), 'to par', '') +
+        statCell('Hard holes', g.hard, '15%+ bogeys', '') + statCell('Par', g.par, 'total', '') + statCell('Untested', g.untested, 'few rounds played', g.untested ? 'pos' : '') + statCell('Throw', Math.round(g.ft / 10) * 10, 'feet total', '') + '</div>';
     }
-    return h + '<button type="button" class="more" data-a="more" aria-expanded="' + st.more + '">' + (st.more ? 'Less' : 'More') + '</button>';
+    return h + '<button type="button" class="more" data-a="more" aria-expanded="' + st.more + '">' + (st.more ? 'Fewer stats' : 'More stats') + '</button>';
   }
   function routeHtml() {
-    var g = grade(st.slots), b = baseGrade || g, cg = geoStats(st.slots), h = scoreHtml(g, b), i, s, o;
-    h += '<div class="hd"><span></span><span>Hole</span><span>Par</span><span>Used</span><span>Ago</span><span>To par</span></div><div class="list" role="list">';
+    var g = grade(st.slots), b = baseGrade || g, cg = geoStats(st.slots), h = '', i, s;
+    if (st.note) { h += '<div class="note"><span>' + esc(st.note.t) + '</span><strong class="' + cl(st.note.d) + '">' + sg(st.note.d, 1) + ' to par</strong><button type="button" data-a="undo">Undo</button></div>'; }
+    h += '<div class="ttl"><b>Your layout</b><span>18 holes · Par ' + g.par + '</span></div>' + scoreHtml(g, b) + '<div class="list" role="list">';
     for (i = 0; i < 18; i++) {
-      s = st.slots[i]; o = H[s.id];
-      h += '<button type="button" class="slot' + (cg.hit[i] ? ' warn' : '') + '" role="listitem" data-i="' + i + '"><span class="n">' + (i + 1) + '</span><span class="l">' + esc(short(s.id)) + '</span><span class="p">P' + s.par + '</span><span class="v">' + usedTxt(s.id) + '</span><span class="v' + (USE[s.id] ? '' : ' pos') + '">' + lastTxt(s.id) + '</span><span class="r ' + (tested(o) ? cl(o.rel) : '') + '">' + relTxt(s.id) + '</span></button>';
+      s = st.slots[i];
+      h += holeRow(s.id, s.par, { n: i + 1, attr: 'data-i="' + i + '"', role: true, warn: !!cg.hit[i], extra: (cg.hit[i] ? ' · Overlaps hole ' + cg.hit[i].join(', ') : '') + (st.lock[i] ? ' · Locked' : '') });
     }
     return h + '</div>';
   }
   function swapHtml() {
-    var cur = st.slots[st.sel], ch = H[cur.id], cgs = geoStats(st.slots), x = cgs.hit[st.sel], i, h = sheetHead('Hole ' + (st.sel + 1) + ' ' + short(cur.id), true);
-    var g0 = grade(st.slots), b0 = baseGrade || g0;
-    h += '<div class="cards">' + statCell('To par', sg(g0.rel, 1), dd(g0.rel, b0.rel)) + statCell('Walk min', f(g0.walk, 0), dd(g0.walk, b0.walk)) + statCell('Cross', g0.cross, dd(g0.cross, b0.cross)) + statCell('Rank', rank(g0.rel) + '/' + (histRel.length + 1), null) + '</div>';
-    h += '<div class="facts"><span>P' + cur.par + '</span><span>' + ftOf(ch) + ' ft</span><span>Walk in ' + f(cgs.legs[st.sel], 1) + ' min</span><span class="' + cl(holeRel(cur)) + '">' + sg(holeRel(cur), 2) + '</span><span>Used ' + usedTxt(cur.id) + '</span><span class="' + (USE[cur.id] ? '' : 'pos') + '">' + (USE[cur.id] ? 'Last ' + USE[cur.id].dates[0] : 'New') + '</span>' + (x ? '<span class="pos">Crosses ' + x.join(', ') + '</span>' : '') + (function () { var m = marksOn(ch), r = ''; if (m.tree) { r += '<span class="pos">Trees ' + m.tree + '</span>'; } if (m.ob) { r += '<span class="pos">OB ' + m.ob + '</span>'; } if (m.overlap) { r += '<span class="pos">Overlap ' + m.overlap + '</span>'; } return r; })() + '</div>';
-    h += '<div class="tools-bar"><button type="button" data-a="up"' + (st.sel === 0 ? ' disabled' : '') + '>Earlier</button><button type="button" data-a="down"' + (st.sel === 17 ? ' disabled' : '') + '>Later</button></div>';
-    h += '<div class="tools-bar"><input id="q" type="search" placeholder="Search" aria-label="Search holes" value="' + esc(st.q) + '" autocomplete="off">' +
-      '<button type="button" data-s="easy" aria-pressed="' + (st.sort === 'easy') + '">Easy</button><button type="button" data-s="hard" aria-pressed="' + (st.sort === 'hard') + '">Hard</button><button type="button" data-s="bird" aria-pressed="' + (st.sort === 'bird') + '">Birdie</button><button type="button" data-a="all" aria-pressed="' + st.all + '">All</button></div>';
-    h += '<div class="hd pk"><span>Replace with</span><span>Par</span><span>Used</span><span>Ago</span><span>To par</span><span>Change</span></div>';
+    var cur = st.slots[st.sel], ch = H[cur.id], cgs = geoStats(st.slots), x = cgs.hit[st.sel], i, h = sheetHead('Hole ' + (st.sel + 1) + ' of 18', true), m = marksOn(ch), g0 = grade(st.slots), b0 = baseGrade || g0;
+    h += '<div class="ttl"><b>' + esc(short(cur.id)) + '</b></div>';
+    h += '<div class="cards c3">' + statCell('Length', ftOf(ch) + ' ft', ch.geo ? '' : 'not mapped', '') + statCell('Walk in', f(cgs.legs[st.sel], 1) + ' min', 'from previous hole', '') + statCell('To par', tested(ch) ? sg(ch.rel, 2) : '-', 'past team average', tested(ch) ? cl(ch.rel) : '') +
+      statCell('Used', usedTxt(cur.id), 'rounds', '') + statCell('Last used', USE[cur.id] ? USE[cur.id].dates[0] : 'New hole', USE[cur.id] ? (USE[cur.id].last === 0 ? 'latest round' : USE[cur.id].last + ' rounds ago') : 'never played', USE[cur.id] ? '' : 'pos') +
+      statCell('Overlaps', x ? x.join(', ') : 'None', 'crossing holes', x ? 'pos' : '') + '</div>';
+    if (m.tree || m.ob || m.overlap) { h += '<div class="facts">' + (m.tree ? '<span class="pos">Trees on line ' + m.tree + '</span>' : '') + (m.ob ? '<span class="pos">OB on line ' + m.ob + '</span>' : '') + (m.overlap ? '<span class="pos">Marked overlaps ' + m.overlap + '</span>' : '') + '</div>'; }
+    h += '<div class="sub">Par</div><div class="chips">';
+    for (i = 3; i <= 5; i++) { h += '<button type="button" data-par="' + i + '" aria-pressed="' + (cur.par === i) + '">Par ' + i + '</button>'; }
+    h += '</div><div class="tools-bar"><button type="button" data-a="up"' + (st.sel === 0 ? ' disabled' : '') + '>Move earlier</button><button type="button" data-a="down"' + (st.sel === 17 ? ' disabled' : '') + '>Move later</button><button type="button" data-a="lock" aria-pressed="' + !!st.lock[st.sel] + '">' + (st.lock[st.sel] ? 'Locked' : 'Lock hole') + '</button></div>';
+    h += '<div class="ttl"><b>Swap for another hole</b><span>' + (st.all ? 'All holes' : 'Tested holes') + '</span></div>';
+    h += '<div class="tools-bar"><input id="q" type="search" placeholder="Search holes" aria-label="Search holes" value="' + esc(st.q) + '" autocomplete="off"></div>';
+    h += '<div class="chips"><button type="button" data-s="easy" aria-pressed="' + (st.sort === 'easy') + '">Easiest first</button><button type="button" data-s="hard" aria-pressed="' + (st.sort === 'hard') + '">Hardest first</button><button type="button" data-s="bird" aria-pressed="' + (st.sort === 'bird') + '">Most birdies</button><button type="button" data-a="all" aria-pressed="' + st.all + '">Include untested</button></div>';
     var list = pool.filter(function (p) { return (st.all || tested(p)) && !inLayout(p.id, st.sel) && p.id !== cur.id && (!st.q || p.label.toLowerCase().indexOf(st.q.toLowerCase()) >= 0); });
     list.sort(function (a, b) {
       if (st.sort === 'bird') { return (b.bird || 0) - (a.bird || 0); }
@@ -572,46 +587,45 @@
     h += '<div class="list">';
     for (i = 0; i < list.length && i < 80; i++) {
       var p = list[i], dl = exp(p, p.par) - exp(ch, cur.par);
-      h += '<button type="button" class="row pk" data-pick="' + esc(p.id) + '"><span class="l">' + esc(short(p.id)) + '</span><span class="v">P' + p.par + '</span><span class="v">' + usedTxt(p.id) + '</span><span class="v' + (USE[p.id] ? '' : ' pos') + '">' + lastTxt(p.id) + '</span><span class="v ' + cl(p.rel) + '">' + relTxt(p.id) + '</span><span class="v ' + cl(dl) + '">' + sg(dl, 2) + '</span></button>';
+      h += holeRow(p.id, p.par, { attr: 'data-pick="' + esc(p.id) + '"', extra: ' · <span class="' + cl(dl) + '">' + sg(dl, 2) + ' strokes vs this hole</span>' });
     }
     if (!list.length) { h += '<div class="empty">-</div>'; }
     return h + '</div>';
   }
   function autoHtml() {
-    var h = sheetHead('Auto', st.prev ? false : true), i;
-    h += '<div class="chips">';
-    for (i = 0; i < GOALS.length; i++) { h += '<button type="button" data-ag="' + GOALS[i][0] + '" aria-pressed="' + (st.pgoal === GOALS[i][0]) + '">' + GOALS[i][1] + '</button>'; }
-    h += '</div>';
-    if (st.prev) {
-      var g = grade(st.prev), b = grade(st.slots), cnt = 0;
-      for (i = 0; i < 18; i++) { if (st.prev[i].id !== st.slots[i].id) { cnt++; } }
-      h += '<div class="cards">' + statCell('To par', sg(g.rel, 1), dd(g.rel, b.rel)) + statCell('Walk min', f(g.walk, 0), dd(g.walk, b.walk)) + statCell('Cross', g.cross, dd(g.cross, b.cross)) + statCell('Changed', cnt, null) + '</div>';
-      h += '<div class="tools-bar"><button type="button" class="pri" data-a="apply">Apply</button><button type="button" data-a="discard">Discard</button></div><div class="list">';
-      for (i = 0; i < 18; i++) {
-        var ch = st.prev[i].id !== st.slots[i].id;
-        h += '<div class="row num' + (ch ? ' chg' : '') + '"><span class="n">' + (i + 1) + '</span><span class="l">' + esc(short(st.prev[i].id)) + '</span><span class="v">P' + st.prev[i].par + '</span><span class="v">' + ftOf(H[st.prev[i].id]) + '</span></div>';
-      }
-      h += '</div>';
-    } else if (st.pgoal) { h += '<div class="empty">-</div>'; }
-    h += '<div class="sub">Reorder only</div><button type="button" class="row" data-a="order"><span class="l">Shortest walk, same holes</span></button>';
+    var h = sheetHead('Build a layout', false), i, lk = [];
+    for (i = 0; i < 18; i++) { if (st.lock[i]) { lk.push(i + 1); } }
+    h += '<div class="sub">' + (lk.length ? 'Locked holes stay: ' + lk.join(', ') : 'Rebuilds all 18 holes') + '</div><div class="list">';
+    for (i = 0; i < GOALS.length; i++) { h += '<button type="button" class="hr" data-ag="' + GOALS[i][0] + '"' + (st.busy ? ' disabled' : '') + '><span class="bdg dot" style="background:#c9b4f0"></span><span class="mid"><b>' + (st.busy === GOALS[i][0] ? 'Building...' : GOALS[i][1]) + '</b><small>' + GOALS[i][2] + '</small></span><span class="chev" aria-hidden="true">&rsaquo;</span></button>'; }
+    h += '<button type="button" class="hr" data-a="order"><span class="bdg dot" style="background:#7fb2ff"></span><span class="mid"><b>Reorder for shortest walk</b><small>Same 18 holes, new order</small></span><span class="chev" aria-hidden="true">&rsaquo;</span></button></div>';
     return h + startHtml();
   }
   function renderSheet() {
     var h = st.view === 'swap' && st.sel >= 0 ? swapHtml() : st.view === 'auto' ? autoHtml() : st.view === 'pins' ? pinsHtml() : st.view === 'hist' ? histHtml() : routeHtml();
     $('sheet').innerHTML = h;
-    $('auto').setAttribute('aria-pressed', st.view === 'auto'); $('pinsBtn').setAttribute('aria-pressed', st.view === 'pins'); $('histBtn').setAttribute('aria-pressed', st.view === 'hist');
+    $('layoutTab').setAttribute('aria-pressed', st.view === 'route' || st.view === 'swap'); $('auto').setAttribute('aria-pressed', st.view === 'auto'); $('pinsBtn').setAttribute('aria-pressed', st.view === 'pins'); $('histBtn').setAttribute('aria-pressed', st.view === 'hist');
     if (st.focusQ) { var q = $('q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } st.focusQ = false; }
   }
   function renderBase() {
-    var h = '<option value="">Blank</option>', i;
-    for (i = 0; i < dates.length; i++) { h += '<option value="' + dates[i] + '"' + (dates[i] === st.base ? ' selected' : '') + '>' + dates[i] + '</option>'; }
+    var h = '<option value="">Blank layout</option>', i;
+    for (i = 0; i < dates.length; i++) { h += '<option value="' + dates[i] + '"' + (dates[i] === st.base ? ' selected' : '') + '>From ' + dates[i] + '</option>'; }
     $('base').innerHTML = h;
   }
   function renderAll() { renderSheet(); drawAll(); drawMap(); drawPins(); $('undo').disabled = !hist.length; }
   function pick(i) { st.sel = i; st.view = 'swap'; st.hover = null; st.focus = true; setCollapsed(false); renderAll(); }
   function replaceWith(id) { snap(); st.slots[st.sel] = { id: id, par: H[id].par }; st.hover = null; save(); st.focus = true; renderAll(); }
-  function applyOrder() { var r = bestOrder(); if (!r) { return; } snap(); st.slots = r.perm.map(function (k) { return st.slots[k]; }); st.sel = -1; st.view = 'route'; save(); renderAll(); }
-  function move(d) { var j = st.sel + d; if (j < 0 || j > 17) { return; } snap(); var t = st.slots[st.sel]; st.slots[st.sel] = st.slots[j]; st.slots[j] = t; st.sel = j; save(); renderAll(); }
+  function runAuto(goal) {
+    st.busy = goal; renderSheet();
+    setTimeout(function () {
+      var before = grade(st.slots).rel, r = buildLayout(goal), lab = goal, k;
+      for (k = 0; k < GOALS.length; k++) { if (GOALS[k][0] === goal) { lab = GOALS[k][1]; } }
+      st.busy = null;
+      if (r) { snap(); st.slots = r.slice(); st.note = { t: 'Auto: ' + lab, d: grade(r).rel - before }; st.view = 'route'; st.sel = -1; st.fit = true; save(); }
+      renderAll();
+    }, 40);
+  }
+  function applyOrder() { var r = bestOrder(); if (!r) { return; } snap(); st.lock = {}; st.slots = r.perm.map(function (k) { return st.slots[k]; }); st.sel = -1; st.view = 'route'; save(); renderAll(); }
+  function move(d) { var j = st.sel + d; if (j < 0 || j > 17) { return; } snap(); var t = st.slots[st.sel], lt = st.lock[st.sel]; st.slots[st.sel] = st.slots[j]; st.slots[j] = t; st.lock[st.sel] = st.lock[j]; st.lock[j] = lt; st.sel = j; save(); renderAll(); }
   function back() { if (st.view === 'hist' && st.hd) { st.hd = null; st.prev = null; st.fit = true; renderAll(); return; } if (st.view === 'pins' && st.tgt) { st.tgt = null; renderAll(); return; } st.hd = null; st.view = 'route'; st.sel = -1; st.tgt = null; st.prev = null; st.pgoal = null; st.hover = null; st.fit = true; renderAll(); }
   function copyText() {
     var t = st.slots.map(function (s, i) { return (i + 1) + '. ' + guideText(s.id, s.par); }).join('\n');
@@ -628,9 +642,10 @@
     $('undo').addEventListener('click', undo);
     $('reset').addEventListener('click', function () { var h0 = JSON.stringify(st.slots); loadBase(st.base || dates[0]); hist = [h0]; renderBase(); st.fit = true; renderAll(); });
     $('copy').addEventListener('click', copyText);
-    $('auto').addEventListener('click', function () { if (st.view === 'auto') { back(); } else { st.view = 'auto'; st.sel = -1; st.prev = null; st.pgoal = null; setCollapsed(false); renderAll(); } });
-    $('pinsBtn').addEventListener('click', function () { if (st.view === 'pins') { back(); } else { st.view = 'pins'; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); } });
-    $('histBtn').addEventListener('click', function () { if (st.view === 'hist') { st.hd = null; st.prev = null; back(); } else { st.view = 'hist'; st.hd = null; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); } });
+    $('layoutTab').addEventListener('click', function () { st.view = 'route'; st.sel = -1; st.prev = null; st.hd = null; st.tgt = null; st.hover = null; setCollapsed(false); st.fit = true; renderAll(); });
+    $('auto').addEventListener('click', function () { st.view = 'auto'; st.sel = -1; st.prev = null; st.pgoal = null; setCollapsed(false); renderAll(); });
+    $('pinsBtn').addEventListener('click', function () { st.view = 'pins'; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); });
+    $('histBtn').addEventListener('click', function () { st.view = 'hist'; st.hd = null; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); });
     $('loc').addEventListener('click', function () { locate(true); });
     $('fit').addEventListener('click', function () { st.fit = true; drawMap(); });
     $('grip').addEventListener('click', function () { setCollapsed(document.body.getAttribute('data-sheet') !== 'min'); });
@@ -650,9 +665,13 @@
       if (mdv) { delMark(mdv); return; }
       if (snv) { st.cards = parseInt(snv, 10); renderSheet(); return; }
       var a = t.getAttribute('data-a'), s = t.getAttribute('data-s'), pk = t.getAttribute('data-pick'), ag = t.getAttribute('data-ag'), di = t.getAttribute('data-i');
+      if (t.getAttribute('data-par')) { /* handled below */ }
       if (di !== null) { pick(parseInt(di, 10)); }
       else if (pk) { st.hover = pk; replaceWith(pk); }
-      else if (ag) { st.pgoal = ag; st.prev = buildLayout(ag); st.fit = true; renderAll(); }
+      else if (ag) { runAuto(ag); }
+      else if (t.getAttribute('data-par')) { var np = parseInt(t.getAttribute('data-par'), 10); if (st.slots[st.sel].par !== np) { snap(); st.slots[st.sel] = { id: st.slots[st.sel].id, par: np }; save(); renderAll(); } }
+      else if (a === 'lock') { if (st.lock[st.sel]) { delete st.lock[st.sel]; } else { st.lock[st.sel] = true; } save(); renderSheet(); }
+      else if (a === 'undo') { undo(); }
       else if (s) { st.sort = s; renderSheet(); }
       else if (a === 'back') { back(); } else if (a === 'up') { move(-1); } else if (a === 'down') { move(1); }
       else if (a === 'all') { st.all = !st.all; renderSheet(); } else if (a === 'more') { st.more = !st.more; renderSheet(); }
@@ -661,7 +680,7 @@
       else if (a === 'place') { var c0 = map.getCenter(); placeAt(c0.lat, c0.lng); }
       else if (a === 'here') { if (me) { placeAt(me.lat, me.lon); } }
       else if (a === 'list') { st.tgt = null; renderAll(); }
-      else if (a === 'rot') { var s0 = parseInt(t.getAttribute('data-s0'), 10); snap(); st.slots = st.slots.slice(s0).concat(st.slots.slice(0, s0)); st.cards = 0; save(); renderAll(); }
+      else if (a === 'rot') { var s0 = parseInt(t.getAttribute('data-s0'), 10); snap(); st.lock = {}; st.slots = st.slots.slice(s0).concat(st.slots.slice(0, s0)); st.cards = 0; save(); renderAll(); }
       else if (a === 'apply') { if (st.prev) { snap(); st.slots = st.prev.slice(); st.prev = null; st.pgoal = null; st.view = 'route'; save(); renderAll(); } }
       else if (a === 'discard') { st.prev = null; st.pgoal = null; renderAll(); }
     });
@@ -678,7 +697,7 @@
   function start() {
     histRel = dates.map(function (x) { return grade(seq[x]).rel; });
     var saved = load();
-    if (saved) { st.base = saved.base; st.slots = saved.slots; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
+    if (saved) { st.base = saved.base; st.slots = saved.slots; st.lock = saved.lock || {}; baseGrade = st.base && seq[st.base] ? grade(seq[st.base]) : grade(st.slots); }
     else { loadBase(dates[0]); }
     buildUse(); loadPinsLocal(); applyPins(); renderBase(); initMap(); renderAll(); pullPins(function () { applyPins(); histRel = dates.map(function (x) { return grade(seq[x]).rel; }); renderAll(); });
   }
