@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var GEO = null, TI = {}, KEY = 'hbnf-studio-v1', MIN_N = 4, K = 6, PRIOR = { 3: -0.4, 4: 0.3 }, BPRIOR = 25, hist = [], histRel = [];
+  var bldCache0 = null, GEO = null, TI = {}, KEY = 'hbnf-studio-v1', MIN_N = 4, K = 6, PRIOR = { 3: -0.4, 4: 0.3 }, BPRIOR = 25, hist = [], histRel = [];
   var $ = function (id) { return document.getElementById(id); };
   var enc = null, H = {}, pool = [], seq = {}, dates = [];
   var st = { base: null, slots: [], sel: 0, tab: 'swap', sort: 'easy', all: false, q: '', goal: 'easier' };
@@ -164,14 +164,14 @@
       c('Hard', g.hard, d(g.hard, b.hard)) + c('Spread', f(g.sd, 2), d(g.sd, b.sd)) + c('Rank', rank(g.rel) + '/' + (histRel.length + 1), null) +
       (GEO ? c('Walk min', f(g.walk, 0), d(g.walk, b.walk)) + c('Throw ft', Math.round(g.ft / 10) * 10, null) + c('Cross', g.cross, d(g.cross, b.cross)) : '');
   }
-  function ftOf(p) { return p.geo ? Math.round(p.geo.d * 3.28084 / 5) * 5 : '-'; }
+  function ftOf(p) { return p.geo ? (p.geo.pf === 'a' || p.geo.bf === 'a' ? '~' : '') + Math.round(p.geo.d * 3.28084 / 5) * 5 : '-'; }
   function rank(rel) { var r = 1, i; for (i = 0; i < histRel.length; i++) { if (histRel[i] < rel) { r++; } } return r; }
   function snap() { hist.push(JSON.stringify(st.slots)); if (hist.length > 50) { hist.shift(); } }
   function undo() { if (hist.length) { st.slots = JSON.parse(hist.pop()); save(); renderAll(); } }
   function inLayout(id, except) { for (var i = 0; i < 18; i++) { if (i !== except && st.slots[i].id === id) { return true; } } return false; }
   function renderTools() {
     var h = '', i, cur = st.slots[st.sel], ch = H[cur.id];
-    $('tSwap').setAttribute('aria-selected', st.tab === 'swap'); $('tSug').setAttribute('aria-selected', st.tab === 'sug'); $('tOrd').setAttribute('aria-selected', st.tab === 'ord');
+    $('tSwap').setAttribute('aria-selected', st.tab === 'swap'); $('tSug').setAttribute('aria-selected', st.tab === 'sug'); $('tOrd').setAttribute('aria-selected', st.tab === 'ord'); $('tBld').setAttribute('aria-selected', st.tab === 'bld');
     if (st.tab === 'swap') {
       h += '<div class="tools-bar"><button type="button" data-a="up"' + (st.sel === 0 ? ' disabled' : '') + '>Up</button><button type="button" data-a="down"' + (st.sel === 17 ? ' disabled' : '') + '>Down</button>' +
         '<input id="q" type="search" placeholder="Search" aria-label="Search holes" value="' + esc(st.q) + '" autocomplete="off">' +
@@ -192,6 +192,8 @@
       if (!list.length) { h += '<div class="empty">-</div>'; }
     } else if (st.tab === 'ord') {
       h += orderHtml();
+    } else if (st.tab === 'bld') {
+      h += buildHtml();
     } else {
       h += '<div class="tools-bar">';
       for (i = 0; i < GOALS.length; i++) { h += '<button type="button" data-g="' + GOALS[i][0] + '" aria-pressed="' + (st.goal === GOALS[i][0]) + '">' + GOALS[i][1] + '</button>'; }
@@ -232,6 +234,39 @@
       if (cost < bc) { bc = cost; best = perm; }
     }
     return { perm: best, cost: bc };
+  }
+  var bldCache = null;
+  function penalty(g) { return g.dup * 4 + g.cross * 2 + g.walk * 0.04 + g.untested * 3; }
+  function buildLayout(goal) {
+    var cand = pool.filter(function (p) { return p.n >= 8 && p.par && (!GEO || p.geo); }), cur = st.slots.slice(), cg = grade(cur),
+        cs = objective(goal, cg) - penalty(cg), best = cur.slice(), bs = cs, it, T, i, j, p, tr, tg, ts, used, k, N = 30000, seed = 11;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    if (!cand.length) { return null; }
+    for (it = 0; it < N; it++) {
+      T = 0.6 * (1 - it / N) + 0.005; tr = cur.slice();
+      if (rnd() < 0.7) {
+        i = Math.floor(rnd() * 18); p = cand[Math.floor(rnd() * cand.length)]; used = false;
+        for (k = 0; k < 18; k++) { if (tr[k].id === p.id) { used = true; } }
+        if (used) { continue; }
+        tr[i] = { id: p.id, par: p.par };
+      } else {
+        i = Math.floor(rnd() * 18); j = Math.floor(rnd() * 18); if (i === j) { continue; }
+        k = tr[i]; tr[i] = tr[j]; tr[j] = k;
+      }
+      tg = grade(tr); ts = objective(goal, tg) - penalty(tg);
+      if (ts >= cs || rnd() < Math.exp((ts - cs) / T)) { cur = tr; cs = ts; if (cs > bs) { bs = cs; best = cur.slice(); } }
+    }
+    return best;
+  }
+  function buildHtml() {
+    var h = '<div class="tools-bar">', i;
+    for (i = 0; i < GOALS.length; i++) { h += '<button type="button" data-bg="' + GOALS[i][0] + '" aria-pressed="' + (st.bgoal === GOALS[i][0]) + '">' + GOALS[i][1] + '</button>'; }
+    h += '</div>';
+    if (!bldCache) { return h + '<div class="empty">-</div>'; }
+    var g = grade(bldCache), b = grade(st.slots);
+    h += '<button type="button" class="row" data-a="build"><span class="l">Apply layout</span><span class="v">' + f(g.rel, 1) + '</span><span class="v ' + cl(g.rel - b.rel) + '">' + sg(g.rel - b.rel, 1) + '</span><span class="v">' + f(g.walk, 0) + ' min</span><span class="v">X' + g.cross + '</span></button>';
+    for (i = 0; i < 18; i++) { h += '<div class="row"><span class="l">' + (i + 1) + ' ' + esc(H[bldCache[i].id].label.replace(/\s*\(.*\)\s*$/, '')) + '</span><span class="v">P' + bldCache[i].par + '</span><span class="v">' + ftOf(H[bldCache[i].id]) + '</span><span class="v">' + f(exp(H[bldCache[i].id], bldCache[i].par), 2) + '</span><span class="v"></span></div>'; }
+    return h;
   }
   function orderHtml() {
     if (!GEO) { return '<div class="empty">-</div>'; }
@@ -297,6 +332,7 @@
     $('tSwap').addEventListener('click', function () { st.tab = 'swap'; renderTools(); });
     $('tSug').addEventListener('click', function () { st.tab = 'sug'; renderTools(); });
     $('tOrd').addEventListener('click', function () { st.tab = 'ord'; renderTools(); });
+    $('tBld').addEventListener('click', function () { st.tab = 'bld'; renderTools(); });
     var mb = document.querySelectorAll('.mnav button'), i;
     for (i = 0; i < mb.length; i++) { mb[i].addEventListener('click', function () { setView(this.getAttribute('data-v')); }); }
     $('toolBody').addEventListener('input', function (e) { if (e.target.id === 'q') { st.q = e.target.value; st.focusQ = true; renderTools(); } });
@@ -306,7 +342,7 @@
       var a = t.getAttribute('data-a'), s = t.getAttribute('data-s'), g = t.getAttribute('data-g'), pk = t.getAttribute('data-pick'), ap = t.getAttribute('data-apply');
       if (a === 'up') { move(-1); } else if (a === 'down') { move(1); } else if (a === 'all') { st.all = !st.all; renderTools(); }
       else if (s) { st.sort = s; renderTools(); } else if (g) { st.goal = g; renderTools(); }
-      else if (a === 'order') { applyOrder(); } else if (pk) { snap(); st.slots[st.sel] = { id: pk, par: H[pk].par }; save(); renderAll(); }
+      else if (t.getAttribute('data-bg')) { st.bgoal = t.getAttribute('data-bg'); bldCache = buildLayout(st.bgoal); renderTools(); } else if (a === 'build') { if (bldCache) { snap(); st.slots = bldCache.slice(); st.sel = 0; save(); renderAll(); } } else if (a === 'order') { applyOrder(); } else if (pk) { snap(); st.slots[st.sel] = { id: pk, par: H[pk].par }; save(); renderAll(); }
       else if (ap) { snap(); var p = ap.split('|'); st.slots[parseInt(p[0], 10)] = { id: p[1], par: H[p[1]].par }; st.sel = parseInt(p[0], 10); save(); renderAll(); }
     });
     get('/hbnf-holes/hole_encyclopedia.json', function (d) {
