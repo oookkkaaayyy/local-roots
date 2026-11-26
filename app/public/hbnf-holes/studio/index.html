@@ -25,8 +25,16 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
 .hbnf-studio button:focus-visible,.hbnf-studio a:focus-visible,.hbnf-studio select:focus-visible,.hbnf-studio input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .hbnf-studio button:disabled{opacity:.55}
 .hbnf-studio .main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,400px);gap:10px;padding:10px 12px}
-.hbnf-studio #map{min-height:0;min-width:0;border:1px solid #6d735499;border-radius:10px;background:#1d1812}
+.hbnf-studio .mapwrap{position:relative;min-height:0;min-width:0}
+.hbnf-studio #map{position:absolute;top:0;left:0;width:100%;height:100%;min-height:0;min-width:0;border:1px solid #6d735499;border-radius:10px;background:#1d1812}
 .hbnf-studio .panel{border:1px solid #6d735499;border-radius:10px;background:var(--panel);min-height:0;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.hbnf-studio .mbtns{position:absolute;right:10px;top:10px;z-index:900;display:flex;flex-direction:column;gap:8px}
+.hbnf-studio .mbtns button{min-width:var(--tap);background:#3a3024e6}
+.hbnf-studio #ret{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;z-index:800;pointer-events:none;border:2px solid #c9b4f0;border-radius:50%;box-shadow:0 0 0 1px #000a}
+.hbnf-studio #ret:before,.hbnf-studio #ret:after{content:"";position:absolute;background:#c9b4f0}
+.hbnf-studio #ret:before{left:15px;top:-8px;width:2px;height:48px}
+.hbnf-studio #ret:after{top:15px;left:-8px;height:2px;width:48px}
+.hbnf-studio .pin.mk span{width:22px;height:22px;border-radius:5px;background:#f4e9d6;font-size:11px}
 .hbnf-studio #grip{display:none}
 .hbnf-studio #sheet{flex:1 1 auto;min-height:0;overflow:auto;padding:10px}
 .hbnf-studio .ph{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -86,16 +94,17 @@ body.hbnf-studio{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.
  <a href="/hbnf-holes/">Holes</a>
  <select id="base" aria-label="Base layout"></select>
  <button type="button" id="auto" aria-pressed="false">Auto</button>
+ <button type="button" id="pinsBtn" aria-pressed="false">Pins</button>
  <span class="sp"></span>
  <button type="button" id="undo">Undo</button>
  <button type="button" id="reset">Reset</button>
  <button type="button" id="copy">Copy</button>
 </div>
 <div class="main">
- <div id="map" data-lg-ignore="third-party tile map; Leaflet controls sized to 44px in CSS" aria-label="Course map"></div>
+ <div class="mapwrap"><div id="map" data-lg-ignore="third-party tile map; Leaflet controls sized to 44px in CSS" aria-label="Course map"></div><div id="ret" hidden aria-hidden="true"></div><div class="mbtns"><button type="button" id="loc" aria-pressed="false">Me</button><button type="button" id="fit">Fit</button></div></div>
  <div class="panel"><button type="button" id="grip" aria-label="Toggle panel">&#8212;</button><div id="sheet"></div></div>
 </div>
 <script src="/hbnf-holes/studio/vendor/leaflet.js?v=1"></script>
-<script src="/hbnf-holes/studio/studio.js?v=4"></script>
+<script src="/hbnf-holes/studio/studio.js?v=6"></script>
 </body>
 </html>
