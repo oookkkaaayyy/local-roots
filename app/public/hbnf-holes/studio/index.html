@@ -50,8 +50,8 @@ body.hbnf-studio{box-sizing:border-box;position:fixed;top:0;left:0;right:0;botto
 .hbnf-studio .slot .n,.hbnf-studio .row .n{color:var(--accent);font-weight:700}
 .hbnf-studio .slot .l{overflow-wrap:anywhere;font-size:.9rem}
 .hbnf-studio .slot .p,.hbnf-studio .slot .r,.hbnf-studio .slot .v{font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
-.hbnf-studio .tabs{display:flex;gap:6px;padding:8px;flex:0 0 auto}
-.hbnf-studio .tabs button{flex:1 1 0;min-width:0;padding:0 6px}
+.hbnf-studio .tabs{display:flex;flex-wrap:wrap;gap:6px;padding:8px;flex:0 0 auto}
+.hbnf-studio .tabs button{flex:1 0 auto;padding:0 6px}
 .hbnf-studio .tabs button[aria-pressed="true"]{background:#4b5038;border-color:var(--accent)}
 .hbnf-studio .tabs #grip{display:none;flex:0 0 var(--tap)}
 .hbnf-studio .legend{position:absolute;left:10px;bottom:28px;z-index:900;display:flex;gap:10px;flex-wrap:wrap;background:#292119e6;border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:.78rem;max-width:calc(100% - 20px)}
@@ -73,7 +73,7 @@ body.hbnf-studio{box-sizing:border-box;position:fixed;top:0;left:0;right:0;botto
 .hbnf-studio .met,.hbnf-studio .mh{display:grid;grid-template-columns:26px 76px 50px minmax(52px,1fr);gap:3px;align-items:baseline}
 .hbnf-studio .met{font-size:.9rem;font-weight:700;color:var(--ink);margin:2px 0}
 .hbnf-studio .met .est{font-style:normal;font-weight:400;color:var(--muted);font-size:.76rem}
-.hbnf-studio .mh{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:0 10px 2px 54px;white-space:nowrap}
+.hbnf-studio .mh{font-size:.72rem;color:var(--muted);letter-spacing:0;padding:0 10px 2px 54px;white-space:nowrap}
 .hbnf-studio .list.nb .mh{padding-left:10px}
 .hbnf-studio .mid small{font-size:.76rem;color:var(--muted);overflow-wrap:anywhere}
 .hbnf-studio .rt{display:flex;flex-direction:column;align-items:flex-end}
@@ -125,6 +125,7 @@ body.hbnf-studio{box-sizing:border-box;position:fixed;top:0;left:0;right:0;botto
 .hbnf-studio .empty{padding:12px;color:var(--muted)}
 .hbnf-studio .legend span[hidden]{display:none}
 .hbnf-studio .legend i.sq{border-radius:3px;background:#f4e9d6;width:14px;height:14px}
+.hbnf-studio .inl{border:1px solid #c9b4f0;border-radius:10px;padding:8px;margin:0 0 4px;min-width:0}.hbnf-studio .ends{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-bottom:8px}.hbnf-studio .end{min-width:0}.hbnf-studio .end span{display:block;color:var(--muted);font-size:.8rem;margin-bottom:3px}.hbnf-studio .end select,.hbnf-studio .fld.one select{width:100%}.hbnf-studio .fld.one{grid-template-columns:minmax(0,1fr)}
 .hbnf-studio .hr.nobdg{grid-template-columns:minmax(0,1fr) auto 14px}
 .hbnf-studio .pin.bk span{border-radius:6px;width:auto;min-width:26px;height:26px;padding:0 6px;background:#f4e9d6;border-color:#1d1812;font-size:12px;cursor:move}
 .hbnf-studio .pin.sel span{cursor:move}
@@ -168,6 +169,8 @@ body.hbnf-studio{box-sizing:border-box;position:fixed;top:0;left:0;right:0;botto
 .nogap .hbnf-studio .facts>*{margin:0 12px 12px 0}
 .nogap .hbnf-studio .tools-bar>*{margin:0 6px 6px 0}
 .nogap .hbnf-studio .chips>*{margin:0 6px 6px 0}
+@media(max-width:760px) and (max-height:700px){.hbnf-studio .main{grid-template-rows:minmax(120px,32fr) minmax(0,68fr)}.hbnf-studio[data-sheet="min"] .main{grid-template-rows:minmax(120px,1fr) auto}.hbnf-studio[data-place="1"] .main{grid-template-rows:minmax(120px,60fr) minmax(0,40fr)}}
+@media(max-width:380px){.hbnf-studio .met,.hbnf-studio .mh{grid-template-columns:24px 64px 42px minmax(44px,1fr)}}
 </style>
 <script>(function(){try{var d=document.createElement('div');d.style.cssText='display:flex;flex-direction:column;row-gap:1px';d.appendChild(document.createElement('i'));d.appendChild(document.createElement('i'));d.firstChild.style.height=d.lastChild.style.height='1px';document.documentElement.appendChild(d);var ok=d.scrollHeight===3;document.documentElement.removeChild(d);if(!ok){document.documentElement.className+=' nogap';}}catch(e){}})();</script>
 </head>
@@ -186,6 +189,6 @@ body.hbnf-studio{box-sizing:border-box;position:fixed;top:0;left:0;right:0;botto
  <div class="panel"><div class="tabs" role="toolbar" aria-label="Views"><button type="button" id="layoutTab" aria-pressed="true">Layout</button><button type="button" id="auto" aria-pressed="false">Auto</button><button type="button" id="pinsBtn" aria-pressed="false">Locations</button><button type="button" id="histBtn" aria-pressed="false">History</button><button type="button" id="grip" aria-label="Show or hide panel">&#9662;</button></div><div id="sheet"></div></div>
 </div>
 <script src="/hbnf-holes/studio/vendor/leaflet.js?v=1"></script>
-<script src="/hbnf-holes/studio/studio.js?v=36"></script>
+<script src="/hbnf-holes/studio/studio.js?v=37"></script>
 </body>
 </html>
