@@ -336,6 +336,7 @@
     map.fitBounds(L.latLngBounds(kp), { padding: [20, 20], animate: false });
     var p = GEO.park && GEO.nodes[GEO.park] ? ll2(GEO.park) : null;
     if (p) { L.marker(p, { icon: L.divIcon({ className: 'pin park', html: '<span>P</span>', iconSize: [28, 28], iconAnchor: [14, 14] }), interactive: false, keyboard: false }).addTo(map); }
+    map.on('click', function (e) { if (st.view !== 'pins' || st.tgt) { return; } if (st.pf === 'marks') { placeAt(e.latlng.lat, e.latlng.lng); } else if (st.pf === 'new') { if (!st.nn) { st.nn = (st.nk === 'bsk' ? 'Basket ' : 'Pad ') + (Object.keys(pins).filter(function (k) { return k.indexOf(':new-') > 0; }).length + 1); } placeAt(e.latlng.lat, e.latlng.lng); } });
     MAPOK = true; st.fit = true;
   }
   function dist2(u, v) { return Math.sqrt(Math.pow(u[0] - v[0], 2) + Math.pow(u[1] - v[1], 2)); }
@@ -487,7 +488,7 @@
   function drawPins() {
     if (!map) { return; }
     layers.pins.clearLayers(); layers.marks.clearLayers(); layers.tgt.clearLayers();
-    var id, i, m, ic, L2 = { tree: 'T', ob: 'OB', overlap: 'X', note: 'N' };
+    var id, i, m, ic, L2 = { tree: TREE_SVG, ob: 'OB', overlap: 'X', note: 'N', mando: 'M' };
     for (id in pins) {
       if (!pins.hasOwnProperty(id)) { continue; }
       if (id.indexOf(':new-') > 0 && st.view === 'pins') {
@@ -497,7 +498,7 @@
     if (st.unused) { drawUnused(); }
     $('lgun').hidden = !st.unused;
     for (i = 0; i < marks.length; i++) {
-      m = marks[i]; ic = L.divIcon({ className: 'pin mk', html: '<span>' + L2[m.kind] + '</span>', iconSize: [22, 22], iconAnchor: [11, 11] });
+      m = marks[i]; ic = L.divIcon({ className: 'pin mk' + (m.kind === 'tree' ? ' tr' : ''), html: '<span>' + L2[m.kind] + '</span>', iconSize: [22, 22], iconAnchor: [11, 11] });
       L.marker([m.lat, m.lon], { icon: ic, interactive: false, keyboard: false }).addTo(layers.marks);
     }
     if (st.view === 'pins' && st.tgt) {
@@ -533,6 +534,7 @@
     for (i = 0; i < marks.length; i++) { m = marks[i]; if (out[m.kind] !== undefined && pd(mxy([m.lat, m.lon]), a, b) < 10) { out[m.kind]++; } }
     return out;
   }
+  var TREE_SVG = '<svg viewBox="0 0 22 22" width="22" height="22" aria-hidden="true"><circle cx="11" cy="8.5" r="7" fill="#2f5d3a" stroke="#f4e9d6" stroke-width="1.2"/><rect x="9.6" y="14" width="2.8" height="6" fill="#5a4330"/></svg>';
   function pinsHtml() {
     var h = sheetHead('Locations', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
     if (!st.tgt) { h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="dup" aria-pressed="' + (st.pf === 'dup') + '">Review ' + (reviewPairs('pad:').length + reviewPairs('bsk:').length) + '</button><button type="button" data-pf="ret" aria-pressed="' + (st.pf === 'ret') + '">Retired ' + targets().filter(function (x) { return x.ret; }).length + '</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>'; }
@@ -555,7 +557,7 @@
       return h + '</div>';
     }
     if (st.pf === 'marks') {
-      var ks = [['tree', 'Tree'], ['ob', 'OB'], ['overlap', 'Overlap'], ['note', 'Note']];
+      var ks = [['tree', 'Tree'], ['ob', 'OB'], ['mando', 'Mando'], ['overlap', 'Overlap'], ['note', 'Note']];
       h += '<div class="chips">'; for (i = 0; i < ks.length; i++) { h += '<button type="button" data-mk="' + ks[i][0] + '" aria-pressed="' + (st.mk === ks[i][0]) + '">' + ks[i][1] + '</button>'; } h += '</div>';
       h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button></div><div class="list">';
       for (i = marks.length - 1; i >= 0 && i > marks.length - 40; i--) { h += '<div class="row"><span class="l">' + marks[i].kind + ' ' + marks[i].lat.toFixed(5) + ', ' + marks[i].lon.toFixed(5) + '</span><span class="v"></span><span class="v"></span><button type="button" class="v" data-md="' + esc(marks[i].id) + '">Delete</button></div>'; }
@@ -948,7 +950,7 @@
       h = sheetHead(st.hd, true, 'History');
       h += '<div class="sub">' + esc((lay[st.hd] || {}).name || '') + '</div>';
       h += '<div class="cards">' + (rr ? statCell('Team avg', sg(rr.avg_rel, 1), 'to par, actual', '') + statCell('Best team', sg(rr.best_rel, 0), 'to par', '') + statCell('Teams', rr.teams, 'played', '') : statCell('Results', 'None yet', 'not scored', 'pos')) + statCell('Expected', sg(g.rel, 1), 'to par, model', '') + '</div>';
-      h += '<div class="tools-bar"><button type="button" class="pri" data-a="loadh">Load into builder</button></div><div class="list">';
+      h += '<div class="list">';
       h += metHead(); for (i = 0; i < 18; i++) { h += holeRow(sl[i].id, sl[i].par, { n: i + 1 }); }
       return h + '</div>';
     }
