@@ -12,3 +12,7 @@ Read first: docs/sessions/2026-11-26_g98_matrix_studio_handoff.md (this repo). C
 - Opal SSH only reachable on the home network: ssh -i $HOME/mnt/local-roots/work/opal_patch/keys/opal_id -o IdentitiesOnly=yes -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@192.168.77.1
 - git push to local-roots works from a clone in the cloud container; hbnf-site branch creation was refused. Use GitHub MCP for merges (squash).
 - Owner: Andrew. Formal short replies, no em dashes, start with "Done and ready for grading" or "Not done, not ready for grading", ration usage, no new monthly cost, no external communication.
+
+## Access (read before asking the owner for anything)
+- Do not request Mac folders first. Everything needed is in GitHub: clone oookkkaaayyy/local-roots and oookkkaaayyy/hbnf-site with the add_repo tool (access: push), then work in the clone. Mac folders are needed only for the Opal/Elite hardware steps, which are done when the owner is on the home network.
+- If a tool or folder request is denied by the classifier, do not retry the same request or work around it. Do everything else that does not need it, then state the one specific request once. The owner approves by naming the exact repo or folder in chat (a blanket "approve everything" is not enough for the classifier).
