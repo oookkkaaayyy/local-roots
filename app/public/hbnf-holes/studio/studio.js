@@ -270,9 +270,9 @@
         for (jj = ii + 1; jj < slots.length && jj <= ii + 2; jj++) {
           gj1 = H[slots[jj].id].geo; if (!gj1 || gj1.b === a1.b || gj1.p === a1.p) { continue; }
           b1 = ll(a1.p); c1 = ll(a1.b); d1 = ll(gj1.p); var e1 = ll(gj1.b);
-          if (segX(b1, c1, d1, e1)) {
+          if ((o.ghost || st.sel < 0 || st.sel === ii || st.sel === jj) && segX(b1, c1, d1, e1)) {
             var den = (c1[0] - b1[0]) * (e1[1] - d1[1]) - (c1[1] - b1[1]) * (e1[0] - d1[0]), tt = ((d1[0] - b1[0]) * (e1[1] - d1[1]) - (d1[1] - b1[1]) * (e1[0] - d1[0])) / den, px = b1[0] + tt * (c1[0] - b1[0]), py = b1[1] + tt * (c1[1] - b1[1]);
-            L.marker([py / 111320, px / (111320 * Math.cos(33.698 * Math.PI / 180))], { icon: L.divIcon({ className: 'pin mk', html: '<span>X</span>', iconSize: [22, 22], iconAnchor: [11, 11] }), interactive: false, keyboard: false }).addTo(group);
+            L.marker([py / 111320, px / (111320 * Math.cos(33.698 * Math.PI / 180))], { icon: L.divIcon({ className: 'pin mk xo', html: '<span>X</span>', iconSize: [16, 16], iconAnchor: [8, 8] }), interactive: false, keyboard: false }).addTo(group);
           }
         }
       }
@@ -282,20 +282,24 @@
     for (i = 0; i < slots.length; i++) {
       h = H[slots[i].id]; if (!h.geo) { continue; }
       p = ll2(h.geo.p); b = ll2(h.geo.b);
-      var col = o.ghost ? '#c9b4f0' : relColor(holeRel(slots[i]), tested(h)), sel = !o.ghost && i === st.sel, bad = !o.ghost && cg.hit[i];
-      L.polyline([ll2(prevB), p], { color: o.ghost ? '#c9b4f0' : '#d9cebb', weight: 2, opacity: 0.6, dashArray: '2 6', interactive: false }).addTo(group);
-      var ln = L.polyline([p, b], { color: bad ? '#ff4d4d' : col, weight: sel ? 8 : 5, opacity: o.ghost ? 0.9 : 0.95, dashArray: o.ghost ? '8 6' : null, lineCap: 'round' }).addTo(group);
+      var col = o.ghost ? '#c9b4f0' : relColor(holeRel(slots[i]), tested(h)), sel = !o.ghost && i === st.sel, dim = !o.ghost && st.sel >= 0 && st.sel < slots.length && !sel;
+      if (sel) { L.polyline([ll2(prevB), p], { color: '#f4e9d6', weight: 2, opacity: 0.85, dashArray: '2 6', interactive: false }).addTo(group); }
+      if (!o.ghost && !dim) { L.polyline([p, b], { color: sel ? '#f4e9d6' : '#1d1812', weight: sel ? 11 : 7, opacity: 0.9, lineCap: 'round', interactive: false }).addTo(group); }
+      var ln = L.polyline([p, b], { color: col, weight: sel ? 6 : 4, opacity: dim ? 0.3 : 0.95, dashArray: o.ghost ? '8 6' : null, lineCap: 'round' }).addTo(group);
       if (!o.ghost) { (function (k) { ln.on('click', function () { pick(k); }); })(i); }
-      L.circleMarker(b, { radius: 4, color: '#1d1812', weight: 1, fillColor: col, fillOpacity: 1, interactive: false }).addTo(group);
+      if (!sel) {
+        var cm = L.marker(b, { icon: L.divIcon({ className: 'pin cup' + (dim ? ' dim' : ''), html: '<span style="border-color:' + col + '"></span>', iconSize: [18, 18], iconAnchor: [9, 9] }), keyboard: false, interactive: !o.ghost }).addTo(group);
+        if (!o.ghost) { (function (k) { cm.on('click', function () { pick(k); }); })(i); }
+      }
       var gn = grp[h.geo.p], fa = 2 * Math.PI * gi[i] / gn - Math.PI / 2, fx = gn > 1 && !sel ? Math.round(Math.cos(fa) * (gn > 3 ? 26 : 19)) : 0, fy = gn > 1 && !sel ? Math.round(Math.sin(fa) * (gn > 3 ? 26 : 19)) : 0;
-      var ic = L.divIcon({ className: 'pin' + (sel ? ' sel' : '') + (o.ghost ? ' gh' : ''), html: '<span style="background:' + col + '">' + (o.nums ? o.nums[i] : i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14 - fx, 14 - fy] });
+      var ic = L.divIcon({ className: 'pin pad' + (sel ? ' sel' : '') + (dim ? ' dim' : '') + (o.ghost ? ' gh' : ''), html: '<span style="background:' + col + '">' + (o.nums ? o.nums[i] : i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14 - fx, 14 - fy] });
       var m = L.marker(p, { icon: ic, keyboard: false, draggable: !!sel, zIndexOffset: sel ? 1000 : 0 }).addTo(group);
       if (!o.ghost) { (function (k) { m.on('click', function () { pick(k); }); })(i); }
       if (sel) {
         (function (hh) {
           m.bindTooltip('Drag to move pad', { direction: 'top', offset: [0, -14] });
           m.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(hh.pad, q.lat, q.lng); }, 0); });
-          var bm = L.marker(b, { icon: L.divIcon({ className: 'pin bk', html: '<span>Basket</span>', iconSize: [64, 26], iconAnchor: [32, 13] }), draggable: true, keyboard: false, zIndexOffset: 1100 }).addTo(group);
+          var bm = L.marker(b, { icon: L.divIcon({ className: 'pin cup sel', html: '<span style="border-color:' + col + '">' + (i + 1) + '</span>', iconSize: [32, 32], iconAnchor: [16, 16] }), draggable: true, keyboard: false, zIndexOffset: 1100 }).addTo(group);
           bm.bindTooltip('Drag to move basket', { direction: 'top', offset: [0, -14] });
           bm.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(hh.bsk, q.lat, q.lng); }, 0); });
         })(h);
@@ -470,16 +474,28 @@
     L.circle([me.lat, me.lon], { radius: me.acc, color: '#7fb2ff', weight: 1, fillColor: '#7fb2ff', fillOpacity: 0.12, interactive: false }).addTo(layers.me);
     L.circleMarker([me.lat, me.lon], { radius: 7, color: '#1d1812', weight: 2, fillColor: '#7fb2ff', fillOpacity: 1, interactive: false }).addTo(layers.me);
   }
+  function drawUnused() {
+    var used = {}, i, h;
+    for (i = 0; i < st.slots.length; i++) { h = H[st.slots[i].id]; used[canon(h.pad)] = 1; used[canon(h.bsk)] = 1; }
+    targets().forEach(function (t) {
+      var q = t.ret || used[t.id] ? null : tpos(t), pad = t.id.indexOf('pad:') === 0, m;
+      if (!q) { return; }
+      m = L.marker(q, { icon: L.divIcon({ className: 'pin un ' + (pad ? 'upad' : 'ucup'), html: '<span></span>', iconSize: [26, 26], iconAnchor: [13, 13] }), keyboard: false, zIndexOffset: -500 }).addTo(layers.pins);
+      m.on('click', function () { st.view = 'pins'; st.tk = pad ? 'pad' : 'bsk'; st.tgt = t.id; st.sel = -1; st.rn = undefined; st.mw = st.kn = st.ks = null; st.cr = null; st.hd = null; st.prev = null; setCollapsed(false); renderAll(); map.panTo(q); });
+    });
+  }
   function drawPins() {
     if (!map) { return; }
     layers.pins.clearLayers(); layers.marks.clearLayers(); layers.tgt.clearLayers();
     var id, i, m, ic, L2 = { tree: 'T', ob: 'OB', overlap: 'X', note: 'N' };
     for (id in pins) {
       if (!pins.hasOwnProperty(id)) { continue; }
-      if (id.indexOf(':new-') > 0) {
+      if (id.indexOf(':new-') > 0 && st.view === 'pins') {
         (function (nid) { var nm = L.marker(pins[nid], { icon: L.divIcon({ className: 'pin bk', html: '<span>' + esc(tlabel(nid.replace(':new-', ':'))) + '</span>', iconSize: [90, 26], iconAnchor: [45, 13] }), draggable: st.view === 'pins', keyboard: false }).addTo(layers.pins); nm.on('dragend', function (ev) { var q = ev.target.getLatLng(); setTimeout(function () { movePoint(nid, q.lat, q.lng); }, 0); }); })(id);
-      } else { L.circleMarker(pins[id], { radius: 5, color: '#1d1812', weight: 1, fillColor: '#c9b4f0', fillOpacity: 1, interactive: false }).addTo(layers.pins); }
+      }
     }
+    if (st.unused) { drawUnused(); }
+    $('lgun').hidden = !st.unused;
     for (i = 0; i < marks.length; i++) {
       m = marks[i]; ic = L.divIcon({ className: 'pin mk', html: '<span>' + L2[m.kind] + '</span>', iconSize: [22, 22], iconAnchor: [11, 11] });
       L.marker([m.lat, m.lon], { icon: ic, interactive: false, keyboard: false }).addTo(layers.marks);
@@ -1102,7 +1118,7 @@
     $('pinsBtn').addEventListener('click', function () { st.view = 'pins'; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); });
     $('histBtn').addEventListener('click', function () { st.view = 'hist'; st.hd = null; st.sel = -1; st.prev = null; st.tgt = null; setCollapsed(false); renderAll(); });
     $('loc').addEventListener('click', function () { locate(true); });
-    $('fit').addEventListener('click', function () { st.fit = true; drawMap(); });
+    $('unused').addEventListener('click', function () { st.unused = !st.unused; this.setAttribute('aria-pressed', st.unused ? 'true' : 'false'); drawPins(); }); $('fit').addEventListener('click', function () { st.fit = true; drawMap(); });
     $('grip').addEventListener('click', function () { setCollapsed(document.body.getAttribute('data-sheet') !== 'min'); });
     $('sheet').addEventListener('input', function (e) { if (e.target.id === 'cn') { st.cr.name = e.target.value; var cb0 = $('sheet').querySelector('[data-a=crok]'), cm0 = $('sheet').querySelector('[data-a=crme]'); if (cb0) { cb0.disabled = !st.cr.name; } if (cm0) { cm0.disabled = !(me && st.cr.name); } return; }
       if (e.target.id === 'nn') { st.nn = e.target.value; var pb = $('sheet').querySelector('[data-a=place]'), hb = $('sheet').querySelector('[data-a=here]'); if (pb) { pb.disabled = !st.nn; } if (hb) { hb.disabled = !(me && st.nn); } return; }
