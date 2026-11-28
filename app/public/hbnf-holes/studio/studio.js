@@ -537,12 +537,12 @@
   var TREE_SVG = '<svg viewBox="0 0 22 22" width="22" height="22" aria-hidden="true"><circle cx="11" cy="8.5" r="7" fill="#2f5d3a" stroke="#f4e9d6" stroke-width="1.2"/><rect x="9.6" y="14" width="2.8" height="6" fill="#5a4330"/></svg>';
   function pinsHtml() {
     var h = sheetHead('Locations', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
-    if (!st.tgt) { h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="dup" aria-pressed="' + (st.pf === 'dup') + '">Review ' + (reviewPairs('pad:').length + reviewPairs('bsk:').length) + '</button><button type="button" data-pf="ret" aria-pressed="' + (st.pf === 'ret') + '">Retired ' + targets().filter(function (x) { return x.ret; }).length + '</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>'; }
+    if (!st.tgt) { h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="dup" aria-pressed="' + (st.pf === 'dup') + '">Review ' + (reviewPairs('pad:').length + reviewPairs('bsk:').length) + '</button>' + (targets().filter(function (x) { return x.ret; }).length ? '<button type="button" data-pf="ret" aria-pressed="' + (st.pf === 'ret') + '">Hidden ' + targets().filter(function (x) { return x.ret; }).length + '</button>' : '') + '<button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>'; }
     if (st.pf === 'dup' && !st.tgt) { return dupHtml(h); }
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
       h += '<div class="facts"><strong>' + (st.tgt.indexOf('bsk:') === 0 ? 'Basket' : 'Pad') + ' · ' + esc(tname(st.tgt)) + '</strong><span>' + (ppos(st.tgt) ? 'Moved by you' : t && t.need === 2 ? 'No location' : t && t.need === 1 ? 'Approximate' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
-      h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button><button type="button" data-a="list">List</button></div>';
+      h += '<div class="facts"><span>Tap the map or drag the marker to move it.</span></div>';
       if (t) { h += manageHtml(t); }
       if (t) { h += '<div class="sub">Used by</div><div class="list">'; for (i = 0; i < t.holes.length && i < 6; i++) { h += '<div class="row"><span class="l">' + esc(short(t.holes[i])) + '</span><span class="v">P' + H[t.holes[i]].par + '</span><span class="v"></span><span class="v"></span></div>'; } h += '</div>'; }
       return h;
@@ -551,7 +551,7 @@
       var nid, nl = [];
       h += '<div class="chips"><button type="button" data-nk="pad" aria-pressed="' + (st.nk !== 'bsk') + '">Pad</button><button type="button" data-nk="bsk" aria-pressed="' + (st.nk === 'bsk') + '">Basket</button></div>';
       h += '<div class="tools-bar"><input id="nn" type="text" placeholder="Name" aria-label="Point name" value="' + esc(st.nn || '') + '" autocomplete="off"></div>';
-      h += '<div class="tools-bar"><button type="button" class="pri" data-a="place"' + (st.nn ? '' : ' disabled') + '>Place at crosshair</button><button type="button" data-a="here"' + (me && st.nn ? '' : ' disabled') + '>My location</button></div><div class="list">';
+      h += '<div class="facts"><span>' + (st.nn ? 'Tap the map to place it.' : 'Name it, then tap the map to place it.') + '</span></div><div class="list">';
       for (nid in pins) { if (pins.hasOwnProperty(nid) && nid.indexOf(':new-') > 0) { nl.push(nid); } }
       for (i = 0; i < nl.length; i++) { h += '<div class="row"><span class="l">' + esc(tlabel(nl[i].replace(':new-', ':'))) + '</span><span class="v">' + pins[nl[i]][0].toFixed(5) + ', ' + pins[nl[i]][1].toFixed(5) + '</span><span class="v"></span><span class="v"></span></div>'; }
       return h + '</div>';
@@ -559,7 +559,7 @@
     if (st.pf === 'marks') {
       var ks = [['tree', 'Tree'], ['ob', 'OB'], ['mando', 'Mando'], ['overlap', 'Overlap'], ['note', 'Note']];
       h += '<div class="chips">'; for (i = 0; i < ks.length; i++) { h += '<button type="button" data-mk="' + ks[i][0] + '" aria-pressed="' + (st.mk === ks[i][0]) + '">' + ks[i][1] + '</button>'; } h += '</div>';
-      h += '<div class="tools-bar"><button type="button" class="pri" data-a="place">Place at crosshair</button><button type="button" data-a="here"' + (me ? '' : ' disabled') + '>My location</button></div><div class="list">';
+      h += '<div class="facts"><span>Tap the map to place a ' + st.mk + '.</span></div><div class="list">';
       for (i = marks.length - 1; i >= 0 && i > marks.length - 40; i--) { h += '<div class="row"><span class="l">' + marks[i].kind + ' ' + marks[i].lat.toFixed(5) + ', ' + marks[i].lon.toFixed(5) + '</span><span class="v"></span><span class="v"></span><button type="button" class="v" data-md="' + esc(marks[i].id) + '">Delete</button></div>'; }
       return h + '</div>';
     }
@@ -581,28 +581,20 @@
   function prov(t) { return t.need === -1 ? 'Moved by you' : t.need === 2 ? 'No location' : t.need === 1 ? 'Approximate' : 'Mapped'; }
   function refText(id) { var r = refs(id); return tname(id) + ': layout ' + (r.cur.length ? r.cur.join(', ') : 'none') + ' · draft ' + (r.draft.length ? r.draft.join(', ') : 'none') + ' · past rounds ' + r.past; }
   function manageHtml(t) {
-    var id = t.id, h = '', r = refs(id), others, o, x, al = Object.keys(MG.m).filter(function (k) { return canon(k) === id; });
+    var id = t.id, h = '', al = Object.keys(MG.m).filter(function (k) { return canon(k) === id; }), others, x;
     if (!t.ret) {
-      h += '<div class="sub">Name</div><div class="tools-bar"><input id="rn" type="text" aria-label="Name" value="' + esc(st.rn === undefined ? tname(id) : st.rn) + '" autocomplete="off"><button type="button" data-a="rename">Rename</button></div>';
+      h += '<div class="sub">Name</div><div class="tools-bar"><input id="rn" type="text" aria-label="Name" value="' + esc(st.rn === undefined ? tname(id) : st.rn) + '" autocomplete="off"></div>';
       others = targets().filter(function (q) { return q.id !== id && q.id.slice(0, 4) === id.slice(0, 4) && !q.ret; }).sort(function (a, b) { return tname(a.id) < tname(b.id) ? -1 : 1; });
-      var here = tpos(t);
-      h += '<div class="sub">Merge</div><div class="fld one"><select id="mw" aria-label="Merge with">' + opt('', 'Merge with', !st.mw);
-      others.forEach(function (q) { var p = tpos(q); h += opt(q.id, tname(q.id) + (here && p ? ' · ' + Math.round(mdist(here, p) * 3.28084) + ' ft' : ''), st.mw === q.id); });
+      h += '<div class="sub">Same place as</div><div class="fld one"><select id="mw" aria-label="Same place as">' + opt('', 'Choose a point', !st.mw);
+      others.forEach(function (q) { h += opt(q.id, tname(q.id), st.mw === q.id); });
       h += '</select></div>';
       x = st.mw && st.mw !== id ? tgtObj(st.mw) : null;
       if (x && !x.ret) {
-        var kn = st.kn === x.id ? x.id : id, ks = st.ks === x.id ? x.id : st.ks === id ? id : kn;
-        h += '<div class="sub">Keep name</div><div class="chips">';
-        [id, x.id].forEach(function (z) { h += '<button type="button" data-kn="' + esc(z) + '" aria-pressed="' + (kn === z) + '">' + esc(tname(z)) + '</button>'; });
-        h += '</div><div class="sub">Keep spot</div><div class="chips">';
-        [t, x].forEach(function (z) { var p = tpos(z); h += '<button type="button" data-ks="' + esc(z.id) + '" aria-pressed="' + (ks === z.id) + '"' + (p ? '' : ' disabled') + '>' + esc(tname(z.id)) + ' · ' + prov(z) + '</button>'; });
-        h += '</div><div class="facts"><span>' + esc(refText(id)) + '</span><span>' + esc(refText(x.id)) + '</span></div><div class="tools-bar"><button type="button" class="pri" data-a="mgo">Merge into ' + esc(tname(kn)) + '</button><button type="button" data-a="mx">Cancel</button></div>';
+        h += '<div class="tools-bar"><button type="button" class="pri" data-mgo="' + esc(id + '|' + x.id) + '">Merge ' + esc(tname(id)) + ' into ' + esc(tname(x.id)) + '</button><button type="button" data-mgo="' + esc(x.id + '|' + id) + '">Merge ' + esc(tname(x.id)) + ' into ' + esc(tname(id)) + '</button></div>';
       }
     }
     if (al.length) { h += '<div class="sub">Merged here</div><div class="list">'; al.forEach(function (k) { h += '<div class="row"><span class="l">' + esc(tname(k)) + '</span><span class="v"></span><span class="v"></span><button type="button" class="v" data-um="' + esc(k) + '">Unmerge</button></div>'; }); h += '</div>'; }
-    o = r.cur.length || r.draft.length;
-    h += '<div class="facts"><span>' + esc(refText(id)) + '</span></div><div class="tools-bar">' + (t.ret ? '<button type="button" class="pri" data-a="restore">Restore</button>' : '<button type="button" data-a="retire"' + (o ? ' disabled' : '') + '>Retire</button>') + '</div>';
-    if (o && !t.ret) { h += '<div class="facts"><span class="pos">In use. Replace those holes to retire.</span></div>'; }
+    if (t.ret) { h += '<div class="tools-bar"><button type="button" class="pri" data-a="restore">Restore</button></div>'; }
     return h;
   }
   var XM = null;
@@ -1127,10 +1119,12 @@
       if (e.target.id === 'rn') { st.rn = e.target.value; return; }
       if (e.target.id === 'lq') { st.lq = e.target.value; st.focusL = true; renderSheet(); return; }
       if (e.target.id === 'q') { st.q = e.target.value; st.focusQ = true; renderSheet(); } });
+    $('sheet').addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.id === 'rn') { e.target.blur(); } });
     $('sheet').addEventListener('change', function (e) {
       var t = e.target, h0;
       if (t.id === 'ipad' || t.id === 'ibsk') { st.ep[t.id === 'ipad' ? 'pad' : 'bsk'] = t.value; h0 = preview(); st.hover = h0 ? h0.id : null; renderAll(); return; }
-      if (t.id === 'mw') { st.mw = t.value; st.kn = st.ks = null; renderSheet(); return; }
+      if (t.id === 'mw') { st.mw = t.value; renderSheet(); return; }
+      if (t.id === 'rn') { var rv = String(t.value).replace(/^\s+|\s+$/g, '').slice(0, 40); if (st.tgt && rv) { mgSet('nm', st.tgt, rv); saveMG(); } st.rn = undefined; renderAll(); return; }
       if (t.id === 'bpad') { st.bp.pad = t.value; st.bp.bsk = ''; renderAll(); return; }
       if (t.id === 'bbsk') { st.bp.bsk = t.value; h0 = selHole(); if (h0) { st.bp.par = defPar(h0); } renderAll(); }
     });
@@ -1150,8 +1144,7 @@
       if (sgv) { addDraft(sgv, H[sgv].par); return; }
       if (bpv) { st.bp.par = parseInt(bpv, 10); if (D()[st.bi] && selHole() && D()[st.bi].id === selHole().id) { st.draft = D(); st.draft[st.bi].par = st.bp.par; save(); renderAll(); } else { renderSheet(); } return; }
       var kn0 = t.getAttribute('data-kn'), ks0 = t.getAttribute('data-ks'), um = t.getAttribute('data-um'), pm = t.getAttribute('data-pm'), pg = t.getAttribute('data-pg'), pn = t.getAttribute('data-pn'), pu = t.getAttribute('data-pu');
-      if (kn0) { st.kn = kn0; renderSheet(); return; }
-      if (ks0) { st.ks = ks0; renderSheet(); return; }
+      var mgo = t.getAttribute('data-mgo'); if (mgo) { var mp = mgo.split('|'), iT = tgtObj(mp[1]); if (mergeInto(mp[0], mp[1], iT && tpos(iT) ? mp[1] : mp[0])) { st.tgt = canon(mp[1]); } st.mw = null; st.rn = undefined; renderAll(); return; }
       if (um) { unmerge(um); renderAll(); return; }
       if (pm) { st.pair = pm; st.pairFit = true; renderAll(); return; }
       if (pn || pu) { var pr = (pn || pu).split('|'); st.pair = null; setDismiss(pr[0], pr[1], !!pn); renderAll(); return; }
@@ -1161,7 +1154,6 @@
       if (aa === 'mx') { st.mw = null; renderSheet(); return; }
       if (aa === 'mgo' && st.tgt && st.mw) { var into = st.kn === st.mw ? st.mw : st.tgt, from = into === st.tgt ? st.mw : st.tgt; if (mergeInto(from, into, st.ks || into)) { st.tgt = into; st.mw = st.kn = st.ks = null; st.rn = undefined; } renderAll(); return; }
       if (aa === 'rename' && st.tgt) { var nv = String(st.rn === undefined ? tname(st.tgt) : st.rn).replace(/^\s+|\s+$/g, '').slice(0, 40); if (nv) { mgSet('nm', st.tgt, nv); st.rn = undefined; saveMG(); } renderAll(); return; }
-      if (aa === 'retire' && st.tgt) { var rr = refs(st.tgt); if (!rr.cur.length && !rr.draft.length) { mgSet('rt', st.tgt, 1); saveMG(); } renderAll(); return; }
       if (aa === 'restore' && st.tgt) { mgSet('rt', st.tgt, null); saveMG(); renderAll(); return; }
       if (aa === 'iapply') { applyPair(); return; }
       if (aa === 'icancel') { st.ep = null; st.hover = null; renderAll(); return; }
