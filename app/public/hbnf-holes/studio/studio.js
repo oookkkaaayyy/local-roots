@@ -535,10 +535,26 @@
     return out;
   }
   var TREE_SVG = '<svg viewBox="0 0 22 22" width="22" height="22" aria-hidden="true"><circle cx="11" cy="8.5" r="7" fill="#2f5d3a" stroke="#f4e9d6" stroke-width="1.2"/><rect x="9.6" y="14" width="2.8" height="6" fill="#5a4330"/></svg>';
+  var SG = [], SGF = 'new', SGU = 'https://phcpbvuqibyarpfrftgx.supabase.co/rest/v1/hbnf_suggestions';
+  function sgReq(m, q, body, cb) { var x = new XMLHttpRequest(); x.open(m, SGU + q, true); x.setRequestHeader('apikey', SK); x.setRequestHeader('Content-Type', 'application/json'); x.onload = function () { cb(x.status < 300 ? (x.responseText ? JSON.parse(x.responseText) : true) : null); }; x.onerror = function () { cb(null); }; x.send(body ? JSON.stringify(body) : null); }
+  function sgLoad() { sgReq('GET', '?select=*&order=created_at.desc&limit=500', null, function (d) { if (d) { SG = d; renderAll(); } }); }
+  var SGN = { basket: 'Basket', pad: 'Pad', other: 'Other', throw_from: 'Throw from', throw_to: 'Throw to', move: 'Wrong spot', note: 'Note' };
+  function suggHtml(h) {
+    var i, g, n = { 'new': 0, accepted: 0, rejected: 0 }, list;
+    for (i = 0; i < SG.length; i++) { n[SG[i].status]++; }
+    h += '<div class="chips">'; ['new', 'accepted', 'rejected'].forEach(function (k) { h += '<button type="button" data-sgf="' + k + '" aria-pressed="' + (SGF === k) + '">' + k.charAt(0).toUpperCase() + k.slice(1) + ' ' + n[k] + '</button>'; }); h += '</div><div class="list">';
+    list = SG.filter(function (q) { return q.status === SGF; });
+    for (i = 0; i < list.length; i++) { g = list[i]; h += '<div class="row"><button type="button" class="l" data-sgg="' + g.id + '">' + esc((SGN[g.kind] || g.kind) + (g.hole ? ' · hole ' + g.hole : '') + (g.note ? ' · ' + g.note : '')) + '</button><span class="v">' + (g.dist_ft ? Math.round(g.dist_ft) + ' ft' : '') + '</span><span class="v">' + esc(new Date(g.created_at).toLocaleDateString()) + '</span>' + (SGF === 'new' ? '<button type="button" data-sga="accepted" data-sgi="' + g.id + '">Accept</button><button type="button" data-sga="rejected" data-sgi="' + g.id + '">Reject</button>' : '<button type="button" data-sga="new" data-sgi="' + g.id + '">Undo</button>') + '</div>'; }
+    return h + '</div>';
+  }
+  function sgLoad0() { setTimeout(sgLoad, 1500); }
+  function sgShow() { if (!layers.sg && map) { layers.sg = L.layerGroup().addTo(map); } if (layers.sg) { layers.sg.clearLayers(); if (st.view === 'pins' && st.pf === 'sugg') { SG.filter(function (q) { return q.status === SGF; }).forEach(function (g) { L.circleMarker([g.lat, g.lon], { radius: 7, color: '#1d1812', weight: 2, fillColor: '#e9a8d4', fillOpacity: 0.95 }).addTo(layers.sg); if (g.lat2 != null) { L.polyline([[g.lat, g.lon], [g.lat2, g.lon2]], { color: '#e9a8d4', weight: 3, dashArray: '6 6' }).addTo(layers.sg); } }); } } }
+  setTimeout(function () { sgLoad(); }, 1500);
   function pinsHtml() {
     var h = sheetHead('Locations', st.tgt ? true : false, 'List'), i, a, t, pos, d, label;
-    if (!st.tgt) { h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="dup" aria-pressed="' + (st.pf === 'dup') + '">Review ' + (reviewPairs('pad:').length + reviewPairs('bsk:').length) + '</button><button type="button" data-pf="ret" aria-pressed="' + (st.pf === 'ret') + '">Retired ' + targets().filter(function (x) { return x.ret; }).length + '</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button></div>'; }
+    if (!st.tgt) { h += '<div class="chips"><button type="button" data-pf="need" aria-pressed="' + (st.pf === 'need') + '">Needs location</button><button type="button" data-pf="all" aria-pressed="' + (st.pf === 'all') + '">All</button><button type="button" data-pf="marks" aria-pressed="' + (st.pf === 'marks') + '">Trees and OB</button><button type="button" data-pf="dup" aria-pressed="' + (st.pf === 'dup') + '">Review ' + (reviewPairs('pad:').length + reviewPairs('bsk:').length) + '</button><button type="button" data-pf="ret" aria-pressed="' + (st.pf === 'ret') + '">Retired ' + targets().filter(function (x) { return x.ret; }).length + '</button><button type="button" data-pf="new" aria-pressed="' + (st.pf === 'new') + '">Add new</button><button type="button" data-pf="sugg" aria-pressed="' + (st.pf === 'sugg') + '">Suggestions ' + SG.filter(function (g) { return g.status === 'new'; }).length + '</button></div>'; }
     if (st.pf === 'dup' && !st.tgt) { return dupHtml(h); }
+    if (st.pf === 'sugg' && !st.tgt) { return suggHtml(h); }
     if (st.tgt) {
       t = tgtObj(st.tgt); pos = t ? tpos(t) : null;
       h += '<div class="facts"><strong>' + (st.tgt.indexOf('bsk:') === 0 ? 'Basket' : 'Pad') + ' · ' + esc(tname(st.tgt)) + '</strong><span>' + (ppos(st.tgt) ? 'Moved by you' : t && t.need === 2 ? 'No location' : t && t.need === 1 ? 'Approximate' : 'Mapped') + '</span>' + (pos ? '<span>' + pos[0].toFixed(6) + ', ' + pos[1].toFixed(6) + '</span>' : '') + (st.sync ? '<span>' + st.sync + '</span>' : '') + '</div>';
@@ -1083,7 +1099,7 @@
     for (i = 0; i < dates.length; i++) { h += '<option value="' + dates[i] + '"' + (dates[i] === st.base ? ' selected' : '') + '>From ' + dates[i] + '</option>'; }
     $('base').innerHTML = h;
   }
-  function renderAll() { renderSheet(); drawAll(); drawMap(); drawPins(); $('undo').disabled = !hist.length; }
+  function renderAll() { renderSheet(); drawAll(); drawMap(); drawPins(); sgShow(); $('undo').disabled = !hist.length; }
   function pick(i) { st.sel = st.sel === i ? -1 : i; st.view = 'route'; st.ep = null; st.xp = false; st.hover = null; st.focus = st.sel >= 0; setCollapsed(false); renderAll();   showInline(); }
   function showInline() { var sh = $('sheet'), r = sh.querySelector('[aria-expanded="true"][data-i]'), a, b, p; if (!r) { return; } a = sh.getBoundingClientRect(); b = r.getBoundingClientRect(); p = r.nextElementSibling.getBoundingClientRect(); if (b.top < a.top || p.top + 110 > a.bottom) { sh.scrollTop += b.top - a.top - 4; } }
   function replaceWith(id) { snap(); st.slots[st.sel] = { id: id, par: H[id].par }; st.hover = null; save(); st.focus = true; renderAll(); }
@@ -1183,7 +1199,11 @@
       }
       var tkv = t.getAttribute('data-tk'); if (tkv) { st.tk = tkv; renderSheet(); return; }
       var nkv = t.getAttribute('data-nk'); if (nkv) { st.nk = nkv; renderSheet(); return; }
-      if (pfv) { st.pf = pfv; st.tgt = null; renderAll(); return; }
+      var sgfv = t.getAttribute('data-sgf'), sgav = t.getAttribute('data-sga'), sggv = t.getAttribute('data-sgg');
+      if (sgfv) { SGF = sgfv; renderAll(); return; }
+      if (sgav) { var sgi = t.getAttribute('data-sgi'); sgReq('PATCH', '?id=eq.' + sgi, { status: sgav }, function (ok) { if (ok) { SG.forEach(function (q) { if (q.id === sgi) { q.status = sgav; } }); } renderAll(); }); return; }
+      if (sggv) { SG.forEach(function (q) { if (q.id === sggv && map) { map.setView([q.lat, q.lon], 19, { animate: false }); } }); return; }
+      if (pfv) { st.pf = pfv; st.tgt = null; if (pfv === 'sugg') { sgLoad(); } renderAll(); return; }
       if (mkv) { st.mk = mkv; renderSheet(); return; }
       if (mdv) { delMark(mdv); return; }
       if (snv) { st.cards = parseInt(snv, 10); renderSheet(); return; }
